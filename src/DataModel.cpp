@@ -42,7 +42,7 @@ DataModelRep::DataModelRep():
   subspaceIdBingLi(false), subspaceIdConstantine(false), subspaceIdEnergy(false),
   referenceCount(1), dimension(0), numReplicates(100), autoRefine(false),
   maxFunctionEvals(1000), refineCVMetric("root_mean_squared"), refineCVFolds(10),
-  truncationTolerance(1.0e-6)
+  truncationTolerance(1.0e-6),analyticCovIdForm(NOCOVAR)
 { }
 
 
@@ -76,7 +76,8 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceIdEnergy
     << dimension << numReplicates << autoRefine << maxFunctionEvals
     << refineCVMetric << refineCVFolds << propagationModelPointer
-    << truncationTolerance << rfDataFileName << randomFieldIdForm;
+    << truncationTolerance << rfDataFileName << randomFieldIdForm
+    << analyticCovIdForm;
 }
 
 
@@ -111,7 +112,8 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceIdEnergy
     >> dimension >> numReplicates >> autoRefine >> maxFunctionEvals
     >> refineCVMetric >> refineCVFolds >> propagationModelPointer
-    >> truncationTolerance >> rfDataFileName >> randomFieldIdForm;
+    >> truncationTolerance >> rfDataFileName >> randomFieldIdForm
+    >> analyticCovIdForm;
 }
 
 
@@ -145,7 +147,8 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceIdEnergy
     << dimension << numReplicates << autoRefine << maxFunctionEvals
     << refineCVMetric << refineCVFolds << propagationModelPointer
-    << truncationTolerance << rfDataFileName << randomFieldIdForm;
+    << truncationTolerance << rfDataFileName << randomFieldIdForm 
+    << analyticCovIdForm;
 }
 
 

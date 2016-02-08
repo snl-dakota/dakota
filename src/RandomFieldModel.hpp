@@ -96,6 +96,8 @@ protected:
   /// Generate field representation: generate a KL or PCA/GP
   void identify_field_model();
 
+  /// Generate field representation: utilize RF Suite
+  void rf_suite_identify_field_model();
 
   // ---
   // Problem transformation functions
@@ -182,6 +184,9 @@ protected:
   /// form of the RF representation (KL, PCA, ICA)
   unsigned short expansionForm;
 
+  /// form of the analytic covariance function
+  unsigned short covarianceForm;
+
   /// current approximation of system rank
   int requestedReducedRank;
 
@@ -201,6 +206,8 @@ protected:
   /// reduced basis representation (for KL or PCA case)
   ReducedBasis rfBasis;
 
+  /// counter for RF Suite
+  int fieldRealizationId;
 
   // ---
   // Data for PCA/GP model

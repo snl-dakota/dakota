@@ -2433,6 +2433,11 @@ KEYWORD model
 	  [ build_source
 	    rf_data_file STRING
 	    | dace_method_pointer STRING
+	    |
+	    ( analytic_covariance
+	      squared_exponential
+	      | exponential
+	      )
 	    ]
 	  [ expansion_form
 	    karhunen_loeve
