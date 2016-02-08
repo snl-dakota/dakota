@@ -22,6 +22,7 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   numFunctions(subModel.num_functions()),
   numObservations(0), 
   expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
+  covarianceForm(problem_db.get_ushort("model.rf.analytic_covariance")),
   requestedReducedRank(problem_db.get_int("model.rf.expansion_bases")),
   percentVariance(problem_db.get_real("model.truncation_tolerance")),
   actualReducedRank(5)
@@ -94,9 +95,10 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
 void RandomFieldModel::validate_inputs()
 {
   //if (buildField) {
-  if (rfDataFilename.empty() && daceIterator.is_null()) {
+  if (rfDataFilename.empty() && daceIterator.is_null() && (covarianceForm == NOCOVAR)) {
     Cerr << "\nError: Random field model requires data_file or "
-	 << "dace_method_pointer" << std::endl;
+	 << "dace_method_pointer or specification of an analytic covariance" 
+         << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
@@ -110,11 +112,17 @@ bool RandomFieldModel::initialize_mapping()
 {
   // TODO: create modes to switch between generating, accepting, and
   // underlying model
+  fieldRealizationId=0;
 
   get_field_data();
 
   // runtime operation to identify the random field approximation
-  identify_field_model();
+  if (covarianceForm != NOCOVAR) { 
+    rf_suite_identify_field_model();
+    expansionForm == RF_KARHUNEN_LOEVE;
+  }
+  else 
+    identify_field_model();
 
   // complete initialization of the base RecastModel
   initialize_recast();
@@ -175,6 +183,17 @@ void RandomFieldModel::get_field_data()
       for (size_t fn=0; fn<numFunctions; ++fn) 
         rfBuildData(samp,fn) = r_it->second.function_value(fn);
   }
+}
+
+
+/// Alternative to below function when using RFSuite
+void RandomFieldModel::rf_suite_identify_field_model()
+{
+  actualReducedRank = requestedReducedRank;
+  // Build an RF suite reduced model
+  // dprepro to insert covariance type / parameters / correl lengths, bases, percent variance
+  std::system("dprepro covsettings.txt KL_solve.template KL_solve.i");
+  std::system("launch -n 1 encore -i KL_solve.i");
 }
 
 
@@ -452,17 +471,24 @@ void RandomFieldModel::vars_mapping(const Variables& recast_augmented_vars,
 
 void RandomFieldModel::derived_evaluate(const ActiveSet& set)
 {
+  fieldRealizationId++;
+
   if (expansionForm == RF_KARHUNEN_LOEVE)
     generate_kl_realization();
   else if (expansionForm == RF_PCA_GP)
     generate_pca_gp_realization();
 
+  // May need hook to communicate the appropraiate mesh file to the simulation
+
   RecastModel::derived_evaluate(set);
+
 }
 
 
 void RandomFieldModel::derived_evaluate_nowait(const ActiveSet& set)
 {
+  fieldRealizationId++;
+
   if (expansionForm == RF_KARHUNEN_LOEVE)
     generate_kl_realization();
   else if (expansionForm == RF_PCA_GP)
@@ -496,6 +522,22 @@ void RandomFieldModel::generate_kl_realization()
     Cout << "Augmented continuous variables:\n" << augmented_cvars << std::endl;
     Cout << "KL random coeffs:\n" << kl_coeffs << std::endl;
   }
+
+  // Run KL realize with RF Suite
+  // dprepro to configure kl_realize.i with kl_coeffs, mesh number
+  std::system("dprepro randomcoeffs.txt KL_realize.template KL_realize.i");
+  std::system("launch -n 1 encore -i KL_realize.i");
+
+  // post-condition: mesh file gets written containing the field realization
+  // probably want to tag it with evalID...
+  // bfs::copy(mesh.exo mesh.realize1.exo)
+  // need to obtain the realization ID for this Model/Interface
+
+  // For now use fieldRealizationId
+
+  // May want to create a new derived Interface from
+  // ForkApplicInterface called ExternalFieldManagerInterface
+  // in order to better manage hierarchical tagging
 
   // augment the mean prediction with the covariance contributions
   RealVector kl_prediction = rfBasis.get_column_means();

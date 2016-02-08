@@ -3193,6 +3193,12 @@
 	      <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
                 <param type="STRING" in_taglist="method" />
               </keyword>
+	      <keyword id="analytic_covariance" name="analytic_covariance" code="{0}" >
+	        <oneOf>
+	          <keyword id="squared_exponential" name="squared_exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L2)}" />
+	          <keyword id="exponential" name="exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L1)}" />
+	        </oneOf>
+	      </keyword>
 	    </oneOf>
           </keyword>
 	  <keyword id="expansion_form" name="expansion_form" code="{0}" minOccurs="0">

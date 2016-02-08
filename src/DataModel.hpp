@@ -36,6 +36,9 @@ enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
 /// define types of random field approximations
 enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
 
+/// define types of analytic covariance functions
+enum { NOCOVAR=0, EXP_L2, EXP_L1 };
+
 /// Body class for model specification data.
 
 /** The DataModelRep class is used to contain the data from a model
@@ -326,6 +329,9 @@ public:
 
   /// Contains which type of random field model 
   unsigned short randomFieldIdForm;
+
+  /// Contains which type of analytic covariance function 
+  unsigned short analyticCovIdForm;
 
   /// truncation tolerance on build process: percent variance explained
   Real truncationTolerance;

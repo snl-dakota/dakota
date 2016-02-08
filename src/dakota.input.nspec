@@ -2476,6 +2476,12 @@ KEYWORD model {N_mom3(start,0,stop)}
       rf_data_file STRING {N_mom(str,rfDataFileName)}
       |
       dace_method_pointer STRING {N_mom(str,subMethodPointer)}
+      |
+      ( analytic_covariance {0}
+        squared_exponential {N_mom(utype,analyticCovIdForm_EXP_L2)}
+        |
+        exponential {N_mom(utype,analyticCovIdForm_EXP_L1)}
+       )
      ]
     [ expansion_form {0}
       karhunen_loeve {N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}

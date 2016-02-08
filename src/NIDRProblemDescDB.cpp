@@ -7121,6 +7121,8 @@ static Model_mp_type
         
 
 static Model_mp_utype
+        MP2s(analyticCovIdForm,EXP_L2),
+        MP2s(analyticCovIdForm,EXP_L1),
         MP2s(exportApproxFormat,TABULAR_NONE),
         MP2s(exportApproxFormat,TABULAR_HEADER),
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
