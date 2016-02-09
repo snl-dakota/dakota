@@ -775,19 +775,8 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
     break;
   default: { // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
     if (lf_resp_map.empty()) { combined_resp_map = hf_resp_map; return; }
-    if (responseMode == AUTO_CORRECTED_SURROGATE) {
-      // if a correction has not been computed, compute it now
-      IntVarsMIter v_it;
-      if (!deltaCorr.computed() && !rawVarsMap.empty()) {
-        v_it = rawVarsMap.begin();
-	deltaCorr.compute(v_it->second, truthResponseRef,
-			  lf_resp_map[v_it->first], quiet_flag);
-      }
-      // apply correction for all rawVarsMap cases (not previously corrected)
-      for (v_it = rawVarsMap.begin(); v_it != rawVarsMap.end(); ++v_it)
-	deltaCorr.apply(v_it->second, lf_resp_map[v_it->first], quiet_flag);
-      rawVarsMap.clear();
-    }
+    if (responseMode == AUTO_CORRECTED_SURROGATE)
+      compute_apply_delta(lf_resp_map);
     if (hf_resp_map.empty()) { combined_resp_map = lf_resp_map; return; }
     // process combinations of HF and LF completions
     Response empty_resp;
@@ -932,10 +921,11 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
 
-  // Logic could avoid overhead but is complicated by cache_for_pending_corr:
-  //if (!lo_fi_evals) { combined_resp_map = hf_resp_map; return; }
-  // ... correct any lo fi evals ...
-  //if (!hi_fi_evals) { combined_resp_map = lf_resp_map; return; }
+  // Early return options avoid some overhead:
+  if (surrIdMap.empty())  { combined_resp_map = hf_resp_map; return; }
+  if (responseMode == AUTO_CORRECTED_SURROGATE)
+    compute_apply_delta(lf_resp_map);
+  if (truthIdMap.empty()) { combined_resp_map = lf_resp_map; return; }
 
   // invert truthIdMap and surrIdMap
   IntIntMap inverse_truth_id_map, inverse_surr_id_map; IntIntMCIter id_it;
@@ -958,9 +948,9 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
 	// cache HF response since LF contribution not yet available
 	cachedTruthRespMap[hf_eval_id] = hf_cit->second; break;
-      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
-	if (inverse_surr_id_map.count(hf_eval_id))// LF contribution is pending
-	  cachedTruthRespMap[hf_eval_id] = hf_cit->second; // cache HF response
+      default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
+	if (inverse_surr_id_map.count(hf_eval_id)) // LF contribution is pending
+	  cachedTruthRespMap[hf_eval_id] = hf_cit->second;  // cache HF response
 	else { // no LF component is pending -> HF contribution is sufficient
 	  response_mapping(hf_cit->second, empty_resp,
 			   surrResponseMap[hf_eval_id]);
@@ -976,12 +966,8 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
 	// cache LF response since HF contribution is pending is sufficient
 	cachedApproxRespMap[lf_eval_id] = lf_it->second; break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-	bool cache_for_pending_corr = false;
-	if (responseMode == AUTO_CORRECTED_SURROGATE)
-	  cache_for_pending_corr = compute_apply_delta(lf_resp_map, lf_it);
-	if (cache_for_pending_corr ||              // correction is pending
-	    inverse_truth_id_map.count(lf_eval_id))// HF contribution is pending
-	  cachedApproxRespMap[lf_eval_id] = lf_it->second; // cache LF response
+	if (inverse_truth_id_map.count(lf_eval_id))// HF contribution is pending
+	  cachedApproxRespMap[lf_eval_id] = lf_it->second;  // cache LF response
 	else { // no HF component is pending -> LF contribution is sufficient
 	  response_mapping(empty_resp, lf_it->second,
 			   surrResponseMap[lf_eval_id]);
@@ -1000,32 +986,22 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
       case AGGREGATED_MODELS:
 	aggregate_response(hf_cit->second, lf_it->second,
 			   surrResponseMap[hf_eval_id]);            break;
-      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
-	if (responseMode == AUTO_CORRECTED_SURROGATE)
-	  cache_for_pending_corr = compute_apply_delta(lf_resp_map, lf_it);
-	if (cache_for_pending_corr) {
-	  cachedTruthRespMap[hf_eval_id]  = hf_cit->second;
-	  cachedApproxRespMap[lf_eval_id] = lf_it->second;
-	}
-	else
-	  response_mapping(hf_cit->second, lf_it->second,
-			   surrResponseMap[hf_eval_id]);
-	break;
+      default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
+	response_mapping(hf_cit->second, lf_it->second,
+			 surrResponseMap[hf_eval_id]);              break;
       }
-      if (!cache_for_pending_corr) {
-	truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
-	surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
-      }
+      truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
+      surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
       ++hf_cit; ++lf_it;
     }
   }
 }
 
 
-bool HierarchSurrModel::
-compute_apply_delta(IntResponseMap& lf_resp_map, IntRespMIter lf_it)
+void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 {
-  // Incoming we have a completed LF evaluation that requires correction.
+  // Incoming we have a completed LF evaluation that may be used to compute a
+  // correction and may be the target of application of a correction.
 
   // First, test if a correction is previously available or can now be computed
   bool corr_comp = deltaCorr.computed(), cache_for_pending_corr = false,
@@ -1048,19 +1024,24 @@ compute_apply_delta(IntResponseMap& lf_resp_map, IntRespMIter lf_it)
   // components necessary for correction are still pending (returning
   // corrected evals with the first available LF response would lead to
   // nondeterministic results).
-  int    lf_eval_id = lf_it->first;
-  IntVarsMIter v_it = rawVarsMap.find(lf_eval_id);
-  if (corr_comp) {
+  IntVarsMIter v_it; IntRespMIter lf_it; int lf_eval_id;
+  for (lf_it=lf_resp_map.begin(); lf_it!=lf_resp_map.end(); ++lf_it) {
+    lf_eval_id = lf_it->first; v_it = rawVarsMap.find(lf_eval_id);
     if (v_it != rawVarsMap.end()) {
-      deltaCorr.apply(v_it->second, lf_it->second, quiet_flag);
-      rawVarsMap.erase(v_it);
+      if (corr_comp) { // apply the correction to the LF response
+	deltaCorr.apply(v_it->second, lf_it->second, quiet_flag);
+	rawVarsMap.erase(v_it);
+      }
+      else // no new corrections can be applied -> cache uncorrected
+	cachedApproxRespMap.insert(*lf_it);
     }
-    // else correction already applied (no need to cache)
+    // else correction already applied
   }
-  else if (v_it != rawVarsMap.end())
-    cache_for_pending_corr = true; // correction needed but not avail -> cache
-
-  return cache_for_pending_corr;
+  // remove cached responses from lf_resp_map
+  if (!corr_comp)
+    for (lf_it =cachedApproxRespMap.begin();
+	 lf_it!=cachedApproxRespMap.end(); ++lf_it)
+      lf_resp_map.erase(lf_it->first);
 }
 
 

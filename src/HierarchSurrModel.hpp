@@ -188,7 +188,7 @@ private:
 
   /// helper function for computing and applying a correction for the
   /// AUTO_CORRECTED_SURROGATE responseMode
-  bool compute_apply_delta(IntResponseMap& lf_resp_map, IntRespMIter lf_it);
+  void compute_apply_delta(IntResponseMap& lf_resp_map);
 
   /// check for consistency in response map keys
   void check_key(int key1, int key2) const;
