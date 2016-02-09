@@ -186,8 +186,8 @@ private:
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
 
-  /// helper function for computing and applying a correction for the
-  /// AUTO_CORRECTED_SURROGATE responseMode
+  /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
+  /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
   /// check for consistency in response map keys

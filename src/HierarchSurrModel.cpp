@@ -662,7 +662,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_same_model()
   lf_resp_map.insert(cachedApproxRespMap.begin(), cachedApproxRespMap.end());
   cachedTruthRespMap.clear(); cachedApproxRespMap.clear();
 
-  derived_synchronize_combine(lf_resp_map, hf_resp_map, surrResponseMap);
+  derived_synchronize_combine(hf_resp_map, lf_resp_map, surrResponseMap);
   return surrResponseMap;
 }
 

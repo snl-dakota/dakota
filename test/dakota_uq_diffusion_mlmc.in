@@ -1,10 +1,13 @@
+#@ p*: Label=SmokeTest
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
 
 #environment,
 #	graphics
 
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_sampling
+        multilevel_sampling				#s0,#p0,#p1
 	  pilot_samples = 100 seed = 1237
 	  max_iterations = 5
 	  convergence_tolerance = .01

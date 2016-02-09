@@ -275,6 +275,12 @@ void NonDMultilevelSampling::multilevel_mc(size_t mf_index)
     ++iter;
     Cout << "MLMC iteration " << iter << " sample increments:\n" << delta_N_l
 	 << std::endl;
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "Accumulated raw moments (Y1, Y2, Y3, Y4):\n";
+      write_data(Cout, sum_Y1); write_data(Cout, sum_Y2);
+      write_data(Cout, sum_Y3); write_data(Cout, sum_Y4); Cout << std::endl;
+      //write_data(Cout, sum_Y1sq);
+    }
   }
 
   // aggregate expected value of estimators for Y, Y^2, Y^3, and Y^4. Final
