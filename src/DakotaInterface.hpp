@@ -173,7 +173,7 @@ public:
   /// move the current approximation into storage for later combination
   virtual void store_approximation();
   /// combine the current approximation with one previously stored
-  virtual void combine_approximation(short corr_type, bool swap);
+  virtual void combine_approximation(short corr_type);
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
