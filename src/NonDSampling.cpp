@@ -23,6 +23,7 @@
 #include "pecos_stat_util.hpp"
 #include <algorithm>
 
+#include <boost/math/special_functions/binomial.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
@@ -69,7 +70,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     Real beta = probDescDB.get_real("method.wilks_beta");
     if (beta <= 0.0)
       beta = 0.95;
-    numSamples = compute_wilks_sample_size(alpha, beta /* ,twosided = true */);
+    numSamples = compute_wilks_sample_size(1, alpha, beta, true /* twosided */);
     Cout << "NonDSampling::NonDSampling : sampleSize = " << numSamples << std::endl;
   }
 
@@ -1158,20 +1159,54 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
 }
 
 
-int NonDSampling::compute_wilks_sample_size(Real alpha, Real beta, bool twosided)
+Real NonDSampling::compute_wilks_onesided_f(Real n, int order, Real alpha, Real beta)
+{
+  int nc = std::ceil(n);
+  Real sum = 1.0 - beta;
+  Real nn, nCk, term;
+  int nterms = 0;
+  for (int k=nc-order+1; k<nc+1; ++k) {
+    nn = n-Real(order-1 - nterms);
+    nCk = boost::math::binomial_coefficient<double>(nc,k);
+    term = nCk*std::pow(alpha,nn)*std::pow((1.0-alpha),(n-nn));
+    sum -= term;
+    nterms += 1;
+  }
+  return sum;
+}
+
+
+Real NonDSampling::compute_wilks_onesided_fprime(Real n, int order, Real alpha, Real beta)
+{
+  Real delta = 0.001;
+  Real fm1 = compute_wilks_onesided_f(n-delta, order, alpha, beta);
+  Real fp1 = compute_wilks_onesided_f(n+delta, order, alpha, beta);
+  Real fprime = (fp1-fm1)/(2.0*delta);
+  return fprime;
+}
+
+
+int NonDSampling::compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided)
 {
   Real tol = 1.e-10; // convergence tolerance
-  Real n = 50.0; // initial guess for sample size
+  Real n = std::log(1.0-beta)/std::log(alpha); // initial guess for sample size - use 1st-order onesided
   Real conv = DBL_MAX;
 
-  if( !twosided ) {
-    return std::ceil( std::log(1.0-beta)/std::log(alpha) );
+  if( !twosided && (order==1) )
+    return std::ceil(n);
+
+  // For now, we only support first-order two-sided Wilks
+  if( twosided ) {
+    if( order!=1 )
+      throw std::runtime_error("Two-sided Wilks only supports order 1 for now.");
+    else
+      order = 2; // one-sided order 2 is equivalent to two-sided order 1 (cf https://www.oecd-nea.org/nsd/docs/2013/csni-r2013-8-part2.pdf )
   }
 
   Real func, fprime;
   while( conv > tol ) {
-    func = (n-1.0)*std::pow(alpha,n) - n*std::pow(alpha,(n-1)) - beta + 1.0;
-    fprime = ((n-1.0)*std::log(alpha)+1.0)*std::pow(alpha,n) - (n*std::log(alpha)+1.0)*std::pow(alpha,(n-1));
+    func = compute_wilks_onesided_f(n, order, alpha, beta);
+    fprime = compute_wilks_onesided_fprime(n, order, alpha, beta);
     n -= func/fprime;
     conv = std::fabs(func);
   }
