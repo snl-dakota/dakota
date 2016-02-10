@@ -751,19 +751,16 @@ void DataFitSurrModel::combine_approximation(short corr_type)
 {
   Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
 
-  // Manage here or within Pecos::sharedPolyApproxData?
-  // Note: access to spec sequences are on Dakota side, but may need to reach
-  // into Pecos drivers for access to refinement levels (GSG starting levels
-  // could be the same) 
-  //NonD* nond_iterator = (NonD*)daceIterator.iterator_rep();//NonDIntegration?
-  //size_t max_index = nond_iterator->maximal_grid(),
-  //       seq_index = nond_iterator->sequence_state();
-  bool swap = true;//(max_index != seq_index);
+  // Manage swap detection here or within Pecos::sharedPolyApproxData?
+  // Note: access to spec sequences are on Dakota side, but need to reach
+  // into Pecos driver levels (TPQ, SSG) and approx orders (regression) for
+  // access to final refinement levels (GSG starting levels could be the same).
+  //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
+  //bool swap = !nond_int->maximal_grid();
 
-  // combine current data fits with previously stored approximations
-  approxInterface.combine_approximation(corr_type, swap);
+  approxInterface.combine_approximation(corr_type);//, swap);
 
-  //Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
+  //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
 }
 
 

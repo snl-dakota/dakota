@@ -157,17 +157,42 @@ private:
   const IntResponseMap& derived_synchronize_same_model();
   /// called from derived_synchronize() for case of distinct model forms
   /// with competing job queues
-  const IntResponseMap& derived_synchronize_nowait_loop();
+  const IntResponseMap& derived_synchronize_competing();
   /// called from derived_synchronize() for case of distinct model forms
   /// without competing job queues
   const IntResponseMap& derived_synchronize_distinct_model();
+  /// combine the HF and LF response maps into a combined response map
+  /// according to the responseMode
+  void derived_synchronize_combine(const IntResponseMap& hf_resp_map,
+				   IntResponseMap& lf_resp_map,
+				   IntResponseMap& combined_resp_map);
+
+  /// called from derived_synchronize_nowait() for case of a shared model form
+  /// between low and high fidelity, resulting in a single combined job queue
+  const IntResponseMap& derived_synchronize_same_model_nowait();
+  /// called from derived_synchronize_nowait() for case of distinct model forms
+  /// with separate job queues
+  const IntResponseMap& derived_synchronize_distinct_model_nowait();
+  /// combine the available components from HF and LF response maps
+  /// into a combined response map according to the responseMode
+  void derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
+					  IntResponseMap& lf_resp_map,
+					  IntResponseMap& combined_resp_map);
 
   /// resize currentResponse based on responseMode
   void resize_response();
+  
   /// aggregate LF and HF response to create a new response with 2x size
   void aggregate_response(const Response& hf_resp, const Response& lf_resp,
 			  Response& agg_resp);
-  
+
+  /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
+  /// for computing a correction and applying it to lf_resp_map
+  void compute_apply_delta(IntResponseMap& lf_resp_map);
+
+  /// check for consistency in response map keys
+  void check_key(int key1, int key2) const;
+
   //
   //- Heading: Data members
   //
@@ -277,6 +302,16 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
     orderedModels[highFidelityIndices.first].surrogate_response_mode(mode);
+}
+
+
+inline void HierarchSurrModel::check_key(int key1, int key2) const
+{
+  if (key1 != key2) {
+    Cerr << "Error: failure in HierarchSurrModel::check_key().  Keys are not "
+	 << "consistent." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 

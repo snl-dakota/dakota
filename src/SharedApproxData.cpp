@@ -464,15 +464,15 @@ void SharedApproxData::store()
 }
 
 
-void SharedApproxData::pre_combine(short corr_type, bool swap)
+bool SharedApproxData::pre_combine(short corr_type)
 {
-  if (dataRep)
-    dataRep->pre_combine(corr_type, swap);
-  else {
+  if (!dataRep) {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
+
+  return dataRep->pre_combine(corr_type);
 }
 
 

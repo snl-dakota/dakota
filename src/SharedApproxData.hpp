@@ -97,7 +97,7 @@ public:
   /// later combination
   virtual void store();
   /// aggregate the shared approximation data from current and saved states
-  virtual void pre_combine(short corr_type, bool swap);
+  virtual bool pre_combine(short corr_type);
   /// clean up saved storage after aggregation
   virtual void post_combine(short corr_type);
 

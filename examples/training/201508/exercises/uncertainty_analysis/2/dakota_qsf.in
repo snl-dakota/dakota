@@ -4,13 +4,19 @@ environment
 method
 ## TODO: Choose a method to estimate P(Y<0.11)
 
-   response_levels 0.11
+   response_levels 0.11 0.30
 
 variables
   uniform_uncertain 2
    descriptors 'x1' 'x2'
    lower_bounds = -0.8 -0.8
    upper_bounds =  0.8  0.8
+
+#  triangular_uncertain 2
+#   descriptors 'x1' 'x2'
+#   lower_bounds = -0.8 -0.8
+#   upper_bounds =  0.8  0.8
+#   modes        =  0.0  0.0
 
 responses
   response_functions 1
