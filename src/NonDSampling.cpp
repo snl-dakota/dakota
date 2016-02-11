@@ -24,7 +24,6 @@
 #include <algorithm>
 
 #include <boost/math/special_functions/beta.hpp>
-#include <boost/math/special_functions/binomial.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
