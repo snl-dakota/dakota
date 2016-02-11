@@ -58,7 +58,14 @@ private:
   //- Heading: Helper functions
   //
 
-  void multilevel_mc(size_t mf_index);
+  /// Perform multilevel Monte Carlo across the discretization levels for a
+  /// particular model form
+  void multilevel_mc(size_t model_form);
+
+  /// Perform control variate Monte Carlo across two model forms for a
+  /// particular discretization level
+  void control_variate_mc(size_t lf_model_form, size_t hf_model_form,
+			  size_t soln_level);
 
   //
   //- Heading: Data

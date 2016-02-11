@@ -184,16 +184,16 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //       solution_level_control = 'dssiv1'
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
-  if (cost.length() == 1) {
+  if (cost.length() == num_lev)
+    for (i=0; i<num_lev; ++i)
+      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
+  else if (cost.length() == 1) {
     Real multiplier = cost[0], prod = 1.;
     for (i=0; i<num_lev; ++i) { // assume increasing cost
       solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
     }
   }
-  else if (cost.length() == num_lev)
-    for (i=0; i<num_lev; ++i)
-      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
   else {
     Cerr << "Error: solution_level_cost specification of length "
 	 << cost.length() << " provided;\n       expected scalar or vector "
