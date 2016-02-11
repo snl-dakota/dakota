@@ -92,12 +92,6 @@ public:
   /// calculates sample moments for an array of observations for a set of QoI
   void compute_moments(const RealMatrix& samples);
 
-  /// calculates the one-sided Wilks residual function used in computing sample sizes
-  static Real compute_wilks_onesided_f(Real n, int order, Real alpha, Real beta);
-
-  /// calculates the one-sided Wilks residual derivative used in computing sample sizes
-  static Real compute_wilks_onesided_fprime(Real n, int order, Real alpha, Real beta);
-
   /// calculates the number of samples using the Wilks formula
   /// Static for now so I can test without instantiating a NonDSampling object - RWH
   static int compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided = false);

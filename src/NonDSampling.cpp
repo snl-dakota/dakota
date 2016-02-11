@@ -1160,33 +1160,6 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
 }
 
 
-Real NonDSampling::compute_wilks_onesided_f(Real n, int order, Real alpha, Real beta)
-{
-  int nc = std::ceil(n);
-  Real sum = 1.0 - beta;
-  Real nn, nCk, term;
-  int nterms = 0;
-  for (int k=nc-order+1; k<nc+1; ++k) {
-    nn = n-Real(order-1 - nterms);
-    nCk = boost::math::binomial_coefficient<double>(nc,k);
-    term = nCk*std::pow(alpha,nn)*std::pow((1.0-alpha),(n-nn));
-    sum -= term;
-    nterms += 1;
-  }
-  return sum;
-}
-
-
-Real NonDSampling::compute_wilks_onesided_fprime(Real n, int order, Real alpha, Real beta)
-{
-  Real delta = 0.001;
-  Real fm1 = compute_wilks_onesided_f(n-delta, order, alpha, beta);
-  Real fp1 = compute_wilks_onesided_f(n+delta, order, alpha, beta);
-  Real fprime = (fp1-fm1)/(2.0*delta);
-  return fprime;
-}
-
-
 int NonDSampling::compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided)
 {
   Real rorder = (Real) order;
@@ -1205,20 +1178,7 @@ int NonDSampling::compute_wilks_sample_size(int order, Real alpha, Real beta, bo
       n += 1.0;
   }
 
-  // An approach based on a Newton method for the one-sided case; may be faster? - RWH
-  //Real n = std::log(1.0-beta)/std::log(alpha); // initial guess for sample size - use 1st-order onesided
-  //Real tol = 1.e-10; // convergence tolerance
-  //Real conv = DBL_MAX;
-  //Real func, fprime;
-  //while( conv > tol ) {
-  //  func = compute_wilks_onesided_f(n, order, alpha, beta);
-  //  fprime = compute_wilks_onesided_fprime(n, order, alpha, beta);
-  //  n -= func/fprime;
-  //  conv = std::fabs(func);
-  //}
-
   return std::ceil(n);
-
 }
 
 
