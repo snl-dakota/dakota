@@ -23,6 +23,7 @@
 #include "pecos_stat_util.hpp"
 #include <algorithm>
 
+#include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
@@ -1188,28 +1189,33 @@ Real NonDSampling::compute_wilks_onesided_fprime(Real n, int order, Real alpha, 
 
 int NonDSampling::compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided)
 {
-  Real tol = 1.e-10; // convergence tolerance
-  Real n = std::log(1.0-beta)/std::log(alpha); // initial guess for sample size - use 1st-order onesided
-  Real conv = DBL_MAX;
+  Real rorder = (Real) order;
 
   if( !twosided && (order==1) )
-    return std::ceil(n);
+    return std::ceil(std::log(1.0-beta)/std::log(alpha));
 
-  // For now, we only support first-order two-sided Wilks
+  Real n = rorder + 1.0;
   if( twosided ) {
-    if( order!=1 )
-      throw std::runtime_error("Two-sided Wilks only supports order 1 for now.");
-    else
-      order = 2; // one-sided order 2 is equivalent to two-sided order 1 (cf https://www.oecd-nea.org/nsd/docs/2013/csni-r2013-8-part2.pdf )
+    n = 2.0*rorder;
+    while( boost::math::ibeta<Real>(n-2.0*rorder+1.0, 2.0*rorder, alpha) > 1.0-beta )
+      n += 1.0;
+  }
+  else {
+    while( boost::math::ibeta<Real>(rorder, n-rorder+1.0, 1-alpha) < beta )
+      n += 1.0;
   }
 
-  Real func, fprime;
-  while( conv > tol ) {
-    func = compute_wilks_onesided_f(n, order, alpha, beta);
-    fprime = compute_wilks_onesided_fprime(n, order, alpha, beta);
-    n -= func/fprime;
-    conv = std::fabs(func);
-  }
+  // An approach based on a Newton method for the one-sided case; may be faster? - RWH
+  //Real n = std::log(1.0-beta)/std::log(alpha); // initial guess for sample size - use 1st-order onesided
+  //Real tol = 1.e-10; // convergence tolerance
+  //Real conv = DBL_MAX;
+  //Real func, fprime;
+  //while( conv > tol ) {
+  //  func = compute_wilks_onesided_f(n, order, alpha, beta);
+  //  fprime = compute_wilks_onesided_fprime(n, order, alpha, beta);
+  //  n -= func/fprime;
+  //  conv = std::fabs(func);
+  //}
 
   return std::ceil(n);
 

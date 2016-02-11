@@ -223,3 +223,85 @@ TEUCHOS_UNIT_TEST(wilks, onesided_thirdorder)
     }
   }
 }
+
+//----------------------------------------------------------------
+
+/*
+   The following gold values were obtained using a helper R-script from Brian Williams (LANL):
+
+       # Specify P, c, and r
+       P <- 0.95 # population coverage
+       c <- 0.95 # confidence level
+       
+       r <- 1:20 # order statistic
+       
+       # one-sided
+       
+       oss <- numeric()
+       for (ii in 1:length(r)) {
+         oss[ii] <- r[ii]
+         while (pbeta(1-P,r[ii],oss[ii]-r[ii]+1) < c) { oss[ii] <- oss[ii]+1 }
+         print(oss)
+       }
+       
+       # two-sided
+       
+       tss <- numeric()
+       for (ii in 1:length(r)) {
+         tss[ii] <- 2*r[ii]
+         while (pbeta(P,tss[ii]-2*r[ii]+1,2*r[ii]) > 1-c) { tss[ii] <- tss[ii]+1 }
+         print(tss)
+       }
+
+   The above also represents the implementation used in NonDSampling::compute_wilks_sample_size(...);
+       
+*/
+
+TEUCHOS_UNIT_TEST(wilks, twosided_secondorder)
+{
+  std::map<int,int> gold_95_95,                    gold_99_999;
+                    gold_95_95[1]  = 93  ;         gold_99_999[1]  = 920 ;
+                    gold_95_95[2]  = 153 ;         gold_99_999[2]  = 1302;  
+                    gold_95_95[3]  = 208 ;         gold_99_999[3]  = 1640;  
+                    gold_95_95[4]  = 260 ;         gold_99_999[4]  = 1957;  
+                    gold_95_95[5]  = 311 ;         gold_99_999[5]  = 2259;  
+                    gold_95_95[6]  = 361 ;         gold_99_999[6]  = 2552;  
+                    gold_95_95[7]  = 410 ;         gold_99_999[7]  = 2837;  
+                    gold_95_95[8]  = 458 ;         gold_99_999[8]  = 3117;  
+                    gold_95_95[9]  = 506 ;         gold_99_999[9]  = 3391;  
+                    gold_95_95[10] = 554 ;         gold_99_999[10] = 3662;  
+                    gold_95_95[11] = 601 ;         gold_99_999[11] = 3929;  
+                    gold_95_95[12] = 647 ;         gold_99_999[12] = 4193;  
+                    gold_95_95[13] = 694 ;         gold_99_999[13] = 4454;  
+                    gold_95_95[14] = 740 ;         gold_99_999[14] = 4713;  
+                    gold_95_95[15] = 786 ;         gold_99_999[15] = 4970;  
+                    gold_95_95[16] = 832 ;         gold_99_999[16] = 5226;  
+                    gold_95_95[17] = 877 ;         gold_99_999[17] = 5479;  
+                    gold_95_95[18] = 923 ;         gold_99_999[18] = 5731;  
+                    gold_95_95[19] = 968 ;         gold_99_999[19] = 5982;  
+                    gold_95_95[20] = 1013;         gold_99_999[20] = 6231;
+
+  
+  // Test a commun use case
+  Real alpha = 0.95, beta = 0.95;
+  bool twosided = true;
+  std::map<int,int>::const_iterator miter = gold_95_95.begin(),
+                                     mend = gold_95_95.end();
+  for( ; mend != miter; ++miter ) {
+    int order = miter->first;
+    int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+    TEST_EQUALITY( miter->second, num_samples );
+  }
+
+
+  // Test an extreme (costly?) use case
+  alpha = 0.99;
+  beta  = 0.999;
+  miter = gold_99_999.begin();
+  mend = gold_99_999.end();
+  for( ; mend != miter; ++miter ) {
+    int order = miter->first;
+    int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+    TEST_EQUALITY( miter->second, num_samples );
+  }
+}
