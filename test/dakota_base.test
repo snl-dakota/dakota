@@ -42234,6 +42234,15 @@ Partial Rank Correlation Matrix between input and output:
            E -6.49274e-04  3.58389e-03 -8.96381e-01 
            X -4.93342e-03  9.26101e-01  8.48500e-01 
            Y  1.05178e-03  9.25996e-01  9.56190e-01 
+dakota_uq_diffusion_cvmc.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 627 total (627 new, 0 duplicate)
+<<<<< Function evaluation summary: 627 total (627 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  2.4013588227e-02  9.7218703037e-03  3.4296889026e-01 -6.3960127083e-01
+            f2  1.1833703046e-01  3.8570968906e-02  1.5034674181e-01 -1.4184584338e+00
+            f3  2.2744045152e-02  9.5503655806e-03  4.7196187197e-01 -5.6362920870e-01
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
