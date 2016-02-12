@@ -141,9 +141,9 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
   RealVector sum_L(numFunctions), sum_H(numFunctions),
     sum_L2(numFunctions), sum_H2(numFunctions), sum_LH(numFunctions),
     mean_L(numFunctions, false), mean_H(numFunctions, false),
-    var_L(numFunctions, false), var_H(numFunctions, false),
-    cov_LH(numFunctions, false);
-  Real lf_fn, hf_fn, mu_L, mu_H, cov, rho_sq, eval_ratio, max_evr, bias_corr;
+    var_L(numFunctions, false),  var_H(numFunctions, false),
+    cov_LH(numFunctions, false), rho2_LH(numFunctions, false);
+  Real lf_fn, hf_fn, mu_L, mu_H, cov, rho_sq, avg_eval_ratio, bias_corr;
   IntRespMCIter r_it;
   
   // Initialize for pilot sample
@@ -182,7 +182,7 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
       sum_LH[qoi] += lf_fn * hf_fn;
     }
   }
-  max_evr = 1.; // don't allow m < n
+  avg_eval_ratio = 0.;
   bias_corr = 1./((Real)(numSamples - 1));
   for (qoi=0; qoi<numFunctions; ++qoi) {
     // unbiased mean estimator X-bar = 1/N * sum
@@ -200,27 +200,34 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
     mu_H2 = mean_H2[qoi] = sum_H2[qoi] / (Real)numSamples;
     var_L2[qoi] = (sum_L4[qoi] - numSamples * mu_L2 * mu_L2) * bias_corr;
     var_H2[qoi] = (sum_H4[qoi] - numSamples * mu_H2 * mu_H2) * bias_corr;
+    cov_L2H2[qoi] = (sum_L2H2[qoi] - numSamples * mu_L2 * mu_H2) * bias_corr;
 
     mu_L3 = mean_L3[qoi] = sum_L3[qoi] / (Real)numSamples;
     mu_H3 = mean_H3[qoi] = sum_H3[qoi] / (Real)numSamples;
     var_L3[qoi] = (sum_L6[qoi] - numSamples * mu_L3 * mu_L3) * bias_corr;
     var_H3[qoi] = (sum_H6[qoi] - numSamples * mu_H3 * mu_H3) * bias_corr;
+    cov_L3H3[qoi] = (sum_L3H3[qoi] - numSamples * mu_L3 * mu_H3) * bias_corr;
 
     mu_L4 = mean_L4[qoi] = sum_L4[qoi] / (Real)numSamples;
     mu_H4 = mean_H4[qoi] = sum_H4[qoi] / (Real)numSamples;
     var_L4[qoi] = (sum_L8[qoi] - numSamples * mu_L4 * mu_L4) * bias_corr;
     var_H4[qoi] = (sum_H8[qoi] - numSamples * mu_H4 * mu_H4) * bias_corr;
+    cov_L4H4[qoi] = (sum_L4H4[qoi] - numSamples * mu_L4 * mu_H4) * bias_corr;
     */
 
-    // compute evaluation ratio which determines increment for LF samples
-    rho_sq = cov / var_L[qoi] * cov / var_H[qoi]; // bessel corrs cancel...
-    eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));// TO DO: trap 1
-    if (eval_ratio > max_evr) max_evr = eval_ratio; // or average eval_ratio?
+    // compute evaluation ratio which determines increment for LF samples; the
+    // sample increment optimizes the total computational budget and is not
+    // treated as a worst case accuracy requirement --> use the QoI average.
+    rho_sq = rho2_LH[qoi] = cov / var_L[qoi] * cov / var_H[qoi]; // bias cancels
+    avg_eval_ratio += (rho_sq >= 1.) ? maxFunctionEvals : // should not happen
+      std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
   }
+  avg_eval_ratio /= numFunctions;
 
   // update LF samples based on evaluation ratio
   // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
-  delta_N_lf = (size_t)std::floor((max_evr-1.) * N_lf + .5); // round
+  delta_N_lf = (avg_eval_ratio <= 1.) ? 0 :
+    (size_t)std::floor(N_lf * (avg_eval_ratio - 1.) + .5); // round
   delta_N_hf = 0; // simple one-pass
   ++iter;
   Cout << "CVMC iteration " << iter << " sample increments: LF = "
@@ -249,28 +256,29 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
   // aggregate expected value of estimators for Y, Y^2, Y^3, and Y^4. ... These
   // uncentered raw moment estimates are then converted to standardized moments.
   if (momentStats.empty()) momentStats.shape/*Uninitialized*/(4, numFunctions);
-  Real orig_control, orig_mu_L, orig_var_L, new_mu_L, new_var_L,
-    mc_mse, cvmc_mse, mse_ratio = 1. - rho_sq * (1. - 1./eval_ratio);
+  Real orig_cntl, orig_mu_L, orig_var_L, new_mu_L, new_var_L,
+    mc_mse, cvmc_mse, mse_ratio;
   bias_corr = 1./((Real)(N_lf - 1));
   for (qoi=0; qoi<numFunctions; ++qoi) {
     // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
     // (just a diagnostic prior to iteration)
+    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1./avg_eval_ratio);
     mc_mse = var_H[qoi] / N_hf; cvmc_mse = mc_mse * mse_ratio;
     Cout << "Mean square error reduced from " << mc_mse << " to " << cvmc_mse
 	 << " (relative factor of " << mse_ratio << ")\n";
 
-    // control and original sample mean for LF:
-    orig_control = cov_LH[qoi] / var_L[qoi];
-    orig_mu_L = mean_L[qoi]; orig_var_L = var_L[qoi];
-    // update mu_L and var_L from updated sum_L and sum_L2
-    new_mu_L = mean_L[qoi] = sum_L[qoi] / (Real)N_lf;
-    new_var_L = var_L[qoi]
-      = (sum_L2[qoi] - N_lf * new_mu_L * new_mu_L) * bias_corr;
-    momentStats(0,qoi) = mean_H[qoi] - orig_control * (orig_mu_L  - new_mu_L);
+    // original and updated sample mean for LF:
+    orig_mu_L = mean_L[qoi];
+    new_mu_L  = mean_L[qoi] = sum_L[qoi] / (Real)N_lf;
+    // compute and apply control for HF mean estimate
+    orig_cntl = cov_LH[qoi] / var_L[qoi];
+    momentStats(0,qoi) = mean_H[qoi] - orig_cntl * (orig_mu_L - new_mu_L);
     // Initial cut reuses the same control value, instead of recomputing from
-    // cov_L2H2[qoi] / var_L2[qoi];
-    momentStats(1,qoi) =  var_H[qoi] - orig_control * (orig_var_L - new_var_L);
-    // TO DO
+    // cov_L2H2[qoi] / var_L2[qoi]
+    orig_var_L = var_L[qoi];
+    new_var_L  = var_L[qoi]
+      = (sum_L2[qoi] - N_lf * new_mu_L * new_mu_L) * bias_corr;
+    momentStats(1,qoi) =  var_H[qoi] - orig_cntl * (orig_var_L - new_var_L);
   }
   Cout << '\n';
 
