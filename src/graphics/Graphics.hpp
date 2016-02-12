@@ -1,7 +1,15 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #ifndef GraphicsGUI_H
 #define GraphicsGUI_H
 
-#include "Graph2D.H"
+#include "Graph2D.hpp"
 // This include file is needed for Red Hat Linux 6.2 on a PC
 //#include <thread_db.h>
 

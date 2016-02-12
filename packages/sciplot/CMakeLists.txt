@@ -9,7 +9,7 @@ find_package(Motif REQUIRED)
 set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
   "Name for the export target for ${CMAKE_PROJECT_NAME}")
 
-include_directories(include src/Widgets 
+include_directories(include
                     ${X11_INCLUDE_DIR} 
 		    ${MOTIF_INCLUDE_DIR}
 )
@@ -23,24 +23,21 @@ if(X11_Xpm_FOUND)
 endif(X11_Xpm_FOUND)
 
 add_library(DGraphics
-                          src/Graph2D.C 
-			  src/Graphics.C 
-			  src/menu.c 
-			  src/Widgets/Board.c 
-			  src/Widgets/choosecol.c 
-			  src/Widgets/Common.c 
-			  src/Widgets/Frame.c 
-			  src/Widgets/icon.c 
-			  src/Widgets/long.c 
-			  src/Widgets/Pen.c 
-			  src/Widgets/RowCol.c 
-			  src/Widgets/SciPlot.c 
-			  src/Widgets/scroll.c 
-			  src/Widgets/str2color.c 
-			  src/Widgets/strarray.c 
-			  src/Widgets/StrToPmap.c 
-			  src/Widgets/ThWheel.c 
-			  src/Widgets/XCC.c 
+			  Board.c 
+			  choosecol.c 
+			  Common.c 
+			  Frame.c 
+			  icon.c 
+			  long.c 
+			  Pen.c 
+			  RowCol.c 
+			  SciPlot.c 
+			  scroll.c 
+			  str2color.c 
+			  strarray.c 
+			  StrToPmap.c 
+			  ThWheel.c 
+			  XCC.c 
 )
 
 #EXTRA_DIST = Widgets/darkstipple.bm \

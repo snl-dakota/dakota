@@ -271,5 +271,5 @@ endif(HAVE_PSUADE)
 #endif()
 
 if(HAVE_X_GRAPHICS)
-  add_subdirectory(motif)
+  add_subdirectory(sciplot)
 endif(HAVE_X_GRAPHICS)

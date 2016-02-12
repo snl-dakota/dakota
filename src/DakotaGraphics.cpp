@@ -13,7 +13,7 @@
 #include "DakotaGraphics.hpp"
 
 #ifdef HAVE_X_GRAPHICS
-#include "Graphics.H"
+#include "Graphics.hpp"
 #endif // HAVE_X_GRAPHICS
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"

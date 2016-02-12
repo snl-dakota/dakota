@@ -770,7 +770,8 @@ endif(HAVE_PSUADE)
 
 if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
-  list(APPEND DAKOTA_INCDIRS ${DakotaMotif_SOURCE_DIR}/include 
+  list(APPEND util_src graphics/Graph2D.cpp graphics/Graphics.cpp graphics/menu.c)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/graphics ${DakotaMotif_SOURCE_DIR}
     ${DAKOTA_X_INCLUDE_DIR})
   list(APPEND DAKOTA_LIBDIRS ${DakotaMotif_BINARY_DIR})
   list(APPEND DAKOTA_PKG_LIBS DGraphics)
