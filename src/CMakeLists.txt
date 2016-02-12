@@ -771,12 +771,17 @@ endif(HAVE_PSUADE)
 if(HAVE_X_GRAPHICS)
   add_definitions("-DHAVE_X_GRAPHICS")
   list(APPEND util_src graphics/Graph2D.cpp graphics/Graphics.cpp graphics/menu.c)
-  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/graphics ${DakotaMotif_SOURCE_DIR}
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/graphics ${DakotaSciPlot_SOURCE_DIR}
     ${DAKOTA_X_INCLUDE_DIR})
-  list(APPEND DAKOTA_LIBDIRS ${DakotaMotif_BINARY_DIR})
-  list(APPEND DAKOTA_PKG_LIBS DGraphics)
-  list(APPEND EXPORT_TARGETS DGraphics)
+  list(APPEND DAKOTA_LIBDIRS ${DakotaSciPlot_BINARY_DIR})
+  list(APPEND DAKOTA_PKG_LIBS dakota_sciplot)
+  list(APPEND EXPORT_TARGETS dakota_sciplot)
   list(APPEND EXT_TPL_LIBS ${DAKOTA_X_LIBRARIES})
+  # Install headers.
+  install(
+    FILES graphics/Graph2D.hpp graphics/Graphics.hpp graphics/menu.h
+    DESTINATION include
+    )
 endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.

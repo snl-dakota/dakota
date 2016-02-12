@@ -695,7 +695,7 @@ running CMake, a list of required %Dakota and %Dakota-included
 third-party libraries will be output to the console, e.g.,
 
 \verbatim
--- Dakota_LIBRARIES: dakota_src;dakota_src_fortran;nidr;teuchos;pecos;pecos_src;lhs;mods;mod;dfftpack;sparsegrid;surfpack;surfpack;surfpack_fortran;utilib;colin;interfaces;scolib;3po;pebbl;tinyxml;conmin;dace;analyzer;random;sampling;bose;dot;fsudace;hopspack;jega;jega_fe;moga;soga;eutils;utilities;ncsuopt;nlpql;cport;nomad;npsol;optpp;psuade;DGraphics;amplsolver
+-- Dakota_LIBRARIES: dakota_src;dakota_src_fortran;nidr;teuchos;pecos;pecos_src;lhs;mods;mod;dfftpack;sparsegrid;surfpack;surfpack;surfpack_fortran;utilib;colin;interfaces;scolib;3po;pebbl;tinyxml;conmin;dace;analyzer;random;sampling;bose;dot;fsudace;hopspack;jega;jega_fe;moga;soga;eutils;utilities;ncsuopt;nlpql;cport;nomad;npsol;optpp;psuade;dakota_sciplot;amplsolver
 \endverbatim
 
 While external dependencies will be output as:
@@ -726,8 +726,8 @@ additional notes on specific libraries:
 additional system libraries such as Expat and Curl, depending on how
 %Dakota is configured.</li>
 
-<li> If configuring with graphics, you will need to add the %Dakota \c
-DGraphics library and system X libraries (partial list here): 
+<li> If configuring with graphics, you will need to add the \c
+dakota_sciplot library and system X libraries (partial list here):
 \code
 -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
 \endcode 
@@ -778,7 +778,7 @@ LocalWords:  SerialDirectApplicInterface redefinitions iter CMake LHS
 LocalWords:  DakLibraryStrat NPSOL nidr teuchos pecos lhs dfftpack po
 LocalWords:  sparsegrid surfpack utilib colin scolib pebbl tinyxml fe
 LocalWords:  conmin bose fsudace hopspack jega moga soga eutils nlpql
-LocalWords:  ncsuopt cport npsol optpp psuade DGraphics amplsolver lX
+LocalWords:  ncsuopt cport npsol optpp psuade dakota_graphics amplsolver lX
 LocalWords:  TPL lpthread ons regex filesystem ACRO lXpm lXm lXt lXmu
 LocalWords:  lXp lXext lSM lICE AMPL dl funcadd libamplsolver GSL GPL
 LocalWords:  gslcblas Newmat lnewmat preprocessor analysisComm

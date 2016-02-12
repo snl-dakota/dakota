@@ -1,9 +1,9 @@
 #ifndef _icon_h_
 #define	_icon_h_
 
-#ifdef HAVE_CONFIG_H
+/* #ifdef HAVE_CONFIG_H
 #include "motif_config.h"
-#endif /* HAVE_CONFIG_H */
+#endif */ /* HAVE_CONFIG_H */
 
 #ifdef HAVE_XPM
 

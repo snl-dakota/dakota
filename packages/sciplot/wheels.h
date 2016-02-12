@@ -1,6 +1,6 @@
-#ifdef HAVE_CONFIG_H
+/* #ifdef HAVE_CONFIG_H
 #include "motif_config.h"
-#endif /* HAVE_CONFIG_H */
+#endif */ /* HAVE_CONFIG_H */
 
 #ifdef HAVE_XPM
 #include <X11/xpm.h>

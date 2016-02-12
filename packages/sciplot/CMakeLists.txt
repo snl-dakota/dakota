@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.4)
-project(DakotaMotif)
+cmake_minimum_required(VERSION 2.8.9)
+project(DakotaSciPlot)
 
 find_package(X11 REQUIRED)
 find_package(Motif REQUIRED)
@@ -9,85 +9,61 @@ find_package(Motif REQUIRED)
 set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
   "Name for the export target for ${CMAKE_PROJECT_NAME}")
 
-include_directories(include
-                    ${X11_INCLUDE_DIR} 
-		    ${MOTIF_INCLUDE_DIR}
-)
+include_directories(${X11_INCLUDE_DIR} ${MOTIF_INCLUDE_DIR})
 
 # We only need the HAVE_XPM definition, unless the defines need to
 # propagate to the system libraries (hope not).
-remove_definitions("-DHAVE_CONFIG_H")
+#remove_definitions("-DHAVE_CONFIG_H")
 
 if(X11_Xpm_FOUND)
   add_definitions("-DHAVE_XPM")
 endif(X11_Xpm_FOUND)
 
-add_library(DGraphics
-			  Board.c 
-			  choosecol.c 
-			  Common.c 
-			  Frame.c 
-			  icon.c 
-			  long.c 
-			  Pen.c 
-			  RowCol.c 
-			  SciPlot.c 
-			  scroll.c 
-			  str2color.c 
-			  strarray.c 
-			  StrToPmap.c 
-			  ThWheel.c 
-			  XCC.c 
-)
-
-#EXTRA_DIST = Widgets/darkstipple.bm \
-#	     Widgets/lightstipple.bm \
-#	     Widgets/wheel0.pm \
-#	     Widgets/wheel1.pm \
-#	     Widgets/wheel2.pm \
-#	     Widgets/wheel3.pm \
-#	     Widgets/wheel0h.pm \
-#	     Widgets/wheel1h.pm \
-#	     Widgets/wheel2h.pm \
-#	     Widgets/wheel3h.pm \
-#	     Widgets/SciPlotDocs/SciPlotDemo.gif \
-#	     Widgets/SciPlotDocs/SciPlotExample.gif \
-#	     Widgets/SciPlotDocs/SciPlotTitle.gif \
-#	     Widgets/SciPlotDocs/new.gif \
-#	     Widgets/SciPlotDocs/SciPlot.html \
-#	     Widgets/SciPlotDocs/SciPlotDemo.html \
-#	     Widgets/SciPlotDocs/SciPlotProg.html \
-#	     Widgets/XPM/diamond0.pm \
-#	     Widgets/XPM/diamond1.pm \
-#	     Widgets/XPM/ERROR.pm \
-#	     Widgets/XPM/FATAL.pm \
-#	     Widgets/XPM/INFO.pm \
-#	     Widgets/XPM/QUESTION.pm \
-#	     Widgets/XPM/square0.pm \
-#	     Widgets/XPM/square1.pm \
-#	     Widgets/XPM/WARNING.pm
-
-
-# Install headers.
-install(
-  FILES include/Graph2D.H include/Graphics.H include/menu.h
-  DESTINATION include
+add_library(dakota_sciplot
+  Board.c 
+  choosecol.c 
+  Common.c 
+  Frame.c 
+  icon.c 
+  long.c 
+  Pen.c 
+  RowCol.c 
+  SciPlot.c 
+  scroll.c 
+  str2color.c 
+  strarray.c 
+  StrToPmap.c 
+  ThWheel.c 
+  XCC.c 
   )
 
-# Install binaries.
-#install(
-#  TARGETS fsudace ${fsu_executables}
-#  EXPORT  FSUDace-targets
-#  ARCHIVE DESTINATION lib
-#  LIBRARY DESTINATION lib
-#  RUNTIME DESTINATION bin
-#  )
+#EXTRA_DIST = darkstipple.bm \
+#	     lightstipple.bm \
+#	     wheel0.pm \
+#	     wheel1.pm \
+#	     wheel2.pm \
+#	     wheel3.pm \
+#	     wheel0h.pm \
+#	     wheel1h.pm \
+#	     wheel2h.pm \
+#	     wheel3h.pm \
+#	     SciPlotDocs/SciPlotDemo.gif \
+#	     SciPlotDocs/SciPlotExample.gif \
+#	     SciPlotDocs/SciPlotTitle.gif \
+#	     SciPlotDocs/new.gif \
+#	     SciPlotDocs/SciPlot.html \
+#	     SciPlotDocs/SciPlotDemo.html \
+#	     SciPlotDocs/SciPlotProg.html \
+#	     XPM/diamond0.pm \
+#	     XPM/diamond1.pm \
+#	     XPM/ERROR.pm \
+#	     XPM/FATAL.pm \
+#	     XPM/INFO.pm \
+#	     XPM/QUESTION.pm \
+#	     XPM/square0.pm \
+#	     XPM/square1.pm \
+#	     XPM/WARNING.pm
 
-# Install package configuration and import files.
-##configure_file(${FSUDace_SOURCE_DIR}/cmake/FSUDaceConfig.cmake.in
-##               ${FSUDace_BINARY_DIR}/cmake/FSUDaceConfig.cmake @ONLY)
-##install(FILES ${FSUDace_BINARY_DIR}/cmake/FSUDaceConfig.cmake
-##       DESTINATION lib/cmake/FSUDace)
-##install(EXPORT FSUDace-targets DESTINATION lib/cmake/FSUDace)
+# TODO: Install package configuration and import files (.cmake files, targets).
 
-install(TARGETS DGraphics EXPORT ${ExportTarget} DESTINATION lib)
+install(TARGETS dakota_sciplot EXPORT ${ExportTarget} DESTINATION lib)

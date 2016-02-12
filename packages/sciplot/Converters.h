@@ -1,9 +1,9 @@
 #ifndef _Converters_h
 #define _Converters_h
 
-#ifdef HAVE_CONFIG_H
+/* #ifdef HAVE_CONFIG_H
 #include "motif_config.h"
-#endif /* HAVE_CONFIG_H */
+#endif */ /* HAVE_CONFIG_H */
 
 #include "long.h"
 #include "icon.h"

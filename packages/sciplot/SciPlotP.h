@@ -25,9 +25,11 @@
 #ifndef _SCIPLOTP_H
 #define _SCIPLOTP_H
 
+/* 
 #ifdef HAVE_CONFIG_H
 #include "motif_config.h"
 #endif
+*/
 
 #ifdef __cplusplus
 extern "C" {
