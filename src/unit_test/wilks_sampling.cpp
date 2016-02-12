@@ -14,6 +14,16 @@ using namespace Dakota;
 
 TEUCHOS_UNIT_TEST(wilks, firstorder)
 {
+  /*
+
+    The following gold results come from 
+
+      "GRS Method for Uncertainty and Sensitivity Evaluation of Code Results and Applications," Horst Glaeser, NURETH-14
+
+      See slide 8.
+
+   * */
+
   std::map<int,int> gold_onesided;
   gold_onesided[50] = 14;
   gold_onesided[80] = 32;
