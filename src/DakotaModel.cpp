@@ -2768,10 +2768,10 @@ int Model::derivative_concurrency() const
 }
 
 
-bool Model::initialize_mapping()
+bool Model::initialize_mapping(ParLevLIter pl_iter)
 {
   if (modelRep)
-    return modelRep->initialize_mapping();
+    return modelRep->initialize_mapping(pl_iter);
   else {
     // Base class default behavior is no-op
     return false; // Variables size did not change
@@ -3335,10 +3335,10 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 }
 
 
-void Model::stop_init(ParLevLIter pl_iter)
+void Model::stop_init_communicators(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->stop_init(pl_iter);
+    modelRep->stop_init_communicators(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int term_code = 0;
     parallelLib.bcast(term_code, *pl_iter);
@@ -3346,10 +3346,10 @@ void Model::stop_init(ParLevLIter pl_iter)
 }
 
 
-int Model::serve_init(ParLevLIter pl_iter)
+int Model::serve_init_communicators(ParLevLIter pl_iter)
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->serve_init(pl_iter);
+    return modelRep->serve_init_communicators(pl_iter);
   else { // not a virtual function: base class definition for all letters
     int max_eval_concurrency = 1, last_eval_concurrency = 1;
     while (max_eval_concurrency) {
@@ -3360,6 +3360,48 @@ int Model::serve_init(ParLevLIter pl_iter)
       }
     }
     return last_eval_concurrency;
+  }
+}
+
+
+void Model::stop_init_mapping(ParLevLIter pl_iter)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->stop_init_mapping(pl_iter);
+  else {
+    // Base class is a no-op
+  }
+}
+
+
+int Model::serve_init_mapping(ParLevLIter pl_iter)
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->serve_init_mapping(pl_iter);
+  else {
+    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    return 0;
+  }
+}
+
+
+void Model::stop_finalize_mapping(ParLevLIter pl_iter)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->stop_finalize_mapping(pl_iter);
+  else {
+    // Base class is a no-op
+  }
+}
+
+
+int Model::serve_finalize_mapping(ParLevLIter pl_iter)
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->serve_finalize_mapping(pl_iter);
+  else {
+    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    return 0;
   }
 }
 

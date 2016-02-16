@@ -257,14 +257,14 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     if (sub_iterator.is_null())
       sub_iterator = problem_db.get_iterator(sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init(pl_iter);
+    if (multiproc) sub_model.stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init(pl_iter);
+    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -298,14 +298,14 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     if (sub_iterator.is_null())// only master processor needs an iterator object
       sub_iterator = problem_db.get_iterator(sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init(pl_iter);
+    if (multiproc) sub_model.stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init(pl_iter);
+    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -339,14 +339,14 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
     if (sub_iterator.is_null())// only master processor needs an iterator object
       sub_iterator = problem_db.get_iterator(method_string, sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init(pl_iter);
+    if (multiproc) sub_model.stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init(pl_iter);
+    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -388,7 +388,22 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
   // Parallel iterators are executed on all processors
   if (sub_iterator.method_name() & PARALLEL_BIT) {
+    // Initialize model:
+    Model& sub_model = sub_iterator.iterated_model();
+    bool var_size_changed = sub_model.initialize_mapping(pl_iter);
+    if (var_size_changed) {
+      bool reinit_comms = sub_iterator.resize();
+      sub_iterator.resize_communicators(pl_iter, reinit_comms);
+    }
+
     sub_iterator.run(pl_iter); // set_communicators() occurs inside run()
+
+    // finalize model:
+    var_size_changed = sub_model.finalize_mapping();
+    if (var_size_changed) {
+      bool reinit_comms = sub_iterator.resize();
+      sub_iterator.resize_communicators(pl_iter, reinit_comms);
+    }
     return;
   }
   // all other iterators execute on selected processors
@@ -406,11 +421,40 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
   // segregate processors into run/serve
   if (pl_iter->server_communicator_rank() == 0) { // iteratorCommRank
+    // Initialize model:
+    bool var_size_changed = sub_model.initialize_mapping(pl_iter);
+    if (var_size_changed) {
+      bool reinit_comms = sub_iterator.resize();
+      sub_iterator.resize_communicators(pl_iter, reinit_comms);
+    }
+    bool multiproc = (pl_iter->server_communicator_size() > 1);
+    if (multiproc) sub_model.stop_init_mapping(pl_iter);
+
     sub_iterator.run(pl_iter); // set_communicators() occurs inside run()
     sub_model.stop_servers();  // send termination message to all servers
+
+    // finalize model:
+    var_size_changed = sub_model.finalize_mapping();
+    if (var_size_changed) {
+      bool reinit_comms = sub_iterator.resize();
+      sub_iterator.resize_communicators(pl_iter, reinit_comms);
+    }
+    if (multiproc) sub_model.stop_finalize_mapping(pl_iter);
   }
-  else // serve until stopped
+  else { // serve until stopped
+    // serve_init_mapping() phase:
+    int last_concurrency = sub_model.serve_init_mapping(pl_iter);
+    if(last_concurrency) // True if init_communicators was called during mapping
+      sub_iterator.maximum_evaluation_concurrency(last_concurrency);
+
+    // Nominal serve_run() phase:
     sub_model.serve_run(pl_iter, sub_iterator.maximum_evaluation_concurrency());
+
+    // serve_finalize_mapping() phase:
+    last_concurrency = sub_model.serve_finalize_mapping(pl_iter);
+    if(last_concurrency) // True if init_communicators was called during mapping
+      sub_iterator.maximum_evaluation_concurrency(last_concurrency);
+  }
 }
 
 

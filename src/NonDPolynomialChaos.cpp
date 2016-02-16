@@ -59,7 +59,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   importBuildPointsFile(probDescDB.get_string("method.import_approx_points_file")),
   importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
   importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  resizedFlag(false)
+  resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -322,7 +322,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), l2Penalty(0.), //initSGLevel(0),
   numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
+  callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -397,7 +398,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
   numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
+  callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -497,28 +499,11 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 { }
 
 
-void NonDPolynomialChaos::initialize_run()
-{
-  NonD::initialize_run();
-
-  // If grid initialization was skipped at construct time and resize has not
-  // been called, do it now. This allows skipping potentially unnecessary grid
-  // initialization in initialize_u_space_model() which can take quite a long
-  // time to run.
-  if (!resizedFlag && callResize)
-    resize();
-}
-
-
-void NonDPolynomialChaos::resize()
+bool NonDPolynomialChaos::resize()
 {
   resizedFlag = true;
 
-  NonDExpansion::resize();
-
-  // Free communicators before we rebuild:
-  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  free_communicators(pl_iter);
+  bool parent_reinit_comms = NonDExpansion::resize();
   
   // -------------------
   // input sanity checks
@@ -646,9 +631,7 @@ void NonDPolynomialChaos::resize()
 
   initialize_u_space_model();
 
-  // Re-initialize communicators:
-  init_communicators(pl_iter);
-  set_communicators(pl_iter);
+  return true; // Always need to re-initialize communicators
 }
 
 

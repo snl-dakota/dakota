@@ -52,6 +52,12 @@ public:
   /// return the method constraint tolerance (constraintTol)
   Real constraint_tolerance() const;
 
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  bool resize();
+
 protected:
 
   //
@@ -76,7 +82,6 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void resize();
   void update_from_model(const Model& model);
 
   void initialize_run();
@@ -302,15 +307,6 @@ inline Real Minimizer::constraint_tolerance() const
 
 inline void Minimizer::finalize_run()
 {
-  if (!iteratedModel.is_null()) {
-    // finalize model:
-    bool var_size_changed = iteratedModel.finalize_mapping();
-
-    if (var_size_changed) {
-      resize();
-    }
-  }
-
   // Restore previous object instance in case of recursion.
   minimizerInstance = prevMinInstance;
   Iterator::finalize_run(); // included for completeness

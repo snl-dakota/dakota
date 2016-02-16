@@ -101,13 +101,15 @@ NonDAdaptImpSampling(Model& model, unsigned short sample_type,
 }
 
 
-void NonDAdaptImpSampling::resize()
+bool NonDAdaptImpSampling::resize()
 {
-  NonDSampling::resize();
+  bool parent_reinit_comms = NonDSampling::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 

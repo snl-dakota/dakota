@@ -27,6 +27,12 @@ namespace Dakota {
 class Verification: public Analyzer
 {
 public:
+    
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  bool resize();
 
 protected:
 
@@ -45,7 +51,6 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void resize();
   void print_results(std::ostream& s);
 
   //

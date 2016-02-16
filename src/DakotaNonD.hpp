@@ -84,6 +84,13 @@ public:
   void print_level_mappings(std::ostream& s, String qoi_type,
 			    const StringArray& qoi_labels) const;
 
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  bool resize();
+
   //
   //- Heading: Set/get routines
   //
@@ -120,7 +127,6 @@ protected:
 
   void initialize_run();
   void finalize_run();
-  void resize();
 
   // return the final uncertain variables from the nondeterministic iteration
   //const Variables& variables_results() const;
@@ -143,6 +149,9 @@ protected:
   //
   //- Heading: Utility routines
   //
+
+  /// Size local variables
+  void size();
 
   /// create a system-generated unique seed (when a seed is unspecified)
   int generate_system_seed();

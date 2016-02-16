@@ -72,6 +72,12 @@ public:
   // return the number of unique points in the current grid
   //size_t grid_size();
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool resize();
+
 protected:
 
   //
@@ -92,7 +98,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resize();
   void core_run();
 
   //

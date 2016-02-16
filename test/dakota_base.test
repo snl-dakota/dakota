@@ -5692,7 +5692,7 @@ Partial Rank Correlation Matrix between input and output:
        ssv_3  4.37748e-02 
        ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5731,7 +5731,7 @@ Partial Rank Correlation Matrix between input and output:
        ssv_3  4.37748e-02 
        ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5774,7 +5774,7 @@ Partial Rank Correlation Matrix between input and output:
        ssv_4  4.41297e-02 
        ssv_5 -2.47454e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5817,7 +5817,7 @@ Partial Rank Correlation Matrix between input and output:
        ssv_4  4.41297e-02 
        ssv_5 -2.47454e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5856,7 +5856,7 @@ Partial Rank Correlation Matrix between input and output:
        ssv_3  4.37748e-02 
        ssv_4 -1.31257e-02 
 <<<<< Function evaluation summary (ID_I): 102 total (102 new, 0 duplicate)
-  response_fn_1: 102 val (102 n, 0 d), 102 grad (102 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_1: 102 val (102 n, 0 d), 2 grad (2 n, 0 d), 0 Hess (0 n, 0 d)
 dakota_experiment_read.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)

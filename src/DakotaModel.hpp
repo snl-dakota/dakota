@@ -28,6 +28,12 @@ namespace Pecos { class SurrogateData; /* forward declarations */ }
 
 namespace Dakota {
 
+// define special values for serve_init_mapping()
+#define FREE_COMMS 1
+#define INIT_COMMS 2
+#define SERVE_RUN 3
+#define ESTIMATE_MESSAGE_LENGTHS 4
+
 // forward declarations
 class ParallelLibrary;
 class Approximation;
@@ -162,7 +168,7 @@ public:
   virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
 
   /// initialize model mapping, returns true if the variables size has changed
-  virtual bool initialize_mapping();
+  virtual bool initialize_mapping(ParLevLIter pl_iter);
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();
 
@@ -331,6 +337,20 @@ public:
   virtual bool db_lookup(const Variables& search_vars, 
 			 const ActiveSet& search_set, Response& found_resp);
 
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// terminate serve_init_mapping() on other iteratorComm processors
+  virtual void stop_init_mapping(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// to balance resize() calls on iteratorComm rank 0
+  virtual int serve_init_mapping(ParLevLIter pl_iter);
+
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// terminate serve_finalize_mapping() on other iteratorComm processors
+  virtual void stop_finalize_mapping(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// to balance resize() calls on iteratorComm rank 0
+  virtual int serve_finalize_mapping(ParLevLIter pl_iter);
+
   //
   //- Heading: Member functions
   //
@@ -383,11 +403,11 @@ public:
   MPI_Comm analysis_comm() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
-  /// terminate serve_init() on other iteratorComm processors
-  void stop_init(ParLevLIter pl_iter);
+  /// terminate serve_init_communicators() on other iteratorComm processors
+  void stop_init_communicators(ParLevLIter pl_iter);
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
-  int serve_init(ParLevLIter pl_iter);
+  int serve_init_communicators(ParLevLIter pl_iter);
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();

@@ -44,6 +44,13 @@ EfficientSubspaceMethod::~EfficientSubspaceMethod()
   /* empty destructor */
 }
 
+void EfficientSubspaceMethod::initialize_run()
+{
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+
+  // No need to resize since sub-iterator is constructed at run-time
+  bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
+}
 
 void EfficientSubspaceMethod::core_run()
 {

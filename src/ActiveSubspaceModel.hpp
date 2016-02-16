@@ -15,6 +15,7 @@
 namespace Dakota {
 
 // define special values for componentParallelMode
+#define CONFIG_PHASE 0
 #define OFFLINE_PHASE 1
 #define ONLINE_PHASE 2
 
@@ -75,9 +76,17 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
   bool mapping_initialized();
+
+  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
+  /// terminate serve_init_mapping() on other iteratorComm processors
+  void stop_init_mapping(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
+  /// to balance resize() calls on iteratorComm rank 0
+  int serve_init_mapping(ParLevLIter pl_iter);
+
 
 protected:
 
@@ -93,6 +102,11 @@ protected:
 
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                                   bool recurse_flag);
+
+  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set);
+  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize_nowait();
 
 
   /// update component parallel mode for supporting parallelism in

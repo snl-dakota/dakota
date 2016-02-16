@@ -67,13 +67,15 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
     NonDRKDDarts::~NonDRKDDarts()
     { }
 
-void NonDRKDDarts::resize()
+bool NonDRKDDarts::resize()
 {
-  NonD::resize();
+  bool parent_reinit_comms = NonD::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
     
     // --------------------------

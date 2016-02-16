@@ -57,13 +57,17 @@ public:
   /// print the cumulative distribution functions for belief and plausibility
   void print_results(std::ostream& s);
 
-protected: 
-
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void resize();
+  bool resize();
+
+protected:
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
 
   /// initialize finalStatistics for belief/plausibility results sets
   void initialize_final_statistics();
