@@ -49,10 +49,10 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   asmInstance = this;
   modelType = "subspace";
 
-  componentParallelMode = OFFLINE_PHASE;
+  componentParallelMode = CONFIG_PHASE;
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
-                             // derived_set_communicators()
+                             // derived_init_communicators()
 
   const IntVector& db_refine_samples = 
     problem_db.get_iv("model.refinement_samples");
@@ -127,10 +127,10 @@ ActiveSubspaceModel(const Model& sub_model,
   asmInstance = this;
   modelType = "subspace";
 
-  componentParallelMode = OFFLINE_PHASE;
+  componentParallelMode = CONFIG_PHASE;
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
-                             // derived_set_communicators()
+                             // derived_init_communicators()
 
   // BMA TODO: probably want to do numerical derivatives in the
   // smaller subspace, not in the subModel space... (not yet)
@@ -219,12 +219,15 @@ void ActiveSubspaceModel::validate_inputs()
 
 /** May eventually take on init_comms and related operations.  Also
     may want ide of build/update like DataFitSurrModel, eventually. */
-bool ActiveSubspaceModel::initialize_mapping()
+bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  // init-time setting of miPLIndex for use in component_parallel_mode()
+  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
+
   // Set mode OFFLINE_PHASE
   component_parallel_mode(OFFLINE_PHASE);
 
-  bool sub_model_resize = subModel.initialize_mapping();
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   // TODO: create modes to switch between active, inactive, and complete
   //       subspaces
@@ -252,18 +255,12 @@ bool ActiveSubspaceModel::initialize_mapping()
   // Perform numerical derivatives in subspace:
   supportsEstimDerivs = true;
 
-  // Set mode ONLINE_PHASE
-  component_parallel_mode(ONLINE_PHASE);
-
+  // Kill servers and return ranks [1,n-1] to serve_init_mapping()
+  component_parallel_mode(CONFIG_PHASE);
+  
   if (reducedRank != numFullspaceVars || // Active SS is reduced rank
-      sub_model_resize) { // Active SS is full rank but subModel resized
-
-    // update message lengths for send/receive of parallel jobs (normally
-    // performed once in Model::init_communicators() just after construct time)
-    estimate_message_lengths();
-
+      sub_model_resize) // Active SS is full rank but subModel resized
     return true; // Size of variables has changed
-  }
   else
     return false;
 }
@@ -278,18 +275,16 @@ bool ActiveSubspaceModel::finalize_mapping()
 
 void ActiveSubspaceModel::component_parallel_mode(short mode)
 {
-  // mode may be correct, but can't guarantee active parallel config is in sync
-  //if (componentParallelMode == mode)
-  //  return; // already in correct parallel mode
-
-  // terminate previous serve mode (if active)
-  size_t index; int iter_comm_size;
-  if (componentParallelMode != mode) {
+  // stop_servers() if they are active, componentParallelMode = 0 indicates
+  // they are inactive
+  if (componentParallelMode != mode &&
+      componentParallelMode != CONFIG_PHASE) {
     ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
     size_t index = subModel.mi_parallel_level_index();
     if (pc_it->mi_parallel_level_defined(index) &&
-        pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+        pc_it->mi_parallel_level(index).server_communicator_size() > 1) {
       subModel.stop_servers();
+    }
   }
 
   // activate new serve mode (matches ActiveSubspaceModel::serve_run(pl_iter)).
@@ -298,14 +293,21 @@ void ActiveSubspaceModel::component_parallel_mode(short mode)
     ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
     if (mi_pl.server_communicator_size() > 1) {
-      parallelLib.bcast(mode, mi_pl);
       if (mode == OFFLINE_PHASE) {
-        parallelLib.bcast(offlineEvalConcurrency, mi_pl);
+        // This block tells Model::serve_init_mapping() to go into 
+        // ActiveSubspaceModel::serve_run() to build the subspace
+        short mapping_code = SERVE_RUN;
+        parallelLib.bcast(mapping_code, *pl_iter);
+        parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
+      }
+
+      // bcast mode to ActiveSubspaceModel::serve_run()
+      parallelLib.bcast(mode, mi_pl);
+
+      if (mode == OFFLINE_PHASE)
         subModel.set_communicators(pl_iter, offlineEvalConcurrency);
-      }
-      else if (mode == ONLINE_PHASE) {
-        subModel.set_communicators(pl_iter, onlineEvalConcurrency);
-      }
+      else if (mode == ONLINE_PHASE)
+        set_communicators(pl_iter, onlineEvalConcurrency);
     }
   }
 
@@ -314,31 +316,122 @@ void ActiveSubspaceModel::component_parallel_mode(short mode)
 
 
 void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter,
-                                    int online_eval_concurrency)
+                                    int max_eval_concurrency)
 {
-  onlineEvalConcurrency = online_eval_concurrency;
-  set_communicators(pl_iter, onlineEvalConcurrency, false); // don't recurse
-
-  // Initially start in offline phase:
-  componentParallelMode = OFFLINE_PHASE;
-  subModel.serve_run(pl_iter, offlineEvalConcurrency);
-
-  while (componentParallelMode) {
+  do {
     parallelLib.bcast(componentParallelMode, *pl_iter);
     if (componentParallelMode == OFFLINE_PHASE) {
-      parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
       subModel.serve_run(pl_iter, offlineEvalConcurrency);
     }
     else if (componentParallelMode == ONLINE_PHASE) {
+      set_communicators(pl_iter, onlineEvalConcurrency, false);
       subModel.serve_run(pl_iter, onlineEvalConcurrency);
     }
-  }
+  } while (componentParallelMode != CONFIG_PHASE);
 }
 
 
 void ActiveSubspaceModel::stop_servers()
 {
-  component_parallel_mode(0);
+  component_parallel_mode(CONFIG_PHASE);
+}
+
+
+void ActiveSubspaceModel::stop_init_mapping(ParLevLIter pl_iter)
+{
+  short term_code = 0;
+  parallelLib.bcast(term_code, *pl_iter);
+}
+
+
+int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
+{
+  short mapping_code = 0;
+  int max_eval_concurrency = 1;
+  int last_eval_concurrency = 0;
+  do {
+    parallelLib.bcast(mapping_code, *pl_iter);
+    switch (mapping_code) {
+      case FREE_COMMS:
+        parallelLib.bcast(max_eval_concurrency, *pl_iter);
+        if (max_eval_concurrency)
+          free_communicators(pl_iter, max_eval_concurrency);
+        break;
+      case INIT_COMMS:
+        last_eval_concurrency = serve_init_communicators(pl_iter);
+        break;
+      case SERVE_RUN:
+        parallelLib.bcast(max_eval_concurrency, *pl_iter);
+        if (max_eval_concurrency)
+          serve_run(pl_iter, max_eval_concurrency);
+        break;
+      case ESTIMATE_MESSAGE_LENGTHS:
+        estimate_message_lengths();
+        break;
+      default:
+        // no-op
+        break;
+    }
+  } while (mapping_code);
+  
+  return last_eval_concurrency; // Will be 0 unless serve_init_communicators()
+                                // is called
+}
+
+
+void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError: Subspace in ActiveSubspaceModel has not "
+         << "been initialized." << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  RecastModel::derived_evaluate(set);
+}
+
+
+void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError: Subspace in ActiveSubspaceModel has not "
+         << "been initialized." << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  RecastModel::derived_evaluate_nowait(set);
+}
+
+
+const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError: Subspace in ActiveSubspaceModel has not "
+         << "been initialized." << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  return RecastModel::derived_synchronize();
+}
+
+
+const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError: Subspace in ActiveSubspaceModel has not "
+         << "been initialized." << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  return RecastModel::derived_synchronize_nowait();
 }
 
 
@@ -395,14 +488,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   //  - fullspaceSampler(subModel) with batchSamples
   //  - direct evaluate() of verif_samples, one at a time
 
-  // The inbound subMmodel concurrency accounts for any finite differences
+  // The inbound subModel concurrency accounts for any finite differences
+
+  onlineEvalConcurrency = max_eval_concurrency;
 
   // BMA: taken from DataFitSurrModel daceIterator; is this correct?
   // init comms for daceIterator
   if (recurse_flag) {
-    size_t method_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_list_nodes(fullspaceSampler.method_id());
-    fullspaceSampler.init_communicators(pl_iter);
+    if (!mapping_initialized())
+      fullspaceSampler.init_communicators(pl_iter);
     
     // TODO: add this back to use refinement samples
     // batch additions support concurrency up to batchSize * model concurrency
@@ -410,8 +504,6 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //subModel.init_communicators(pl_iter, batch_concurrency);
 
     subModel.init_communicators(pl_iter, max_eval_concurrency);
-
-    probDescDB.set_db_method_node(method_index); // restore method only
   }
 }
 
@@ -422,10 +514,10 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
-  onlineEvalConcurrency = max_eval_concurrency;
-
   if (recurse_flag) {
     fullspaceSampler.set_communicators(pl_iter);
+
+    subModel.set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
@@ -1428,6 +1520,9 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   }
   currentVariables.continuous_variable_types(
     cont_variable_types[boost::indices[idx_range(0, reducedRank)]]);
+
+  // Set currentVariables to means of active variables:
+  continuous_variables(mu_y);
 }
 
 

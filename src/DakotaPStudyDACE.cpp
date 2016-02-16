@@ -62,11 +62,12 @@ PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
 PStudyDACE::~PStudyDACE() { }
 
 
-void PStudyDACE::resize()
+bool PStudyDACE::resize()
 {
-  Analyzer::resize();
+  bool parent_reinit_comms = Analyzer::resize();
 
   // Current nothing to be done here -> no-op
+  return parent_reinit_comms;
 }
 
 

@@ -72,13 +72,15 @@ NonDMultilevelSampling::~NonDMultilevelSampling()
 { }
 
 
-void NonDMultilevelSampling::resize()
+bool NonDMultilevelSampling::resize()
 {
-  NonDSampling::resize();
+  bool parent_reinit_comms = NonDSampling::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 
@@ -192,7 +194,7 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
     = eval_ratio(sum_L, sum_H, sum_LH, total_N, cost_ratio, mean_L[1],
 		 mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
   // compute the ratio of MC and CVMC mean squared errors (controls convergence)
-  Real avg_mse_ratio = MSE_ratio(avg_eval_ratio, N_hf, var_H, rho2_LH);
+  Real avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, N_hf, iter);
 
   // -----------------------------------------------------------
   // Compute HF + LF increment targeting specified MSE reduction
@@ -201,8 +203,8 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
   // bypass refinement if maxIterations == 0 or convergenceTol already
   // satisfied by pilot sample
   if (maxIterations && convergenceTol < avg_mse_ratio) {
-    // Assuming rho_AB, evaluation_ratio and var_H to be invariant, we seek
-    // a relative reduction in MSE using the convergence tolerance spec:
+    // Assuming rho_AB, evaluation_ratio and var_H to be relatively invariant,
+    // we seek a relative reduction in MSE using the convergence tol spec:
     //   convTol = CV_mse / MC^0_mse = mse_ratio * N0 / N
     //   delta_N = mse_ratio*N0/convTol - N0 = (mse_ratio/convTol - 1) * N0
 
@@ -227,7 +229,7 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
 		   mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
     // compute ratio of MC and CVMC mean squared errors, averaged over the
     // QoI; the relative reduction in MSE is used to control convergence
-    avg_mse_ratio = MSE_ratio(avg_eval_ratio, N_hf, var_H, rho2_LH);
+    avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, N_hf, iter);
   }
 
   // bookkeeping for higher order stats for matched LF/HF evaluations
@@ -297,11 +299,14 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
       // LF expectations prior to final sample increment:
       mu_Li  = mean_Li[qoi];
       H_cntl = covar_LHi[qoi] / var_Li[qoi];
+      Cout << "Control variate beta parameter (moment " << i << ", QoI "
+	   << qoi+1 << ") is " << H_cntl << '\n';
       // updated LF expectations following final sample increment:
       refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
       // apply control for HF uncentered raw moment estimates:
       H_raw_mom(i-1,qoi) = mean_Hi[qoi] - H_cntl * (mu_Li - refined_mu_Li);
     }
+    Cout << '\n';
   }
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(H_raw_mom, momentStats);
@@ -396,20 +401,29 @@ eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
 
 
 Real NonDMultilevelSampling::
-MSE_ratio(Real avg_eval_ratio, size_t N_hf, const RealVector& var_H,
-	  const RealVector& rho2_LH)
+MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
+	  const RealVector& rho2_LH, size_t N_hf, size_t iter)
 {
-  Real mc_mse, cvmc_mse, mse_ratio, avg_mse_ratio = 0.;
+  if (iter == 0) mcMSEIter0.sizeUninitialized(numFunctions);
+  Real mc_mse, cvmc_mse, mse_ratio, avg_mse_ratio = 0.;//,avg_mse_iter_ratio=0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
-    // (just a diagnostic prior to iteration)
-    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1./avg_eval_ratio);
+    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1./avg_eval_ratio); // Ng 2014
     mc_mse = var_H[qoi] / N_hf; cvmc_mse = mc_mse * mse_ratio;
-    Cout << "Mean square error reduced from " << mc_mse << " to " << cvmc_mse
-	 << " (relative factor of " << mse_ratio << ")\n";
-    avg_mse_ratio += mse_ratio;
+    Cout << "Mean square error for QoI " << qoi+1 << " reduced from " << mc_mse
+	 << " (MC) to " << cvmc_mse << " (CV); factor = " << mse_ratio << '\n';
+    //avg_mse_iter_ratio += mse_ratio;
+    if (iter == 0)
+      { mcMSEIter0[qoi] = mc_mse; avg_mse_ratio += mse_ratio; }
+    else
+      avg_mse_ratio += cvmc_mse / mcMSEIter0[qoi];
   }
+  //avg_mse_iter_ratio /= numFunctions;
   avg_mse_ratio /= numFunctions;
+  Cout //<< "Average MSE reduction factor from CV for iteration "
+       //<< std::setw(4) << iter << " = " << avg_mse_iter_ratio << '\n'
+       << "Average MSE reduction factor since pilot MC = " << avg_mse_ratio
+       << " targeting convergence tol = " << convergenceTol << "\n\n";
   return avg_mse_ratio;
 }
 

@@ -108,7 +108,7 @@ void RandomFieldModel::validate_inputs()
 
 /** May eventually take on init_comms and related operations.  Also
     may want ide of build/update like DataFitSurrModel, eventually. */
-bool RandomFieldModel::initialize_mapping()
+bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
 {
   // TODO: create modes to switch between generating, accepting, and
   // underlying model

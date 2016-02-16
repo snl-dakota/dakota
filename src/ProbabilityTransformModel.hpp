@@ -47,7 +47,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter);
 
 
 

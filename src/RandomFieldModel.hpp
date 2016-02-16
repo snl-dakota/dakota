@@ -47,7 +47,7 @@ public:
   //
 
   /// for KL models, the model is augmented with the random coeffs of the KL
-  bool initialize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter);
   /// currently no-op
   bool finalize_mapping();
 

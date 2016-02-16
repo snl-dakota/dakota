@@ -91,9 +91,11 @@ NonDExpansion(unsigned short method_name, Model& model,
 NonDExpansion::~NonDExpansion()
 { }
 
-void NonDExpansion::resize()
+bool NonDExpansion::resize()
 {
-  NonD::resize();
+  bool parent_reinit_comms = NonD::resize();
+
+  return parent_reinit_comms;
 }
 
 

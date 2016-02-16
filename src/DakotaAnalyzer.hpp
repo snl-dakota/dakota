@@ -41,6 +41,7 @@ public:
   const VariablesArray& all_variables();
   const RealMatrix&     all_samples();
   const IntResponseMap& all_responses() const;
+  bool resize();
 
   int num_samples() const;
 
@@ -50,6 +51,7 @@ public:
 
   /// sets varyPattern in derived classes that support it
   virtual void vary_pattern(bool pattern_flag);
+
 
 protected:
 
@@ -87,8 +89,6 @@ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
-
-  void resize();
 
   void update_from_model(const Model& model);
 
@@ -286,15 +286,6 @@ inline bool Analyzer::compact_mode() const
 
 inline void Analyzer::finalize_run()
 {
-  if (!iteratedModel.is_null()) {
-    // finalize model:
-    bool var_size_changed = iteratedModel.finalize_mapping();
-
-    if (var_size_changed) {
-      resize();
-    }
-  }
-
   Iterator::finalize_run(); // included for completeness
 }
 

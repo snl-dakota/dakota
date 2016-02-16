@@ -38,13 +38,14 @@ public:
   /// destructor
   ~NonDCalibration();
 
-protected:
-
   //
   //- Heading: Virtual function redefinitions
   //
   
-  void resize();
+  bool resize();
+
+protected:
+
   //void print_results(std::ostream& s);
 
   /// set the passed configuration variables into the model's state vars

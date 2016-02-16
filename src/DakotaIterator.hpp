@@ -192,6 +192,9 @@ public:
   /// utilized by this Iterator
   virtual IntIntPair estimate_partition_bounds();
 
+  /// reinitializes iterator based on new variable size
+  virtual bool resize();
+
   //
   //- Heading: Member functions
   //
@@ -202,6 +205,9 @@ public:
   void set_communicators(ParLevLIter pl_iter);
   /// free the communicators associated with this Iterator instance
   void free_communicators(ParLevLIter pl_iter);
+
+  /// Resize the communicators. This is called from the letter's resize()
+  void resize_communicators(ParLevLIter pl_iter, bool reinit_comms);
 
   /// set methodPCIter
   void parallel_configuration_iterator(ParConfigLIter pc_iter);
@@ -339,9 +345,6 @@ protected:
   /// gets the multiple initial points for this iterator.  This will only
   /// be meaningful after a call to initial_points mutator.
   virtual const VariablesArray& initial_points() const;
-
-  /// reinitializes iterator based on new variable size
-  virtual void resize();
 
   //
   //- Heading: Member functions

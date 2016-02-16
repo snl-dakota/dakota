@@ -95,13 +95,15 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
 { }
 
 
-void Minimizer::resize()
+bool Minimizer::resize()
 {
-  Iterator::resize();
+  bool parent_reinit_comms = Iterator::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 
@@ -250,11 +252,15 @@ void Minimizer::initialize_run()
     // This is needed for reused objects.
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
-    // Initialize model:
-    bool var_size_changed = iteratedModel.initialize_mapping();
-
-    if (var_size_changed) {
-      resize();
+    // This is to catch un-initialized models used by local iterators that
+    // are not called through IteratorScheduler::run_iterator()
+    if (!iteratedModel.mapping_initialized()) {
+      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
+      bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
+      if (var_size_changed) {
+        // Ignore return value
+        bool reinit_comms = resize();
+      }
     }
 
     // Do not reset the evaluation reference for sub-iterators

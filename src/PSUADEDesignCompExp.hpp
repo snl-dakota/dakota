@@ -39,6 +39,12 @@ public:
   PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model);
   /// destructor
   ~PSUADEDesignCompExp();
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool resize();
     
 protected:
 
@@ -46,7 +52,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resize();
   void pre_run();
   void post_input();
   void core_run();

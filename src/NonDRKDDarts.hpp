@@ -45,6 +45,7 @@ public:
     //- Heading: Virtual function redefinitions
     //
 
+    bool resize();
     void core_run();
 
 protected:
@@ -52,8 +53,6 @@ protected:
     //
     //- Heading: Virtual function redefinitions
     //
-
-    void resize();
     
     // together the three run components perform a forward uncertainty
     // propagation to generate a set of parameter samples,

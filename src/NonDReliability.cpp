@@ -56,9 +56,9 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
 NonDReliability::~NonDReliability()
 { }
 
-void NonDReliability::resize()
+bool NonDReliability::resize()
 {
-  NonD::resize();
+  bool parent_reinit_comms = NonD::resize();
 
   initialize_random_variable_transformation();
   initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
@@ -71,6 +71,8 @@ void NonDReliability::resize()
   computedRespLevels.resize(numFunctions);
   computedProbLevels.resize(numFunctions);
   computedGenRelLevels.resize(numFunctions);
+
+  return parent_reinit_comms;
 }
 
 

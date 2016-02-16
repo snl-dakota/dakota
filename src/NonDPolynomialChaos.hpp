@@ -61,7 +61,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_run();
+  bool resize();
 
 protected:
 
@@ -69,7 +69,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resize();
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);

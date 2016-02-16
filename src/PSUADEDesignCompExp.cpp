@@ -52,13 +52,15 @@ PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model):
 PSUADEDesignCompExp::~PSUADEDesignCompExp()
 { }
 
-void PSUADEDesignCompExp::resize()
+bool PSUADEDesignCompExp::resize()
 {
-  PStudyDACE::resize();
+  bool parent_reinit_comms = PStudyDACE::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 

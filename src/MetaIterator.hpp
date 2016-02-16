@@ -34,6 +34,12 @@ namespace Dakota {
 class MetaIterator: public Iterator
 {
 public:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool resize();
   
 protected:
   
@@ -52,7 +58,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resize();
   void post_run(std::ostream& s);
 
   //

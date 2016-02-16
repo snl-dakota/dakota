@@ -40,13 +40,18 @@ public:
   /// destructor
   ~NonDMultilevelSampling();
 
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  bool resize();
+
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void resize();
   void pre_run();
   void core_run();
   void post_run(std::ostream& s);
@@ -77,8 +82,8 @@ private:
 		  RealVector& var_L, RealVector& var_H, RealVector& covar_LH,
 		  RealVector& rho2_LH);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
-  Real MSE_ratio(Real avg_eval_ratio, size_t N_hf, const RealVector& var_H,
-		 const RealVector& rho2_LH);
+  Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
+		 const RealVector& rho2_LH, size_t N_hf, size_t iter);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -91,6 +96,8 @@ private:
 
   /// number of pilot samples to perform per level, to initialize the iteration
   SizetArray pilotSamples;
+  /// mean squared error of mean estimator from pilot sample MC on HF model
+  RealVector mcMSEIter0;
 };
 
 

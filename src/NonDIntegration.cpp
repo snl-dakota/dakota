@@ -85,13 +85,15 @@ NonDIntegration(unsigned short method_name, Model& model,
 NonDIntegration::~NonDIntegration()
 { }
 
-void NonDIntegration::resize()
+bool NonDIntegration::resize()
 {
-  NonD::resize();
+  bool parent_reinit_comms = NonD::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 

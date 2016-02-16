@@ -55,17 +55,12 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  bool resize();
+
   /// perform POFDart analysis and return probability of failure 
   void core_run();
 
-protected: 
-
-  //
-  //- Heading: Virtual member function redefinitions
-  //
-
-  void resize();
-
+protected:
 
   //
   //- Heading: Convenience functions

@@ -43,6 +43,12 @@ public:
 		   unsigned short sampling_method);
   /// destructor
   ~FSUDesignCompExp();
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+  
+  bool resize();
     
 protected:
 
@@ -50,7 +56,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
   
-  void resize();
   void pre_run();
   void core_run();
   void post_input();

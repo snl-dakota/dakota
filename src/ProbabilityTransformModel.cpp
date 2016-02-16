@@ -116,9 +116,9 @@ ProbabilityTransformModel::
 }
 
 
-bool ProbabilityTransformModel::initialize_mapping()
+bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
 {
-  bool sub_model_resize = subModel.initialize_mapping();
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   initialize_random_variable_parameters();
 

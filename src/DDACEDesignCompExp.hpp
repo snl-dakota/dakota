@@ -49,6 +49,12 @@ public:
 		     unsigned short sampling_method);
   /// destructor
   ~DDACEDesignCompExp();
+  
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  bool resize();
     
   //
   //- Heading: Member functions
@@ -68,12 +74,6 @@ public:
   void get_parameter_sets(Model& model);
 
 protected:
-  
-  //
-  //- Heading: Virtual member function redefinitions
-  //
-
-  void resize();
 
 private:
 

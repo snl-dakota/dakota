@@ -44,9 +44,10 @@ public:
   ~NonDExpansion();
 
   //
-  //- Heading: Virtual member function redefinitions
+  //- Heading: Virtual function redefinitions
   //
 
+  bool resize();
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
@@ -106,8 +107,6 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
-
-  void resize();
 
   /// set covarianceControl defaults and shape respCovariance
   void initialize_response_covariance();

@@ -223,13 +223,15 @@ NonDStochCollocation::~NonDStochCollocation()
 { }
 
 
-void NonDStochCollocation::resize()
+bool NonDStochCollocation::resize()
 {
-  NonDExpansion::resize();
+  bool parent_reinit_comms = NonDExpansion::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
        << method_enum_to_string(methodName) << "." << std::endl;
   abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
 }
 
 
