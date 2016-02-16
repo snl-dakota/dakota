@@ -17,7 +17,7 @@ method,
 #	    variance_based_decomp
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
-	polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
 	  non_nested				#s0,#s1,#s2,#s6,#s7
 #	  expansion_order_sequence = 4 2	#s11,#s13,#s15,#s16
 #	  expansion_order_sequence = 5 3	#s12,#s17
@@ -30,6 +30,7 @@ method,
 #	  seed = 12347	      	  		#s11,#s12,#s13,#s14,#s15,#s16,#s17
 #	stoch_collocation non_nested		#s3,#s4,#s5,#s8,#s9,#s10
 	  sparse_grid_level_sequence = 3 1	#s0,#s3
+#	  sparse_grid_level_sequence = 1 3	#s18
 #	  quadrature_order_sequence  = 5 3	#s6,#s8
 #	  uniform p_refinement			#s1,#s4,#s7,#s9
 #	  dimension_adaptive p_refinement generalized	#s2,#s5
@@ -44,13 +45,13 @@ model,
 	surrogate hierarchical
 	  model_fidelity_sequence = 'LOFI' 'HIFI'
 	  correction multiplicative
-	    zeroth_order			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17	
+	    zeroth_order			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
 #	    first_order				#s10
 
 variables,
-	normal_uncertain = 2			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
-      	  means             =  0.   0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
-	  std_deviations    =  1.   1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	normal_uncertain = 2			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
+      	  means             =  0.   0.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
+	  std_deviations    =  1.   1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
 #	uniform_uncertain = 2			#s10
 #	  lower_bounds      = -5.  -5.		#s10
 #	  upper_bounds	    =  5.   5.		#s10
@@ -58,7 +59,7 @@ variables,
 
 responses,
 	response_functions = 1
-	no_gradients				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17
+	no_gradients				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
 # 	analytic_gradients			#s10
 	no_hessians				
 

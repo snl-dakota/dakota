@@ -1,0 +1,73 @@
+#@ p*: Label=SmokeTest
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
+
+#environment,
+#	graphics
+
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling				
+	  pilot_samples = 100 seed = 1237
+	  max_iterations = 0				#s0
+#	  convergence_tolerance = .01			#s1
+#	  complementary distribution
+#	  response_levels = 3.6e+11 4.0e+11 4.4e+11
+#			    6.0e+04 6.5e+04 7.0e+04
+#			    3.5e+05 4.0e+05 4.5e+05
+	output silent
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LF' 'HF'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'LF'
+	variables_pointer = 'LF_VARS'
+	simulation
+	  solution_level_control = 'dssiv_1'
+	  solution_level_cost = 4.
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	simulation
+	  solution_level_control = 'dssiv_1'
+	  solution_level_cost = 40.
+
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 16
+            set_values = 16
+	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
+	    initial_state = 'cosine'
+            set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 16
+            set_values = 16
+	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
+	    initial_state = 'exponential'
+            set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
+
+interface,
+	direct
+	  analysis_driver = 'diffusion_1d'
+
+responses,
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
+	no_gradients
+	no_hessians

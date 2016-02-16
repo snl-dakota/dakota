@@ -23,6 +23,7 @@
 #include "pecos_stat_util.hpp"
 #include <algorithm>
 
+#include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
@@ -69,7 +70,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     Real beta = probDescDB.get_real("method.wilks_beta");
     if (beta <= 0.0)
       beta = 0.95;
-    numSamples = compute_wilks_sample_size(alpha, beta /* ,twosided = true */);
+    numSamples = compute_wilks_sample_size(1, alpha, beta, true /* twosided */);
     Cout << "NonDSampling::NonDSampling : sampleSize = " << numSamples << std::endl;
   }
 
@@ -1158,26 +1159,25 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
 }
 
 
-int NonDSampling::compute_wilks_sample_size(Real alpha, Real beta, bool twosided)
+int NonDSampling::compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided)
 {
-  Real tol = 1.e-10; // convergence tolerance
-  Real n = 50.0; // initial guess for sample size
-  Real conv = DBL_MAX;
+  Real rorder = (Real) order;
 
-  if( !twosided ) {
-    return std::ceil( std::log(1.0-beta)/std::log(alpha) );
+  if( !twosided && (order==1) )
+    return std::ceil(std::log(1.0-beta)/std::log(alpha));
+
+  Real n = rorder + 1.0;
+  if( twosided ) {
+    n = 2.0*rorder;
+    while( boost::math::ibeta<Real>(n-2.0*rorder+1.0, 2.0*rorder, alpha) > 1.0-beta )
+      n += 1.0;
   }
-
-  Real func, fprime;
-  while( conv > tol ) {
-    func = (n-1.0)*std::pow(alpha,n) - n*std::pow(alpha,(n-1)) - beta + 1.0;
-    fprime = ((n-1.0)*std::log(alpha)+1.0)*std::pow(alpha,n) - (n*std::log(alpha)+1.0)*std::pow(alpha,(n-1));
-    n -= func/fprime;
-    conv = std::fabs(func);
+  else {
+    while( boost::math::ibeta<Real>(rorder, n-rorder+1.0, 1-alpha) < beta )
+      n += 1.0;
   }
 
   return std::ceil(n);
-
 }
 
 

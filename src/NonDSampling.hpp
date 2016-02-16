@@ -94,7 +94,7 @@ public:
 
   /// calculates the number of samples using the Wilks formula
   /// Static for now so I can test without instantiating a NonDSampling object - RWH
-  static int compute_wilks_sample_size(Real alpha, Real beta, bool twosided = true);
+  static int compute_wilks_sample_size(int order, Real alpha, Real beta, bool twosided = false);
 
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until

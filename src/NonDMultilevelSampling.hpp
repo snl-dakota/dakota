@@ -58,7 +58,32 @@ private:
   //- Heading: Helper functions
   //
 
-  void multilevel_mc(size_t mf_index);
+  /// Perform multilevel Monte Carlo across the discretization levels for a
+  /// particular model form
+  void multilevel_mc(size_t model_form);
+
+  /// Perform control variate Monte Carlo across two model forms for a
+  /// particular discretization level
+  void control_variate_mc(size_t lf_model_form, size_t hf_model_form,
+			  size_t soln_level);
+  /// update running sums (sum_L, sum_H, and sum_LH) from (matched) set
+  /// of LF and HF evaluations
+  void accumulate_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
+		       IntRealVectorMap& sum_LH);
+  /// compute the LF/HF evaluation ratio, averaged over the QoI
+  Real eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
+		  const IntRealVectorMap& sum_LH, size_t total_N,
+		  Real cost_ratio, RealVector& mean_L, RealVector& mean_H,
+		  RealVector& var_L, RealVector& var_H, RealVector& covar_LH,
+		  RealVector& rho2_LH);
+  /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
+  Real MSE_ratio(Real avg_eval_ratio, size_t N_hf, const RealVector& var_H,
+		 const RealVector& rho2_LH);
+
+  /// convert uncentered raw moments (multilevel expectations) to
+  /// standardized moments
+  void convert_moments(const RealMatrix& raw_moments,
+		       RealMatrix& standard_moments);
 
   //
   //- Heading: Data
