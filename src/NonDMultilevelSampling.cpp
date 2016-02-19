@@ -123,6 +123,191 @@ void NonDMultilevelSampling::core_run()
 }
 
 
+/** This function performs "geometrical" MLMC on a single model form
+    with multiple discretization levels. */
+void NonDMultilevelSampling::multilevel_mc(size_t model_form)
+{
+  // Formulate as a coordinated progression towards convergence, where, e.g.,
+  // time step is inferred from the spatial discretization (NOT an additional
+  // solution control) based on stability criteria, e.g. CFL condition.  Can
+  // we reliably capture runtime estimates as part of pilot run w/i Dakota?
+  // Ultimately seems desirable to support either online or offline cost
+  // estimates, to allow more accurate resource allocation when possible
+  // or necessary (e.g., combustion processes with expense that is highly
+  // parameter dependent).
+  //   model
+  //     id_model = 'LF'
+  //     simulation
+  //       # point to state vars; ordered based on set values for h, delta-t
+  //       solution_level_control = 'dssiv1'
+  //       # relative cost estimates in same order as state set values
+  //       # --> re-sort into map keyed by increasing cost
+  //       solution_level_cost = 10 2 200
+
+  // How to manage the set of MLMC statistics:
+  // 1. Simplest: proposal is to use the mean estimator to drive the algorithm,
+  //    but carry along other estimates.
+  // 2. Later: could consider a refinement for converging the estimator of the
+  //    variance after convergence of the mean estimator.
+
+  // How to manage the vector of QoI:
+  // 1. Worst case: select N_l based only on QoI w/ highest total variance
+  //      from pilot run --> fix for all levels and don't allow switching
+  //      across major iterations (possible oscillation?  Or simple overlay
+  //      of resolution reqmts?)
+  // 2. Better: select N_l based on convergence in aggregated variance.
+  
+  iteratedModel.surrogate_model(model_form);// LF soln_level not updated (yet)
+  iteratedModel.truth_model(model_form);    // HF soln_level not updated (yet)
+
+  Model& surr_model = iteratedModel.surrogate_model();
+  size_t lev, num_lev = surr_model.solution_levels(), // single model form
+    qoi, iter = 0, samp, new_N_l;
+  SizetArray N_l, delta_N_l;
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost = surr_model.solution_level_cost(), agg_var(num_lev);
+  // For moment estimation, we accumulate telescoping sums for Q^order,
+  // Yi = Q^i_{HF} - Q^i_{LF}.  For computing N_l from (aggregated) estimator
+  // variance, we accumulate the square of the mean estimator Y1sq = Y1^2.
+  RealMatrix sum_Y1(numFunctions, num_lev), sum_Y2(numFunctions, num_lev),
+             sum_Y3(numFunctions, num_lev), sum_Y4(numFunctions, num_lev),
+             sum_Y1sq(numFunctions, num_lev);
+  Real agg_var_l, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  IntRespMCIter r_it;
+  
+  // Initialize for pilot sample
+  N_l.assign(num_lev, 0);
+  if      (pilotSamples.empty())     delta_N_l.assign(num_lev, 100); // default
+  else if (pilotSamples.size() == 1) delta_N_l.assign(num_lev, pilotSamples[0]);
+  else                               delta_N_l = pilotSamples;
+  Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
+
+  // now converge on sample counts per level (N_l)
+  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
+      
+    // set initial surrogate responseMode and model indices for lev 0
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    iteratedModel.surrogate_model(model_form, 0); // solution level 0
+
+    sum_sqrt_var_cost = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+
+      if (lev) {
+	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
+	iteratedModel.surrogate_model(model_form, lev-1);
+	iteratedModel.truth_model(model_form,     lev);
+      }
+      
+      // set the number of current samples from the defined increment
+      numSamples = delta_N_l[lev];
+      // update total samples performed for this level
+      N_l[lev]  += numSamples;
+
+      // aggregate variances across QoI for estimating N_l (justification:
+      // for independent QoI, sum of QoI variances = variance of QoI sum)
+      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
+      if (numSamples) {
+
+	// generate new MC parameter sets
+	get_parameter_sets(iteratedModel);// pull dist params from any model
+	// compute allResponses from allVariables using hierarchical model
+	evaluate_parameter_sets(iteratedModel, true, false);
+
+	Real lf_fn, hf_fn, delta_fn, lf_prod, hf_prod, *sum_Y1_l = sum_Y1[lev],
+	  *sum_Y2_l = sum_Y2[lev], *sum_Y3_l   = sum_Y3[lev],
+	  *sum_Y4_l = sum_Y4[lev], *sum_Y1sq_l = sum_Y1sq[lev];
+
+	// process allResponses: accumulate new samples for each qoi
+	for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+	  const RealVector& fn_vals = r_it->second.function_values();
+	  for (qoi=0; qoi<numFunctions; ++qoi) {
+	    lf_fn = fn_vals[qoi];
+	    // sum_Y*_l are running sums across all level increments
+	    if (lev) {
+	      hf_fn = fn_vals[qoi+numFunctions]; delta_fn = hf_fn - lf_fn;
+	      sum_Y1_l[qoi] += delta_fn; sum_Y1sq_l[qoi] += delta_fn * delta_fn;
+	      hf_prod = hf_fn*hf_fn; lf_prod = lf_fn*lf_fn;
+	      sum_Y2_l[qoi] += hf_prod - lf_prod; // HF^2 - LF^2
+	      hf_prod *= hf_fn; lf_prod *= lf_fn;
+	      sum_Y3_l[qoi] += hf_prod - lf_prod; // HF^3 - LF^3
+	      hf_prod *= hf_fn; lf_prod *= lf_fn;
+	      sum_Y4_l[qoi] += hf_prod - lf_prod; // HF^4 - LF^4
+	    }
+	    else {
+	      sum_Y1_l[qoi] += lf_fn; lf_prod = lf_fn*lf_fn;
+	      sum_Y2_l[qoi] += lf_prod; sum_Y1sq_l[qoi] += lf_prod; // LF^2
+	      lf_prod *= lf_fn; sum_Y3_l[qoi] += lf_prod; // LF^3
+	      lf_prod *= lf_fn; sum_Y4_l[qoi] += lf_prod; // LF^4
+	    }
+	  }
+	}
+
+	// compute estimator mean & variance from current sample accumulation:
+	agg_var_l = 0.;
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  Real mu_Y = sum_Y1_l[qoi] / N_l[lev];
+	  // Note: precision loss in variance is difficult to avoid without
+	  // storing full sample history; must accumulate Y^2 across iterations
+	  // instead of (Y-mean)^2 since mean is updated on each iteration.
+	  agg_var_l += sum_Y1sq_l[qoi] / N_l[lev] - mu_Y * mu_Y;
+	}
+      }
+
+      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
+    }
+    // compute epsilon target based on relative tolerance: total MSE = eps^2
+    // which is equally apportioned (eps^2 / 2) among discretization MSE and
+    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+    // discretization error, we compute an initial estimator variance and
+    // then seek to reduce it by a relative_factor <= 1.
+    if (iter == 0) // eps^2 / 2 = var * relative factor
+      eps_sq_div_2 = estimator_var0 * convergenceTol;
+
+    // update targets based on variance estimates
+    Real fact = sum_sqrt_var_cost / eps_sq_div_2;
+    for (lev=0; lev<num_lev; ++lev) {
+      // Equation 3.9 in CTR Annual Research Briefs:
+      // "A multifidelity control variate approach for the multilevel Monte 
+      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
+      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
+      delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
+    }
+    ++iter;
+    Cout << "MLMC iteration " << iter << " sample increments:\n" << delta_N_l
+	 << std::endl;
+    if (outputLevel == DEBUG_OUTPUT) {
+      Cout << "Accumulated raw moments (Y1, Y2, Y3, Y4):\n";
+      write_data(Cout, sum_Y1); write_data(Cout, sum_Y2);
+      write_data(Cout, sum_Y3); write_data(Cout, sum_Y4); Cout << std::endl;
+      //write_data(Cout, sum_Y1sq);
+    }
+  }
+
+  // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
+  // value is sum of expected values from telescopic sum. There is no bias
+  // correction for small sample sizes as in NonDSampling::compute_moments().
+  RealMatrix Y_raw_mom(4, numFunctions);
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    Real *Y_rm_q = Y_raw_mom[qoi];
+    for (lev=0; lev<num_lev; ++lev) {
+      size_t Nl = N_l[lev];
+      Y_rm_q[0] += sum_Y1(qoi,lev) / Nl;   Y_rm_q[1] += sum_Y2(qoi,lev) / Nl;
+      Y_rm_q[2] += sum_Y3(qoi,lev) / Nl;   Y_rm_q[3] += sum_Y4(qoi,lev) / Nl;
+    }
+  }
+  // Convert uncentered raw moment estimates to standardized moments
+  convert_moments(Y_raw_mom, momentStats);
+
+  // compute the equivalent number of HF evaluations
+  equivHFEvals = N_l[0] * cost[0]; // first level is single eval
+  for (lev=1; lev<num_lev; ++lev) // subsequent levels incur 2 model costs
+    equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
+  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+}
+
+
 /** This function performs control variate MC on multiple model forms
     using a single discretization level. */
 void NonDMultilevelSampling::
@@ -310,6 +495,9 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
   }
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(H_raw_mom, momentStats);
+
+  // compute the equivalent number of HF evaluations
+  equivHFEvals = (Real)N_hf + (Real)N_lf / cost_ratio;
 }
 
 
@@ -428,185 +616,6 @@ MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 }
 
 
-/** This function performs "geometrical" MLMC on a single model form
-    with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc(size_t model_form)
-{
-  // Formulate as a coordinated progression towards convergence, where, e.g.,
-  // time step is inferred from the spatial discretization (NOT an additional
-  // solution control) based on stability criteria, e.g. CFL condition.  Can
-  // we reliably capture runtime estimates as part of pilot run w/i Dakota?
-  // Ultimately seems desirable to support either online or offline cost
-  // estimates, to allow more accurate resource allocation when possible
-  // or necessary (e.g., combustion processes with expense that is highly
-  // parameter dependent).
-  //   model
-  //     id_model = 'LF'
-  //     simulation
-  //       # point to state vars; ordered based on set values for h, delta-t
-  //       solution_level_control = 'dssiv1'
-  //       # relative cost estimates in same order as state set values
-  //       # --> re-sort into map keyed by increasing cost
-  //       solution_level_cost = 10 2 200
-
-  // How to manage the set of MLMC statistics:
-  // 1. Simplest: proposal is to use the mean estimator to drive the algorithm,
-  //    but carry along other estimates.
-  // 2. Later: could consider a refinement for converging the estimator of the
-  //    variance after convergence of the mean estimator.
-
-  // How to manage the vector of QoI:
-  // 1. Worst case: select N_l based only on QoI w/ highest total variance
-  //      from pilot run --> fix for all levels and don't allow switching
-  //      across major iterations (possible oscillation?  Or simple overlay
-  //      of resolution reqmts?)
-  // 2. Better: select N_l based on convergence in aggregated variance.
-  
-  iteratedModel.surrogate_model(model_form);// LF soln_level not updated (yet)
-  iteratedModel.truth_model(model_form);    // HF soln_level not updated (yet)
-
-  Model& surr_model = iteratedModel.surrogate_model();
-  size_t lev, num_lev = surr_model.solution_levels(), // single model form
-    qoi, iter = 0, samp, new_N_l;
-  SizetArray N_l, delta_N_l;
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = surr_model.solution_level_cost(), agg_var(num_lev);
-  // For moment estimation, we accumulate telescoping sums for Q^order,
-  // Yi = Q^i_{HF} - Q^i_{LF}.  For computing N_l from (aggregated) estimator
-  // variance, we accumulate the square of the mean estimator Y1sq = Y1^2.
-  RealMatrix sum_Y1(numFunctions, num_lev), sum_Y2(numFunctions, num_lev),
-             sum_Y3(numFunctions, num_lev), sum_Y4(numFunctions, num_lev),
-             sum_Y1sq(numFunctions, num_lev);
-  Real agg_var_l, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
-  IntRespMCIter r_it;
-  
-  // Initialize for pilot sample
-  N_l.assign(num_lev, 0);
-  if      (pilotSamples.empty())     delta_N_l.assign(num_lev, 100); // default
-  else if (pilotSamples.size() == 1) delta_N_l.assign(num_lev, pilotSamples[0]);
-  else                               delta_N_l = pilotSamples;
-  Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
-
-  // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
-      
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    iteratedModel.surrogate_model(model_form, 0); // solution level 0
-
-    sum_sqrt_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
-
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
-	iteratedModel.surrogate_model(model_form, lev-1);
-	iteratedModel.truth_model(model_form,     lev);
-      }
-      
-      // set the number of current samples from the defined increment
-      numSamples = delta_N_l[lev];
-      // update total samples performed for this level
-      N_l[lev]  += numSamples;
-
-      // aggregate variances across QoI for estimating N_l (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
-      if (numSamples) {
-
-	// generate new MC parameter sets
-	get_parameter_sets(iteratedModel);// pull dist params from any model
-	// compute allResponses from allVariables using hierarchical model
-	evaluate_parameter_sets(iteratedModel, true, false);
-
-	Real lf_fn, hf_fn, delta_fn, lf_prod, hf_prod, *sum_Y1_l = sum_Y1[lev],
-	  *sum_Y2_l = sum_Y2[lev], *sum_Y3_l   = sum_Y3[lev],
-	  *sum_Y4_l = sum_Y4[lev], *sum_Y1sq_l = sum_Y1sq[lev];
-
-	// process allResponses: accumulate new samples for each qoi
-	for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-	  const RealVector& fn_vals = r_it->second.function_values();
-	  for (qoi=0; qoi<numFunctions; ++qoi) {
-	    lf_fn = fn_vals[qoi];
-	    // sum_Y*_l are running sums across all level increments
-	    if (lev) {
-	      hf_fn = fn_vals[qoi+numFunctions]; delta_fn = hf_fn - lf_fn;
-	      sum_Y1_l[qoi] += delta_fn; sum_Y1sq_l[qoi] += delta_fn * delta_fn;
-	      hf_prod = hf_fn*hf_fn; lf_prod = lf_fn*lf_fn;
-	      sum_Y2_l[qoi] += hf_prod - lf_prod; // HF^2 - LF^2
-	      hf_prod *= hf_fn; lf_prod *= lf_fn;
-	      sum_Y3_l[qoi] += hf_prod - lf_prod; // HF^3 - LF^3
-	      hf_prod *= hf_fn; lf_prod *= lf_fn;
-	      sum_Y4_l[qoi] += hf_prod - lf_prod; // HF^4 - LF^4
-	    }
-	    else {
-	      sum_Y1_l[qoi] += lf_fn; lf_prod = lf_fn*lf_fn;
-	      sum_Y2_l[qoi] += lf_prod; sum_Y1sq_l[qoi] += lf_prod; // LF^2
-	      lf_prod *= lf_fn; sum_Y3_l[qoi] += lf_prod; // LF^3
-	      lf_prod *= lf_fn; sum_Y4_l[qoi] += lf_prod; // LF^4
-	    }
-	  }
-	}
-
-	// compute estimator mean & variance from current sample accumulation:
-	agg_var_l = 0.;
-	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  Real mu_Y = sum_Y1_l[qoi] / N_l[lev];
-	  // Note: precision loss in variance is difficult to avoid without
-	  // storing full sample history; must accumulate Y^2 across iterations
-	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  agg_var_l += sum_Y1sq_l[qoi] / N_l[lev] - mu_Y * mu_Y;
-	}
-      }
-
-      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
-      if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
-    }
-    // compute epsilon target based on relative tolerance: total MSE = eps^2
-    // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) // eps^2 / 2 = var * relative factor
-      eps_sq_div_2 = estimator_var0 * convergenceTol;
-
-    // update targets based on variance estimates
-    Real fact = sum_sqrt_var_cost / eps_sq_div_2;
-    for (lev=0; lev<num_lev; ++lev) {
-      // Equation 3.9 in CTR Annual Research Briefs:
-      // "A multifidelity control variate approach for the multilevel Monte 
-      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
-      delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
-    }
-    ++iter;
-    Cout << "MLMC iteration " << iter << " sample increments:\n" << delta_N_l
-	 << std::endl;
-    if (outputLevel == DEBUG_OUTPUT) {
-      Cout << "Accumulated raw moments (Y1, Y2, Y3, Y4):\n";
-      write_data(Cout, sum_Y1); write_data(Cout, sum_Y2);
-      write_data(Cout, sum_Y3); write_data(Cout, sum_Y4); Cout << std::endl;
-      //write_data(Cout, sum_Y1sq);
-    }
-  }
-
-  // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
-  // value is sum of expected values from telescopic sum. There is no bias
-  // correction for small sample sizes as in NonDSampling::compute_moments().
-  RealMatrix Y_raw_mom(4, numFunctions);
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    Real *Y_rm_q = Y_raw_mom[qoi];
-    for (lev=0; lev<num_lev; ++lev) {
-      size_t Nl = N_l[lev];
-      Y_rm_q[0] += sum_Y1(qoi,lev) / Nl;   Y_rm_q[1] += sum_Y2(qoi,lev) / Nl;
-      Y_rm_q[2] += sum_Y3(qoi,lev) / Nl;   Y_rm_q[3] += sum_Y4(qoi,lev) / Nl;
-    }
-  }
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(Y_raw_mom, momentStats);
-}
-
-
 void NonDMultilevelSampling::
 convert_moments(const RealMatrix& raw_moments, RealMatrix& standard_moments)
 {
@@ -625,7 +634,6 @@ convert_moments(const RealMatrix& raw_moments, RealMatrix& standard_moments)
     standard_moments(2,qoi) = cm3 / std::pow(cm2, 1.5); // skewness
     standard_moments(3,qoi) = cm4 / (cm2 * cm2) - 3.;   // excess kurtosis
   }
-
 }
 
 
@@ -642,7 +650,9 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 void NonDMultilevelSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
-    s << "\nStatistics based on multilevel sample set:\n"; //<< N_l; // TO DO
+    s << "\nEquivalent number of high fidelity evaluations: "
+      << equivHFEvals //<< "\nFinal samples per level:\n" << N_l; // TO DO
+      << "\n\nStatistics based on multilevel sample set:\n";
     print_moments(s);//print_statistics(s);
   }
 }
