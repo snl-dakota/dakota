@@ -115,8 +115,8 @@ DataMethodRep::DataMethodRep():
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false), vbdFlag(false),
   vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
-  percentVarianceExplained(0.95), wilksFlag(false), wilksAlpha(0.95),
-  wilksBeta(0.95),
+  percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
+  wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED),
   // NonD
   vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
@@ -243,7 +243,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
-    << percentVarianceExplained << wilksFlag << wilksAlpha << wilksBeta;
+    << percentVarianceExplained << wilksFlag << wilksOrder
+    << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
@@ -382,7 +383,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
     >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag 
-    >> percentVarianceExplained >> wilksFlag >> wilksAlpha >> wilksBeta;
+    >> percentVarianceExplained >> wilksFlag >> wilksOrder
+    >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
   s >> vbdOrder >> covarianceControl >> rngName >> refinementType
@@ -521,7 +523,8 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
     << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag 
-    << percentVarianceExplained << wilksFlag << wilksAlpha << wilksBeta;
+    << percentVarianceExplained << wilksFlag << wilksOrder
+    << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType

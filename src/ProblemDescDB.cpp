@@ -2448,6 +2448,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"coliny.local_balance_parameter", P localBalanceParam},
 	{"coliny.max_boxsize_limit", P maxBoxSize},
 	{"coliny.threshold_delta", P threshDelta},
+	{"confidence_level", P wilksConfidenceLevel},
 	{"constraint_penalty", P constraintPenalty},
 	{"constraint_tolerance", P constraintTolerance},
 	{"convergence_tolerance", P convergenceTolerance},
@@ -2487,9 +2488,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"solution_target", P solnTarget},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
-	{"volume_boxsize_limit", P volBoxSize},
-	{"wilks_alpha", P wilksAlpha},
-	{"wilks_beta", P wilksBeta}};
+	{"volume_boxsize_limit", P volBoxSize}};
     #undef P
 
     KW<Real, DataMethodRep> *kw;
@@ -2665,7 +2664,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"sbl.constraint_relax", P surrBasedLocalConstrRelax},
 	{"sbl.merit_function", P surrBasedLocalMeritFn},
 	{"sbl.subproblem_constraints", P surrBasedLocalSubProbCon},
-	{"sbl.subproblem_objective", P surrBasedLocalSubProbObj}};
+	{"sbl.subproblem_objective", P surrBasedLocalSubProbObj},
+	{"wilks.sided_interval", P wilksSidedInterval}};
     #undef P
 
     KW<short, DataMethodRep> *kw;
@@ -2772,6 +2772,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"nond.pre_solve_method", P preSolveMethod},
 	{"nond.reliability_search_type", P reliabilitySearchType},
 	{"nond.vbd_interaction_order", P vbdOrder},
+	{"order", P wilksOrder},
 	{"pstudy.import_format", P pstudyFileFormat},
 	{"sample_type", P sampleType},
 	{"soft_convergence_limit", P softConvLimit},
@@ -3032,7 +3033,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"scaling", P methodScaling},
 	{"speculative", P speculativeFlag},
 	{"variance_based_decomp", P vbdFlag},
-	{"wilks_samples", P wilksFlag}};
+	{"wilks", P wilksFlag}};
     #undef P
 
     KW<bool, DataMethodRep> *kw;

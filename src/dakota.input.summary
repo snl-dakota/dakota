@@ -1164,9 +1164,11 @@ KEYWORD12 method
 	  [ principal_components
 	    [ percent_variance_explained REAL ]
 	    ]
-	  [ wilks_samples
-	    [ wilks_alpha REAL ]
-	    [ wilks_beta REAL ]
+	  [ wilks
+	    [ order INTEGER ]
+	    [ confidence_level REAL ]
+	    [ one_sided ]
+	    [ two_sided ]
 	    ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]

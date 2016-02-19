@@ -63,7 +63,7 @@ TEUCHOS_UNIT_TEST(wilks, firstorder)
 
 namespace {
   std::map<int, std::map<int,int> >
-  test_order_table(int order, bool twosided, const std::map<int, std::map<int,int> > & gold_table_data)
+  test_order_table(unsigned short order, bool twosided, const std::map<int, std::map<int,int> > & gold_table_data)
   {
     std::map<int, std::map<int,int> > computed_table_data;
 

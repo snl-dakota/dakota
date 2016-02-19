@@ -6683,8 +6683,7 @@ static Real
 	MP_(vbdDropTolerance),
 	MP_(volBoxSize),
 	MP_(vns),
-	MP_(wilksAlpha),
-	MP_(wilksBeta),
+	MP_(wilksConfidenceLevel),
 	MP_(xConvTol);
 
 static RealVector
@@ -6718,7 +6717,8 @@ static unsigned short
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
 	MP_(softConvLimit),
-	MP_(vbdOrder);
+	MP_(vbdOrder),
+	MP_(wilksOrder);
 
 static SizetArray
 	MP_(collocationPoints),
@@ -6808,7 +6808,8 @@ static bool
 static short
         MP_(expansionType),
 	MP_(nestingOverride),
-	MP_(refinementType);
+	MP_(refinementType),
+	MP_(wilksSidedInterval);
 
 static int
 	MP_(buildSamples),
@@ -6916,7 +6917,9 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,AUGMENTED_LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
-	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
+	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE),
+	MP2s(wilksSidedInterval,ONE_SIDED),
+	MP2s(wilksSidedInterval,TWO_SIDED);
 
 static Method_mp_utype
 	MP2s(calibrateErrorMode,CALIBRATE_ONE),
