@@ -1,0 +1,26 @@
+TEMPLATE
+Blurb::
+Specifies one-sided order statistics to be used when determining sample
+sizes for random sampling using Wilks order statistics.
+
+Description::
+This option causes the sample size to be based on the uppermost N outputs
+for order N statistics (default N=1).
+
+<b> Default Behavior </b>
+This is the default for Wilks.
+
+Topics::
+
+Examples::
+\verbatim
+method
+  sampling
+    sample_type random
+    wilks
+      one_sided
+\endverbatim
+
+Theory::
+Faq::
+See_Also:: wilks
