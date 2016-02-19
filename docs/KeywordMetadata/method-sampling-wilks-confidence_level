@@ -8,7 +8,7 @@ Description::
 <b> Default Behavior </b>
 
 A value of 0.95 (95%) is the default for both confidence level as well
-as probability level resuting in 59 samples for first-order one-sided
+as probability level resulting in 59 samples for first-order one-sided
 statistics.
 
 Topics::
@@ -24,4 +24,4 @@ method
 
 Theory::
 Faq::
-See_Also:: wilks proability_levels
+See_Also:: wilks probability_levels
