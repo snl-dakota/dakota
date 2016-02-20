@@ -114,15 +114,15 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   // underlying model
   fieldRealizationId=0;
 
-  get_field_data();
-
   // runtime operation to identify the random field approximation
   if (covarianceForm != NOCOVAR) { 
     rf_suite_identify_field_model();
     expansionForm == RF_KARHUNEN_LOEVE;
   }
-  else 
+  else { 
+    get_field_data();
     identify_field_model();
+  }
 
   // complete initialization of the base RecastModel
   initialize_recast();
@@ -192,8 +192,9 @@ void RandomFieldModel::rf_suite_identify_field_model()
   actualReducedRank = requestedReducedRank;
   // Build an RF suite reduced model
   // dprepro to insert covariance type / parameters / correl lengths, bases, percent variance
-  std::system("dprepro covsettings.txt KL_solve.template KL_solve.i");
-  std::system("launch -n 1 encore -i KL_solve.i");
+  Cout << "In rf_suite_identify_field_model  " << '\n';
+  //std::system("dprepro covsettings.txt KL_solve.template KL_solve.i");
+  std::system("./run_kl_solve.sh");
 }
 
 
@@ -525,8 +526,9 @@ void RandomFieldModel::generate_kl_realization()
 
   // Run KL realize with RF Suite
   // dprepro to configure kl_realize.i with kl_coeffs, mesh number
-  std::system("dprepro randomcoeffs.txt KL_realize.template KL_realize.i");
-  std::system("launch -n 1 encore -i KL_realize.i");
+  //std::system("dprepro randomcoeffs.txt KL_realize.template KL_realize.i");
+  //std::system("launch -n 1 encore -i KL_realize.i");
+  std::system("./run_kl_realize.sh");
 
   // post-condition: mesh file gets written containing the field realization
   // probably want to tag it with evalID...
