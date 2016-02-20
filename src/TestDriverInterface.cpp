@@ -94,6 +94,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
   driverTypeMap["diffusion_1d"]           = DIFFUSION_1D;
+  driverTypeMap["heat_equation_1d"]       = HEAT_EQUATION_1D;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
 
@@ -158,7 +159,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case BARNES:        case BARNES_LF:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
-    case GENZ: case DAMPED_OSCILLATOR: case DIFFUSION_1D:
+    case GENZ: case DAMPED_OSCILLATOR: case DIFFUSION_1D: case HEAT_EQUATION_1D:
     case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
@@ -311,6 +312,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = damped_oscillator(); break;
   case DIFFUSION_1D:
     fail_code = diffusion_1d(); break;
+  case HEAT_EQUATION_1D:
+    fail_code = heat_equation_1d(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
@@ -1491,6 +1494,7 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
     }
 }
 
+
 /** \brief Solve the 1D diffusion equation with an uncertain variable 
  * coefficient using the spectral Chebyshev collocation method.
  *
@@ -1500,7 +1504,8 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
  * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
  * where z_d are random variables, typically i.i.d uniform[-1,1]
  */
-int TestDriverInterface::diffusion_1d(){
+int TestDriverInterface::diffusion_1d()
+{
   // ------------------------------------------------------------- //
   // Pre-processing 
   // ------------------------------------------------------------- //
@@ -1570,7 +1575,93 @@ int TestDriverInterface::diffusion_1d(){
 }
 
 
-int TestDriverInterface::genz(){
+int TestDriverInterface::heat_equation_1d()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: heat_equation_1d direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars != 7) {
+    Cerr << "Error: unsupported variable counts in heat_equation_1d direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns > 1) {
+    Cerr << "Error: unsupported function counts in heat_equation_1d direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: gradients and Hessians are not supported in " 
+	 << " heat_equation_1d direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  // Get the number of spatial discretization points and the number of
+  // Fourier solution modes from the discrete integer variables
+  size_t nx_index = find_index(xDILabels, "N_x"),
+         nm_index = find_index(xDILabels, "N_mod");
+  int N_x   = ( nx_index == _NPOS ) ? 200 : xDI[nx_index];
+  int N_mod = ( nm_index == _NPOS ) ?  21 : xDI[nm_index];
+
+  RealVector x(N_x+1, false), u_n(N_x+1, false), f_tilde(N_x+1, false),
+             A(N_x, false);
+  Real Pi = 4. * std::atan(1.);
+  
+  // scaling from [-1,1] to [xi_min, xi_max]
+  // [-1,1] -> [l,u]: xi = l + (u-l) * (xC+1) / 2
+  RealVector xi(numVars);
+  xi[0] = Pi*xC[0]; xi[1] = Pi*xC[1]; xi[2] = Pi*xC[2]; // [-pi,pi]
+  xi[3] = 0.005 + 0.004*xC[3]; // [.001, .009]
+  xi[4] = (xC[4]+1.)/2.; xi[5] = (xC[5]+1.)/2.; xi[6] = (xC[6]+1.)/2.; // [0,1]
+
+  // spatial discretization
+  size_t i, n;
+  Real dx = 1. / N_x;
+  x[0] = 0.;
+  for (i=1; i<=N_x; ++i)
+    x[i] = x[i-1] + dx;
+
+  Real gamma = 1., T_f = 0.5, sum_A, int_u_n = 0.,
+    f_t_1, f_t_2, x_i, xpi, npi_g, u_exp, xi2_sq = xi[2]*xi[2],
+    sin_xi0 = std::sin(xi[0]), sin_xi1 = std::sin(xi[1]),
+    i_fn = 3.5*(sin_xi0 + 7.*sin_xi1*sin_xi1 + xi2_sq*xi2_sq*sin_xi0/10.);
+  Real g_fn = 50., a_i = -0.5;
+  for (i=4; i<=6; ++i)
+    g_fn *= (std::abs(4.*xi[i] - 2.) + a_i) / (1.+a_i);
+
+  f_tilde[0] = 0.;
+  for (n=0; n<N_mod; ++n) {
+    sum_A = 0.; u_n[0] = 0.; npi_g = n * Pi / gamma;
+    u_exp = std::exp(-xi[3] * npi_g * npi_g * T_f);
+    for (i=1; i<=N_x; ++i) {
+      x_i = x[i]; xpi = Pi*x_i; f_t_1 = std::sin(xpi);
+      f_t_2 = std::sin(2.*xpi) + std::sin(3.*xpi)
+	    + 50.* ( std::sin(9.*xpi) + std::sin(21.*xpi) );
+      // This term is the product of (a realization of) the initial solution
+      // and the n_th modal term
+      f_tilde[i] = std::sin(npi_g * x_i) * (g_fn * f_t_1 + i_fn * f_t_2);
+
+      // n_th coeff of the modal expansion (integrated over a single interval)
+      A[i-1] = (f_tilde[i] + f_tilde[i-1]) * dx / 2.; // area (trapezoidal rule)
+      sum_A += A[i-1];
+
+      u_n[i] = std::sin(npi_g * x_i) * u_exp;
+    }
+
+    // n_th coefficient of the modal expansion (...sum of the integrals)
+    u_n.scale(2. * sum_A);
+    for (i=1; i<=N_x; ++i)
+      int_u_n += u_n[i-1] + u_n[i]; // ends counted once, interior counted twice
+  }
+
+  // QoI is the integral of the solution over the physical space
+  fnVals[0] = int_u_n * dx / 2.; // trapezoidal rule
+}
+
+
+int TestDriverInterface::genz()
+{
   if (multiProcAnalysisFlag) {
     Cerr << "Error: genz direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
@@ -1650,8 +1741,8 @@ int TestDriverInterface::genz(){
 }
 
 
-int TestDriverInterface::damped_oscillator(){
-
+int TestDriverInterface::damped_oscillator()
+{
   if (multiProcAnalysisFlag) {
     Cerr << "Error: damped oscillator direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
