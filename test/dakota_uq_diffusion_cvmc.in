@@ -1,6 +1,5 @@
-#@ p*: Label=SmokeTest
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=3
+#@ s3: TimeoutAbsolute=3600
+#@ s3: TimeoutDelay=1200
 
 #environment,
 #	graphics
@@ -9,8 +8,11 @@ method,
 	model_pointer = 'HIERARCH'
         multilevel_sampling				
 	  pilot_samples = 100 seed = 1237
-	  max_iterations = 0				#s0
+#	  max_iterations = 0
+	  convergence_tolerance = .1			#s0
 #	  convergence_tolerance = .01			#s1
+#	  convergence_tolerance = .001			#s2
+#	  convergence_tolerance = .0001			#s3
 #	  complementary distribution
 #	  response_levels = 3.6e+11 4.0e+11 4.4e+11
 #			    6.0e+04 6.5e+04 7.0e+04
