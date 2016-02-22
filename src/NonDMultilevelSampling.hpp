@@ -98,6 +98,9 @@ private:
   SizetArray pilotSamples;
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
+  /// equivalent number of high fidelity evaluations accumulated using samples
+  /// across multiple model forms and/or discretization levels
+  Real equivHFEvals;
 };
 
 

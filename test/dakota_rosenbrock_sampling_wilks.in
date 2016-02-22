@@ -1,0 +1,34 @@
+# Dakota Input File: rosen_sampling_wilks.in
+
+environment
+  tabular_data
+    tabular_data_file = 'rosen_sampling_wilks.dat'
+
+method
+  sampling
+    sample_type random
+    wilks
+      probability_levels = 0.75 0.8 0.95 0.99
+      confidence_level 0.99
+      two_sided
+      order 2
+    seed = 17
+    response_levels = 100.0
+
+model
+  single
+
+variables
+  uniform_uncertain = 2
+    lower_bounds       -2.0  -2.0
+    upper_bounds        2.0   2.0
+    descriptors         'x1'  'x2'
+
+interface
+  analysis_driver = 'rosenbrock'
+    direct
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians

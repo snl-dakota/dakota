@@ -1,0 +1,55 @@
+#@ p*: Label=SmokeTest
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
+#@ s3: TimeoutAbsolute=3600
+#@ s3: TimeoutDelay=1200
+
+#environment,
+#	graphics
+
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling				
+	  pilot_samples = 20 seed = 1237
+	  max_iterations = 5
+	  convergence_tolerance = .1			#s0,#p0,#p1
+#	  convergence_tolerance = .01			#s1
+#	  convergence_tolerance = .001			#s2
+#	  convergence_tolerance = .0001
+	output silent
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'SIM1'
+	simulation
+	  solution_level_control = 'N_x'
+#	  solution_level_cost = 1. 3. 6. 12. 20. 40.
+	  solution_level_cost = 630. 1260. 2100. 4200.
+
+variables,
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set integer = 2
+#	  num_set_values = 6 2
+#	  set_values = 5 15 30 60 100 200 # number of spatial coords
+#	  	       3 21    	      	  # number of Fourier solution modes
+	  num_set_values = 4 2
+	  set_values = 30 60 100 200	  # number of spatial coords
+	  	       3 21    	      	  # number of Fourier solution modes
+	  initial_state = 30 21
+	  descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'heat_equation_1d'
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

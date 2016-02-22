@@ -569,7 +569,7 @@ sub compare_output {
       }
     }
 
-    # LHS/MC
+    # LHS/MC/MLMC/CVMC
     elsif ( ( ($t_mu, $t_sig, $t_cov) = $test =~
 	      /^\w+:\s+Mean =\s+($e)\s+Std. Dev. =\s+($e)\s+Coeff. of Variation =\s+($e)$/ ) &&
 	    ( ($b_mu, $b_sig, $b_cov) = $base =~
@@ -595,6 +595,16 @@ sub compare_output {
 	    ( ($b_min, $b_max) = $base =~
 	      /^\w+:\s+Min =\s+($e)\s+Max =\s+($e)$/ ) ) {
       if ( diff($t_min, $b_min) || diff($t_max, $b_max) ) {
+	$test_diff = 1;
+	push @base_diffs, $base;
+	push @test_diffs, $test;
+      }
+    }
+    elsif ( ( ($t_eq) = $test =~
+	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) &&
+	    ( ($b_eq) = $base =~
+	      /^<<<<< Equivalent number of high fidelity evaluations:\s+($e)\s+$/ ) ) {
+      if ( diff($t_eq, $b_eq) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;
 	push @test_diffs, $test;

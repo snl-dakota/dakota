@@ -1602,13 +1602,15 @@
 			  <param type="REAL" />
 			</keyword>
 		      </keyword>
-		      <keyword  id="wilks_samples" name="wilks_samples" code="{N_mdm(true,wilksFlag)}" label="wilks_samples" help="" minOccurs="0" >
-			<keyword  id="wilks_alpha" name="wilks_alpha" code="{N_mdm(Real,wilksAlpha)}" label="wilks_alpha" help="" minOccurs="0" >
+		      <keyword  id="wilks" name="wilks" code="{N_mdm(true,wilksFlag)}" label="wilks" help="" minOccurs="0" >
+			<keyword  id="order" name="order" code="{N_mdm(ushint,wilksOrder)}" label="order" help="" minOccurs="0" >
+                          <param type="INTEGER" />
+			</keyword>
+			<keyword  id="confidence_level" name="confidence_level" code="{N_mdm(Real,wilksConfidenceLevel)}" label="confidence_level" help="" minOccurs="0" >
 			  <param type="REAL" />
 			</keyword>
-			<keyword  id="wilks_beta" name="wilks_beta" code="{N_mdm(Real,wilksBeta)}" label="wilks_beta" help="" minOccurs="0" >
-			  <param type="REAL" />
-			</keyword>
+                        <keyword  id="one_sided" name="one_sided" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED)}" label="one_sided" help="" minOccurs="0" />
+                        <keyword  id="two_sided" name="two_sided" code="{N_mdm(type,wilksSidedInterval_TWO_SIDED)}" label="two_sided" help="" minOccurs="0" />
 		      </keyword>
 		    </keyword>
 		  </oneOf>

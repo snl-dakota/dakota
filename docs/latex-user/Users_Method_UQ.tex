@@ -749,6 +749,33 @@ where the weights will be determined by Gaussian processes which are a function
 of the input uncertain variables.  This reduced form then can be used for 
 sensitivity analysis, calibration, etc.  
 
+\subsection{Wilks-based Sample Sizes}\label{uq:wilks}
+
+Most of the sampling methods require the user to specify the number of 
+samples in advance.  However, if one specifies \texttt{random} sampling, 
+one can use an approach developed by Wilks\cite{Wilks} to determine the number of 
+samples the ensure a particular confidence level in a percentile of interest. 
+The Wilks method of computing the number of samples to execute for
+a random sampling study is based on order statistics, eg considering
+the outputs ordered from smallest to largest \cite{Wilks}.  Given a
+\texttt{probability\_level}, $\alpha$, and \texttt{confidence\_level}, $\beta$, the
+Wilks calculation determines the minimum number of samples required
+such that there is $(\beta*100)$\% confidence that $(\alpha*100)$\%-ile 
+of the uncertain distribution on model output will fall below the actual 
+$(\alpha*100)$\%-ile given by the sample.  To be more specific, if we wish to 
+calculate the $95\%$ confidence limit on the 95th percentile, Wilks indicates 
+that 59 samples are needed.  If we order the responses and take the largest one, 
+that value defines a tolerance limit on the 95th percentile:  we have a situation 
+where 95\% of the time, the 95th percentile will fall at or below that sampled value.  
+This represents a \texttt{one\_sided} treatment applicable to the largest
+output value and can be expanded to include an interval containing
+both the smallest and the largest output values in the statistical
+statement via the \texttt{two\_sided} option.  Additional generalization
+to higher order statistics, eg a statement applied to the N largest
+outputs (\texttt{one\_sided}) or the N smallest and N largest outputs
+(\texttt{two\_sided}), can be specified using the \texttt{order} option
+along with value N.
+
 \section{Reliability Methods}\label{uq:reliability}
 
 Reliability methods provide an alternative approach to uncertainty

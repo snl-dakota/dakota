@@ -1108,9 +1108,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ principal_components {N_mdm(true,pcaFlag)}
             [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
            ]
-          [ wilks_samples {N_mdm(true,wilksFlag)}
-            [ wilks_alpha REAL {N_mdm(Real,wilksAlpha)} ]
-            [ wilks_beta REAL {N_mdm(Real,wilksBeta)} ]
+          [ wilks {N_mdm(true,wilksFlag)}
+            [ order INTEGER {N_mdm(ushint,wilksOrder)} ]
+            [ confidence_level REAL {N_mdm(Real,wilksConfidenceLevel)} ]
+            [ one_sided {N_mdm(type,wilksSidedInterval_ONE_SIDED)} ]
+            [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
            ]
          )
         [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}

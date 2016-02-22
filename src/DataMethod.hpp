@@ -170,6 +170,8 @@ enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
 // (6) ALL_UNIFORM: sample over All variables using uniform distributions.
 // Note that ACTIVE modes will overlap with either UNCERTAIN or ALL modes
 // depending on whether the Model/Variables employ an All or Distinct view.
+// Wilks type of confidence interval
+enum { ONE_SIDED, TWO_SIDED };
 
 // ---------------
 // NonDReliability
@@ -782,10 +784,12 @@ public:
   Real percentVarianceExplained;
   /// Flag to specify use of Wilks formula to calculate num samples
   bool wilksFlag;
-  /// Wilks alpha parameter - 
-  Real wilksAlpha;
-  /// Wilks beta parameter - 
-  Real wilksBeta;
+  /// Wilks order parameter
+  unsigned short wilksOrder;
+  /// Wilks confidence interval parameter
+  Real wilksConfidenceLevel;
+  /// Wilks sided interval type
+  short wilksSidedInterval;
 
   // NonD
 
