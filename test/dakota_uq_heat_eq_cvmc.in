@@ -7,12 +7,12 @@
 method,
 	model_pointer = 'HIERARCH'
         multilevel_sampling				
-	  pilot_samples = 100 seed = 1237
+	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
 	  convergence_tolerance = .1			#s0
 #	  convergence_tolerance = .01			#s1
 #	  convergence_tolerance = .001			#s2
-#	  convergence_tolerance = .0001			#s3
+#	  convergence_tolerance = .0001
 	output silent
 
 model,
@@ -45,7 +45,7 @@ variables,
 	  integer = 2
 #	    num_set_values = 4 2
 #	    set_values = 5 15 30 60 # number of spatial coords
-#	    	       	 3 21 	    # number of Fourier solution modes
+#	    	       	 3 	    # number of Fourier solution modes
 	    num_set_values = 1 1
 	    set_values = 5 # number of spatial coords
 	    	       	 3 # number of Fourier solution modes
@@ -61,7 +61,7 @@ variables,
 	  integer = 2
 #	    num_set_values = 4 2
 #	    set_values = 30 60 100 200 # number of spatial coords
-#	    	       	 3 21 	       # number of Fourier solution modes
+#	    	       	 21 	       # number of Fourier solution modes
 	    num_set_values = 1 1
 	    set_values = 200 # number of spatial coords
 	    	       	 21  # number of Fourier solution modes

@@ -1246,7 +1246,7 @@ sub parse_test_output {
     # ***********************************************
     # *** UQ sampling/reliability results summary ***
     # ***********************************************
-    if (/Equivalent number of high fidelity evaluations/) {
+    if (/^<<<<< Equivalent number of high fidelity evaluations/) {
       print;
       print TEST_OUT;
     }

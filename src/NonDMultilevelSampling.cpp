@@ -650,7 +650,7 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 void NonDMultilevelSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
-    s << "\nEquivalent number of high fidelity evaluations: "
+    s << "\n<<<<< Equivalent number of high fidelity evaluations: "
       << equivHFEvals //<< "\nFinal samples per level:\n" << N_l; // TO DO
       << "\n\nStatistics based on multilevel sample set:\n";
     print_moments(s);//print_statistics(s);
