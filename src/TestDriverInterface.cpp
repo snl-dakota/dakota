@@ -1582,7 +1582,7 @@ int TestDriverInterface::heat_equation_1d()
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numVars != 7) {
+  if (numACV != 7 || numADIV > 2) {
     Cerr << "Error: unsupported variable counts in heat_equation_1d direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
