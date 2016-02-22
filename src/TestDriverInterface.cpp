@@ -1657,6 +1657,8 @@ int TestDriverInterface::heat_equation_1d()
 
   // QoI is the integral of the solution over the physical space
   fnVals[0] = int_u_n * dx / 2.; // trapezoidal rule
+
+  return 0;
 }
 
 
