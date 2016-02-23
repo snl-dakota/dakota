@@ -1,6 +1,6 @@
 #!/bin/sh
 # Clone SRN repos
-git clone development:~rhoope/Dakota_git_srn/local local
+git clone development.sandia.gov:/git/dakota local
 cd local/packages/external-seat
 git clone development:~rhoope/Dakota_git_srn/DOT DOT
 cd -
