@@ -3,7 +3,7 @@
 	url = software-login.sandia.gov:/home/rhoope/Dakota_packages_public_sandbox
 [submodule "packages/pecos"]
 	path = packages/pecos
-	url = software-login.sandia.gov:/home/rhoope/pecos_git_sandbox
+	url = software.sandia.gov:/git/pecos
 [submodule "packages/surfpack"]
 	path = packages/surfpack
 	url = software-login.sandia.gov:/home/rhoope/surfpack_git_sandbox
