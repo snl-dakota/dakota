@@ -611,7 +611,7 @@ if(HAVE_QUESO)
   #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include")
   if(DAKOTA_QUESO_CMAKE)
 
-    list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/queso/include/
+    list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/queso/include/
       ${GSL_INCLUDE_DIRS})
     list(APPEND DAKOTA_PKG_LIBS queso)
 

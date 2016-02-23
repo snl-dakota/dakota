@@ -115,7 +115,7 @@ if(HAVE_QUESO)
   # Configure, build, and install QUESO in packages/queso_ext.  Build
   # is in queso_ext/src; Install is to queso_ext/{bin,examples,include,lib}
   set(queso_config_cmd
-    ${SH} ${CMAKE_CURRENT_SOURCE_DIR}/queso/configure
+    ${SH} ${CMAKE_CURRENT_SOURCE_DIR}/external/queso/configure
     "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
     "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
     "--without-hdf5" "--without-glpk"
@@ -128,7 +128,7 @@ if(HAVE_QUESO)
 
   externalproject_add(queso_ext
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/queso_ext"
-    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/queso"
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/queso"
     CONFIGURE_COMMAND "${queso_config_cmd}"
     )
 
