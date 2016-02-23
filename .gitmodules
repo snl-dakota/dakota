@@ -1,9 +1,9 @@
 [submodule "packages/external"]
 	path = packages/external
-	url = software-login.sandia.gov:/home/rhoope/Dakota_packages_public_sandbox
+	url = software.sandia.gov:/git/dakota-packages
 [submodule "packages/pecos"]
 	path = packages/pecos
 	url = software.sandia.gov:/git/pecos
 [submodule "packages/surfpack"]
 	path = packages/surfpack
-	url = software-login.sandia.gov:/home/rhoope/surfpack_git_sandbox
+	url = software.sandia.gov:/git/surfpack
