@@ -26,7 +26,8 @@ model,
 	id_model = 'SIM1'
 	simulation
 	  solution_level_control = 'dssiv_1'
-	  solution_level_cost = 1. 2. 4. 8. 16.
+# dense matrices --> direct solvers --> cubic cost growth
+	  solution_level_cost = 1. 8. 64. 512. 4096.
 
 variables,
 	uniform_uncertain = 9	 # number of cosine terms in soln expansion
