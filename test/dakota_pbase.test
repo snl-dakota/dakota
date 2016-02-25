@@ -5751,21 +5751,23 @@ Partial Rank Correlation Matrix between input and output:
       Y_mean  8.08696e-02 -9.86420e-01 -9.55272e-01 
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
-<<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
+<<<<< Function evaluation summary: 518 total (518 new, 0 duplicate)
+<<<<< Function evaluation summary: 518 total (518 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 8.1062500000e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.5327382163e-02  6.5977710726e-03  7.6968813743e-01 -1.4569293038e-01
-            f2  1.2932928682e-01  1.3370616572e-02  8.8363664212e-01 -3.9612759977e-01
-            f3  2.5327382163e-02  6.5977710728e-03  7.6968813735e-01 -1.4569293063e-01
+            f1  2.5544082976e-02  6.8414219991e-03  8.0642700809e-01 -2.6119566818e-01
+            f2  1.2744494891e-01  1.4003395737e-02  7.1487794606e-01  1.8468885730e-01
+            f3  2.5544082976e-02  6.8414219993e-03  8.0642700803e-01 -2.6119566810e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
-<<<<< Function evaluation summary: 22457 total (22457 new, 0 duplicate)
+<<<<< Function evaluation summary: 518 total (518 new, 0 duplicate)
+<<<<< Function evaluation summary: 518 total (518 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 8.1062500000e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.5327382163e-02  6.5977710726e-03  7.6968813743e-01 -1.4569293038e-01
-            f2  1.2932928682e-01  1.3370616572e-02  8.8363664212e-01 -3.9612759977e-01
-            f3  2.5327382163e-02  6.5977710728e-03  7.6968813735e-01 -1.4569293063e-01
+            f1  2.5544082976e-02  6.8414219991e-03  8.0642700809e-01 -2.6119566818e-01
+            f2  1.2744494891e-01  1.4003395737e-02  7.1487794606e-01  1.8468885730e-01
+            f3  2.5544082976e-02  6.8414219993e-03  8.0642700803e-01 -2.6119566810e-01
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)

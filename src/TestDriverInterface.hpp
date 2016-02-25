@@ -84,8 +84,10 @@ private:
   int genz(); ///< scalable test functions from the Genz test suite
 
   int damped_oscillator(); ///< 1d-6d that returns field values (ode solution)
-  int diffusion_1d(); ///< solve the 1d diffusion equation with random coeff.
-  int heat_equation_1d(); ///< solve the 1d heat equation with random coeff.
+  int steady_state_diffusion_1d(); ///< solve the 1d steady-state diffusion eqn
+                                   ///< with uncertain field diffusivity
+  int transient_diffusion_1d(); ///< solve the 1d transient diffusion equation
+                                ///< with uncertain scalar diffusivity
 
   int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function
   int steel_column_perf(); ///< the steel_column_perf UQ/OUU test function

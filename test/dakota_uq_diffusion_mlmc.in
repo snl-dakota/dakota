@@ -1,8 +1,6 @@
 #@ p*: Label=SmokeTest
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
-#@ s3: TimeoutAbsolute=3600
-#@ s3: TimeoutDelay=1200
 
 #environment,
 #	graphics
@@ -12,10 +10,10 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 	  max_iterations = 5
-	  convergence_tolerance = .1			#s0,#p0,#p1
-#	  convergence_tolerance = .01			#s1
-#	  convergence_tolerance = 1.e-3			#s2
-#	  convergence_tolerance = 1.e-4
+	  convergence_tolerance =    .1			#s0,#p0,#p1
+#	  convergence_tolerance =   .01			#s1
+#	  convergence_tolerance =  .001			#s2
+#	  convergence_tolerance = .0001			# too expensive
 	output silent
 
 model,
@@ -43,7 +41,7 @@ variables,
 
 interface,
 	direct
-	  analysis_driver = 'diffusion_1d'
+	  analysis_driver = 'steady_state_diffusion_1d'
 
 responses,
 	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)

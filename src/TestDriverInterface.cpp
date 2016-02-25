@@ -93,8 +93,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["modelcenter"]            = MODELCENTER;
   driverTypeMap["genz"]                   = GENZ;
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
-  driverTypeMap["diffusion_1d"]           = DIFFUSION_1D;
-  driverTypeMap["heat_equation_1d"]       = HEAT_EQUATION_1D;
+  driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
+  driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
 
@@ -159,7 +159,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case BARNES:        case BARNES_LF:
     case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
     case SALINAS:       case MODELCENTER:
-    case GENZ: case DAMPED_OSCILLATOR: case DIFFUSION_1D: case HEAT_EQUATION_1D:
+    case GENZ: case DAMPED_OSCILLATOR:
+    case STEADY_STATE_DIFFUSION_1D: case TRANSIENT_DIFFUSION_1D:
     case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
@@ -310,10 +311,10 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = genz(); break;
   case DAMPED_OSCILLATOR:
     fail_code = damped_oscillator(); break;
-  case DIFFUSION_1D:
-    fail_code = diffusion_1d(); break;
-  case HEAT_EQUATION_1D:
-    fail_code = heat_equation_1d(); break;
+  case STEADY_STATE_DIFFUSION_1D:
+    fail_code = steady_state_diffusion_1d(); break;
+  case TRANSIENT_DIFFUSION_1D:
+    fail_code = transient_diffusion_1d(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
@@ -1504,30 +1505,30 @@ get_genz_coefficients( int num_dims, Real factor, int c_type,
  * k = 1+4.*sum_d [cos(2*pi*x)/(pi*d)^2*z[d]] d=1,...,num_dims
  * where z_d are random variables, typically i.i.d uniform[-1,1]
  */
-int TestDriverInterface::diffusion_1d()
+int TestDriverInterface::steady_state_diffusion_1d()
 {
   // ------------------------------------------------------------- //
   // Pre-processing 
   // ------------------------------------------------------------- //
 
   if (multiProcAnalysisFlag) {
-    Cerr << "Error: diffusion_1d direct fn does not support "
+    Cerr << "Error: steady_state_diffusion_1d direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
   if ( ( numVars < 1 )  || ( numADIV > 1 ) ) {
-    Cerr << "Error: Bad variable types in diffusion_1d direct fn."
+    Cerr << "Error: Bad variable types in steady_state_diffusion_1d direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (numFns < 1) {
-    Cerr << "Error: Bad number of functions in diffusion_1d direct fn."
-	 << std::endl;
+    Cerr << "Error: Bad number of functions in steady_state_diffusion_1d "
+	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag||gradFlag) {
     Cerr << "Error: Gradients and Hessians are not supported in " 
-	 << " diffusion_1d direct fn." << std::endl;
+	 << "steady_state_diffusion_1d direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
@@ -1575,26 +1576,26 @@ int TestDriverInterface::diffusion_1d()
 }
 
 
-int TestDriverInterface::heat_equation_1d()
+int TestDriverInterface::transient_diffusion_1d()
 {
   if (multiProcAnalysisFlag) {
-    Cerr << "Error: heat_equation_1d direct fn does not support "
+    Cerr << "Error: transient_diffusion_1d direct fn does not support "
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
   if (numACV != 7 || numADIV > 2) {
-    Cerr << "Error: unsupported variable counts in heat_equation_1d direct fn."
-	 << std::endl;
+    Cerr << "Error: unsupported variable counts in transient_diffusion_1d "
+	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (numFns > 1) {
-    Cerr << "Error: unsupported function counts in heat_equation_1d direct fn."
-	 << std::endl;
+    Cerr << "Error: unsupported function counts in transient_diffusion_1d "
+	 << "direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (hessFlag || gradFlag) {
     Cerr << "Error: gradients and Hessians are not supported in " 
-	 << " heat_equation_1d direct fn." << std::endl;
+	 << "transient_diffusion_1d direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   // Get the number of spatial discretization points and the number of

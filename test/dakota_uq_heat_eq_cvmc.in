@@ -70,7 +70,7 @@ variables,
 
 interface,
 	direct
-	  analysis_driver = 'heat_equation_1d'
+	  analysis_driver = 'transient_diffusion_1d'
 
 responses,
 	response_functions = 1

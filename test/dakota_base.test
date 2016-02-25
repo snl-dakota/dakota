@@ -42236,32 +42236,41 @@ Partial Rank Correlation Matrix between input and output:
            Y  1.05178e-03  9.25996e-01  9.56190e-01 
 dakota_uq_diffusion_cvmc.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)
-<<<<< Function evaluation summary: 570 total (570 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 146.1
+<<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
+<<<<< Function evaluation summary: 2912 total (2912 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 81.4297
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.2678164137e-02  9.5941181293e-03  1.2403609608e+00  2.0429871137e+00
-            f2  1.1636954918e-01  3.5686305561e-02  3.5906105211e-01 -9.6660435163e-01
-            f3  2.2550718357e-02  9.7051950702e-03  8.7008198042e-01  2.6301452221e-01
+            f1  2.5638895037e-02  6.7797292003e-03  4.1932153615e-01 -2.7555448547e-01
+            f2  1.2925299268e-01  1.4469413313e-02  2.6518201317e-01 -1.0083440575e+00
+            f3  2.5376118561e-02  6.9922253556e-03  5.3804402029e-01 -9.1020660194e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 5809 total (5809 new, 0 duplicate)
-<<<<< Function evaluation summary: 5809 total (5809 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 1472.8
+<<<<< Function evaluation summary: 30639 total (30639 new, 0 duplicate)
+<<<<< Function evaluation summary: 30639 total (30639 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 818.667
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.3042673434e-02  9.5667259516e-03  7.8057923879e-01  2.7492663855e-01
-            f2  1.1861639312e-01  3.8506423809e-02  3.4228174145e-01 -1.1129044597e+00
-            f3  2.3032431876e-02  9.5431221438e-03  6.8408940248e-01  9.6460751706e-02
+            f1  2.5222337069e-02  6.5483854532e-03  7.7448731467e-01  3.7528558274e-01
+            f2  1.2922739131e-01  1.3882809093e-02  3.7045750210e-01 -4.4060640179e-01
+            f3  2.5288947824e-02  6.5552137001e-03  7.7884445371e-01  1.4603207195e-01
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 57098 total (57098 new, 0 duplicate)
-<<<<< Function evaluation summary: 57098 total (57098 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 14626.1
+<<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
+<<<<< Function evaluation summary: 21944 total (21944 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 25.3525
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.3104295249e-02  9.4661079763e-03  7.1481528704e-01  5.4852219394e-02
-            f2  1.1769770122e-01  3.7225118213e-02  3.7106552050e-01 -1.0040396324e+00
-            f3  2.2893684438e-02  9.3649433879e-03  7.0887649094e-01  7.7861676917e-02
+            f1  2.5225571176e-02  6.5767003327e-03  7.6644080011e-01 -1.4075286854e-01
+            f2  1.2968378243e-01  1.3595190642e-02  1.3818246848e+00  1.5479136287e+00
+            f3  2.5225571176e-02  6.5767003336e-03  7.6644079989e-01 -1.4075286925e-01
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 88691 total (88691 new, 0 duplicate)
+<<<<< Function evaluation summary: 88691 total (88691 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 110.631
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+            f1  2.5280286326e-02  6.5948038793e-03  7.9517346556e-01 -8.3481880157e-02
+            f2  1.2928299231e-01  1.3784076330e-02  8.3827174650e-01 -5.3634154753e-01
+            f3  2.5280286327e-02  6.5948038796e-03  7.9517346558e-01 -8.3481879965e-02
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 518 total (518 new, 0 duplicate)

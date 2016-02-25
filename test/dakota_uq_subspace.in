@@ -99,7 +99,7 @@ interface,
   direct
     analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17
     analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17
-#   analysis_driver = 'diffusion_1d'	                                          #s10,#p10
+#   analysis_driver = 'steady_state_diffusion_1d'  	  #s10,#p10
 
 responses,
   id_responses = 'ID_R'
