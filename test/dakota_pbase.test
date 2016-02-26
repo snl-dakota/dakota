@@ -5756,18 +5756,18 @@ Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.5865234375e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.5539854163e-02  6.5892982854e-03  7.4779935981e-01 -4.0460631457e-01
-            f2  1.2646326944e-01  1.4396763813e-02  4.2891814574e-01 -6.2369347578e-01
-            f3  2.5539854163e-02  6.5892982857e-03  7.4779935974e-01 -4.0460631445e-01
+ response_fn_1  2.5539854163e-02  6.5892982854e-03  7.4779935981e-01 -4.0460631457e-01
+ response_fn_2  1.2646326944e-01  1.4396763813e-02  4.2891814574e-01 -6.2369347578e-01
+ response_fn_3  2.5539854163e-02  6.5892982857e-03  7.4779935974e-01 -4.0460631445e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 636 total (636 new, 0 duplicate)
 <<<<< Function evaluation summary: 636 total (636 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5865234375e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-            f1  2.5539854163e-02  6.5892982854e-03  7.4779935981e-01 -4.0460631457e-01
-            f2  1.2646326944e-01  1.4396763813e-02  4.2891814574e-01 -6.2369347578e-01
-            f3  2.5539854163e-02  6.5892982857e-03  7.4779935974e-01 -4.0460631445e-01
+ response_fn_1  2.5539854163e-02  6.5892982854e-03  7.4779935981e-01 -4.0460631457e-01
+ response_fn_2  1.2646326944e-01  1.4396763813e-02  4.2891814574e-01 -6.2369347578e-01
+ response_fn_3  2.5539854163e-02  6.5892982857e-03  7.4779935974e-01 -4.0460631445e-01
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 465 total (465 new, 0 duplicate)
