@@ -1,5 +1,5 @@
-#@ s3: TimeoutAbsolute=3600
-#@ s3: TimeoutDelay=1200
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
 
 #environment,
 #	graphics
@@ -9,10 +9,10 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
-	  convergence_tolerance = .1			#s0
-#	  convergence_tolerance = .01			#s1
-#	  convergence_tolerance = .001			#s2
-#	  convergence_tolerance = .0001
+	  convergence_tolerance =    .1			#s0,#s2
+#	  convergence_tolerance =   .01			#s1,#s3
+#	  convergence_tolerance =  .001			# too expensive
+#	  convergence_tolerance = .0001			# too expensive
 	output silent
 
 model,
@@ -27,14 +27,18 @@ model,
 	variables_pointer = 'LF_VARS'
 	simulation
 	  solution_level_control = 'dssiv_1'
-	  solution_level_cost = 4.
+# dense matrices --> direct solvers --> cubic cost growth
+#   cos64 -> exp16: 64x for 4^3, 10x assumed for kernel
+#   cos64 -> cos4:  4096x for 16^3
+	  solution_level_cost = 6.4			#s0,#s1
+#	  solution_level_cost = 1.			#s2,#s3
 
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
 	  solution_level_control = 'dssiv_1'
-	  solution_level_cost = 40.
+	  solution_level_cost = 4096. # MLMC cost for cosine64
 
 variables,
 	id_variables = 'LF_VARS'
@@ -42,11 +46,16 @@ variables,
 	  lower_bounds    = 9*-1.
 	  upper_bounds    = 9* 1.
 	discrete_state_set
+# LF = exp16 case tests different model forms
+# LF = cos4 case tests the extreme values of the discretization levels 
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-	    initial_state = 16
-            set_values = 16
+	    initial_state = 16	  	     	 #s0,#s1
+	    set_values = 16	     	 	 #s0,#s1
+#	    initial_state = 4	  	     	 #s2,#s3
+#	    set_values = 4	     	 	 #s2,#s3
 	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
-	    initial_state = 'cosine'
+	    initial_state = 'exponential'	 #s0,#s1
+#	    initial_state = 'cosine'	 	 #s2,#s3
             set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
 
 variables,
@@ -56,15 +65,15 @@ variables,
 	  upper_bounds    = 9* 1.
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-	    initial_state = 16
-            set_values = 16
+	    initial_state = 64
+            set_values = 64
 	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
-	    initial_state = 'exponential'
+	    initial_state = 'cosine'
             set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
 
 interface,
 	direct
-	  analysis_driver = 'diffusion_1d'
+	  analysis_driver = 'steady_state_diffusion_1d'
 
 responses,
 	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)

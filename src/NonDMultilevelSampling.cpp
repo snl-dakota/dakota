@@ -32,6 +32,10 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
 {
+  // TO DO: Multilevel LHS is do-able but will require either:
+  // (a) assumptions about separability -> analytic variance reduction by a
+  //     constant factor
+  // (b) numerically-generated estimator variance (from, e.g., bootstrapping)
   sampleType = SUBMETHOD_RANDOM;
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
@@ -184,7 +188,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
-      
+
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
     iteratedModel.surrogate_model(model_form, 0); // solution level 0
@@ -262,8 +266,11 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
     // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
     // discretization error, we compute an initial estimator variance and
     // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) // eps^2 / 2 = var * relative factor
+    if (iter == 0) { // eps^2 / 2 = var * relative factor
       eps_sq_div_2 = estimator_var0 * convergenceTol;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+    }
 
     // update targets based on variance estimates
     Real fact = sum_sqrt_var_cost / eps_sq_div_2;
@@ -387,12 +394,12 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
 
   // bypass refinement if maxIterations == 0 or convergenceTol already
   // satisfied by pilot sample
-  if (maxIterations && convergenceTol < avg_mse_ratio) {
+  if (maxIterations && avg_mse_ratio > convergenceTol) {
+
     // Assuming rho_AB, evaluation_ratio and var_H to be relatively invariant,
     // we seek a relative reduction in MSE using the convergence tol spec:
     //   convTol = CV_mse / MC^0_mse = mse_ratio * N0 / N
     //   delta_N = mse_ratio*N0/convTol - N0 = (mse_ratio/convTol - 1) * N0
-
     Real incr = (avg_mse_ratio/convergenceTol - 1.) * numSamples;
     numSamples = delta_N_lf = delta_N_hf = (size_t)std::floor(incr + .5);
     N_lf += delta_N_lf; N_hf += delta_N_hf; total_N += numSamples;
@@ -407,13 +414,13 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
 
     // accumulate allResponses contributions to LF, HF, and LF-HF sums
     accumulate_sums(sum_L, sum_H, sum_LH);
-    // compute the LF/HF evaluation ratio, averaged over the QoI; this
-    // includes updating mean_L, mean_H, var_L, var_H, cov_LH, rho2_LH
+    // compute the LF/HF evaluation ratio, averaged over the QoI;
+    // this includes updating mean_L, mean_H, var_L, var_H, cov_LH, rho2_LH
     avg_eval_ratio
       = eval_ratio(sum_L, sum_H, sum_LH, total_N, cost_ratio, mean_L[1],
 		   mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
-    // compute ratio of MC and CVMC mean squared errors, averaged over the
-    // QoI; the relative reduction in MSE is used to control convergence
+    // compute ratio of MC and CVMC mean squared errors, averaged over QoI;
+    // the relative reduction in MSE is used to control convergence
     avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, N_hf, iter);
   }
 
@@ -440,8 +447,9 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
 
   // update LF samples based on evaluation ratio
   // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
+  // or with inverse r  -> delta = m-n = n/inverse_r - n
   delta_N_lf = (avg_eval_ratio <= 1.) ? 0 :
-    (size_t)std::floor(N_lf * (avg_eval_ratio - 1.) + .5); // round
+    (size_t)std::floor((Real)N_lf * (avg_eval_ratio - 1.) + .5); // round
   delta_N_hf = 0;
   Cout << "CVMC final sample increments: LF = " << delta_N_lf
        << " HF = " << delta_N_hf << std::endl;
@@ -474,18 +482,21 @@ control_variate_mc(size_t lf_model_form, size_t hf_model_form,
 
   // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
   if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
-  Real H_cntl, refined_mu_Li, m1, cm2, cm3, cm4;
+  Real H_cntl, refined_mu_Li, m1, cm2, cm3, cm4, cr1 = cost_ratio + 1.;
   RealMatrix H_raw_mom(4, numFunctions);
   for (i=1; i<=4; ++i) {
-    const RealVector&  sum_Li =  sum_L[i]; RealVector& mean_Li = mean_L[i];
-    const RealVector& mean_Hi = mean_H[i]; const RealVector& var_Li = var_L[i];
+    const RealVector&  sum_Li =  sum_L[i]; RealVector&      mean_Li = mean_L[i];
+    const RealVector& mean_Hi = mean_H[i]; const RealVector& var_Li =  var_L[i];
     const RealVector& covar_LHi = covar_LH[i];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       // LF expectations prior to final sample increment:
       mu_Li  = mean_Li[qoi];
       H_cntl = covar_LHi[qoi] / var_Li[qoi];
-      Cout << "Control variate beta parameter (moment " << i << ", QoI "
-	   << qoi+1 << ") is " << H_cntl << '\n';
+      Cout << "Moment " << i << ", QoI " << qoi+1
+	   << ": control variate beta = " << std::setw(9) << H_cntl;
+      if (i == 1) // neither rho2_LHi nor var_Hi are stored for i > 1
+	Cout << " Effectiveness ratio = " << std::setw(9) << rho2_LH[qoi] * cr1;
+      Cout << '\n';
       // updated LF expectations following final sample increment:
       refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
       // apply control for HF uncentered raw moment estimates:
@@ -565,6 +576,7 @@ eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
   IntRVMCIter h2_cit = sum_H.find(2); const RealVector& sum_H2 = h2_cit->second;
   IntRVMCIter lh1_cit = sum_LH.find(1);
   const RealVector& sum_L1H1 = lh1_cit->second;
+  size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // unbiased mean estimator X-bar = 1/N * sum
     mu_L = mean_L[qoi] = sum_L1[qoi] / total_N;
@@ -579,11 +591,20 @@ eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
     // > the sample increment optimizes the total computational budget and is
     //   not treated as a worst case accuracy reqmt --> use the QoI average
     // > refinement based only on QoI mean statistics
+    // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
+    // this does not seem to behave as well in limited numerical experience.
     rho_sq = rho2_LH[qoi] = cov / var_L[qoi] * cov / var_H[qoi];//bias cancels
-    avg_eval_ratio += (rho_sq >= 1.) ? maxFunctionEvals : // should not happen
-      std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+    //if (rho_sq > Pecos::SMALL_NUMBER) {
+    //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
+    if (rho_sq < 1.) { // protect against division by 0
+      avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      ++num_avg;
+    }
   }
-  avg_eval_ratio /= numFunctions;
+  if (num_avg) avg_eval_ratio /= num_avg;
+  else // should not happen, but provide a reasonable upper bound
+    avg_eval_ratio  = (Real)maxFunctionEvals / (Real)total_N;
+
   return avg_eval_ratio;
 }
 
@@ -596,7 +617,7 @@ MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
   Real mc_mse, cvmc_mse, mse_ratio, avg_mse_ratio = 0.;//,avg_mse_iter_ratio=0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // Compute ratio of MSE for high fidelity MC and multifidelity CVMC
-    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1./avg_eval_ratio); // Ng 2014
+    mse_ratio = 1. - rho2_LH[qoi] * (1. - 1. / avg_eval_ratio); // Ng 2014
     mc_mse = var_H[qoi] / N_hf; cvmc_mse = mc_mse * mse_ratio;
     Cout << "Mean square error for QoI " << qoi+1 << " reduced from " << mc_mse
 	 << " (MC) to " << cvmc_mse << " (CV); factor = " << mse_ratio << '\n';
@@ -653,7 +674,9 @@ void NonDMultilevelSampling::print_results(std::ostream& s)
     s << "\n<<<<< Equivalent number of high fidelity evaluations: "
       << equivHFEvals //<< "\nFinal samples per level:\n" << N_l; // TO DO
       << "\n\nStatistics based on multilevel sample set:\n";
-    print_moments(s);//print_statistics(s);
+  //print_statistics(s);
+    print_moments(s, "response function",
+		  iteratedModel.truth_model().response_labels());
   }
 }
 
