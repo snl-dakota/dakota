@@ -21,6 +21,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaApproximation.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "PRPMultiIndex.hpp"
 // then list QUESO headers
 #include "queso/StatisticalInverseProblem.h"
 #include "queso/StatisticalInverseProblemOptions.h"
@@ -43,6 +44,8 @@ static const char rcsId[]="@(#) $Id$";
 
 
 namespace Dakota {
+
+extern PRPCache data_pairs; // global container
 
 // declaring inherited classes here for now during prototyping to
 // avoid including QUESO header in our header
@@ -383,6 +386,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   uniqueSamples.reserve(chainSamples * chainCycles);
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
 				     chainSamples * chainCycles);
+  if (outputLevel >= DEBUG_OUTPUT)
+    acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
@@ -431,6 +436,11 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << std::endl;
   }
+
+  // archive accepted function values (this has to be done before the
+  // surrogate gets updated)
+  if (outputLevel >= DEBUG_OUTPUT)
+    retrieve_fn_vals(update_cntr);
 }
 
 
@@ -446,6 +456,13 @@ void NonDQUESOBayesCalibration::compute_statistics()
   // Prior to retirement of restarts and aggregation of acceptanceChain
   NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
   nond_rep->compute_moments(acceptanceChain);
+
+  // BMA: temporary output until credible/prediction intervals are implemented
+  if (outputLevel >= DEBUG_OUTPUT) {
+    std::ofstream interval_stream("dakota_mcmc_intervals.dat");
+    interval_stream << "Accepted variables\n" << acceptanceChain << '\n';
+    interval_stream << "Accepted functions\n" << acceptedFnVals << '\n';
+  }
 }
 
 
@@ -1605,5 +1622,53 @@ equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2)
       return false;
   return true;
 }
+
+
+void NonDQUESOBayesCalibration::retrieve_fn_vals(size_t cycle_num)
+{
+  // TODO: account for transformations if present? optimize for copies?
+  // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
+
+  // the MCMC model omits the hyper params and residual transformations...
+  Variables lookup_vars = mcmcModel.current_variables().copy();
+  String interface_id = mcmcModel.interface_id();
+  Response lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+ 
+  int lookup_failures = 0, 
+    sample_index = (cycle_num - 1) * chainSamples,
+    stop_index   = sample_index + chainSamples;
+  for ( ; sample_index < stop_index; ++sample_index) {
+
+    // get just the calibration variables, omitting hyper-parameters
+    RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
+			   numContinuousVars);
+    lookup_vars.continuous_variables(accept_vars);
+      
+    if (mcmcModel.model_type() == "surrogate") {
+      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+    }
+    else {
+      lookup_pr.variables(lookup_vars);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+      if (cache_it == data_pairs.get<hashed>().end())
+	++lookup_failures;
+      else {
+	const RealVector& fn_vals = cache_it->response().function_values();
+	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+      }
+    }
+  }
+  if (lookup_failures > 0)
+    Cout << "Warning: could not retrieve function values for " 
+	 << lookup_failures << " MCMC chain points." << std::endl;
+}
+
 
 } // namespace Dakota

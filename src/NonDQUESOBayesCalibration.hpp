@@ -188,6 +188,9 @@ protected:
   /// equality tester for two GslVectors
   bool equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2);
 
+  /// recover the function values for each accepted point
+  void retrieve_fn_vals(size_t cycle_num);
+
   //
   //- Heading: Data
   //
@@ -264,6 +267,10 @@ private:
   /// accumulation of acceptance chain across restarts
   /// TO DO: retire once restarts are retired
   RealMatrix acceptanceChain;
+  /// cached function values corresponding to acceptanceChain for
+  /// final statistics reporting
+  RealMatrix acceptedFnVals;
+
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
   RealVectorArray uniqueSamples;
