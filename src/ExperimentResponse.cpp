@@ -93,16 +93,9 @@ void ExperimentResponse::set_full_covariance(std::vector<RealMatrix> &matrices,
   //expDataCovariance.print_cov();
 }
 
-Real ExperimentResponse::get_scalar_covariance(const int this_response)
-{
-  RealMatrix thisCovariance;
-  //expDataCovariance.get_covariance(thisCovariance);
 
-  // TODO: inquire about the proper return (SCALAR?) value
-  //return thisCovariance[0][0];
-  // BUT, in the meantime, properly satisfy the interface (return a Real)
-  return 0;
-}
+const ExperimentCovariance& ExperimentResponse::experiment_covariance() const
+{  return expDataCovariance; }
  
 Real ExperimentResponse::apply_covariance(const RealVector &residual) const
 {

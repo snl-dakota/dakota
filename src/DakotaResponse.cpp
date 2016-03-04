@@ -1729,17 +1729,18 @@ void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
   }
 }
 
-Real Response::get_scalar_covariance(const int this_response)
+
+const ExperimentCovariance& Response::experiment_covariance() const
 {
   if (responseRep)
-    return responseRep->get_scalar_covariance(this_response);
+    return responseRep->experiment_covariance();
   else {
-    Cerr << "\nError: get_scalar_covariance() not defined for this response "
+    Cerr << "\nError: experiment_covariance() not defined for this response "
          << std::endl;
     abort_handler(-1);
-    return 0;
   }
 }
+
 
 Real Response::apply_covariance(const RealVector &residual) const
 {

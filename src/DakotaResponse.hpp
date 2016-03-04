@@ -280,8 +280,8 @@ public:
  
   /// method to set the covariance matrix defined for ExperimentResponse
   virtual void set_scalar_covariance(RealVector& scalars);
-  /// method to get the covariance matrix defined for ExperimentResponse
-  virtual Real get_scalar_covariance(const int this_response);
+  /// retrieve the ExperimentCovariance structure
+  virtual const ExperimentCovariance& experiment_covariance() const;
   /// method to set the full covariance matrices for ExperimentResponse
   virtual void set_full_covariance(std::vector<RealMatrix> &matrices, 
                            std::vector<RealVector> &diagonals,

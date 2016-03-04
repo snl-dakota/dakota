@@ -460,6 +460,16 @@ void NonDQUESOBayesCalibration::compute_statistics()
   // BMA: temporary output until credible/prediction intervals are implemented
   if (outputLevel >= DEBUG_OUTPUT) {
     std::ofstream interval_stream("dakota_mcmc_intervals.dat");
+    // observation covariance for computing prediction intervals, on a
+    // per-experiment basis
+    if (calibrationData && expData.variance_active()) {
+      RealVectorArray std_deviations;
+      expData.cov_std_deviation(std_deviations);
+      interval_stream << "Standard deviations\n" << std_deviations << '\n';
+      RealSymMatrixArray correl_matrices;
+      expData.cov_as_correlation(correl_matrices);
+      interval_stream << "Correlations\n" << correl_matrices << '\n';
+    }
     interval_stream << "Accepted variables\n" << acceptanceChain << '\n';
     interval_stream << "Accepted functions\n" << acceptedFnVals << '\n';
   }
