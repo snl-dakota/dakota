@@ -88,8 +88,25 @@ variables,
 # normal_uncertain = 15               #s10,#p10
 #   means = 15*0.                     #s10,#p10
 #   std_deviations = 15*1.            #s10,#p10
-# discrete_state_set string 1         #s10,#p10
-#   set_values = "exponential"        #s10,#p10
+# discrete_state_set                  #s10,#p10
+#   integer = 1                       #s10,#p10
+#     initial_state = 20              #s10,#p10
+#     set_values = 20                 #s10,#p10
+#     descriptors = 'mesh_size'       #s10,#p10
+#   real = 4                          #s10,#p10
+#     elements_per_variable = 2 2 1 1                                           #s10,#p10
+#     set_values = 0.1 1                                                        #s10,#p10
+#                  0.5 4                                                        #s10,#p10
+#                  1                                                            #s10,#p10
+#                  0.2                                                          #s10,#p10
+#     descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length' #s10,#p10
+#     initial_state = 0.1 0.5 1 0.2                                             #s10,#p10
+#   string = 2                                                                  #s10,#p10
+#     elements_per_variable = 2 2                                               #s10,#p10
+#     initial_state = 'exponential' 'on'                                        #s10,#p10
+#     set_values = 'cosine' 'exponential'                                       #s10,#p10
+#                  'off' 'on'                                                   #s10,#p10
+#     descriptors = 'kernel_type' 'positivity'                                  #s10,#p10
 # uniform_uncertain = 100             #s18,#p17
 #   lower_bounds = 100*0.2            #s18,#p17
 #   upper_bounds = 100*0.7            #s18,#p17

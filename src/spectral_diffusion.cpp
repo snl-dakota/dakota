@@ -122,9 +122,11 @@ void chebyshev_derivative_matrix(int order, RealMatrix &derivative_matrix,
   // derivative matrix I return will be the negative of the matlab version
 }
 
-SpectralDiffusionModel::SpectralDiffusionModel() : order_(0),numQOI_(1), kernel_("") {};
+SpectralDiffusionModel::
+SpectralDiffusionModel() : order_(0), numQOI_(1), kernel_(""), positivity_(true),
+                           p_(1.0), L_(1.0), fieldMean_(1.0), fieldStdDev_(1.0) {};
 
-SpectralDiffusionModel::~SpectralDiffusionModel(){};
+SpectralDiffusionModel::~SpectralDiffusionModel() {};
 
 void SpectralDiffusionModel::
 initialize( int order, String kernel, const RealVector &bndry_conds,
@@ -167,15 +169,13 @@ initialize( int order, String kernel, const RealVector &bndry_conds,
   // Get kernel specification String
   kernel_ = kernel;
   if (kernel_ == "exponential") {
-    Real field_mean = 0.1, field_std_dev = 0.5;
     int num_mesh_points =collocationPoints_.numCols();
 
     // Form correlation matrix:
-    Real beta = 0.2;
     RealMatrix Corr(num_mesh_points,num_mesh_points);
     for (int i = 0; i < num_mesh_points; i++) {
       for (int j = 0; j < num_mesh_points; j++) {
-        Corr(i,j) = std::exp(-std::abs(collocationPoints_(0,i) - collocationPoints_(0,j))/beta);
+        Corr(i,j) = std::exp(-std::pow(std::abs(collocationPoints_(0,i) - collocationPoints_(0,j))/L_,p_));
       }
     }
 
@@ -302,18 +302,19 @@ diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
   diffusivity.size( num_mesh_points ); // initialize to zero
 
   if (kernel_ == "exponential") {
-    Real field_offset = 0.1, field_std_dev = 0.5;
-
     for (int d=0; d<num_stoch_dims; d++) {
       for (int i=0; i<num_mesh_points; i++) {
         diffusivity[i] += singularValues_[d]*leftSingularVectors_(i,d)*sample[d];
       }
     }
-    for (int i=0; i<num_mesh_points; i++)
-      diffusivity[i] = std::exp(diffusivity[i] * field_std_dev) + field_offset;
+    for (int i=0; i<num_mesh_points; i++) {
+      if (positivity_)
+        diffusivity[i] = std::exp(diffusivity[i] * fieldStdDev_) + fieldMean_;
+      else
+        diffusivity[i] = diffusivity[i] * fieldStdDev_ + fieldMean_;
+    }
   }
-  else {
-    Real field_mean = 1., field_std_dev = 4.;
+  else if (kernel_ == "cosine" || kernel_ == "default") {
     for (int d=0; d<num_stoch_dims; d++) {
       Real dPI = PI*(Real)(d+1);
       for (int i=0; i<num_mesh_points; i++) {
@@ -321,7 +322,11 @@ diffusivity_function( const RealVector &sample, const RealMatrix &mesh_points,
       }
     }
     for (int i=0; i<num_mesh_points; i++)
-      diffusivity[i] = diffusivity[i] * field_std_dev + field_mean;
+      diffusivity[i] = diffusivity[i] * fieldStdDev_ + fieldMean_;
+  }
+  else {
+    std::string msg = "diffusivity_function(): unknown kernel";
+    throw(std::runtime_error(msg));
   }
 };
   

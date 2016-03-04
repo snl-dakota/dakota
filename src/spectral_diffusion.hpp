@@ -16,6 +16,12 @@ private:
   int order_;
   int numQOI_;
   String kernel_;
+  bool positivity_;
+  Real p_;
+  Real L_;
+  Real fieldMean_;
+  Real fieldStdDev_;
+
   RealVector singularValues_;
   RealMatrix leftSingularVectors_;
   RealVector boundaryConditions_;
@@ -62,7 +68,17 @@ public:
   
   virtual void forcing_function( const RealVector &sample, 
 				 const RealMatrix &mesh_points,
-				 RealVector &result) const;  
+				 RealVector &result) const;
+
+  void set_positivity( bool positivity ) { positivity_ = positivity;};
+
+  void set_kernel_order( Real p ) { p_ = p;};
+
+  void set_kernel_length( Real L ) { L_ = L;};
+
+  void set_field_mean( Real field_mean ) { fieldMean_ = field_mean;};
+
+  void set_field_std_dev( Real field_std_dev ) { fieldStdDev_ = field_std_dev;};
 
   void set_num_qoi( int num_qoi );
 

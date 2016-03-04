@@ -1532,46 +1532,86 @@ int TestDriverInterface::steady_state_diffusion_1d()
     abort_handler(INTERFACE_ERROR);
   }
 
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
   // Get the mesh resolution from the first discrete integer variable
-  int order = ( numADIV ) ? xDI[0] : 20;
+  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  int order = ( mesh_size_index == _NPOS ) ? 20 : xDI[mesh_size_index];
 
   if (order % 2 != 0) {
-    Cerr << "Error: Mesh order must be even." << std::endl;
+    Cerr << "Error: Mesh size must be even." << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
-  // Get the kernel specification from the first discrete string variable
-  String kernel = ( numADSV ) ? xDS[0] : "default";
+  // Get the kernel specification from the discrete string variables
+  size_t kernel_index = find_index(xDSLabels, "kernel_type");
+  String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
+
+  // Get the positivity flag from the discrete string variables
+  size_t pos_index = find_index(xDSLabels, "positivity");
+  String pos_string = ( pos_index == _NPOS ) ? "on" : xDS[pos_index];
+  bool positivity = ( pos_string == "on" );
+
+  // Get the field mean from the discrete real variables
+  size_t mean_index = find_index(xDRLabels, "field_mean");
+  Real field_mean = ( mean_index == _NPOS ) ? 1.0 : xDR[mean_index];
+
+  // Get the field mean from the discrete real variables
+  size_t std_dev_index = find_index(xDRLabels, "field_std_dev");
+  Real field_std_dev = ( std_dev_index == _NPOS ) ? 1.0 : xDR[std_dev_index];
+
+  // Get the kernel order from the discrete real variables
+  size_t kern_ord_index = find_index(xDRLabels, "kernel_order");
+  Real kernel_order = ( kern_ord_index == _NPOS ) ? 1.0 : xDR[kern_ord_index];
+
+  // Get the kernel length from the discrete real variables
+  size_t kern_len_index = find_index(xDRLabels, "kernel_length");
+  Real kernel_length = ( kern_len_index == _NPOS ) ? 1.0 : xDR[kern_len_index];
+
+  // Initialize domain and boundary conditions:
+  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
+  domain_limits[1] = 1.;
+
+  // Compute default QoI coordinates:
+  RealVector qoi_coords( numFns, false );
+  if (numFns > 1) {
+    Real range = domain_limits[1]-domain_limits[0];
+    Real h = (range*0.9) / (Real)(numFns-1);
+    for (int i=0; i<numFns; i++)
+      qoi_coords[i] = domain_limits[0]+range*0.05+(Real)i*h;
+  }
+  else
+    qoi_coords[0] = (domain_limits[1]+domain_limits[0])/2.;
+
+  // If QoI coordinates provided through discrete real variables, overwrite
+  // defaults:
+  for (int i=0; i<numFns; i++) {
+    size_t coord_index = find_index(xDRLabels, "coord_" + boost::lexical_cast<String>(i));
+    if ( coord_index != _NPOS )
+      qoi_coords[i] = xDR[coord_index];
+  }
 
   // ------------------------------------------------------------- //
   // Initialize and evaluate model 
   // ------------------------------------------------------------- //
-  RealVector bndry_conds(2), domain_limits(2); // initialize to zero
-  domain_limits[1] = 1.;
-
-  // Get QoI coordinates:
-  RealVector qoi_coords( numFns, false );
-  if (numADRV == numFns) {
-    for (int i=0; i<numFns; i++)
-      qoi_coords[i] = xDR[i];
-  }
-  else {
-    if (numFns > 1) {
-      Real range = domain_limits[1]-domain_limits[0];
-      Real h = (range*0.9) / (Real)(numFns-1);
-      for (int i=0; i<numFns; i++)
-        qoi_coords[i] = domain_limits[0]+range*0.05+(Real)i*h;
-    }
-    else
-      qoi_coords[0] = (domain_limits[1]+domain_limits[0])/2.;
-  }
 
   SpectralDiffusionModel model;
-  model.initialize( order, kernel, bndry_conds, domain_limits );
   model.set_num_qoi( numFns );
   model.set_qoi_coords( qoi_coords );
+  model.set_field_mean( field_mean );
+  model.set_field_std_dev( field_std_dev );
+
+  // These are ignored if kernel is not exponential
+  model.set_positivity( positivity );
+  model.set_kernel_order( kernel_order );
+  model.set_kernel_length( kernel_length );
+
+  model.initialize( order, kernel, bndry_conds, domain_limits );
   
   model.evaluate( xC, fnVals ); 
+
   return  0;
 }
 
