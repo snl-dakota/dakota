@@ -66,7 +66,9 @@ public:
   ~ExperimentResponse();
 
   void set_scalar_covariance(RealVector& scalars);
-  Real get_scalar_covariance(const int this_response);
+
+  const ExperimentCovariance& experiment_covariance() const;
+
   void set_full_covariance(std::vector<RealMatrix> &matrices,
                            std::vector<RealVector> &diagonals,
                            RealVector &scalars,

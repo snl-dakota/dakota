@@ -26,7 +26,7 @@ model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
 	simulation
-	  solution_level_control = 'dssiv_1'
+	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic cost growth
 #   cos64 -> exp16: 64x for 4^3, 10x assumed for kernel
 #   cos64 -> cos4:  4096x for 16^3
@@ -37,7 +37,7 @@ model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
-	  solution_level_control = 'dssiv_1'
+	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 4096. # MLMC cost for cosine64
 
 variables,
@@ -49,14 +49,27 @@ variables,
 # LF = exp16 case tests different model forms
 # LF = cos4 case tests the extreme values of the discretization levels 
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-	    initial_state = 16	  	     	 #s0,#s1
+	    initial_state = 16	  	 #s0,#s1
 	    set_values = 16	     	 	 #s0,#s1
-#	    initial_state = 4	  	     	 #s2,#s3
+#	    initial_state = 4	  	   #s2,#s3
 #	    set_values = 4	     	 	 #s2,#s3
-	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
-	    initial_state = 'exponential'	 #s0,#s1
-#	    initial_state = 'cosine'	 	 #s2,#s3
-            set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
+      descriptors = 'mesh_size'
+    real = 4
+      elements_per_variable = 2 2 1 1
+      set_values = 0.1 1 # field mean
+                   0.5 4 # field std dev
+                   1     # kernel order
+                   0.2   # kernel length
+      descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      initial_state = 0.1 0.5 1 0.2	 #s0,#s1
+#     initial_state = 1 4 1 0.2  	 	 #s2,#s3
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      elements_per_variable = 2 2
+	    initial_state = 'exponential' 'on'	 #s0,#s1
+#	    initial_state = 'cosine' 'off'  	 	 #s2,#s3
+      set_values = 'cosine' 'exponential'
+                   'off' 'on'
+      descriptors = 'kernel_type' 'positivity'
 
 variables,
 	id_variables = 'HF_VARS'
@@ -66,10 +79,22 @@ variables,
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 64
-            set_values = 64
-	  string = 1  # form of kernel (refer to Yang,Lei,Baker,Lin)
-	    initial_state = 'cosine'
-            set_values = 'cosine' 'exponential' # TO DO: 'gaussian'
+      set_values = 64
+      descriptors = 'mesh_size'
+    real = 4
+      elements_per_variable = 2 2 1 1
+      set_values = 0.1 1 # field mean
+                   0.5 4 # field std dev
+                   1     # kernel order
+                   0.2   # kernel length
+      descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      set_values = 'cosine' 'exponential'
+                   'off' 'on'
+      descriptors = 'kernel_type' 'positivity'
 
 interface,
 	direct

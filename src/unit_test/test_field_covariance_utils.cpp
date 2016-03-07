@@ -533,6 +533,25 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   exact_diagonal -= diagonal;
   BOOST_CHECK( exact_diagonal.normInf() < 
 	       10.*std::numeric_limits<double>::epsilon() );
+
+  // Test conversion to correlation matrix
+  // Matlab for correlation matrix
+  // std_dev = sqrt(diag(B)); correl_mat = diag(1./std_dev)*B*diag(1./std_dev);
+  RealSymMatrix exact_correl(9);
+  for (int i=0; i<9; ++i)
+    exact_correl(i,i) = 1.0;
+  // update off-diagonal entries for the full matrix block
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<i; ++j)
+      exact_correl(4+i,4+j) = matrices[0](i,j) / 
+        std::sqrt(matrices[0](i,i)) / std::sqrt(matrices[0](j,j));
+
+  RealSymMatrix calc_correl;
+  exper_cov.as_correlation(calc_correl);
+
+  calc_correl -= exact_correl;
+  BOOST_CHECK( calc_correl.normInf() < 
+               10.*std::numeric_limits<double>::epsilon() );
 }
 
 void test_linear_interpolate_1d_no_extrapolation()

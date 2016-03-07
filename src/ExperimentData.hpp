@@ -167,6 +167,14 @@ public:
   /// experimental covariance matrix
   void get_main_diagonal( RealVector &diagonal, size_t experiment ) const;
 
+  /// get the standard deviation of the observation error process, one
+  /// vector per experiment
+  void cov_std_deviation(RealVectorArray& std_deviation) const;
+
+  /// get the observation error covariance as a correlation matrix, one
+  /// vector per experiment
+  void cov_as_correlation(RealSymMatrixArray& corr_matrix) const;
+
   /// form residuals for all experiments, interpolating if necessary 
   void form_residuals(const Response& sim_resp, Response& residual_resp) const;
     

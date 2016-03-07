@@ -819,6 +819,27 @@ get_main_diagonal(RealVector &diagonal, size_t experiment ) const
     allExperiments[experiment].get_covariance_diagonal( diagonal );
 }
 
+void ExperimentData::cov_std_deviation(RealVectorArray& std_deviations) const
+{
+  std_deviations.resize(numExperiments);
+  for (size_t exp_ind=0; exp_ind<numExperiments; ++exp_ind) {
+    RealVector& sd_vec = std_deviations[exp_ind];
+    allExperiments[exp_ind].experiment_covariance().get_main_diagonal(sd_vec);
+    for (size_t i=0; i<sd_vec.length(); ++i)
+      sd_vec[i] = std::sqrt(sd_vec[i]);
+  }
+}
+
+void ExperimentData::cov_as_correlation(RealSymMatrixArray& corr_matrices) const
+{
+  corr_matrices.resize(numExperiments);
+  for (size_t exp_ind=0; exp_ind<numExperiments; ++exp_ind) {
+    const ExperimentCovariance& exp_cov = 
+      allExperiments[exp_ind].experiment_covariance();
+    exp_cov.as_correlation(corr_matrices[exp_ind]);
+  }
+}
+
 
 /** This assumes the souce gradient/Hessian are size less or equal to
     the destination response, and that the leading part is to be populated. */

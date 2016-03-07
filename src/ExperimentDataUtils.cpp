@@ -476,6 +476,24 @@ void CovarianceMatrix::get_main_diagonal( RealVector &diagonal ) const {
   }
 }
 
+void CovarianceMatrix::as_correlation(RealSymMatrix& corr_mat) const
+{
+  corr_mat = 0.0;
+  if (covIsDiagonal_) {
+    for (int i=0; i<num_dof(); ++i)
+      corr_mat(i, i) = 1.0;
+  } 
+  else {
+    for (int i=0; i<num_dof(); ++i) {
+      corr_mat(i, i) = 1.0;
+      for (int j=0; j<i; ++j)
+        corr_mat(i,j) = covMatrix_(i,j) / std::sqrt(covMatrix_(i,i)) / 
+          std::sqrt(covMatrix_(j,j));
+    }
+  }
+}
+
+
 Real CovarianceMatrix::determinant() const
 {
   Real det = 1.0;
@@ -669,6 +687,19 @@ void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
     RealVector sub_diagonal( Teuchos::View, diagonal.values()+global_row_num,
 			     covMatrices_[i].num_dof() );
       covMatrices_[i].get_main_diagonal( sub_diagonal );
+    global_row_num += covMatrices_[i].num_dof();
+  }
+}
+
+
+void ExperimentCovariance::as_correlation(RealSymMatrix& corr_mat) const
+{
+  corr_mat.shape(num_dof());
+  int global_row_num = 0;
+  for (int i=0; i<covMatrices_.size(); ++i) {
+    RealSymMatrix sub_matrix(Teuchos::View, corr_mat, covMatrices_[i].num_dof(), 
+                             global_row_num);
+    covMatrices_[i].as_correlation(sub_matrix);
     global_row_num += covMatrices_[i].num_dof();
   }
 }
