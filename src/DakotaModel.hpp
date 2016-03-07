@@ -131,16 +131,32 @@ public:
   /// models and truth_model() in surrogate models; used for a directed
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
-  /// set the active approximation sub-model in surrogate models
-  virtual void surrogate_model(size_t lf_model_index,
-			       size_t lf_soln_lev_index = _NPOS);
+
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
-  /// set the active truth sub-model in surrogate models
-  virtual void truth_model(size_t hf_model_index,
-			   size_t hf_soln_lev_index = _NPOS);
+  /// set the indices that define the active approximation sub-model
+  /// within surrogate models
+  virtual void surrogate_model_indices(size_t lf_model_index,
+				       size_t lf_soln_lev_index = _NPOS);
+  /// set the index pair that defines the active approximation sub-model
+  /// within surrogate models
+  virtual void surrogate_model_indices(const SizetSizetPair& lf_form_level);
+  /// return the indices of the active approximation sub-model within
+  /// surrogate models
+  virtual const SizetSizetPair& surrogate_model_indices() const;
+
   /// return the active truth sub-model in surrogate models
   virtual Model& truth_model();
+  /// set the indices that define the active truth sub-model within
+  /// surrogate models
+  virtual void truth_model_indices(size_t hf_model_index,
+				   size_t hf_soln_lev_index = _NPOS);
+  /// set the index pair that defines the active truth sub-model within
+  /// surrogate models
+  virtual void truth_model_indices(const SizetSizetPair& hf_form_level);
+  /// return the indices of the active truth sub-model within surrogate models
+  virtual const SizetSizetPair& truth_model_indices() const;
+
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
   /// propagate vars/labels/bounds/targets from the bottom up

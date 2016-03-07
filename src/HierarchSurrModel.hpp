@@ -70,13 +70,24 @@ protected:
 
   /// return the active low fidelity model
   Model& surrogate_model();
-  /// set the active low fidelity model
-  void surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index = _NPOS);
+  /// set the indices identifying the active low fidelity model
+  void surrogate_model_indices(size_t lf_model_index,
+			       size_t lf_soln_lev_index = _NPOS);
+  /// set the index pair identifying the active low fidelity model
+  void surrogate_model_indices(const SizetSizetPair& lf_form_level);
+  /// return the indices identifying the active low fidelity model
+  const SizetSizetPair& surrogate_model_indices() const;
+
   /// return the active high fidelity model
   Model& truth_model();
-  /// set the active high fidelity model
-  void truth_model(size_t lf_model_index, size_t lf_soln_lev_index = _NPOS);
-  
+  /// set the indices identifying the active high fidelity model
+  void truth_model_indices(size_t hf_model_index,
+			   size_t hf_soln_lev_index = _NPOS);
+  /// set the index pair identifying the active high fidelity model
+  void truth_model_indices(const SizetSizetPair& hf_form_level);
+  /// return the indices identifying the active high fidelity model
+  const SizetSizetPair& truth_model_indices() const;
+
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
 
@@ -233,15 +244,14 @@ inline Model& HierarchSurrModel::surrogate_model()
 
 
 inline void HierarchSurrModel::
-surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index)
+surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 {
-  lowFidelityIndices.first = lf_model_index;
+  lowFidelityIndices.first  = lf_model_index;
+  lowFidelityIndices.second = lf_soln_lev_index; // including _NPOS default
   sameModelForm = (lf_model_index == highFidelityIndices.first);
 
-  if (lf_soln_lev_index != _NPOS) {  
-    lowFidelityIndices.second = lf_soln_lev_index;
+  if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
-  }
 
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
@@ -249,21 +259,58 @@ surrogate_model(size_t lf_model_index, size_t lf_soln_lev_index)
 }
 
 
+inline void HierarchSurrModel::
+surrogate_model_indices(const SizetSizetPair& lf_form_level)
+{
+  lowFidelityIndices = lf_form_level;
+  size_t lf_model_index = lf_form_level.first,
+      lf_soln_lev_index = lf_form_level.second;
+  sameModelForm = (lf_model_index == highFidelityIndices.first);
+
+  if (lf_soln_lev_index != _NPOS)
+    orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+
+  // TO DO:
+  //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
+  //deltaCorr.clear();
+}
+
+
+inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
+{ return lowFidelityIndices; }
+
+
 inline Model& HierarchSurrModel::truth_model()
 { return orderedModels[highFidelityIndices.first]; }
 
 
 inline void HierarchSurrModel::
-truth_model(size_t hf_model_index, size_t hf_soln_lev_index)
+truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
 {
-  highFidelityIndices.first = hf_model_index;
+  highFidelityIndices.first  = hf_model_index;
+  highFidelityIndices.second = hf_soln_lev_index; // including _NPOS default
   sameModelForm = (hf_model_index == lowFidelityIndices.first);
 
-  if (hf_soln_lev_index != _NPOS) {
-    highFidelityIndices.second = hf_soln_lev_index;
+  if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
-  }
 }
+
+
+inline void HierarchSurrModel::
+truth_model_indices(const SizetSizetPair& hf_form_level)
+{
+  highFidelityIndices = hf_form_level;
+  size_t hf_model_index = hf_form_level.first,
+      hf_soln_lev_index = hf_form_level.second;
+  sameModelForm = (hf_model_index == lowFidelityIndices.first);
+
+  if (hf_soln_lev_index != _NPOS)
+    orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+}
+
+
+inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
+{ return highFidelityIndices; }
 
 
 inline void HierarchSurrModel::
