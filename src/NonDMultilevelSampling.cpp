@@ -155,9 +155,10 @@ void NonDMultilevelSampling::core_run()
 
   // TO DO: this initial logic is limiting:
   // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultilevelSampling
+  // > separate method specs that both map to NonDMultilevelSampling ???
   if (num_mf > 1) {
-    if (iteratedModel.surrogate_model().solution_levels() > 1) {
+    size_t num_lf_lev = NLev[0].size();
+    if (num_lf_lev > 1 && NLev[1].size() == num_lf_lev) {
       // multiple model forms and multiple solutions levels --> ML-CV-MC
       multilevel_control_variate_mc(model_form, model_form+1);
     }
