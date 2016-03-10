@@ -66,24 +66,66 @@ private:
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form
   void multilevel_mc(size_t model_form);
+  /// Perform control variate Monte Carlo across two model forms, as a
+  /// complete UQ workflow execution
+  void control_variate_mc(const SizetSizetPair& lf_form_level,
+			  const SizetSizetPair& hf_form_level);
+  /// Perform control variate Monte Carlo across two model forms for given
+  /// LF/HF samples, as a helper iteration within a higher level context
+  void control_variate_mc(const SizetSizetPair& lf_form_level,
+			  const SizetSizetPair& hf_form_level,
+			  size_t shared_samples);
+  /// Perform multilevel Monte Carlo across levels in combination with
+  /// control variate Monte Carlo across model forms at each level
+  void multilevel_control_variate_mc(size_t lf_model_form,
+				     size_t hf_model_form);
 
-  /// Perform control variate Monte Carlo across two model forms for a
-  /// particular discretization level
-  void control_variate_mc(size_t lf_model_form, size_t hf_model_form,
-			  size_t soln_level);
-  /// update running sums (sum_L, sum_H, and sum_LH) from (matched) set
-  /// of LF and HF evaluations
+  /// perform a shared increment of LF and HF samples for purposes of
+  /// computing/updating the evaluation ratio and the MSE ratio
+  void shared_increment(size_t iter);
+  /// perform final LF sample increment as indicated by the evaluation ratio
+  void lf_increment(Real avg_eval_ratio);
+
+  /// initialize the levels that are tracked for sums, means,
+  /// variances, and covariances
+  void initialize_sums_moments(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
+			       IntRealVectorMap& sum_LH,
+			       IntRealVectorMap& mean_L,
+			       IntRealVectorMap& mean_H,
+			       IntRealVectorMap& var_L,
+			       IntRealVectorMap& covar_LH);
+
+  /// update running sums for two models (sum_L, sum_H, and sum_LH)
+  /// from set of low/high fidelity model evaluations within allResponses
   void accumulate_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
 		       IntRealVectorMap& sum_LH);
+  /// update running sums for one model (sum_map) up to order max_ord
+  /// using set of model evaluations within allResponses
+  void accumulate_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
+
+
+  /// update higher-order means, variances, and covariances from sums
+  void update_high_order_stats(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
+			       IntRealVectorMap& sum_LH,
+			       IntRealVectorMap& mean_L,
+			       IntRealVectorMap& mean_H,
+			       IntRealVectorMap& var_L,
+			       IntRealVectorMap& covar_LH);
+  
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
-		  const IntRealVectorMap& sum_LH, size_t total_N,
-		  Real cost_ratio, RealVector& mean_L, RealVector& mean_H,
-		  RealVector& var_L, RealVector& var_H, RealVector& covar_LH,
-		  RealVector& rho2_LH);
+		  const IntRealVectorMap& sum_LH, Real cost_ratio,
+		  RealVector& mean_L, RealVector& mean_H, RealVector& var_L,
+		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
-		 const RealVector& rho2_LH, size_t N_hf, size_t iter);
+		 const RealVector& rho2_LH, size_t iter);
+
+  /// compute control variate parameter and estimate raw moments
+  void cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
+		      IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
+		      IntRealVectorMap& covar_LH, const RealVector& rho2_LH,
+		      Real cost_ratio,            RealMatrix& H_raw_mom);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -94,8 +136,13 @@ private:
   //- Heading: Data
   //
 
-  /// number of pilot samples to perform per level, to initialize the iteration
-  SizetArray pilotSamples;
+  /// total number of samples performed per model form, per discretization
+  /// level, or both
+  Sizet2DArray NLev;
+  /// increment in number of samples required for each model form,
+  /// discretization level, or both
+  Sizet2DArray deltaNLev;
+  
   /// mean squared error of mean estimator from pilot sample MC on HF model
   RealVector mcMSEIter0;
   /// equivalent number of high fidelity evaluations accumulated using samples
