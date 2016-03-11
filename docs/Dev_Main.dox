@@ -246,10 +246,6 @@ optimization (\ref Dakota::NonDLocalInterval "NonDLocalInterval").
 Each of these three has specializations for single interval and
 Dempster-Shafer Theory of Evidence approaches.  
 
-<li> Experimental: \ref Dakota::EfficientSubspaceMethod
-"EfficientSubspaceMethod" implements a prototype input-space dimension
-reduction method for UQ.
-
 </ul>
 
 <li> Parameter studies and design of experiments: 

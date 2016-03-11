@@ -25,7 +25,7 @@ NonDLocalReliability:
   la.SYEV('N', A.UPLO(), num_kappa, A.values(), A.stride(), kappa_u.values(),
           work, lwork, &info);
 
-EfficientSubspace
+ActiveSubspaceModel
   teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m, 
   		    mu_x.values(), incx, beta, mu_xi.values(), incy);
 

@@ -103,9 +103,6 @@
 #ifdef HAVE_ADAPTIVE_SAMPLING 
 #include "NonDAdaptiveSampling.hpp"
 #endif
-#ifdef HAVE_ESM
-#include "EfficientSubspaceMethod.hpp"
-#endif
 #include "OptDartsOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -423,10 +420,6 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDLHSSampling(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return new NonDMultilevelSampling(problem_db, model); break;
-#ifdef HAVE_ESM 
-  case EFFICIENT_SUBSPACE:
-    return new EfficientSubspaceMethod(problem_db, model);  break;
-#endif
   case SURROGATE_BASED_LOCAL:
     return new SurrBasedLocalMinimizer(problem_db, model);  break;
   case SURROGATE_BASED_GLOBAL:
