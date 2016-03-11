@@ -86,23 +86,31 @@ private:
   /// perform final LF sample increment as indicated by the evaluation ratio
   void lf_increment(Real avg_eval_ratio);
 
-  /// initialize the levels that are tracked for sums, means,
-  /// variances, and covariances
-  void initialize_sums_moments(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
-			       IntRealVectorMap& sum_LH,
-			       IntRealVectorMap& mean_L,
-			       IntRealVectorMap& mean_H,
-			       IntRealVectorMap& var_L,
-			       IntRealVectorMap& covar_LH);
+  /// initialize the CV bookkeeping for sums, means, variances, and
+  /// covariances across fidelity levels
+  void initialize_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
+			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t num_lev);
+  /// initialize the CV bookkeeping for sums, means, variances, and
+  /// covariances across fidelity levels
+  void initialize_cv_sums_moments(IntRealVectorMap& sum_L,
+				  IntRealVectorMap& sum_H,
+				  IntRealVectorMap& sum_LH,
+				  IntRealVectorMap& mean_L,
+				  IntRealVectorMap& mean_H,
+				  IntRealVectorMap& var_L,
+				  IntRealVectorMap& covar_LH);
 
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
-  void accumulate_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
-		       IntRealVectorMap& sum_LH);
+  void accumulate_cv_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
+			  IntRealVectorMap& sum_LH);
   /// update running sums for one model (sum_map) up to order max_ord
   /// using set of model evaluations within allResponses
-  void accumulate_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
-
+  void accumulate_cv_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
+			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev);
 
   /// update higher-order means, variances, and covariances from sums
   void update_high_order_stats(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
