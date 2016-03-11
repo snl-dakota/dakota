@@ -6979,7 +6979,6 @@ static Method_mp_utype
 	MP2s(methodName,NLSSOL_SQP),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
-	MP2s(methodName,EFFICIENT_SUBSPACE),
 	MP2s(methodName,GENIE_DIRECT),
 	MP2s(methodName,GENIE_OPT_DARTS),
         MP2s(methodName,GPAIS),

@@ -1872,15 +1872,6 @@
 		    </keyword>
 		  </keyword>
 		</keyword>
-		<keyword  id="efficient_subspace" name="efficient_subspace" code="{N_mdm(utype,methodName_EFFICIENT_SUBSPACE)}" label="efficient_subspace" help="" minOccurs="1" group="Uncertainty Quantification" >
-		  <alias name="nond_efficient_subspace"/>
-		  <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='method-dependent'>
-		    <param type='INTEGER' />
-		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
-		  </keyword>
-		</keyword>
 		<!-- BMA TODO: not clear what the right samples spec is for evidence -->
 		<keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_global_evidence"/>
