@@ -94,6 +94,12 @@ protected:
   /// compute chain statistics for final MCMC chain
   void compute_statistics();
 
+  /// compute credibility and prediction intervals of final MCMC chain
+  void compute_intervals();
+  /// compute mean and standard devations of fn vals of final MCMC chain
+  void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+  void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs);
+
   /// export the acceptance chain in user space
   void export_chain(size_t update_cntr);
 
@@ -286,6 +292,7 @@ private:
   RealVectorArray prevCoeffs;
   /// store MAP estimate for warm-starting pre-solves
   RealVector mapSoln;
+  
 };
 
 } // namespace Dakota

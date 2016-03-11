@@ -40,8 +40,10 @@
 #include "queso/JointPdf.h"
 #include "queso/VectorRV.h"
 
-static const char rcsId[]="@(#) $Id$";
+#include "LHSDriver.hpp"
+#include "algorithm"
 
+static const char rcsId[]="@(#) $Id$";
 
 namespace Dakota {
 
@@ -459,22 +461,185 @@ void NonDQUESOBayesCalibration::compute_statistics()
 
   // BMA: temporary output until credible/prediction intervals are implemented
   if (outputLevel >= DEBUG_OUTPUT) {
-    std::ofstream interval_stream("dakota_mcmc_intervals.dat");
-    // observation covariance for computing prediction intervals, on a
-    // per-experiment basis
-    if (calibrationData && expData.variance_active()) {
-      RealVectorArray std_deviations;
-      expData.cov_std_deviation(std_deviations);
-      interval_stream << "Standard deviations\n" << std_deviations << '\n';
-      RealSymMatrixArray correl_matrices;
-      expData.cov_as_correlation(correl_matrices);
-      interval_stream << "Correlations\n" << correl_matrices << '\n';
-    }
-    interval_stream << "Accepted variables\n" << acceptanceChain << '\n';
-    interval_stream << "Accepted functions\n" << acceptedFnVals << '\n';
+    compute_intervals();
   }
 }
 
+void NonDQUESOBayesCalibration::compute_intervals()
+{
+  if (outputLevel >= DEBUG_OUTPUT) {
+    /*KAM TODO: Currently can only be used when numFunctions = number of residuals 
+     * used for calibration, and when the output functions are calculated
+     * on the same abscissas as those for the residuals 
+     */
+    std::ofstream out_stream("dakota_mcmc_CredPredIntervals.dat");
+    std::ofstream interval_stream("dakota_mcmc_intervals.dat");
+  
+    RealVectorArray std_deviations;
+    RealSymMatrixArray correl_matrices;
+    if (calibrationData && expData.variance_active()) {
+      expData.cov_std_deviation(std_deviations);
+      interval_stream << "Standard deviations\n" << std_deviations << '\n';
+      expData.cov_as_correlation(correl_matrices);
+      interval_stream << "Correlations\n" << correl_matrices << '\n';
+    } 
+
+    interval_stream << "Accepted variables\n" << acceptanceChain << '\n';
+    interval_stream << "Accepted functions\n" << acceptedFnVals << '\n';
+   
+    /*filter acceptanceChain
+    Default take every 10 samples
+    */
+    //out_stream << "Num Functions = "<< numFunctions << '\n';
+    int num_skip = 10;
+    int burnin = 10;
+    int num_samples = acceptanceChain.numCols();
+    int num_filtered = int((num_samples-burnin)/num_skip);
+    RealMatrix filteredFnVals_for_intervals;
+    filteredFnVals_for_intervals.shapeUninitialized(numFunctions, num_filtered);
+    int j = 0;
+    for (int i = burnin; i <num_samples; ++i){
+      if (i % num_skip == 0){
+        const RealVector& col_vec = Teuchos::getCol(Teuchos::View, acceptedFnVals, i);
+        Teuchos::setCol(col_vec, j, filteredFnVals_for_intervals);
+        j++;
+        }
+    }
+    // Make accepted function values the rows instead of the columns
+    RealMatrix filteredFnVals_transpose(filteredFnVals_for_intervals, Teuchos::TRANS);
+    //out_stream << filteredFnVals_for_intervals << '\n';
+  
+    // Calculate +/- 2sigma Credibility Intervals
+    RealVector Fn_ave(numFunctions), Fn_stdevs(numFunctions),
+	     Cred_interval_minima(numFunctions), Cred_interval_maxima(numFunctions);
+    compute_col_means(filteredFnVals_transpose, Fn_ave); 
+    compute_col_stdevs(filteredFnVals_transpose, Fn_ave, Fn_stdevs);
+    out_stream << "Function aves = " <<Fn_ave << '\n';
+    out_stream << "Function st devs = " <<Fn_stdevs << '\n';
+    out_stream << "Credibility Intervals\n";
+    for(int i=0; i<numFunctions; ++i){
+      Cred_interval_minima[i] = Fn_ave[i] - 2*Fn_stdevs[i];
+      Cred_interval_maxima[i] = Fn_ave[i] + 2*Fn_stdevs[i];
+      out_stream << Cred_interval_minima[i] << ", " << Cred_interval_maxima[i] << '\n';
+    }    
+    out_stream << "\n";
+
+    // Calculate Prediction Intervals
+    int num_exp = expData.num_experiments();
+    int num_concatenated = num_exp*num_filtered;
+    RealMatrix PredVals;
+    PredVals.shapeUninitialized(numFunctions, num_concatenated);
+    //Generate normal errors using LHS'
+    /*int num_res = residualModel.current_response().num_functions();
+    out_stream << "Num Res = " << num_res << '\n';
+    RealVector means_vec(num_res), lower_bnds(num_res),
+	                   upper_bnds(num_res);
+			   */
+    RealVector means_vec(numFunctions), lower_bnds(numFunctions),
+	                   upper_bnds(numFunctions);
+    means_vec.putScalar(0.0);
+    lower_bnds.putScalar(-DBL_MAX);
+    upper_bnds.putScalar(DBL_MAX);
+    RealMatrix lhs_normal_samples;
+    unsigned short sample_type = SUBMETHOD_LHS;
+    short sample_ranks_mode = 0; //IGNORE_RANKS
+    Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+    int n = 0;
+    for(int i = 0; i < num_exp; ++i){
+      lhsDriver.seed(randomSeed);
+      lhsDriver.initialize("lhs", sample_ranks_mode, true);
+      lhsDriver.generate_normal_samples(means_vec, std_deviations[i], lower_bnds,
+        upper_bnds, num_filtered, correl_matrices[i],lhs_normal_samples);
+      //out_stream << "size lhs = " << lhs_normal_samples.numRows() << ", " << lhs_normal_samples.numCols() << '\n';
+      for(int j = 0; j < num_filtered; ++j){
+        const RealVector& FnVal_colj = Teuchos::getCol(Teuchos::View, filteredFnVals_for_intervals, j);
+        const RealVector& lhs_colj = Teuchos::getCol(Teuchos::View, lhs_normal_samples, j);
+        RealVector col_vec(numFunctions);
+        for(int k = 0; k < numFunctions;++k){
+          col_vec[k] = FnVal_colj[k] + lhs_colj[k];		
+        }	
+        //const RealVector& col_vec = Teuchos::getCol(Teuchos::View, filteredFnVals_for_intervals, j) + Teuchos::getCol(Teuchos::View, lhs_normal_samples, j);
+        Teuchos::setCol(col_vec, n, PredVals);
+        n++; 
+      }
+    }
+    RealMatrix PredVals_transpose(PredVals, Teuchos::TRANS);
+    RealVector Pred_ave(numFunctions), Pred_stdevs(numFunctions),
+	     Pred_interval_minima(numFunctions), Pred_interval_maxima(numFunctions);
+    compute_col_means(PredVals_transpose, Pred_ave);
+    compute_col_stdevs(PredVals_transpose, Pred_ave, Pred_stdevs);
+    out_stream << "Prediction Intervals\n";
+    for(int i=0; i<numFunctions; ++i){
+      Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
+      Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
+      out_stream << Pred_interval_minima[i] << ", "<< Pred_interval_maxima[i] << '\n';
+    }
+    out_stream << "\n";
+
+    // Calculate instead by sorting and taking the 5/95 indices
+    out_stream << "Indexed Credibility Interval \n";
+    float alpha = 5;
+    int lower_index = floor(alpha/200*(num_filtered));
+    int upper_index = num_filtered - lower_index;
+    //out_stream << "lower index = "<< lower_index <<'\n';
+    //out_stream << "upper_index = "<< upper_index << '\n';
+    //out_stream << " Sorted col vec = \n";
+    for(int i =0; i < numFunctions; ++i){
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, filteredFnVals_transpose, i);
+      std::sort(col_vec.values(), col_vec.values() + num_filtered);
+      //out_stream << col_vec;
+      out_stream << col_vec[lower_index] << ", "<< col_vec[upper_index] << "\n";
+    }
+    out_stream << "\n";
+
+    out_stream << "Indexed Prediction Interval \n";
+    lower_index = floor(alpha/200*(num_concatenated));
+    upper_index = num_concatenated - lower_index;
+    for(int i =0; i < numFunctions; ++i){
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, PredVals_transpose, i);
+      std::sort(col_vec.values(), col_vec.values() + num_concatenated);
+      //out_stream << col_vec;
+      out_stream << col_vec[lower_index] << ", "<< col_vec[upper_index] << "\n";
+    }
+    out_stream << '\n';
+  }
+}
+
+void NonDQUESOBayesCalibration::
+compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+  
+  RealVector ones_vec(num_rows);
+  ones_vec.putScalar(1.0);
+ 
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
+  }
+}
+
+void NonDQUESOBayesCalibration::
+compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  std_devs.resize(num_cols);
+  //RealVector std_devs(num_rows);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
+  }
+}
 
 void NonDQUESOBayesCalibration::init_queso_environment()
 {
