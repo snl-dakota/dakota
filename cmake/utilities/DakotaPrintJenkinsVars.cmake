@@ -18,9 +18,14 @@ function (print_jenkins_vars _build_path )
     "****************************************************\n" )
 
   # Write Jenkins variables
+    # A recent Jenkins update changed BUILD_ID, which used to
+    # be the date/time when the build started. This is a 
+    # hopefully temporary work-around to get email reports
+    # and archiving working again.
+    string(TIMESTAMP BUILD_ID "%Y-%m-%d_%H-%M-%S")
     file( APPEND ${_build_path}/dakota_jenkins.out
       "BUILD_NUMBER:           $ENV{BUILD_NUMBER}\n"
-      "BUILD_ID:               $ENV{BUILD_ID}\n"
+      "BUILD_ID:               ${BUILD_ID}\n"
       "JOB_NAME:               $ENV{JOB_NAME}\n"
       "BUILD_TAG:              $ENV{BUILD_TAG}\n"
       "EXECUTOR_NUMBER:        $ENV{EXECUTOR_NUMBER}\n"
