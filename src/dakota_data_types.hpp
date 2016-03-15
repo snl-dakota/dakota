@@ -195,6 +195,8 @@ typedef RealRealPairRealMap::iterator          RRPRMIter;
 typedef RealRealPairRealMap::const_iterator    RRPRMCIter;
 typedef IntRealVectorMap::iterator             IntRVMIter;
 typedef IntRealVectorMap::const_iterator       IntRVMCIter;
+typedef IntRealMatrixMap::iterator             IntRMMIter;
+typedef IntRealMatrixMap::const_iterator       IntRMMCIter;
 typedef IntActiveSetMap::iterator              IntASMIter;
 typedef IntVariablesMap::iterator              IntVarsMIter;
 typedef IntVariablesMap::const_iterator        IntVarsMCIter;

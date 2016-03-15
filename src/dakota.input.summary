@@ -1458,26 +1458,6 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
-	( efficient_subspace ALIAS nond_efficient_subspace
-	  [ samples INTEGER ]
-	  [ seed INTEGER > 0 ]
-	  [ distribution
-	    cumulative
-	    | complementary
-	    ]
-	  [ probability_levels REALLIST
-	    [ num_probability_levels INTEGERLIST ]
-	    ]
-	  [ gen_reliability_levels REALLIST
-	    [ num_gen_reliability_levels INTEGERLIST ]
-	    ]
-	  [ rng
-	    mt19937
-	    | rnum2
-	    ]
-	  [ model_pointer STRING ]
-	  )
-	|
 	( global_evidence ALIAS nond_global_evidence
 	  [ samples INTEGER ]
 	  [ seed INTEGER > 0 ]

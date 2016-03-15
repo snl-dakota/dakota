@@ -59,7 +59,7 @@ include( RHEL6 )
 #  "/path/to/Boost/include"
 #  CACHE PATH "Use Boost installed here" FORCE)
 
-#set(BOOST_LIBRARYDIR
+  #set(BOOST_LIBRARYDIR
 #  "/path/to/Boost/lib"
 #  CACHE PATH "Use Boost installed here" FORCE)
 
@@ -73,3 +73,30 @@ include( RHEL6 )
 #set( Trilinos_DIR
 #      "/path/to/Trilinos/install"
 #      CACHE FILEPATH "Path to installed Trilinos" FORCE )
+
+##############################################################################
+##############################################################################
+##############################################################################
+
+#kmaupin's edits
+##############################################################################
+#  Set CMake compilers to compiler suite installed
+##############################################################################
+set(CMAKE_C_COMPILER /usr/local/bin/gcc-5 CACHE FILEPATH "Local gcc")
+set(CMAKE_CXX_COMPILER /usr/local/bin/g++-5 CACHE FILEPATH "Local g++")
+set(CMAKE_Fortran_COMPILER /usr/local/bin/gfortran CACHE FILEPATH "Local gfortran")
+##############################################################################
+#  Boost base directory
+##############################################################################
+set(BOOST_INCLUDEDIR
+  "/usr/local/Cellar/boost/1.60.0_1/include"
+  CACHE PATH "Use Boost installed here" FORCE)
+set(BOOST_LIBRARYDIR
+  "/usr/local/Cellar/boost/1.60.0_1/lib"
+  CACHE PATH "Use Boost installed here" FORCE)
+##############################################################################
+#  Enforce shared library build for DAKOTA and all of its TPLs
+##############################################################################
+set(BUILD_STATIC_LIBS OFF CACHE BOOL "Set to ON to build static libraries" FORCE)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Set to ON to build DSO libraries" FORCE)
+

@@ -596,12 +596,6 @@ if(HAVE_ADAPTIVE_SAMPLING)
   endif()
 endif()
 
-option(HAVE_ESM "Whether to enable efficient subspace method" ON)
-if(HAVE_ESM)
-  add_definitions("-DHAVE_ESM")
-  list(APPEND iterator_src EfficientSubspaceMethod.cpp)
-endif()
-
 # Can't do CheckPackage because queso isn't built in CMake and
 # therefore can't be in EXPORT_TARGETS.
 #CheckPackage(QUESO)
