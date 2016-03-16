@@ -973,6 +973,10 @@ public:
   RealVector hyperPriorAlphas;
   /// hyperparameters inverse gamma prior alphas
   RealVector hyperPriorBetas;
+  /// number of MCMC samples to discard from acceptance chain
+  int burnInSamples;
+  /// period or skip in post-processing the acceptance chain
+  int subSamplingPeriod;
 
   // DREAM sub-specification
 

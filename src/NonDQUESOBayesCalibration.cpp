@@ -491,8 +491,8 @@ void NonDQUESOBayesCalibration::compute_intervals()
     Default take every 10 samples
     */
     //out_stream << "Num Functions = "<< numFunctions << '\n';
-    int num_skip = 10;
-    int burnin = 10;
+    int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+    int burnin = (burnInSamples > 0) ? burnInSamples : 0;
     int num_samples = acceptanceChain.numCols();
     int num_filtered = int((num_samples-burnin)/num_skip);
     RealMatrix filteredFnVals_for_intervals;

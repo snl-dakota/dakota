@@ -2364,6 +2364,19 @@
 		  </keyword>
 		</optional>
 	      </keyword>
+
+		  <keyword  id='burn_in_samples' name='burn_in_samples' code='{N_mdm(int,burnInSamples)}' label='Burn-in samples' help='' minOccurs='0' default='0'>
+		  	<param type='INTEGER' />
+		  </keyword>
+	      <keyword  id='sub_sampling_period' name='sub_sampling_period' code='{N_mdm(int,subSamplingPeriod)}' label='Chain sampling period for statistics' help='' minOccurs='0' default='0'>
+		  	<param type='INTEGER' />
+		  </keyword>
+          <keyword  id="probability_levels1" name="probability_levels" code="{N_mdm(resplevs01,probabilityLevels)}" label="probability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
+            <param type="REALLIST" />
+            <keyword  id="num_probability_levels1" name="num_probability_levels" code="{N_mdm(num_resplevs,probabilityLevels)}" label="num_probability_levels" help="" minOccurs="0" default="probability_levels evenly distributed among response functions" >
+              <param type="INTEGERLIST" />
+            </keyword>
+          </keyword>
 	      &default_convergence_tolerance;
 	      &default_max_iterations;
 	    </keyword>
