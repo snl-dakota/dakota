@@ -1625,7 +1625,8 @@ single quotes are required to allow space-separated args
 
 =item Label=<label1>[,<label2>]
 
-apply CTest labels, e.g., SmokeTest, AcceptanceTest, OptimizationTest
+apply CTest labels, e.g., test categories: SmokeTest, AcceptanceTest;
+capability categories: OptimizationTest, or maturity: Experimental
 
 =item MPIProcs=<int-procs>
 
