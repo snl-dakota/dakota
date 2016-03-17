@@ -53,7 +53,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   proposalCovarFilename(
     probDescDB.get_string("method.nond.proposal_covariance_filename")),
   proposalCovarInputType(
-    probDescDB.get_string("method.nond.proposal_covariance_input_type"))
+    probDescDB.get_string("method.nond.proposal_covariance_input_type")),
+  burnInSamples(probDescDB.get_int("method.burn_in_samples")),
+  subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period"))
 {
   // assign default proposalCovarType
   if (proposalCovarType.empty()) {

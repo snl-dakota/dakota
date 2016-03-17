@@ -1,7 +1,4 @@
-# DAKOTA INPUT FILE - dakota_uq_subspace.in
-# Contains regression tests for using model subspace
-# with several methods
-
+#@ *: Label=Experimental
 #@ p0: MPIProcs=3
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=3
@@ -20,6 +17,9 @@
 #@ p15: MPIProcs=3
 #@ p16: MPIProcs=3
 #@ p17: MPIProcs=3
+# DAKOTA INPUT FILE - dakota_uq_subspace.in
+# Contains regression tests for using model subspace
+# with several methods
 
 environment
   output_precision = 16

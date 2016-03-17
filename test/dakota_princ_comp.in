@@ -1,3 +1,4 @@
+#@ *: Label=Experimental
 # DAKOTA INPUT FILE - dakota_princ_comp.in
 # This input file demonstates an initial prototype 
 # principal components analysis (PCA).  In this version, 

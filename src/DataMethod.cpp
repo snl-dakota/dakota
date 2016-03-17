@@ -268,7 +268,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << numChains << numCR << crossoverChainPairs
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile << posteriorDensityExportFilename
@@ -408,7 +409,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
     >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
-    >> hyperPriorBetas >> numChains >> numCR >> crossoverChainPairs
+    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
+    >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
     >> dataDistFile >> posteriorDensityExportFilename
@@ -548,7 +550,8 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << numChains << numCR << crossoverChainPairs
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
     << dataDistFile << posteriorDensityExportFilename

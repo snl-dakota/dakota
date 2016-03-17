@@ -1889,6 +1889,11 @@ KEYWORD12 method
 	      hyperprior_betas REALLIST
 	      ]
 	    ]
+	  [ burn_in_samples INTEGER ]
+	  [ sub_sampling_period INTEGER ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
 	  [ convergence_tolerance REAL ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ model_pointer STRING ]

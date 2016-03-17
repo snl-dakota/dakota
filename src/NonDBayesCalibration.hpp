@@ -188,6 +188,13 @@ protected:
   /// approach for defining proposal covariance
   String proposalCovarInputType;
 
+  /// Post-processing-related controls
+
+  /// number of MCMC samples to discard from acceptance chain
+  int burnInSamples;
+  /// period or skip in post-processing the acceptance chain
+  int subSamplingPeriod;
+
   /// Pointer to current class instance for use in static callback functions
   static NonDBayesCalibration* nonDBayesInstance;
 

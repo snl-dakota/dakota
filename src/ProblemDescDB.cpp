@@ -2549,6 +2549,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     static KW<int, DataMethodRep> Idme[] = {	
       // must be sorted by string (key)
 	{"build_samples", P buildSamples},
+	{"burn_in_samples", P burnInSamples},
 	{"coliny.contract_after_failure", P contractAfterFail},
 	{"coliny.expand_after_success", P expandAfterSuccess},
 	{"coliny.mutation_range", P mutationRange},
@@ -2577,6 +2578,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"processors_per_iterator", P procsPerIterator},
 	{"random_seed", P randomSeed},
 	{"samples", P numSamples},
+	{"sub_sampling_period", P subSamplingPeriod},
 	{"symbols", P numSymbols}};
     #undef P
 

@@ -6813,6 +6813,7 @@ static short
 
 static int
 	MP_(buildSamples),
+	MP_(burnInSamples),
 	MP_(chainSamples),
 	MP_(concurrentRandomJobs),
 	MP_(contractAfterFail),
@@ -6839,6 +6840,7 @@ static int
 	MP_(randomSeed),
 	MP_(samplesOnEmulator),
 	MP_(searchSchemeSize),
+	MP_(subSamplingPeriod),
 	MP_(totalPatternSize),
 	MP_(verifyLevel);
 
