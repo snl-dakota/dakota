@@ -25,16 +25,9 @@ interface,
 # uncomment to leave params.in and results.out files in work_dir subdirectories
 # 	  named 'workdir' file_save  directory_save
 	  aprepro
-# when using conmin_frcg (above) with analytic_gradients (below), 
-# need to turn off the active set vector as rosenbrock_bb does not parse it.
-## 	  deactivate active_set_vector
+ 	  deactivate active_set_vector
 	  
 responses,
 	num_objective_functions = 1
- 	numerical_gradients
-	  fd_gradient_step_size = .000001
-# to instead use analytic gradients returned by the simulator comment the
-# preceding two lines and uncomment the following:
-##	analytic_gradients
-
+	analytic_gradients
 	no_hessians
