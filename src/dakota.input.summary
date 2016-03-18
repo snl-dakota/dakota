@@ -917,7 +917,9 @@ KEYWORD12 method
 		[ noise_tolerance REALLIST ]
 		[ l2_penalty REAL ]
 		]
-	      [ cross_validation ]
+	      [ cross_validation
+		[ noise_only ]
+		]
 	      [ use_derivatives ]
 	      [ tensor_grid ]
 	      [ reuse_points ALIAS reuse_samples ]
@@ -943,7 +945,9 @@ KEYWORD12 method
 	  |
 	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
 	    collocation_points_sequence INTEGERLIST
-	    [ cross_validation ]
+	    [ cross_validation
+	      [ noise_only ]
+	      ]
 	    [ tensor_grid INTEGERLIST ]
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ import_build_points_file ALIAS import_points_file STRING

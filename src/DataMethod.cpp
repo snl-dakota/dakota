@@ -125,7 +125,8 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
-  regressionL2Penalty(0.), crossValidation(false), //adaptedBasisInitLevel(0),
+  regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
+  //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   //expansionSampleType("lhs"),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), reliabilitySearchType(MV),
@@ -254,7 +255,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation //<< adaptedBasisInitLevel
+    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
     << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
@@ -395,7 +396,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> regressionType
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
-    >> crossValidation //>> adaptedBasisInitLevel
+    >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
     >> exportExpansionFile >> sampleType >> dOptimal >> reliabilitySearchType
@@ -536,7 +537,7 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << regressionType
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation //<< adaptedBasisInitLevel
+    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
     << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType

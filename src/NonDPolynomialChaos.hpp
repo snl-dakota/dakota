@@ -151,6 +151,9 @@ private:
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches
   bool crossValidation;
+  /// flag to restrict cross-validation to only estimate the noise
+  /// tolerance in order to manage computational cost
+  bool crossValidNoiseOnly;
 
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation

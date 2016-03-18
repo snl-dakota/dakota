@@ -6774,6 +6774,7 @@ static bool
 	MP_(backfillFlag),
 	MP_(constantPenalty),
 	MP_(crossValidation),
+	MP_(crossValidNoiseOnly),
 	MP_(dOptimal),
         MP_(evaluatePosteriorDensity),
 	MP_(expansionFlag),

@@ -3018,6 +3018,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
 	{"nond.cross_validation", P crossValidation},
+	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},
 	{"nond.d_optimal", P dOptimal},
 	{"nond.evaluate_posterior_density", P evaluatePosteriorDensity},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},

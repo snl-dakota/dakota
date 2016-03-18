@@ -42,6 +42,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   randomSeed(probDescDB.get_int("method.random_seed")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
   crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  crossValidNoiseOnly(
+    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
   noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
   l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
 //initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
@@ -56,7 +58,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
-  importBuildPointsFile(probDescDB.get_string("method.import_approx_points_file")),
+  importBuildPointsFile(
+    probDescDB.get_string("method.import_approx_points_file")),
   importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
   importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
   resizedFlag(false), callResize(false)
@@ -736,8 +739,8 @@ void NonDPolynomialChaos::initialize_u_space_model()
     // user spec) as well as seed progressions for varyPattern.  Coordinate
     // with JDJ on whether Dakota or CV should own these features.
     Pecos::RegressionConfigOptions
-      rc_options(crossValidation, randomSeed, noiseTols, l2Penalty,
-		 false, 0/*initSGLevel*/, 2, numAdvance);
+      rc_options(crossValidation, crossValidNoiseOnly, randomSeed, noiseTols,
+		 l2Penalty, false, 0/*initSGLevel*/, 2, numAdvance);
     shared_data_rep->configuration_options(rc_options);
 
     // updates for automatic order adaptation
