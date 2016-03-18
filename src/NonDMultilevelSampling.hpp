@@ -99,14 +99,34 @@ private:
 				  IntRealVectorMap& mean_H,
 				  IntRealVectorMap& var_L,
 				  IntRealVectorMap& covar_LH);
+  /// initialize the CV bookkeeping for sums, means, variances, and
+  /// covariances across fidelity levels
+  void initialize_cv_sums_moments(IntRealMatrixMap& sum_L,
+				  IntRealMatrixMap& sum_H,
+				  IntRealMatrixMap& sum_LH,
+				  IntRealMatrixMap& mean_L,
+				  IntRealMatrixMap& mean_H,
+				  IntRealMatrixMap& var_L,
+				  IntRealMatrixMap& covar_LH, size_t num_lev);
 
+  /// update running sums for one model (sum_map) up to order max_ord
+  /// using set of model evaluations within allResponses
+  void accumulate_cv_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
   void accumulate_cv_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
 			  IntRealVectorMap& sum_LH);
   /// update running sums for one model (sum_map) up to order max_ord
   /// using set of model evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
+  void accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev,
+			  size_t max_ord = _NPOS);
+  /// update running sums for two models (sum_L, sum_H, and sum_LH)
+  /// from set of low/high fidelity model evaluations within lf/hf_resp_map
+  void accumulate_cv_sums(const IntResponseMap& lf_resp_map, size_t lf_offset,
+			  const IntResponseMap& hf_resp_map, size_t hf_offset,
+			  IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
+			  IntRealMatrixMap& sum_LH, size_t lev);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
@@ -121,8 +141,9 @@ private:
 			       IntRealVectorMap& covar_LH);
   
   /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(const IntRealVectorMap& sum_L, const IntRealVectorMap& sum_H,
-		  const IntRealVectorMap& sum_LH, Real cost_ratio,
+  Real eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
+		  const RealVector& sum_L2, const RealVector& sum_H2,
+		  const RealVector& sum_L1H1, Real cost_ratio,
 		  RealVector& mean_L, RealVector& mean_H, RealVector& var_L,
 		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
