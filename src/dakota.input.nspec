@@ -876,7 +876,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
                    )
                  ]
-                [ cross_validation {N_mdm(true,crossValidation)} ]
+                [ cross_validation {N_mdm(true,crossValidation)}
+                  [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+                 ]
                 [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
                 [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
                 [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -890,7 +892,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
               collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-              [ cross_validation {N_mdm(true,crossValidation)} ]
+              [ cross_validation {N_mdm(true,crossValidation)}
+                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+               ]
               [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
              )

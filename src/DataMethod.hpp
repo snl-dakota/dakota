@@ -861,6 +861,10 @@ public:
   /// flag indicating the use of cross-validation across expansion orders
   /// (given a prescribed maximum order) and, for some methods, noise tolerances
   bool crossValidation;
+  /// flag indicating the restriction of cross-validation to estimate only
+  /// the most effective noise tolerance; used to reduce cost from performing
+  /// CV over both noise tolerances and expansion orders
+  bool crossValidNoiseOnly;
   // initial grid level for the ADAPTED_BASIS_GENERALIZED approach to
   // defining the candidate basis for sparse recovery (compressed sensing)
   //unsigned short adaptedBasisInitLevel;
