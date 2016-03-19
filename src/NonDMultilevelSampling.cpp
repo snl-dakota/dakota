@@ -269,13 +269,20 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 
 	  // store allResponses for sum_H (previously sum_Y_*)
 	  IntResponseMap mlmc_resp = allResponses; // shallow copy
-	  // compute allResponses for LF using allVariables from MLMC step
-	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-	  iteratedModel.surrogate_model_indices(lf_model_form, lev);
+	  // compute allResponses for LF model (level 0) or LF discretization
+	  // discrepancy (level > 0) using allVariables from MLMC step
+	  if (lev) {
+	    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // same
+	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
+	    iteratedModel.truth_model_indices(lf_model_form,     lev);
+	  }
+	  else {
+	    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	  }
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
-	  accumulate_cv_sums(allResponses, 0, mlmc_resp, numFunctions,
-			     sum_L, sum_H, sum_LH, lev);
+	  accumulate_cv_sums(allResponses, mlmc_resp, sum_L, sum_H, sum_LH,lev);
 	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev],   numFunctions),
 	             mean_H_l(Teuchos::View, mean_H[1][lev],   numFunctions),
 	              var_L_l(Teuchos::View, var_L[1][lev],    numFunctions),
@@ -882,7 +889,8 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
 	  ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
 	}
 
-	lf_prod *= lf_fn; hf_prod *= hf_fn;
+	if (l_ord || lh_ord) lf_prod *= lf_fn;
+	if (h_ord || lh_ord) hf_prod *= hf_fn;
 	++active_ord;
       }
     }
@@ -893,25 +901,51 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
 void NonDMultilevelSampling::
 accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev, size_t max_ord)
 {
-  Real fn_val, prod;
+  Real fn_l, prod_l;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter sum_it; 
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-    const RealVector& fn_vals = r_it->second.function_values();
+  if (lev == 0) { // UNCORRECTED_SURROGATE -> 1 set of qoi per response map
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
 
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      prod = fn_val = fn_vals[qoi];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	prod_l = fn_l = fn_vals[qoi];
 
-      sum_it = sum_map.begin(); ord = sum_it->first; active_ord = 1;
-      while (sum_it!=sum_map.end() && active_ord <= max_ord) {
+	sum_it = sum_map.begin(); ord = sum_it->first; active_ord = 1;
+	while (sum_it!=sum_map.end() && active_ord <= max_ord) {
     
-	if (ord == active_ord) {
-	  sum_it->second(qoi,lev) += prod; ++sum_it;
-	  ord = (sum_it == sum_map.end()) ? 0 : sum_it->first;
-	}
+	  if (ord == active_ord) {
+	    sum_it->second(qoi,lev) += prod_l; ++sum_it;
+	    ord = (sum_it == sum_map.end()) ? 0 : sum_it->first;
+	  }
 
-	prod *= fn_val;
-	++active_ord;
+	  prod_l *= fn_l;
+	  ++active_ord;
+	}
+      }
+    }
+  }
+  else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
+    Real fn_lm1, prod_lm1;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+
+	prod_l   = fn_l   = fn_vals[qoi+numFunctions];
+	prod_lm1 = fn_lm1 = fn_vals[qoi];
+
+	sum_it = sum_map.begin(); ord = sum_it->first; active_ord = 1;
+	while (sum_it!=sum_map.end() && active_ord <= max_ord) {
+    
+	  if (ord == active_ord) {
+	    sum_it->second(qoi,lev) += prod_l - prod_lm1; ++sum_it;
+	    ord = (sum_it == sum_map.end()) ? 0 : sum_it->first;
+	  }
+
+	  prod_l *= fn_l; prod_lm1 *= fn_lm1;
+	  ++active_ord;
+	}
       }
     }
   }
@@ -919,52 +953,102 @@ accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev, size_t max_ord)
 
 
 void NonDMultilevelSampling::
-accumulate_cv_sums(const IntResponseMap& lf_resp_map, size_t lf_offset,
-		   const IntResponseMap& hf_resp_map, size_t hf_offset,
-		   IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
-		   IntRealMatrixMap& sum_LH, size_t lev)
+accumulate_cv_sums(const IntResponseMap& lf_resp_map,
+		   const IntResponseMap& hf_resp_map, IntRealMatrixMap& sum_L,
+		   IntRealMatrixMap& sum_H, IntRealMatrixMap& sum_LH,
+		   size_t lev)
 {
-  Real lf_fn, hf_fn, lf_prod, hf_prod;
+  Real lf_l, hf_l, lf_l_prod, hf_l_prod;
   IntRespMCIter lf_r_it, hf_r_it; IntRMMIter l_it, h_it, lh_it;
   int l_ord, h_ord, lh_ord, active_ord; size_t qoi;
 
-  for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
-       lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
-       ++lf_r_it, ++hf_r_it) {
-    const RealVector& lf_fn_vals = lf_r_it->second.function_values();
-    const RealVector& hf_fn_vals = hf_r_it->second.function_values();
+  if (lev == 0) { // UNCORRECTED_SURROGATE -> 1 set of qoi per response map
+    for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
+	 lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
+	 ++lf_r_it, ++hf_r_it) {
+      const RealVector& lf_fn_vals = lf_r_it->second.function_values();
+      const RealVector& hf_fn_vals = hf_r_it->second.function_values();
 
-    for (qoi=0; qoi<numFunctions; ++qoi) {
+      for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      lf_prod = lf_fn = lf_fn_vals[qoi+lf_offset];
-      hf_prod = hf_fn = hf_fn_vals[qoi+hf_offset];
+	lf_l_prod = lf_l = lf_fn_vals[qoi];
+	hf_l_prod = hf_l = hf_fn_vals[qoi];
 
-      l_it = sum_L.begin(); h_it = sum_H.begin(); lh_it = sum_LH.begin();
-      l_ord  = /*(l_it  == sum_L.end())  ? 0 :*/  l_it->first;
-      h_ord  = /*(h_it  == sum_H.end())  ? 0 :*/  h_it->first;
-      lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
-      active_ord = 1;
+	l_it = sum_L.begin(); h_it = sum_H.begin(); lh_it = sum_LH.begin();
+	l_ord  = /*(l_it  == sum_L.end())  ? 0 :*/  l_it->first;
+	h_ord  = /*(h_it  == sum_H.end())  ? 0 :*/  h_it->first;
+	lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
+	active_ord = 1;
 
-      while (l_it!=sum_L.end() || h_it!=sum_H.end() || lh_it!=sum_LH.end()) {
+	while (l_it!=sum_L.end() || h_it!=sum_H.end() || lh_it!=sum_LH.end()) {
     
-	// Low
-	if (l_ord == active_ord) {
-	  l_it->second(qoi,lev) += lf_prod;
-	  ++l_it; l_ord = (l_it == sum_L.end()) ? 0 : l_it->first;
-	}
-	// High
-	if (h_ord == active_ord) {
-	  h_it->second(qoi,lev) += hf_prod;
-	  ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
-	}
-	// Low-High
-	if (lh_ord == active_ord) {
-	  lh_it->second(qoi,lev) += lf_prod * hf_prod;
-	  ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
-	}
+	  // Low
+	  if (l_ord == active_ord) {
+	    l_it->second(qoi,lev) += lf_l_prod;
+	    ++l_it; l_ord = (l_it == sum_L.end()) ? 0 : l_it->first;
+	  }
+	  // High
+	  if (h_ord == active_ord) {
+	    h_it->second(qoi,lev) += hf_l_prod;
+	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	  }
+	  // Low-High
+	  if (lh_ord == active_ord) {
+	    lh_it->second(qoi,lev) += lf_l_prod * hf_l_prod;
+	    ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
+	  }
 
-	lf_prod *= lf_fn; hf_prod *= hf_fn;
-	++active_ord;
+	  if (l_ord || lh_ord) lf_l_prod *= lf_l;
+	  if (h_ord || lh_ord) hf_l_prod *= hf_l;
+	  ++active_ord;
+	}
+      }
+    }
+  }
+  else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
+    Real lf_lm1, hf_lm1, lf_lm1_prod, hf_lm1_prod;
+    for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
+	 lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
+	 ++lf_r_it, ++hf_r_it) {
+      const RealVector& lf_fn_vals = lf_r_it->second.function_values();
+      const RealVector& hf_fn_vals = hf_r_it->second.function_values();
+
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+
+	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
+	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+
+	l_it = sum_L.begin(); h_it = sum_H.begin(); lh_it = sum_LH.begin();
+	l_ord  = /*(l_it  == sum_L.end())  ? 0 :*/  l_it->first;
+	h_ord  = /*(h_it  == sum_H.end())  ? 0 :*/  h_it->first;
+	lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
+	active_ord = 1;
+
+	while (l_it!=sum_L.end() || h_it!=sum_H.end() || lh_it!=sum_LH.end()) {
+    
+	  // Low
+	  if (l_ord == active_ord) {
+	    l_it->second(qoi,lev) += lf_l_prod - lf_lm1_prod;
+	    ++l_it; l_ord = (l_it == sum_L.end()) ? 0 : l_it->first;
+	  }
+	  // High
+	  if (h_ord == active_ord) {
+	    h_it->second(qoi,lev) += hf_l_prod - hf_lm1_prod;
+	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	  }
+	  // Low-High
+	  if (lh_ord == active_ord) {
+	    lh_it->second(qoi,lev) += (lf_l_prod - lf_lm1_prod)
+	                           *  (hf_l_prod - hf_lm1_prod);
+	    ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
+	  }
+
+	  if (l_ord || lh_ord) { lf_l_prod *= lf_l; lf_lm1_prod *= lf_lm1; }
+	  if (h_ord || lh_ord) { hf_l_prod *= hf_l; hf_lm1_prod *= hf_lm1; }
+	  ++active_ord;
+	}
       }
     }
   }

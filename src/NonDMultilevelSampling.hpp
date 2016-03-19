@@ -122,8 +122,8 @@ private:
 			  size_t max_ord = _NPOS);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within lf/hf_resp_map
-  void accumulate_cv_sums(const IntResponseMap& lf_resp_map, size_t lf_offset,
-			  const IntResponseMap& hf_resp_map, size_t hf_offset,
+  void accumulate_cv_sums(const IntResponseMap& lf_resp_map,
+			  const IntResponseMap& hf_resp_map,
 			  IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
 			  IntRealMatrixMap& sum_LH, size_t lev);
 
