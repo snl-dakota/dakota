@@ -190,7 +190,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev = surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
     lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
@@ -274,31 +274,28 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  iteratedModel.surrogate_model_indices(lf_model_form, lev);
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
-	  accumulate_cv_sums(allResponses, 0,         // LF qoi offset
-			     mlmc_resp, numFunctions, // HF qoi offset
+	  accumulate_cv_sums(allResponses, 0, mlmc_resp, numFunctions,
 			     sum_L, sum_H, sum_LH, lev);
-	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev], numFunctions),
-	    mean_H_l(Teuchos::View,   mean_H[1][lev],   numFunctions),
-	    var_L_l(Teuchos::View,    var_L[1][lev],    numFunctions),
-	    var_H_l(Teuchos::View,    var_H[lev],       numFunctions),
-	    covar_LH_l(Teuchos::View, covar_LH[1][lev], numFunctions),
-	    rho2_LH_l(Teuchos::View,  rho2_LH[lev],     numFunctions);
+	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev],   numFunctions),
+	             mean_H_l(Teuchos::View, mean_H[1][lev],   numFunctions),
+	              var_L_l(Teuchos::View, var_L[1][lev],    numFunctions),
+	              var_H_l(Teuchos::View, var_H[lev],       numFunctions),
+	           covar_LH_l(Teuchos::View, covar_LH[1][lev], numFunctions),
+	            rho2_LH_l(Teuchos::View, rho2_LH[lev],     numFunctions);
 	  int i_lev = (int)lev;
-	  Real avg_eval_ratio
-	    = eval_ratio(getCol(Teuchos::View, sum_L[1], i_lev),
-			 getCol(Teuchos::View, sum_H[1], i_lev),
-			 getCol(Teuchos::View, sum_L[2], i_lev),
-			 getCol(Teuchos::View, sum_H[2], i_lev),
-			 getCol(Teuchos::View, sum_LH[1], i_lev),
-			 hf_cost[lev]/lf_cost[lev], mean_L_l, mean_H_l,
-			 var_L_l, var_H_l, covar_LH_l, rho2_LH_l);
+	  avg_eval_ratio = eval_ratio(getCol(Teuchos::View, sum_L[1],  i_lev),
+				      getCol(Teuchos::View, sum_H[1],  i_lev),
+				      getCol(Teuchos::View, sum_L[2],  i_lev),
+				      getCol(Teuchos::View, sum_H[2],  i_lev),
+				      getCol(Teuchos::View, sum_LH[1], i_lev),
+				      hf_cost[lev]/lf_cost[lev], mean_L_l,
+				      mean_H_l, var_L_l, var_H_l, covar_LH_l,
+				      rho2_LH_l);
 	  Lambda[lev] = 1. - rho2_LH(qoi,lev)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
-	  // now execute any additional LF sample increment
-	  if (true) { // TO DO
-	    lf_increment(avg_eval_ratio);
+	  // now execute additional LF sample increment, if needed
+	  if (lf_increment(avg_eval_ratio))
 	    accumulate_cv_sums(sum_L, lev, 4);
-	  }
 	}
       }
       
@@ -587,14 +584,16 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     //   delta_N = mse_ratio*N0/convTol - N0 = (mse_ratio/convTol - 1) * N0
     Real incr = (avg_mse_ratio / convergenceTol - 1.) * numSamples;
     numSamples = (size_t)std::floor(incr + .5); // round
-    shared_increment(++iter);
-    accumulate_cv_sums(sum_L, sum_H, sum_LH);
 
-    // update ratios:
-    avg_eval_ratio =
-      eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1], cost_ratio,
-		 mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
-    avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter);
+    if (numSamples) { // small incr did not round up
+      shared_increment(++iter);
+      accumulate_cv_sums(sum_L, sum_H, sum_LH);
+      // update ratios:
+      avg_eval_ratio =
+	eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1],cost_ratio,
+		   mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
+      avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter);
+    }
   }
 
   // compute higher-order sums/stats once, including pilot + shared increment
@@ -604,8 +603,8 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // --------------------------------------------------
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
-  lf_increment(avg_eval_ratio);
-  accumulate_cv_sums(sum_L, 4);
+  if (lf_increment(avg_eval_ratio))
+    accumulate_cv_sums(sum_L, 4);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom;
@@ -665,8 +664,8 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   //			    var_L, covar_LH);
 
   // perform LF increment
-  lf_increment(avg_eval_ratio);
-  accumulate_cv_sums(sum_L, 4);
+  if (lf_increment(avg_eval_ratio))
+    accumulate_cv_sums(sum_L, 4);
   //RealMatrix H_raw_mom;
   //cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, rho2_LH, cost_ratio,
   //               H_raw_mom);
@@ -700,7 +699,7 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
 }
   
 
-void NonDMultilevelSampling::lf_increment(Real avg_eval_ratio)
+bool NonDMultilevelSampling::lf_increment(Real avg_eval_ratio)
 {
   // ----------------------------------------------
   // Compute Final LF increment for control variate
@@ -710,25 +709,33 @@ void NonDMultilevelSampling::lf_increment(Real avg_eval_ratio)
   const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
   size_t&       N_lf =      NLev[lf_form_level.first][lf_form_level.second];
   size_t& delta_N_lf = deltaNLev[lf_form_level.first][lf_form_level.second];
+  size_t        N_hf =      NLev[hf_form_level.first][hf_form_level.second];
 
   // update LF samples based on evaluation ratio
   // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
   // or with inverse r  -> delta = m-n = n/inverse_r - n
-  delta_N_lf = (avg_eval_ratio <= 1.) ? 0 :
-    (size_t)std::floor((Real)N_lf * (avg_eval_ratio - 1.) + .5); // round
-  deltaNLev[hf_form_level.first][hf_form_level.second] = 0;
-  Cout << "CVMC final LF sample increment = " << delta_N_lf << std::endl;
+  size_t N_lf_target = (size_t)std::floor(N_hf * avg_eval_ratio + .5); // round
+  delta_N_lf = (N_lf_target > N_lf) ? N_lf_target - N_lf : 0;
+  // reserve HF counts for MLMC usage in hybrid case:
+  //deltaNLev[hf_form_level.first][hf_form_level.second] = 0;
 
-  // set the number of current samples from the defined increment
-  numSamples = delta_N_lf;
+  if (delta_N_lf) {
+    Cout << "CVMC final LF sample increment = " << delta_N_lf << std::endl;
 
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);// pull dist params from any model
-  // compute allResponses from allVariables using hierarchical model
-  evaluate_parameter_sets(iteratedModel, true, false);
+    // set the number of current samples from the defined increment
+    numSamples = delta_N_lf;
+    // set the mode for the hierarchical surrogate model
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);// pull dist params from any model
+    // compute allResponses from allVariables using hierarchical model
+    evaluate_parameter_sets(iteratedModel, true, false);
 
-  N_lf += delta_N_lf;
+    N_lf += delta_N_lf;
+    return true;
+  }
+  else
+    return false;
 }
 
   

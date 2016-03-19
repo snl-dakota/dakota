@@ -84,7 +84,7 @@ private:
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(size_t iter);
   /// perform final LF sample increment as indicated by the evaluation ratio
-  void lf_increment(Real avg_eval_ratio);
+  bool lf_increment(Real avg_eval_ratio);
 
   /// initialize the CV bookkeeping for sums, means, variances, and
   /// covariances across fidelity levels
