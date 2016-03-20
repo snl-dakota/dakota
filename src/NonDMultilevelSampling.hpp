@@ -66,15 +66,9 @@ private:
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form
   void multilevel_mc(size_t model_form);
-  /// Perform control variate Monte Carlo across two model forms, as a
-  /// complete UQ workflow execution
+  /// Perform control variate Monte Carlo across two model forms
   void control_variate_mc(const SizetSizetPair& lf_form_level,
 			  const SizetSizetPair& hf_form_level);
-  /// Perform control variate Monte Carlo across two model forms for given
-  /// LF/HF samples, as a helper iteration within a higher level context
-  void control_variate_mc(const SizetSizetPair& lf_form_level,
-			  const SizetSizetPair& hf_form_level,
-			  size_t shared_samples);
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level
   void multilevel_control_variate_mc(size_t lf_model_form,
@@ -155,6 +149,12 @@ private:
 		      IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
 		      IntRealVectorMap& covar_LH, const RealVector& rho2_LH,
 		      Real cost_ratio,            RealMatrix& H_raw_mom);
+  /// compute control variate parameter and estimate raw moments
+  void cv_raw_moments(IntRealMatrixMap& sum_L,     IntRealMatrixMap& mean_L,
+		      IntRealMatrixMap& mean_H,    IntRealMatrixMap& var_L,
+		      IntRealMatrixMap& covar_LH,  //const RealMatrix& rho2_LH,
+		      size_t lev, size_t N_lf,     //Real cost_ratio,
+		      RealMatrix& H_raw_mom);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -178,8 +178,6 @@ private:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 };
-
-
 
 } // namespace Dakota
 

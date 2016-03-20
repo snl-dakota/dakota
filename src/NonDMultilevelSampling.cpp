@@ -344,19 +344,19 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     }
   }
 
-  // Iteration complete.  Now aggregate final CVMC and MLMC estimators.
-  
-  RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions);
+  // Iteration complete.  Now roll up raw moments from combing final
+  // CVMC and MLMC estimators.
+  SizetArray& N_lf_l = NLev[lf_model_form];
+  RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
-    //cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, rho2_LH,
-    //		   cost_ratio, Y_cvmc_mom);
+    cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, /*rho2_LH,*/ lev,
+		   N_lf_l[lev], /*hf_cost[lev]/lf_cost[lev],*/ Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
   }
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
-  SizetArray& N_lf_l = NLev[lf_model_form];
   equivHFEvals = N_hf_l[0] * hf_cost[0] + N_lf_l[0] * lf_cost[0]; // first level
   for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
     equivHFEvals += N_hf_l[lev] * (hf_cost[lev] + hf_cost[lev-1]);
@@ -606,7 +606,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     accumulate_cv_sums(sum_L, 4);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
-  RealMatrix H_raw_mom;
+  RealMatrix H_raw_mom(4, numFunctions);
   cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, rho2_LH, cost_ratio,
 		 H_raw_mom);
   // Convert uncentered raw moment estimates to standardized moments
@@ -1176,9 +1176,9 @@ cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
   size_t N_lf = NLev[lf_form_level.first][lf_form_level.second];
   
   // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
-  Real beta, mu_Li, refined_mu_Li, m1, cm2, cm3, cm4, cr1 = cost_ratio + 1.;
+  Real beta, mu_Li, refined_mu_Li, cr1 = cost_ratio + 1.;
   size_t qoi;
-  H_raw_mom.shapeUninitialized(4, numFunctions);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
   for (int i=1; i<=4; ++i) {
     const RealVector&  sum_Li =  sum_L[i]; RealVector&      mean_Li = mean_L[i];
     const RealVector& mean_Hi = mean_H[i]; const RealVector& var_Li =  var_L[i];
@@ -1193,6 +1193,43 @@ cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
       if (i == 1) // neither rho2_LHi nor var_Hi are stored for i > 1
 	Cout << " Effectiveness ratio = " << std::setw(9) << rho2_LH[qoi] * cr1;
       Cout << '\n';
+
+      // updated LF expectations following final sample increment:
+      refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
+      // apply control for HF uncentered raw moment estimates:
+      H_raw_mom(i-1,qoi) = mean_Hi[qoi] - beta * (mu_Li - refined_mu_Li);
+    }
+    Cout << '\n';
+  }
+}
+
+
+void NonDMultilevelSampling::
+cv_raw_moments(IntRealMatrixMap& sum_L,    IntRealMatrixMap& mean_L,
+	       IntRealMatrixMap& mean_H,   IntRealMatrixMap& var_L,
+	       IntRealMatrixMap& covar_LH, //const RealMatrix& rho2_LH,
+	       size_t lev, size_t N_lf,    //Real cost_ratio,
+	       RealMatrix& H_raw_mom)
+{
+  // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
+  Real beta, mu_Li, refined_mu_Li;//, cr1 = cost_ratio + 1.;
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
+  for (int i=1; i<=4; ++i) {
+    Real *sum_Li = sum_L[i][lev], *mean_Li = mean_L[i][lev],
+        *mean_Hi = mean_H[i][lev], *var_Li =  var_L[i][lev],
+      *covar_LHi = covar_LH[i][lev];
+    //const Real* rho2_LHi = rho2_LH[lev];
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      // LF expectations prior to final sample increment:
+      mu_Li = mean_Li[qoi];
+      beta  = covar_LHi[qoi] / var_Li[qoi];
+
+      Cout << "Moment " << i << ", QoI " << qoi+1 << ", lev " << lev
+	   << ": control variate beta = " << std::setw(9) << beta << '\n';
+      //if (i == 1) // neither rho2_LHi nor var_Hi are stored for i > 1
+      //  Cout << " Effectiveness ratio = " << std::setw(9)
+      //       << rho2_LHi[qoi] * cr1;
+      //Cout << '\n';
 
       // updated LF expectations following final sample increment:
       refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
