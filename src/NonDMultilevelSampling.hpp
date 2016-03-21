@@ -124,7 +124,8 @@ private:
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
-			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev);
+			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev,
+			  size_t max_ord1 = _NPOS, size_t max_ord2 = _NPOS);
 
   /// update higher-order means, variances, and covariances from sums
   void update_high_order_stats(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,

@@ -244,26 +244,15 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
-	// process allResponses: accumulate new samples for each qoi
-	accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev);
-
-	// compute estimator mean & variance from current sample accumulation:
-	agg_var_hf_l = 0.;
-	Real *sum_Y1_l   = sum_Y_diff_Qpow[1][lev],
-	     *sum_Y1sq_l = sum_Y_pow_Qdiff[2][lev];
-	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  Real mu_Y = sum_Y1_l[qoi] / N_hf_l[lev];
-	  // Note: precision loss in variance is difficult to avoid without
-	  // storing full sample history; must accumulate Y^2 across iterations
-	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  agg_var_hf_l += sum_Y1sq_l[qoi] / N_hf_l[lev] - mu_Y * mu_Y;
-	}
-
 	// if unequal number of levels, loop over all HF levels for MLMC and
 	// apply CVMC when LF levels are available.  LF levels are assigned as
 	// control variates to the leading set of HF levels, since these will
 	// tend to have larger variance.      
 	if (lev < num_lf_lev) {
+	  // only need to accumulate order 1 for sum_Y_diff_Qpow and order 2
+	  // for sum_Y_pow_Qdiff for computing agg_var_hf_l
+	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev, 1, 2);
+
 	  // control variate betwen LF and HF for this discretization level
 	  // using current N_hf_l for HF -> rho2_LH, eval_ratio -> Lambda_l
 
@@ -283,6 +272,8 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_cv_sums(allResponses, mlmc_resp, sum_L, sum_H, sum_LH,lev);
+
+	  // compute the average evaluation ratio and Lambda factor
 	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev],   numFunctions),
 	             mean_H_l(Teuchos::View, mean_H[1][lev],   numFunctions),
 	              var_L_l(Teuchos::View, var_L[1][lev],    numFunctions),
@@ -304,14 +295,28 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  if (lf_increment(avg_eval_ratio))
 	    accumulate_cv_sums(sum_L, lev, 4);
 	}
+	else // accumulate all orders as this will be used in moment increments
+	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev);
+
+	// compute estimator mean & variance from current sample accumulation:
+	Real *sum_Y1_l   = sum_Y_diff_Qpow[1][lev],
+	     *sum_Y1sq_l = sum_Y_pow_Qdiff[2][lev];
+	agg_var_hf_l = 0.;
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  Real mu_Y = sum_Y1_l[qoi] / N_hf_l[lev];
+	  // Note: precision loss in variance is difficult to avoid without
+	  // storing full sample history; must accumulate Y^2 across iters
+	  // instead of (Y-mean)^2 since mean is updated on each iteration.
+	  agg_var_hf_l += sum_Y1sq_l[qoi] / N_hf_l[lev] - mu_Y * mu_Y;
+	}
       }
-      
+
+      // accumulate sum of sqrt's of estimator var * cost used in new_N_l
       sum_sqrt_var_cost += (lev < num_lf_lev) ?
 	std::sqrt(agg_var_hf_l * hf_cost[lev] * Lambda[lev] /
 		  (1. - rho2_LH(qoi,lev))) :
 	std::sqrt(agg_var_hf_l * hf_cost[lev]);
-
-      // MSE reference is MC applied to HF:
+      // mean sq error reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf_l[lev];
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
@@ -348,10 +353,22 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   // CVMC and MLMC estimators.
   SizetArray& N_lf_l = NLev[lf_model_form];
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
-  for (lev=0; lev<num_hf_lev; ++lev) {
+  for (lev=0; lev<num_lf_lev; ++lev) {
     cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, /*rho2_LH,*/ lev,
 		   N_lf_l[lev], /*hf_cost[lev]/lf_cost[lev],*/ Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
+  }
+  if (num_hf_lev > num_lf_lev) {
+    RealMatrix &sum_Y1 = sum_Y_diff_Qpow[1], &sum_Y2 = sum_Y_diff_Qpow[2],
+               &sum_Y3 = sum_Y_diff_Qpow[3], &sum_Y4 = sum_Y_diff_Qpow[4];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      Real *Y_ml_q = Y_mlmc_mom[qoi];
+      for (lev=num_lf_lev; lev<num_hf_lev; ++lev) {
+	size_t Nl = N_hf_l[lev];
+	Y_ml_q[0] += sum_Y1(qoi,lev) / Nl;  Y_ml_q[1] += sum_Y2(qoi,lev) / Nl;
+	Y_ml_q[2] += sum_Y3(qoi,lev) / Nl;  Y_ml_q[3] += sum_Y4(qoi,lev) / Nl;
+      }
+    }
   }
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(Y_mlmc_mom, momentStats);
@@ -995,7 +1012,8 @@ accumulate_cv_sums(const IntResponseMap& lf_resp_map,
 
 void NonDMultilevelSampling::
 accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
-		   IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev)
+		   IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev,
+		   size_t max_ord1, size_t max_ord2)
 {
   Real lf_fn, lf_prod;
   int s1_ord, s2_ord, active_ord; size_t qoi;
@@ -1008,14 +1026,15 @@ accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
 	s1_it = sum_Y_diff_Qpow.begin(); s1_ord = s1_it->first;
 	s2_it = sum_Y_pow_Qdiff.begin(); s2_ord = s2_it->first;
 	active_ord = 1;
-	while (s1_it!=sum_Y_diff_Qpow.end() || s2_it!=sum_Y_pow_Qdiff.end()) {
+	while ( (s1_it!=sum_Y_diff_Qpow.end() && active_ord <= max_ord1) ||
+	        (s2_it!=sum_Y_pow_Qdiff.end() && active_ord <= max_ord2) ) {
 	  // add to sum_Y_diff_Qpow: running sums across all sample increments
-	  if (s1_ord == active_ord) {
+	  if (s1_ord == active_ord && active_ord <= max_ord1) {
 	    s1_it->second(qoi,lev) += lf_prod; ++s1_it;
 	    s1_ord = (s1_it == sum_Y_diff_Qpow.end()) ? 0 : s1_it->first;
 	  }
 	  // add to sum_Y_pow_Qdiff: running sums across all sample increments
-	  if (s2_ord == active_ord) {
+	  if (s2_ord == active_ord && active_ord <= max_ord2) {
 	    s2_it->second(qoi,lev) += lf_prod; ++s2_it;
 	    s2_ord = (s2_it == sum_Y_pow_Qdiff.end()) ? 0 : s2_it->first;
 	  }
@@ -1029,28 +1048,28 @@ accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	lf_prod    =    lf_fn = fn_vals[qoi];
-	hf_prod    =    hf_fn = fn_vals[qoi+numFunctions];
-	delta_prod = delta_fn = hf_fn - lf_fn;
 
-	s1_it = sum_Y_diff_Qpow.begin(); s1_ord = s1_it->first;
-	s2_it = sum_Y_pow_Qdiff.begin(); s2_ord = s2_it->first;
-	active_ord = 1;
-	while (s1_it!=sum_Y_diff_Qpow.end() || s2_it!=sum_Y_pow_Qdiff.end()) {
+	lf_prod = lf_fn = fn_vals[qoi];
+	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
+	s1_it = sum_Y_diff_Qpow.begin(); s1_ord = s1_it->first;	active_ord = 1;
+	while (s1_it!=sum_Y_diff_Qpow.end() && active_ord <= max_ord1) {
 	  // add to sum_Y_diff_Qpow: running sums across all sample increments
 	  if (s1_ord == active_ord) {
 	    s1_it->second(qoi,lev) += hf_prod - lf_prod; ++s1_it; // HF^p-LF^p
 	    s1_ord = (s1_it == sum_Y_diff_Qpow.end()) ? 0 : s1_it->first;
 	  }
+	  hf_prod *= hf_fn; lf_prod *= lf_fn; ++active_ord;
+	}
+
+	delta_prod = delta_fn = hf_fn - lf_fn;
+	s2_it = sum_Y_pow_Qdiff.begin(); s2_ord = s2_it->first;	active_ord = 1;
+	while (s2_it!=sum_Y_pow_Qdiff.end() && active_ord <= max_ord2) {
 	  // add to sum_Y_pow_Qdiff: running sums across all sample increments
 	  if (s2_ord == active_ord) {
 	    s2_it->second(qoi,lev) += delta_prod; ++s2_it;        // (HF-LF)^p
 	    s2_ord = (s2_it == sum_Y_pow_Qdiff.end()) ? 0 : s2_it->first;
 	  }
-	  
-	  if (s1_ord) { hf_prod *= hf_fn; lf_prod *= lf_fn; }
-	  if (s2_ord) delta_prod *= delta_fn;
-	  ++active_ord;
+	  delta_prod *= delta_fn; ++active_ord;
 	}
       }
     }
