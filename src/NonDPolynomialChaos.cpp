@@ -1119,6 +1119,21 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 }
 
 
+/*
+void NonDPolynomialChaos::multilevel_compressed_sensing()
+{
+  for (lev=0; lev<num_lev; ++lev) { // borrow from MLMC loop
+
+    // set hierarchical model in discrepancy mode for active levels
+    RegressOrthogPolyApproximation* poly_approx_i = uSpaceModel.();
+    poly_approx_i->cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+    // Make MultipleSolutionLinearModelCrossValidationIterator cv_iterator class scope
+
+  }
+}
+*/
+
+
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   bool export_pce = false;

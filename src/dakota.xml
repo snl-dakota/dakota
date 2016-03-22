@@ -1576,8 +1576,8 @@
 		      -->
 		      <keyword  id="sample_type2" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="lhs" >
 			<oneOf>
-			  <keyword  id="random3" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
 			  <keyword  id="lhs2" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
+			  <keyword  id="random3" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
 			  <required>
 			    <oneOf>
 			      <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
@@ -1653,6 +1653,12 @@
 		  <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
 		    <!-- <alias name="initial_samples"/> -->
 		    <param type="INTEGERLIST" />
+		  </keyword>
+		  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
+		    <oneOf>
+		      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
+		      <keyword  id="random4" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
+		    </oneOf>
 		  </keyword>
 		  &default_max_iterations;
 		  &default_convergence_tolerance;

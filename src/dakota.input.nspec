@@ -1091,9 +1091,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ sample_type {0}
-            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-            |
             lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
             |
             ( 
               incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}
@@ -1142,6 +1142,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
         [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+        [ sample_type {0}
+          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+          |
+          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+         ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
