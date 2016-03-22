@@ -1321,12 +1321,14 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
  
     for (size_t i=0; i<total_resid; ++i) {
 
-      Real& fn_value = residual_response.function_value_view(i);
-      if (asv[i] & 1)
-	 fn_value *= fn_scale;
+      if (asv[i] & 1) {
+	Real& fn_value = residual_response.function_value_view(i);
+	fn_value *= fn_scale;
+      }
 
-      RealVector fn_grad = residual_response.function_gradient_view(i);
       if (asv[i] & 2) {
+	const Real& fn_value = residual_response.function_value(i);
+	RealVector fn_grad = residual_response.function_gradient_view(i);
 	// scale all of the gradient (including zeroed entries)
 	fn_grad *= fn_scale;
 	// then augment with gradient entry for the hyper-parameter
@@ -1334,6 +1336,8 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
       }
 
       if (asv[i] & 4) {
+	const Real& fn_value = residual_response.function_value(i);
+	const RealVector fn_grad = residual_response.function_gradient_view(i);
 	RealSymMatrix fn_hess = residual_response.function_hessian_view(i);
 	// scale all of the Hessian (including zeroed entries)
 	fn_hess *= fn_scale;
@@ -1360,12 +1364,14 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
       Real grad_scale = -0.5/multipliers[mult_ind];
       Real hess_scale = 0.75*std::pow(multipliers[mult_ind], -2.0);
 
-      Real& fn_value = residual_response.function_value_view(i);
-      if (asv[i] & 1)
+      if (asv[i] & 1) {
+	Real& fn_value = residual_response.function_value_view(i);
 	fn_value *= fn_scale;
+      }
 
-      RealVector fn_grad = residual_response.function_gradient_view(i);
       if (asv[i] & 2) {
+	const Real& fn_value = residual_response.function_value(i);
+	RealVector fn_grad = residual_response.function_gradient_view(i);
 	// scale all of the gradient (including zeroed entries)
 	fn_grad *= fn_scale;
 	// then augment with gradient entries for the hyper-parameters
@@ -1374,6 +1380,8 @@ scale_residuals(const RealVector& multipliers, unsigned short multiplier_mode,
       }
       
       if (asv[i] & 4) {
+	const Real& fn_value = residual_response.function_value(i);
+	const RealVector fn_grad = residual_response.function_gradient_view(i);
 	RealSymMatrix fn_hess = residual_response.function_hessian_view(i);
 	// scale all of the Hessian (including zeroed entries)
 	fn_hess *= fn_scale;
