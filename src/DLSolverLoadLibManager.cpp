@@ -123,7 +123,10 @@ static SharedLib
 #define DOT510 F77_FUNC(dot510,DOT510)
 #define NPSOL F77_FUNC(npsol,NPSOL)
 #define NLSSOL F77_FUNC(nlssol,NLSSOL)
-#define NPOPTN2 F77_FUNC(npoptn2,NPOPTN2)
+// BMA (20160315): Changed to use Fortran 2003 ISO C bindings.
+// The Fortran symbol will be lowercase with same name as if in C
+//#define NPOPTN2 F77_FUNC(npoptn2,NPOPTN2)
+#define NPOPTN2 npoptn2
 #define NLPQLP F77_FUNC(nlpqlp,NLPQLP)
 #define QL F77_FUNC(ql,QL)
 

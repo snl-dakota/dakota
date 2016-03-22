@@ -23,7 +23,10 @@
 static const char rcsId[]="@(#) $Id: NPSOLOptimizer.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 #define NPSOL_F77   F77_FUNC(npsol,NPSOL)
-#define NPOPTN2_F77 F77_FUNC(npoptn2,NPOPTN2)
+// BMA (20160315): Changed to use Fortran 2003 ISO C bindings.
+// The Fortran symbol will be lowercase with same name as if in C
+//#define NPOPTN2_F77 F77_FUNC(npoptn2,NPOPTN2)
+#define NPOPTN2_F77 npoptn2
 
 extern "C" {
 
