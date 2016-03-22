@@ -42,6 +42,11 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
   initLHS(true), useModelBounds(false), invertProb(false),
   trackExtremeValues(pdfOutput) // used for defining PDF bounds
 {
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
     probDescDB.get_iv("method.nond.refinement_samples");

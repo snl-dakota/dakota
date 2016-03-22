@@ -31,11 +31,16 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model)
 {
-  // TO DO: Multilevel LHS is do-able but will require either:
+  // Support multilevel LHS as a specification override.  The estimator variance
+  // is known/correct for MC and an assumption/approximation for LHS.  To get an
+  // accurate LHS estimator variance, one would need:
   // (a) assumptions about separability -> analytic variance reduction by a
   //     constant factor
-  // (b) numerically-generated estimator variance (from, e.g., replicated LHS)
-  sampleType = SUBMETHOD_RANDOM;
+  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
+  //     factor largely cancels out within the relative sample allocation.)
+  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
+  if (!sampleType) // SUBMETHOD_DEFAULT
+    sampleType = SUBMETHOD_RANDOM;
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for {init,set}_communicators.

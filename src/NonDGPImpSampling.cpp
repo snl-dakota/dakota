@@ -37,6 +37,11 @@ namespace Dakota {
 NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model)
 {
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
   samplingVarsMode = ACTIVE_UNIFORM;
   String sample_reuse, approx_type("global_kriging");/*("global_kriging");*/
   UShortArray approx_order; // not used by GP/kriging
@@ -91,6 +96,7 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
 		rngName, vary_pattern); 
 }
+
 
 NonDGPImpSampling::~NonDGPImpSampling()
 { }
