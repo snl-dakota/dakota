@@ -1,6 +1,5 @@
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ s0: UserMan=container_opt_npsol
-
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]
 #@ s0: [method:SQP]

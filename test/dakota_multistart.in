@@ -5,7 +5,6 @@
 #@ p2: MPIProcs=4 CheckOutput='dakota.out.1'
 #@ p3: MPIProcs=4
 #@ s0: UserMan=qsf_multistart_strat
-
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]
 #@ s0: [method:Newton]

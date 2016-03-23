@@ -1,5 +1,4 @@
 #@ s5: UserMan=logratio_uq_reliability
-
 #@ [taxonomy:start]
 #@ s5: [analysis:UQ]
 #@ s5: [method:Reliability]

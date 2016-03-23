@@ -5,7 +5,6 @@
 #@ s4: DakotaConfig=HAVE_NLPQL
 #@ s9: DakotaConfig=HAVE_NLPQL
 #@ s0: UserMan=textbook_opt_multiobj1
-
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]
 #@ s0: [method:SQP]

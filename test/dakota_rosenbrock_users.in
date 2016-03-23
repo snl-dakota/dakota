@@ -7,7 +7,6 @@
 #@ s7: UserMan=rosen_syscall
 #@ s8: UserMan=rosen_opt_nls
 #@ s9: UserMan=rosen_opt_scaled
-
 #@ [taxonomy:start]
 #@ s0-1: [analysis:SensitivityAnalysis]
 #@ s2: [analysis:Optimization]
@@ -17,7 +16,6 @@
 #@ s7: [analysis:Optimization]
 #@ s8: [analysis:Calibration]
 #@ s9: [analysis:Optimization]
-
 #@ s0-1: [method:ParameterStudy]
 #@ s2: [method:ConjugateGradient]
 #@ s3: [method:GenericOptimization]
@@ -29,7 +27,6 @@
 #@ s8: [method:GenericOptimization]
 #@ s8: [method:LeastSquares]
 #@ s9: [method:ConjugateGradient]
-
 #@ s0-1: [goal:All]
 #@ s2-4: [goal:Local]
 #@ s3: [goal:ParameterValues]
@@ -39,16 +36,12 @@
 #@ s8: [goal:ParameterConfidenceIntervals]
 #@ s8: [goal:Local]
 #@ s9: [goal:Local]
-
 #@ s2-5: [goal:BoundConstraints]
 #@ s7-9: [goal:BoundConstraints]
-
 #@ s0-9: [variable:Continuous]
-
 #@ s0-3: [model:Smooth]
 #@ s4-5: [model:NonSmooth]
 #@ s6-9: [model:Smooth]
-
 #@ s2: [model:EstimatedFirstDerivatives]
 #@ s3: [model:FirstDerivatives]
 #@ s4-5: [model:NoDerivatives]

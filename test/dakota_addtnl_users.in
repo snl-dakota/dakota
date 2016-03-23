@@ -2,7 +2,6 @@
 #@ s5: DakotaConfig=HAVE_NPSOL
 #@ s4: UserMan=cylhead_opt_npsol
 #@ s5: UserMan=cantilever_opt_npsol
-
 #@ [taxonomy:start]
 #@ s4-5: [analysis:Optimization]
 #@ s4-5: [method:SQP]
