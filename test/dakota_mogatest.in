@@ -5,6 +5,18 @@
 #@ s0: UserMan=mogatest1
 #@ s1: UserMan=mogatest2
 #@ s2: UserMan=mogatest3
+
+#@ [taxonomy:start]
+#@ s0-2: [analysis:Optimization]
+#@ s0-2: [method:GeneticAlgorithm]
+#@ s0-2: [goal:Global]
+#@ s0-1: [goal:BoundConstraints]
+#@ s2:   [goal:BoundAndNonLinearConstraints]
+#@ s0-2: [variable:Continuous]
+#@ s0-2: [model:MultiModal]
+#@ s0-2: [model:NoDerivatives]
+#@ [taxonomy:end]
+
 # Dakota Input File: mogatest1.in   #s0
 ## Dakota Input File: mogatest2.in	#s1
 ## Dakota Input File: mogatest3.in	#s2

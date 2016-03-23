@@ -1,5 +1,16 @@
 #@ *: DakotaConfig=HAVE_DOT
 #@ s0: UserMan=textbook_pareto_strat
+
+#@ [taxonomy:start]
+#@ s0: [analysis:Optimization]
+#@ s0: [method:Newton]
+#@ s0: [goal:Local]
+#@ s0: [goal:BoundConstraints]
+#@ s0: [variable:Continuous]
+#@ s0: [model:Smooth]
+#@ s0: [model:FirstDerivatives]
+#@ [taxonomy:end]
+
 # DAKOTA INPUT FILE - dakota_pareto.in
 # Dakota Input File: textbook_pareto_strat.in	#s0
 

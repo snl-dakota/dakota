@@ -1,4 +1,13 @@
 #@ s5: UserMan=logratio_uq_reliability
+
+#@ [taxonomy:start]
+#@ s5: [analysis:UQ]
+#@ s5: [method:Reliability]
+#@ s5: [goal:FailureProbabilities]
+#@ s5: [variable:Continuous]
+#@ s5: [model:Smooth]
+#@ [taxonomy:end]
+
 # DAKOTA INPUT FILE : dakota_logratio.in
 ## Dakota Input File: logratio_uq_reliability.in                        #s5
 
