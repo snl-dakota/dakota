@@ -674,8 +674,16 @@ sub parse_test_options {
       my $test_select_re = "\\*|[sp]\\*|[0-9]+|[sp][0-9]+";
       # /^#@\s*(${test_select_re})\s*:\s*(.+)/
 
-      # now match selection: key/value pairs; re-match leading comment to be safe
-      # (differentiating from comments)
+      # skip taxonomy entries which look like [ cat:subcat ]
+      my $taxonomy_metadata =  "\\[\\s*[\\w:]+\\s*\\]";
+      if ($line =~ 
+          /^#@\s*(${test_select_re}\s*:)?\s*(${taxonomy_metadata})\s*$/ ) {
+        print "Skipping taxonomy line: $line" if ${DTP_DEBUG};
+        next;
+      }
+
+      # now match selection: key/value pairs; re-match leading comment
+      # to be safe (differentiating from comments)
       if ($line =~ /^#@\s*(${test_select_re})\s*:\s*(.+)/) {
 	my $test_selection = $1;
 	my $test_options = $2;
