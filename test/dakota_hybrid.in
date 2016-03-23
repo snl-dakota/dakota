@@ -7,12 +7,22 @@
 
 # Hybrid optimization on the unconstrained Textbook test problem using
 # 3 optimization methods in sequence:
-#    genetic algorithm (in Coliny) 
-#    coordinate pattern search (in Coliny) 
+#    genetic algorithm (in Coliny)
+#    coordinate pattern search (in Coliny)
 #    nonlinear programming (in OPT++)
 # This provides an initial global search using a derivative-free method,
 # followed by a local search using a derivative-free method, with a final
 # local search using a full Newton method.
+
+#@ [taxonomy:start]
+#@ s0: [analysis:Optimization]
+#@ s0: [method:GeneticAlgorithm]
+#@ s0: [goal:Global]
+#@ s0: [goal:BoundConstraints]
+#@ s0: [variable:Continuous]
+#@ s0: [model:MultiModal]
+#@ s0: [model:NoDerivatives]
+#@ [taxonomy:end]
 
 environment
   top_method_pointer = 'HS'
