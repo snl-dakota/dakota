@@ -50,6 +50,11 @@ namespace Dakota
 	{	
 		#pragma region Class Constructor:
 		
+	        // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+	        // Enforce an LHS default for this method.
+	        if (!sampleType)
+		  sampleType = SUBMETHOD_LHS;
+
 		AMSC = NULL;
 
 		//Defaults are set before parsing input parameters

@@ -5,6 +5,16 @@
 #@ s4: DakotaConfig=HAVE_NLPQL
 #@ s9: DakotaConfig=HAVE_NLPQL
 #@ s0: UserMan=textbook_opt_multiobj1
+#@ [taxonomy:start]
+#@ s0: [analysis:Optimization]
+#@ s0: [method:SQP]
+#@ s0: [goal:Local]
+#@ s0: [goal:BoundConstraints]
+#@ s0: [variable:Continuous]
+#@ s0: [model:Smooth]
+#@ s0: [model:FirstDerivatives]
+#@ [taxonomy:end]
+
 # DAKOTA INPUT FILE - dakota_multiobj1.in	
 # Dakota Input File: textbook_opt_multiobj1.in            #s0
 

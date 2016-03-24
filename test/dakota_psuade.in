@@ -1,8 +1,17 @@
 #@ s1: DependsOn=s0
 #@ s1: ExecArgs='-post_run dakota_psuade.0.dat::'
 #@ s0: UserMan=morris_ps_moat
+#@ [taxonomy:start]
+#@ s0: [analysis:SensitivityAnalysis]
+#@ s0: [method:DACE]
+#@ s0: [goal:Correlations]
+#@ s0: [variable:Continuous]
+#@ s0: [model:Smooth]
+#@ [taxonomy:end]
+
 # DAKOTA INPUT FILE : dakota_psuade.in
 # Dakota Input File: morris_ps_moat.in      #s0
+
 environment                                 #s0,#s1
   tabular_data					                    #s0
     tabular_data_file 'dakota_psuade.0.dat'	#s0

@@ -1,5 +1,15 @@
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ s0: UserMan=textbook_opt_ouu1
+#@ [taxonomy:start]
+#@ s0: [analysis:Optimization]
+#@ s0: [method:SQP]
+#@ s0: [goal:Local]
+#@ s0: [goal:BoundAndNonLinearConstraints]
+#@ s0: [variable:Continuous]
+#@ s0: [model:Smooth]
+#@ s0: [model:EstimatedFirstDerivatives]
+#@ [taxonomy:end]
+
 # DAKOTA Input File: dakota_ouu1_tb.in
 # Dakota Input File: textbook_opt_ouu1.in             #s0
 # Optimization under uncertainty

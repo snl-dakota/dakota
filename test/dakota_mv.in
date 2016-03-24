@@ -1,7 +1,16 @@
 #@ s*: Label=SmokeTest
 #@ s0: UserMan=textbook_uq_meanvalue
+#@ [taxonomy:start]
+#@ s0: [analysis:UQ]
+#@ s0: [method:Reliability]
+#@ s0: [goal:FailureProbabilities]
+#@ s0: [variable:Continuous]
+#@ s0: [model:Smooth]
+#@ [taxonomy:end]
+
 # DAKOTA INPUT FILE - dakota_mv.in
 # Dakota Input File: textbook_uq_meanvalue.in     #s0
+
 environment
   #graphics
 

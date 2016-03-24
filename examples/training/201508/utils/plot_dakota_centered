@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
-#import readdat as rd
+# The default matplotlib backend for Enthought Canopy on CentOS 6.7 ("Qt3Agg")
+# does not display plots correctly; the first figure window pops up, but no
+# plot shows. Switching to TkAgg fixed it. (Uncomment the following two lines)
+# import matplotlib
+# matplotlib.use("TkAgg")
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+
 
 def from_dat(f):
     """Read in a dakota tabular file and create a DataFrame."""  
@@ -100,7 +106,8 @@ for v in variables:
     # from the nominal evaluation, and sort by variable value
     steps = raw[ [v]+responses ][raw[v].isin(uniqueVals[1:])]
     steps = steps.append(nominal[ [v] + responses],ignore_index=True)
-    steps = steps.sort(v)
+    #steps = steps.sort(v)
+    steps = steps.sort_values(by=v)
     if len(steps) % 2 == 0: # basic test: must have odd number of rows
         print >> sys.stderr,"ERROR: Unexpected number of steps for '%s'." % v
         sys.exit(1)

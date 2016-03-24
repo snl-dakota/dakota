@@ -49,7 +49,12 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   percentVarianceExplained(
     probDescDB.get_real("method.percent_variance_explained"))
-{ 
+{
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
 }

@@ -2,6 +2,16 @@
 #@ s5: DakotaConfig=HAVE_NPSOL
 #@ s4: UserMan=cylhead_opt_npsol
 #@ s5: UserMan=cantilever_opt_npsol
+#@ [taxonomy:start]
+#@ s4-5: [analysis:Optimization]
+#@ s4-5: [method:SQP]
+#@ s4-5: [goal:Local]
+#@ s4-5: [goal:BoundAndNonLinearConstraints]
+#@ s4-5: [variable:Continuous]
+#@ s4-5: [model:Smooth]
+#@ s4-5: [model:EstimatedFirstDerivatives]
+#@ [taxonomy:end]
+
 # Tests from the Additional Examples chapter in the DAKOTA Users Manual
 ## Dakota Input File: cylhead_opt_npsol.in    #s4
 ## Dakota Input File: cantilever_opt_npsol.in #s5

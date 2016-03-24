@@ -48,17 +48,15 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   wilksFlag(probDescDB.get_bool("method.wilks")),
   numLHSRuns(0)
 {
+  // pushed down as some derived classes (MLMC) use a MC default
+  //if (!sampleType)
+  //  sampleType = SUBMETHOD_LHS;
+
   if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(-1);
   }
-
-  // Since the sampleType is shared with other iterators for other purposes,
-  // its default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).  Enforce an LHS
-  // default here.
-  if (!sampleType)
-    sampleType = SUBMETHOD_LHS;
 
   // initialize finalStatistics using the default statistics set
   initialize_final_statistics();
@@ -195,10 +193,9 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
-  samplesIncrement(0),
-  statsFlag(true), allDataFlag(true), samplingVarsMode(ACTIVE),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), backfillFlag(false),
-  numLHSRuns(0)
+  samplesIncrement(0), statsFlag(true), allDataFlag(true),
+  samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(false), backfillFlag(false), numLHSRuns(0)
 {
   allSamples = sample_matrix; compactMode = true;
   samplesRef = numSamples = samplesSpec;
