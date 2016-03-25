@@ -2,7 +2,13 @@
 # reference manual generator.  Building these tools requires java
 # development kit, probed for at top-level.
 
-set(DAKOTA_JAVA_UTIL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gov/sandia/dart/dakota")
+if (${CMAKE_VERSION} VERSION_EQUAL 3.0 OR ${CMAKE_VERSION} VERSION_GREATER 3.0)
+  # CMake 3.0 and newer choke on the absolute path
+  set(DAKOTA_JAVA_UTIL_DIR "gov/sandia/dart/dakota")
+else()
+  # CMake 2.8.9 seems to require it
+  set(DAKOTA_JAVA_UTIL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gov/sandia/dart/dakota")
+endif()
 
 # Translates dakota.xml to dakota.input.nspec
 if (ENABLE_SPEC_MAINT)
