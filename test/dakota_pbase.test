@@ -6875,6 +6875,38 @@ response_fn_1 -9.99808e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        ssv_1 -9.99808e-01 
+Test Number 18 succeeded
+<<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 100 grad (100 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
+  response_fn_1: 231 val (231 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
+  response_fn_1: 231 val (231 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Coefficients of Polynomial Chaos Expansion for response_fn_1:
+  1.8753589735977042e+02  He0  He0  He0  He0  He0
+  -8.4092343989877349e+01  He1  He0  He0  He0  He0
+  7.8392178850479088e-01  He0  He1  He0  He0  He0
+  6.1961445843694771e-02  He0  He0  He1  He0  He0
+  -4.5505860191797955e-02  He0  He0  He0  He1  He0
+  9.0199851420468824e-03  He0  He0  He0  He0  He1
+  1.0202701165024902e+01  He2  He0  He0  He0  He0
+  7.1148844855214069e-02  He1  He1  He0  He0  He0
+  2.4385149449260752e+00  He0  He2  He0  He0  He0
+  1.5706347439823132e-01  He1  He0  He1  He0  He0
+  1.0732916612939143e+00  He0  He1  He1  He0  He0
+  1.0090802209460472e+00  He0  He0  He2  He0  He0
+  -4.1646735815438823e-03  He1  He0  He0  He1  He0
+  1.3843318377068714e-01  He0  He1  He0  He1  He0
+  -5.4098505970790210e-02  He0  He0  He1  He1  He0
+  2.0864700932161345e-01  He0  He0  He0  He2  He0
+  2.7808139126987638e-02  He1  He0  He0  He0  He1
+  6.3012181862981242e-02  He0  He1  He0  He0  He1
+  -2.4356948055992197e-02  He0  He0  He1  He0  He1
+  2.6542443822718777e-02  He0  He0  He0  He1  He1
+  2.1458043258644244e-02  He0  He0  He0  He0  He2
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  1.8753589735977042e+02  8.5414050858665632e+01
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
