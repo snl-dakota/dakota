@@ -121,6 +121,7 @@ bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
   bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   initialize_random_variable_parameters();
+  transform_correlations();
 
   transform_model(truncatedBounds, boundVal);
 
@@ -1151,6 +1152,7 @@ void ProbabilityTransformModel::initialize_random_variable_correlations()
 {
   const RealSymMatrix& uncertain_corr
     = subModel.aleatory_distribution_parameters().uncertain_correlations();
+
   if (!uncertain_corr.empty()) {
     natafTransform.initialize_random_variable_correlations(uncertain_corr);
     if (numContDesVars || numContEpistUncVars || numContStateVars)
