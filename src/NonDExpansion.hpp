@@ -160,11 +160,6 @@ protected:
     unsigned short import_build_format = TABULAR_ANNOTATED,
     bool import_build_active_only = false);
 
-  /// reconstruct the expansionSampler for evaluating samples on uSpaceModel
-  void reconstruct_expansion_sampler(const String& import_approx_file,
-    unsigned short import_build_format = TABULAR_ANNOTATED,
-    bool import_build_active_only = false);
-
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
 
