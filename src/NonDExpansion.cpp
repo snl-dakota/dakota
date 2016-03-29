@@ -63,6 +63,13 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
+
+  // Get info from probDescDB for construct_expansion_sampler()
+  expansionSampleType = probDescDB.get_ushort("method.sample_type");
+  origSeed = probDescDB.get_int("method.random_seed");
+  expansionRng = probDescDB.get_string("method.random_number_generator");
+  integrationRefine = probDescDB.get_ushort("method.nond.integration_refinement");
+  refinementSamples = probDescDB.get_iv("method.nond.refinement_samples");
 }
 
 
@@ -505,13 +512,9 @@ construct_expansion_sampler(const String& import_approx_file,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-    int orig_seed = probDescDB.get_int("method.random_seed");
-    const String& rng
-      = probDescDB.get_string("method.random_number_generator");
-    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, sample_type,
-					  numSamplesOnExpansion, orig_seed,
-					  rng, false, ALEATORY_UNCERTAIN);
+    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, expansionSampleType,
+					  numSamplesOnExpansion, origSeed,
+					  expansionRng, false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // publish level mappings to expansion sampler, but suppress reliability
@@ -523,21 +526,17 @@ construct_expansion_sampler(const String& import_approx_file,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
 
-    unsigned short int_refine
-      = probDescDB.get_ushort("method.nond.integration_refinement");
     bool imp_sampling = false;
-    if (int_refine && respLevelTarget != RELIABILITIES)
+    if (integrationRefine && respLevelTarget != RELIABILITIES)
       for (i=0; i<numFunctions; ++i)
 	if (requestedRespLevels[i].length())
 	  { imp_sampling = true; break; }
 
     if (imp_sampling) {
       int refine_samples = 1000; // context-specific default
-      const IntVector& db_refine_samples = 
-        probDescDB.get_iv("method.nond.refinement_samples");
-      if (db_refine_samples.length() == 1)
-        refine_samples = db_refine_samples[0];
-      else if (db_refine_samples.length() > 1) {
+      if (refinementSamples.length() == 1)
+        refine_samples = refinementSamples[0];
+      else if (refinementSamples.length() > 1) {
         Cerr << "\nError (NonDExpansion): refinement_samples must be length "
              << "1 if specified." << std::endl;
         abort_handler(PARSE_ERROR);
@@ -545,8 +544,8 @@ construct_expansion_sampler(const String& import_approx_file,
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
-				   orig_seed, rng, vary_pattern, int_refine,
+	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType, refine_samples,
+				   origSeed, expansionRng, vary_pattern, integrationRefine,
 				   cdfFlag, false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
  

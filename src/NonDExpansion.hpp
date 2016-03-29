@@ -160,6 +160,11 @@ protected:
     unsigned short import_build_format = TABULAR_ANNOTATED,
     bool import_build_active_only = false);
 
+  /// reconstruct the expansionSampler for evaluating samples on uSpaceModel
+  void reconstruct_expansion_sampler(const String& import_approx_file,
+    unsigned short import_build_format = TABULAR_ANNOTATED,
+    bool import_build_active_only = false);
+
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
 
@@ -316,6 +321,21 @@ private:
   /// enumeration for controlling response covariance calculation and
   /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
   short covarianceControl;
+
+  /// integration refinement
+  unsigned short integrationRefine;
+
+  /// Expansion sampler random number generator
+  String expansionRng;
+
+  /// Expansion sampler random number generator seed
+  int origSeed;
+
+  /// Expansion sampler sample type
+  unsigned short expansionSampleType;
+
+  /// Refinement samples
+  IntVector refinementSamples;
 };
 
 

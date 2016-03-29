@@ -634,6 +634,14 @@ bool NonDPolynomialChaos::resize()
 
   initialize_u_space_model();
 
+  // -------------------------------------
+  // (Re)Construct expansionSampler, if needed
+  // -------------------------------------
+  construct_expansion_sampler(
+    importBuildPointsFile,
+    importBuildFormat,
+    importBuildActiveOnly);
+
   return true; // Always need to re-initialize communicators
 }
 
