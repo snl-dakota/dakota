@@ -503,7 +503,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    fullspaceSampler.set_communicators(pl_iter);
+    if (!mapping_initialized())
+      fullspaceSampler.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);
 

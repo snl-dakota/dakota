@@ -43,6 +43,10 @@ public:
   ~ProbabilityTransformModel();
 
 
+  /// perform correlation warping for variable types supported by Nataf
+  void transform_correlations();
+
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -264,6 +268,10 @@ private:
   static ProbabilityTransformModel* ptmInstance;
 
 };
+
+
+inline void ProbabilityTransformModel::transform_correlations()
+{ natafTransform.transform_correlations(); }
 
 
 inline void ProbabilityTransformModel::distribution_parameter_derivatives(

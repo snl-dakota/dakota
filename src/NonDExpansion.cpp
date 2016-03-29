@@ -63,6 +63,13 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
+
+  // Get info from probDescDB for construct_expansion_sampler()
+  expansionSampleType = probDescDB.get_ushort("method.sample_type");
+  origSeed = probDescDB.get_int("method.random_seed");
+  expansionRng = probDescDB.get_string("method.random_number_generator");
+  integrationRefine = probDescDB.get_ushort("method.nond.integration_refinement");
+  refinementSamples = probDescDB.get_iv("method.nond.refinement_samples");
 }
 
 
@@ -213,11 +220,6 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDExpansion::initialize(short u_space_type)
 {
-  // if multifidelity UQ with hierarchical surrogates, ordered_model_fidelities
-  // is from low to high --> initial expansion is for the low fidelity model
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
   initialize_random_variable_transformation();
   initialize_random_variable_types(u_space_type); // need x/u_types below
@@ -505,13 +507,9 @@ construct_expansion_sampler(const String& import_approx_file,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-    int orig_seed = probDescDB.get_int("method.random_seed");
-    const String& rng
-      = probDescDB.get_string("method.random_number_generator");
-    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, sample_type,
-					  numSamplesOnExpansion, orig_seed,
-					  rng, false, ALEATORY_UNCERTAIN);
+    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, expansionSampleType,
+					  numSamplesOnExpansion, origSeed,
+					  expansionRng, false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // publish level mappings to expansion sampler, but suppress reliability
@@ -523,21 +521,17 @@ construct_expansion_sampler(const String& import_approx_file,
       empty_rv_array, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, false); // suppress PDFs (managed locally)
 
-    unsigned short int_refine
-      = probDescDB.get_ushort("method.nond.integration_refinement");
     bool imp_sampling = false;
-    if (int_refine && respLevelTarget != RELIABILITIES)
+    if (integrationRefine && respLevelTarget != RELIABILITIES)
       for (i=0; i<numFunctions; ++i)
 	if (requestedRespLevels[i].length())
 	  { imp_sampling = true; break; }
 
     if (imp_sampling) {
       int refine_samples = 1000; // context-specific default
-      const IntVector& db_refine_samples = 
-        probDescDB.get_iv("method.nond.refinement_samples");
-      if (db_refine_samples.length() == 1)
-        refine_samples = db_refine_samples[0];
-      else if (db_refine_samples.length() > 1) {
+      if (refinementSamples.length() == 1)
+        refine_samples = refinementSamples[0];
+      else if (refinementSamples.length() > 1) {
         Cerr << "\nError (NonDExpansion): refinement_samples must be length "
              << "1 if specified." << std::endl;
         abort_handler(PARSE_ERROR);
@@ -545,8 +539,8 @@ construct_expansion_sampler(const String& import_approx_file,
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, sample_type, refine_samples,
-				   orig_seed, rng, vary_pattern, int_refine,
+	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType, refine_samples,
+				   origSeed, expansionRng, vary_pattern, integrationRefine,
 				   cdfFlag, false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
  
@@ -573,40 +567,12 @@ void NonDExpansion::core_run()
 {
   initialize_expansion();
 
-  // single fidelity or initial low fidelity expansion
-  compute_expansion();  // nominal iso/aniso expansion from input spec
-  if (refineType)
-    refine_expansion(); // uniform/adaptive p-/h-refinement
-
-  // manage multifidelity expansions
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    // output and capture low fidelity results
-    Cout << "\n--------------------------------------"
-	 << "\nMultifidelity UQ: low fidelity results"
-	 << "\n--------------------------------------\n\n";
-    compute_print_converged_results(true);
-    // store current state.  Note: a subsequent finalize_approximation()
-    // within refine_expansion() must distinguish between saved trial sets
-    // and stored expansions.
-    uSpaceModel.store_approximation();
-
-    // change HierarchSurrModel::responseMode to model discrepancy
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-    increment_specification_sequence(); // advance from LF to discrepancy spec
-    update_expansion();   // nominal iso/aniso expansion from input spec
+  if (iteratedModel.surrogate_type() == "hierarchical")
+    multifidelity_expansion(); // multilevel / multifidelity expansion
+  else { // single fidelity expansion
+    compute_expansion();  // nominal iso/aniso expansion from input spec
     if (refineType)
       refine_expansion(); // uniform/adaptive p-/h-refinement
-    Cout << "\n-------------------------------------------"
-	 << "\nMultifidelity UQ: model discrepancy results"
-	 << "\n-------------------------------------------\n\n";
-    compute_print_converged_results(true);
-
-    // compute aggregate expansion and generate its statistics
-    uSpaceModel.combine_approximation(
-      iteratedModel.discrepancy_correction().correction_type());
-    Cout << "\n----------------------------------------------------"
-	 << "\nMultifidelity UQ: approximated high fidelity results"
-	 << "\n----------------------------------------------------\n\n";
   }
   
   // generate final results
@@ -981,6 +947,52 @@ void NonDExpansion::refine_expansion()
     bool converged_within_tol = (metric <= convergenceTol);
     finalize_sets(converged_within_tol); break;
   }
+}
+
+
+void NonDExpansion::multifidelity_expansion()
+{
+  // ordered_model_fidelities is from low to high --> initial expansion is LF
+  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+  iteratedModel.surrogate_model_indices(0);
+
+  // initial low fidelity/lowest discretization expansion
+  compute_expansion();  // nominal iso/aniso expansion from input spec
+  if (refineType)
+    refine_expansion(); // uniform/adaptive p-/h-refinement
+  // output and capture low fidelity results
+  Cout << "\n--------------------------------------"
+       << "\nMultifidelity UQ: low fidelity results"
+       << "\n--------------------------------------\n\n";
+  compute_print_converged_results(true);
+  // store current state for use in combine_approximation() below
+  uSpaceModel.store_approximation();
+
+  // change HierarchSurrModel::responseMode to model discrepancy
+  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+
+  size_t i, num_mf = iteratedModel.subordinate_models(false).size();
+  for (size_t i=1; i<num_mf; ++i) {
+    increment_specification_sequence(); // advance from LF to discrepancy spec
+    iteratedModel.surrogate_model_indices(i-1);
+    iteratedModel.truth_model_indices(i);
+    update_expansion();   // nominal iso/aniso expansion from input spec
+    if (refineType)
+      refine_expansion(); // uniform/adaptive p-/h-refinement
+    Cout << "\n-------------------------------------------"
+	 << "\nMultifidelity UQ: model discrepancy results"
+	 << "\n-------------------------------------------\n\n";
+    compute_print_converged_results(true);
+    uSpaceModel.store_approximation(); // for use in combine_approximation()
+  }
+
+  // compute aggregate expansion and generate its statistics
+  // TO DO: one call to aggregate all contributions?
+  uSpaceModel.combine_approximation(
+    iteratedModel.discrepancy_correction().correction_type());
+  Cout << "\n----------------------------------------------------"
+       << "\nMultifidelity UQ: approximated high fidelity results"
+       << "\n----------------------------------------------------\n\n";
 }
 
 

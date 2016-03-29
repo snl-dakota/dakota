@@ -82,18 +82,18 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
+  void multifidelity_expansion();
+
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);
 
-  void select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
-					unsigned short batch_size,
-					RealMatrix& best_samples);
+  void select_refinement_points_deprecated(
+    const RealVectorArray& candidate_samples, unsigned short batch_size,
+    RealMatrix& best_samples);
 
   void append(const RealMatrix& samples, const IntResponseMap& resp_map);
 
-  /// uniformly increment the order of the polynomial chaos expansion and
-  /// define a consistent grid increment
   void increment_order_and_grid();
 
   /// print the PCE coefficient array for the orthogonal basis
@@ -101,6 +101,16 @@ protected:
 
   /// archive the PCE coefficient array for the orthogonal basis
   void archive_coefficients();
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// special case of multifidelity_expansion() for multilevel allocation of
+  /// samples, mirroring NonDMultilevelSampling for least sq/compressed sensing
+  void multilevel_regression(size_t model_form);
+  /// increment the sequence in numSamplesOnModel for multilevel_regression()
+  void increment_sample_sequence(size_t num_samp);
 
 private:
 

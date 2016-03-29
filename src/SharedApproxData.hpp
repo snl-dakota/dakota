@@ -84,21 +84,21 @@ public:
   virtual size_t restoration_index();
   /// restore a previous state of the shared approximation data 
   virtual void pre_restore();
-  /// clean up saved storage following restoration 
+  /// clean up popped bookkeeping following restoration 
   virtual void post_restore();
   /// return index of i-th trailing trial set within restorable bookkeeping sets
   virtual size_t finalization_index(size_t i);
   /// finalize the shared approximation data following a set of increments
   virtual void pre_finalize();
-  /// clean up saved storage following aggregation
+  /// clean up popped bookkeeping following aggregation
   virtual void post_finalize();
 
   /// store the current state of the shared approximation data for
   /// later combination
   virtual void store();
-  /// aggregate the shared approximation data from current and saved states
-  virtual bool pre_combine(short corr_type);
-  /// clean up saved storage after aggregation
+  /// aggregate the shared approximation data from current and stored states
+  virtual size_t pre_combine(short corr_type);
+  /// clean up stored data sets after aggregation
   virtual void post_combine(short corr_type);
 
   //

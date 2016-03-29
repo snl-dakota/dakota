@@ -1270,10 +1270,10 @@ void Interface::clear_all()
 }
 
 
-void Interface::clear_saved()
+void Interface::clear_popped()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_saved();
+    interfaceRep->clear_popped();
   else { // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
   }

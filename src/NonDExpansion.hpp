@@ -94,6 +94,9 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
+  /// construct a multifidelity expansion, across model forms or
+  /// discretization levels
+  virtual void multifidelity_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
   /// archive expansion coefficients, as supported by derived instance
@@ -316,6 +319,21 @@ private:
   /// enumeration for controlling response covariance calculation and
   /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
   short covarianceControl;
+
+  /// integration refinement
+  unsigned short integrationRefine;
+
+  /// Expansion sampler random number generator
+  String expansionRng;
+
+  /// Expansion sampler random number generator seed
+  int origSeed;
+
+  /// Expansion sampler sample type
+  unsigned short expansionSampleType;
+
+  /// Refinement samples
+  IntVector refinementSamples;
 };
 
 

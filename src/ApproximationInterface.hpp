@@ -114,7 +114,7 @@ protected:
 
   void clear_current();
   void clear_all();
-  void clear_saved();
+  void clear_popped();
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
@@ -298,10 +298,10 @@ inline void ApproximationInterface::store_approximation()
 
 inline void ApproximationInterface::combine_approximation(short corr_type)
 {
-  bool swap = sharedData.pre_combine(corr_type); // do shared aggregation first
+  size_t swap_index = sharedData.pre_combine(corr_type);//shared aggregation 1st
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type, swap);
-  sharedData.post_combine(corr_type); // do shared cleanup last
+    functionSurfaces[*it].combine(corr_type, swap_index);
+  sharedData.post_combine(corr_type); // shared cleanup last
 }
 
 
@@ -319,10 +319,10 @@ inline void ApproximationInterface::clear_all()
 }
 
 
-inline void ApproximationInterface::clear_saved()
+inline void ApproximationInterface::clear_popped()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
-    functionSurfaces[*it].clear_saved();
+    functionSurfaces[*it].clear_popped();
 }
 
 
