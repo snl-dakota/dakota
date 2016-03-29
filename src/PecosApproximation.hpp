@@ -203,7 +203,7 @@ protected:
   void restore();
   void finalize();
   void store();
-  void combine(short corr_type, bool swap);
+  void combine(short corr_type, size_t swap_index);
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -522,7 +522,7 @@ inline void PecosApproximation::restore()
 
 inline void PecosApproximation::finalize()
 {
-  // base class implementation appends currentPoints with savedSDPArrays
+  // base class implementation appends currentPoints with popped data sets
   Approximation::finalize();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.finalize_coefficients();
@@ -538,15 +538,15 @@ inline void PecosApproximation::store()
 }
 
 
-inline void PecosApproximation::combine(short corr_type, bool swap)
+inline void PecosApproximation::combine(short corr_type, size_t swap_index)
 {
   // base class implementation manages approxData state
   //Approximation::combine(corr_type);
-  if (swap) approxData.swap();
+  if (swap_index != _NPOS) approxData.swap(swap_index);
 
   // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
   // PECOS combination type enumerations coincide.
-  pecosBasisApprox.combine_coefficients(corr_type, swap);
+  pecosBasisApprox.combine_coefficients(corr_type, swap_index);
 }
 
 

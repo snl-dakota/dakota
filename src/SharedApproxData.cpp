@@ -464,7 +464,7 @@ void SharedApproxData::store()
 }
 
 
-bool SharedApproxData::pre_combine(short corr_type)
+size_t SharedApproxData::pre_combine(short corr_type)
 {
   if (!dataRep) {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "

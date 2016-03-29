@@ -41,8 +41,8 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), approxLabel(approx_label), 
-  referenceCount(1)
+  sharedDataRep(shared_data.data_rep()), approxRep(NULL),
+  approxLabel(approx_label), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -345,7 +345,7 @@ void Approximation::restore()
     approxRep->restore();
   else
     popCountStack.push_back(
-      approxData.restore(sharedDataRep->restoration_index()));
+      approxData.push(sharedDataRep->restoration_index()));
 }
 
 
@@ -358,10 +358,10 @@ void Approximation::finalize()
     approxRep->finalize();
   else {
     // finalization has to apply restorations in the correct order
-    size_t i, num_restore = approxData.saved_trials(); // # of saved trial sets
+    size_t i, num_restore = approxData.popped_trials(); // # of popped trials
     for (i=0; i<num_restore; ++i)
-      approxData.restore(sharedDataRep->finalization_index(i), false);
-    clear_saved(); // clear only after process completed
+      approxData.push(sharedDataRep->finalization_index(i), false);
+    clear_popped(); // clear only after process completed
   }
 }
 
@@ -373,9 +373,9 @@ void Approximation::store()
 }
 
 
-void Approximation::combine(short corr_type, bool swap)
+void Approximation::combine(short corr_type, size_t swap_index)
 {
-  if (approxRep) approxRep->combine(corr_type, swap);
+  if (approxRep) approxRep->combine(corr_type, swap_index);
 //else           approxData.combine(); // base contribution; derived augments
 }
 

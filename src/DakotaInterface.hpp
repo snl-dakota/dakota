@@ -186,8 +186,8 @@ public:
   virtual void clear_current();
   /// clears all data from an approximation interface
   virtual void clear_all();
-  /// clears saved data (from pop invocations) from an approximation interface
-  virtual void clear_saved();
+  /// clears bookkeeping for popped data sets from an approximation interface
+  virtual void clear_popped();
 
   /// retrieve the SharedApproxData within an ApproximationInterface
   virtual SharedApproxData& shared_approximation();

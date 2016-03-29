@@ -153,7 +153,6 @@ void NonDMultilevelSampling::core_run()
   //         For MLMC, could seek adaptive selection of most correlated
   //         alternative (or a convex combination of alternatives).
 
-  size_t model_form = 0, soln_level = 0, num_mf = NLev.size();
   // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
   //   num_mf     = iteratedModel.model_hierarchy_depth();
   //   num_peer_i = iteratedModel.model_peer_breadth(i);
@@ -161,6 +160,11 @@ void NonDMultilevelSampling::core_run()
   // TO DO: this initial logic is limiting:
   // > allow MLMC and CVMC for either model forms or discretization levels
   // > separate method specs that both map to NonDMultilevelSampling ???
+
+  // TO DO: following pilot sample across levels and fidelities in mixed case,
+  // could pair models for CVMC based on estimation of rho2_LH.
+
+  size_t model_form = 0, soln_level = 0, num_mf = NLev.size();
   if (num_mf > 1) {
     size_t num_hf_lev = NLev[1].size();
     if (num_hf_lev > 1) { // && NLev[0].size() == num_hf_lev) {
@@ -236,13 +240,13 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_hf_l[lev];
-      // update total samples performed for this level
-      N_hf_l[lev] += numSamples;
 
       // aggregate variances across QoI for estimating N_hf_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
+	// update total samples performed for this level
+	N_hf_l[lev] += numSamples;
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
@@ -462,13 +466,13 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 
       // set the number of current samples from the defined increment
       numSamples = delta_N_l[lev];
-      // update total samples performed for this level
-      N_l[lev]  += numSamples;
 
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (numSamples) {
+	// update total samples performed for this level
+	N_l[lev] += numSamples;
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model

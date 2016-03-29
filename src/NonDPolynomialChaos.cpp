@@ -798,6 +798,7 @@ void NonDPolynomialChaos::compute_expansion()
   }
 }
 
+
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, 
@@ -1036,6 +1037,80 @@ void NonDPolynomialChaos::increment_specification_sequence()
 }
 
 
+void NonDPolynomialChaos::increment_sample_sequence(size_t num_samp)
+{
+  numSamplesOnModel = num_samp;
+  
+  bool update_exp = false, update_sampler = false, update_from_ratio = false,
+    err_flag = false;
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
+    err_flag = true; break;
+  case Pecos::SAMPLING:
+    //if () update_exp = true;
+    update_sampler = true; break;
+  case Pecos::ORTHOG_LEAST_INTERPOLATION:
+    update_sampler = true; break;
+  default: // regression
+    //if () update_exp = true;
+    update_sampler = true;
+    //if () // (fixed) collocation ratio
+    //  update_from_ratio = true;
+    break;
+  }
+
+  /*
+  UShortArray exp_order;
+  if (update_exp) {
+    // update expansion order within Pecos::SharedOrthogPolyApproxData
+    NonDIntegration::dimension_preference_to_anisotropic_order(
+      expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
+      exp_order);
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    shared_data_rep->expansion_order(exp_order);
+    if (update_from_ratio) { // update numSamplesOnModel from collocRatio
+      size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+    }
+  }
+  else if (update_sampler && tensorRegression) {
+    // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    exp_order = shared_data_rep->expansion_order();
+  }
+  */
+
+  // udpate sampler settings (NonDQuadrature or NonDSampling)
+  if (update_sampler) {
+    /*
+    if (tensorRegression) {
+      NonDQuadrature* nond_quad
+	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_quad->samples(numSamplesOnModel);
+      if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+	UShortArray dim_quad_order(numContinuousVars);
+	for (size_t i=0; i<numContinuousVars; ++i)
+	  dim_quad_order[i] = exp_order[i] + 1;
+        nond_quad->quadrature_order(dim_quad_order);
+      }
+      nond_quad->update(); // sanity check on sizes, likely a no-op
+    }
+    else { // enforce increment through sampling_reset()
+    */
+      // no lower bound on samples in the subiterator
+      uSpaceModel.subordinate_iterator().sampling_reference(0);
+      DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+      dfs_model->total_points(numSamplesOnModel);
+    //}
+  }
+}
+
+
 /** Used for uniform refinement of regression-based PCE. */
 void NonDPolynomialChaos::increment_order_and_grid()
 {
@@ -1127,19 +1202,130 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 }
 
 
-/*
-void NonDPolynomialChaos::multilevel_compressed_sensing()
+void NonDPolynomialChaos::multifidelity_expansion()
 {
-  for (lev=0; lev<num_lev; ++lev) { // borrow from MLMC loop
-
-    // set hierarchical model in discrepancy mode for active levels
-    RegressOrthogPolyApproximation* poly_approx_i = uSpaceModel.();
-    poly_approx_i->cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-    // Make MultipleSolutionLinearModelCrossValidationIterator cv_iterator class scope
-
+  size_t num_mf = iteratedModel.subordinate_models(false).size(),
+     num_hf_lev = iteratedModel.truth_model().solution_levels();
+     // for now, only SimulationModel supports solution_levels()
+  if (num_mf == 2 && num_hf_lev == 1)                     // multifidelity PCE
+    NonDExpansion::multifidelity_expansion();
+  else if (num_mf == 1 && num_hf_lev > 1 &&               // multilevel LLS/CS
+	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION)
+    multilevel_regression(0);
+  else {
+    Cerr << "Error: unsupported combination of fidelities and levels within "
+	 << "NonDPolynomialChaos::multilevel_expansion()." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 }
-*/
+
+
+void NonDPolynomialChaos::multilevel_regression(size_t model_form)
+{
+  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+
+  Model& truth_model  = iteratedModel.truth_model();
+  size_t lev, num_lev = truth_model.solution_levels(), // single model form
+    qoi, iter = 0, num_samp, new_N_l;
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+
+  // Initialize for pilot sample
+  SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);
+  N_l.assign(num_lev, 20); // TO DO
+  Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
+
+  // now converge on sample counts per level (N_l)
+  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
+
+    // set initial surrogate responseMode and model indices for lev 0
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
+
+    sum_sqrt_var_cost = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+
+      if (lev) {
+	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
+	iteratedModel.surrogate_model_indices(model_form, lev-1);
+	iteratedModel.truth_model_indices(model_form,     lev);
+      }
+
+      // set the number of current samples from the defined increment
+      num_samp = delta_N_l[lev];
+
+      // aggregate variances across QoI for estimating N_l (justification:
+      // for independent QoI, sum of QoI variances = variance of QoI sum)
+      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
+      if (num_samp) {
+	N_l[lev] += num_samp; // update total samples evaluated for this level
+
+	increment_sample_sequence(num_samp);
+	if (lev == 0 && iter == 0) compute_expansion(); // initializations
+	else                        update_expansion();
+
+        // compute and accumulate variance of mean estimator from the set of
+	// fold results within the selected settings from cross-validation:
+	agg_var_l = 0.;
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  PecosApproximation* poly_approx_rep
+	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+
+	  // TO DO
+	  Real cv_var_i = 0.;//poly_approx_rep->cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+	  // Make MultipleSolutionLinearModelCrossValidationIterator
+	  // cv_iterator class scope; fold in John's patch
+	  
+	  agg_var_l += cv_var_i;
+	}
+	uSpaceModel.store_approximation();
+      }
+
+      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      // MSE reference is MC applied to HF:
+      if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
+    }
+    // compute epsilon target based on relative tolerance: total MSE = eps^2
+    // which is equally apportioned (eps^2 / 2) among discretization MSE and
+    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+    // discretization error, we compute an initial estimator variance and
+    // then seek to reduce it by a relative_factor <= 1.
+    if (iter == 0) { // eps^2 / 2 = var * relative factor
+      eps_sq_div_2 = estimator_var0 * convergenceTol;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+    }
+
+    // update targets based on variance estimates
+    Real fact = sum_sqrt_var_cost / eps_sq_div_2;
+    for (lev=0; lev<num_lev; ++lev) {
+      // Equation 3.9 in CTR Annual Research Briefs:
+      // "A multifidelity control variate approach for the multilevel Monte 
+      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
+      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
+      delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
+    }
+    ++iter;
+    Cout << "\nML PCE iteration " << iter << " sample increments:\n"
+	 << delta_N_l << std::endl;
+  }
+
+  // compute aggregate expansion and generate its statistics
+  // TO DO: one call to aggregate all contributions?
+  uSpaceModel.combine_approximation(
+    iteratedModel.discrepancy_correction().correction_type());
+
+  // compute the equivalent number of HF evaluations
+  Real equivHFEvals = N_l[0] * cost[0]; // first level is single eval
+  for (lev=1; lev<num_lev; ++lev) // subsequent levels incur 2 model costs
+    equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
+  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+  Cout << "\nML PCE equivalent HF evaluations = " << equivHFEvals << std::endl;
+}
 
 
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)

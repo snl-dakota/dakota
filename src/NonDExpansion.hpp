@@ -94,6 +94,9 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
+  /// construct a multifidelity expansion, across model forms or
+  /// discretization levels
+  virtual void multifidelity_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
   /// archive expansion coefficients, as supported by derived instance

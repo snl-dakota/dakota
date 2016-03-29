@@ -85,7 +85,7 @@ public:
   /// store current approximation for later combination
   virtual void store();
   /// combine current approximation with previously stored approximation
-  virtual void combine(short corr_type, bool swap);
+  virtual void combine(short corr_type, size_t swap_index);
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
@@ -112,7 +112,8 @@ public:
   virtual Real diagnostic(const String& metric_type);
   /// retrieve diagnostic metrics for the diagnostic types specified, applying 
   // num_folds-cross validation
-  virtual RealArray cv_diagnostic(const StringArray& metric_types, unsigned num_folds);
+  virtual RealArray cv_diagnostic(const StringArray& metric_types,
+				  unsigned num_folds);
   /// compute and print all requested diagnostics and cross-validation 
   virtual void primary_diagnostics(int fn_index);
   /// compute requested diagnostics for user provided challenge pts
@@ -209,8 +210,8 @@ public:
   void clear_anchor();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
-  /// clear popCountStack and SurrogateData::saved{Vars,Resp}Trials
-  void clear_saved();
+  /// clear popCountStack and SurrogateData::popped{Vars,Resp}Trials
+  void clear_popped();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -438,13 +439,13 @@ inline void Approximation::clear_data()
 }
 
 
-inline void Approximation::clear_saved()
+inline void Approximation::clear_popped()
 {
   if (approxRep) // envelope fwd to letter
-    approxRep->clear_saved();
+    approxRep->clear_popped();
   else { // not virtual: base class implementation
     popCountStack.clear();
-    approxData.clear_saved();
+    approxData.clear_popped();
   }
 }
 
