@@ -965,14 +965,15 @@ void NonDExpansion::multifidelity_expansion()
        << "\nMultifidelity UQ: low fidelity results"
        << "\n--------------------------------------\n\n";
   compute_print_converged_results(true);
-  // store current state for use in combine_approximation() below
-  uSpaceModel.store_approximation();
 
   // change HierarchSurrModel::responseMode to model discrepancy
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
   size_t i, num_mf = iteratedModel.subordinate_models(false).size();
   for (size_t i=1; i<num_mf; ++i) {
+    // store current state for use in combine_approximation() below
+    uSpaceModel.store_approximation(); // for use in combine_approximation()
+
     increment_specification_sequence(); // advance from LF to discrepancy spec
     iteratedModel.surrogate_model_indices(i-1);
     iteratedModel.truth_model_indices(i);
@@ -983,7 +984,6 @@ void NonDExpansion::multifidelity_expansion()
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
     compute_print_converged_results(true);
-    uSpaceModel.store_approximation(); // for use in combine_approximation()
   }
 
   // compute aggregate expansion and generate its statistics
