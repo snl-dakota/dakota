@@ -25,6 +25,9 @@ method,
 #	    diagonal filename 'dakota_cantilever_queso.diag.dat'	  #p2
 #	    matrix   filename 'dakota_cantilever_queso.matrix.dat'	#p3
 	  logit_transform         # default is off
+	output debug
+	probability_levels 0.05 0.1 
+			   0.05 0.1
 
 variables,								
         uniform_uncertain 2
