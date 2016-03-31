@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1875 distinct keywords (plus 251 aliases) **/
+/** 1873 distinct keywords (plus 249 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2593,27 +2593,25 @@ static KeyWord
 		{"scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqScales)},
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
-	kw_404[20] = {
-		{"calibration_data",8,5,7,0,kw_398,0.,0.,0,N_rem(true,calibrationDataFlag)},
-		{"calibration_data_file",11,6,7,0,kw_400,0.,0.,0,N_rem(str,scalarDataFileName)},
-		{"calibration_term_scale_types",0x807,0,4,0,0,0.,0.,13,N_rem(strL,primaryRespFnScaleTypes)},
-		{"calibration_term_scales",0x806,0,5,0,0,0.,0.,13,N_rem(RealDL,primaryRespFnScales)},
-		{"calibration_weights",6,0,6,0,0,0.,0.,15,N_rem(RealDL,primaryRespFnWeights)},
-		{"descriptors",15,0,1,0,0,0.,0.,0,N_rem(strL,responseLabels)},
-		{"field_calibration_terms",0x29,3,3,0,kw_401,0.,0.,0,N_rem(sizet,numFieldLeastSqTerms)},
-		{"least_squares_data_file",3,6,7,0,kw_400,0.,0.,-6,N_rem(str,scalarDataFileName)},
-		{"least_squares_term_scale_types",0x807,0,4,0,0,0.,0.,7,N_rem(strL,primaryRespFnScaleTypes)},
-		{"least_squares_term_scales",0x806,0,5,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnScales)},
-		{"least_squares_weights",6,0,6,0,0,0.,0.,9,N_rem(RealDL,primaryRespFnWeights)},
-		{"nonlinear_equality_constraints",0x29,6,9,0,kw_402,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
-		{"nonlinear_inequality_constraints",0x29,8,8,0,kw_403,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
-		{"num_nonlinear_equality_constraints",0x21,6,9,0,kw_402,0.,0.,-2,N_rem(sizet,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x21,8,8,0,kw_403,0.,0.,-2,N_rem(sizet,numNonlinearIneqConstraints)},
-		{"primary_scale_types",0x80f,0,4,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
-		{"primary_scales",0x80e,0,5,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
-		{"response_descriptors",7,0,1,0,0,0.,0.,-12,N_rem(strL,responseLabels)},
-		{"scalar_calibration_terms",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numScalarLeastSqTerms)},
-		{"weights",14,0,6,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
+	kw_404[18] = {
+		{"calibration_data",8,5,6,0,kw_398,0.,0.,0,N_rem(true,calibrationDataFlag)},
+		{"calibration_data_file",11,6,6,0,kw_400,0.,0.,0,N_rem(str,scalarDataFileName)},
+		{"calibration_term_scale_types",0x807,0,3,0,0,0.,0.,12,N_rem(strL,primaryRespFnScaleTypes)},
+		{"calibration_term_scales",0x806,0,4,0,0,0.,0.,12,N_rem(RealDL,primaryRespFnScales)},
+		{"calibration_weights",6,0,5,0,0,0.,0.,13,N_rem(RealDL,primaryRespFnWeights)},
+		{"field_calibration_terms",0x29,3,2,0,kw_401,0.,0.,0,N_rem(sizet,numFieldLeastSqTerms)},
+		{"least_squares_data_file",3,6,6,0,kw_400,0.,0.,-5,N_rem(str,scalarDataFileName)},
+		{"least_squares_term_scale_types",0x807,0,3,0,0,0.,0.,7,N_rem(strL,primaryRespFnScaleTypes)},
+		{"least_squares_term_scales",0x806,0,4,0,0,0.,0.,7,N_rem(RealDL,primaryRespFnScales)},
+		{"least_squares_weights",6,0,5,0,0,0.,0.,8,N_rem(RealDL,primaryRespFnWeights)},
+		{"nonlinear_equality_constraints",0x29,6,8,0,kw_402,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
+		{"nonlinear_inequality_constraints",0x29,8,7,0,kw_403,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"num_nonlinear_equality_constraints",0x21,6,8,0,kw_402,0.,0.,-2,N_rem(sizet,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x21,8,7,0,kw_403,0.,0.,-2,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"primary_scale_types",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
+		{"primary_scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
+		{"scalar_calibration_terms",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numScalarLeastSqTerms)},
+		{"weights",14,0,5,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
 		},
 	kw_405[4] = {
 		{"absolute",8,0,2,0,0,0.,0.,0,N_rem(lit,fdGradStepType_absolute)},
@@ -2680,37 +2678,33 @@ static KeyWord
 		{"scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqScales)},
 		{"upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
-	kw_415[17] = {
-		{"descriptors",15,0,1,0,0,0.,0.,0,N_rem(strL,responseLabels)},
-		{"field_objectives",0x29,3,9,0,kw_412,0.,0.,0,N_rem(sizet,numFieldObjectiveFunctions)},
-		{"multi_objective_weights",6,0,5,0,0,0.,0.,14,N_rem(RealDL,primaryRespFnWeights)},
-		{"nonlinear_equality_constraints",0x29,6,7,0,kw_413,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
-		{"nonlinear_inequality_constraints",0x29,8,6,0,kw_414,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
-		{"num_field_objectives",0x21,3,9,0,kw_412,0.,0.,-4,N_rem(sizet,numFieldObjectiveFunctions)},
-		{"num_nonlinear_equality_constraints",0x21,6,7,0,kw_413,0.,0.,-3,N_rem(sizet,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x21,8,6,0,kw_414,0.,0.,-3,N_rem(sizet,numNonlinearIneqConstraints)},
-		{"num_scalar_objectives",0x21,0,8,0,0,0.,0.,6,N_rem(sizet,numScalarObjectiveFunctions)},
-		{"objective_function_scale_types",0x807,0,3,0,0,0.,0.,2,N_rem(strL,primaryRespFnScaleTypes)},
-		{"objective_function_scales",0x806,0,4,0,0,0.,0.,2,N_rem(RealDL,primaryRespFnScales)},
-		{"primary_scale_types",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
-		{"primary_scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
-		{"response_descriptors",7,0,1,0,0,0.,0.,-13,N_rem(strL,responseLabels)},
-		{"scalar_objectives",0x29,0,8,0,0,0.,0.,0,N_rem(sizet,numScalarObjectiveFunctions)},
-		{"sense",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,primaryRespFnSense)},
-		{"weights",14,0,5,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
+	kw_415[15] = {
+		{"field_objectives",0x29,3,8,0,kw_412,0.,0.,0,N_rem(sizet,numFieldObjectiveFunctions)},
+		{"multi_objective_weights",6,0,4,0,0,0.,0.,13,N_rem(RealDL,primaryRespFnWeights)},
+		{"nonlinear_equality_constraints",0x29,6,6,0,kw_413,0.,0.,0,N_rem(sizet,numNonlinearEqConstraints)},
+		{"nonlinear_inequality_constraints",0x29,8,5,0,kw_414,0.,0.,0,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"num_field_objectives",0x21,3,8,0,kw_412,0.,0.,-4,N_rem(sizet,numFieldObjectiveFunctions)},
+		{"num_nonlinear_equality_constraints",0x21,6,6,0,kw_413,0.,0.,-3,N_rem(sizet,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x21,8,5,0,kw_414,0.,0.,-3,N_rem(sizet,numNonlinearIneqConstraints)},
+		{"num_scalar_objectives",0x21,0,7,0,0,0.,0.,5,N_rem(sizet,numScalarObjectiveFunctions)},
+		{"objective_function_scale_types",0x807,0,2,0,0,0.,0.,2,N_rem(strL,primaryRespFnScaleTypes)},
+		{"objective_function_scales",0x806,0,3,0,0,0.,0.,2,N_rem(RealDL,primaryRespFnScales)},
+		{"primary_scale_types",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
+		{"primary_scales",0x80e,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
+		{"scalar_objectives",0x29,0,7,0,0,0.,0.,0,N_rem(sizet,numScalarObjectiveFunctions)},
+		{"sense",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnSense)},
+		{"weights",14,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)}
 		},
 	kw_416[3] = {
 		{"lengths",13,0,1,1,0,0.,0.,0,N_rem(ivec,fieldLengths)},
 		{"num_coordinates_per_field",13,0,2,0,0,0.,0.,0,N_rem(ivec,numCoordsPerField)},
 		{"read_field_coordinates",8,0,3,0,0,0.,0.,0,N_rem(true,readFieldCoords)}
 		},
-	kw_417[6] = {
-		{"descriptors",15,0,1,0,0,0.,0.,0,N_rem(strL,responseLabels)},
-		{"field_responses",0x29,3,3,0,kw_416,0.,0.,0,N_rem(sizet,numFieldResponseFunctions)},
-		{"num_field_responses",0x21,3,3,0,kw_416,0.,0.,-1,N_rem(sizet,numFieldResponseFunctions)},
-		{"num_scalar_responses",0x21,0,2,0,0,0.,0.,2,N_rem(sizet,numScalarResponseFunctions)},
-		{"response_descriptors",7,0,1,0,0,0.,0.,-4,N_rem(strL,responseLabels)},
-		{"scalar_responses",0x29,0,2,0,0,0.,0.,0,N_rem(sizet,numScalarResponseFunctions)}
+	kw_417[4] = {
+		{"field_responses",0x29,3,2,0,kw_416,0.,0.,0,N_rem(sizet,numFieldResponseFunctions)},
+		{"num_field_responses",0x21,3,2,0,kw_416,0.,0.,-1,N_rem(sizet,numFieldResponseFunctions)},
+		{"num_scalar_responses",0x21,0,1,0,0,0.,0.,1,N_rem(sizet,numScalarResponseFunctions)},
+		{"scalar_responses",0x29,0,1,0,0,0.,0.,0,N_rem(sizet,numScalarResponseFunctions)}
 		},
 	kw_418[7] = {
 		{"absolute",8,0,2,0,0,0.,0.,0,N_rem(lit,fdHessStepType_absolute)},
@@ -2728,24 +2722,26 @@ static KeyWord
 		{"bfgs",8,1,1,1,kw_419,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
 		{"sr1",8,0,1,1,0,0.,0.,0,N_rem(lit,quasiHessianType_sr1)}
 		},
-	kw_421[17] = {
-		{"analytic_gradients",8,0,3,2,0,0.,0.,0,N_rem(lit,gradientType_analytic)},
-		{"analytic_hessians",8,0,4,3,0,0.,0.,0,N_rem(lit,hessianType_analytic)},
-		{"calibration_terms",0x29,20,2,1,kw_404,0.,0.,0,N_rem(sizet,numLeastSqTerms)},
+	kw_421[19] = {
+		{"analytic_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_analytic)},
+		{"analytic_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_analytic)},
+		{"calibration_terms",0x29,18,3,1,kw_404,0.,0.,0,N_rem(sizet,numLeastSqTerms)},
+		{"descriptors",15,0,2,0,0,0.,0.,0,N_rem(strL,responseLabels)},
 		{"id_responses",11,0,1,0,0,0.,0.,0,N_rem(str,idResponses)},
-		{"least_squares_terms",0x21,20,2,1,kw_404,0.,0.,-2,N_rem(sizet,numLeastSqTerms)},
-		{"mixed_gradients",8,2,3,2,kw_407,0.,0.,0,N_rem(lit,gradientType_mixed)},
-		{"mixed_hessians",8,8,4,3,kw_411,0.,0.,0,N_rem(lit,hessianType_mixed)},
-		{"no_gradients",8,0,3,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
-		{"no_hessians",8,0,4,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
-		{"num_least_squares_terms",0x21,20,2,1,kw_404,0.,0.,-7,N_rem(sizet,numLeastSqTerms)},
-		{"num_objective_functions",0x21,17,2,1,kw_415,0.,0.,4,N_rem(sizet,numObjectiveFunctions)},
-		{"num_response_functions",0x21,6,2,1,kw_417,0.,0.,5,N_rem(sizet,numResponseFunctions)},
-		{"numerical_gradients",8,8,3,2,kw_406,0.,0.,0,N_rem(lit,gradientType_numerical)},
-		{"numerical_hessians",8,7,4,3,kw_418,0.,0.,0,N_rem(lit,hessianType_numerical)},
-		{"objective_functions",0x29,17,2,1,kw_415,0.,0.,0,N_rem(sizet,numObjectiveFunctions)},
-		{"quasi_hessians",8,2,4,3,kw_420,0.,0.,0,N_rem(lit,hessianType_quasi)},
-		{"response_functions",0x29,6,2,1,kw_417,0.,0.,0,N_rem(sizet,numResponseFunctions)}
+		{"least_squares_terms",0x21,18,3,1,kw_404,0.,0.,-3,N_rem(sizet,numLeastSqTerms)},
+		{"mixed_gradients",8,2,4,2,kw_407,0.,0.,0,N_rem(lit,gradientType_mixed)},
+		{"mixed_hessians",8,8,5,3,kw_411,0.,0.,0,N_rem(lit,hessianType_mixed)},
+		{"no_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
+		{"no_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
+		{"num_least_squares_terms",0x21,18,3,1,kw_404,0.,0.,-8,N_rem(sizet,numLeastSqTerms)},
+		{"num_objective_functions",0x21,15,3,1,kw_415,0.,0.,4,N_rem(sizet,numObjectiveFunctions)},
+		{"num_response_functions",0x21,4,3,1,kw_417,0.,0.,6,N_rem(sizet,numResponseFunctions)},
+		{"numerical_gradients",8,8,4,2,kw_406,0.,0.,0,N_rem(lit,gradientType_numerical)},
+		{"numerical_hessians",8,7,5,3,kw_418,0.,0.,0,N_rem(lit,hessianType_numerical)},
+		{"objective_functions",0x29,15,3,1,kw_415,0.,0.,0,N_rem(sizet,numObjectiveFunctions)},
+		{"quasi_hessians",8,2,5,3,kw_420,0.,0.,0,N_rem(lit,hessianType_quasi)},
+		{"response_descriptors",7,0,2,0,0,0.,0.,-14,N_rem(strL,responseLabels)},
+		{"response_functions",0x29,4,3,1,kw_417,0.,0.,0,N_rem(sizet,numResponseFunctions)}
 		},
 	kw_422[6] = {
 		{"aleatory",8,0,1,1,0,0.,0.,0,N_vam(type,varsView_ALEATORY_UNCERTAIN_VIEW)},
@@ -3164,7 +3160,7 @@ static KeyWord
 		{"interface",0x308,9,5,5,kw_26,0.,0.,0,N_ifm3(start,0,stop)},
 		{"method",0x308,87,2,2,kw_336,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,10,3,3,kw_395,0.,0.,0,N_mom3(start,0,stop)},
-		{"responses",0x308,17,6,6,kw_421,0.,0.,0,N_rem3(start,0,stop)},
+		{"responses",0x308,19,6,6,kw_421,0.,0.,0,N_rem3(start,0,stop)},
 		{"variables",0x308,34,4,4,kw_466,0.,0.,0,N_vam3(start,0,stop)}
 		};
 
