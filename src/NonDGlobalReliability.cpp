@@ -331,6 +331,18 @@ NonDGlobalReliability::~NonDGlobalReliability()
 { }
 
 
+bool NonDGlobalReliability::resize()
+{
+  bool parent_reinit_comms = NonDReliability::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+       << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
+}
+
+
 void NonDGlobalReliability::derived_init_communicators(ParLevLIter pl_iter)
 {
   iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
