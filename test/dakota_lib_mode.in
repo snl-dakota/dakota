@@ -41,9 +41,10 @@ method,
 	optpp_q_newton				#s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3
 	  max_iterations = 50			#s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3
 	  convergence_tolerance = 1e-5		#s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3
-#	polynomial_chaos				#p4,#p5,#p6,#p7
+#	polynomial_chaos                            #p4,#p5,#p6,#p7
 #	  expansion_order = 4 collocation_ratio = 2	#p4,#p5,#p6,#p7
-#	  use_derivatives     				#p4,#p5,#p6,#p7
+#	  use_derivatives     				              #p4,#p5,#p6,#p7
+#   seed = 74321                              #p4,#p5,#p6,#p7
 
 variables,
 	continuous_design = 2			#s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3

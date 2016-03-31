@@ -213,10 +213,12 @@ protected:
 
   /// output file stream for the MCMC chain (active based on output verbosity)
   std::ofstream exportMCMCStream;
+  std::ofstream filteredMCMCStream;
   /// output filename for the MCMC chain
   String exportMCMCFilename;
   /// output formatting options for MCMC export
   short exportMCMCFormat;
+  short filteredMCMCFormat;
 
 private:
 

@@ -2789,8 +2789,8 @@ KEYWORD12 interface
 
 KEYWORD12 responses
 	[ id_responses STRING ]
+	[ descriptors ALIAS response_descriptors STRINGLIST ]
 	( objective_functions ALIAS num_objective_functions INTEGER >= 0
-	  [ descriptors ALIAS response_descriptors STRINGLIST ]
 	  [ sense STRINGLIST ]
 	  [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST ]
 	  [ primary_scales ALIAS objective_function_scales REALLIST ]
@@ -2815,7 +2815,6 @@ KEYWORD12 responses
 	  )
 	|
 	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0
-	  [ descriptors ALIAS response_descriptors STRINGLIST ]
 	  [ scalar_calibration_terms INTEGER >= 0 ]
 	  [ field_calibration_terms INTEGER >= 0
 	    lengths INTEGERLIST
@@ -2869,7 +2868,6 @@ KEYWORD12 responses
 	  )
 	|
 	( response_functions ALIAS num_response_functions INTEGER >= 0
-	  [ descriptors ALIAS response_descriptors STRINGLIST ]
 	  [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 ]
 	  [ field_responses ALIAS num_field_responses INTEGER >= 0
 	    lengths INTEGERLIST

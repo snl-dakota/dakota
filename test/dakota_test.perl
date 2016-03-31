@@ -138,8 +138,8 @@ foreach my $file (@test_inputs) {
   my($base_filename, $output, $error, $input, $test, $restart_file) = 
     get_filenames($file);
 
-  if ($mode eq "base") {
-    # annotate baseline with test filenames
+  if ($mode eq "base" && ${last_test} >= 0) {
+    # annotate baseline with test filenames (if there exist ser/par subtests)
     print TEST_OUT "$base_filename\n";
   }
   elsif ($mode eq "run") { 
@@ -483,10 +483,10 @@ sub process_command_line {
     # default baseline filenames
     if (! $baseline_filename) {
       if ($parallelism eq "parallel") {
-        $baseline_filename = "dakota.pbase.test.new";
+        $baseline_filename = "dakota_pbase.test.new";
       }
       else {
-        $baseline_filename = "dakota.base.test.new";
+        $baseline_filename = "dakota_base.test.new";
       }
     }
   }

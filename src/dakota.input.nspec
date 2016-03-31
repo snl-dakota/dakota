@@ -2871,8 +2871,8 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 
 KEYWORD12 responses {N_rem3(start,0,stop)}
   [ id_responses STRING {N_rem(str,idResponses)} ]
+  [ descriptors ALIAS response_descriptors STRINGLIST {N_rem(strL,responseLabels)} ]
   ( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(sizet,numObjectiveFunctions)}
-    [ descriptors ALIAS response_descriptors STRINGLIST LEN objective_functions {N_rem(strL,responseLabels)} ]
     [ sense STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnSense)} ]
     [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
     [ primary_scales ALIAS objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
@@ -2897,7 +2897,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
    )
   |
   ( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
-    [ descriptors ALIAS response_descriptors STRINGLIST LEN calibration_terms {N_rem(strL,responseLabels)} ]
     [ scalar_calibration_terms INTEGER >= 0 {N_rem(sizet,numScalarLeastSqTerms)} ]
     [ field_calibration_terms INTEGER >= 0 {N_rem(sizet,numFieldLeastSqTerms)}
       lengths INTEGERLIST LEN calibration_terms {N_rem(ivec,fieldLengths)}
@@ -2961,7 +2960,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
    )
   |
   ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
-    [ descriptors ALIAS response_descriptors STRINGLIST LEN response_functions {N_rem(strL,responseLabels)} ]
     [ scalar_responses ALIAS num_scalar_responses INTEGER >= 0 {N_rem(sizet,numScalarResponseFunctions)} ]
     [ field_responses ALIAS num_field_responses INTEGER >= 0 {N_rem(sizet,numFieldResponseFunctions)}
       lengths INTEGERLIST {N_rem(ivec,fieldLengths)}

@@ -2678,16 +2678,16 @@ Test Number 2 succeeded
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 23
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 98 total (98 new, 0 duplicate)
+<<<<< Function evaluation summary: 116 total (116 new, 0 duplicate)
 <<<<< Best parameters          =
-                      6.2271967622e-01 x1
-                      1.1761084488e+00 x2
-                      1.5784521988e+00 x3
+                      6.2176284429e-01 x1
+                      1.1719871557e+00 x2
+                      1.5844871557e+00 x3
 <<<<< Best objective function  =
-                      1.3318448984e-01
+                      1.3804987393e-01
 <<<<< Best constraint values   =
-                     -2.0027442923e-01
-<<<<< Best data captured at function evaluation 74
+                     -1.9940454331e-01
+<<<<< Best data captured at function evaluation 98
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 383 total (383 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2992,6 +2992,8 @@ Test Number 29 succeeded
 dakota_cantilever_queso.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8691852474e+07 E
                       2.4998843409e+00 w
@@ -3007,6 +3009,8 @@ Sample moment statistics for each posterior variable:
              w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
+         stress: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8648655053e+07 E
                       2.5015668110e+00 w
@@ -3022,6 +3026,8 @@ Sample moment statistics for each posterior variable:
              w  2.5026433245e+00  3.0465652412e-03  3.0912842683e-01  5.2358311834e-02
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
+         stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8691852474e+07 E
                       2.4998843409e+00 w
@@ -3037,6 +3043,8 @@ Sample moment statistics for each posterior variable:
              w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 1468 total (1468 new, 0 duplicate)
+         stress: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1468 val (1468 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8648655053e+07 E
                       2.5015668110e+00 w
@@ -3052,6 +3060,8 @@ Sample moment statistics for each posterior variable:
              w  2.5026433245e+00  3.0465652412e-03  3.0912842683e-01  5.2358311834e-02
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 1762 total (1762 new, 0 duplicate)
+         stress: 1762 val (1762 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1762 val (1762 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8725945587e+07 E
                       2.4993381806e+00 w
@@ -3071,6 +3081,8 @@ Sample moment statistics for each posterior variable:
   CovMultResp2  1.0548221534e+00  1.8771627706e-01  6.6394070771e-01  5.6539171795e-01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
+         stress: 1800 val (1800 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 1800 val (1800 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8639753447e+07 E
                       2.5011742137e+00 w
@@ -3833,49 +3845,49 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-   1.9748778859e-14   P1   P1
+  -1.7862673849e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -9.4109365511e-15   P2   P1
-   2.5802982791e-14   P1   P2
+  -3.8295724787e-14   P2   P1
+   4.4619268292e-14   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-   4.0275530571e-15   P3   P1
-  -2.3670707157e-14   P2   P2
-   7.8104578112e-15   P1   P3
+  -4.4578679829e-14   P3   P1
+  -3.8895736591e-14   P2   P2
+  -6.1576007686e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
-   8.2798750542e-16   P1   P0
+  -2.3205421971e-15   P1   P0
   -1.0000000000e+00   P0   P1
    2.6666666667e+00   P2   P0
-   4.6723141239e-16   P1   P1
-  -6.9567689974e-16   P0   P2
-   8.4942063281e-16   P3   P0
-   3.7191113481e-16   P2   P1
-   6.6948679548e-16   P1   P2
-   5.8541564114e-16   P0   P3
-  -5.9280691228e-17   P4   P0
-  -7.2002193986e-16   P3   P1
-  -1.6063301579e-15   P2   P2
-   3.7929163475e-17   P1   P3
-  -4.8338713000e-16   P0   P4
+   3.2477588817e-16   P1   P1
+  -3.7604233830e-15   P0   P2
+   8.9274452429e-16   P3   P0
+  -2.5504324909e-16   P2   P1
+  -7.3346742398e-15   P1   P2
+  -1.0405063090e-15   P0   P3
+   2.5127326884e-15   P4   P0
+  -8.8081834104e-16   P3   P1
+  -5.0252420875e-15   P2   P2
+   2.2543517458e-16   P1   P3
+  -3.6410252364e-16   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.3333333333e+00   P0   P0
   -1.0000000000e+00   P1   P0
-   3.7874639760e-16   P0   P1
-  -5.4416270436e-16   P2   P0
-   1.0789091509e-15   P1   P1
+  -5.3461856403e-16   P0   P1
+   1.1411011135e-15   P2   P0
+   5.9880554382e-16   P1   P1
    2.6666666667e+00   P0   P2
-  -1.3057324527e-16   P3   P0
-  -6.9317566109e-16   P2   P1
-   6.8613149481e-16   P1   P2
-  -2.2589628213e-16   P0   P3
-  -6.6845343851e-16   P4   P0
-   1.2499701819e-15   P3   P1
-  -8.1948220243e-16   P2   P2
-   2.0108606728e-16   P1   P3
-  -7.5960834714e-17   P0   P4
+  -5.8839980010e-17   P3   P0
+   1.1403376041e-15   P2   P1
+   5.1380921107e-15   P1   P2
+   1.5062734913e-15   P0   P3
+  -1.1541039673e-15   P4   P0
+  -3.9405031047e-16   P3   P1
+   3.1657210985e-15   P2   P2
+  -9.4199697950e-16   P1   P3
+   5.0064097000e-16   P0   P4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.4400000000e+01  2.8211266465e+01
@@ -3888,49 +3900,49 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-   8.4720956249e-14   P1   P1
+  -1.7862673849e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-   1.5128696592e-15   P2   P1
-  -8.3208660345e-14   P1   P2
+  -3.8295724787e-14   P2   P1
+   4.4619268292e-14   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-  -6.2952416042e-15   P3   P1
-  -4.6207748484e-14   P2   P2
-   5.9841972106e-14   P1   P3
+  -4.4578679829e-14   P3   P1
+  -3.8895736591e-14   P2   P2
+  -6.1576007686e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
-   9.7095416697e-16   P1   P0
+  -2.3205421971e-15   P1   P0
   -1.0000000000e+00   P0   P1
    2.6666666667e+00   P2   P0
-  -7.9821838141e-15   P1   P1
-   8.3540715724e-17   P0   P2
-   1.7963399535e-16   P3   P0
-   3.1451763968e-15   P2   P1
-   5.2428220949e-15   P1   P2
-  -2.3828761258e-15   P0   P3
-   1.5592166124e-16   P4   P0
-  -1.9256033142e-15   P3   P1
-  -5.2444377114e-15   P2   P2
-  -6.7313804393e-15   P1   P3
-   1.1633328191e-15   P0   P4
+   3.2477588817e-16   P1   P1
+  -3.7604233830e-15   P0   P2
+   8.9274452429e-16   P3   P0
+  -2.5504324909e-16   P2   P1
+  -7.3346742398e-15   P1   P2
+  -1.0405063090e-15   P0   P3
+   2.5127326884e-15   P4   P0
+  -8.8081834104e-16   P3   P1
+  -5.0252420875e-15   P2   P2
+   2.2543517458e-16   P1   P3
+  -3.6410252364e-16   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.3333333333e+00   P0   P0
   -1.0000000000e+00   P1   P0
-   7.8574248280e-16   P0   P1
-  -1.7978813607e-15   P2   P0
-  -4.7301830009e-15   P1   P1
+  -5.3461856403e-16   P0   P1
+   1.1411011135e-15   P2   P0
+   5.9880554382e-16   P1   P1
    2.6666666667e+00   P0   P2
-   1.0778039721e-15   P3   P0
-   2.4783193760e-15   P2   P1
-   3.5938699844e-15   P1   P2
-  -6.8236907238e-16   P0   P3
-   7.3374899405e-17   P4   P0
-  -1.0877807184e-15   P3   P1
-  -4.4294237427e-15   P2   P2
-  -3.0711923254e-15   P1   P3
-   3.2718735537e-16   P0   P4
+  -5.8839980010e-17   P3   P0
+   1.1403376041e-15   P2   P1
+   5.1380921107e-15   P1   P2
+   1.5062734913e-15   P0   P3
+  -1.1541039673e-15   P4   P0
+  -3.9405031047e-16   P3   P1
+   3.1657210985e-15   P2   P2
+  -9.4199697950e-16   P1   P3
+   5.0064097000e-16   P0   P4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.4400000000e+01  2.8211266465e+01
@@ -3943,49 +3955,49 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-   9.5614743803e-16   P1   P1
+  -1.7862673849e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -1.2967461206e-14   P2   P1
-  -2.2825421491e-14   P1   P2
+  -3.8295724787e-14   P2   P1
+   4.4619268292e-14   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-   1.3522303440e-14   P3   P1
-   8.3004501543e-17   P2   P2
-  -1.2712752760e-14   P1   P3
+  -4.4578679829e-14   P3   P1
+  -3.8895736591e-14   P2   P2
+  -6.1576007686e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
-   1.8744255220e-17   P1   P0
+  -2.3205421971e-15   P1   P0
   -1.0000000000e+00   P0   P1
    2.6666666667e+00   P2   P0
-  -2.5895659780e-16   P1   P1
-   1.5369216703e-16   P0   P2
-  -6.5347457055e-16   P3   P0
-  -1.4265861340e-15   P2   P1
-  -2.5028802776e-16   P1   P2
-   7.1716267008e-16   P0   P3
-  -7.1707613732e-17   P4   P0
-   7.2105536698e-16   P3   P1
-   8.8659183211e-16   P2   P2
-   3.3384329728e-18   P1   P3
-   9.2581055882e-17   P0   P4
+   3.2477588817e-16   P1   P1
+  -3.7604233830e-15   P0   P2
+   8.9274452429e-16   P3   P0
+  -2.5504324909e-16   P2   P1
+  -7.3346742398e-15   P1   P2
+  -1.0405063090e-15   P0   P3
+   2.5127326884e-15   P4   P0
+  -8.8081834104e-16   P3   P1
+  -5.0252420875e-15   P2   P2
+   2.2543517458e-16   P1   P3
+  -3.6410252364e-16   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.3333333333e+00   P0   P0
   -1.0000000000e+00   P1   P0
-  -3.0584577231e-16   P0   P1
-   4.2503503706e-16   P2   P0
-  -1.1155053444e-15   P1   P1
+  -5.3461856403e-16   P0   P1
+   1.1411011135e-15   P2   P0
+   5.9880554382e-16   P1   P1
    2.6666666667e+00   P0   P2
-  -3.1521412732e-16   P3   P0
-  -1.3397504563e-15   P2   P1
-  -1.6826975228e-16   P1   P2
-  -5.3435649928e-16   P0   P3
-  -3.8023986139e-16   P4   P0
-  -7.7806904716e-16   P3   P1
-   3.3409311871e-16   P2   P2
-  -2.5973008528e-15   P1   P3
-   6.1720703921e-16   P0   P4
+  -5.8839980010e-17   P3   P0
+   1.1403376041e-15   P2   P1
+   5.1380921107e-15   P1   P2
+   1.5062734913e-15   P0   P3
+  -1.1541039673e-15   P4   P0
+  -3.9405031047e-16   P3   P1
+   3.1657210985e-15   P2   P2
+  -9.4199697950e-16   P1   P3
+   5.0064097000e-16   P0   P4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.4400000000e+01  2.8211266465e+01
@@ -3998,49 +4010,49 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
   -2.7200000000e+01   P1   P0
   -2.7200000000e+01   P0   P1
    2.5142857143e+01   P2   P0
-   2.9395296813e-14   P1   P1
+  -1.7862673849e-14   P1   P1
    2.5142857143e+01   P0   P2
   -1.2800000000e+01   P3   P0
-  -2.8489542805e-14   P2   P1
-   6.6871234535e-15   P1   P2
+  -3.8295724787e-14   P2   P1
+   4.4619268292e-14   P1   P2
   -1.2800000000e+01   P0   P3
    3.6571428571e+00   P4   P0
-   1.0816535790e-14   P3   P1
-  -3.6015212665e-14   P2   P2
-  -1.0765096469e-14   P1   P3
+  -4.4578679829e-14   P3   P1
+  -3.8895736591e-14   P2   P2
+  -6.1576007686e-14   P1   P3
    3.6571428571e+00   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    1.3333333333e+00   P0   P0
-  -6.0310136886e-16   P1   P0
+  -2.3205421971e-15   P1   P0
   -1.0000000000e+00   P0   P1
    2.6666666667e+00   P2   P0
-  -5.9990401659e-16   P1   P1
-  -7.2930596784e-16   P0   P2
-  -1.0621491414e-15   P3   P0
-  -4.7482571341e-16   P2   P1
-  -1.9106067010e-15   P1   P2
-  -4.4900253151e-16   P0   P3
-   2.5068705287e-16   P4   P0
-  -7.2110238600e-16   P3   P1
-  -2.1265263760e-15   P2   P2
-  -8.9278877588e-16   P1   P3
-   5.2989217730e-16   P0   P4
+   3.2477588817e-16   P1   P1
+  -3.7604233830e-15   P0   P2
+   8.9274452429e-16   P3   P0
+  -2.5504324909e-16   P2   P1
+  -7.3346742398e-15   P1   P2
+  -1.0405063090e-15   P0   P3
+   2.5127326884e-15   P4   P0
+  -8.8081834104e-16   P3   P1
+  -5.0252420875e-15   P2   P2
+   2.2543517458e-16   P1   P3
+  -3.6410252364e-16   P0   P4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.3333333333e+00   P0   P0
   -1.0000000000e+00   P1   P0
-   0.0000000000e+00   P0   P1
-   3.9789532661e-16   P2   P0
-   1.9121940529e-15   P1   P1
+  -5.3461856403e-16   P0   P1
+   1.1411011135e-15   P2   P0
+   5.9880554382e-16   P1   P1
    2.6666666667e+00   P0   P2
-   2.5258424704e-16   P3   P0
-   1.8465444411e-16   P2   P1
-   1.2472015965e-15   P1   P2
-  -7.6165769321e-16   P0   P3
-  -2.3381388585e-16   P4   P0
-   1.8027559650e-16   P3   P1
-   1.0293292565e-15   P2   P2
-   5.3083284445e-16   P1   P3
-  -3.0279552989e-16   P0   P4
+  -5.8839980010e-17   P3   P0
+   1.1403376041e-15   P2   P1
+   5.1380921107e-15   P1   P2
+   1.5062734913e-15   P0   P3
+  -1.1541039673e-15   P4   P0
+  -3.9405031047e-16   P3   P1
+   3.1657210985e-15   P2   P2
+  -9.4199697950e-16   P1   P3
+   5.0064097000e-16   P0   P4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.4400000000e+01  2.8211266465e+01
@@ -4523,8 +4535,8 @@ Test Number 6 succeeded
                      -2.5310242470e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  3.4097638473e-01  5.4603097828e-01 -6.1833846716e-01 -1.3464154243e-01
-            x2  3.9596984009e-01  4.1125796672e-01  8.4595997964e-01 -2.9695963772e-01
+            x1  3.4097638447e-01  5.4603097829e-01 -6.1833846657e-01 -1.3464154344e-01
+            x2  3.9596983992e-01  4.1125796667e-01  8.4595998041e-01 -2.9695963635e-01
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4823,8 +4835,8 @@ Test Number 26 succeeded
                      -2.5310242470e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.2762601301e-01  3.4069706924e-01 -8.2312637646e-01  4.8781598015e-01
-            x2  6.2770234402e-01  4.3051288947e-01  2.4182070084e-01 -9.4286419987e-01
+            x1  7.2762601300e-01  3.4069706924e-01 -8.2312637658e-01  4.8781598045e-01
+            x2  6.2770234401e-01  4.3051288945e-01  2.4182070093e-01 -9.4286419957e-01
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
