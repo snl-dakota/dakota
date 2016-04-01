@@ -960,9 +960,9 @@ void NonDExpansion::multifidelity_expansion()
   iteratedModel.surrogate_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
-  compute_expansion();  // nominal iso/aniso expansion from input spec
+  compute_expansion();  // nominal expansion from input spec
   if (refineType)
-    refine_expansion(); // uniform/adaptive p-/h-refinement
+    refine_expansion(); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -972,17 +972,18 @@ void NonDExpansion::multifidelity_expansion()
   // change HierarchSurrModel::responseMode to model discrepancy
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
+  // loop over each of the discrepancy levels
   size_t i, num_mf = iteratedModel.subordinate_models(false).size();
   for (size_t i=1; i<num_mf; ++i) {
     // store current state for use in combine_approximation() below
-    uSpaceModel.store_approximation(); // for use in combine_approximation()
+    uSpaceModel.store_approximation();
 
-    increment_specification_sequence(); // advance from LF to discrepancy spec
+    increment_specification_sequence(); // advance to next discrepancy spec
     iteratedModel.surrogate_model_indices(i-1);
     iteratedModel.truth_model_indices(i);
-    update_expansion();   // nominal iso/aniso expansion from input spec
+    update_expansion();   // nominal expansion from input spec
     if (refineType)
-      refine_expansion(); // uniform/adaptive p-/h-refinement
+      refine_expansion(); // uniform/adaptive refinement
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
@@ -990,7 +991,6 @@ void NonDExpansion::multifidelity_expansion()
   }
 
   // compute aggregate expansion and generate its statistics
-  // TO DO: one call to aggregate all contributions?
   uSpaceModel.combine_approximation(
     iteratedModel.discrepancy_correction().correction_type());
   Cout << "\n----------------------------------------------------"

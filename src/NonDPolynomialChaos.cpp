@@ -1228,24 +1228,27 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, num_samp, new_N_l, last_active = 0;
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-
+  // factors for relationship between variance of mean estimator and N_l
+  // (hard coded for right now; TO DO: fit params)
+  Real gamma = 1., k = 1., inv_k = 1./k, inv_kp1 = 1./(k+1.);
+  
   // Initialize for pilot sample
   SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);
-  N_l.assign(num_lev, 20); // TO DO
+  delta_N_l.assign(num_lev, 20); // TO DO: pilot sample spec
   Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
 
   // now converge on sample counts per level (N_l)
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
 
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
     iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
 
-    sum_sqrt_var_cost = 0.;
+    sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
       if (lev) {
@@ -1272,15 +1275,28 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	// fold results within the selected settings from cross-validation:
 	agg_var_l = 0.;
 	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  PecosApproximation* poly_approx_rep
+	  PecosApproximation* poly_approx_q
 	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
 
-	  // TO DO
-	  Real cv_var_i = 0.;//poly_approx_rep->cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-	  // Make MultipleSolutionLinearModelCrossValidationIterator
-	  // cv_iterator class scope; fold in John's patch
+	  // We must assume a functional dependence on N_l for formulating the
+	  // optimum of the cost functional subject to error balance constraint.
+	  //   Var(Q-hat) = sigma_Q^2 / (gamma N_l^k)
+	  // where Monte Carlo has gamma = k = 1.  For now we will select the
+	  // parameters k and gamma for PCE regression.
 	  
-	  agg_var_l += cv_var_i;
+	  // To fit these parameters, one approach is to numerically estimate
+	  // the variance in the mean estimator (alpha_0) from the variation
+	  // across the k folds for the selected CV settings.
+          //Real cv_var_i = poly_approx_rep->
+	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
+	  //   cv_iterator class scope)
+	  // To validate this approach, the actual
+	  // estimator variance can also be computed and compared with the CV
+	  // variance approximation (similar to traditional CV erro plots, but
+	  // predicting estimator variance instead of actual L2 fit error).
+	  
+	  agg_var_l += poly_approx_q->variance();
 	}
         // store all approximation levels, whenever recomputed.
 	// Note: the active approximation upon completion of this loop may be
@@ -1290,7 +1306,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	last_active = lev;
       }
 
-      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      sum_root_var_cost += std::pow(agg_var_l * std::pow(cost[lev],k), inv_kp1);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
     }
@@ -1306,12 +1322,12 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     }
 
     // update targets based on variance estimates
-    Real fact = sum_sqrt_var_cost / eps_sq_div_2;
+    Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
+      new_N_l = std::pow(agg_var[lev] / cost[lev], inv_kp1) * fact;
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
     ++iter;
