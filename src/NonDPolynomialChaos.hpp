@@ -110,7 +110,7 @@ protected:
   /// samples, mirroring NonDMultilevelSampling for least sq/compressed sensing
   void multilevel_regression(size_t model_form);
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t num_samp);
+  void increment_sample_sequence(size_t new_samp, size_t total_samp);
 
 private:
 

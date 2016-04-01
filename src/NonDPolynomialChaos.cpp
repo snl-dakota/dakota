@@ -1037,9 +1037,10 @@ void NonDPolynomialChaos::increment_specification_sequence()
 }
 
 
-void NonDPolynomialChaos::increment_sample_sequence(size_t num_samp)
+void NonDPolynomialChaos::
+increment_sample_sequence(size_t new_samp, size_t total_samp)
 {
-  numSamplesOnModel = num_samp;
+  numSamplesOnModel = new_samp;
   
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;
@@ -1053,41 +1054,26 @@ void NonDPolynomialChaos::increment_sample_sequence(size_t num_samp)
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
     update_sampler = true; break;
   default: // regression
-    //if () update_exp = true;
-    update_sampler = true;
-    //if () // (fixed) collocation ratio
-    //  update_from_ratio = true;
+    update_exp = update_sampler = true;
+    if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+      update_from_ratio = true;
     break;
   }
 
-  /*
   UShortArray exp_order;
   if (update_exp) {
-    // update expansion order within Pecos::SharedOrthogPolyApproxData
-    NonDIntegration::dimension_preference_to_anisotropic_order(
-      expOrderSeqSpec[sequenceIndex], dimPrefSpec, numContinuousVars,
-      exp_order);
     SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
       uSpaceModel.shared_approximation().data_rep();
+    exp_order = shared_data_rep->expansion_order(); // increment from ref
+    if (update_from_ratio) // update numSamplesOnModel from collocRatio
+      ratio_samples_to_order(collocRatio, total_samp, exp_order, true);
+    else
+      err_flag = true;
     shared_data_rep->expansion_order(exp_order);
-    if (update_from_ratio) { // update numSamplesOnModel from collocRatio
-      size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
-	Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
-	Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-    }
   }
-  else if (update_sampler && tensorRegression) {
-    // extract unchanged expansion order from Pecos::SharedOrthogPolyApproxData
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    exp_order = shared_data_rep->expansion_order();
-  }
-  */
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
-    /*
     if (tensorRegression) {
       NonDQuadrature* nond_quad
 	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1101,12 +1087,18 @@ void NonDPolynomialChaos::increment_sample_sequence(size_t num_samp)
       nond_quad->update(); // sanity check on sizes, likely a no-op
     }
     else { // enforce increment through sampling_reset()
-    */
       // no lower bound on samples in the subiterator
       uSpaceModel.subordinate_iterator().sampling_reference(0);
       DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+      // total including reuse from DB/file (does not include previous ML iter)
       dfs_model->total_points(numSamplesOnModel);
-    //}
+    }
+  }
+
+  if (err_flag) {
+    Cerr << "Error: option not yet supported in NonDPolynomialChaos::"
+	 << "increment_sample_sequence." << std::endl;
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1175,6 +1167,9 @@ void NonDPolynomialChaos::
 ratio_samples_to_order(Real colloc_ratio, int num_samples,
 		       UShortArray& exp_order, bool less_than_or_equal)
 {
+  if (exp_order.empty()) // ramp from order 0; else ramp from starting point
+    exp_order.assign(numContinuousVars, 0);
+
   // ramp expansion order to synchronize with num_samples and colloc_ratio
 
   size_t i, data_size = (useDerivs) ?
@@ -1227,13 +1222,13 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, num_samp, new_N_l, last_active = 0;
+    qoi, iter = 0, new_N_l, last_active = 0;
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and N_l
   // (hard coded for right now; TO DO: fit params)
-  Real gamma = 1., k = 1., inv_k = 1./k, inv_kp1 = 1./(k+1.);
+  Real gamma = 1., kappa = 1., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
   // Initialize for pilot sample
   SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);
@@ -1258,16 +1253,13 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	iteratedModel.truth_model_indices(model_form,     lev);
       }
 
-      // set the number of current samples from the defined increment
-      num_samp = delta_N_l[lev];
-
       // aggregate variances across QoI for estimating N_l (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
-      if (num_samp) {
-	N_l[lev] += num_samp; // update total samples evaluated for this level
+      if (delta_N_l[lev]) {
+	N_l[lev] += delta_N_l[lev]; // update total samples for this level
 
-	increment_sample_sequence(num_samp);
+	increment_sample_sequence(delta_N_l[lev], N_l[lev]);
 	if (lev == 0 && iter == 0) compute_expansion(); // initializations
 	else                        update_expansion();
 
@@ -1280,13 +1272,15 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 
 	  // We must assume a functional dependence on N_l for formulating the
 	  // optimum of the cost functional subject to error balance constraint.
-	  //   Var(Q-hat) = sigma_Q^2 / (gamma N_l^k)
-	  // where Monte Carlo has gamma = k = 1.  For now we will select the
-	  // parameters k and gamma for PCE regression.
+	  //   Var(Q-hat) = sigma_Q^2 / (gamma N_l^kappa)
+	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
+	  // the parameters kappa and gamma for PCE regression.
 	  
 	  // To fit these parameters, one approach is to numerically estimate
-	  // the variance in the mean estimator (alpha_0) from the variation
-	  // across the k folds for the selected CV settings.
+	  // the variance in the mean estimator (alpha_0) from two sources:
+	  // > from variation across k folds for the selected CV settings
+	  //   (estimate gamma?)
+	  // > from var decrease as N_l increases across iters (estimate kappa?)
           //Real cv_var_i = poly_approx_rep->
 	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
 	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
@@ -1306,7 +1300,8 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	last_active = lev;
       }
 
-      sum_root_var_cost += std::pow(agg_var_l * std::pow(cost[lev],k), inv_kp1);
+      sum_root_var_cost
+	+= std::pow(agg_var_l * std::pow(cost[lev], kappa), inv_kp1);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
     }

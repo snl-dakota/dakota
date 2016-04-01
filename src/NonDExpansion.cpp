@@ -978,7 +978,7 @@ void NonDExpansion::multifidelity_expansion()
     // store current state for use in combine_approximation() below
     uSpaceModel.store_approximation();
 
-    increment_specification_sequence(); // advance to next discrepancy spec
+    increment_specification_sequence(); // advance to next PCE/SC specification
     iteratedModel.surrogate_model_indices(i-1);
     iteratedModel.truth_model_indices(i);
     update_expansion();   // nominal expansion from input spec
