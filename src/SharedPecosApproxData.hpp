@@ -125,7 +125,8 @@ protected:
   void pre_finalize();
   void post_finalize();
 
-  void store();
+  void store(size_t index = _NPOS);
+  void remove_stored(size_t index = _NPOS);
   size_t pre_combine(short corr_type);
   void post_combine(short corr_type);
 
@@ -201,8 +202,12 @@ inline void SharedPecosApproxData::post_finalize()
 { pecosSharedDataRep->post_finalize_data(); }
 
 
-inline void SharedPecosApproxData::store()
-{ pecosSharedDataRep->store_data(); }
+inline void SharedPecosApproxData::store(size_t index)
+{ pecosSharedDataRep->store_data(index); }
+
+
+inline void SharedPecosApproxData::remove_stored(size_t index)
+{ pecosSharedDataRep->remove_stored_data(index); }
 
 
 inline size_t SharedPecosApproxData::pre_combine(short corr_type)

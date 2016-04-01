@@ -83,7 +83,9 @@ public:
   virtual void finalize();
 
   /// store current approximation for later combination
-  virtual void store();
+  virtual void store(size_t index = _NPOS);
+  /// remove a stored approximation prior to combination
+  virtual void remove_stored(size_t index = _NPOS);
   /// combine current approximation with previously stored approximation
   virtual void combine(short corr_type, size_t swap_index);
 

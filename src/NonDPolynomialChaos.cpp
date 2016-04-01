@@ -1227,7 +1227,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, num_samp, new_N_l;
+    qoi, iter = 0, num_samp, new_N_l, last_active = 0;
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
@@ -1282,7 +1282,12 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	  
 	  agg_var_l += cv_var_i;
 	}
-	uSpaceModel.store_approximation();
+        // store all approximation levels, whenever recomputed.
+	// Note: the active approximation upon completion of this loop may be
+	// any level --> this requires passing the current approximation index
+	// within combine_approximation().
+	uSpaceModel.store_approximation(lev);
+	last_active = lev;
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
@@ -1314,8 +1319,9 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	 << delta_N_l << std::endl;
   }
 
+  // remove redundancy between current active and stored, prior to combining
+  uSpaceModel.remove_stored_approximation(last_active);
   // compute aggregate expansion and generate its statistics
-  // TO DO: one call to aggregate all contributions?
   uSpaceModel.combine_approximation(
     iteratedModel.discrepancy_correction().correction_type());
 

@@ -170,9 +170,14 @@ public:
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
 
-  /// move the current approximation into storage for later combination
-  virtual void store_approximation();
-  /// combine the current approximation with one previously stored
+  /// move the current approximation into storage for later combination;
+  /// the index of the stored approximation can be passed to allow
+  /// replacement instead of augmentation (default is push_back)
+  virtual void store_approximation(size_t index = _NPOS);
+  /// remove a stored approximation, due to redundancy with the current
+  /// approximation, prior to combination (default for no index is pop_back)
+  virtual void remove_stored_approximation(size_t index = _NPOS);
+  /// combine the current approximation with previously stored data sets
   virtual void combine_approximation(short corr_type);
 
   /// approximation cross-validation quality metrics per response function

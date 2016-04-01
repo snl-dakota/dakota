@@ -104,7 +104,8 @@ protected:
   bool restore_available();
   void finalize_approximation();
 
-  void store_approximation();
+  void store_approximation(size_t index = _NPOS);
+  void remove_stored_approximation(size_t index = _NPOS);
   void combine_approximation(short corr_type);
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
@@ -288,11 +289,19 @@ inline void ApproximationInterface::finalize_approximation()
 }
 
 
-inline void ApproximationInterface::store_approximation()
+inline void ApproximationInterface::store_approximation(size_t index)
 {
-  sharedData.store(); // do shared storage first
+  sharedData.store(index); // do shared storage first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].store();
+    functionSurfaces[*it].store(index);
+}
+
+
+inline void ApproximationInterface::remove_stored_approximation(size_t index)
+{
+  sharedData.remove_stored(index); // do shared storage first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].remove_stored(index);
 }
 
 

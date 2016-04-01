@@ -3049,14 +3049,27 @@ void Model::finalize_approximation()
 }
 
 
-void Model::store_approximation()
+void Model::store_approximation(size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->store_approximation();
+    modelRep->store_approximation(index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
 	 << "() function.\nThis model does not support approximation storage."
 	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::remove_stored_approximation(size_t index)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->remove_stored_approximation(index);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
+	 << "approximation() function.\nThis model does not support "
+	 << "approximation storage." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

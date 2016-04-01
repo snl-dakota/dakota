@@ -366,10 +366,17 @@ void Approximation::finalize()
 }
 
 
-void Approximation::store()
+void Approximation::store(size_t index)
 {
-  if (approxRep) approxRep->store();
-  else           approxData.store(); // base contribution; derived augments
+  if (approxRep) approxRep->store(index);
+  else           approxData.store(index); // derived classes augment
+}
+
+
+void Approximation::remove_stored(size_t index)
+{
+  if (approxRep) approxRep->remove_stored(index);
+  else           approxData.remove_stored(index); // derived classes augment
 }
 
 

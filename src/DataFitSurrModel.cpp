@@ -736,14 +736,26 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 }
 
 
-void DataFitSurrModel::store_approximation()
+void DataFitSurrModel::store_approximation(size_t index)
 {
   Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
 
   // store the current data for each approximation for later combination
-  approxInterface.store_approximation();
+  approxInterface.store_approximation(index);
 
   //Cout << "\n<<<<< " << surrogateType << " approximation stored.\n";
+}
+
+
+void DataFitSurrModel::remove_stored_approximation(size_t index)
+{
+  // If activated, must protect _NPOS:
+  //Cout << "\n>>>>> Removing stored approximation " << index+1 << ".\n";
+
+  // store the current data for each approximation for later combination
+  approxInterface.remove_stored_approximation(index);
+
+  //Cout << "\n<<<<< Stored approximation removed.\n";
 }
 
 
@@ -758,7 +770,7 @@ void DataFitSurrModel::combine_approximation(short corr_type)
   //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
   //bool swap = !nond_int->maximal_grid();
 
-  approxInterface.combine_approximation(corr_type);//, swap);
+  approxInterface.combine_approximation(corr_type);
 
   //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
 }

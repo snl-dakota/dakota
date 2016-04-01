@@ -202,7 +202,8 @@ protected:
   void pop(bool save_data);
   void restore();
   void finalize();
-  void store();
+  void store(size_t index = _NPOS);
+  void remove_stored(size_t index = _NPOS);
   void combine(short corr_type, size_t swap_index);
 
   void print_coefficients(std::ostream& s, bool normalized);
@@ -529,12 +530,21 @@ inline void PecosApproximation::finalize()
 }
 
 
-inline void PecosApproximation::store()
+inline void PecosApproximation::store(size_t index)
 {
   // base class implementation manages approx data
-  Approximation::store();
+  Approximation::store(index);
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.store_coefficients();
+  pecosBasisApprox.store_coefficients(index);
+}
+
+
+inline void PecosApproximation::remove_stored(size_t index)
+{
+  // base class implementation manages approx data
+  Approximation::remove_stored(index);
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.remove_stored_coefficients(index);
 }
 
 

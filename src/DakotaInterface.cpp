@@ -1197,12 +1197,25 @@ void Interface::finalize_approximation()
 }
 
 
-void Interface::store_approximation()
+void Interface::store_approximation(size_t index)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->store_approximation();
+    interfaceRep->store_approximation(index);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual store_"
+    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
+	 << "() function.\n       This interface does not support approximation"
+	 << " storage." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::remove_stored_approximation(size_t index)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->remove_stored_approximation(index);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
 	 << "approximation() function.\n       This interface does not "
 	 << "support approximation storage." << std::endl;
     abort_handler(-1);

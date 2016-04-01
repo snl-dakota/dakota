@@ -452,13 +452,25 @@ void SharedApproxData::post_finalize()
 }
 
 
-void SharedApproxData::store()
+void SharedApproxData::store(size_t index)
 {
   if (dataRep)
-    dataRep->store();
+    dataRep->store(index);
   else {
     Cerr << "\nError: store() not defined for this shared approximation type."
 	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void SharedApproxData::remove_stored(size_t index)
+{
+  if (dataRep)
+    dataRep->remove_stored(index);
+  else {
+    Cerr << "\nError: remove_stored() not defined for this shared "
+	 << "approximation type." << std::endl;
     abort_handler(-1);
   }
 }

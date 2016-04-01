@@ -173,7 +173,9 @@ protected:
   void finalize_approximation();
 
   /// store the current data fit approximation for later combination
-  void store_approximation();
+  void store_approximation(size_t index = _NPOS);
+  /// store the current data fit approximation for later combination
+  void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current data fit approximation with one previously stored
   void combine_approximation(short corr_type);
 

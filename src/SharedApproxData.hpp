@@ -94,8 +94,12 @@ public:
   virtual void post_finalize();
 
   /// store the current state of the shared approximation data for
-  /// later combination
-  virtual void store();
+  /// later combination (defaults to push_back)
+  virtual void store(size_t index = _NPOS);
+  /// remove an instance of stored approximation data prior to combination
+  /// (defaults to pop_back)
+  virtual void remove_stored(size_t index = _NPOS);
+
   /// aggregate the shared approximation data from current and stored states
   virtual size_t pre_combine(short corr_type);
   /// clean up stored data sets after aggregation

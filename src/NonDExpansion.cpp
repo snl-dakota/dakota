@@ -50,12 +50,19 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
   vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
   vbdOrderLimit(probDescDB.get_ushort("method.nond.vbd_interaction_order")),
-  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance"))
+  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance")),
+  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
+  // data for construct_expansion_sampler():
+  expansionSampleType(probDescDB.get_ushort("method.sample_type")),
+  origSeed(probDescDB.get_int("method.random_seed")),
+  expansionRng(probDescDB.get_string("method.random_number_generator")),
+  integrationRefine(
+    probDescDB.get_ushort("method.nond.integration_refinement")),
+  refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
@@ -63,13 +70,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
-
-  // Get info from probDescDB for construct_expansion_sampler()
-  expansionSampleType = probDescDB.get_ushort("method.sample_type");
-  origSeed = probDescDB.get_int("method.random_seed");
-  expansionRng = probDescDB.get_string("method.random_number_generator");
-  integrationRefine = probDescDB.get_ushort("method.nond.integration_refinement");
-  refinementSamples = probDescDB.get_iv("method.nond.refinement_samples");
 }
 
 
@@ -97,6 +97,7 @@ NonDExpansion(unsigned short method_name, Model& model,
 
 NonDExpansion::~NonDExpansion()
 { }
+
 
 bool NonDExpansion::resize()
 {
@@ -507,9 +508,10 @@ construct_expansion_sampler(const String& import_approx_file,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, expansionSampleType,
-					  numSamplesOnExpansion, origSeed,
-					  expansionRng, false, ALEATORY_UNCERTAIN);
+    exp_sampler_rep
+      = new NonDLHSSampling(uSpaceModel, expansionSampleType,
+			    numSamplesOnExpansion, origSeed, expansionRng,
+			    false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // publish level mappings to expansion sampler, but suppress reliability
@@ -539,9 +541,10 @@ construct_expansion_sampler(const String& import_approx_file,
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType, refine_samples,
-				   origSeed, expansionRng, vary_pattern, integrationRefine,
-				   cdfFlag, false, false, track_extreme);
+	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType,
+				   refine_samples, origSeed, expansionRng,
+				   vary_pattern, integrationRefine, cdfFlag,
+				   false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
  
       imp_sampler_rep->output_level(outputLevel);

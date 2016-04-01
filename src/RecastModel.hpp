@@ -255,7 +255,8 @@ protected:
   bool restore_available();
   void finalize_approximation();
 
-  void store_approximation();
+  void store_approximation(size_t index = _NPOS);
+  void remove_stored_approximation(size_t index = _NPOS);
   void combine_approximation(short corr_type);
 
   /// retrieve the set of Approximations from the subModel
@@ -583,8 +584,12 @@ inline void RecastModel::finalize_approximation()
 { subModel.finalize_approximation(); }
 
 
-inline void RecastModel::store_approximation()
-{ subModel.store_approximation(); }
+inline void RecastModel::store_approximation(size_t index)
+{ subModel.store_approximation(index); }
+
+
+inline void RecastModel::remove_stored_approximation(size_t index)
+{ subModel.remove_stored_approximation(index); }
 
 
 inline void RecastModel::combine_approximation(short corr_type)
