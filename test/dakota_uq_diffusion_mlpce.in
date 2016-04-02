@@ -7,13 +7,12 @@ environment,
 method,
 	model_pointer = 'HIERARCH'
         polynomial_chaos				
-	  max_iterations = 10
 	  expansion_order = 2				# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
-	  convergence_tolerance =    .1			#s0,#s3,#p0,#p1
-#	  convergence_tolerance =   .01			#s1,#s4
-#	  convergence_tolerance =  .001			#s2,#s5
-#	  convergence_tolerance = .0001			# too expensive
+	  orthogonal_matching_pursuit
+	  max_iterations = 5
+	  convergence_tolerance = .1		#s0
+#	  convergence_tolerance = .01		#s1
 	output silent
 
 model,

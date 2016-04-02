@@ -1243,7 +1243,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   
   // Initialize for pilot sample
   SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);
-  delta_N_l.assign(num_lev, 20); // TO DO: pilot sample spec
+  delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
   Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
 
   // now converge on sample counts per level (N_l)
@@ -1355,11 +1355,12 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     iteratedModel.discrepancy_correction().correction_type());
 
   // compute the equivalent number of HF evaluations
-  Real equivHFEvals = N_l[0] * cost[0]; // first level is single eval
+  Real equiv_hf_evals = N_l[0] * cost[0]; // first level is single eval
   for (lev=1; lev<num_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += N_l[lev] * (cost[lev] + cost[lev-1]);
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
-  Cout << "\nML PCE equivalent HF evaluations = " << equivHFEvals << std::endl;
+    equiv_hf_evals += N_l[lev] * (cost[lev] + cost[lev-1]);
+  equiv_hf_evals /= cost[num_lev-1]; // normalize into equivalent HF evals
+  Cout << "<<<<< Equivalent number of high fidelity evaluations: "
+       << equiv_hf_evals << std::endl;
 }
 
 
