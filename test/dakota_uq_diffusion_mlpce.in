@@ -1,18 +1,15 @@
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=7200
 #@ s*: TimeoutDelay=7200
 
 environment,
-	graphics
 	output_precision = 16
 
 method,
 	model_pointer = 'HIERARCH'
         polynomial_chaos				
 	  max_iterations = 10
-	  expansion_order = 2
-	  collocation_ratio = 2.
+	  expansion_order = 2				# initial for pilot
+	  collocation_ratio = .9			# eo adapted to ratio
 	  convergence_tolerance =    .1			#s0,#s3,#p0,#p1
 #	  convergence_tolerance =   .01			#s1,#s4
 #	  convergence_tolerance =  .001			#s2,#s5
