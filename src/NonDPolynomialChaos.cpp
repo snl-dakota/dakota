@@ -1226,6 +1226,11 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
   iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
 
+  // Multilevel variance aggregation requires independent sample sets
+  Analyzer* sampler
+    = (Analyzer*)uSpaceModel.subordinate_iterator().iterator_rep();
+  sampler->vary_pattern(true);
+
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, new_N_l, last_active = 0;
