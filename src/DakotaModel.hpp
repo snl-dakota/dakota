@@ -233,14 +233,14 @@ public:
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
-  /// of surrogate data for use in a subsequent restore_approximation()
+  /// of surrogate data for use in a subsequent push_approximation()
   virtual void pop_approximation(bool save_surr_data,
 				 bool rebuild_flag = false);
 
-  /// restore a previous approximation data state within a surrogate
-  virtual void restore_approximation();
+  /// push a previous approximation data state; reverse of pop_approximation
+  virtual void push_approximation();
   /// query for whether a trial increment is restorable within a surrogate
-  virtual bool restore_available();
+  virtual bool push_available();
 
   /// finalize an approximation by applying all previous trial increments
   virtual void finalize_approximation();
@@ -249,11 +249,18 @@ public:
   /// the index of the stored set can be passed to allow replacement instead
   /// of augmentation (default is push_back)
   virtual void store_approximation(size_t index = _NPOS);
+  /// return an approximation from storage; the index identifies a
+  /// particular stored data set (default is pop_back from stored)
+  virtual void restore_approximation(size_t index = _NPOS);
   /// remove a stored approximation, due to redundancy with the current
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current approximation with previously stored data sets
   virtual void combine_approximation(short corr_type);
+
+  /// execute the DACE iterator, append the approximation data, and
+  /// rebuild the approximation if indicated
+  virtual void run_dace_iterator(bool rebuild_flag);
 
   // retrieve the variables used to build a surrogate model
   //virtual const VariablesArray build_variables() const;

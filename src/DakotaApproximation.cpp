@@ -339,13 +339,12 @@ void Approximation::pop(bool save_data)
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::restore()
+void Approximation::push()
 {
   if (approxRep)
-    approxRep->restore();
+    approxRep->push();
   else
-    popCountStack.push_back(
-      approxData.push(sharedDataRep->restoration_index()));
+    popCountStack.push_back(approxData.push(sharedDataRep->retrieval_index()));
 }
 
 
@@ -358,8 +357,8 @@ void Approximation::finalize()
     approxRep->finalize();
   else {
     // finalization has to apply restorations in the correct order
-    size_t i, num_restore = approxData.popped_trials(); // # of popped trials
-    for (i=0; i<num_restore; ++i)
+    size_t i, num_popped = approxData.popped_trials(); // # of popped trials
+    for (i=0; i<num_popped; ++i)
       approxData.push(sharedDataRep->finalization_index(i), false);
     clear_popped(); // clear only after process completed
   }
@@ -370,6 +369,13 @@ void Approximation::store(size_t index)
 {
   if (approxRep) approxRep->store(index);
   else           approxData.store(index); // derived classes augment
+}
+
+
+void Approximation::restore(size_t index)
+{
+  if (approxRep) approxRep->restore(index);
+  else           approxData.restore(index); // derived classes augment
 }
 
 

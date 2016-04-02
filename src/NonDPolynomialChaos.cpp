@@ -835,7 +835,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   std::vector<Pecos::BasisPolynomial>& poly_basis
     = shared_data_rep->polynomial_basis();
   sampler.set_polynomial_basis( poly_basis );
-  sampler.set_total_degree_basis_from_num_samples( numContinuousVars, new_size );
+  sampler.set_total_degree_basis_from_num_samples(numContinuousVars, new_size);
   RealMatrix candidate_samples_matrix;
   Pecos::convert( candidate_samples, candidate_samples_matrix );
   //sampler.Sampler::enrich_samples((int)numContinuousVars, current_samples, 
@@ -1060,16 +1060,18 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
     break;
   }
 
-  UShortArray exp_order;
   if (update_exp) {
-    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-      uSpaceModel.shared_approximation().data_rep();
-    exp_order = shared_data_rep->expansion_order(); // increment from ref
-    if (update_from_ratio) // update numSamplesOnModel from collocRatio
-      ratio_samples_to_order(collocRatio, total_samp, exp_order, true);
+    if (update_from_ratio) {
+      //increment_order_from_grid(); // need total samples
+      SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+	uSpaceModel.shared_approximation().data_rep();
+      UShortArray exp_order = shared_data_rep->expansion_order(); // lower bnd
+      // false results in 1st exp_order with terms * colloc_ratio >= total_samp
+      ratio_samples_to_order(collocRatio, total_samp, exp_order, false);
+      shared_data_rep->expansion_order(exp_order);
+    }
     else
       err_flag = true;
-    shared_data_rep->expansion_order(exp_order);
   }
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
@@ -1079,6 +1081,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
 	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
       nond_quad->samples(numSamplesOnModel);
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
+	SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+	  uSpaceModel.shared_approximation().data_rep();
+	const UShortArray& exp_order = shared_data_rep->expansion_order();
 	UShortArray dim_quad_order(numContinuousVars);
 	for (size_t i=0; i<numContinuousVars; ++i)
 	  dim_quad_order[i] = exp_order[i] + 1;
@@ -1172,7 +1177,7 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 
   // ramp expansion order to synchronize with num_samples and colloc_ratio
 
-  size_t i, data_size = (useDerivs) ?
+  size_t i, incr = 0, data_size = (useDerivs) ?
     num_samples * (numContinuousVars + 1) : num_samples;
   size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
     Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
@@ -1190,8 +1195,9 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
       Pecos::SharedPolyApproxData::total_order_terms(exp_order);
     data_reqd = (size_t)std::floor(std::pow((Real)exp_terms, termsOrder) *
 				   colloc_ratio + .5);
+    ++incr;
   }
-  if (less_than_or_equal && data_reqd > data_size) // one too many increments
+  if (less_than_or_equal && incr && data_reqd > data_size) // 1 too many
     for (i=0; i<numContinuousVars; ++i)
       --exp_order[i];
 }
@@ -1259,9 +1265,16 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
       if (delta_N_l[lev]) {
 	N_l[lev] += delta_N_l[lev]; // update total samples for this level
 
-	increment_sample_sequence(delta_N_l[lev], N_l[lev]);
-	if (lev == 0 && iter == 0) compute_expansion(); // initializations
-	else                        update_expansion();
+	if (iter == 0) { // initial expansion build
+	  increment_sample_sequence(delta_N_l[lev], N_l[lev]);
+	  if (lev == 0) compute_expansion(); // init + build
+	  else           update_expansion(); // just build 
+	}
+	else { // retrieve prev expansion for this level & append new samples
+	  uSpaceModel.restore_approximation(lev);
+	  increment_sample_sequence(delta_N_l[lev], N_l[lev]);
+	  append_expansion();
+	}
 
         // compute and accumulate variance of mean estimator from the set of
 	// fold results within the selected settings from cross-validation:

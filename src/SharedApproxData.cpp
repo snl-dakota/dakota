@@ -368,48 +368,48 @@ void SharedApproxData::pop(bool save_surr_data)
 }
 
 
-bool SharedApproxData::restore_available()
+bool SharedApproxData::push_available()
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: restore_available() not available for this approximation "
+    Cerr << "Error: push_available() not available for this approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
 
-  return dataRep->restore_available();
+  return dataRep->push_available();
 }
 
 
-size_t SharedApproxData::restoration_index()
+size_t SharedApproxData::retrieval_index()
 {
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: restoration_index() not available for this approximation "
+    Cerr << "Error: retrieval_index() not available for this approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
 
-  return dataRep->restoration_index();
+  return dataRep->retrieval_index();
 }
 
 
-void SharedApproxData::pre_restore()
+void SharedApproxData::pre_push()
 {
   if (dataRep)
-    dataRep->pre_restore();
+    dataRep->pre_push();
   else {
-    Cerr << "\nError: pre_restore() not defined for this shared approximation "
+    Cerr << "\nError: pre_push() not defined for this shared approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
 }
 
 
-void SharedApproxData::post_restore()
+void SharedApproxData::post_push()
 {
   if (dataRep)
-    dataRep->post_restore();
+    dataRep->post_push();
   else {
-    Cerr << "\nError: post_restore() not defined for this shared approximation "
+    Cerr << "\nError: post_push() not defined for this shared approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
@@ -458,6 +458,18 @@ void SharedApproxData::store(size_t index)
     dataRep->store(index);
   else {
     Cerr << "\nError: store() not defined for this shared approximation type."
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void SharedApproxData::restore(size_t index)
+{
+  if (dataRep)
+    dataRep->restore(index);
+  else {
+    Cerr << "\nError: restore() not defined for this shared approximation type."
 	 << std::endl;
     abort_handler(-1);
   }

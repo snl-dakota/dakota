@@ -200,9 +200,10 @@ protected:
   void build();
   void rebuild();
   void pop(bool save_data);
-  void restore();
+  void push();
   void finalize();
   void store(size_t index = _NPOS);
+  void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
   void combine(short corr_type, size_t swap_index);
 
@@ -512,12 +513,12 @@ inline void PecosApproximation::pop(bool save_data)
 }
 
 
-inline void PecosApproximation::restore()
+inline void PecosApproximation::push()
 {
   // base class implementation updates currentPoints
-  Approximation::restore();
+  Approximation::push();
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.restore_coefficients();
+  pecosBasisApprox.push_coefficients();
 }
 
 
@@ -536,6 +537,15 @@ inline void PecosApproximation::store(size_t index)
   Approximation::store(index);
   // map to Pecos::BasisApproximation
   pecosBasisApprox.store_coefficients(index);
+}
+
+
+inline void PecosApproximation::restore(size_t index)
+{
+  // base class implementation manages approx data
+  Approximation::restore(index);
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.restore_coefficients(index);
 }
 
 

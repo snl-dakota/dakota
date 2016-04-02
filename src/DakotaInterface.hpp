@@ -162,10 +162,10 @@ public:
   /// removes data from last append from the approximation
   virtual void pop_approximation(bool save_surr_data);
 
-  /// restores the approximation to a selected previous state
-  virtual void restore_approximation();
-  /// queries the approximation for the ability to restore a previous increment
-  virtual bool restore_available();
+  /// retrieves approximation data from a previous state (negates pop)
+  virtual void push_approximation();
+  /// queries the approximation for the ability to retrieve a previous increment
+  virtual bool push_available();
 
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
@@ -174,6 +174,9 @@ public:
   /// the index of the stored approximation can be passed to allow
   /// replacement instead of augmentation (default is push_back)
   virtual void store_approximation(size_t index = _NPOS);
+  /// return an approximation from storage; the index identifies a
+  /// particular stored data set (default is pop_back from stored)
+  virtual void restore_approximation(size_t index = _NPOS);
   /// remove a stored approximation, due to redundancy with the current
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);

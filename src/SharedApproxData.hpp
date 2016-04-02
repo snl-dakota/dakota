@@ -78,14 +78,14 @@ public:
   virtual void rebuild();
   /// back out the previous increment to the shared approximation data 
   virtual void pop(bool save_surr_data);
-  /// queries availability of restoration for trial set
-  virtual bool restore_available();
-  /// return index of trial set within restorable bookkeeping sets
-  virtual size_t restoration_index();
-  /// restore a previous state of the shared approximation data 
-  virtual void pre_restore();
-  /// clean up popped bookkeeping following restoration 
-  virtual void post_restore();
+  /// queries availability of pushing data associated with a trial set
+  virtual bool push_available();
+  /// return index of trial set within popped bookkeeping sets
+  virtual size_t retrieval_index();
+  /// push a previous state of the shared approximation data 
+  virtual void pre_push();
+  /// clean up popped bookkeeping following push 
+  virtual void post_push();
   /// return index of i-th trailing trial set within restorable bookkeeping sets
   virtual size_t finalization_index(size_t i);
   /// finalize the shared approximation data following a set of increments
@@ -96,6 +96,9 @@ public:
   /// store the current state of the shared approximation data for
   /// later combination (defaults to push_back)
   virtual void store(size_t index = _NPOS);
+  /// restore a previous state of the shared approximation data
+  /// (defaults to pop_back from stored)
+  virtual void restore(size_t index = _NPOS);
   /// remove an instance of stored approximation data prior to combination
   /// (defaults to pop_back)
   virtual void remove_stored(size_t index = _NPOS);

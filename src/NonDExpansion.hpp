@@ -70,8 +70,8 @@ public:
     RealMatrix& best_samples);
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
-  virtual void append(const RealMatrix& samples,
-		      const IntResponseMap& resp_map);
+  virtual void append_expansion(const RealMatrix& samples,
+				const IntResponseMap& resp_map);
 
 protected:
 

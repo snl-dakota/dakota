@@ -1004,16 +1004,17 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, RealMatrix& best_samples)
 {
   Cerr << "Error: virtual select_refinement_points() not redefined by derived "
-       << "class.  NonDExpansion does not support point selection."<< std::endl;
+       << "class.\n       NonDExpansion does not support point selection."
+       << std::endl;
   abort_handler(-1);
 }
 
 
-void NonDExpansion::append(const RealMatrix&     samples,
-			   const IntResponseMap& resp_map)
+void NonDExpansion::append_expansion(const RealMatrix&     samples,
+				     const IntResponseMap& resp_map)
 {
-  Cerr << "Error: virtual append() not redefined by derived class.  "
-       << "NonDExpansion does not support data appending." << std::endl;
+  Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
+       << "       NonDExpansion does not support data appending." << std::endl;
   abort_handler(-1);
 }
 
@@ -1021,8 +1022,8 @@ void NonDExpansion::append(const RealMatrix&     samples,
 void NonDExpansion::increment_order_and_grid()
 {
   Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
-       << "class.  NonDExpansion does not support uniform expansion order and "
-       << "grid increments." << std::endl;
+       << "class.\n       NonDExpansion does not support uniform expansion "
+       << "order and grid increments." << std::endl;
   abort_handler(-1);
 }
 
@@ -1101,9 +1102,9 @@ Real NonDExpansion::increment_sets()
     // increment grid with current candidate
     Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
     nond_sparse->increment_set(*cit);
-    if (uSpaceModel.restore_available()) {    // has been active previously
+    if (uSpaceModel.push_available()) {    // has been active previously
       nond_sparse->restore_set();
-      uSpaceModel.restore_approximation();
+      uSpaceModel.push_approximation();
     }
     else {                                    // a new active set
       nond_sparse->evaluate_set();
@@ -1145,7 +1146,7 @@ Real NonDExpansion::increment_sets()
 
   // permanently apply best increment and update ref points for next increment
   nond_sparse->update_sets(*cit_star);
-  uSpaceModel.restore_approximation();
+  uSpaceModel.push_approximation();
   nond_sparse->update_reference();
   if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
     if (totalLevelRequests) finalStatistics.function_values(stats_star);

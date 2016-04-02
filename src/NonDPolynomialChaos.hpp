@@ -92,7 +92,8 @@ protected:
     const RealVectorArray& candidate_samples, unsigned short batch_size,
     RealMatrix& best_samples);
 
-  void append(const RealMatrix& samples, const IntResponseMap& resp_map);
+  void append_expansion(const RealMatrix& samples,
+			const IntResponseMap& resp_map);
 
   void increment_order_and_grid();
 
@@ -111,6 +112,8 @@ protected:
   void multilevel_regression(size_t model_form);
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp, size_t total_samp);
+  /// generate new samples from numSamplesOnModel and update expansion
+  void append_expansion();
 
 private:
 
@@ -227,7 +230,7 @@ private:
 
 
 inline void NonDPolynomialChaos::
-append(const RealMatrix& samples, const IntResponseMap& resp_map)
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   // adapt the expansion in sync with the dataset
   numSamplesOnModel += resp_map.size();
@@ -236,6 +239,18 @@ append(const RealMatrix& samples, const IntResponseMap& resp_map)
 
   // utilize rebuild following expansion updates
   uSpaceModel.append_approximation(samples, resp_map, true);
+}
+
+
+inline void NonDPolynomialChaos::append_expansion()
+{
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         increment_order_from_grid() called
+
+  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+						    true, false);
+  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
 }
 
 

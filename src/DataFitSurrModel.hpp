@@ -164,20 +164,26 @@ protected:
   /// or a specified number of points
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
-  /// restore a previous approximation data state
-  void restore_approximation();
-  /// query for whether a trial increment is restorable
-  bool restore_available();
+  /// retrieve a previous approximation data state
+  void push_approximation();
+  /// query for whether a trial increment can be retrieved
+  bool push_available();
 
   /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
   /// store the current data fit approximation for later combination
   void store_approximation(size_t index = _NPOS);
+  /// restore a previous data fit approximation
+  void restore_approximation(size_t index = _NPOS);
   /// store the current data fit approximation for later combination
   void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current data fit approximation with one previously stored
   void combine_approximation(short corr_type);
+
+  /// execute the DACE iterator, append the approximation data, and
+  /// rebuild the approximation if indicated
+  void run_dace_iterator(bool rebuild_flag);
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();
@@ -293,8 +299,6 @@ private:
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
 
-  /// Gather data from the DACE iterator and update the approximation iface
-  void run_dace_iterator();
   /// Refine the built surrogate until convergence criteria are met
   void refine_surrogate();
   /// Call build_approximation on the interface, passing appropriate constraints
@@ -441,8 +445,8 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 }
 
 
-inline bool DataFitSurrModel::restore_available()
-{ return approxInterface.restore_available(); }
+inline bool DataFitSurrModel::push_available()
+{ return approxInterface.push_available(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

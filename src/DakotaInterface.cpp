@@ -1159,28 +1159,28 @@ void Interface::pop_approximation(bool save_surr_data)
 }
 
 
-void Interface::restore_approximation()
+void Interface::push_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->restore_approximation();
+    interfaceRep->push_approximation();
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
+    Cerr << "Error: Letter lacking redefinition of virtual push_"
 	 << "approximation() function.\n       This interface does not "
-	 << "support approximation restoration." << std::endl;
+	 << "support approximation data retrieval." << std::endl;
     abort_handler(-1);
   }
 }
 
 
-bool Interface::restore_available()
+bool Interface::push_available()
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
+    Cerr << "Error: Letter lacking redefinition of virtual push_"
 	 << "available() function.\n       This interface does not "
-	 << "support approximation restoration queries." << std::endl;
+	 << "support approximation data retrieval." << std::endl;
     abort_handler(-1);
   }
-  return interfaceRep->restore_available();
+  return interfaceRep->push_available();
 }
 
 
@@ -1205,6 +1205,19 @@ void Interface::store_approximation(size_t index)
     Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
 	 << "() function.\n       This interface does not support approximation"
 	 << " storage." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::restore_approximation(size_t index)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->restore_approximation(index);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual restore_"
+	 << "approximation() function.\n       This interface does not "
+	 << "support approximation storage." << std::endl;
     abort_handler(-1);
   }
 }

@@ -3011,28 +3011,28 @@ void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
 }
 
 
-void Model::restore_approximation()
+void Model::push_approximation()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->restore_approximation();
+    modelRep->push_approximation();
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation() function.\nThis model does not support "
-	 << "approximation restoration." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual push_approximation()"
+	 << " function.\n       This model does not support approximation"
+	 << " augmentation." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 
 
-bool Model::restore_available()
+bool Model::push_available()
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual restore_"
-	 << "approximation(bool) function.\nThis model does not support "
-	 << "approximation restoration." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual push_available()"
+	 << "function.\n       This model does not support approximation "
+	 << "augmentation." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  return modelRep->restore_available();
+  return modelRep->push_available();
 }
 
 
@@ -3042,7 +3042,7 @@ void Model::finalize_approximation()
     modelRep->finalize_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual finalize_"
-	 << "approximation() function.\nThis model does not support "
+	 << "approximation() function.\n       This model does not support "
 	 << "approximation finalization." << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -3055,8 +3055,21 @@ void Model::store_approximation(size_t index)
     modelRep->store_approximation(index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
-	 << "() function.\nThis model does not support approximation storage."
-	 << std::endl;
+	 << "() function.\n       This model does not support approximation "
+	 << "storage." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::restore_approximation(size_t index)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->restore_approximation(index);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual restore_"
+	 << "approximation() function.\n       This model does not support "
+	 << "approximation restoration." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3068,7 +3081,7 @@ void Model::remove_stored_approximation(size_t index)
     modelRep->remove_stored_approximation(index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual remove_stored_"
-	 << "approximation() function.\nThis model does not support "
+	 << "approximation() function.\n       This model does not support "
 	 << "approximation storage." << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -3081,8 +3094,21 @@ void Model::combine_approximation(short corr_type)
     modelRep->combine_approximation(corr_type);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
-	 << "approximation() function.\nThis model does not support "
+	 << "approximation() function.\n       This model does not support "
 	 << "approximation combination." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::run_dace_iterator(bool rebuild_flag)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->run_dace_iterator(rebuild_flag);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual run_dace_iterator()"
+	 << "function.\n       This model does not support DACE executions."
+	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -3095,7 +3121,7 @@ const VariablesArray Model::build_variables() const
     return modelRep->build_variables();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_variables()"
-         << "\nThis model does not support build variables retrieval."
+         << "\n       This model does not support build variables retrieval."
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
@@ -3108,7 +3134,7 @@ const ResponseArray Model::build_responses() const
     return modelRep->build_responses();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_responses()"
-         << "\nThis model does not support build responses retrieval."
+         << "\n       This model does not support build responses retrieval."
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
