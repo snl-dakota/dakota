@@ -77,13 +77,18 @@ public:
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop(bool save_data);
-  /// restores state prior to previous append()
-  virtual void restore();
+  /// restores state prior to previous pop()
+  virtual void push();
   /// finalize approximation by applying all remaining trial sets
   virtual void finalize();
 
-  /// store current approximation for later combination
-  virtual void store();
+  /// store current approximation state for later combination
+  virtual void store(size_t index = _NPOS);
+  /// restore previous approximation state
+  virtual void restore(size_t index = _NPOS);
+  /// remove a stored approximation prior to combination
+  virtual void remove_stored(size_t index = _NPOS);
+
   /// combine current approximation with previously stored approximation
   virtual void combine(short corr_type, size_t swap_index);
 

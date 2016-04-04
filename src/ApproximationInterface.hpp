@@ -100,11 +100,13 @@ protected:
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
   void pop_approximation(bool save_surr_data);
-  void restore_approximation();
-  bool restore_available();
+  void push_approximation();
+  bool push_available();
   void finalize_approximation();
 
-  void store_approximation();
+  void store_approximation(size_t index = _NPOS);
+  void restore_approximation(size_t index = _NPOS);
+  void remove_stored_approximation(size_t index = _NPOS);
   void combine_approximation(short corr_type);
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
@@ -266,17 +268,17 @@ inline void ApproximationInterface::pop_approximation(bool save_surr_data)
 
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */
-inline void ApproximationInterface::restore_approximation()
+inline void ApproximationInterface::push_approximation()
 {
-  sharedData.pre_restore(); // do shared aggregation first
+  sharedData.pre_push(); // do shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].restore(); // requires sharedData restoration index
-  sharedData.post_restore(); // do shared cleanup last
+    functionSurfaces[*it].push(); // requires sharedData restoration index
+  sharedData.post_push(); // do shared cleanup last
 }
 
 
-inline bool ApproximationInterface::restore_available()
-{ return sharedData.restore_available(); }
+inline bool ApproximationInterface::push_available()
+{ return sharedData.push_available(); }
 
 
 inline void ApproximationInterface::finalize_approximation()
@@ -288,11 +290,27 @@ inline void ApproximationInterface::finalize_approximation()
 }
 
 
-inline void ApproximationInterface::store_approximation()
+inline void ApproximationInterface::store_approximation(size_t index)
 {
-  sharedData.store(); // do shared storage first
+  sharedData.store(index); // do shared storage first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].store();
+    functionSurfaces[*it].store(index);
+}
+
+
+inline void ApproximationInterface::restore_approximation(size_t index)
+{
+  sharedData.restore(index); // do shared storage first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].restore(index);
+}
+
+
+inline void ApproximationInterface::remove_stored_approximation(size_t index)
+{
+  sharedData.remove_stored(index); // do shared storage first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].remove_stored(index);
 }
 
 

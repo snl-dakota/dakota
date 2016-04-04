@@ -1337,7 +1337,7 @@ void NonDQUESOBayesCalibration::update_model()
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
     NonDExpansion* se_iterator
       = (NonDExpansion*)stochExpIterator.iterator_rep();
-    se_iterator->append(allSamples, allResponses);
+    se_iterator->append_expansion(allSamples, allResponses);
     // TO DO: order increment places addtnl reqmts on emulator conv assessment
     break;
   }

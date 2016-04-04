@@ -251,11 +251,13 @@ protected:
 			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
-  void restore_approximation();
-  bool restore_available();
+  void push_approximation();
+  bool push_available();
   void finalize_approximation();
 
-  void store_approximation();
+  void store_approximation(size_t index = _NPOS);
+  void restore_approximation(size_t index = _NPOS);
+  void remove_stored_approximation(size_t index = _NPOS);
   void combine_approximation(short corr_type);
 
   /// retrieve the set of Approximations from the subModel
@@ -571,20 +573,28 @@ pop_approximation(bool save_surr_data, bool rebuild_flag)
 { subModel.pop_approximation(save_surr_data, rebuild_flag); }
 
 
-inline void RecastModel::restore_approximation()
-{ subModel.restore_approximation(); }
+inline void RecastModel::push_approximation()
+{ subModel.push_approximation(); }
 
 
-inline bool RecastModel::restore_available()
-{ return subModel.restore_available(); }
+inline bool RecastModel::push_available()
+{ return subModel.push_available(); }
 
 
 inline void RecastModel::finalize_approximation()
 { subModel.finalize_approximation(); }
 
 
-inline void RecastModel::store_approximation()
-{ subModel.store_approximation(); }
+inline void RecastModel::store_approximation(size_t index)
+{ subModel.store_approximation(index); }
+
+
+inline void RecastModel::restore_approximation(size_t index)
+{ subModel.restore_approximation(index); }
+
+
+inline void RecastModel::remove_stored_approximation(size_t index)
+{ subModel.remove_stored_approximation(index); }
 
 
 inline void RecastModel::combine_approximation(short corr_type)

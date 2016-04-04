@@ -698,12 +698,12 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 }
 
 
-void DataFitSurrModel::restore_approximation()//(bool rebuild_flag)
+void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
 {
-  Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
+  Cout << "\n>>>>> Retrieving " << surrogateType << " approximation data.\n";
 
   // append to the current points for each approximation
-  approxInterface.restore_approximation();
+  approxInterface.push_approximation();
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
@@ -713,7 +713,7 @@ void DataFitSurrModel::restore_approximation()//(bool rebuild_flag)
   }
   */
 
-  Cout << "\n<<<<< " << surrogateType << " approximation restored.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation data retrieved.\n";
 }
 
 
@@ -736,14 +736,37 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 }
 
 
-void DataFitSurrModel::store_approximation()
+void DataFitSurrModel::store_approximation(size_t index)
 {
   Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
 
   // store the current data for each approximation for later combination
-  approxInterface.store_approximation();
+  approxInterface.store_approximation(index);
 
   //Cout << "\n<<<<< " << surrogateType << " approximation stored.\n";
+}
+
+
+void DataFitSurrModel::restore_approximation(size_t index)
+{
+  Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
+
+  // store the current data for each approximation for later combination
+  approxInterface.restore_approximation(index);
+
+  //Cout << "\n<<<<< " << surrogateType << " approximation restored.\n";
+}
+
+
+void DataFitSurrModel::remove_stored_approximation(size_t index)
+{
+  // If activated, must protect _NPOS:
+  //Cout << "\n>>>>> Removing stored approximation " << index+1 << ".\n";
+
+  // store the current data for each approximation for later combination
+  approxInterface.remove_stored_approximation(index);
+
+  //Cout << "\n<<<<< Stored approximation removed.\n";
 }
 
 
@@ -758,7 +781,7 @@ void DataFitSurrModel::combine_approximation(short corr_type)
   //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
   //bool swap = !nond_int->maximal_grid();
 
-  approxInterface.combine_approximation(corr_type);//, swap);
+  approxInterface.combine_approximation(corr_type);
 
   //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
 }
@@ -1042,7 +1065,7 @@ void DataFitSurrModel::build_global()
 
     // only run the iterator if work to do
     if (new_points)
-      run_dace_iterator();
+      run_dace_iterator(false); // don't rebuild
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
@@ -1066,7 +1089,7 @@ void DataFitSurrModel::build_global()
 }
 
 
-void DataFitSurrModel::run_dace_iterator()
+void DataFitSurrModel::run_dace_iterator(bool rebuild_flag)
 {
   // Define the data requests
   ActiveSet set = daceIterator.active_set(); // copy
@@ -1083,21 +1106,13 @@ void DataFitSurrModel::run_dace_iterator()
   // run the iterator
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   daceIterator.run(pl_iter);
-
-  // Append vars/resp arrays to the approximation.  If actualModel evals
-  // are not already cached, cache them now to provide persistence (thereby
-  // allowing approximation classes to consistently utilize shallow copies).
-  if (daceIterator.compact_mode())
-    approxInterface.append_approximation(daceIterator.all_samples(),
-					 daceIterator.all_responses());
-  else
-    approxInterface.append_approximation(daceIterator.all_variables(),
-					 daceIterator.all_responses());
+  // append the new data sets and rebuild if indicated
+  append_approximation(rebuild_flag);
 }
+
 
 void DataFitSurrModel::refine_surrogate()
 {
-
   StringArray diag_metrics(1, refineCVMetric);
   int curr_iter = 0; // initial surrogate build is iteration 0
 
@@ -1158,8 +1173,8 @@ void DataFitSurrModel::refine_surrogate()
         << convergenceTolerance << ")\n";
       break;
     } else if(total_evals >= maxFuncEvals) {
-      Cout << "\n------------\nAuto-refinment halted: Maximum function evaluations met "
-        << "or exceeded.\n";
+      Cout << "\n------------\nAuto-refinment halted: Maximum function "
+	   << "evaluations met or exceeded.\n";
       break;
     }
 
@@ -1170,7 +1185,7 @@ void DataFitSurrModel::refine_surrogate()
     total_evals += num_samples;
     Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";
-    run_dace_iterator();
+    run_dace_iterator(false); // don't rebuild
 
     // build and check diagnostics
     interface_build_approx();
@@ -1182,10 +1197,12 @@ void DataFitSurrModel::refine_surrogate()
     curr_err = *std::max_element(cv_per_fn.begin(), cv_per_fn.end());
     Cout << "\n------------\nAuto-refinement iteration " << curr_iter 
       << " complete.\n";
-    Cout << "Cross-validation error (" << refineCVMetric << "): " << curr_err << std::endl;
+    Cout << "Cross-validation error (" << refineCVMetric << "): " << curr_err
+	 << std::endl;
     mean_err(prev_err-curr_err);
     prev_err = curr_err;
-    Cout << "Mean reduction in CV error: " << rolling_mean(mean_err) << std::endl;
+    Cout << "Mean reduction in CV error: " << rolling_mean(mean_err)
+	 << std::endl;
   }
 }
 

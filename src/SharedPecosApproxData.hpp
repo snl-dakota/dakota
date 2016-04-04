@@ -117,15 +117,17 @@ protected:
 
   void rebuild();
   void pop(bool save_surr_data);
-  bool restore_available();
-  size_t restoration_index();
-  void pre_restore();
-  void post_restore();
+  bool push_available();
+  size_t retrieval_index();
+  void pre_push();
+  void post_push();
   size_t finalization_index(size_t i);
   void pre_finalize();
   void post_finalize();
 
-  void store();
+  void store(size_t index = _NPOS);
+  void restore(size_t index = _NPOS);
+  void remove_stored(size_t index = _NPOS);
   size_t pre_combine(short corr_type);
   void post_combine(short corr_type);
 
@@ -173,20 +175,20 @@ inline void SharedPecosApproxData::pop(bool save_surr_data)
 { pecosSharedDataRep->decrement_data(); } // save is implied
 
 
-inline bool SharedPecosApproxData::restore_available()
-{ return pecosSharedDataRep->restore_available(); }
+inline bool SharedPecosApproxData::push_available()
+{ return pecosSharedDataRep->push_available(); }
 
 
-inline size_t SharedPecosApproxData::restoration_index()
-{ return pecosSharedDataRep->restoration_index(); }
+inline size_t SharedPecosApproxData::retrieval_index()
+{ return pecosSharedDataRep->retrieval_index(); }
 
 
-inline void SharedPecosApproxData::pre_restore()
-{ pecosSharedDataRep->pre_restore_data(); }
+inline void SharedPecosApproxData::pre_push()
+{ pecosSharedDataRep->pre_push_data(); }
 
 
-inline void SharedPecosApproxData::post_restore()
-{ pecosSharedDataRep->post_restore_data(); }
+inline void SharedPecosApproxData::post_push()
+{ pecosSharedDataRep->post_push_data(); }
 
 
 inline size_t SharedPecosApproxData::finalization_index(size_t i)
@@ -201,8 +203,16 @@ inline void SharedPecosApproxData::post_finalize()
 { pecosSharedDataRep->post_finalize_data(); }
 
 
-inline void SharedPecosApproxData::store()
-{ pecosSharedDataRep->store_data(); }
+inline void SharedPecosApproxData::store(size_t index)
+{ pecosSharedDataRep->store_data(index); }
+
+
+inline void SharedPecosApproxData::restore(size_t index)
+{ pecosSharedDataRep->restore_data(index); }
+
+
+inline void SharedPecosApproxData::remove_stored(size_t index)
+{ pecosSharedDataRep->remove_stored_data(index); }
 
 
 inline size_t SharedPecosApproxData::pre_combine(short corr_type)

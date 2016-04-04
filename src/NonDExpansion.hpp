@@ -70,8 +70,8 @@ public:
     RealMatrix& best_samples);
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
-  virtual void append(const RealMatrix& samples,
-		      const IntResponseMap& resp_map);
+  virtual void append_expansion(const RealMatrix& samples,
+				const IntResponseMap& resp_map);
 
 protected:
 
@@ -320,19 +320,15 @@ private:
   /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
   short covarianceControl;
 
-  /// integration refinement
+  /// integration refinement for expansion sampler
   unsigned short integrationRefine;
-
-  /// Expansion sampler random number generator
+  /// random number generator for expansion sampler
   String expansionRng;
-
-  /// Expansion sampler random number generator seed
+  /// seed for expansion sampler random number generator
   int origSeed;
-
-  /// Expansion sampler sample type
+  /// sample type for expansion sampler
   unsigned short expansionSampleType;
-
-  /// Refinement samples
+  /// refinement samples for expansion sampler
   IntVector refinementSamples;
 };
 

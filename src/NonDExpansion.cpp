@@ -50,12 +50,19 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
-  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
   vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
   vbdOrderLimit(probDescDB.get_ushort("method.nond.vbd_interaction_order")),
-  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance"))
+  vbdDropTol(probDescDB.get_real("method.vbd_drop_tolerance")),
+  covarianceControl(probDescDB.get_short("method.nond.covariance_control")),
+  // data for construct_expansion_sampler():
+  expansionSampleType(probDescDB.get_ushort("method.sample_type")),
+  origSeed(probDescDB.get_int("method.random_seed")),
+  expansionRng(probDescDB.get_string("method.random_number_generator")),
+  integrationRefine(
+    probDescDB.get_ushort("method.nond.integration_refinement")),
+  refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
@@ -63,13 +70,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
-
-  // Get info from probDescDB for construct_expansion_sampler()
-  expansionSampleType = probDescDB.get_ushort("method.sample_type");
-  origSeed = probDescDB.get_int("method.random_seed");
-  expansionRng = probDescDB.get_string("method.random_number_generator");
-  integrationRefine = probDescDB.get_ushort("method.nond.integration_refinement");
-  refinementSamples = probDescDB.get_iv("method.nond.refinement_samples");
 }
 
 
@@ -97,6 +97,7 @@ NonDExpansion(unsigned short method_name, Model& model,
 
 NonDExpansion::~NonDExpansion()
 { }
+
 
 bool NonDExpansion::resize()
 {
@@ -507,9 +508,10 @@ construct_expansion_sampler(const String& import_approx_file,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    exp_sampler_rep = new NonDLHSSampling(uSpaceModel, expansionSampleType,
-					  numSamplesOnExpansion, origSeed,
-					  expansionRng, false, ALEATORY_UNCERTAIN);
+    exp_sampler_rep
+      = new NonDLHSSampling(uSpaceModel, expansionSampleType,
+			    numSamplesOnExpansion, origSeed, expansionRng,
+			    false, ALEATORY_UNCERTAIN);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
     // publish level mappings to expansion sampler, but suppress reliability
@@ -539,9 +541,10 @@ construct_expansion_sampler(const String& import_approx_file,
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
       NonDAdaptImpSampling* imp_sampler_rep
-	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType, refine_samples,
-				   origSeed, expansionRng, vary_pattern, integrationRefine,
-				   cdfFlag, false, false, track_extreme);
+	= new NonDAdaptImpSampling(uSpaceModel, expansionSampleType,
+				   refine_samples, origSeed, expansionRng,
+				   vary_pattern, integrationRefine, cdfFlag,
+				   false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep, false);
  
       imp_sampler_rep->output_level(outputLevel);
@@ -957,9 +960,9 @@ void NonDExpansion::multifidelity_expansion()
   iteratedModel.surrogate_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
-  compute_expansion();  // nominal iso/aniso expansion from input spec
+  compute_expansion();  // nominal expansion from input spec
   if (refineType)
-    refine_expansion(); // uniform/adaptive p-/h-refinement
+    refine_expansion(); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -969,17 +972,18 @@ void NonDExpansion::multifidelity_expansion()
   // change HierarchSurrModel::responseMode to model discrepancy
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
+  // loop over each of the discrepancy levels
   size_t i, num_mf = iteratedModel.subordinate_models(false).size();
   for (size_t i=1; i<num_mf; ++i) {
     // store current state for use in combine_approximation() below
-    uSpaceModel.store_approximation(); // for use in combine_approximation()
+    uSpaceModel.store_approximation();
 
-    increment_specification_sequence(); // advance from LF to discrepancy spec
+    increment_specification_sequence(); // advance to next PCE/SC specification
     iteratedModel.surrogate_model_indices(i-1);
     iteratedModel.truth_model_indices(i);
-    update_expansion();   // nominal iso/aniso expansion from input spec
+    update_expansion();   // nominal expansion from input spec
     if (refineType)
-      refine_expansion(); // uniform/adaptive p-/h-refinement
+      refine_expansion(); // uniform/adaptive refinement
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
@@ -987,7 +991,6 @@ void NonDExpansion::multifidelity_expansion()
   }
 
   // compute aggregate expansion and generate its statistics
-  // TO DO: one call to aggregate all contributions?
   uSpaceModel.combine_approximation(
     iteratedModel.discrepancy_correction().correction_type());
   Cout << "\n----------------------------------------------------"
@@ -1001,16 +1004,17 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, RealMatrix& best_samples)
 {
   Cerr << "Error: virtual select_refinement_points() not redefined by derived "
-       << "class.  NonDExpansion does not support point selection."<< std::endl;
+       << "class.\n       NonDExpansion does not support point selection."
+       << std::endl;
   abort_handler(-1);
 }
 
 
-void NonDExpansion::append(const RealMatrix&     samples,
-			   const IntResponseMap& resp_map)
+void NonDExpansion::append_expansion(const RealMatrix&     samples,
+				     const IntResponseMap& resp_map)
 {
-  Cerr << "Error: virtual append() not redefined by derived class.  "
-       << "NonDExpansion does not support data appending." << std::endl;
+  Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
+       << "       NonDExpansion does not support data appending." << std::endl;
   abort_handler(-1);
 }
 
@@ -1018,8 +1022,8 @@ void NonDExpansion::append(const RealMatrix&     samples,
 void NonDExpansion::increment_order_and_grid()
 {
   Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
-       << "class.  NonDExpansion does not support uniform expansion order and "
-       << "grid increments." << std::endl;
+       << "class.\n       NonDExpansion does not support uniform expansion "
+       << "order and grid increments." << std::endl;
   abort_handler(-1);
 }
 
@@ -1098,9 +1102,9 @@ Real NonDExpansion::increment_sets()
     // increment grid with current candidate
     Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
     nond_sparse->increment_set(*cit);
-    if (uSpaceModel.restore_available()) {    // has been active previously
+    if (uSpaceModel.push_available()) {    // has been active previously
       nond_sparse->restore_set();
-      uSpaceModel.restore_approximation();
+      uSpaceModel.push_approximation();
     }
     else {                                    // a new active set
       nond_sparse->evaluate_set();
@@ -1142,7 +1146,7 @@ Real NonDExpansion::increment_sets()
 
   // permanently apply best increment and update ref points for next increment
   nond_sparse->update_sets(*cit_star);
-  uSpaceModel.restore_approximation();
+  uSpaceModel.push_approximation();
   nond_sparse->update_reference();
   if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
     if (totalLevelRequests) finalStatistics.function_values(stats_star);
