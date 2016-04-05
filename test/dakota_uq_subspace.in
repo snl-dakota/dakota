@@ -85,7 +85,7 @@ model
 #       truncation_tolerance 1e-6     #s17,#p16
 #   dimension 5                       #s3,#p3,#s19,#p18
 #   bootstrap_samples 150             #s4,#p4
-#   dimension 15                      #s10,#p10
+#   dimension 6                       #s10,#p10
 
 model 
   single
