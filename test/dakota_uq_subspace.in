@@ -30,10 +30,10 @@ environment
 # Tests 0-9 are for sampling methods:
 method,
   id_method = 'ID_METHOD'
-  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17
-    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17
-    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17
-    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17
+  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
+    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
+    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
+    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
     sample_type random              #s0,#s1,#s2,#s3,#s4,#s17,#p0,#p1,#p2,#p3,#p4,#p16
 #   sample_type lhs                 #s5,#s18,#p5,#p17
 #   sample_type incremental_lhs     #s6,#s7,#p6,#p7
@@ -79,7 +79,7 @@ model
     max_iterations = 10
     convergence_tolerance = 1.0e-3
 #   truncation_method bing_li         #s1,#p1
-#   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#p11,#p12,#p13,#p14,#p15,#p17,#s20,#p19
+#   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#p11,#p12,#p13,#p14,#p15,#p17,#s20,#p19,#s21
 #   truncation_method                 #s17,#p16
 #     energy                          #s17,#p16
 #       truncation_tolerance 1e-6     #s17,#p16
@@ -133,17 +133,23 @@ variables,
 #     0.00 0.50 1.00 0.00 0.20        #s19,#p18
 #     0.00 0.24 0.00 1.00 0.49        #s19,#p18
 #     0.00 0.78 0.20 0.49 1.0         #s19,#p18
+# uniform_uncertain = 2               #s21
+#   lower_bounds = 2*-1               #s21
+#   upper_bounds = 2*1                #s21
+# normal_uncertain = 5                #s21
+#   means = 5*0.5                     #s21
+#   std_deviations = 5*0.2            #s21
 
 interface,
   id_interface = 'ID_I'
   direct
-    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19
-    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19
+    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21
 #   analysis_driver = 'steady_state_diffusion_1d'  	  #s10,#p10
 
 responses,
   id_responses = 'ID_R'
   num_response_functions = 1
-  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19
+  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21
 # numerical_gradients         #s10,#p10
   no_hessians
