@@ -89,10 +89,12 @@ private:
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
-  /// computes simple correlations
-  void simple_corr(RealMatrix& total_data, bool rank_on, const int& num_in);
-  /// computes partial correlations
-  void partial_corr(RealMatrix& total_data, bool rank_on, const int& num_in);
+  /// computes simple correlations, populating corr_matrix
+  void simple_corr(RealMatrix& total_data, const int& num_in, 
+		   RealMatrix& corr_matrix);
+  /// computes partial correlations, populating corr_matrix and numerical_issues
+  void partial_corr(RealMatrix& total_data, const int& num_in, 
+		    RealMatrix& corr_matrix, bool& numerical_issues);
 
   //
   //- Heading: Data

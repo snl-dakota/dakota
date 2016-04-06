@@ -1,4 +1,3 @@
-#@ s*: Label=AcceptanceTest
 #@ s0: UserMan=rosen_opt_ego
 # DAKOTA INPUT FILE - dakota_rosenbrock_ego.in
 # Dakota Input File: rosen_opt_ego.in           #s0

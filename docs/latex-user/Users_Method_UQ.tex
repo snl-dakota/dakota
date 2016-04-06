@@ -2606,8 +2606,8 @@ selected. The number of samples = 1000 indicates how many points to
 generate in the acceptance chain\footnote{If delayed rejection is
   active, the number of simulation evaluations will typically be
   higher due to backtracking.}.  This example uses the
-\texttt{cantilever3} algebraic model, so an emulator is not warranted,
-but the commented lines hint at related user optionsr.  The proposal
+\texttt{mod\_cantilever} algebraic model, so an emulator is not warranted,
+but the commented lines hint at related user options.  The proposal
 covariance used has diagonal element values of 1.e6 and 0.1.  The
 calibration terms in the responses section refers to the number of
 outputs that will be used in the calibration process: in this case, it
@@ -2619,51 +2619,13 @@ values for the error associated with that experiment for each quantity
 of interest.
 
 \begin{figure}[htbp!]
-\centering
-\begin{bigbox}
-\begin{small}
-\begin{verbatim}
-method,
-       bayes_calibration queso
-#       emulator
-#       gp
-#        emulator_samples = 50
-#        points_file = 'ros.txt' freeform
-#       pce 
-#        sparse_grid_level = 3 
-        samples = 1000  seed = 348                                    
-        dram 
-        proposal_covariance
-         diagonal values 1.0e6 1.0e-1
-        logit_transform
-         output verbose
- 
-variables,
-       uniform_uncertain = 2
-         lower_bounds = 1.0e6 0.1
-         upper_bounds = 1.0e8 10.0
-         initial_point = 2.85e7 2.5
-       continuous_state = 4
-          initial_state 3 40000 500 1000
-          descriptors 't' 'R' 'X' 'Y'
-
-interface,
-         system
-           analysis_driver = 'cantilever3'
-
-responses,
-        calibration_terms = 2
-        calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
-          freeform
-          num_experiments = 10
-          variance_type = 'scalar'
-        descriptors = 'stress' 'displacement'
-        no_gradients
-        no_hessians
-\end{verbatim}
-\end{small}
-\end{bigbox}
-\caption{Dakota input file for UQ example using Bayesian Calibration}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{queso_uq.in}
+    \end{small}
+  \end{bigbox}
+  \caption{Dakota input file for UQ example using Bayesian Calibration}
 \label{uq:figure18}
 \end{figure}
 

@@ -99,10 +99,10 @@ compute_correlations(const VariablesArray& vars_samples,
     }
  
   //calculate simple rank correlation coeff
-  simple_corr(total_data, false, num_corr);
+  simple_corr(total_data, num_corr, simpleCorr);
 
   //calculate partial correlation coeff
-  partial_corr(total_data, false, numVars);
+  partial_corr(total_data, numVars, partialCorr, numericalIssuesRaw);
 
   //simple rank correlations
   IntArray rank_col(num_true_samples);
@@ -147,10 +147,10 @@ compute_correlations(const VariablesArray& vars_samples,
   }
 
   //calculate simple rank correlation coeff
-  simple_corr(total_data, true, num_corr);
+  simple_corr(total_data, num_corr, simpleRankCorr);
 
   //calculate partial rank correlation coeff
-  partial_corr(total_data, true, numVars);
+  partial_corr(total_data, numVars, partialRankCorr, numericalIssuesRank);
 
   corrComputed = true;
 }
@@ -208,10 +208,10 @@ compute_correlations(const RealMatrix&     vars_samples,
     }
  
   //calculate simple rank correlation coeff
-  simple_corr(total_data, false, num_corr);
+  simple_corr(total_data, num_corr, simpleCorr);
 
   //calculate partial correlation coeff
-  partial_corr(total_data, false, numVars);
+  partial_corr(total_data, numVars, partialCorr, numericalIssuesRaw);
 
   //simple rank correlations
   IntArray rank_col(num_true_samples);
@@ -241,21 +241,20 @@ compute_correlations(const RealMatrix&     vars_samples,
   }
 
   //calculate simple rank correlation coeff
-  simple_corr(total_data, true, num_corr);
+  simple_corr(total_data, num_corr, simpleRankCorr);
 
   //calculate partial rank correlation coeff
-  partial_corr(total_data, true, numVars);
+  partial_corr(total_data, numVars, partialRankCorr, numericalIssuesRank);
 
   corrComputed = true;
 }
 
 
 void SensAnalysisGlobal::
-simple_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
+simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
 {
   //this method calculates simple correlation coefficients from a matrix of data
   //num_corr is number of columns of total data
-  //rank_on indicates if rank correlations should be calculated
   //num_in indicate if only pairs of correlations 
   //should be calculated between pairs of columns (num_in vs. num_corr-num_in) 
   //if num_in =  num_corr, correlations are calculated between all columns
@@ -264,18 +263,10 @@ simple_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
   int num_corr = total_data.numRows(), num_obs = total_data.numCols(),
     num_out = num_corr - num_in;
 
-  if (num_corr == num_in) {
-    if (rank_on)
-      simpleRankCorr.shape(num_corr,num_corr);
-    else
-      simpleCorr.shape(num_corr,num_corr);
-  }
-  else {
-    if (rank_on)
-      simpleRankCorr.shape(num_in,num_out);
-    else
-      simpleCorr.shape(num_in,num_out);
-  }
+  if (num_corr == num_in)
+    corr_matrix.shape(num_corr,num_corr);
+  else
+    corr_matrix.shape(num_in,num_out);
 
   RealVector mean_column(num_corr, false), absmax_column(num_corr,false),
     sumsquare_column(num_corr, false);
@@ -317,39 +308,22 @@ simple_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
   //calculate simple correlation coeff, put in matrix
   if (num_corr == num_in) {
     for (i=0; i<num_corr; i++) {
-      if (rank_on)
-	simpleRankCorr(i,i) = 1.0;
-      else
-	simpleCorr(i,i) = 1.0;
-    }
-    for (i=0; i<num_corr; i++) {
+      corr_matrix(i,i) = 1.0;
       for (k=0; k<i; k++) {
-	if (rank_on) {
-	  simpleRankCorr(k,i) = 0.0;
-	  for (j=0; j<num_obs; j++)
-	    simpleRankCorr(i,k) += total_data(i,j)*total_data(k,j);
-	}
-	else {
-	  simpleCorr(k,i) = 0.0;
-	  for (j=0; j<num_obs; j++)
-	    simpleCorr(i,k) += total_data(i,j)*total_data(k,j);
-	}
+	corr_matrix(i,k) = 0.0;
+	for (j=0; j<num_obs; j++)
+	  corr_matrix(i,k) += total_data(i,j)*total_data(k,j);
+	// BMA: matrix isn't currently stored as symmetric, so do both halves
+	corr_matrix(k,i) = corr_matrix(i,k);
       }
     }
   }
-  else{//input/output case
+  else {  //input/output case
     for (i=0; i<num_in; i++) {
       for (k=0; k<num_out; k++) {
-	if (rank_on) {
-	  simpleRankCorr(i,k) = 0.0;
-	  for (j=0; j<num_obs; j++)
-	    simpleRankCorr(i,k) += total_data(i,j)*total_data(k+num_in,j);
-	}
-	else {
-	  simpleCorr(i,k) = 0.0;
-	  for (j=0; j<num_obs; j++)
-	    simpleCorr(i,k) += total_data(i,j)*total_data(k+num_in,j);
-	}
+	corr_matrix(i,k) = 0.0;
+	for (j=0; j<num_obs; j++)
+	  corr_matrix(i,k) += total_data(i,j)*total_data(k+num_in,j);
       }
     }
   }
@@ -357,7 +331,8 @@ simple_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
 
 
 void SensAnalysisGlobal::
-partial_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
+partial_corr(RealMatrix& total_data, const int& num_in,
+	     RealMatrix& corr_matrix, bool& numerical_issues)
 {
   //this method calculates partial correlation coefficients from a
   //matrix of data.  Note that it is assumed that total data is
@@ -371,20 +346,16 @@ partial_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
   Teuchos::SerialDenseSolver<int, Real>    corr_solve2;
   //temporary ints to take return codes from matrix factorization and solves
   int succ_solve1 = 0, succ_solve2 = 0;
-  if (rank_on)
-    numericalIssuesRank=false;  
-  else
-    numericalIssuesRaw=false;
 
   total_pdata.shape(num_in+1,num_obs);
   temp_corr.shape(num_in+1);
   partial_corr.shape(num_in+1,num_in+1);
-  if (rank_on)
-    partialRankCorr.shape(num_in, num_out);
-  else
-    partialCorr.shape(num_in, num_out);
   temp2_corr.shape(num_in+1,num_in+1);
   partial_transpose.shape(num_in+1,num_in+1);
+
+  // initialize output data
+  numerical_issues = false;
+  corr_matrix.shape(num_in, num_out);
 
   //start off by populating partial_corr
   //NOTE:  need to calculate partial correlations one response at a time
@@ -416,26 +387,17 @@ partial_corr(RealMatrix& total_data, bool rank_on, const int& num_in)
 	temp2_corr(i,k) = (k <= i) ? temp_corr(i,k): 0.0;
     corr_solve2.setMatrix( Teuchos::rcp(&temp2_corr, false) );
     succ_solve2 = corr_solve2.invert();
-    if (rank_on)
-      numericalIssuesRank
-	= (succ_solve1 != 0) || (succ_solve2 !=0) || (numericalIssuesRank);
-    else
-      numericalIssuesRaw
-	= (succ_solve1 != 0) || (succ_solve2 !=0) || (numericalIssuesRaw);
+    numerical_issues = 
+      (succ_solve1 != 0) || (succ_solve2 !=0) || (numerical_issues);
  
     for (i=0; i<num_in+1; i++)
       for (k=0; k<num_in+1; k++)
 	partial_transpose(k,i) = temp2_corr(i,k);
     partial_corr.multiply(Teuchos::NO_TRANS,Teuchos::NO_TRANS,1.0,
                           partial_transpose,temp2_corr,0.0);
-    for (i=0; i<num_in; i++) {
-      if (rank_on)
-	partialRankCorr(i,m) = -partial_corr(i, num_in) /
-	  std::sqrt(partial_corr(num_in, num_in) * partial_corr(i, i));
-      else
-	partialCorr(i,m) = -partial_corr(i, num_in) /
-	  std::sqrt(partial_corr(num_in, num_in) * partial_corr(i, i));
-    }
+    for (i=0; i<num_in; i++)
+      corr_matrix(i,m) = -partial_corr(i, num_in) /
+	std::sqrt(partial_corr(num_in, num_in) * partial_corr(i, i));
   }
 }
 
