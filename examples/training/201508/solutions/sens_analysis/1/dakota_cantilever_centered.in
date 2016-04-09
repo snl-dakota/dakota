@@ -1,0 +1,25 @@
+# This solution uses the global bounds from model characterization 
+
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_centered_tabular.dat'
+
+method
+  centered_parameter_study
+    steps_per_variable = 4
+    step_vector  0.05  0.05  0.25  25  1.5e6  2.5  5
+ 
+variables
+  continuous_design = 7
+    initial_point = 1.0  1.0  5   500  2.9e7  50  100
+    descriptors    'w'  't'  'L'  'p'  'E'    'X' 'Y'
+
+interface
+  fork
+    analysis_drivers = 'driver.sh'
+
+responses
+  response_functions = 3
+    descriptors  'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians
