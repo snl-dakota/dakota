@@ -12,10 +12,7 @@ method
     variance_based_decomp
 
 variables
-  uniform_uncertain = 7
-    upper_bounds = 1.5  1.5  15.0  550.0  3.4e7 10.0 15.0
-    lower_bounds = 0.5  0.5   5.0  450.0  2.4e7  1.0  5.0
-    descriptors    'w'  't'  'L'   'p'    'E'   'X'  'Y'
+  # TODO
 
 interface
   fork
