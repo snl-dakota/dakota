@@ -276,7 +276,12 @@ void NonDDREAMBayesCalibration::core_run()
   //                                   paramInitials, proposalCovMatrix);
 
   Cout << "INFO (DREAM): Running DREAM for Bayesian inference." << std::endl;
-  dream_main();
+  /// DREAM will callback to cache_chain to store the chain
+  dream_main(cache_chain);
+
+  // Generate useful stats from the posterior samples
+  //  compute_statistics();
+
 
   return;
 }
@@ -426,6 +431,29 @@ double *  NonDDREAMBayesCalibration::prior_sample ( int par_num )
   */
 
   return zp;
+}
+
+
+/** Archive the chain from DREAM.  This default implementation is
+    aggregating from the parallel chains in a round-robin fashion. */
+void NonDDREAMBayesCalibration::cache_chain(const double* const z) 
+{
+  int par_num = 
+    nonDDREAMInstance->numContinuousVars + nonDDREAMInstance->numHyperparams;
+  int num_samples = 
+    nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
+
+  nonDDREAMInstance->acceptanceChain.shape(par_num, num_samples);
+
+  // BMA: loops taken from dream.cpp chain_write; don't change
+  // indexing for the z vector (may need to update where the samples
+  // are placed in acceptanceChain)
+  for (int k=0; k<nonDDREAMInstance->numGenerations; ++k)
+    for (int j=0; j<nonDDREAMInstance->numChains; ++j) 
+      for (int i=0; i<par_num; ++i)
+        nonDDREAMInstance->acceptanceChain
+	  (i, k*nonDDREAMInstance->numChains + j) =
+	  z[i+j*par_num+k*par_num*nonDDREAMInstance->numChains];
 }
 
 

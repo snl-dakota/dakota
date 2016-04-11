@@ -84,6 +84,12 @@ protected:
   void core_run();
   //void print_results(std::ostream& s);
 
+
+  // Member functions
+
+  /// Callback to archive the chain from DREAM
+  static void cache_chain(const double* const z);
+
   //
   //- Heading: Data
 
@@ -91,6 +97,9 @@ protected:
   RealVector paramMins;
   /// upper bounds on calibrated parameters
   RealVector paramMaxs;
+
+  /// aggregate final chain (need to verify if accepted only)
+  RealMatrix acceptanceChain;
 
   // DREAM Algorithm controls
 
