@@ -4833,7 +4833,7 @@ static void Var_RealBoundIPCheck(DataVariablesRep *dv, Var_rcheck *b)
       ++ndflt;
     else if (U->length() != n) {
       Squawk("%s_upper_bounds needs %lu elements, not %lu",
-	     b->name, (UL)n, (UL)L->length());
+	     b->name, (UL)n, (UL)U->length());
       return;
     }
   }
