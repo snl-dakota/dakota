@@ -9,6 +9,7 @@ method,
         polynomial_chaos				
 	  expansion_order = 2				# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
+	  seed = 1237
 	  orthogonal_matching_pursuit
 #	  max_iterations = 5				# affects OMP as well
 	  convergence_tolerance = .1			#s0

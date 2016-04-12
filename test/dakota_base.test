@@ -42241,14 +42241,14 @@ Sample moment statistics for each response function:
  response_fn_3  2.5254432138e-02  6.5435610121e-03  7.8140474408e-01 -4.8690010681e-02
 dakota_uq_diffusion_mlpce.in
 Test Number 0 succeeded
-<<<<< Equivalent number of high fidelity evaluations: 1.2970703125000000e+01
-<<<<< Function evaluation summary: 390 total (390 new, 0 duplicate)
-<<<<< Function evaluation summary: 390 total (390 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.3002685546875000e+01
+<<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
+<<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5251283366071662e-02  6.5472629132223743e-03
- response_fn_2  1.2890381217828636e-01  1.3759691761964617e-02
- response_fn_3  2.5251283366150189e-02  6.5472629131926629e-03
+ response_fn_1  2.5273113900100883e-02  6.5910964026953634e-03
+ response_fn_2  1.2899060332640971e-01  1.3695444202540109e-02
+ response_fn_3  2.5273113899963510e-02  6.5910964026781533e-03
 dakota_uq_genz_pce_lls_adapted.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
