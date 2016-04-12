@@ -10,9 +10,11 @@ method,
 	  expansion_order = 2				# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
 	  orthogonal_matching_pursuit
-	  max_iterations = 5
-	  convergence_tolerance = .1		#s0
-#	  convergence_tolerance = .01		#s1
+#	  max_iterations = 5				# affects OMP as well
+	  convergence_tolerance = .1			#s0
+#	  convergence_tolerance = .01			#s1
+#	  convergence_tolerance = .001
+#	  convergence_tolerance = .0001
 	output silent
 
 model,
