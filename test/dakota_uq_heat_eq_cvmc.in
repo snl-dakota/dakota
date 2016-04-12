@@ -1,5 +1,5 @@
-#@ s3: TimeoutAbsolute=3600
-#@ s3: TimeoutDelay=1200
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
 
 #environment,
 #	graphics
@@ -11,8 +11,8 @@ method,
 #	  max_iterations = 0
 	  convergence_tolerance = .1			#s0
 #	  convergence_tolerance = .01			#s1
-#	  convergence_tolerance = .001			#s2
-#	  convergence_tolerance = .0001
+#	  convergence_tolerance = .001			# too expensive
+#	  convergence_tolerance = .0001			# too expensive
 	output silent
 
 model,
@@ -27,14 +27,20 @@ model,
 	variables_pointer = 'LF_VARS'
 	simulation
 	  solution_level_control = 'N_x'
-	  solution_level_cost = 15.
+# linear in modes, linear in spatial coords:
+#	  solution_level_cost = 15.
+# linear in modes, cubic in spatial coords:
+	  solution_level_cost = 375.
 
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
 	  solution_level_control = 'N_x'
-	  solution_level_cost = 4200.
+# linear in modes, linear in spatial coords:
+#	  solution_level_cost = 4200.
+# linear in modes, cubic in spatial coords:
+	  solution_level_cost = 1.68e+8
 
 variables,
 	id_variables = 'LF_VARS'
@@ -43,7 +49,7 @@ variables,
 	  upper_bounds    = 7* 1.
 	discrete_state_set
 	  integer = 2
-#	    num_set_values = 4 2
+#	    num_set_values = 4 1
 #	    set_values = 5 15 30 60 # number of spatial coords
 #	    	       	 3 	    # number of Fourier solution modes
 	    num_set_values = 1 1
@@ -59,7 +65,7 @@ variables,
 	  upper_bounds    = 7* 1.
 	discrete_state_set
 	  integer = 2
-#	    num_set_values = 4 2
+#	    num_set_values = 4 1
 #	    set_values = 30 60 100 200 # number of spatial coords
 #	    	       	 21 	       # number of Fourier solution modes
 	    num_set_values = 1 1

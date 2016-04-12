@@ -1,5 +1,5 @@
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=3
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
 
 #environment,
 #	graphics
@@ -49,9 +49,9 @@ variables,
 # LF = exp16 case tests different model forms
 # LF = cos4 case tests the extreme values of the discretization levels 
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-	    initial_state = 16	  	 #s0,#s1
+	    initial_state = 16	  	     	 #s0,#s1
 	    set_values = 16	     	 	 #s0,#s1
-#	    initial_state = 4	  	   #s2,#s3
+#	    initial_state = 4	  	   	 #s2,#s3
 #	    set_values = 4	     	 	 #s2,#s3
       descriptors = 'mesh_size'
     real = 4
@@ -61,12 +61,12 @@ variables,
                    1     # kernel order
                    0.2   # kernel length
       descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
-      initial_state = 0.1 0.5 1 0.2	 #s0,#s1
+      initial_state = 0.1 0.5 1 0.2		 #s0,#s1
 #     initial_state = 1 4 1 0.2  	 	 #s2,#s3
 	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
       elements_per_variable = 2 2
 	    initial_state = 'exponential' 'on'	 #s0,#s1
-#	    initial_state = 'cosine' 'off'  	 	 #s2,#s3
+#	    initial_state = 'cosine' 'off'  	 #s2,#s3
       set_values = 'cosine' 'exponential'
                    'off' 'on'
       descriptors = 'kernel_type' 'positivity'
