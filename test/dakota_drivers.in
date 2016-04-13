@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ On Windows: 4-6 abort; refork?
 #@ *: DakotaConfig=UNIX

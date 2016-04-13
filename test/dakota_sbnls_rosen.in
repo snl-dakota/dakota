@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ s5: DakotaConfig=HAVE_NPSOL
 #@ s6: DakotaConfig=HAVE_NPSOL
 #@ s7: DakotaConfig=HAVE_DOT

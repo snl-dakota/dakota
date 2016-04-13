@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_DOT
 #@ s0: UserMan=textbook_pareto_strat
 #@ [taxonomy:start]

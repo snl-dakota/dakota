@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ s0: UserMan=textbook_opt_ouu1
 #@ [taxonomy:start]

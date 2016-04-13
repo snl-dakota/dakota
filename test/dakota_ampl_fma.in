@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_AMPL
 #@ s0: DakotaConfig=HAVE_NPSOL
 #@ s1: DakotaConfig=HAVE_NPSOL

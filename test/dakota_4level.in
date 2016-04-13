@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ Allow default serial test: #s0
 #@ s*: Label=FastTest
 #@ p0: MPIProcs=12

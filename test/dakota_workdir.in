@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ On Windows: not sufficiently generic
 #@ *: DakotaConfig=UNIX
 #@ p*: Label=FastTest

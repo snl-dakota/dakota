@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ p*: Label=FastTest
 #@ p0: MPIProcs=2
 

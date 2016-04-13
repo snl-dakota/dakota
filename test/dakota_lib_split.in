@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ s*: Label=FastTest
 #@ p*: Label=AcceptanceTest
 #@ p0: MPIProcs=4 ExecCmd='dakota_library_split'

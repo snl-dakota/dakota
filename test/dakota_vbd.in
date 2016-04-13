@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 # DAKOTA INPUT FILE : dakota_vbd.in
 
 environment,

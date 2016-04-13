@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ s*: Label=FastTest
 ## DAKOTA INPUT FILE - dakota_nonlinear_cg
 ## Test DAKOTA's built-in nonlinear conjugate gradient solver

@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 # DAKOTA INPUT FILE : dakota_rkd.in
 # This input file tests the Recursive k-d Darts (RKD) capability. 
 

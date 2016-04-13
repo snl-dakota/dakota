@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 environment,
 	#graphics

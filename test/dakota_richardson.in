@@ -1,3 +1,4 @@
+#@ *: Label=FastTest
 #@ s*: Label=FastTest
 
 # TO DO: define a meaningful verification test.  text_book generates inf's
