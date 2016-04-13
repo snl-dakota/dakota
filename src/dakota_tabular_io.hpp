@@ -173,20 +173,20 @@ void read_data_tabular(const std::string& input_filename,
 		       RealVector& input_data, size_t num_entries,
 		       unsigned short tabular_format);
 
-/// read possibly header-annotated whitespace-separated data of
-/// Variables, followed by num_fns, into a dynamic vector with minimal
-/// error checking
+/// Tabular read for ApproximationInterface challenge data: read
+/// possibly header-annotated whitespace-separated data of Variables,
+/// followed by num_fns, into a dynamic vector with minimal error
+/// checking
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
 		       RealArray& input_vector, unsigned short tabular_format,
 		       bool active_only);
 
-
-/// PCE import: read possibly header-annotated whitespace-separated
-/// data of unknown length where each row has num_fns reals followed
-/// by num_vars unsigned shorts; append data to arrays passed by
-/// reference
+/// Tabular read for PCE import: read possibly header-annotated
+/// whitespace-separated data of unknown length where each row has
+/// num_fns reals followed by num_vars unsigned shorts; append data to
+/// arrays passed by reference
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealVectorArray& input_coeffs, 
@@ -194,12 +194,9 @@ void read_data_tabular(const std::string& input_filename,
 		       unsigned short tabular_format,
 		       size_t num_vars, size_t num_fns);
 
-//
-// Uses: DataFitSurrModel (highly specialized)
-//
-/// read whitespace-separated data with optional row and column
-/// headers into lists of Variables and Responses until out of data;
-/// continuous variables only
+/// Tabular read for DataFitSurrModel (build points): read
+/// whitespace-separated data with optional row and column headers
+/// into lists of Variables and Responses until out of data
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, Response resp,
@@ -207,33 +204,31 @@ void read_data_tabular(const std::string& input_filename,
 		       unsigned short tabular_format,
 		       bool verbose=false, bool active_only=false);
 
-
-//
-// Uses: import_approx_points_file
-//
-/// read whitespace-separated data with optional row and column headers
-/// into a single matrix, with length of record as specified and number of
-/// records to be determined by file content.  The matrix is stored as
-/// record_len rows by num_records columns.
+/// Tabular read for import_approx_points_file: read
+/// whitespace-separated data with optional row and column headers
+/// into a single matrix, with length of record as specified and
+/// number of records to be determined by file content.  The matrix is
+/// stored as record_len rows by num_records columns.
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealMatrix& input_matrix, size_t record_len,
 		       unsigned short tabular_format, bool verbose=false);
 
-//
-// Uses: Bayesian calibration
-//       Eventually regular least squares where we'll have one experiment/row
-//
-/// read whitespace-separated data with optional row and column headers
-/// into a single matrix, with size as specified
+// BMA: Probably retire in favor of new data readers, rather than
+// propagating to other Bayesian calibration and deterministic least
+// squares
+/// Tabular read for GPMSA data: read whitespace-separated data with
+/// optional row and column headers into a single matrix, with size as
+/// specified (one experiment per row)
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       RealMatrix& input_matrix, 
 		       size_t num_rows, size_t num_cols,
 		       unsigned short tabular_format, bool verbose=false);
 
-/// read specified input data file into arrays with sizes specified
-/// by the passed vc_totals array; used in ParamStudy
+// special reader for list parameter studies: probably move back to ParamStudy
+/// Tabular read for ParamStudy: read specified input data file into
+/// arrays with sizes specified by the passed vc_totals array
 size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 

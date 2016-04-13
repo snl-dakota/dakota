@@ -490,7 +490,6 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
-// Data fit surrogate import, which might only read active variables
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, Response resp,
@@ -632,7 +631,6 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
-// special reader for list parameter studies: probably move back to ParamStudy
 size_t read_data_tabular(const std::string& input_filename, 
 			 const std::string& context_message,
 			 RealVectorArray& cva, IntVectorArray& diva, 

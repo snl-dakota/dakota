@@ -1234,7 +1234,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, new_N_l, last_active = 0;
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and N_l
@@ -1257,11 +1257,13 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
+      lev_cost = cost[lev];
       if (lev) {
 	if (lev == 1) // update responseMode for levels 1:num_lev-1
 	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
 	iteratedModel.surrogate_model_indices(model_form, lev-1);
 	iteratedModel.truth_model_indices(model_form,     lev);
+	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
       }
 
       // aggregate variances across QoI for estimating N_l (justification:
@@ -1319,7 +1321,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
       }
 
       sum_root_var_cost
-	+= std::pow(agg_var_l * std::pow(cost[lev], kappa), inv_kp1);
+	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
     }
@@ -1337,10 +1339,11 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     // update targets based on variance estimates
     Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
+      lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      new_N_l = std::pow(agg_var[lev] / cost[lev], inv_kp1) * fact;
+      new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
     ++iter;

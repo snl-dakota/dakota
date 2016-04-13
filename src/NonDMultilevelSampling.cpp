@@ -199,7 +199,8 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev = surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
-  Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
+    lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
     lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
@@ -211,8 +212,8 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   initialize_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, num_hf_lev);
 
   IntRealMatrixMap sum_L, sum_H, sum_LH, mean_L, mean_H, var_L, covar_LH;
-  initialize_cv_sums_moments(sum_L, sum_H, sum_LH,
-			     mean_L, mean_H, var_L, covar_LH, num_cv_lev);
+  initialize_cv_sums_moments(sum_L, sum_H, sum_LH, mean_L, mean_H, var_L,
+			     covar_LH, num_cv_lev);
   RealMatrix var_H(numFunctions, num_cv_lev, false),
            rho2_LH(numFunctions, num_cv_lev, false);
   RealVector Lambda(num_cv_lev, false);
@@ -232,10 +233,12 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
+      lf_lev_cost = lf_cost[lev]; hf_lev_cost = hf_cost[lev];
       if (lev) {
 	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
 	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
 	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
+	lf_lev_cost += lf_cost[lev-1]; hf_lev_cost += hf_cost[lev-1];// 2 levels
       }
 
       // set the number of current samples from the defined increment
@@ -295,7 +298,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 				      getCol(Teuchos::View, sum_L[2],  i_lev),
 				      getCol(Teuchos::View, sum_H[2],  i_lev),
 				      getCol(Teuchos::View, sum_LH[1], i_lev),
-				      hf_cost[lev]/lf_cost[lev], mean_L_l,
+				      hf_lev_cost/lf_lev_cost, mean_L_l,
 				      mean_H_l, var_L_l, var_H_l, covar_LH_l,
 				      rho2_LH_l);
 	  Lambda[lev] = 1. - rho2_LH(qoi,lev)
@@ -322,9 +325,9 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 
       // accumulate sum of sqrt's of estimator var * cost used in new_N_l
       sum_sqrt_var_cost += (lev < num_lf_lev) ?
-	std::sqrt(agg_var_hf_l * hf_cost[lev] * Lambda[lev] /
+	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
 		  (1. - rho2_LH(qoi,lev))) :
-	std::sqrt(agg_var_hf_l * hf_cost[lev]);
+	std::sqrt(agg_var_hf_l * hf_lev_cost);
       // mean sq error reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf_l[lev];
     }
@@ -342,9 +345,10 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     // update targets based on variance estimates
     Real fact = sum_sqrt_var_cost / eps_sq_div_2;
     for (lev=0; lev<num_hf_lev; ++lev) {
+      hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
       new_N_l = (lev < num_lf_lev) ? fact *
-	std::sqrt(agg_var_hf[lev] / hf_cost[lev] * (1. - rho2_LH(qoi,lev))) :
-	fact * std::sqrt(agg_var_hf[lev] / hf_cost[lev]);
+	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - rho2_LH(qoi,lev))) :
+	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf_l[lev] = (new_N_l > N_hf_l[lev]) ? new_N_l - N_hf_l[lev] : 0;
     }
     ++iter;
@@ -364,7 +368,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
     cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, /*rho2_LH,*/ lev,
-		   N_lf_l[lev], /*hf_cost[lev]/lf_cost[lev],*/ Y_cvmc_mom);
+		   N_lf_l[lev], /*hf_lev_cost/lf_lev_cost,*/ Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_lf_lev) {
@@ -432,7 +436,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, samp, new_N_l;
-  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.;
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -457,11 +461,13 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
+      lev_cost = cost[lev];
       if (lev) {
 	if (lev == 1) // update responseMode for levels 1:num_lev-1
 	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
 	iteratedModel.surrogate_model_indices(model_form, lev-1);
 	iteratedModel.truth_model_indices(model_form,     lev);
+	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
       }
 
       // set the number of current samples from the defined increment
@@ -495,7 +501,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 	}
       }
 
-      sum_sqrt_var_cost += std::sqrt(agg_var_l * cost[lev]);
+      sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
     }
@@ -516,7 +522,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
       // Equation 3.9 in CTR Annual Research Briefs:
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
-      new_N_l = std::sqrt(agg_var[lev] / cost[lev]) * fact;
+      new_N_l = std::sqrt(agg_var[lev] / lev_cost) * fact;
       delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
     }
     ++iter;
@@ -615,8 +621,9 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
       accumulate_cv_sums(sum_L, sum_H, sum_LH);
       // update ratios:
       avg_eval_ratio =
-	eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1],cost_ratio,
-		   mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
+	eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1],
+		   cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H,
+		   covar_LH[1], rho2_LH);
       avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter);
     }
   }

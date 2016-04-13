@@ -1,5 +1,5 @@
-#@ s*: TimeoutAbsolute=7200
-#@ s*: TimeoutDelay=7200
+#@ s*: TimeoutAbsolute=1200
+#@ s*: TimeoutDelay=3600
 
 environment,
 	output_precision = 16
@@ -9,10 +9,13 @@ method,
         polynomial_chaos				
 	  expansion_order = 2				# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
+	  seed = 1237
 	  orthogonal_matching_pursuit
-	  max_iterations = 5
-	  convergence_tolerance = .1		#s0
-#	  convergence_tolerance = .01		#s1
+#	  max_iterations = 5				# affects OMP as well
+	  convergence_tolerance = .1			#s0
+#	  convergence_tolerance = .01
+#	  convergence_tolerance = .001
+#	  convergence_tolerance = .0001
 	output silent
 
 model,
