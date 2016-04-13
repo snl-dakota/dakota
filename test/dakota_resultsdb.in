@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 
 # Tests borrowed from other files, but with results DB enabled
 

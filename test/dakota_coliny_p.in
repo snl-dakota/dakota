@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 #@ p*: MPIProcs=2
 
 # DAKOTA INPUT FILE - dakota_coliny_p.in

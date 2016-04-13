@@ -1,5 +1,5 @@
 #@ Allow default serial test: #s0
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 #@ p0: MPIProcs=12
 
 # This tester has been used to measure scaling performance in 4 level

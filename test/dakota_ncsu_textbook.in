@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_ncsu_textbook.in
 
 # Apply NCSU DIRECT to textbook problem exercising asynchronous (batch)
