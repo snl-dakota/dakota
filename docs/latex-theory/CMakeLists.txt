@@ -54,7 +54,7 @@ add_custom_command(
   OUTPUT    "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.bbl"
   DEPENDS   "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}.aux"
   COMMAND   "${BIBTEX_COMPILER}"
-  ARGS      -terse "${CMAKE_CURRENT_BINARY_DIR}/${file_tex}"
+  ARGS      "${file_tex}"
   COMMENT   "Bibtex: Theory"
 )
 
