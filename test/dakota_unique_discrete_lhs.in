@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 ## DAKOTA INPUT FILE - dakota_unique_discrete_lhs.in
 
 # This file contains tests of the variable views override capability

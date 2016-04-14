@@ -1,5 +1,4 @@
-#@ *: Label=FastTest
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ s*: Label=AcceptanceTest
 #@ p*: Label=FastTest
 #@ p0: MPIProcs=3 CheckOutput='dakota.out.1'

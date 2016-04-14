@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_ncsu_textbook.in
 

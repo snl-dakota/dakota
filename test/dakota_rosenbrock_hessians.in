@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_rosenbrock_hessians.in
 
 # This sample Dakota input file optimizes the Rosenbrock function.

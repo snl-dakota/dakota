@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 # This Dakota input file provides a stress test for the 2D graphics.  It
 # derives from a nonlinear parameter estimation of plasticity material

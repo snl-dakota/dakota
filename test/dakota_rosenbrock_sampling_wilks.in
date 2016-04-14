@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # Dakota Input File: rosen_sampling_wilks.in
 
 environment

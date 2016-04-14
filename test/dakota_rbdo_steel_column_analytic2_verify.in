@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 
 # DAKOTA Input File: dakota_rbdo_steel_column_analytic2.in

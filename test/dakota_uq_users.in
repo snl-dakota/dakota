@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ s0: UserMan=textbook_uq_sampling
 #@ s4: UserMan=textbook_uq_surrogate
 # DAKOTA INPUT FILE - dakota_uq_users.in

@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_sbo_sine_fcn.in
 
 # Demonstrates the use of approximation models and a trust region

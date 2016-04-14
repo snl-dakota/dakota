@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ *: DakotaConfig=HAVE_OPTPP
 #@ *: ExecCmd='dakota_library_mode' Restart=none
 #@

@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 #@ s0: UserMan=textbook_uq_meanvalue
 #@ [taxonomy:start]

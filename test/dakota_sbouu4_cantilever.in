@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA INPUT FILE: dakota_sbouu4_cantilever.in
 #

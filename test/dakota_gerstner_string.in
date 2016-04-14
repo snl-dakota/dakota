@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # This input file tests the string variable capability by using a
 # string variable to specify the analysis component for anisotropy
 # level to Gerstner.

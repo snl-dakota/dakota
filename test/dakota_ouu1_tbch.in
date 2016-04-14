@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_ouu1_tbch.in
 # Optimization under uncertainty

@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE : dakota_portal_frame.in
 
 # This file is a verification test for second-order integration.

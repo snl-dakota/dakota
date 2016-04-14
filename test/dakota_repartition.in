@@ -1,5 +1,3 @@
-#@ *: Label=FastTest
-#@ *: Label=FastTest
 #@ Allow default serial test: #s0
 #@ s*: Label=FastTest
 #@ p*: Label=FastTest

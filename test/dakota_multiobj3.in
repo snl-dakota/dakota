@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_multiobj3.in
 
 # Unconstrained nongradient-based multiobjective optimization using

@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 #@ s0: UserMan=container_opt_npsol
 #@ [taxonomy:start]

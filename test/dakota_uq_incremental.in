@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 #@ s0: Restart=write
 #@ s1: Restart=read

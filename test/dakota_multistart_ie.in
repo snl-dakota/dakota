@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 #@ p*: Label=AcceptanceTest
 #@ p*: MPIProcs=8

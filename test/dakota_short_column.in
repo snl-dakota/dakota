@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE : dakota_short_column.in
 
 # This file covers a test matrix of reliability index approach (RIA)

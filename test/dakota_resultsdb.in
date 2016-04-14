@@ -1,4 +1,3 @@
-#@ *: Label=FastTest
 #@ s*: Label=FastTest
 
 # Tests borrowed from other files, but with results DB enabled

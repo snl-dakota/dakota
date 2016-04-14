@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE : dakota_steel_section.in
 
 # This file is a verification test for second-order integration.

@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ s4: DakotaConfig=HAVE_NPSOL
 #@ s5: DakotaConfig=HAVE_NPSOL
 #@ s4: UserMan=cylhead_opt_npsol

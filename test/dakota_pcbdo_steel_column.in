@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA Input File: dakota_pcbdo_steel_column.in
 # Optimization under uncertainty using PCE methods with variable insertion.

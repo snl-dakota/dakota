@@ -1,4 +1,4 @@
-#@ *: Label=FastTest
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_QUESO
 #@ p*: MPIProcs=1
 
