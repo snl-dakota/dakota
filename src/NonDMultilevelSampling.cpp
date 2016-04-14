@@ -199,6 +199,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev = surr_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev);
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
@@ -224,7 +225,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_hf_l << std::endl;
 
   // now converge on sample counts per level (N_hf_l)
-  while (Pecos::l1_norm(delta_N_hf_l) && iter <= maxIterations) {
+  while (Pecos::l1_norm(delta_N_hf_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
@@ -436,6 +437,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, samp, new_N_l;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
@@ -452,7 +454,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
 
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
+  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
@@ -607,7 +609,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 
   // bypass refinement if maxIterations == 0 or convergenceTol already
   // satisfied by pilot sample
-  if (maxIterations && avg_mse_ratio > convergenceTol) {
+  if (maxIterations != 0 && avg_mse_ratio > convergenceTol) {
 
     // Assuming rho_AB, evaluation_ratio and var_H to be relatively invariant,
     // we seek a relative reduction in MSE using the convergence tol spec:
