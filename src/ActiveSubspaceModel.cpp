@@ -151,13 +151,14 @@ void ActiveSubspaceModel::validate_inputs()
 
   // validate iteration controls
 
-  // set default initialSamples, with lower bound of 2
-  // TODO: allow other user control of initial sample rule?
-  int min_initial_samples = 2;
+  // set default initialSamples, with lower bound equal to dimension of
+  // of full space
+  int min_initial_samples = numFullspaceVars;
   if (initialSamples < min_initial_samples) {
     initialSamples = min_initial_samples;
     Cout << "\nWarning (model subspace): resetting samples to minimum "
-         << "allowed = " << initialSamples << "." << std::endl;
+         << "allowed = " << initialSamples << ". Note that the accuracy of the "
+         << "subspace may be poor with this few samples." << std::endl;
   }
 
   if (initialSamples > maxFunctionEvals) {
