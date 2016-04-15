@@ -714,6 +714,41 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
   //Cout << "nlpost_resp:\n" << nlpost_resp;
 }
 
+void NonDBayesCalibration::filter_chain(RealMatrix& accepted_chain, RealMatrix& filteredChain)
+{
+  int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+  int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+  int num_samples = accepted_chain.numCols();
+  int num_filtered = int((num_samples - burnin)/num_skip);
+  int j = 0;
+  for (int i = burnin; i < num_samples; ++i){
+    if (i % num_skip == 0){
+      const RealVector& param_vec = Teuchos::getCol(Teuchos::View, 
+	  			    accepted_chain, i);
+      Teuchos::setCol(param_vec, j, filteredChain);
+      j++;
+    }
+  }
+}
+
+void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fnvals, RealMatrix& filteredFnVals)
+{
+  int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+  int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+  int num_samples = accepted_fnvals.numCols();
+  int num_filtered = int((num_samples - burnin)/num_skip);
+  int j = 0;
+  for (int i = burnin; i < num_samples; ++i){
+    if (i % num_skip == 0){
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+	  			  accepted_fnvals, i);
+      Teuchos::setCol(col_vec, j, filteredFnVals);
+      j++;
+    }
+  }
+}
+
+
 
 //void NonDBayesCalibration::print_results(std::ostream& s)
 //{ Cout << "Posterior sample results " << '\n'; }

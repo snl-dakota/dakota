@@ -2383,7 +2383,7 @@
 		  </keyword>
           <keyword  id="probability_levels1" name="probability_levels" code="{N_mdm(resplevs01,probabilityLevels)}" label="probability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
             <param type="REALLIST" />
-            <keyword  id="num_probability_levels1" name="num_probability_levels" code="{N_mdm(num_resplevs,probabilityLevels)}" label="num_probability_levels" help="" minOccurs="0" default="probability_levels evenly distributed among response functions" >
+            <keyword  id="num_probability_levels" name="num_probability_levels" code="{N_mdm(num_resplevs,probabilityLevels)}" label="num_probability_levels" help="" minOccurs="0" default="probability_levels evenly distributed among response functions" >
               <param type="INTEGERLIST" />
             </keyword>
           </keyword>

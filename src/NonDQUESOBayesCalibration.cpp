@@ -492,25 +492,16 @@ void NonDQUESOBayesCalibration::compute_intervals()
     */
     int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
     int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+    int num_params = acceptanceChain.numRows();
     int num_samples = acceptanceChain.numCols();
     int num_filtered = int((num_samples-burnin)/num_skip);
     RealMatrix filteredFnVals_for_intervals;
-    filteredFnVals_for_intervals.shapeUninitialized(numFunctions, num_filtered);
     RealMatrix filteredChain;
+    filteredFnVals_for_intervals.shapeUninitialized(numFunctions, num_filtered);
     filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
-    int j = 0;
-    for (int i = burnin; i <num_samples; ++i){
-      if (i % num_skip == 0){
-        const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
-	    			    acceptedFnVals, i);
-        Teuchos::setCol(col_vec, j, filteredFnVals_for_intervals);
-	const RealVector& param_vec = Teuchos::getCol(Teuchos::View,
-	    			      acceptanceChain, i);
-	Teuchos::setCol(param_vec, j, filteredChain);
-        j++;
-        }
-    }
-    int num_params = acceptanceChain.numRows();
+    filter_chain(acceptanceChain, filteredChain);
+    filter_fnvals(acceptedFnVals, filteredFnVals_for_intervals);
+
 
     // Make accepted function values the rows instead of the columns
     RealMatrix filteredFnVals_transpose(filteredFnVals_for_intervals, 
@@ -604,7 +595,12 @@ void NonDQUESOBayesCalibration::compute_intervals()
 	resp_array.push_back(resp[k]);
       }
     }
-    TabularIO::write_header_tabular(filteredMCMCStream, residualModel.current_variables(), resp_array, "mcmc_id", exportMCMCFormat);
+    //
+    Variables output_vars = residualModel.current_variables().copy();
+    //
+    TabularIO::write_header_tabular(filteredMCMCStream, 
+			            residualModel.current_variables(), resp_array, 
+				    "mcmc_id", exportMCMCFormat);
     size_t sample_cntr = 0;
     size_t wpp4 = write_precision+4;
     for (int i=0; i<num_filtered; ++i, ++sample_cntr){
@@ -614,50 +610,19 @@ void NonDQUESOBayesCalibration::compute_intervals()
       if (standardizedSpace){
 	RealVector u_rv(numContinuousVars, false), x_rv;
 	natafTransform.trans_U_to_X(u_rv, x_rv);
+	output_vars.continuous_variables(x_rv);
 	write_data_tabular(filteredMCMCStream, x_rv);
       }
       // Write param values to filtered_tabular
       else{
-	for(int j=0; j<numContinuousVars; ++j){
-	  filteredMCMCStream << std::setw(wpp4) << qv[j] << ' ';
-	}
-      }
-      for (j=numContinuousVars; j<num_params; ++j){
-	filteredMCMCStream << std::setw(wpp4) << qv[j] << ' ';
+	output_vars.continuous_variables(qv);
+	output_vars.write_tabular(filteredMCMCStream);
       }
 
-      /*const Variables& base_vars = residualModel.current_variables();
-      write_data_tabular(filteredMCMCStream, 
-	  	        base_vars.inactive_continuous_variables());
-      out_stream << "test " << base_vars << '\n';
-      out_stream << "test0 " << base_vars.continuous_variables() << '\n';
-      out_stream << "test1 " << base_vars.inactive_continuous_variables() << '\n';
-      write_data_tabular(filteredMCMCStream, 
-	  	         base_vars.inactive_discrete_int_variables());
-      out_stream << "test2 " << base_vars.inactive_discrete_int_variables() << '\n';
-      write_data_tabular(filteredMCMCStream, 
-	  	         base_vars.inactive_discrete_string_variables());
-      out_stream << "test " << base_vars.inactive_discrete_string_variables() << '\n';
-      write_data_tabular(filteredMCMCStream, 
-	  	         base_vars.inactive_discrete_real_variables());
-      out_stream << "test3 " << base_vars.inactive_discrete_real_variables() << '\n';
-      out_stream << "test4 " << base_vars.discrete_int_variables() << '\n';
-      //out_stream << "test4 " << base_vars.discrete_string_variables() << '\n';
-      out_stream << "test5 " << base_vars.discrete_real_variables() << '\n';
-      */
-
-      // Write non-param variable values to filtered_tabular
-      // Variables not being calibrated are filled with white space
-      int num_vars = residualModel.tv(); 
-      //const RealVector& cont_vars = residualModel.all_continuous_variables();
-      if (num_vars > num_params){
-	for(int j=num_params; j < num_vars; ++j){
-	  filteredMCMCStream << std::setw(wpp4) << '\t' << ' ' ;
-	}
-      }
       // Write function values to filtered_tabular
       const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
 	  			    filteredFnVals_for_intervals, i);
+      int j = 0;
       for (j=0; j<numFunctions; ++j){
 	filteredMCMCStream << std::setw(wpp4) << col_vec[j] << ' ';
       }      
@@ -677,8 +642,6 @@ void NonDQUESOBayesCalibration::compute_intervals()
     //Print cred/pred intervals to screen
     std::ostream& s = Cout;
     size_t width = write_precision+7;
-    //StringArray combined_labels;
-    //copy_data(residualModel.continuous_variable_labels(), combined_labels);
     s << "Credibility Intervals for each response:\n";
     s << std::setw(width) << ' ' << "  Probability Level Response Level\n";
     s << std::setw(width) << ' ' << "  ----------------- -----------------\n";
@@ -1007,15 +970,22 @@ void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
 				     empty_id,//mcmcModel.interface_id(),
 				     exportMCMCFormat);
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
+    Variables output_vars = residualModel.current_variables().copy();
+    RealVector u_rv(numContinuousVars, false), x_rv;
+    copy_gsl_partial(qv, 0, u_rv);
     if (standardizedSpace) {
-      RealVector u_rv(numContinuousVars, false), x_rv;
-      copy_gsl_partial(qv, 0, u_rv);
+      //RealVector u_rv(numContinuousVars, false), x_rv;
+      //copy_gsl_partial(qv, 0, u_rv);
       natafTransform.trans_U_to_X(u_rv, x_rv);
+      output_vars.continuous_variables(x_rv);
       write_data_tabular(exportMCMCStream, x_rv);
     }
-    else
-      for (j=0; j<numContinuousVars; ++j)
-	exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
+    else{
+      output_vars.continuous_variables(u_rv);
+      output_vars.write_tabular(exportMCMCStream);
+      //for (j=0; j<numContinuousVars; ++j)
+	//exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
+    }
     // trailing calibrated hyperparams are not transformed
     for (j=numContinuousVars; j<num_params; ++j)
       exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';

@@ -198,6 +198,10 @@ protected:
   /// Pointer to current class instance for use in static callback functions
   static NonDBayesCalibration* nonDBayesInstance;
 
+  /// Perform chain filtering with burn-in and sub-sampling
+  void filter_chain(RealMatrix& accepted_chain, RealMatrix& filteredChain);
+  void filter_fnvals(RealMatrix& accepted_fnvals, RealMatrix& filteredFnVals);
+
 private:
 
   //
