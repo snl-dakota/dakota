@@ -78,7 +78,7 @@ private:
   /// computing/updating the evaluation ratio and the MSE ratio
   void shared_increment(size_t iter);
   /// perform final LF sample increment as indicated by the evaluation ratio
-  bool lf_increment(Real avg_eval_ratio);
+  bool lf_increment(Real avg_eval_ratio, size_t N_hf);
 
   /// initialize the CV bookkeeping for sums, means, variances, and
   /// covariances across fidelity levels
@@ -157,6 +157,9 @@ private:
 		      size_t lev, size_t N_lf,     //Real cost_ratio,
 		      RealMatrix& H_raw_mom);
 
+  /// compute average of a set of observations
+  Real average(const RealVector& vec) const;
+
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
   void convert_moments(const RealMatrix& raw_moments,
@@ -179,6 +182,16 @@ private:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 };
+
+
+inline Real NonDMultilevelSampling::average(const RealVector& vec) const
+{
+  Real avg = 0.;
+  size_t i, num_vec = vec.length();
+  for (i=0; i<num_vec; ++i)
+    avg += vec[i];
+  return avg / num_vec;
+}
 
 } // namespace Dakota
 

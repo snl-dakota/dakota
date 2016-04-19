@@ -217,7 +217,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 			     covar_LH, num_cv_lev);
   RealMatrix var_H(numFunctions, num_cv_lev, false),
            rho2_LH(numFunctions, num_cv_lev, false);
-  RealVector Lambda(num_cv_lev, false);
+  RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
   SizetArray& N_hf_l = NLev[hf_model_form]; N_hf_l.assign(num_hf_lev, 0);
@@ -270,21 +270,22 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  // using current N_hf_l for HF -> rho2_LH, eval_ratio -> Lambda_l
 
 	  // store allResponses for sum_H (previously sum_Y_*)
-	  IntResponseMap mlmc_resp = allResponses; // shallow copy
-	  // compute allResponses for LF model (level 0) or LF discretization
-	  // discrepancy (level > 0) using allVariables from MLMC step
+	  IntResponseMap hf_resp = allResponses; // shallow copy
+	  // activate LF response (lev 0) or LF response discrepancy (lev > 0)
+	  // within the hierarchical surrogate model.  Level indices & surrogate
+	  // response mode are same as HF above, only the model form changes.
+	  // However, we must pass the unchanged level index to update the
+	  // variable values corresponding to this index for the new model form.
 	  if (lev) {
-	    //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // same
 	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	    iteratedModel.truth_model_indices(lf_model_form,     lev);
 	  }
-	  else {
-	    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+	  else
 	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
-	  }
+	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
 	  // process previous and new set of allResponses for CV sums
-	  accumulate_cv_sums(allResponses, mlmc_resp, sum_L, sum_H, sum_LH,lev);
+	  accumulate_cv_sums(allResponses, hf_resp, sum_L, sum_H, sum_LH, lev);
 
 	  // compute the average evaluation ratio and Lambda factor
 	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev],   numFunctions),
@@ -302,10 +303,11 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 				      hf_lev_cost/lf_lev_cost, mean_L_l,
 				      mean_H_l, var_L_l, var_H_l, covar_LH_l,
 				      rho2_LH_l);
-	  Lambda[lev] = 1. - rho2_LH(qoi,lev)
+	  avg_rho2_LH[lev] = average(rho2_LH_l);
+	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio))
+	  if (lf_increment(avg_eval_ratio, N_hf_l[lev]))
 	    accumulate_cv_sums(sum_L, lev, 4);
 	}
 	else // accumulate all orders as this will be used in moment increments
@@ -327,7 +329,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
       // accumulate sum of sqrt's of estimator var * cost used in new_N_l
       sum_sqrt_var_cost += (lev < num_lf_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
-		  (1. - rho2_LH(qoi,lev))) :
+		  (1. - avg_rho2_LH[lev])) :
 	std::sqrt(agg_var_hf_l * hf_lev_cost);
       // mean sq error reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf_l[lev];
@@ -348,7 +350,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     for (lev=0; lev<num_hf_lev; ++lev) {
       hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
       new_N_l = (lev < num_lf_lev) ? fact *
-	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - rho2_LH(qoi,lev))) :
+	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf_l[lev] = (new_N_l > N_hf_l[lev]) ? new_N_l - N_hf_l[lev] : 0;
     }
@@ -637,7 +639,9 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // --------------------------------------------------
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
-  if (lf_increment(avg_eval_ratio))
+  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+  size_t N_hf = NLev[hf_form_level.first][hf_form_level.second];
+  if (lf_increment(avg_eval_ratio, N_hf))
     accumulate_cv_sums(sum_L, 4);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
@@ -648,8 +652,8 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   convert_moments(H_raw_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
-  equivHFEvals = (Real)NLev[hf_form_level.first][hf_form_level.second]
-    + (Real)NLev[lf_form_level.first][lf_form_level.second] / cost_ratio;
+  size_t N_lf = NLev[lf_form_level.first][lf_form_level.second];
+  equivHFEvals = N_hf + (Real)N_lf / cost_ratio;
 }
 
 
@@ -677,19 +681,17 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
   NLev[lf_form_level.first][lf_form_level.second] += delta_N_lf;
   NLev[hf_form_level.first][hf_form_level.second] += delta_N_hf;
 }
-  
 
-bool NonDMultilevelSampling::lf_increment(Real avg_eval_ratio)
+
+bool NonDMultilevelSampling::lf_increment(Real avg_eval_ratio, size_t N_hf)
 {
   // ----------------------------------------------
   // Compute Final LF increment for control variate
   // ----------------------------------------------
 
   const SizetSizetPair& lf_form_level = iteratedModel.surrogate_model_indices();
-  const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
   size_t&       N_lf =      NLev[lf_form_level.first][lf_form_level.second];
   size_t& delta_N_lf = deltaNLev[lf_form_level.first][lf_form_level.second];
-  size_t        N_hf =      NLev[hf_form_level.first][hf_form_level.second];
 
   // update LF samples based on evaluation ratio
   // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
@@ -704,8 +706,10 @@ bool NonDMultilevelSampling::lf_increment(Real avg_eval_ratio)
 
     // set the number of current samples from the defined increment
     numSamples = delta_N_lf;
-    // set the mode for the hierarchical surrogate model
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    // mode for hierarchical surrogate model can be uncorrected surrogate
+    // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
+    // --> set at calling level
+    //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     // generate new MC parameter sets
     get_parameter_sets(iteratedModel);// pull dist params from any model
     // compute allResponses from allVariables using hierarchical model
