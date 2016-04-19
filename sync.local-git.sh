@@ -1,6 +1,13 @@
 #!/bin/sh
 # Clone SRN repos
-git clone --recursive development.sandia.gov:/git/dakota local
+if [ -d local ]; then
+  cd local
+  git pull --recurse-submodules=on-demand 
+  cd ../
+else
+  git clone --recursive development.sandia.gov:/git/dakota local
+fi
+
 cd local
 if [ $# == 1 ] && [ $1 == "-u" ]; then
   git checkout master
