@@ -349,6 +349,12 @@ void read_data_tabular(const std::string& input_filename,
 		       RealMatrix& vars_matrix, RealMatrix& resp_matrix,
                        unsigned short tabular_format, bool active_only)
 {
+  // Disallow string variables for now - RWH
+  if( (active_only && vars.dsv()>0) || (!active_only && vars.adsv()>0) ) {
+    Cerr << "\nError (" << context_message << "): String variables are not currently supported.\n";
+    abort_handler(-1);
+  }
+
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
 
