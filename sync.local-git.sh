@@ -2,7 +2,7 @@
 # Clone SRN repos
 if [ -d local ]; then
   cd local
-  git pull --recurse-submodules=on-demand 
+  git pull origin master --recurse-submodules=on-demand 
   cd ../
 else
   git clone --recursive development.sandia.gov:/git/dakota local
