@@ -16,7 +16,7 @@
 #include "SensAnalysisGlobal.hpp"
 #include "ResultsManager.hpp"
 #include <algorithm>
-
+#include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
@@ -31,18 +31,66 @@ bool SensAnalysisGlobal::rank_sort(const int& x, const int& y)
 { return rawData[x]<rawData[y]; }
 
 
-/** This version is used when full variables objects are being processed */
+size_t SensAnalysisGlobal::
+find_valid_samples(const IntResponseMap& resp_samples, BoolDeque& valid_sample)
+{
+  // TODO: later compute correlation on per-response basis to keep
+  // partial faults
+  using boost::math::isfinite;
+
+  size_t num_obs = resp_samples.size(), num_valid_samples = 0;
+  IntRespMCIter it = resp_samples.begin();
+  for (size_t j=0; j<num_obs; ++j, ++it) {
+    valid_sample[j] = true;
+    for (size_t k=0; k<numFns; ++k)
+      if (!isfinite(it->second.function_value(k))) {
+	valid_sample[j] = false; 
+	break; 
+      }
+    if (valid_sample[j])
+      ++num_valid_samples;
+  }
+
+  return num_valid_samples;
+}
+
+void SensAnalysisGlobal::
+values_to_ranks(const RealMatrix& total_data, RealMatrix& total_data_rank)
+{
+  int num_corr = total_data.numRows(), num_valid_samples = total_data.numCols();
+
+  rawData.resize(num_valid_samples);
+
+  // for each var/resp
+  for (int i=0; i<num_corr; ++i) {
+    // intiialize the (unsorted) ranks
+    IntArray rank_col(boost::counting_iterator<int>(0),
+		      boost::counting_iterator<int>(num_valid_samples));
+
+    // assuming total_data already contains only the valid samples,
+    // just extract a row of it
+    copy_row_vector(total_data, i, rawData);
+
+    // rank_col will contain the indices (ranks), sorted by value
+    std::sort(rank_col.begin(), rank_col.end(), rank_sort);
+    IntArray final_rank(num_valid_samples);
+    for (int j=0; j<num_valid_samples; ++j)
+      final_rank[rank_col[j]] = j;
+    for (int j=0; j<num_valid_samples; ++j)
+      total_data_rank(i, j) = (Real)final_rank[j];
+  }
+}
+
+
+/** This version is used when full variables objects are being
+    processed. Calculates simple correlation, partial correlation,
+    simple rank correlation, and partial rank correlation
+    coefficients. */
 void SensAnalysisGlobal::
 compute_correlations(const VariablesArray& vars_samples,
 		     const IntResponseMap& resp_samples,
 		     const StringSetArray& dss_vals)
 {
-  using boost::math::isfinite;
-
-  // this method calculates four correlation matrices:
-  // simple correlation coefficients, partial correlation coefficients
-  // simple rank correlation coefficients, and partial rank correlation coeff.
-
   size_t num_obs = vars_samples.size();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
@@ -54,119 +102,60 @@ compute_correlations(const VariablesArray& vars_samples,
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  size_t i, j, k;
-  size_t num_cv = vars_samples[0].cv(), num_div = vars_samples[0].div(), 
-    num_dsv = vars_samples[0].dsv(), num_drv = vars_samples[0].drv();
-  numVars = num_cv + num_div + num_dsv + num_drv;
-  numFns  = resp_samples.begin()->second.num_functions();
 
-  //simple correlation coefficients
+  numVars = vars_samples[0].cv() + vars_samples[0].div() + 
+    vars_samples[0].dsv() + vars_samples[0].drv();
+  numFns  = resp_samples.begin()->second.num_functions();
   int num_corr = numVars + numFns;
-  size_t num_true_samples = 0;
+
+  // determine which samples have valid responses
   BoolDeque valid_sample(num_obs);
-  IntRespMCIter it;
-  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j) {
-    valid_sample[j] = true;
-    for (k=0; k<numFns; ++k) // any Nan or +/-Inf observation will be dropped
-      if (!isfinite(it->second.function_value(k)))
-	{ valid_sample[j] = false; break; }
-    if (valid_sample[j])
-      ++num_true_samples;
-  }
+  int num_valid_samples = find_valid_samples(resp_samples, valid_sample);
   
-  RealMatrix total_data(num_corr, num_true_samples);
-  size_t s_cntr = 0;
-  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
+  // create a matrix containing only the valid sample data
+  RealMatrix total_data(num_corr, num_valid_samples);
+  IntRespMCIter it = resp_samples.begin();
+  for (size_t j=0, s_cntr=0; j<num_obs; ++j, ++it)
     if (valid_sample[j]) {
-      const Variables& vars_j = vars_samples[j];
-      for (i=0; i<num_cv; ++i)
-	total_data(i, s_cntr) = vars_j.continuous_variable(i);
-      for (i=0; i<num_div; ++i)
-	total_data(i+num_cv, s_cntr) = (Real)vars_j.discrete_int_variable(i);
-      for (i=0; i<num_dsv; ++i) {
-	const String& val = vars_j.discrete_string_variable(i);
-	size_t ind = set_value_to_index(val, dss_vals[i]);
-	// use one-based index for consistency with LHS
-	total_data(i+num_cv+num_div, s_cntr) = (Real) ind + 1;
-      }
-      for (i=0; i<num_drv; ++i)
-	total_data(i+num_cv+num_div+num_dsv, s_cntr) = 
-	  vars_j.discrete_real_variable(i);
-      const Response& resp_j = it->second;
-      for (i=0; i<numFns; ++i)
-	total_data(i+numVars, s_cntr) = resp_j.function_value(i);
+      // get a view of the first numVars rows of the samples col
+      RealVector td_col_vars(Teuchos::View, total_data[s_cntr], (int)numVars);
+      vars_samples[j].as_vector(dss_vals, td_col_vars);
+      // get a view of the last numFns rows of the samples col
+      RealVector td_col_resp(Teuchos::View, total_data[s_cntr] + numVars, 
+			     (int)numFns);
+      copy_data(it->second.function_values(), td_col_resp);
       ++s_cntr;
     }
  
-  //calculate simple rank correlation coeff
+  // Compute the ranks before manipulating total_data (this will
+  // change when we refactor partial_corr)
+  RealMatrix total_data_rank(num_corr, num_valid_samples);
+  values_to_ranks(total_data, total_data_rank);
+
+  // calculate simple rank correlation coeff (modifies total_data)
   simple_corr(total_data, num_corr, simpleCorr);
 
-  //calculate partial correlation coeff
+  // calculate partial correlation coeff
   partial_corr(total_data, numVars, partialCorr, numericalIssuesRaw);
 
-  //simple rank correlations
-  IntArray rank_col(num_true_samples);
-  IntArray final_rank(num_true_samples);
-  rawData.resize(num_true_samples);
-  for (i=0; i<num_corr; ++i) {
-    s_cntr = 0;
-    if (i<numVars) {
-      for (j=0; j<num_obs; ++j)
-	if (valid_sample[j]) {
-	  if (i<num_cv)
-	    rawData[s_cntr] = vars_samples[j].continuous_variable(i);
-	  else if (i<num_cv+num_div)
-	    rawData[s_cntr]
-	      = (Real)vars_samples[j].discrete_int_variable(i-num_cv);
-	  else if (i<num_cv+num_div+num_dsv) {
-	    const String& val = 
-	      vars_samples[j].discrete_string_variable(i-num_cv-num_div);
-	    size_t ind = set_value_to_index(val, dss_vals[i-num_cv-num_div]);
-	    // use one-based index for consistency with LHS
-	    rawData[s_cntr] = (Real) ind + 1;
-	  }
-	  else if (i<numVars)
-	    rawData[s_cntr]
-	      = vars_samples[j].discrete_real_variable(i-num_cv-num_div-num_dsv);
-	  rank_col[s_cntr] = s_cntr; 
-	  ++s_cntr;
-	}
-    }
-    else {
-      for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
-	if (valid_sample[j]) {
-	  rawData[s_cntr] = it->second.function_value(i-numVars);
-	  rank_col[s_cntr] = s_cntr; ++s_cntr;
-	}
-    }
-    std::sort(rank_col.begin(),rank_col.end(),rank_sort);
-    for (j=0; j<num_true_samples; ++j)
-      final_rank[rank_col[j]] = j;
-    for (j=0; j<num_true_samples; ++j)
-      total_data(i, j) = (Real)final_rank[j];
-  }
+  // calculate simple rank correlation coeff (modifies total_data_rank)
+  simple_corr(total_data_rank, num_corr, simpleRankCorr);
 
-  //calculate simple rank correlation coeff
-  simple_corr(total_data, num_corr, simpleRankCorr);
-
-  //calculate partial rank correlation coeff
-  partial_corr(total_data, numVars, partialRankCorr, numericalIssuesRank);
+  // calculate partial rank correlation coeff
+  partial_corr(total_data_rank, numVars, partialRankCorr, numericalIssuesRank);
 
   corrComputed = true;
 }
 
-/** This version is used when compact samples matrix is being processed */
+/** This version is used when compact samples matrix is being
+    processed.  Calculates simple correlation, partial correlation,
+    simple rank correlation, and partial rank correlation
+    coefficients. */
 void SensAnalysisGlobal::
 compute_correlations(const RealMatrix&     vars_samples,
 		     const IntResponseMap& resp_samples)
 {
-  using boost::math::isfinite;
-
-  // this method calculates four correlation matrices:
-  // simple correlation coefficients, partial correlation coefficients
-  // simple rank correlation coefficients, and partial rank correlation coeff.
-
-  size_t num_obs = vars_samples.numCols();
+  int num_obs = vars_samples.numCols();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
@@ -177,74 +166,44 @@ compute_correlations(const RealMatrix&     vars_samples,
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  size_t i, j, k;
   numVars = vars_samples.numRows();
   numFns  = resp_samples.begin()->second.num_functions();
-
-  //simple correlation coefficients
   int num_corr = numVars + numFns;
-  size_t num_true_samples = 0;
-  BoolDeque valid_sample(num_obs);
-  IntRespMCIter it;
-  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j) {
-    valid_sample[j] = true;
-    for (k=0; k<numFns; ++k) // any Nan or +/-Inf observation will be dropped
-      if (!isfinite(it->second.function_value(k)))
-	{ valid_sample[j] = false; break; }
-    if (valid_sample[j])
-      ++num_true_samples;
-  }
 
-  RealMatrix total_data(num_corr, num_true_samples);
-  size_t s_cntr = 0;
-  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
+  // determine which samples have valid responses
+  BoolDeque valid_sample(num_obs);
+  int num_valid_samples = find_valid_samples(resp_samples, valid_sample);
+
+  // create a matrix containing only the valid sample data
+  RealMatrix total_data(num_corr, num_valid_samples);
+  IntRespMCIter it = resp_samples.begin();
+  for (int j=0, s_cntr=0; j<num_obs; ++j, ++it)
     if (valid_sample[j]) {
-      for (i=0; i<numVars; ++i)
-	total_data(i, s_cntr) = vars_samples(i,j);
-      const Response& resp_j = it->second;
-      for (i=0; i<numFns; ++i)
-	total_data(i+numVars, s_cntr) = resp_j.function_value(i);
+      for (int i=0; i<numVars; ++i)
+	total_data(i, s_cntr) = vars_samples(i, j);
+      // get a view of the last numFns rows of the samples col
+      RealVector td_col_resp(Teuchos::View, total_data[s_cntr] + numVars, 
+			     (int)numFns);
+      copy_data(it->second.function_values(), td_col_resp);
       ++s_cntr;
     }
- 
-  //calculate simple rank correlation coeff
+
+  // Compute the ranks before manipulating total_data (this will
+  // change when we refactor partial_corr)
+  RealMatrix total_data_rank(num_corr, num_valid_samples);
+  values_to_ranks(total_data, total_data_rank);
+
+  // calculate simple rank correlation coeff (modifies total_data)
   simple_corr(total_data, num_corr, simpleCorr);
 
-  //calculate partial correlation coeff
+  // calculate partial correlation coeff
   partial_corr(total_data, numVars, partialCorr, numericalIssuesRaw);
 
-  //simple rank correlations
-  IntArray rank_col(num_true_samples);
-  IntArray final_rank(num_true_samples);
-  rawData.resize(num_true_samples);
-  for (i=0; i<num_corr; ++i) {
-    s_cntr = 0;
-    if (i<numVars) {
-      for (j=0; j<num_obs; ++j)
-	if (valid_sample[j]) {
-	  rawData[s_cntr] = vars_samples(i,j);
-	  rank_col[s_cntr] = s_cntr; ++s_cntr;
-	}
-    }
-    else {
-      for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
-	if (valid_sample[j]) {
-	  rawData[s_cntr] = it->second.function_value(i-numVars);
-	  rank_col[s_cntr] = s_cntr; ++s_cntr;
-	}
-    }
-    std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-    for (j=0; j<num_true_samples; ++j)
-      final_rank[rank_col[j]] = j;
-    for (j=0; j<num_true_samples; ++j)
-      total_data(i, j) = (Real)final_rank[j];
-  }
+  // calculate simple rank correlation coeff (modifies total_data_rank)
+  simple_corr(total_data_rank, num_corr, simpleRankCorr);
 
-  //calculate simple rank correlation coeff
-  simple_corr(total_data, num_corr, simpleRankCorr);
-
-  //calculate partial rank correlation coeff
-  partial_corr(total_data, numVars, partialRankCorr, numericalIssuesRank);
+  // calculate partial rank correlation coeff
+  partial_corr(total_data_rank, numVars, partialRankCorr, numericalIssuesRank);
 
   corrComputed = true;
 }
