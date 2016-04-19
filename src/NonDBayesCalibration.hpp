@@ -199,8 +199,31 @@ protected:
   static NonDBayesCalibration* nonDBayesInstance;
 
   /// Perform chain filtering with burn-in and sub-sampling
-  void filter_chain(RealMatrix& accepted_chain, RealMatrix& filteredChain);
-  void filter_fnvals(RealMatrix& accepted_fnvals, RealMatrix& filteredFnVals);
+  void filter_chain(RealMatrix& acceptanceChain, RealMatrix& filteredChain);
+  void filter_fnvals(RealMatrix& acceptedFnVals, RealMatrix& filteredFnVals);
+  /// Compute credibility and prediction intervals of final chain
+  void compute_intervals(RealMatrix& acceptanceChain, 
+      			 RealMatrix& acceptedFnVals);
+  void compute_prediction_vals(RealMatrix& filteredFnVals_for_intervals,
+      			       RealMatrix& PredVals, int num_filtered,
+			       size_t num_exp, size_t num_concatenated);
+  void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+  void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
+      			  RealVector& std_devs);
+  /// Print credibility and prediction intervals
+  void print_filtered_tabular(RealMatrix& filteredChain,
+      			      RealMatrix& filteredFnVals_for_intervals,
+			      RealMatrix& PredVals, int num_filtered,
+			      size_t num_exp);
+  void print_intervals_file(std::ostream& stream, RealMatrix& functionvalsT,
+  			      RealMatrix& predvalsT, int length, 
+			      size_t aug_length);
+  void print_intervals_screen(std::ostream& stream, RealMatrix& functionvalsT,
+  			      RealMatrix& predvalsT, int length);
+  /// output file stream and formatting options for tabular file output
+  std::ofstream filteredMCMCStream;
+  short exportMCMCFormat;
+  short filteredMCMCFormat;
 
 private:
 

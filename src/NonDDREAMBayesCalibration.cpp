@@ -13,6 +13,7 @@
 //- Version:
 
 #include "NonDDREAMBayesCalibration.hpp"
+#include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
@@ -280,7 +281,7 @@ void NonDDREAMBayesCalibration::core_run()
   dream_main(cache_chain);
 
   // Generate useful stats from the posterior samples
-  //  compute_statistics();
+  compute_statistics();
 
 
   return;
@@ -454,7 +455,29 @@ void NonDDREAMBayesCalibration::cache_chain(const double* const z)
         nonDDREAMInstance->acceptanceChain
 	  (i, k*nonDDREAMInstance->numChains + j) =
 	  z[i+j*par_num+k*par_num*nonDDREAMInstance->numChains];
+
 }
 
+
+void NonDDREAMBayesCalibration::compute_statistics()
+{
+  /*
+  // Copied from NonDQUESO 
+  // implementation may need to be reconsidered for parallel chains
+  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  nond_rep->compute_moments(acceptanceChain);
+  */
+
+  //std::ofstream test_intervals("kam_test.dat");
+  if (outputLevel >= DEBUG_OUTPUT){
+    // Record corresponding function values
+    // placeholder empty matrix
+    int num_samples = 
+      nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
+    acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
+    compute_intervals(acceptanceChain, acceptedFnVals);
+    //test_intervals << "Accepted Fn Vals" << acceptedFnVals << '\n';
+  }
+}
 
 } // namespace Dakota

@@ -55,7 +55,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   proposalCovarInputType(
     probDescDB.get_string("method.nond.proposal_covariance_input_type")),
   burnInSamples(probDescDB.get_int("method.burn_in_samples")),
-  subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period"))
+  subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
+  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
 {
   // assign default proposalCovarType
   if (proposalCovarType.empty()) {
@@ -714,36 +715,377 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
   //Cout << "nlpost_resp:\n" << nlpost_resp;
 }
 
-void NonDBayesCalibration::filter_chain(RealMatrix& accepted_chain, RealMatrix& filteredChain)
+void NonDBayesCalibration::filter_chain(RealMatrix& acceptanceChain, 
+					RealMatrix& filteredChain)
 {
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-  int num_samples = accepted_chain.numCols();
+  int num_samples = acceptanceChain.numCols();
   int num_filtered = int((num_samples - burnin)/num_skip);
   int j = 0;
   for (int i = burnin; i < num_samples; ++i){
     if (i % num_skip == 0){
       const RealVector& param_vec = Teuchos::getCol(Teuchos::View, 
-	  			    accepted_chain, i);
+	  			    acceptanceChain, i);
       Teuchos::setCol(param_vec, j, filteredChain);
       j++;
     }
   }
 }
 
-void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fnvals, RealMatrix& filteredFnVals)
+void NonDBayesCalibration::filter_fnvals(RealMatrix& acceptedFnVals, 
+    					 RealMatrix& filteredFnVals)
 {
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-  int num_samples = accepted_fnvals.numCols();
+  int num_samples = acceptedFnVals.numCols();
   int num_filtered = int((num_samples - burnin)/num_skip);
   int j = 0;
   for (int i = burnin; i < num_samples; ++i){
     if (i % num_skip == 0){
       const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
-	  			  accepted_fnvals, i);
+	  			  acceptedFnVals, i);
       Teuchos::setCol(col_vec, j, filteredFnVals);
       j++;
+    }
+  }
+}
+
+void NonDBayesCalibration::compute_intervals(RealMatrix& acceptanceChain,
+    					    RealMatrix& acceptedFnVals)
+{
+  std::ofstream interval_stream("dakota_mcmc_CredPredIntervals.dat");
+  std::ostream& screen_stream = Cout;
+
+  // Filter mcmc chain and corresponding function values
+  int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+  int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+  int num_params = acceptanceChain.numRows();
+  int num_samples = acceptanceChain.numCols();
+  int num_filtered = int((num_samples-burnin)/num_skip);
+  RealMatrix filteredFnVals_for_intervals;
+  RealMatrix filteredChain;
+  filteredFnVals_for_intervals.shapeUninitialized(numFunctions, num_filtered);
+  filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
+  filter_chain(acceptanceChain, filteredChain);
+  filter_fnvals(acceptedFnVals, filteredFnVals_for_intervals);
+  // Make accepted function values the rows instead of the columns
+  RealMatrix filteredFnVals_transpose(filteredFnVals_for_intervals, 
+ 		            	      Teuchos::TRANS);
+
+  // Augment function values with experimental uncertainty for prediction ints
+  size_t num_exp = expData.num_experiments();
+  size_t num_concatenated = num_exp*num_filtered;
+  RealMatrix PredVals;
+  PredVals.shapeUninitialized(numFunctions, num_concatenated);
+  compute_prediction_vals(filteredFnVals_for_intervals, PredVals, 
+      			  num_filtered, num_exp, num_concatenated);
+  RealMatrix PredVals_transpose(PredVals, Teuchos::TRANS);
+
+  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  size_t width = write_precision+7;
+  
+  // Calculate +/- 2sigma credibility intervals
+  RealVector Fn_ave(numFunctions), Fn_stdevs(numFunctions),
+	     Cred_interval_minima(numFunctions), 
+	     Cred_interval_maxima(numFunctions);
+  compute_col_means(filteredFnVals_transpose, Fn_ave); 
+  compute_col_stdevs(filteredFnVals_transpose, Fn_ave, Fn_stdevs);
+  interval_stream << "Function aves = " <<Fn_ave << '\n';
+  interval_stream << "Function st devs = " <<Fn_stdevs << '\n';
+  interval_stream << "2 sigma Credibility Intervals\n";
+  for(size_t i=0; i<numFunctions; ++i){
+    Cred_interval_minima[i] = Fn_ave[i] - 2*Fn_stdevs[i];
+    Cred_interval_maxima[i] = Fn_ave[i] + 2*Fn_stdevs[i];
+    interval_stream << std::setw(width) << resp[i] << " ";
+    interval_stream << Cred_interval_minima[i] << ", " << Cred_interval_maxima[i] 
+               << '\n';
+  }    
+  interval_stream << "\n";
+  // Calculate +/- 2sigma prediction intervals
+  RealVector Pred_ave(numFunctions), Pred_stdevs(numFunctions),
+	     Pred_interval_minima(numFunctions), 
+	     Pred_interval_maxima(numFunctions);
+  compute_col_means(PredVals_transpose, Pred_ave);
+  compute_col_stdevs(PredVals_transpose, Pred_ave, Pred_stdevs);
+  interval_stream << "2 sigma Prediction Intervals\n";
+  for(size_t i=0; i<numFunctions; ++i){
+    Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
+    Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
+    interval_stream << std::setw(width) << resp[i] << " ";
+    interval_stream << Pred_interval_minima[i] << ", "<< Pred_interval_maxima[i] 
+	       << '\n';
+  }
+  interval_stream << "\n";
+  // Calculate intervals with sorting - print to screen and interval file
+  print_intervals_file(interval_stream, filteredFnVals_transpose, 
+      			 PredVals_transpose, num_filtered, num_concatenated);
+  print_intervals_screen(screen_stream, filteredFnVals_transpose, 
+      			 PredVals_transpose, num_filtered);
+  // Print tabular file
+  print_filtered_tabular(filteredChain, filteredFnVals_for_intervals, PredVals, 
+      			 num_filtered, num_exp);
+
+
+}
+
+void NonDBayesCalibration::compute_prediction_vals
+(RealMatrix& filteredFnVals_for_intervals, RealMatrix& PredVals, 
+ int num_filtered, size_t num_exp, size_t num_concatenated)
+{
+  // Read std_dev and correl matrices if specified for experiments
+  RealVectorArray std_deviations;
+  RealSymMatrixArray correl_matrices;
+  if (calibrationData && expData.variance_active()){
+    expData.cov_std_deviation(std_deviations);
+    expData.cov_as_correlation(correl_matrices);
+  }
+  
+  // Augment function values with experimental uncertainty for prediction ints
+  // Generate normal errors using LHS
+  /*int num_res = residualModel.current_response().num_functions();
+    RealVector means_vec(num_res), lower_bnds(num_res), upper_bnds(num_res);
+    */
+  RealVector means_vec(numFunctions), lower_bnds(numFunctions), 
+	     upper_bnds(numFunctions);
+  means_vec.putScalar(0.0);
+  lower_bnds.putScalar(-DBL_MAX);
+  upper_bnds.putScalar(DBL_MAX);
+  RealMatrix lhs_normal_samples;
+  unsigned short sample_type = SUBMETHOD_LHS;
+  short sample_ranks_mode = 0; //IGNORE RANKS
+  Pecos::LHSDriver lhsDriver; // the C++ wrapper for the F90 LHS library
+  int n = 0;
+  for(size_t i = 0; i < num_exp; ++i){
+    lhsDriver.seed(randomSeed);
+    lhsDriver.initialize("lhs", sample_ranks_mode, true);
+    lhsDriver.generate_normal_samples(means_vec, std_deviations[i], lower_bnds,
+              upper_bnds, num_filtered, correl_matrices[i],lhs_normal_samples);
+    //out_stream << "size lhs = " << lhs_normal_samples.numRows() << 
+    //      	      ", " << lhs_normal_samples.numCols() << '\n';
+    for(int j = 0; j < num_filtered; ++j){
+      const RealVector& FnVal_colj = Teuchos::getCol(Teuchos::View, 
+     			        filteredFnVals_for_intervals, j);
+      const RealVector& lhs_colj = Teuchos::getCol(Teuchos::View, 
+   				lhs_normal_samples, j);
+      RealVector col_vec(numFunctions);
+      for(size_t k = 0; k < numFunctions;++k){
+        col_vec[k] = FnVal_colj[k] + lhs_colj[k];	
+      }	
+      //const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+      //filteredFnVals_for_intervals, j) + 
+      //Teuchos::getCol(Teuchos::View, lhs_normal_samples, j);
+      Teuchos::setCol(col_vec, n, PredVals);
+      n++; 
+    }
+  }
+}
+
+void NonDBayesCalibration::
+compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+  
+  RealVector ones_vec(num_rows);
+  ones_vec.putScalar(1.0);
+ 
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
+  }
+}
+
+void NonDBayesCalibration::
+compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  std_devs.resize(num_cols);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
+  }
+}
+
+void NonDBayesCalibration::print_filtered_tabular(RealMatrix& filteredChain, 
+RealMatrix& filteredFnVals_for_intervals, RealMatrix& PredVals, int num_filtered,
+size_t num_exp)
+{
+  // Print tabular file with filtered chain, function values, and pred values
+  String empty_id, filteredmcmc_filename = "dakota_mcmc_filtered_tabular.dat";
+  TabularIO::open_file(filteredMCMCStream, filteredmcmc_filename,
+ 		       "NonDBayesCalibration filtered chain export");
+  StringArray resp_array;
+  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  for (size_t i=0; i<num_exp+1; ++i){
+    for (size_t k=0; k<numFunctions; ++k){
+      resp_array.push_back(resp[k]);
+    }
+  }
+  Variables output_vars = residualModel.current_variables().copy();
+  TabularIO::write_header_tabular(filteredMCMCStream, 
+		            	  residualModel.current_variables(), resp_array, 
+				  "mcmc_id", exportMCMCFormat);
+  size_t sample_cntr = 0;
+  size_t wpp4 = write_precision+4;
+  for (int i=0; i<num_filtered; ++i, ++sample_cntr){
+    TabularIO::write_leading_columns(filteredMCMCStream, sample_cntr,
+ 			       	     empty_id, exportMCMCFormat);
+    const RealVector& qv = Teuchos::getCol(Teuchos::View, filteredChain, i);
+    if (standardizedSpace){
+      RealVector u_rv(numContinuousVars, false), x_rv;
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      output_vars.continuous_variables(x_rv);
+      write_data_tabular(filteredMCMCStream, x_rv);
+    }
+    // Write param values to filtered_tabular
+    else{
+      output_vars.continuous_variables(qv);
+      output_vars.write_tabular(filteredMCMCStream);
+    }
+    // Write function values to filtered_tabular
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+  			    	filteredFnVals_for_intervals, i);
+    for (size_t j = 0; j<numFunctions; ++j){
+      filteredMCMCStream << std::setw(wpp4) << col_vec[j] << ' ';
+    }      
+    // Write predicted values to filtered_tabular
+    for (size_t j =0; j<num_exp; ++j){
+      for (size_t k = 0; k<numFunctions; ++k){
+	int col_index = j*num_filtered+i;
+        const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+      				    PredVals, col_index);
+  	filteredMCMCStream << std::setw(wpp4) << col_vec[k] << ' ';
+      }
+    }
+    filteredMCMCStream << '\n';
+  }
+}
+
+void NonDBayesCalibration::print_intervals_file
+(std::ostream& s, RealMatrix& filteredFnVals_transpose, 
+ RealMatrix& PredVals_transpose, int num_filtered, size_t num_concatenated)
+{
+  
+  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  size_t width = write_precision+7;
+  double alpha;
+  int lower_index;
+  int upper_index;
+  // Credibility Intervals
+  for(int i = 0; i < numFunctions; ++i){
+    // Sort function values 
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
+				filteredFnVals_transpose, i);
+    std::sort(col_vec.values(), col_vec.values() + num_filtered);
+    // Write intervals
+    //s << "column = " << col_vec;
+    s << "Credibility Intervals for ";
+    s << resp[i] << '\n';
+    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+    size_t num_prob_levels = requestedProbLevels[i].length();
+    for (size_t j = 0; j < num_prob_levels; ++j){
+      alpha = requestedProbLevels[i][j];
+      s << "alpha = " << alpha << '\n';
+      lower_index = floor(alpha/2*(num_filtered));
+      upper_index = num_filtered - lower_index;
+      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	<< std::setw(width) << col_vec[lower_index] << '\n'
+	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	<< std::setw(width) << col_vec[upper_index] << '\n'
+	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    }
+  }
+  // Prediction Intervals
+  for(int i = 0; i < numFunctions; ++i){
+    // Sort function values 
+    const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
+				 PredVals_transpose, i);
+    std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
+    // Write intervals
+    //s << "column = " << col_vec1;
+    s << "Prediction Intervals for ";
+    s << resp[i] << '\n';
+    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+    size_t num_prob_levels = requestedProbLevels[i].length();
+    for (size_t j = 0; j < num_prob_levels; ++j){
+      alpha = requestedProbLevels[i][j];
+      s << "alpha = " << alpha << '\n';
+      lower_index = floor(alpha/2*(num_filtered));
+      upper_index = num_filtered - lower_index;
+      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	<< std::setw(width) << col_vec1[lower_index] << '\n'
+	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	<< std::setw(width) << col_vec1[upper_index] << '\n'
+	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    }
+  }
+}
+
+void NonDBayesCalibration::print_intervals_screen
+(std::ostream& s, RealMatrix& filteredFnVals_transpose, 
+ RealMatrix& PredVals_transpose, int num_filtered)
+{
+  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  size_t width = write_precision+7;
+  double alpha;
+  int lower_index;
+  int upper_index;
+  // Credibility Intervals
+  for(int i = 0; i < numFunctions; ++i){
+    // Sort function values 
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View,
+				filteredFnVals_transpose, i);
+    std::sort(col_vec.values(), col_vec.values() + num_filtered);
+    // Write intervals
+    s << "Credibility Intervals for ";
+    s << resp[i] << '\n';
+    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+    size_t num_prob_levels = requestedProbLevels[i].length();
+    for (size_t j = 0; j < num_prob_levels; ++j){
+      alpha = requestedProbLevels[i][j];
+      lower_index = floor(alpha/2*(num_filtered));
+      upper_index = num_filtered - lower_index;
+      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	<< std::setw(width) << col_vec[lower_index] << '\n'
+	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	<< std::setw(width) << col_vec[upper_index] << '\n'
+	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    }
+  }
+  // Prediction Intervals
+  for(int i = 0; i < numFunctions; ++i){
+    // Sort function values 
+    const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
+				 PredVals_transpose, i);
+    std::sort(col_vec1.values(), col_vec1.values() + num_filtered);
+    // Write intervals
+    s << "Prediction Intervals for ";
+    s << resp[i] << '\n';
+    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+    size_t num_prob_levels = requestedProbLevels[i].length();
+    for (size_t j = 0; j < num_prob_levels; ++j){
+      alpha = requestedProbLevels[i][j];
+      lower_index = floor(alpha/2*(num_filtered));
+      upper_index = num_filtered - lower_index;
+      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	<< std::setw(width) << col_vec1[lower_index] << '\n'
+	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	<< std::setw(width) << col_vec1[upper_index] << '\n'
+	<< std::setw(width) << ' ' <<  "        -----             -----\n";
     }
   }
 }

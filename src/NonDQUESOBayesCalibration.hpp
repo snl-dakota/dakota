@@ -95,7 +95,7 @@ protected:
   void compute_statistics();
 
   /// compute credibility and prediction intervals of final MCMC chain
-  void compute_intervals();
+  void compute_intervals1();
   /// compute mean and standard devations of fn vals of final MCMC chain
   void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
   void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_devs);
