@@ -383,7 +383,7 @@ void read_data_tabular(const std::string& input_filename,
       copy_data_partial(dr_vars, work_vars_vec, c_vars.length()+di_vars.length());
       //varsMatrix(row,:) = [vars.continuous_variables(), vars.discrete_int_variables(), vars.discrete_real_variables() ]
       work_vars_va.push_back(work_vars_vec);
-      std::cout << "Working Variables vector contents: \n" << work_vars_vec << std::endl;
+      //std::cout << "Working Variables vector contents: \n" << work_vars_vec << std::endl;
 
       // read the raw function data
       for (size_t fi = 0; fi < num_fns; ++fi) {
@@ -392,7 +392,7 @@ void read_data_tabular(const std::string& input_filename,
           work_resp_vec(fi) = read_value;
       }
       work_resp_va.push_back(work_resp_vec);
-      std::cout << "Working Response vector contents: \n" << work_resp_vec << std::endl;
+      //std::cout << "Working Response vector contents: \n" << work_resp_vec << std::endl;
 
       input_stream >> std::ws;
     }
