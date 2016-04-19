@@ -24,6 +24,8 @@
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 
+#include "LHSDriver.hpp"
+
 static const char rcsId[]="@(#) $Id$";
 
 namespace Dakota {
@@ -988,22 +990,23 @@ void NonDBayesCalibration::print_intervals_file
 				filteredFnVals_transpose, i);
     std::sort(col_vec.values(), col_vec.values() + num_filtered);
     // Write intervals
-    //s << "column = " << col_vec;
-    s << "Credibility Intervals for ";
-    s << resp[i] << '\n';
-    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
     size_t num_prob_levels = requestedProbLevels[i].length();
-    for (size_t j = 0; j < num_prob_levels; ++j){
-      alpha = requestedProbLevels[i][j];
-      s << "alpha = " << alpha << '\n';
-      lower_index = floor(alpha/2*(num_filtered));
-      upper_index = num_filtered - lower_index;
-      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	<< std::setw(width) << col_vec[lower_index] << '\n'
-	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	<< std::setw(width) << col_vec[upper_index] << '\n'
-	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    if (num_prob_levels > 0){
+      s << "Credibility Intervals for ";
+      s << resp[i] << '\n';
+      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+      for (size_t j = 0; j < num_prob_levels; ++j){
+        alpha = requestedProbLevels[i][j];
+        s << "alpha = " << alpha << '\n';
+        lower_index = floor(alpha/2*(num_filtered));
+        upper_index = num_filtered - lower_index;
+        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	  << std::setw(width) << col_vec[lower_index] << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	  << std::setw(width) << col_vec[upper_index] << '\n'
+	  << std::setw(width) << ' ' <<  "        -----             -----\n";
+      }
     }
   }
   // Prediction Intervals
@@ -1013,22 +1016,23 @@ void NonDBayesCalibration::print_intervals_file
 				 PredVals_transpose, i);
     std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
     // Write intervals
-    //s << "column = " << col_vec1;
-    s << "Prediction Intervals for ";
-    s << resp[i] << '\n';
-    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
     size_t num_prob_levels = requestedProbLevels[i].length();
-    for (size_t j = 0; j < num_prob_levels; ++j){
-      alpha = requestedProbLevels[i][j];
-      s << "alpha = " << alpha << '\n';
-      lower_index = floor(alpha/2*(num_filtered));
-      upper_index = num_filtered - lower_index;
-      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	<< std::setw(width) << col_vec1[lower_index] << '\n'
-	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	<< std::setw(width) << col_vec1[upper_index] << '\n'
-	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    if (num_prob_levels > 0){
+      s << "Prediction Intervals for ";
+      s << resp[i] << '\n';
+      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+      for (size_t j = 0; j < num_prob_levels; ++j){
+        alpha = requestedProbLevels[i][j];
+        s << "alpha = " << alpha << '\n';
+        lower_index = floor(alpha/2*(num_filtered));
+        upper_index = num_filtered - lower_index;
+        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	  << std::setw(width) << col_vec1[lower_index] << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	  << std::setw(width) << col_vec1[upper_index] << '\n'
+	  << std::setw(width) << ' ' <<  "        -----             -----\n";
+      }
     }
   }
 }
@@ -1049,20 +1053,22 @@ void NonDBayesCalibration::print_intervals_screen
 				filteredFnVals_transpose, i);
     std::sort(col_vec.values(), col_vec.values() + num_filtered);
     // Write intervals
-    s << "Credibility Intervals for ";
-    s << resp[i] << '\n';
-    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
     size_t num_prob_levels = requestedProbLevels[i].length();
-    for (size_t j = 0; j < num_prob_levels; ++j){
-      alpha = requestedProbLevels[i][j];
-      lower_index = floor(alpha/2*(num_filtered));
-      upper_index = num_filtered - lower_index;
-      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	<< std::setw(width) << col_vec[lower_index] << '\n'
-	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	<< std::setw(width) << col_vec[upper_index] << '\n'
-	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    if (num_prob_levels > 0){
+      s << "Credibility Intervals for ";
+      s << resp[i] << '\n';
+      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+      for (size_t j = 0; j < num_prob_levels; ++j){
+        alpha = requestedProbLevels[i][j];
+        lower_index = floor(alpha/2*(num_filtered));
+        upper_index = num_filtered - lower_index;
+        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	  << std::setw(width) << col_vec[lower_index] << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	  << std::setw(width) << col_vec[upper_index] << '\n'
+	  << std::setw(width) << ' ' <<  "        -----             -----\n";
+      }
     }
   }
   // Prediction Intervals
@@ -1072,20 +1078,22 @@ void NonDBayesCalibration::print_intervals_screen
 				 PredVals_transpose, i);
     std::sort(col_vec1.values(), col_vec1.values() + num_filtered);
     // Write intervals
-    s << "Prediction Intervals for ";
-    s << resp[i] << '\n';
-    s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-    s << std::setw(width) << ' ' << " ----------------- -----------------\n";
     size_t num_prob_levels = requestedProbLevels[i].length();
-    for (size_t j = 0; j < num_prob_levels; ++j){
-      alpha = requestedProbLevels[i][j];
-      lower_index = floor(alpha/2*(num_filtered));
-      upper_index = num_filtered - lower_index;
-      s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	<< std::setw(width) << col_vec1[lower_index] << '\n'
-	<< std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	<< std::setw(width) << col_vec1[upper_index] << '\n'
-	<< std::setw(width) << ' ' <<  "        -----             -----\n";
+    if (num_prob_levels > 0){
+      s << "Prediction Intervals for ";
+      s << resp[i] << '\n';
+      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+      for (size_t j = 0; j < num_prob_levels; ++j){
+        alpha = requestedProbLevels[i][j];
+        lower_index = floor(alpha/2*(num_filtered));
+        upper_index = num_filtered - lower_index;
+        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
+	  << std::setw(width) << col_vec1[lower_index] << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
+	  << std::setw(width) << col_vec1[upper_index] << '\n'
+	  << std::setw(width) << ' ' <<  "        -----             -----\n";
+      }
     }
   }
 }
