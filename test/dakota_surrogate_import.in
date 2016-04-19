@@ -17,15 +17,17 @@ method,
 model,                                         
         id_model = 'SURR'                        
         surrogate global,                        
-        import_points_file = 'surrogate_build_pts.dat' annotated #s0,#s2
+        import_points_file = 'surrogate_build_pts.dat' annotated #s0,#s2,#s4,#s5,#s6
 #        import_points_file = 'surrogate_build_pts_ff.dat' freeform #s1,#s3
         polynomial quadratic                   
-        challenge_points_file = 'surrogate_build_pts.dat' annotated #s0,#s3
+        challenge_points_file = 'surrogate_build_pts.dat' annotated #s0,#s3,#s4,#s5,#s6
 #        challenge_points_file = 'surrogate_build_pts_ff.dat' freeform #s1,#s2
 
 
 variables,
-        active all
+#        active all #s0,#s1,#s2,#s3
+#        active design #s4
+#        active uncertain #s5
 	discrete_design_range = 1
 	  initial_point      3
           lower_bounds       0
