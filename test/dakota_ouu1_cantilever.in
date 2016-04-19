@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_DOT
 # DAKOTA Input File: dakota_ouu1_cantilever.in
 # Optimization under uncertainty

@@ -1234,6 +1234,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, new_N_l, last_active = 0;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
@@ -1248,7 +1249,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 
   // now converge on sample counts per level (N_l)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  while (Pecos::l1_norm(delta_N_l) && iter <= maxIterations) {
+  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF

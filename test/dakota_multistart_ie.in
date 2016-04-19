@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 #@ p*: Label=AcceptanceTest
 #@ p*: MPIProcs=8
 #@ p1: CheckOutput='dakota.out.1'

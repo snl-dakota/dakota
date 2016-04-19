@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: ExecArgs='-pre_run ::dakota_tabular_io.0.dat -run -post_run'
 #@ s2: ExecArgs='-post_run dakota_tabular_io.1.dat::'
 

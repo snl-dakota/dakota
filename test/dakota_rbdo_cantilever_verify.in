@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # Reliability analysis using the cantilever test function.
 
 method,

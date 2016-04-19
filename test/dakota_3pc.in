@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ On Windows: abort; Unix shell; also refork
 #@ *: DakotaConfig=UNIX
 #@ *: DakotaConfig=HAVE_DOT

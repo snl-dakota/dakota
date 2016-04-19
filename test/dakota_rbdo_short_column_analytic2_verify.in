@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # DAKOTA Input File: dakota_rbdo_short_column_analytic.in
 # Optimization under uncertainty using reliability methods within a
 # fully-analytic bi-level RBDO approach.  The RBDO problem is the

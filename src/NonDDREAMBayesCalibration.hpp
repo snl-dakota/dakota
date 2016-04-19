@@ -100,6 +100,7 @@ protected:
 
   /// aggregate final chain (need to verify if accepted only)
   RealMatrix acceptanceChain;
+  RealMatrix acceptedFnVals;
 
   // DREAM Algorithm controls
 
@@ -123,6 +124,10 @@ protected:
   //std::vector<boost::math::uniform> priorDistributions;
   // samplers for the uniform prior PDFs for each variable
   //std::vector<boost::uniform_real<double> > priorSamplers;
+  
+  // compute chain stats for final chain
+  void compute_statistics();
+  //void compute_intervals();
 
 private:
 

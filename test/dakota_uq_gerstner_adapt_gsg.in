@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s*: Label=AcceptanceTest
 
 environment,

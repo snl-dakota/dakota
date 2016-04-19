@@ -7,6 +7,9 @@ method,
           chain_samples = 1000 seed = 348					
           chains = 5
          # output verbose
+         output debug
+	probability_level 0.05 0.1
+ 			  0.05 0.1
 
 variables,								
         active design 
@@ -20,7 +23,8 @@ variables,
           descriptors 't' 'R' 'X' 'Y' 
 
 interface,								
-        system
+        #system
+	direct
           analysis_driver = 'mod_cantilever'
 
 responses,								

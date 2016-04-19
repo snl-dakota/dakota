@@ -1,3 +1,4 @@
+#@ p*: Label=FastTest
 #@ p0: MPIProcs=2
 
 # DAKOTA INPUT FILE - dakota_sbo_textbook.in

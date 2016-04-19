@@ -1,4 +1,4 @@
-#@ p*: Label=SmokeTest
+#@ p*: Label=FastTest
 #@ p0: MPIProcs=2
 
 # DAKOTA INPUT FILE - dakota_textbook_lhs.in

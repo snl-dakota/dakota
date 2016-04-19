@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_NPSOL
 # DAKOTA Input File: dakota_pcbdo_short_column.in
 # Optimization under uncertainty using polynomial chaos methods within a

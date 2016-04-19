@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: UserMan=queso_uq
 #@ *: DakotaConfig=HAVE_QUESO
 #@ p*: MPIProcs=1
@@ -27,6 +28,7 @@ method,
 #	    matrix   filename 'dakota_cantilever_queso.matrix.dat'	#p3
 	  logit_transform         # default is off
 	output debug
+	burn_in 100
 	probability_levels 0.05 0.1 
 			   0.05 0.1
 

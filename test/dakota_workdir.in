@@ -1,6 +1,6 @@
 #@ On Windows: not sufficiently generic
 #@ *: DakotaConfig=UNIX
-#@ p*: Label=SmokeTest
+#@ p*: Label=FastTest
 #@ p0: MPIProcs=3
 #@ p1: MPIProcs=2
 

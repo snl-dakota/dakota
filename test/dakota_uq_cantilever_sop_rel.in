@@ -1,3 +1,5 @@
+#@ s*: Label=FastTest
+#@ p*: Label=FastTest
 #@ p0: MPIProcs=2
 #@ s0: UserMan=cantilever_uq_sop_rel
 # DAKOTA Input File: dakota_uq_cantilever_sop_rel.in

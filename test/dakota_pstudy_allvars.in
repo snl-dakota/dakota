@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE - dakota_pstudy_allvars.in
 
 # This sample Dakota input file tests inferred bounds and inferred 

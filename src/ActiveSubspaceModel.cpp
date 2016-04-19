@@ -151,13 +151,14 @@ void ActiveSubspaceModel::validate_inputs()
 
   // validate iteration controls
 
-  // set default initialSamples, with lower bound of 2
-  // TODO: allow other user control of initial sample rule?
-  int min_initial_samples = 2;
+  // set default initialSamples, with lower bound equal to dimension of
+  // of full space
+  int min_initial_samples = numFullspaceVars;
   if (initialSamples < min_initial_samples) {
     initialSamples = min_initial_samples;
     Cout << "\nWarning (model subspace): resetting samples to minimum "
-         << "allowed = " << initialSamples << "." << std::endl;
+         << "allowed = " << initialSamples << ". Note that the accuracy of the "
+         << "subspace may be poor with this few samples." << std::endl;
   }
 
   if (initialSamples > maxFunctionEvals) {
@@ -846,6 +847,32 @@ compute_svd(bool& svtol_met)
              << "metric." << std::endl;
       computeBingLiCriterion(singular_values, svtol_met);
     }
+  }
+
+  // Check to make sure subspace size is smaller than numerical rank of the
+  // derivative matrix:
+  double inf_norm = derivativeMatrix.normInf();
+  double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
+  if (singular_values[reducedRank-1] < mach_svtol) {
+    Cout << "\nWarning (model subspace): Computed subspace size is greater than"
+         << " numerical rank. Changing subspace size to numerical rank."
+         << std::endl;
+    for (unsigned int i=0; i<reducedRank; ++i) {
+      if (singular_values[i] < mach_svtol) {
+        reducedRank = i;
+        break;
+      }
+    }
+    
+    if (reducedRank < 1) {
+      Cerr << "\nError (model subspace): Derivative matrix has numerical rank "
+           << "of 0. Something may be wrong with the gradient calculations."
+           << std::endl;
+      abort_handler(-1);
+    }
+
+    Cout << "\nModel subspace: New subspace size is reduced_rank = "
+         << reducedRank << "." << std::endl;
   }
 
   int num_singular_values = singular_values.length();

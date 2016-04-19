@@ -1,3 +1,5 @@
+#@ Tests 2--5, 7, 9, 10, 21, 26--29 may randomly DIFF (should be fewer; only some are asynch)
+#@ *: Label=StochDiff
 #@ s4: TimeoutAbsolute=1800
 #@ s5: TimeoutAbsolute=1800
 #@ p0: MPIProcs=2

@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # DAKOTA INPUT FILE : dakota_graphics2.in
 
 # This file is adapted from dakota_dace.in.  It uses large inputs

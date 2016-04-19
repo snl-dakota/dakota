@@ -1,4 +1,3 @@
-#@ p*: Label=SmokeTest
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=2

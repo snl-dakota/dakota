@@ -143,6 +143,9 @@ ScalingModel::~ScalingModel()
 { /* empty dtor */}
 
 
+/** Since this convenience function is public, it must have a
+    fall-through to return a copy for when this scaling type isn't
+    active. */
 RealVector ScalingModel::cv_scaled2native(const RealVector& scaled_cv) const
 {
   return (varsScaleFlag) ?
@@ -150,6 +153,10 @@ RealVector ScalingModel::cv_scaled2native(const RealVector& scaled_cv) const
     scaled_cv;
 }
 
+
+/** Since this convenience function is public, it must behave
+    correctly when this scale type isn't active.  It does, because it
+    modifies in-place */
 void ScalingModel::resp_scaled2native(const Variables& native_vars, 
                                       Response& updated_resp) const
 {
@@ -179,6 +186,9 @@ void ScalingModel::resp_scaled2native(const Variables& native_vars,
 }
 
 
+/** Since this convenience function is public, it must have a
+    fall-through to return a copy for when this scaling type isn't
+    active. */
 void ScalingModel::
 secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                              const ShortArray& asv,
@@ -194,6 +204,9 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                   responseScaleOffsets),
        num_primary_fns(), num_nln_cons, native_fns, num_primary_fns());
   }
+  else 
+    copy_data_partial(scaled_nln_cons, num_primary_fns(), num_nln_cons, 
+                      native_fns, num_primary_fns());
 }
 
 short ScalingModel::response_order(const Model& sub_model)
@@ -213,9 +226,9 @@ short ScalingModel::response_order(const Model& sub_model)
 void ScalingModel::initialize_scaling(Model& sub_model)
 {
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "\nScalingModel: Scaling enabled (any scaling derived from 'auto' " 
-         << "reported as value)" << std::endl;
-  else if (outputLevel == NORMAL_OUTPUT)
+    Cout << "\nScalingModel: Scaling enabled ('auto' scaling is reported as "
+         << "derived values)" << std::endl;
+  else if (outputLevel > SILENT_OUTPUT)
     Cout << "\nScalingModel: Scaling enabled" << std::endl;
 
   // in the scaled case, perform numerical derivatives at the RecastModel level
@@ -244,7 +257,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   // -----------------
   const StringArray& cdv_scale_strings = scalingOpts.cvScaleTypes;
   const RealVector& cdv_scales = scalingOpts.cvScales;
-  varsScaleFlag = !cdv_scale_strings.empty();
+  varsScaleFlag = scaling_active(cdv_scale_strings);
 
   copy_data(sub_model.continuous_lower_bounds(), lbs); // view->copy
   copy_data(sub_model.continuous_upper_bounds(), ubs); // view->copy
@@ -279,7 +292,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   // -------------------------
   const StringArray& primary_scale_strings = scalingOpts.priScaleTypes;
   const RealVector& primary_scales = scalingOpts.priScales;
-  primaryRespScaleFlag = !primary_scale_strings.empty();
+  primaryRespScaleFlag = scaling_active(primary_scale_strings);
 
   lbs.size(0); ubs.size(0);
   compute_scaling(FN_LSQ, DISALLOW, num_primary, lbs, ubs, targets,
@@ -297,7 +310,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   // --------------------
   const StringArray& nln_ineq_scale_strings = scalingOpts.nlnIneqScaleTypes;
   const RealVector& nln_ineq_scales = scalingOpts.nlnIneqScales;
-  secondaryRespScaleFlag = !nln_ineq_scale_strings.empty();
+  secondaryRespScaleFlag = scaling_active(nln_ineq_scale_strings);
 
   lbs = sub_model.nonlinear_ineq_constraint_lower_bounds();
   ubs = sub_model.nonlinear_ineq_constraint_upper_bounds();
@@ -321,7 +334,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   const StringArray& nln_eq_scale_strings = scalingOpts.nlnEqScaleTypes;
   const RealVector& nln_eq_scales = scalingOpts.nlnEqScales;
   secondaryRespScaleFlag
-    = (secondaryRespScaleFlag || !nln_eq_scale_strings.empty());
+    = (secondaryRespScaleFlag || scaling_active(nln_eq_scale_strings));
 
   lbs.size(0); ubs.size(0);
   targets = sub_model.nonlinear_eq_constraint_targets();
@@ -452,6 +465,16 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << std::endl;
+}
+
+
+bool ScalingModel::scaling_active(const StringArray& scale_types)
+{
+  BOOST_FOREACH(const String& sc_type, scale_types) {
+    if (sc_type != "none")
+      return true;
+  }
+  return false;  // false if array empty or all types == "none"
 }
 
 
@@ -738,7 +761,7 @@ variables_scaler(const Variables& scaled_vars, Variables& native_vars)
     Cout << "\n----------------------------------";
     Cout << "\nPre-processing Function Evaluation";
     Cout << "\n----------------------------------";
-    Cout << "\nVariables before scaling transformation:\n";
+    Cout << "\nVariables before unscaling transformation:\n";
     write_data(Cout, scaled_vars.continuous_variables(),
                scaled_vars.continuous_variable_labels());
     Cout << std::endl;
@@ -765,18 +788,33 @@ void ScalingModel::
 primary_resp_scaler(const Variables& native_vars, const Variables& scaled_vars,
                     const Response& native_response, Response& iterator_response)
 {
-  if (scaleModelInstance->outputLevel > NORMAL_OUTPUT) {
-    Cout << "\n-----------------------------------------------------------";
-    Cout << "\nPost-processing Function Evaluation: Scaling Transformation";
-    Cout << "\n-----------------------------------------------------------" 
-         << std::endl;
-  }
+  // scaling is always applied on a model with user's original size,
+  // so can query this object or the underlying model for sizes
 
-  // scaling is always applied on a model with user's original size
-  scaleModelInstance->
-    response_scaler_core(native_vars, scaled_vars, native_response, 
-                         iterator_response, 0, 
-                         scaleModelInstance->num_primary_fns());
+  // need to scale if primary responses are scaled or (variables are
+  // scaled and grad or hess requested)
+  size_t start_offset = 0;
+  size_t num_responses = scaleModelInstance->num_primary_fns();
+  bool scale_transform_needed = 
+    scaleModelInstance->primaryRespScaleFlag ||
+    scaleModelInstance->need_resp_trans_byvars
+    (native_response.active_set_request_vector(), start_offset, num_responses);
+
+  if (scale_transform_needed) {
+    if (scaleModelInstance->outputLevel > NORMAL_OUTPUT) {
+      Cout << "\n--------------------------------------------";
+      Cout << "\nPost-processing Function Evaluation: Primary";
+      Cout << "\n--------------------------------------------" << std::endl; 
+    }
+    scaleModelInstance->
+      response_modify_n2s(native_vars, native_response,
+                          iterator_response, start_offset, num_responses);
+
+  }
+  else
+    // could reach this if variables are scaled and only functions are requested
+    iterator_response.update_partial(start_offset, num_responses,
+                                     native_response, start_offset);
 }
 
 
@@ -788,39 +826,32 @@ secondary_resp_scaler(const Variables& native_vars,
                       const Response& native_response,
                       Response& iterator_response)
 {
+  // scaling is always applied on a model with user's original size,
+  // so can query this object or the underlying model for sizes
+
   // need to scale if secondary responses are scaled or (variables are
   // scaled and grad or hess requested)
-  // scaling is always applied on a model with user's original size
+  size_t start_offset = scaleModelInstance->num_primary_fns();
   size_t num_nln_cons = scaleModelInstance->num_nonlinear_ineq_constraints() +
     scaleModelInstance->num_nonlinear_eq_constraints();
-  scaleModelInstance->
-    response_scaler_core(native_vars, scaled_vars, native_response, 
-                         iterator_response, 
-                         scaleModelInstance->num_primary_fns(),
-                         num_nln_cons);
-}
-
-void ScalingModel::
-response_scaler_core(const Variables& native_vars,
-                     const Variables& scaled_vars,
-                     const Response& native_response,
-                     Response& iterator_response,
-                     size_t start_offset, size_t num_responses)
-{
-  // need to scale if primary responses are scaled or (variables are
-  // scaled and grad or hess requested)
   bool scale_transform_needed = 
-    scaleModelInstance->primaryRespScaleFlag ||
+    scaleModelInstance->secondaryRespScaleFlag ||
     scaleModelInstance->need_resp_trans_byvars
-    (native_response.active_set_request_vector(), start_offset, num_responses);
+    (native_response.active_set_request_vector(), start_offset, num_nln_cons);
 
-  if (scale_transform_needed)
+  if (scale_transform_needed) {
+    if (scaleModelInstance->outputLevel > NORMAL_OUTPUT) {
+      Cout << "\n----------------------------------------------";
+      Cout << "\nPost-processing Function Evaluation: Secondary";
+      Cout << "\n----------------------------------------------" << std::endl; 
+    }
     scaleModelInstance->
       response_modify_n2s(native_vars, native_response,
-                          iterator_response, start_offset, num_responses);
+                          iterator_response, start_offset, num_nln_cons);
+  }
   else
     // could reach this if variables are scaled and only functions are requested
-    iterator_response.update_partial(start_offset, num_responses,
+    iterator_response.update_partial(start_offset, num_nln_cons,
                                      native_response, start_offset);
 }
 
@@ -924,9 +955,9 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
 
   if (outputLevel > NORMAL_OUTPUT)
     if (start_offset < scaleModelInstance->num_primary_fns())
-      Cout << "Primary response scaling transformation:\n";
+      Cout << "Primary response after scaling transformation:\n";
     else
-      Cout << "Secondary response scaling transformation:\n";
+      Cout << "Secondary response after scaling transformation:\n";
 
   // scale functions and constraints
   // assumes Multipliers and Offsets are 1 and 0 when not in use
@@ -1095,9 +1126,9 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
 
   if (outputLevel > NORMAL_OUTPUT)
     if (start_offset < scaleModelInstance->num_primary_fns())
-      Cout << "Primary response unscaling transformation:\n";
+      Cout << "Primary response after unscaling transformation:\n";
     else
-      Cout << "Secondary response unscaling transformation:\n";
+      Cout << "Secondary response after unscaling transformation:\n";
 
   // scale functions and constraints
   // assumes Multipliers and Offsets are 1 and 0 when not in use

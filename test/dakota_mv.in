@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 #@ s0: UserMan=textbook_uq_meanvalue
 #@ [taxonomy:start]
 #@ s0: [analysis:UQ]

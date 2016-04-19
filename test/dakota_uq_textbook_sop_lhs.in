@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 
 # DAKOTA Input File: dakota_uq_textbook_sop_lhs.in
 

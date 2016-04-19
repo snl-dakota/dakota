@@ -821,9 +821,9 @@ void DataFitSurrModel::interface_build_approx()
       actualModel.discrete_int_upper_bounds(),
       actualModel.discrete_real_lower_bounds(),
       actualModel.discrete_real_upper_bounds());
-    if (exportSurrogate)
-      approxInterface.export_approximation();
   }
+  if (exportSurrogate)
+    approxInterface.export_approximation();
 }
 
 

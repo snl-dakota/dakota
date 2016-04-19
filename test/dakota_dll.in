@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s0: ExecCmd='dll_tester' ExecArgs='1' Restart=none CheckOutput='dakota_dll.log'
 
 # Dakota DLL test, based on rosenbrock users test s0

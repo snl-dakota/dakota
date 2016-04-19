@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s2: ReqFiles=oscillator.1.dat,oscillator.1.sigma
 #@ s3: ReqFiles=oscillatorA.1.dat,oscillatorA.1.sigma
 #@ s4: ReqFiles=oscillatorA.1.dat,oscillatorA.1.sigma

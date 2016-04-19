@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s1: DependsOn=s0
 #@ s1: ExecArgs='-post_run dakota_psuade.0.dat::'
 #@ s0: UserMan=morris_ps_moat

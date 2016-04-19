@@ -71,6 +71,10 @@ protected:
   /// initialize scaling types, multipliers, and offsets; perform error
   /// checking
   void initialize_scaling(Model& sub_model);
+  
+  /// check whether the passed scale strings include any active (!= none)
+  /// scale types
+  static bool scaling_active(const StringArray& scale_types);
 
   /// general helper function for initializing scaling types and factors on a 
   /// vector of variables, functions, constraints, etc.
@@ -130,13 +134,6 @@ protected:
   // ---
   // Convenience functions to manage transformations
   // ---
-
-  /// Core of response scaling, which doesn't perform any output
-  void response_scaler_core(const Variables& native_vars,
-			    const Variables& scaled_vars,
-			    const Response& native_response,
-			    Response& iterator_response,
-			    size_t start_offset, size_t num_responses);
 
   /// determine if response transformation is needed due to variable
   /// transformations

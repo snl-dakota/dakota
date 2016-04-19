@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 environment,
 	#graphics
 	  method_pointer = 'OPTIM'

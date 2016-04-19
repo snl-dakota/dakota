@@ -1,4 +1,4 @@
-#@ s*: Label=SmokeTest
+#@ s*: Label=FastTest
 
 # TO DO: define a meaningful verification test.  text_book generates inf's
 #        for test 1 and ~DBL_MIN for test 2.

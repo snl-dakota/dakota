@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 # Test global surrogates with piecewise local decomposition
 environment
 	  tabular_data

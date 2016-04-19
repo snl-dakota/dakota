@@ -1,3 +1,4 @@
+#@ s*: Label=FastTest
 #@ s4: TimeoutDelay=300
 
 environment,

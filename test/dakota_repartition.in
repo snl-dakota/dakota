@@ -1,6 +1,6 @@
 #@ Allow default serial test: #s0
-#@ s*: Label=SmokeTest
-#@ p*: Label=SmokeTest
+#@ s*: Label=FastTest
+#@ p*: Label=FastTest
 #@ p0: MPIProcs=5
 
 # DAKOTA INPUT FILE - dakota_repartition.in
