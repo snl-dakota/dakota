@@ -445,6 +445,10 @@ public:
   /// set a variable within the all discrete array
   void all_discrete_real_variable(Real adr_var, size_t index);
 
+  /// get the active variables as a vector of reals, converting string
+  /// values to zero-based set indices
+  void as_vector(const StringSetArray& dss_vals, RealVector& var_values) const;
+
   /// returns a single array with all continuous variable labels
   StringMultiArrayView all_continuous_variable_labels() const;
   /// sets all continuous variable labels using a single array

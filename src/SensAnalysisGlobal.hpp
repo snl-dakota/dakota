@@ -86,6 +86,16 @@ private:
   //- Heading: Convenience member functions
   //
 
+  /// find samples with finite response (any sample with any Nan or
+  /// +/-Inf observation will be dropped)
+  size_t find_valid_samples(const IntResponseMap& resp_samples, 
+			    BoolDeque& valid_sample);
+
+  /// replace sample values with their ranks
+  void values_to_ranks(const RealMatrix& total_data, 
+		       RealMatrix& total_data_rank);
+
+
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 

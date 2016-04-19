@@ -987,4 +987,24 @@ std::size_t hash_value(const Variables& vars)
   return seed;
 }
 
+
+void Variables::
+as_vector(const StringSetArray& dss_vals, RealVector& var_values) const
+{
+  if (variablesRep)
+    variablesRep->as_vector(dss_vals, var_values);
+  else {
+    size_t num_cv = cv(), num_div = div(), num_dsv = dsv();
+    copy_data_partial(continuous_variables(), var_values, 0);
+    merge_data_partial(discrete_int_variables(), var_values, num_cv);
+    for (size_t i=0; i<num_dsv; ++i) {
+      size_t ind = set_value_to_index(discrete_string_variable(i), dss_vals[i]);
+      var_values[num_cv + num_div + i] = (Real) ind;
+    }
+    copy_data_partial(discrete_real_variables(), var_values, 
+		      num_cv + num_div + num_dsv);
+  }
+}
+
+
 } // namespace Dakota
