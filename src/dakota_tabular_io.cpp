@@ -342,14 +342,12 @@ void read_data_tabular(const std::string& input_filename,
 }
 
 
-
-// BMA TODO: use a helper to read each line.
-// BMA TODO: what to do about discrete vars, esp string?
+// New prototype to support mixed variable reads
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
-		       RealArray& input_vector, unsigned short tabular_format,
-		       bool active_only)
+		       RealMatrix& vars_matrix, RealMatrix& resp_matrix,
+                       unsigned short tabular_format, bool active_only)
 {
   std::ifstream input_stream;
   open_file(input_stream, input_filename, context_message);
@@ -357,7 +355,12 @@ void read_data_tabular(const std::string& input_filename,
   size_t num_vars = active_only ? 
     vars.cv() + vars.div() + vars.dsv() + vars.drv() : vars.tv();
 
-  //  input_vector.resize(num_rows);
+  RealVectorArray work_vars_va;
+  RealVectorArray work_resp_va;
+  RealVector work_vars_vec(num_vars);
+  RealVector work_resp_vec(num_fns);
+
+  //  Need to delay sizing of input_matrix 
   try {
 
     read_header_tabular(input_stream, tabular_format);
@@ -371,19 +374,26 @@ void read_data_tabular(const std::string& input_filename,
       // use a variables object because it knows how to read active vs. all
       vars.read_tabular(input_stream, active_only);
 
-      // Extract the continuous variables
-      // TODO: handle discrete variable types
-      const RealVector& c_vars = active_only ? vars.continuous_variables() :
-	vars.all_continuous_variables();
-      std::copy(c_vars.values(), c_vars.values()+c_vars.length(), 
-		std::back_inserter(input_vector));
+      // Extract the variables
+      const RealVector& c_vars  = active_only ? vars.continuous_variables()    : vars.all_continuous_variables();
+      const IntVector&  di_vars = active_only ? vars.discrete_int_variables()  : vars.all_discrete_int_variables();
+      const RealVector& dr_vars = active_only ? vars.discrete_real_variables() : vars.all_discrete_real_variables();
+      copy_data_partial(c_vars, work_vars_vec, 0);
+      merge_data_partial(di_vars, work_vars_vec, c_vars.length());
+      copy_data_partial(dr_vars, work_vars_vec, c_vars.length()+di_vars.length());
+      //varsMatrix(row,:) = [vars.continuous_variables(), vars.discrete_int_variables(), vars.discrete_real_variables() ]
+      work_vars_va.push_back(work_vars_vec);
+      std::cout << "Working Variables vector contents: \n" << work_vars_vec << std::endl;
 
       // read the raw function data
       for (size_t fi = 0; fi < num_fns; ++fi) {
-	double read_value = std::numeric_limits<double>::quiet_NaN();
-	if (input_stream >> read_value)
-	  input_vector.push_back(read_value);
+        double read_value = std::numeric_limits<double>::quiet_NaN();
+        if (input_stream >> read_value)
+          work_resp_vec(fi) = read_value;
       }
+      work_resp_va.push_back(work_resp_vec);
+      std::cout << "Working Response vector contents: \n" << work_resp_vec << std::endl;
+
       input_stream >> std::ws;
     }
   }
@@ -404,6 +414,9 @@ void read_data_tabular(const std::string& input_filename,
 	 << input_filename << " (unknown error).";
     abort_handler(-1);
   }
+
+  copy_data(work_vars_va, vars_matrix);
+  copy_data(work_resp_va, resp_matrix);
 }
 
 /** Read possibly annotated data with unknown num_rows data into input_coeffs

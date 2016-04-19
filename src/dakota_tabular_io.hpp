@@ -174,14 +174,13 @@ void read_data_tabular(const std::string& input_filename,
 		       unsigned short tabular_format);
 
 /// Tabular read for ApproximationInterface challenge data: read
-/// possibly header-annotated whitespace-separated data of Variables,
-/// followed by num_fns, into a dynamic vector with minimal error
-/// checking
+/// possibly header-annotated whitespace-separated data of possible mixed Variables,
+/// followed by num_fns, each into RealMatrix with minimal error checking
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
 		       Variables vars, size_t num_fns,
-		       RealArray& input_vector, unsigned short tabular_format,
-		       bool active_only);
+		       RealMatrix& vars_matrix, RealMatrix& resp_matrix, 
+                       unsigned short tabular_format, bool active_only);
 
 /// Tabular read for PCE import: read possibly header-annotated
 /// whitespace-separated data of unknown length where each row has

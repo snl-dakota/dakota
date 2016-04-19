@@ -875,17 +875,10 @@ void ApproximationInterface::read_challenge_points(bool active_only)
 
   // use a Variables object to easily read active vs. all
   RealArray pts_array;
+  RealMatrix pts_matrix;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
-			       actualModelVars.copy(), num_fns, pts_array, 
-			       challengeFormat, challengeActiveOnly);
-  
-  // translate to the matrix, using real vector only for convenience
-  size_t num_points = pts_array.size()/num_cols;
-  RealVector pts_vec(Teuchos::View, &pts_array[0], pts_array.size());
-  RealMatrix chal_var_resp;
-  copy_data(pts_vec, chal_var_resp, num_points, num_cols);
-  challengePoints = RealMatrix(Teuchos::Copy,chal_var_resp,num_points,num_vars);
-  challengeResponses = RealMatrix(Teuchos::Copy,chal_var_resp,num_points,num_fns,0,num_vars);
+			       actualModelVars.copy(), num_fns, challengePoints, 
+                               challengeResponses, challengeFormat, challengeActiveOnly);
 }
 
 } // namespace Dakota
