@@ -220,12 +220,14 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
-  SizetArray& N_hf_l = NLev[hf_model_form]; N_hf_l.assign(num_hf_lev, 0);
-  SizetArray& delta_N_hf_l = deltaNLev[hf_model_form];
-  Cout << "\nMLMC pilot sample:\n" << delta_N_hf_l << std::endl;
+  SizetArray& N_lf = NLev[lf_model_form];
+  SizetArray& N_hf = NLev[hf_model_form]; 
+  SizetArray& delta_N_lf = deltaNLev[lf_model_form];
+  SizetArray& delta_N_hf = deltaNLev[hf_model_form];
+  Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
 
-  // now converge on sample counts per level (N_hf_l)
-  while (Pecos::l1_norm(delta_N_hf_l) && iter <= max_iter) {
+  // now converge on sample counts per level (N_hf)
+  while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // surr resp
@@ -243,19 +245,19 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
       }
 
       // set the number of current samples from the defined increment
-      numSamples = delta_N_hf_l[lev];
+      numSamples = delta_N_hf[lev];
 
-      // aggregate variances across QoI for estimating N_hf_l (justification:
+      // aggregate variances across QoI for estimating N_hf (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
       if (numSamples) {
-	// update total samples performed for this level
-	N_hf_l[lev] += numSamples;
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
+	// update total samples performed for this level
+	N_hf[lev] += numSamples;
 
 	// if unequal number of levels, loop over all HF levels for MLMC and
 	// apply CVMC when LF levels are available.  LF levels are assigned as
@@ -267,7 +269,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev, 1, 2);
 
 	  // control variate betwen LF and HF for this discretization level
-	  // using current N_hf_l for HF -> rho2_LH, eval_ratio -> Lambda_l
+	  // using current N_hf for HF -> rho2_LH, eval_ratio -> Lambda_l
 
 	  // store allResponses for sum_H (previously sum_Y_*)
 	  IntResponseMap hf_resp = allResponses; // shallow copy
@@ -284,6 +286,8 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  evaluate_parameter_sets(iteratedModel, true, false);
+	  // update total samples performed for this level
+	  N_lf[lev] += numSamples;
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_cv_sums(allResponses, hf_resp, sum_L, sum_H, sum_LH, lev);
 
@@ -307,7 +311,8 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio, N_hf_l[lev]))
+	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
+			   delta_N_lf[lev], N_lf[lev]))
 	    accumulate_cv_sums(sum_L, lev, 4);
 	}
 	else // accumulate all orders as this will be used in moment increments
@@ -318,11 +323,11 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	     *sum_Y1sq_l = sum_Y_pow_Qdiff[2][lev];
 	agg_var_hf_l = 0.;
 	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  Real mu_Y = sum_Y1_l[qoi] / N_hf_l[lev];
+	  Real mu_Y = sum_Y1_l[qoi] / N_hf[lev];
 	  // Note: precision loss in variance is difficult to avoid without
 	  // storing full sample history; must accumulate Y^2 across iters
 	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  agg_var_hf_l += sum_Y1sq_l[qoi] / N_hf_l[lev] - mu_Y * mu_Y;
+	  agg_var_hf_l += sum_Y1sq_l[qoi] / N_hf[lev] - mu_Y * mu_Y;
 	}
       }
 
@@ -332,7 +337,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 		  (1. - avg_rho2_LH[lev])) :
 	std::sqrt(agg_var_hf_l * hf_lev_cost);
       // mean sq error reference is MC applied to HF:
-      if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf_l[lev];
+      if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf[lev];
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -352,11 +357,11 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
       new_N_l = (lev < num_lf_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf_l[lev] = (new_N_l > N_hf_l[lev]) ? new_N_l - N_hf_l[lev] : 0;
+      delta_N_hf[lev] = (new_N_l > N_hf[lev]) ? new_N_l - N_hf[lev] : 0;
     }
     ++iter;
     Cout << "\nMLMC iteration " << iter << " sample increments:\n"
-	 << delta_N_hf_l << std::endl;
+	 << delta_N_hf << std::endl;
     if (outputLevel == DEBUG_OUTPUT) {
       Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
       write_data(Cout,sum_Y_diff_Qpow[1]); write_data(Cout,sum_Y_diff_Qpow[2]);
@@ -367,11 +372,10 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 
   // Iteration complete.  Now roll up raw moments from combing final
   // CVMC and MLMC estimators.
-  SizetArray& N_lf_l = NLev[lf_model_form];
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
     cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, /*rho2_LH,*/ lev,
-		   N_lf_l[lev], /*hf_lev_cost/lf_lev_cost,*/ Y_cvmc_mom);
+		   N_lf[lev], /*hf_lev_cost/lf_lev_cost,*/ Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_lf_lev) {
@@ -380,7 +384,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real *Y_ml_q = Y_mlmc_mom[qoi];
       for (lev=num_lf_lev; lev<num_hf_lev; ++lev) {
-	size_t Nl = N_hf_l[lev];
+	size_t Nl = N_hf[lev];
 	Y_ml_q[0] += sum_Y1(qoi,lev) / Nl;  Y_ml_q[1] += sum_Y2(qoi,lev) / Nl;
 	Y_ml_q[2] += sum_Y3(qoi,lev) / Nl;  Y_ml_q[3] += sum_Y4(qoi,lev) / Nl;
       }
@@ -390,11 +394,11 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   convert_moments(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
-  equivHFEvals = N_hf_l[0] * hf_cost[0] + N_lf_l[0] * lf_cost[0]; // first level
+  equivHFEvals = N_hf[0] * hf_cost[0] + N_lf[0] * lf_cost[0]; // first level
   for (lev=1; lev<num_hf_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += N_hf_l[lev] * (hf_cost[lev] + hf_cost[lev-1]);
+    equivHFEvals += N_hf[lev] * (hf_cost[lev] + hf_cost[lev-1]);
   for (lev=1; lev<num_lf_lev; ++lev) // subsequent levels incur 2 model costs
-    equivHFEvals += N_lf_l[lev] * (lf_cost[lev] + lf_cost[lev-1]);
+    equivHFEvals += N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
   equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
 }
 
@@ -481,13 +485,13 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (numSamples) {
-	// update total samples performed for this level
-	N_l[lev] += numSamples;
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
+	// update total samples performed for this level
+	N_l[lev] += numSamples;
 
 	// process allResponses: accumulate new samples for each qoi
 	accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev);
@@ -587,13 +591,17 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 			     mean_L, mean_H, var_L, covar_LH);
   RealVector var_H(numFunctions, false), rho2_LH(numFunctions, false);
 
+  size_t& delta_N_lf = deltaNLev[lf_form_level.first][lf_form_level.second];
+  size_t& delta_N_hf = deltaNLev[hf_form_level.first][hf_form_level.second];
+  size_t&       N_lf =      NLev[lf_form_level.first][lf_form_level.second];
+  size_t&       N_hf =      NLev[hf_form_level.first][hf_form_level.second];
+
   // ---------------------
   // Compute Pilot Samples
   // ---------------------
 
   // Initialize for pilot sample (shared sample count discarding any excess)
-  numSamples = std::min(deltaNLev[lf_form_level.first][lf_form_level.second],
-			deltaNLev[hf_form_level.first][hf_form_level.second]);
+  numSamples = std::min(delta_N_lf, delta_N_hf);
   shared_increment(iter);
   accumulate_cv_sums(sum_L, sum_H, sum_LH);
 
@@ -640,8 +648,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  size_t N_hf = NLev[hf_form_level.first][hf_form_level.second];
-  if (lf_increment(avg_eval_ratio, N_hf))
+  if (lf_increment(avg_eval_ratio, N_hf, delta_N_lf, N_lf))
     accumulate_cv_sums(sum_L, 4);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
@@ -652,7 +659,6 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   convert_moments(H_raw_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
-  size_t N_lf = NLev[lf_form_level.first][lf_form_level.second];
   equivHFEvals = N_hf + (Real)N_lf / cost_ratio;
 }
 
@@ -683,15 +689,12 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
 }
 
 
-bool NonDMultilevelSampling::lf_increment(Real avg_eval_ratio, size_t N_hf)
+bool NonDMultilevelSampling::
+lf_increment(Real avg_eval_ratio, size_t N_hf, size_t& delta_N_lf, size_t& N_lf)
 {
   // ----------------------------------------------
   // Compute Final LF increment for control variate
   // ----------------------------------------------
-
-  const SizetSizetPair& lf_form_level = iteratedModel.surrogate_model_indices();
-  size_t&       N_lf =      NLev[lf_form_level.first][lf_form_level.second];
-  size_t& delta_N_lf = deltaNLev[lf_form_level.first][lf_form_level.second];
 
   // update LF samples based on evaluation ratio
   // r = m/n -> m = r*n -> delta = m-n = (r-1)*n
