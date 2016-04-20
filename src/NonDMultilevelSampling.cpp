@@ -267,6 +267,10 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  // only need to accumulate order 1 for sum_Y_diff_Qpow and order 2
 	  // for sum_Y_pow_Qdiff for computing agg_var_hf_l
 	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev, 1, 2);
+	  if (outputLevel == DEBUG_OUTPUT) {
+	    write_data(Cout, sum_Y_diff_Qpow[1]);
+	    write_data(Cout, sum_Y_pow_Qdiff[2]); 
+	  }
 
 	  // control variate betwen LF and HF for this discretization level
 	  // using current N_hf for HF -> rho2_LH, eval_ratio -> Lambda_l
@@ -290,30 +294,26 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  N_lf[lev] += numSamples;
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_cv_sums(allResponses, hf_resp, sum_L, sum_H, sum_LH, lev);
+	  if (outputLevel == DEBUG_OUTPUT) {
+	    write_data(Cout, sum_L[1]);  write_data(Cout, sum_L[2]);
+	    write_data(Cout, sum_H[1]);  write_data(Cout, sum_H[2]);
+	    write_data(Cout, sum_LH[1]); write_data(Cout, sum_LH[2]);
+	  }
 
 	  // compute the average evaluation ratio and Lambda factor
-	  RealVector mean_L_l(Teuchos::View, mean_L[1][lev],   numFunctions),
-	             mean_H_l(Teuchos::View, mean_H[1][lev],   numFunctions),
-	              var_L_l(Teuchos::View, var_L[1][lev],    numFunctions),
-	              var_H_l(Teuchos::View, var_H[lev],       numFunctions),
-	           covar_LH_l(Teuchos::View, covar_LH[1][lev], numFunctions),
-	            rho2_LH_l(Teuchos::View, rho2_LH[lev],     numFunctions);
-	  int i_lev = (int)lev;
-	  avg_eval_ratio = eval_ratio(getCol(Teuchos::View, sum_L[1],  i_lev),
-				      getCol(Teuchos::View, sum_H[1],  i_lev),
-				      getCol(Teuchos::View, sum_L[2],  i_lev),
-				      getCol(Teuchos::View, sum_H[2],  i_lev),
-				      getCol(Teuchos::View, sum_LH[1], i_lev),
-				      hf_lev_cost/lf_lev_cost, mean_L_l,
-				      mean_H_l, var_L_l, var_H_l, covar_LH_l,
-				      rho2_LH_l);
-	  avg_rho2_LH[lev] = average(rho2_LH_l);
+	  avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
+	    sum_LH[1], hf_lev_cost/lf_lev_cost, lev, mean_L[1], mean_H[1],
+	    var_L[1], var_H, covar_LH[1], rho2_LH, N_lf[lev], N_hf[lev]);
+	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
 	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  // now execute additional LF sample increment, if needed
 	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
-			   delta_N_lf[lev], N_lf[lev]))
+			   delta_N_lf[lev], N_lf[lev])) {
 	    accumulate_cv_sums(sum_L, lev, 4);
+	    if (outputLevel == DEBUG_OUTPUT)
+	      { write_data(Cout, sum_L[1]);  write_data(Cout, sum_L[2]); }
+	  }
 	}
 	else // accumulate all orders as this will be used in moment increments
 	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev);
@@ -374,8 +374,9 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   // CVMC and MLMC estimators.
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
-    cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, /*rho2_LH,*/ lev,
-		   N_lf[lev], /*hf_lev_cost/lf_lev_cost,*/ Y_cvmc_mom);
+    cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH,
+		   /*rho2_LH, hf_lev_cost/lf_lev_cost, */
+		   lev, N_lf[lev], Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_lf_lev) {
@@ -602,16 +603,16 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 
   // Initialize for pilot sample (shared sample count discarding any excess)
   numSamples = std::min(delta_N_lf, delta_N_hf);
-  shared_increment(iter);
+  shared_increment(iter, lf_form_level, hf_form_level);
   accumulate_cv_sums(sum_L, sum_H, sum_LH);
 
   // compute the LF/HF evaluation ratio, averaged over the QoI
   // This includes updating mean_L, mean_H, var_L, var_H, cov_LH, rho2_LH
-  Real avg_eval_ratio
-    = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1], cost_ratio,
-		 mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH);
+  Real avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
+    sum_LH[1], cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1],
+    rho2_LH, N_lf, N_hf);
   // compute the ratio of MC and CVMC mean squared errors (controls convergence)
-  Real avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter);
+  Real avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
 
   // -----------------------------------------------------------
   // Compute HF + LF increment targeting specified MSE reduction
@@ -629,20 +630,19 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     numSamples = (size_t)std::floor(incr + .5); // round
 
     if (numSamples) { // small incr did not round up
-      shared_increment(++iter);
+      shared_increment(++iter, lf_form_level, hf_form_level);
       accumulate_cv_sums(sum_L, sum_H, sum_LH);
       // update ratios:
-      avg_eval_ratio =
-	eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2], sum_LH[1],
-		   cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H,
-		   covar_LH[1], rho2_LH);
-      avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter);
+      avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
+	sum_LH[1], cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H,
+	covar_LH[1], rho2_LH, N_lf, N_hf);
+      avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
     }
   }
 
   // compute higher-order sums/stats once, including pilot + shared increment
   update_high_order_stats(sum_L, sum_H, sum_LH, mean_L, mean_H,
-			  var_L, covar_LH);
+			  var_L, covar_LH, N_hf); // N_lf = N_hf = N_shared
 
   // --------------------------------------------------
   // Compute LF increment based on the evaluation ratio
@@ -654,7 +654,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(4, numFunctions);
   cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH, rho2_LH, cost_ratio,
-		 H_raw_mom);
+		 N_lf, H_raw_mom);
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(H_raw_mom, momentStats);
 
@@ -663,19 +663,17 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 }
 
 
-void NonDMultilevelSampling::shared_increment(size_t iter)
+void NonDMultilevelSampling::
+shared_increment(size_t iter, const SizetSizetPair& lf_form_level,
+		 const SizetSizetPair& hf_form_level)
 {
-  const SizetSizetPair& lf_form_level = iteratedModel.surrogate_model_indices();
-  const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
-  size_t &delta_N_lf = deltaNLev[lf_form_level.first][lf_form_level.second],
-         &delta_N_hf = deltaNLev[hf_form_level.first][hf_form_level.second];
-
-  delta_N_lf = delta_N_hf = numSamples;
+  deltaNLev[lf_form_level.first][lf_form_level.second]
+    = deltaNLev[hf_form_level.first][hf_form_level.second] = numSamples;
 
   if (iter == _NPOS)  Cout << "\nCVMC sample increments: ";
   else if (iter == 0) Cout << "\nCVMC pilot sample: ";
   else Cout << "\nCVMC iteration " << iter << " sample increments: ";
-  Cout << "LF = " << delta_N_lf << " HF = " << delta_N_hf << '\n';
+  Cout << "LF = " << numSamples << " HF = " << numSamples << '\n';
 
   iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
 
@@ -684,8 +682,8 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
 
-  NLev[lf_form_level.first][lf_form_level.second] += delta_N_lf;
-  NLev[hf_form_level.first][hf_form_level.second] += delta_N_hf;
+  NLev[lf_form_level.first][lf_form_level.second] += numSamples;
+  NLev[hf_form_level.first][hf_form_level.second] += numSamples;
 }
 
 
@@ -709,10 +707,12 @@ lf_increment(Real avg_eval_ratio, size_t N_hf, size_t& delta_N_lf, size_t& N_lf)
 
     // set the number of current samples from the defined increment
     numSamples = delta_N_lf;
+
     // mode for hierarchical surrogate model can be uncorrected surrogate
     // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
     // --> set at calling level
     //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+
     // generate new MC parameter sets
     get_parameter_sets(iteratedModel);// pull dist params from any model
     // compute allResponses from allVariables using hierarchical model
@@ -1103,29 +1103,27 @@ accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
 
 
 void NonDMultilevelSampling::
-update_high_order_stats(IntRealVectorMap& sum_L,  IntRealVectorMap& sum_H,
-			IntRealVectorMap& sum_LH, IntRealVectorMap& mean_L,
-			IntRealVectorMap& mean_H, IntRealVectorMap& var_L,
-			IntRealVectorMap& covar_LH)
+update_high_order_stats(IntRealVectorMap& sum_L,    IntRealVectorMap& sum_H,
+			IntRealVectorMap& sum_LH,   IntRealVectorMap& mean_L,
+			IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
+			IntRealVectorMap& covar_LH, size_t N_LH)
 {
-  // At this point, LF and HF are synchronized, prior to final LF increment:
-  const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
-  size_t total_N = NLev[hf_form_level.first][hf_form_level.second];
+  // N_LH: LF and HF are synchronized prior to final LF increment
 
   // bookkeeping for higher order stats for matched LF/HF evaluations
   // (first 2 evaluation sets), prior to final LF-only sample increment
-  Real mu_Li, mu_Hi, bias_corr = 1./(total_N - 1);
+  Real mu_Li, mu_Hi, bias_corr = 1./(N_LH - 1);
   for (int i=2; i<=4; ++i) {
     const RealVector& sum_Li = sum_L[i]; const RealVector& sum_L2i = sum_L[2*i];
     const RealVector& sum_Hi = sum_H[i]; const RealVector& sum_LHi = sum_LH[i];
     RealVector& mean_Li = mean_L[i]; RealVector&   mean_Hi =   mean_H[i];
     RealVector&  var_Li =  var_L[i]; RealVector& covar_LHi = covar_LH[i];
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      mu_Li = mean_Li[qoi] = sum_Li[qoi] / total_N;
-      mu_Hi = mean_Hi[qoi] = sum_Hi[qoi] / total_N;
-      var_Li[qoi]    = (sum_L2i[qoi] - total_N * mu_Li * mu_Li) * bias_corr;
-      //var_Hi[qoi]  = (sum_H2i[qoi] - total_N * mu_Hi * mu_Hi) * bias_corr;
-      covar_LHi[qoi] = (sum_LHi[qoi] - total_N * mu_Li * mu_Hi) * bias_corr;
+      mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_LH;
+      mu_Hi = mean_Hi[qoi] = sum_Hi[qoi] / N_LH;
+      var_Li[qoi]    = (sum_L2i[qoi] - N_LH * mu_Li * mu_Li) * bias_corr;
+      //var_Hi[qoi]  = (sum_H2i[qoi] - N_LH * mu_Hi * mu_Hi) * bias_corr;
+      covar_LHi[qoi] = (sum_LHi[qoi] - N_LH * mu_Li * mu_Hi) * bias_corr;
     }
   }
 }
@@ -1136,25 +1134,23 @@ eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
 	   const RealVector& sum_L2, const RealVector& sum_H2,
 	   const RealVector& sum_L1H1, Real cost_ratio,
 	   RealVector& mean_L, RealVector& mean_H,   RealVector& var_L,
-	   RealVector& var_H,  RealVector& covar_LH, RealVector& rho2_LH)
+	   RealVector& var_H,  RealVector& covar_LH, RealVector& rho2_LH,
+	   size_t N_lf, size_t N_hf)
 {
-  // At this point, LF and HF are synchronized, prior to final LF increment:
-  const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
-  size_t total_N = NLev[hf_form_level.first][hf_form_level.second];
-
   // Update rho^2, avg_eval_ratio:
   Real mu_L, mu_H, cov, rho_sq, avg_eval_ratio = 0.,
-    bias_corr = 1./(total_N - 1);
+    lf_bias_corr = 1./(N_lf - 1), hf_bias_corr = 1./(N_hf - 1);
   size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // unbiased mean estimator X-bar = 1/N * sum
-    mu_L = mean_L[qoi] = sum_L1[qoi] / total_N;
-    mu_H = mean_H[qoi] = sum_H1[qoi] / total_N;
+    mu_L = mean_L[qoi] = sum_L1[qoi] / N_lf;
+    mu_H = mean_H[qoi] = sum_H1[qoi] / N_hf;
     // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
     // = 1/(N-1) (sum[X^2_i] - N X-bar^2) where bias correction = 1/(N-1)
-    var_L[qoi] = (sum_L2[qoi] - total_N * mu_L * mu_L) * bias_corr;
-    var_H[qoi] = (sum_H2[qoi] - total_N * mu_H * mu_H) * bias_corr;
-    cov = covar_LH[qoi] = (sum_L1H1[qoi] - total_N * mu_L * mu_H) * bias_corr;
+    var_L[qoi] = (sum_L2[qoi] - N_lf * mu_L * mu_L) * lf_bias_corr;
+    var_H[qoi] = (sum_H2[qoi] - N_hf * mu_H * mu_H) * hf_bias_corr;
+    // we assume that mixed LH stats are limited by min(N_hf, N_lf) = N_hf
+    cov = covar_LH[qoi] = (sum_L1H1[qoi] - N_hf * mu_L * mu_H) * hf_bias_corr;
 
     // compute evaluation ratio which determines increment for LF samples
     // > the sample increment optimizes the total computational budget and is
@@ -1172,7 +1168,7 @@ eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
   }
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
-    avg_eval_ratio  = (Real)maxFunctionEvals / (Real)total_N;
+    avg_eval_ratio  = (Real)maxFunctionEvals / (Real)N_hf;
 
   return avg_eval_ratio;
 }
@@ -1180,12 +1176,9 @@ eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
 
 Real NonDMultilevelSampling::
 MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
-	  const RealVector& rho2_LH, size_t iter)
+	  const RealVector& rho2_LH, size_t iter, size_t N_hf)
 {
   if (iter == 0) mcMSEIter0.sizeUninitialized(numFunctions);
-
-  const SizetSizetPair& hf_form_level = iteratedModel.truth_model_indices();
-  size_t N_hf = NLev[hf_form_level.first][hf_form_level.second];
 
   Real mc_mse, cvmc_mse, mse_ratio, avg_mse_ratio = 0.;//,avg_mse_iter_ratio=0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -1214,11 +1207,8 @@ void NonDMultilevelSampling::
 cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
 	       IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
 	       IntRealVectorMap& covar_LH, const RealVector& rho2_LH,
-	       Real cost_ratio,            RealMatrix& H_raw_mom)
+	       Real cost_ratio, size_t N_lf, RealMatrix& H_raw_mom)
 {
-  const SizetSizetPair& lf_form_level = iteratedModel.surrogate_model_indices();
-  size_t N_lf = NLev[lf_form_level.first][lf_form_level.second];
-  
   // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
   Real beta, mu_Li, refined_mu_Li, cr1 = cost_ratio + 1.;
   size_t qoi;
@@ -1252,8 +1242,8 @@ void NonDMultilevelSampling::
 cv_raw_moments(IntRealMatrixMap& sum_L,    IntRealMatrixMap& mean_L,
 	       IntRealMatrixMap& mean_H,   IntRealMatrixMap& var_L,
 	       IntRealMatrixMap& covar_LH, //const RealMatrix& rho2_LH,
-	       size_t lev, size_t N_lf,    //Real cost_ratio,
-	       RealMatrix& H_raw_mom)
+	       //Real cost_ratio,
+	       size_t lev, size_t N_lf,    RealMatrix& H_raw_mom)
 {
   // aggregate expected value of estimators for E[Y] for Y=LF^k or Y=HF^k
   Real beta, mu_Li, refined_mu_Li;//, cr1 = cost_ratio + 1.;

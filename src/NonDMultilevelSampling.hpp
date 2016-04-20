@@ -76,7 +76,8 @@ private:
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
-  void shared_increment(size_t iter);
+  void shared_increment(size_t iter, const SizetSizetPair& lf_form_level,
+			const SizetSizetPair& hf_form_level);
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(Real avg_eval_ratio, size_t N_hf,
 		    size_t& delta_N_lf, size_t& N_lf);
@@ -134,32 +135,41 @@ private:
 			       IntRealVectorMap& mean_L,
 			       IntRealVectorMap& mean_H,
 			       IntRealVectorMap& var_L,
-			       IntRealVectorMap& covar_LH);
+			       IntRealVectorMap& covar_LH, size_t N_LH);
   
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
 		  const RealVector& sum_L2, const RealVector& sum_H2,
 		  const RealVector& sum_L1H1, Real cost_ratio,
 		  RealVector& mean_L, RealVector& mean_H, RealVector& var_L,
-		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH);
+		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH,
+		  size_t N_lf, size_t N_hf);
+  /// compute the LF/HF evaluation ratio, averaged over the QoI
+  Real eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
+		  RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
+		  size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
+		  RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
+		  RealMatrix& rho2_LH, size_t N_lf, size_t N_hf);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
-		 const RealVector& rho2_LH, size_t iter);
+		 const RealVector& rho2_LH, size_t iter, size_t N_hf);
 
   /// compute control variate parameter and estimate raw moments
-  void cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
-		      IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
-		      IntRealVectorMap& covar_LH, const RealVector& rho2_LH,
-		      Real cost_ratio,            RealMatrix& H_raw_mom);
+  void cv_raw_moments(IntRealVectorMap& sum_L,      IntRealVectorMap& mean_L,
+		      IntRealVectorMap& mean_H,     IntRealVectorMap& var_L,
+		      IntRealVectorMap& covar_LH,   const RealVector& rho2_LH,
+		      Real cost_ratio, size_t N_lf, RealMatrix& H_raw_mom);
   /// compute control variate parameter and estimate raw moments
   void cv_raw_moments(IntRealMatrixMap& sum_L,     IntRealMatrixMap& mean_L,
 		      IntRealMatrixMap& mean_H,    IntRealMatrixMap& var_L,
-		      IntRealMatrixMap& covar_LH,  //const RealMatrix& rho2_LH,
-		      size_t lev, size_t N_lf,     //Real cost_ratio,
-		      RealMatrix& H_raw_mom);
+		      IntRealMatrixMap& covar_LH,
+		    //const RealMatrix& rho2_LH,   Real cost_ratio,
+		      size_t lev, size_t N_lf,     RealMatrix& H_raw_mom);
 
   /// compute average of a set of observations
   Real average(const RealVector& vec) const;
+  /// compute average of a set of observations
+  Real average(const Real* vec, size_t vec_len) const;
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -185,13 +195,47 @@ private:
 };
 
 
+inline Real NonDMultilevelSampling::
+eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
+	   RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
+	   size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
+	   RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
+	   RealMatrix& rho2_LH, size_t N_lf, size_t N_hf)
+{
+  RealVector mean_L_l(Teuchos::View, mean_L[lev],   numFunctions),
+             mean_H_l(Teuchos::View, mean_H[lev],   numFunctions),
+              var_L_l(Teuchos::View, var_L[lev],    numFunctions),
+              var_H_l(Teuchos::View, var_H[lev],    numFunctions),
+           covar_LH_l(Teuchos::View, covar_LH[lev], numFunctions),
+            rho2_LH_l(Teuchos::View, rho2_LH[lev],  numFunctions);
+  int i_lev = (int)lev;
+  return eval_ratio(getCol(Teuchos::View, sum_L1,   i_lev),
+		    getCol(Teuchos::View, sum_H1,   i_lev),
+		    getCol(Teuchos::View, sum_L2,   i_lev),
+		    getCol(Teuchos::View, sum_H2,   i_lev),
+		    getCol(Teuchos::View, sum_L1H1, i_lev), cost_ratio,
+		    mean_L_l, mean_H_l, var_L_l, var_H_l, covar_LH_l,
+		    rho2_LH_l, N_lf, N_hf);
+}
+
+
 inline Real NonDMultilevelSampling::average(const RealVector& vec) const
 {
   Real avg = 0.;
-  size_t i, num_vec = vec.length();
-  for (i=0; i<num_vec; ++i)
+  size_t i, vec_len = vec.length();
+  for (i=0; i<vec_len; ++i)
     avg += vec[i];
-  return avg / num_vec;
+  return avg / vec_len;
+}
+
+
+inline Real NonDMultilevelSampling::
+average(const Real* vec, size_t vec_len) const
+{
+  Real avg = 0.;
+  for (size_t i=0; i<vec_len; ++i)
+    avg += vec[i];
+  return avg / vec_len;
 }
 
 } // namespace Dakota
