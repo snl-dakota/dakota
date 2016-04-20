@@ -209,19 +209,20 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (Y_pow_Qdiff[i] = Y1^i for i=2).
-  IntRealMatrixMap sum_Y_diff_Qpow, sum_Y_pow_Qdiff;
-  initialize_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, num_hf_lev);
+  IntRealMatrixMap sum_H, sum_H_pow_Qdiff;
+  initialize_ml_sums(sum_H, sum_H_pow_Qdiff, num_hf_lev);
 
-  IntRealMatrixMap sum_L, sum_H, sum_LH, mean_L, mean_H, var_L, covar_LH;
-  initialize_cv_sums_moments(sum_L, sum_H, sum_LH, mean_L, mean_H, var_L,
-			     covar_LH, num_cv_lev);
+  IntRealMatrixMap sum_L, sum_L_shared, sum_LH, empty_map,
+                   mean_L, mean_H, var_L, covar_LH;
+  initialize_cv_sums_moments(sum_L_shared, sum_L,/*not sum_L, sum_H,*/ sum_LH,
+			     mean_L, mean_H, var_L, covar_LH, num_cv_lev);
   RealMatrix var_H(numFunctions, num_cv_lev, false),
            rho2_LH(numFunctions, num_cv_lev, false);
   RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
-  SizetArray& N_lf = NLev[lf_model_form];
-  SizetArray& N_hf = NLev[hf_model_form]; 
+  SizetArray&       N_lf =      NLev[lf_model_form];
+  SizetArray&       N_hf =      NLev[hf_model_form]; 
   SizetArray& delta_N_lf = deltaNLev[lf_model_form];
   SizetArray& delta_N_hf = deltaNLev[hf_model_form];
   Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
@@ -258,30 +259,29 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	evaluate_parameter_sets(iteratedModel, true, false);
 	// update total samples performed for this level
 	N_hf[lev] += numSamples;
+	// accumulate all orders (only order 2 for sum_H_pow_Qdiff for
+	// computing agg_var_hf_l)
+	accumulate_ml_sums(sum_H, sum_H_pow_Qdiff, lev);
+	if (outputLevel == DEBUG_OUTPUT) {
+	  Cout << "Accumulated sums (H[1], H[2], H_pow_Qdiff[2]):\n";
+	  write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
+	  write_data(Cout, sum_H_pow_Qdiff[2]);
+	}
 
+	// control variate betwen LF and HF for this discretization level:
 	// if unequal number of levels, loop over all HF levels for MLMC and
 	// apply CVMC when LF levels are available.  LF levels are assigned as
 	// control variates to the leading set of HF levels, since these will
 	// tend to have larger variance.      
 	if (lev < num_lf_lev) {
-	  // only need to accumulate order 1 for sum_Y_diff_Qpow and order 2
-	  // for sum_Y_pow_Qdiff for computing agg_var_hf_l
-	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev, 1, 2);
-	  if (outputLevel == DEBUG_OUTPUT) {
-	    write_data(Cout, sum_Y_diff_Qpow[1]);
-	    write_data(Cout, sum_Y_pow_Qdiff[2]); 
-	  }
 
-	  // control variate betwen LF and HF for this discretization level
-	  // using current N_hf for HF -> rho2_LH, eval_ratio -> Lambda_l
-
-	  // store allResponses for sum_H (previously sum_Y_*)
+	  // store allResponses used for sum_H (and sum_H_pow_Qdiff)
 	  IntResponseMap hf_resp = allResponses; // shallow copy
 	  // activate LF response (lev 0) or LF response discrepancy (lev > 0)
 	  // within the hierarchical surrogate model.  Level indices & surrogate
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
-	  // variable values corresponding to this index for the new model form.
+	  // corresponding variable values for the new model form.
 	  if (lev) {
 	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	    iteratedModel.truth_model_indices(lf_model_form,     lev);
@@ -293,11 +293,18 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  // update total samples performed for this level
 	  N_lf[lev] += numSamples;
 	  // process previous and new set of allResponses for CV sums
-	  accumulate_cv_sums(allResponses, hf_resp, sum_L, sum_H, sum_LH, lev);
+	  // > sum_H has already been accumulated, so use empty_map in its slot
+	  // > accumulate sum_L to order 4 and sum_L_shared (used for CV beta
+	  //   param estimates for all moments) to all orders
+	  accumulate_cv_sums(allResponses, hf_resp, sum_L_shared, empty_map,
+			     sum_LH, lev);   // only shared samples, all orders
+	  accumulate_cv_sums(sum_L, lev, 4); // all LF samples to order 4
 	  if (outputLevel == DEBUG_OUTPUT) {
-	    write_data(Cout, sum_L[1]);  write_data(Cout, sum_L[2]);
-	    write_data(Cout, sum_H[1]);  write_data(Cout, sum_H[2]);
-	    write_data(Cout, sum_LH[1]); write_data(Cout, sum_LH[2]);
+	    Cout << "Accumulated sums (L_shared[1,2], L[1,2], LH[1,2]):\n";
+	    write_data(Cout,sum_L_shared[1]); write_data(Cout,sum_L_shared[2]);
+	    write_data(Cout,sum_L[1]);        write_data(Cout,sum_L[2]);
+	    //write_data(Cout,sum_H[1]);      write_data(Cout,sum_H[2]);
+	    write_data(Cout,sum_LH[1]);       write_data(Cout,sum_LH[2]);
 	  }
 
 	  // compute the average evaluation ratio and Lambda factor
@@ -310,24 +317,23 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  // now execute additional LF sample increment, if needed
 	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
 			   delta_N_lf[lev], N_lf[lev])) {
-	    accumulate_cv_sums(sum_L, lev, 4);
-	    if (outputLevel == DEBUG_OUTPUT)
-	      { write_data(Cout, sum_L[1]);  write_data(Cout, sum_L[2]); }
+	    accumulate_cv_sums(sum_L, lev, 4); // all LF samples incl increment
+	    if (outputLevel == DEBUG_OUTPUT) {
+	      Cout << "Accumulated sums (L[1,2]):\n";
+	      write_data(Cout, sum_L[1]); write_data(Cout, sum_L[2]);
+	    }
 	  }
 	}
-	else // accumulate all orders as this will be used in moment increments
-	  accumulate_ml_sums(sum_Y_diff_Qpow, sum_Y_pow_Qdiff, lev);
 
 	// compute estimator mean & variance from current sample accumulation:
-	Real *sum_Y1_l   = sum_Y_diff_Qpow[1][lev],
-	     *sum_Y1sq_l = sum_Y_pow_Qdiff[2][lev];
+	Real *sum_H1_l = sum_H[1][lev], *sum_H1sq_l = sum_H_pow_Qdiff[2][lev];
 	agg_var_hf_l = 0.;
 	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  Real mu_Y = sum_Y1_l[qoi] / N_hf[lev];
+	  Real mu_Y = sum_H1_l[qoi] / N_hf[lev];
 	  // Note: precision loss in variance is difficult to avoid without
 	  // storing full sample history; must accumulate Y^2 across iters
 	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  agg_var_hf_l += sum_Y1sq_l[qoi] / N_hf[lev] - mu_Y * mu_Y;
+	  agg_var_hf_l += sum_H1sq_l[qoi] / N_hf[lev] - mu_Y * mu_Y;
 	}
       }
 
@@ -362,32 +368,28 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
     ++iter;
     Cout << "\nMLMC iteration " << iter << " sample increments:\n"
 	 << delta_N_hf << std::endl;
-    if (outputLevel == DEBUG_OUTPUT) {
-      Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
-      write_data(Cout,sum_Y_diff_Qpow[1]); write_data(Cout,sum_Y_diff_Qpow[2]);
-      write_data(Cout,sum_Y_diff_Qpow[3]); write_data(Cout,sum_Y_diff_Qpow[4]);
-      write_data(Cout,sum_Y_pow_Qdiff[2]); Cout << std::endl;
-    }
   }
 
-  // Iteration complete.  Now roll up raw moments from combing final
+  // Iteration complete.  Now roll up raw moments from combining final
   // CVMC and MLMC estimators.
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
+    update_high_order_stats(sum_L_shared, sum_H, sum_LH, mean_L, mean_H,
+			    var_L, covar_LH, lev, N_hf[lev]); // N_hf = shared
     cv_raw_moments(sum_L, mean_L, mean_H, var_L, covar_LH,
 		   /*rho2_LH, hf_lev_cost/lf_lev_cost, */
 		   lev, N_lf[lev], Y_cvmc_mom);
     Y_mlmc_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_lf_lev) {
-    RealMatrix &sum_Y1 = sum_Y_diff_Qpow[1], &sum_Y2 = sum_Y_diff_Qpow[2],
-               &sum_Y3 = sum_Y_diff_Qpow[3], &sum_Y4 = sum_Y_diff_Qpow[4];
+    RealMatrix &sum_H1 = sum_H[1], &sum_H2 = sum_H[2],
+               &sum_H3 = sum_H[3], &sum_H4 = sum_H[4];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real *Y_ml_q = Y_mlmc_mom[qoi];
       for (lev=num_lf_lev; lev<num_hf_lev; ++lev) {
 	size_t Nl = N_hf[lev];
-	Y_ml_q[0] += sum_Y1(qoi,lev) / Nl;  Y_ml_q[1] += sum_Y2(qoi,lev) / Nl;
-	Y_ml_q[2] += sum_Y3(qoi,lev) / Nl;  Y_ml_q[3] += sum_Y4(qoi,lev) / Nl;
+	Y_ml_q[0] += sum_H1(qoi,lev) / Nl;  Y_ml_q[1] += sum_H2(qoi,lev) / Nl;
+	Y_ml_q[2] += sum_H3(qoi,lev) / Nl;  Y_ml_q[3] += sum_H4(qoi,lev) / Nl;
       }
     }
   }
@@ -703,7 +705,7 @@ lf_increment(Real avg_eval_ratio, size_t N_hf, size_t& delta_N_lf, size_t& N_lf)
   //deltaNLev[hf_form_level.first][hf_form_level.second] = 0;
 
   if (delta_N_lf) {
-    Cout << "CVMC final LF sample increment = " << delta_N_lf << std::endl;
+    Cout << "CVMC LF sample increment = " << delta_N_lf << std::endl;
 
     // set the number of current samples from the defined increment
     numSamples = delta_N_lf;
@@ -753,10 +755,11 @@ initialize_cv_sums_moments(IntRealVectorMap& sum_L,  IntRealVectorMap& sum_H,
 
 
 void NonDMultilevelSampling::
-initialize_cv_sums_moments(IntRealMatrixMap& sum_L,  IntRealMatrixMap& sum_H,
-			   IntRealMatrixMap& sum_LH, IntRealMatrixMap& mean_L,
-			   IntRealMatrixMap& mean_H, IntRealMatrixMap& var_L,
-			   IntRealMatrixMap& covar_LH, size_t num_lev)
+initialize_cv_sums_moments(IntRealMatrixMap& sum_L,
+			   IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LH,
+			   IntRealMatrixMap& mean_L, IntRealMatrixMap& mean_H,
+			   IntRealMatrixMap& var_L,  IntRealMatrixMap& covar_LH,
+			   size_t num_lev)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealMatrix> empty_pr;
@@ -955,9 +958,9 @@ accumulate_cv_sums(const IntResponseMap& lf_resp_map,
 	hf_l_prod = hf_l = hf_fn_vals[qoi];
 
 	l_it = sum_L.begin(); h_it = sum_H.begin(); lh_it = sum_LH.begin();
-	l_ord  = /*(l_it  == sum_L.end())  ? 0 :*/  l_it->first;
-	h_ord  = /*(h_it  == sum_H.end())  ? 0 :*/  h_it->first;
-	lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
+	l_ord  = (l_it  == sum_L.end())  ? 0 :  l_it->first;
+	h_ord  = (h_it  == sum_H.end())  ? 0 :  h_it->first;
+	lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
 	active_ord = 1;
 
 	while (l_it!=sum_L.end() || h_it!=sum_H.end() || lh_it!=sum_LH.end()) {
@@ -1001,9 +1004,9 @@ accumulate_cv_sums(const IntResponseMap& lf_resp_map,
 	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
 
 	l_it = sum_L.begin(); h_it = sum_H.begin(); lh_it = sum_LH.begin();
-	l_ord  = /*(l_it  == sum_L.end())  ? 0 :*/  l_it->first;
-	h_ord  = /*(h_it  == sum_H.end())  ? 0 :*/  h_it->first;
-	lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
+	l_ord  = (l_it  == sum_L.end())  ? 0 :  l_it->first;
+	h_ord  = (h_it  == sum_H.end())  ? 0 :  h_it->first;
+	lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
 	active_ord = 1;
 
 	while (l_it!=sum_L.end() || h_it!=sum_H.end() || lh_it!=sum_LH.end()) {
@@ -1108,7 +1111,7 @@ update_high_order_stats(IntRealVectorMap& sum_L,    IntRealVectorMap& sum_H,
 			IntRealVectorMap& mean_H,   IntRealVectorMap& var_L,
 			IntRealVectorMap& covar_LH, size_t N_LH)
 {
-  // N_LH: LF and HF are synchronized prior to final LF increment
+  // N_LH: LF and HF data passed in must be synchronized (e.g., sum_L_shared)
 
   // bookkeeping for higher order stats for matched LF/HF evaluations
   // (first 2 evaluation sets), prior to final LF-only sample increment
@@ -1118,6 +1121,33 @@ update_high_order_stats(IntRealVectorMap& sum_L,    IntRealVectorMap& sum_H,
     const RealVector& sum_Hi = sum_H[i]; const RealVector& sum_LHi = sum_LH[i];
     RealVector& mean_Li = mean_L[i]; RealVector&   mean_Hi =   mean_H[i];
     RealVector&  var_Li =  var_L[i]; RealVector& covar_LHi = covar_LH[i];
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+      mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_LH;
+      mu_Hi = mean_Hi[qoi] = sum_Hi[qoi] / N_LH;
+      var_Li[qoi]    = (sum_L2i[qoi] - N_LH * mu_Li * mu_Li) * bias_corr;
+      //var_Hi[qoi]  = (sum_H2i[qoi] - N_LH * mu_Hi * mu_Hi) * bias_corr;
+      covar_LHi[qoi] = (sum_LHi[qoi] - N_LH * mu_Li * mu_Hi) * bias_corr;
+    }
+  }
+}
+
+
+void NonDMultilevelSampling::
+update_high_order_stats(IntRealMatrixMap& sum_L,    IntRealMatrixMap& sum_H,
+			IntRealMatrixMap& sum_LH,   IntRealMatrixMap& mean_L,
+			IntRealMatrixMap& mean_H,   IntRealMatrixMap& var_L,
+			IntRealMatrixMap& covar_LH, size_t lev, size_t N_LH)
+{
+  // N_LH: LF and HF data passed in must be synchronized (e.g., sum_L_shared)
+
+  // bookkeeping for higher order stats for matched LF/HF evaluations
+  // (first 2 evaluation sets), prior to final LF-only sample increment
+  Real mu_Li, mu_Hi, bias_corr = 1./(N_LH - 1);
+  for (int i=2; i<=4; ++i) {
+    Real *sum_Li =  sum_L[i][lev],   *sum_L2i =  sum_L[2*i][lev],
+         *sum_Hi =  sum_H[i][lev],   *sum_LHi =   sum_LH[i][lev],
+        *mean_Li = mean_L[i][lev],   *mean_Hi =   mean_H[i][lev],
+         *var_Li =  var_L[i][lev], *covar_LHi = covar_LH[i][lev];
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_LH;
       mu_Hi = mean_Hi[qoi] = sum_Hi[qoi] / N_LH;
@@ -1229,7 +1259,7 @@ cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
       Cout << '\n';
 
       // updated LF expectations following final sample increment:
-      refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
+      refined_mu_Li /* = mean_Li[qoi] */ = sum_Li[qoi] / N_lf;
       // apply control for HF uncentered raw moment estimates:
       H_raw_mom(i-1,qoi) = mean_Hi[qoi] - beta * (mu_Li - refined_mu_Li);
     }
@@ -1266,7 +1296,7 @@ cv_raw_moments(IntRealMatrixMap& sum_L,    IntRealMatrixMap& mean_L,
       //Cout << '\n';
 
       // updated LF expectations following final sample increment:
-      refined_mu_Li = mean_Li[qoi] = sum_Li[qoi] / N_lf;
+      refined_mu_Li /* = mean_Li[qoi] */ = sum_Li[qoi] / N_lf;
       // apply control for HF uncentered raw moment estimates:
       H_raw_mom(i-1,qoi) = mean_Hi[qoi] - beta * (mu_Li - refined_mu_Li);
     }

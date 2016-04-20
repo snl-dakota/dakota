@@ -136,6 +136,14 @@ private:
 			       IntRealVectorMap& mean_H,
 			       IntRealVectorMap& var_L,
 			       IntRealVectorMap& covar_LH, size_t N_LH);
+  /// update higher-order means, variances, and covariances from sums
+  void update_high_order_stats(IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
+			       IntRealMatrixMap& sum_LH,
+			       IntRealMatrixMap& mean_L,
+			       IntRealMatrixMap& mean_H,
+			       IntRealMatrixMap& var_L,
+			       IntRealMatrixMap& covar_LH,
+			       size_t lev, size_t N_LH);
   
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
