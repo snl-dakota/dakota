@@ -308,9 +308,10 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	  }
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
-	    sum_LH[1], hf_lev_cost/lf_lev_cost, lev, mean_L[1], mean_H[1],
-	    var_L[1], var_H, covar_LH[1], rho2_LH, N_lf[lev], N_hf[lev]);
+	  avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1],
+	    sum_L_shared[2], sum_H[2], sum_LH[1], hf_lev_cost/lf_lev_cost,
+	    lev, mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1], rho2_LH,
+	    N_hf[lev]);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
 	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
@@ -612,7 +613,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // This includes updating mean_L, mean_H, var_L, var_H, cov_LH, rho2_LH
   Real avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
     sum_LH[1], cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H, covar_LH[1],
-    rho2_LH, N_lf, N_hf);
+    rho2_LH, N_hf);
   // compute the ratio of MC and CVMC mean squared errors (controls convergence)
   Real avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
 
@@ -637,7 +638,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
       // update ratios:
       avg_eval_ratio = eval_ratio(sum_L[1], sum_H[1], sum_L[2], sum_H[2],
 	sum_LH[1], cost_ratio, mean_L[1], mean_H[1], var_L[1], var_H,
-	covar_LH[1], rho2_LH, N_lf, N_hf);
+	covar_LH[1], rho2_LH, N_hf);
       avg_mse_ratio = MSE_ratio(avg_eval_ratio, var_H, rho2_LH, iter, N_hf);
     }
   }
@@ -906,6 +907,7 @@ accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev, size_t max_ord)
 	  ++active_ord;
 	}
       }
+      //Cout << r_it->first << ": "; write_data(Cout, sum_map[1]);
     }
   }
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
@@ -930,6 +932,7 @@ accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev, size_t max_ord)
 	  ++active_ord;
 	}
       }
+      //Cout << r_it->first << ": "; write_data(Cout, sum_map[1]);
     }
   }
 }
@@ -1162,25 +1165,23 @@ update_high_order_stats(IntRealMatrixMap& sum_L,    IntRealMatrixMap& sum_H,
 Real NonDMultilevelSampling::
 eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
 	   const RealVector& sum_L2, const RealVector& sum_H2,
-	   const RealVector& sum_L1H1, Real cost_ratio,
-	   RealVector& mean_L, RealVector& mean_H,   RealVector& var_L,
-	   RealVector& var_H,  RealVector& covar_LH, RealVector& rho2_LH,
-	   size_t N_lf, size_t N_hf)
+	   const RealVector& sum_L1H1, Real cost_ratio, RealVector& mean_L,
+	   RealVector& mean_H, RealVector& var_L, RealVector& var_H,
+	   RealVector& covar_LH, RealVector& rho2_LH, size_t N_LH)
 {
   // Update rho^2, avg_eval_ratio:
-  Real mu_L, mu_H, cov, rho_sq, avg_eval_ratio = 0.,
-    lf_bias_corr = 1./(N_lf - 1), hf_bias_corr = 1./(N_hf - 1);
+  Real mu_L, mu_H, cov, rho_sq, avg_eval_ratio = 0., bias_corr = 1./(N_LH - 1);
   size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     // unbiased mean estimator X-bar = 1/N * sum
-    mu_L = mean_L[qoi] = sum_L1[qoi] / N_lf;
-    mu_H = mean_H[qoi] = sum_H1[qoi] / N_hf;
+    mu_L = mean_L[qoi] = sum_L1[qoi] / N_LH;
+    mu_H = mean_H[qoi] = sum_H1[qoi] / N_LH;
     // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
     // = 1/(N-1) (sum[X^2_i] - N X-bar^2) where bias correction = 1/(N-1)
-    var_L[qoi] = (sum_L2[qoi] - N_lf * mu_L * mu_L) * lf_bias_corr;
-    var_H[qoi] = (sum_H2[qoi] - N_hf * mu_H * mu_H) * hf_bias_corr;
+    var_L[qoi] = (sum_L2[qoi] - N_LH * mu_L * mu_L) * bias_corr;
+    var_H[qoi] = (sum_H2[qoi] - N_LH * mu_H * mu_H) * bias_corr;
     // we assume that mixed LH stats are limited by min(N_hf, N_lf) = N_hf
-    cov = covar_LH[qoi] = (sum_L1H1[qoi] - N_hf * mu_L * mu_H) * hf_bias_corr;
+    cov = covar_LH[qoi] = (sum_L1H1[qoi] - N_LH * mu_L * mu_H) * bias_corr;
 
     // compute evaluation ratio which determines increment for LF samples
     // > the sample increment optimizes the total computational budget and is
@@ -1198,7 +1199,7 @@ eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
   }
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
-    avg_eval_ratio  = (Real)maxFunctionEvals / (Real)N_hf;
+    avg_eval_ratio  = (Real)maxFunctionEvals / (Real)N_LH;
 
   return avg_eval_ratio;
 }
@@ -1263,7 +1264,7 @@ cv_raw_moments(IntRealVectorMap& sum_L,    IntRealVectorMap& mean_L,
       // apply control for HF uncentered raw moment estimates:
       H_raw_mom(i-1,qoi) = mean_Hi[qoi] - beta * (mu_Li - refined_mu_Li);
     }
-    Cout << '\n';
+    if (numFunctions > 1) Cout << '\n';
   }
 }
 

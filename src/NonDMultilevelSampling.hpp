@@ -151,13 +151,13 @@ private:
 		  const RealVector& sum_L1H1, Real cost_ratio,
 		  RealVector& mean_L, RealVector& mean_H, RealVector& var_L,
 		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH,
-		  size_t N_lf, size_t N_hf);
+		  size_t N_LH);
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
 		  RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
 		  size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
 		  RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
-		  RealMatrix& rho2_LH, size_t N_lf, size_t N_hf);
+		  RealMatrix& rho2_LH, size_t N_LH);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 		 const RealVector& rho2_LH, size_t iter, size_t N_hf);
@@ -208,7 +208,7 @@ eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
 	   RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
 	   size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
 	   RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
-	   RealMatrix& rho2_LH, size_t N_lf, size_t N_hf)
+	   RealMatrix& rho2_LH, size_t N_LH)
 {
   RealVector mean_L_l(Teuchos::View, mean_L[lev],   numFunctions),
              mean_H_l(Teuchos::View, mean_H[lev],   numFunctions),
@@ -223,7 +223,7 @@ eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
 		    getCol(Teuchos::View, sum_H2,   i_lev),
 		    getCol(Teuchos::View, sum_L1H1, i_lev), cost_ratio,
 		    mean_L_l, mean_H_l, var_L_l, var_H_l, covar_LH_l,
-		    rho2_LH_l, N_lf, N_hf);
+		    rho2_LH_l, N_LH);
 }
 
 
