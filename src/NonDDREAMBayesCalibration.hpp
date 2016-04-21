@@ -89,6 +89,7 @@ protected:
 
   /// Callback to archive the chain from DREAM
   static void cache_chain(const double* const z);
+  void retrieve_fn_vals();
 
   //
   //- Heading: Data

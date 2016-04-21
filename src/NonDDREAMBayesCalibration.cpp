@@ -17,6 +17,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "PRPMultiIndex.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples
@@ -280,6 +281,9 @@ void NonDDREAMBayesCalibration::core_run()
   /// DREAM will callback to cache_chain to store the chain
   dream_main(cache_chain);
 
+  if (outputLevel >= DEBUG_OUTPUT)
+    retrieve_fn_vals();
+
   // Generate useful stats from the posterior samples
   compute_statistics();
 
@@ -455,7 +459,63 @@ void NonDDREAMBayesCalibration::cache_chain(const double* const z)
         nonDDREAMInstance->acceptanceChain
 	  (i, k*nonDDREAMInstance->numChains + j) =
 	  z[i+j*par_num+k*par_num*nonDDREAMInstance->numChains];
+}
 
+void NonDDREAMBayesCalibration::retrieve_fn_vals()
+{
+  // TODO: account for transformations if present? optimize for copies?
+  // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
+
+  //std::ofstream test_stream("kam_test.txt");
+
+  extern PRPCache data_pairs;
+  int num_samples = 
+      nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
+  acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
+  // the MCMC model omits the hyper params and residual transformations...
+  Variables lookup_vars = mcmcModel.current_variables().copy();
+  String interface_id = mcmcModel.interface_id();
+  Response lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+ 
+  int lookup_failures = 0, sample_index = 0, stop_index = num_samples;
+  //test_stream << "sample index = " << sample_index << '\n';
+  //test_stream << "num_samples = " << num_samples << '\n';
+  //test_stream << "stop index = " << stop_index << '\n';
+  for ( ; sample_index < stop_index; ++sample_index) {
+    //test_stream << "sample index = " << sample_index << '\n';
+
+    // get just the calibration variables, omitting hyper-parameters
+    RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
+			   numContinuousVars);
+    lookup_vars.continuous_variables(accept_vars);
+      
+    if (mcmcModel.model_type() == "surrogate") {
+      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      //test_stream << "surrogate fcn vals" << fn_vals << '\n';
+      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+    }
+    else {
+      lookup_pr.variables(lookup_vars);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+      if (cache_it == data_pairs.get<hashed>().end())
+	++lookup_failures;
+      else {
+	const RealVector& fn_vals = cache_it->response().function_values();
+        //test_stream << "lookup fcn vals" << fn_vals << '\n';
+	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+      }
+    }
+  }
+  if (lookup_failures > 0)
+    Cout << "Warning: could not retrieve function values for " 
+	 << lookup_failures << " MCMC chain points." << std::endl;
+  //test_stream << "\nfn vals\n" << acceptedFnVals;
 }
 
 
@@ -468,15 +528,15 @@ void NonDDREAMBayesCalibration::compute_statistics()
   nond_rep->compute_moments(acceptanceChain);
   */
 
-  //std::ofstream test_intervals("kam_test.dat");
+  std::ofstream test_intervals("kam_test.txt1");
   if (outputLevel >= DEBUG_OUTPUT){
     // Record corresponding function values
     // placeholder empty matrix
     int num_samples = 
       nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
-    acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
+    //acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
     compute_intervals(acceptanceChain, acceptedFnVals);
-    //test_intervals << "Accepted Fn Vals" << acceptedFnVals << '\n';
+    test_intervals << "Accepted Fn Vals" << acceptedFnVals << '\n';
   }
 }
 

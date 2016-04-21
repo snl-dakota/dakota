@@ -774,7 +774,6 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptanceChain,
   // Make accepted function values the rows instead of the columns
   RealMatrix filteredFnVals_transpose(filteredFnVals_for_intervals, 
  		            	      Teuchos::TRANS);
-
   // Augment function values with experimental uncertainty for prediction ints
   size_t num_exp = expData.num_experiments();
   size_t num_concatenated = num_exp*num_filtered;
@@ -858,14 +857,15 @@ void NonDBayesCalibration::compute_prediction_vals
   short sample_ranks_mode = 0; //IGNORE RANKS
   Pecos::LHSDriver lhsDriver; // the C++ wrapper for the F90 LHS library
   int n = 0;
+  //std::ofstream test_stream("kam_test.txt2");
   for(size_t i = 0; i < num_exp; ++i){
-    lhsDriver.seed(randomSeed);
+    //test_stream << "exp = " << i << "randomSeed = " << randomSeed << '\n';
+    lhsDriver.seed(randomSeed+i);
     lhsDriver.initialize("lhs", sample_ranks_mode, true);
     lhsDriver.generate_normal_samples(means_vec, std_deviations[i], lower_bnds,
               upper_bnds, num_filtered, correl_matrices[i],lhs_normal_samples);
-    //out_stream << "size lhs = " << lhs_normal_samples.numRows() << 
-    //      	      ", " << lhs_normal_samples.numCols() << '\n';
     for(int j = 0; j < num_filtered; ++j){
+      //test_stream << "j = " << j << '\n';
       const RealVector& FnVal_colj = Teuchos::getCol(Teuchos::View, 
      			        filteredFnVals_for_intervals, j);
       const RealVector& lhs_colj = Teuchos::getCol(Teuchos::View, 
@@ -926,6 +926,9 @@ size_t num_exp)
   String empty_id, filteredmcmc_filename = "dakota_mcmc_filtered_tabular.dat";
   TabularIO::open_file(filteredMCMCStream, filteredmcmc_filename,
  		       "NonDBayesCalibration filtered chain export");
+  // When outputting only chain responses
+  //const StringArray& resp_array = mcmcModel.current_response().function_labels();
+  // When outputting experimental responses
   StringArray resp_array;
   const StringArray& resp = mcmcModel.current_response().function_labels(); 
   for (size_t i=0; i<num_exp+1; ++i){
@@ -961,6 +964,7 @@ size_t num_exp)
       filteredMCMCStream << std::setw(wpp4) << col_vec[j] << ' ';
     }      
     // Write predicted values to filtered_tabular
+    // When outputting experimental responses 
     for (size_t j =0; j<num_exp; ++j){
       for (size_t k = 0; k<numFunctions; ++k){
 	int col_index = j*num_filtered+i;
@@ -998,13 +1002,15 @@ void NonDBayesCalibration::print_intervals_file
       s << std::setw(width) << ' ' << " ----------------- -----------------\n";
       for (size_t j = 0; j < num_prob_levels; ++j){
         alpha = requestedProbLevels[i][j];
-        s << "alpha = " << alpha << '\n';
+        //s << "alpha = " << alpha << '\n';
         lower_index = floor(alpha/2*(num_filtered));
         upper_index = num_filtered - lower_index;
-        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	  << std::setw(width) << col_vec[lower_index] << '\n'
-	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	  << std::setw(width) << col_vec[upper_index] << '\n'
+        s << std::setw(width) << ' ' << std::setw(width) 
+	  << col_vec[lower_index] << ' ' << std::setw(width) 
+	  << alpha << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) 
+	  << col_vec[upper_index] << ' '<< std::setw(width) 
+	  << 1-alpha << '\n'
 	  << std::setw(width) << ' ' <<  "        -----             -----\n";
       }
     }
@@ -1024,13 +1030,15 @@ void NonDBayesCalibration::print_intervals_file
       s << std::setw(width) << ' ' << " ----------------- -----------------\n";
       for (size_t j = 0; j < num_prob_levels; ++j){
         alpha = requestedProbLevels[i][j];
-        s << "alpha = " << alpha << '\n';
+        //s << "alpha = " << alpha << '\n';
         lower_index = floor(alpha/2*(num_filtered));
         upper_index = num_filtered - lower_index;
-        s << std::setw(width) << ' ' << std::setw(width) << alpha << ' '  
-	  << std::setw(width) << col_vec1[lower_index] << '\n'
-	  << std::setw(width) << ' ' << std::setw(width) << 1-alpha << ' '
-	  << std::setw(width) << col_vec1[upper_index] << '\n'
+        s << std::setw(width) << ' ' << std::setw(width) 
+	  << col_vec1[lower_index] << ' ' << std::setw(width) 
+	  << alpha << '\n'
+	  << std::setw(width) << ' ' << std::setw(width) 
+	  << col_vec1[upper_index] << ' '<< std::setw(width) 
+	  << 1-alpha << '\n'
 	  << std::setw(width) << ' ' <<  "        -----             -----\n";
       }
     }
@@ -1057,7 +1065,7 @@ void NonDBayesCalibration::print_intervals_screen
     if (num_prob_levels > 0){
       s << "Credibility Intervals for ";
       s << resp[i] << '\n';
-      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " Probability Level Response Level\n";
       s << std::setw(width) << ' ' << " ----------------- -----------------\n";
       for (size_t j = 0; j < num_prob_levels; ++j){
         alpha = requestedProbLevels[i][j];
@@ -1082,7 +1090,7 @@ void NonDBayesCalibration::print_intervals_screen
     if (num_prob_levels > 0){
       s << "Prediction Intervals for ";
       s << resp[i] << '\n';
-      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+      s << std::setw(width) << ' ' << " Probability Level Response Level\n";
       s << std::setw(width) << ' ' << " ----------------- -----------------\n";
       for (size_t j = 0; j < num_prob_levels; ++j){
         alpha = requestedProbLevels[i][j];
