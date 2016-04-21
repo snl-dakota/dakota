@@ -58,6 +58,9 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 my $summary_exitcode = 0;
 
 # regular expressions for matching and extracting test results
+# TODO: extend NaN/Inf to work cross-platform (funny Windows format)
+# invalid numerical field
+my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
 my $i = "-?\\d+";                     # numerical field: integer notation
@@ -1358,7 +1361,7 @@ sub parse_test_output {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
-      while (/\s+$e/) {
+      while (/\s+($e|$naninf)/) {  # correlations may contain nan/inf
         print;
         print TEST_OUT;
         $_ = <OUTPUT>; # grab next line

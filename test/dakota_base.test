@@ -43167,6 +43167,10 @@ response_fn_1  1.00000e+00  1.03030e-01 -2.12121e-01 -1.15152e-01  1.00000e+00
 response_fn_2  1.00000e+00  1.03030e-01 -2.12121e-01 -1.15152e-01  1.00000e+00  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 
+       nuv_1         -nan         -nan 
+       nuv_2         -nan         -nan 
+       uuv_1         -nan         -nan 
+       uuv_2         -nan         -nan 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 20 total (10 new, 10 duplicate)
 Sample moment statistics for each response function:
