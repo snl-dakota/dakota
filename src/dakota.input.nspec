@@ -2468,9 +2468,6 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( subspace {N_mom(lit,modelType_subspace)}
     actual_model_pointer STRING {N_mom(str,actualModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
-    [ refinement_samples INTEGERLIST {N_mom(ivec,refineSamples)} ]
-    [ max_iterations INTEGER {N_mom(int,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mom(Real,convergenceTolerance)} ]
     [ truncation_method {0}
       [ bing_li {N_mom(true,subspaceIdBingLi)} ]
       [ constantine {N_mom(true,subspaceIdConstantine)} ]

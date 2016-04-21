@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1873 distinct keywords (plus 249 aliases) **/
+/** 1870 distinct keywords (plus 249 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2267,15 +2267,12 @@ static KeyWord
 		{"constantine",8,0,2,0,0,0.,0.,0,N_mom(true,subspaceIdConstantine)},
 		{"energy",8,1,3,0,kw_347,0.,0.,0,N_mom(true,subspaceIdEnergy)}
 		},
-	kw_349[8] = {
+	kw_349[5] = {
 		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,actualModelPointer)},
-		{"bootstrap_samples",9,0,8,0,0,0.,0.,0,N_mom(int,numReplicates)},
-		{"convergence_tolerance",10,0,5,0,0,0.,0.,0,N_mom(Real,convergenceTolerance)},
-		{"dimension",9,0,7,0,0,0.,0.,0,N_mom(int,dimension)},
+		{"bootstrap_samples",9,0,5,0,0,0.,0.,0,N_mom(int,numReplicates)},
+		{"dimension",9,0,4,0,0,0.,0.,0,N_mom(int,dimension)},
 		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
-		{"max_iterations",9,0,4,0,0,0.,0.,0,N_mom(int,maxIterations)},
-		{"refinement_samples",13,0,3,0,0,0.,0.,0,N_mom(ivec,refineSamples)},
-		{"truncation_method",8,3,6,0,kw_348}
+		{"truncation_method",8,3,3,0,kw_348}
 		},
 	kw_350[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)},
@@ -2538,7 +2535,7 @@ static KeyWord
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
 		{"simulation",0,2,5,1,kw_346,0.,0.,1,N_mom(lit,modelType_simulation)},
 		{"single",8,2,5,1,kw_346,0.,0.,0,N_mom(lit,modelType_simulation)},
-		{"subspace",8,8,5,1,kw_349,0.,0.,0,N_mom(lit,modelType_subspace)},
+		{"subspace",8,5,5,1,kw_349,0.,0.,0,N_mom(lit,modelType_subspace)},
 		{"surrogate",8,5,5,1,kw_394,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},

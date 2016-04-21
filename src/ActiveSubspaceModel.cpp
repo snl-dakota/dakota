@@ -26,22 +26,13 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   randomSeed(24620),
   initialSamples(problem_db.get_int("model.initial_samples")),
-  batchSize(0), // updated later
-  maxIterations(problem_db.get_int("model.max_iterations")),
-  // may need to allow this control later if doing nullspace verification:
   maxFunctionEvals(std::numeric_limits<int>::max()),
-  // need to offer user control
-  svTol(std::max(problem_db.get_real("model.convergence_tolerance"),
-                 std::numeric_limits<Real>::epsilon())),
-  performAssessment(false),
-  nullspaceTol(problem_db.get_real("model.convergence_tolerance")/1.0e3),
   subspaceIdBingLi(probDescDB.get_bool("model.subspace.truncation_method.bing_li")),
   subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
   subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
-  subspaceInitialized(false),
+  totalSamples(0), totalEvals(0), subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance"))
@@ -53,16 +44,6 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_init_communicators()
-
-  const IntVector& db_refine_samples = 
-    problem_db.get_iv("model.refinement_samples");
-  if (db_refine_samples.length() == 1)
-    batchSize = db_refine_samples[0];
-  else if (db_refine_samples.length() > 1) {
-    Cerr << "\nError (ActiveSubspaceModel): refinement_samples must be "
-         << "length 1 if specified." << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
 
   validate_inputs();
 
@@ -109,18 +90,15 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
     variables along for the ride. */
 ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model,
-                    int random_seed, int initial_samples, int batch_size,
-                    double conv_tol, size_t max_iter, size_t max_evals,
+                    int random_seed, int initial_samples,
+                    double conv_tol, size_t max_evals,
                     unsigned short subspace_id_method):
   RecastModel(sub_model), randomSeed(random_seed),
-  initialSamples(initial_samples), batchSize(batch_size),
-  maxIterations(max_iter), maxFunctionEvals(max_evals),
-  svTol(std::max(conv_tol, std::numeric_limits<Real>::epsilon())),
-  performAssessment(false), nullspaceTol(conv_tol/1.0e3),
+  initialSamples(initial_samples), maxFunctionEvals(max_evals),
   subspaceIdBingLi(false),
   subspaceIdConstantine(true), subspaceIdEnergy(false), numReplicates(100),
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
-  currIter(0), totalSamples(0), totalEvals(0), svRatio(0.0),
+  totalSamples(0), totalEvals(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0))
 {
@@ -149,41 +127,20 @@ void ActiveSubspaceModel::validate_inputs()
 {
   bool error_flag = false;
 
-  // validate iteration controls
-
   // set default initialSamples, with lower bound equal to dimension of
   // of full space
   int min_initial_samples = numFullspaceVars;
   if (initialSamples < min_initial_samples) {
     initialSamples = min_initial_samples;
-    Cout << "\nWarning (model subspace): resetting samples to minimum "
+    Cout << "\nWarning (subspace model): resetting samples to minimum "
          << "allowed = " << initialSamples << ". Note that the accuracy of the "
-         << "subspace may be poor with this few samples." << std::endl;
+         << "subspace may be poor with this few samples.\n" << std::endl;
   }
 
   if (initialSamples > maxFunctionEvals) {
     error_flag = true;
-    Cerr << "\nError (model subspace): build samples exceeds function "
-         << "evaluation budget." << std::endl;
-  }
-
-  if (batchSize <= 0) {
-    // default is to add one point at a time
-    batchSize = 1;
-  }
-  else if (batchSize > initialSamples) {
-    Cout << "\nWarning (model subspace): refinement_samples = " << batchSize
-         << " exceeds (initial) samples = " << initialSamples
-         << "\n                          resetting refinement_samples = "
-         << initialSamples << "." << std::endl;
-    batchSize = initialSamples;
-  }
-
-  // maxIterations controls the number of build iterations
-  if (maxIterations < 0) {
-    maxIterations = 1;
-    Cout << "\nInfo (model subspace): setting max_iterations = "
-         << maxIterations << "." << std::endl;
+    Cerr << "\nError (subspace model): build samples exceeds function "
+         << "evaluation budget.\n" << std::endl;
   }
 
   // validate variables specification
@@ -191,17 +148,17 @@ void ActiveSubspaceModel::validate_inputs()
   if (//subModel.cv() != numNormalVars ||
       subModel.div() > 0 || subModel.dsv() > 0 || subModel.drv() > 0) {
     error_flag = true;
-    Cerr << "\nError (model subspace): only normal uncertain variables are "
+    Cerr << "\nError (subspace model): only normal uncertain variables are "
          << "supported;\n                        remove other variable "
-         << "specifications." << std::endl;
+         << "specifications.\n" << std::endl;
   }
 
   // validate response data
   if (subModel.gradient_type() == "none") {
     error_flag = true;
-    Cerr << "\nError (model subspace): gradients are required;"
+    Cerr << "\nError (subspace model): gradients are required;"
          << "\n                        Please select numerical, analytic "
-         << "(recommended), or mixed gradients." << std::endl;
+         << "(recommended), or mixed gradients.\n" << std::endl;
   }
 
   if (error_flag)
@@ -214,6 +171,9 @@ void ActiveSubspaceModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
+
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
 
@@ -250,6 +210,10 @@ bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Initialization of active subspace is complete."
+         << std::endl;
   
   if (reducedRank != numFullspaceVars || // Active SS is reduced rank
       sub_model_resize) // Active SS is full rank but subModel resized
@@ -375,7 +339,7 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
   if (!mapping_initialized()) {
-    Cerr << "\nError (model subspace): model has not been initialized."
+    Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
   }
@@ -389,7 +353,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   if (!mapping_initialized()) {
-    Cerr << "\nError (model subspace): model has not been initialized."
+    Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
   }
@@ -403,7 +367,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
   if (!mapping_initialized()) {
-    Cerr << "\nError (model subspace): model has not been initialized."
+    Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
   }
@@ -417,7 +381,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
   if (!mapping_initialized()) {
-    Cerr << "\nError (model subspace): model has not been initialized."
+    Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
   }
@@ -435,7 +399,6 @@ bool ActiveSubspaceModel::mapping_initialized()
 
 void ActiveSubspaceModel::update_var_labels()
 {
-  // TODO: 'ssv' stands for subspace variable, come up with something better
   StringMultiArray subspace_var_labels(boost::extents[reducedRank]);
   for (int i = 0; i < reducedRank; i++) {
     subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
@@ -471,26 +434,13 @@ void ActiveSubspaceModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
-  // The same model is used in multiple contexts, with varying degrees
-  // of concurrency:
-  //  - fullspaceSampler(subModel) with initialSamples
-  //  - fullspaceSampler(subModel) with batchSamples
-  //  - direct evaluate() of verif_samples, one at a time
-
   // The inbound subModel concurrency accounts for any finite differences
 
   onlineEvalConcurrency = max_eval_concurrency;
 
-  // BMA: taken from DataFitSurrModel daceIterator; is this correct?
-  // init comms for daceIterator
   if (recurse_flag) {
     if (!mapping_initialized())
       fullspaceSampler.init_communicators(pl_iter);
-    
-    // TODO: add this back to use refinement samples
-    // batch additions support concurrency up to batchSize * model concurrency
-    //int batch_concurrency = batchSize * subModel.derivative_concurrency();
-    //subModel.init_communicators(pl_iter, batch_concurrency);
 
     subModel.init_communicators(pl_iter, max_eval_concurrency);
   }
@@ -524,11 +474,6 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     fullspaceSampler.free_communicators(pl_iter);
 
-    // TODO: add this back to use refinement samples
-    // batch additions support concurrency up to batchSize * model concurrency
-    //int batch_concurrency = batchSize * subModel.derivative_concurrency();
-    //subModel.free_communicators(pl_iter, batch_concurrency);
-
     subModel.free_communicators(pl_iter, max_eval_concurrency);
   }
 }
@@ -536,116 +481,40 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 void ActiveSubspaceModel::identify_subspace()
 {
-  Cout << "\nModel subspace: Performing sampling to build reduced space" << std::endl;
-
-  // whether singular value tolerance met
-  bool svtol_met = false;
-  // whether reconstruction error tolerance met
-  bool recon_tol_met = false;
-
-  // iterate until numerically singular or small reconstruction error
-  while (!svtol_met && !recon_tol_met &&
-         currIter < maxIterations && totalEvals < maxFunctionEvals &&
-         reducedRank <= numFullspaceVars) {
-    // Run the inner iteration until user tol met (if possible), then check
-    // reconstruction error, then continue outer if not tight enough
-    if (currIter == 0) {
-      // initially do this loop until tolerance met
-      // once met (svTol will always be met),
-      while (!svtol_met && currIter < maxIterations &&
-             totalEvals < maxFunctionEvals
-             && reducedRank <= numFullspaceVars) {
-        ++currIter;  // any addition of batch of points counts as an iteration
-        Cout << "\nModel subspace: Iteration " << currIter << "." << std::endl;
-        expand_basis(svtol_met);
-        print_svd_stats();
-      } // until SVD converged
-
-      if (svtol_met) {
-        Cout << "\nModel subspace: SVD converged to tolerance."
-             << "\n                Proceeding to "
-             << "reconstruction with reduced rank = " << reducedRank << "."
-             << std::endl;
-      }
-      else {
-        Cout << "\nModel subspace: SVD not converged within budget.";
-        if (currIter >= maxIterations)
-          Cout << "\n                Maximum iterations reached.";
-        if (totalEvals >= maxFunctionEvals)
-          Cout << "\n                Maximum function evaluations reached.";
-        Cout << "\n                Proceeding to reconstruction with "
-             << "reducedRank = " << reducedRank << std::endl;
-      }
-    }
-    else {
-      ++currIter;  // any addition of batch of points counts as an iteration
-      Cout << "\nModel subspace: Iteration " << currIter << "." << std::endl;
-      expand_basis(svtol_met);
-      print_svd_stats();
-    }
-
-    // update the activeBasis
-    // the reduced basis is dimension N x r and stored in the first r
-    // cols of leftSingularVectors; extract it instead of using BLAS directly
-    RealMatrix reduced_basis_W1(Teuchos::View, leftSingularVectors,
-                                numFullspaceVars, reducedRank);
-    activeBasis = reduced_basis_W1;
-
-    RealMatrix reduced_basis_W2(Teuchos::View, leftSingularVectors,
-                                numFullspaceVars,numFullspaceVars - reducedRank,
-                                0, reducedRank);
-
-    inactiveBasis = reduced_basis_W2;
-    if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "\nModel subspace: Active basis is";
-      activeBasis.print(Cout);
-    }
-
-    // evaluate the fidelity of the reconstruction via orthogonal subspace
-    // evaluations (constrained to stay in bounds)
-    if (performAssessment) {
-      assess_reconstruction(recon_tol_met);
-    }
-    else {
-      // Bypass tolerance check if no reconstruction:
-      recon_tol_met = true;
-      Cout << "\nModel subspace: Reconstruction has been bypassed."
-           << " performAssessment = false" << std::endl;
-    }
-
-    if (!recon_tol_met)
-      Cout << "\nModel subspace: Reconstruction tolerance not met." << std::endl;
-
-  } // until reconstruction converged
-
-  Cout << "\n --- Model subspace Final Build Statistics ---"
-       << "\n  total iterations: " << currIter
-       << "\n  small/large singular value: " << svRatio
-       << "\n  build samples: " << totalSamples
-       << "\n  reduced rank: " << reducedRank
+  Cout << "\nSubspace Model: Performing sampling to build reduced space"
        << std::endl;
 
-  Cout << "\n --- Model subspace Build Convergence Criteria ---"
-       << "\n  tolerance on SVD met?: " << svtol_met;
-  if(performAssessment) {
-    Cout << "\n  reconstruction tolerance met?: " << recon_tol_met;
+  expand_basis();
+
+  // update the activeBasis
+  // the reduced basis is dimension N x r and stored in the first r
+  // cols of leftSingularVectors; extract it instead of using BLAS directly
+  RealMatrix reduced_basis_W1(Teuchos::View, leftSingularVectors,
+                              numFullspaceVars, reducedRank);
+  activeBasis = reduced_basis_W1;
+
+  RealMatrix reduced_basis_W2(Teuchos::View, leftSingularVectors,
+                              numFullspaceVars,numFullspaceVars - reducedRank,
+                              0, reducedRank);
+
+  inactiveBasis = reduced_basis_W2;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nSubspace Model: Active basis is:\n";
+    write_data(Cout, activeBasis, true, true, true);
   }
-  else {
-    Cout << "\n  reconstruction tolerance met?: bypassed";
-  }
-  Cout << "\n  max_iterations reached: " << (bool) (currIter >= maxIterations)
-       << "\n  max_evals reached: " << (bool) (totalEvals >= maxFunctionEvals)
-       << "\n  max rank reached: " << (bool) (reducedRank >= numFullspaceVars)
+
+  Cout << "\n**************************************************************"
+       << "************\nSubspace Model: Build Statistics"
+       << "\nbuild samples: " << totalSamples
+       << "\nsubspace size: " << reducedRank
        << std::endl;
-
-
+  Cout << "****************************************************************"
+       << "**********\n";
 }
 
 
-
-
 void ActiveSubspaceModel::
-expand_basis(bool& svtol_met)
+expand_basis()
 {
   // determine number of points to add
   unsigned int diff_samples = calculate_fullspace_samples();
@@ -653,7 +522,7 @@ expand_basis(bool& svtol_met)
   totalEvals += diff_samples;
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nModel subspace: Adding " << diff_samples << " full-space samples."
+    Cout << "\nSubspace Model: Adding " << diff_samples << " full-space samples."
          << std::endl;
 
   // evaluate samples with fullspaceSampler
@@ -663,35 +532,13 @@ expand_basis(bool& svtol_met)
   append_sample_matrices(diff_samples);
 
   // factor the derivative matrix and estimate the information content
-  compute_svd(svtol_met);
+  compute_svd();
 }
 
 
 unsigned int ActiveSubspaceModel::calculate_fullspace_samples()
 {
-  // on first pass, use initial build samples
-  if (currIter == 1)
-    return initialSamples;
-
-  unsigned int diff_samples;
-
-  // for now only supporting growth by fixed batch size
-  diff_samples = batchSize;
-
-  // TODO: allow options for fullspace sample growth based on
-  // fixed user-supplied factor, logarithmic growth
-
-  // factor by which to increase number samples at each minor iteration
-  // therefore also each major iteration (> 1.0) (not used for now)
-  //double sample_growth_factor = 2.0;
-  //double desired_total_samples = sample_growth_factor*totalSamples;
-  //diff_samples =
-  //  (unsigned int) std::ceil(desired_total_samples) - totalSamples;
-
-  // limit the increment by maximum evaluations control
-  diff_samples = std::min(diff_samples, maxFunctionEvals - totalEvals);
-
-  return diff_samples;
+  return initialSamples;
 }
 
 
@@ -728,9 +575,9 @@ append_sample_matrices(unsigned int diff_samples)
 
   // TODO: could easily filter NaN/Inf responses and omit
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Iteration " << currIter << ". DACE iterator returned "
-         << all_responses.size() << " samples. (Expected diff_samples = "
-         << diff_samples << ".)" << std::endl;
+    Cout << "\nSubspace Model: DACE iterator returned "
+         << all_responses.size() << " samples. (expected "
+         << diff_samples << " samples)" << std::endl;
   }
 
   int sample_insert_point = varsMatrix.numCols();
@@ -742,8 +589,7 @@ append_sample_matrices(unsigned int diff_samples)
   IntRespMCIter resp_end = all_responses.end();
 
   // Compute gradient scaling factors if more than 1 response function
-  // and only on the first iteration
-  if(numFunctions > 1 && currIter == 1) {
+  if(numFunctions > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
       const RealVector& resp_vector = resp_it->second.function_values();
       for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
@@ -776,16 +622,14 @@ append_sample_matrices(unsigned int diff_samples)
   }
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Iteration " << currIter
-         << ". Compiled derivative matrix is:\n";
-    derivativeMatrix.print(Cout);
-    Cout << std::endl;
+    Cout << "\nSubspace Model: Compiled derivative matrix is:\n";
+    write_data(Cout, derivativeMatrix, true, true, true);
   }
 }
 
 
 void ActiveSubspaceModel::
-compute_svd(bool& svtol_met)
+compute_svd()
 {
   // Want eigenvalues of derivMatrix*derivMatrix^T, so perform SVD of
   // derivMatrix and square them
@@ -798,7 +642,7 @@ compute_svd(bool& svtol_met)
   // TODO: Analyze whether we need to worry about this
   if(singular_values.length() == 0)
   {
-    Cerr << "\nError (model subspace): No computed singular values available!"
+    Cerr << "\nError (subspace model): No computed singular values available!"
          << std::endl;
     abort_handler(-1);
   }
@@ -807,45 +651,68 @@ compute_svd(bool& svtol_met)
   // of singular values returned
   if(derivativeMatrix.numRows() != singular_values.length())
   {
-    Cerr << "\nError (model subspace): Number of computed singular_values does "
+    Cerr << "\nError (subspace model): Number of computed singular_values does "
          << "not match the dimension of the space of gradient samples! Logic "
          << "not currently supported!" << std::endl;
     abort_handler(-1);
   }
 
+  int num_singular_values = singular_values.length();
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Singular values are:\n[ ";
+    for (unsigned int i=0; i<num_singular_values; ++i)
+      Cout << singular_values[i] << " ";
+    Cout << "]" << std::endl;
+  }
+
+  double bing_li_rank = computeBingLiCriterion(singular_values);
+  double constantine_rank = computeConstantineMetric(singular_values);
+  double energy_rank = computeEnergyCriterion(singular_values);
+
   if (reducedRank > 0 && reducedRank <= singular_values.length()) {
-    // reducedRank has been provided, set svtol_met to true:
     if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "\nModel subspace: Subspace size has been specified as reduced_rank = "
+      Cout << "\nSubspace Model: Subspace size has been specified as dimension = "
            << reducedRank << "." << std::endl;
-    svtol_met = true;
   }
   else {
+    // Initialize reducedRank
+    reducedRank = 1;
+
     if (subspaceIdBingLi) {
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "\nModel subspace: Determining eigenvalue gap with boostrap and Bing-Li "
-             << "metric." << std::endl;
-      computeBingLiCriterion(singular_values, svtol_met);
+        Cout << "\nSubspace Model: Bing Li truncation method is active."
+             << std::endl;
+      
+      if (reducedRank < bing_li_rank)
+        reducedRank = bing_li_rank;
     }
+
     if (subspaceIdConstantine) {
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "\nModel subspace: Determining eigenvalue gap with boostrap and Constantine "
-             << "metric." << std::endl;
-      computeConstantineMetric(singular_values, svtol_met);
+        Cout << "\nSubspace Model: Constantine truncation method is active."
+             << std::endl;
+      
+      if (reducedRank < constantine_rank)
+        reducedRank = constantine_rank;
     }
+
     if (subspaceIdEnergy) {
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "\nModel subspace: Determining minimum subspace size with eigenvalue energy "
-             << "metric." << std::endl;
-      computeEnergyCriterion(singular_values, svtol_met);
+        Cout << "\nSubspace Model: Constantine truncation method is active."
+             << std::endl;
+      
+      if (reducedRank < energy_rank)
+        reducedRank = energy_rank;
     }
 
     // Default case:
     if (!(subspaceIdBingLi || subspaceIdConstantine || subspaceIdEnergy)) {
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "\nModel subspace: Determining eigenvalue gap with boostrap and Bing-Li "
+        Cout << "\nSubspace Model: Determining subspace size with Constantine "
              << "metric." << std::endl;
-      computeBingLiCriterion(singular_values, svtol_met);
+
+      reducedRank = constantine_rank;
     }
   }
 
@@ -854,7 +721,7 @@ compute_svd(bool& svtol_met)
   double inf_norm = derivativeMatrix.normInf();
   double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
   if (singular_values[reducedRank-1] < mach_svtol) {
-    Cout << "\nWarning (model subspace): Computed subspace size is greater than"
+    Cout << "\nWarning (subspace model): Computed subspace size is greater than"
          << " numerical rank. Changing subspace size to numerical rank."
          << std::endl;
     for (unsigned int i=0; i<reducedRank; ++i) {
@@ -865,38 +732,19 @@ compute_svd(bool& svtol_met)
     }
     
     if (reducedRank < 1) {
-      Cerr << "\nError (model subspace): Derivative matrix has numerical rank "
+      Cerr << "\nError (subspace model): Derivative matrix has numerical rank "
            << "of 0. Something may be wrong with the gradient calculations."
            << std::endl;
       abort_handler(-1);
     }
 
-    Cout << "\nModel subspace: New subspace size is reduced_rank = "
+    Cout << "\nSubspace Model: New subspace size is dimension = "
          << reducedRank << "." << std::endl;
-  }
-
-  int num_singular_values = singular_values.length();
-
-  // Compute ratio of largest singular value not in active subspace to
-  // largest singular value in active subspace:
-  int sv_cutoff_ind;
-  if (reducedRank < num_singular_values)
-    sv_cutoff_ind = reducedRank;
-  else
-    sv_cutoff_ind = num_singular_values-1;
-
-  svRatio = singular_values[sv_cutoff_ind]/singular_values[0];
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Iteration " << currIter << ": singular values are [ ";
-    for (unsigned int i=0; i<num_singular_values; ++i)
-      Cout << singular_values[i] << " ";
-    Cout << "]" << std::endl;
   }
 }
 
-void ActiveSubspaceModel::
-computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
+double ActiveSubspaceModel::
+computeBingLiCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
 
@@ -979,9 +827,8 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
     bing_li_criterion[i] += bootstrapped_det[i] / det_sum;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Iteration " << currIter
-         << ". Bing Li Criterion values are [ ";
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Bing Li Criterion values are:\n[ ";
     for (size_t i = 0; i < num_vars; ++i)
     {
       Cout << bing_li_criterion[i] << " ";
@@ -995,22 +842,20 @@ computeBingLiCriterion(RealVector& singular_values, bool& svtol_met)
   {
     if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
-      svtol_met = true;
       rank = i-1;
       break;
     }
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nModel subspace: Bing Li metric subspace size estimate = "
+    Cout << "\nSubspace Model: Bing Li metric subspace size estimate = "
          << rank << std::endl;
 
-  if (rank > reducedRank)
-    reducedRank = rank;
+  return rank;
 }
 
-void ActiveSubspaceModel::
-computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
+double ActiveSubspaceModel::
+computeConstantineMetric(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
 
@@ -1061,9 +906,8 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
     }
   }
 
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Iteration " << currIter
-         << ". Constantine metric are [ ";
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Constantine metric values are:\n[ ";
     for (size_t i = 0; i < num_vars-1; ++i)
     {
       Cout << constantine_metric[i] << " ";
@@ -1074,7 +918,6 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
   // Cutoff is global minimum of metric
   int rank = 0;
   Real min_val = 0;
-  svtol_met = true; // This just bypasses the tolerance check
   for (size_t i = 0; i < num_vars-1; ++i)
   {
     if(constantine_metric[i] < min_val || i == 0)
@@ -1085,18 +928,16 @@ computeConstantineMetric(RealVector& singular_values, bool& svtol_met)
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nModel subspace: Constantine metric subspace size estimate = "
+    Cout << "\nSubspace Model: Constantine metric subspace size estimate = "
          << rank << std::endl;
 
-  if (rank > reducedRank)
-    reducedRank = rank;
+  return rank;
 }
 
-void ActiveSubspaceModel::
-computeEnergyCriterion(RealVector& singular_values, bool& svtol_met)
+double ActiveSubspaceModel::
+computeEnergyCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
-  svtol_met = true; // This just bypasses the tolerance check
 
   Real total_energy = 0.0;
   for (size_t i = 0; i < num_vars; ++i)
@@ -1105,12 +946,27 @@ computeEnergyCriterion(RealVector& singular_values, bool& svtol_met)
     total_energy += std::pow(singular_values[i],2);
   }
 
-  Real running_total_energy = 0.0;
+  RealVector energy_metric(num_vars);
+  energy_metric[0] = std::pow(singular_values[0],2)/total_energy;
+  for (size_t i = 1; i < num_vars; ++i)
+  {
+    energy_metric[i] = std::pow(singular_values[i],2)/total_energy
+                       + energy_metric[i-1];
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Energy criterion values are:\n[ ";
+    for (size_t i = 0; i < num_vars; ++i)
+    {
+      Cout << energy_metric[i] << " ";
+    }
+    Cout << "]" << std::endl;
+  }
+
   int rank = 0;
   for (size_t i = 0; i < num_vars; ++i)
   {
-    running_total_energy += std::pow(singular_values[i],2);
-    if(std::abs(1.0 - (running_total_energy/total_energy)) < truncationTolerance)
+    if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
     {
       rank = i+1;
       break;
@@ -1118,153 +974,12 @@ computeEnergyCriterion(RealVector& singular_values, bool& svtol_met)
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nModel subspace: Eigenvalue energy metric subspace size estimate = "
-         << rank << std::endl;
-
-  if (rank > reducedRank)
-    reducedRank = rank;
-}
-
-void ActiveSubspaceModel::print_svd_stats()
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n --- Model subspace Iteration " << currIter << " Statistics --- "
-         << "\n  small/large singular value: " << svRatio
-         << "\n  build samples: " << totalSamples
-         << "\n  estimated reduced rank: " << reducedRank
+    Cout << "\nSubspace Model: Eigenvalue energy metric subspace size estimate = "
+         << rank << ". (truncation_tolerance = " << truncationTolerance << ")"
          << std::endl;
+
+  return rank;
 }
-
-
-/** This function is experimental and needs to be carefully reviewed
-    and cleaned up */
-void ActiveSubspaceModel::
-assess_reconstruction(bool& recon_tol_met)
-{
-  // calculate upper bound on number of verification samples
-  // allow maxFunctionEvals to be exceeded
-  // TODO: likely shouldn't do more than N-reducedRank samples?
-  // TODO: Could generate additional random samples in the perp space
-  unsigned int wilks_max_samples = 100; // maximum based on Wilk's formula
-  unsigned int verif_samples = std::min(wilks_max_samples, totalSamples);
-  if (verif_samples > maxFunctionEvals - totalEvals) {
-    verif_samples = maxFunctionEvals - totalEvals;
-    Cout << "\nModel subspace: Warning: " << verif_samples << " verification samples "
-         << "desired, but budget only permits " << verif_samples << std::endl;
-  }
-  totalEvals += verif_samples;
-
-  // Calculate perturbations of the samples from nominal and project
-  // orthogonal to activeBasis U
-
-  // TODO: Relies on normal distribution for now
-  const RealVector& nominal_vars =
-    subModel.aleatory_distribution_parameters().normal_means();
-
-  // Find vectors orthogonal to each initial perturbation
-  // for test problem, nominal is 0.5 for all x
-  // TODO: use actual nominal values
-
-  RealMatrix perturbations(numFullspaceVars, verif_samples);
-  for (int i=0; i<numFullspaceVars; ++i)
-    for (int j=0; j<verif_samples; ++j)
-      perturbations(i,j) = varsMatrix(i,j) - nominal_vars(i);
-
-
-  // want to compute perturbations delta_x_perp in the nullspace of
-  // U^T, i.e.,
-  //   delta_x_perp = (I - U*U^T)*delta_x = delta_x - U*U^T*delta_x
-
-  // compute U^T * delta_x via
-  // u_trans_delta_x = 1.0 * U^T * delta_x + 0.0 * u_trans_delta_x
-  RealMatrix u_trans_delta_x(reducedRank, verif_samples); // init to zero
-
-  Real alpha = 1.0;
-  Real beta = 0.0;
-  u_trans_delta_x.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha,
-                           activeBasis, perturbations, beta);
-
-  // compute -1.0 * ( U * u_trans_delta_x ) + 1.0 * delta_x
-  alpha = -1.0;
-  beta = 1.0;
-  perturbations.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha,
-                         activeBasis, u_trans_delta_x, beta);
-
-  // the matrix perturbations now contains the delta_x_perp
-  // NEED to evaluate at nomimal + delta_x_perp
-
-  // evaluate the model at the sample points in perturbations
-  // for now in serial
-  // TODO: initialize to nominal
-  RealMatrix perp_points(numFullspaceVars, verif_samples, false);
-  for (int i=0; i<numFullspaceVars; ++i)
-    for (int j=0; j<verif_samples; ++j)
-      perp_points(i,j) = nominal_vars(i);
-  perp_points += perturbations;
-
-  // TODO: restrict perp_points to the variable bounds
-
-  // Reconstruction phase requires only functions
-  // TODO: get off the model?
-  //   ActiveSet recon_set = dace_iterator.active_set(); // copy
-  //   unsigned short request_value = 1;
-  //   recon_set.request_values(request_value);
-  ActiveSet active_set = subModel.current_response().active_set();
-  active_set.request_values(1);
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nModel subspace: Evaluating at nominal, and at " << verif_samples
-         << " points orthogonal to the subspace" << std::endl;
-
-  // evaluate model at nominal values
-  subModel.continuous_variables(nominal_vars);
-  subModel.evaluate(active_set);
-  const RealVector& ynominal = subModel.current_response().function_values();
-
-  // TODO: use array of RealVectors here
-
-  // TODO: convenience function to evaluate a matrix of samples
-  // TODO: asynch as well
-  RealMatrix Kmat(verif_samples, numFunctions);
-  for (int j=0; j<verif_samples; ++j) {
-    subModel.continuous_variables(getCol(Teuchos::View, perp_points, j));
-    subModel.evaluate(active_set);
-    // compute y(perp) - y(nominal)
-    RealVector deviation(subModel.current_response().function_values());
-    deviation -= ynominal;
-    Teuchos::setCol(deviation, j, Kmat);
-  }
-
-  recon_tol_met = true;
-  RealVector recon_error(numFunctions);
-  for (int i=0; i<numFunctions; ++i) {
-
-    RealVector Kvec = Teuchos::getCol(Teuchos::View, Kmat, i);
-
-    // two-norm of recon error for now
-    double recon_error = std::sqrt(Kvec.dot(Kvec)/verif_samples);
-
-    // standard deviation of Kvec
-    double K_mu = std::accumulate(&Kvec[0], &Kvec[0]+verif_samples, 0.0) /
-                  (Real) verif_samples;
-    double K_sigma = 0.0;
-    // Could decimate Kvec with (K-mu)^2; opt for simplicity
-    for (unsigned int j=0; j<verif_samples; ++j) {
-      K_sigma += (Kvec(j) - K_mu)*(Kvec(j) - K_mu);
-    }
-    K_sigma = std::sqrt(K_sigma / (Real) (verif_samples-1));
-
-    Cout << "\nModel subspace: Reconstruction statistics over " << verif_samples
-         << " samples for function " << i << ":\n  K_sigma = " << K_sigma
-         << "\n  K_mu = " << K_mu
-         << "\n  L2 (recon) error = " << recon_error << std::endl;
-
-    // if any function violates, continue process
-    if (recon_error > nullspaceTol)
-      recon_tol_met = false;
-  }
-}
-
-
 
 
 /** Initialize the recast model based on the reduced space, with no
@@ -1379,7 +1094,7 @@ SizetArray ActiveSubspaceModel::variables_resize()
       break;
 
     default:
-      Cerr << "\nError (model subspace): invalid active variables view "
+      Cerr << "\nError (subspace model): invalid active variables view "
            << active_view << "." << std::endl;
       abort_handler(-1);
       break;
@@ -1428,12 +1143,14 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   const RealVector& sd_x = native_params.normal_std_deviations();
   const RealSymMatrix& correl_x = native_params.uncertain_correlations();
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nModel subspace: correl_x = \n" << correl_x << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nSubspace Model: correl_x = \n";
+    write_data(Cout, correl_x, true, true, true);
+  }
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "\nModel subspace: Wrong correlation size." << std::endl;
+    Cerr << "\nSubspace Model: Wrong correlation size." << std::endl;
     abort_handler(-1);
   }
 
@@ -1474,8 +1191,10 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: activeBasis = \n" << activeBasis << std::endl;
-    Cout << "\nModel subspace: V_x =\n" << V_x << std::endl;
+    Cout << "\nSubspace Model: activeBasis = \n";
+    write_data(Cout, activeBasis, true, true, true);
+    Cout << "\nSubspace Model: V_x =\n";
+    write_data(Cout, V_x, true, true, true);
   }
 
   // compute V_y = U^T * V_x * U
@@ -1488,8 +1207,10 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
                alpha, UTVx, activeBasis, beta);
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nModel subspace: V_y = \n" << V_y << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nSubspace Model: V_y = \n";
+    write_data(Cout, V_y, true, true, true);
+  }
 
   // compute the standard deviations in reduced space
   for (int i=0; i<reducedRank; ++i)
@@ -1510,8 +1231,10 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     for (int col=0; col<reducedRank; ++col)
       correl_y(row, col) = V_y(row,col)/sd_y(row)/sd_y(col);
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nModel subspace: correl_y = \n" << correl_y << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\nSubspace Model: correl_y = \n";
+    write_data(Cout, correl_y, true, true, true);
+  }
 
   reduced_dist_params.uncertain_correlations(correl_y);
 
@@ -1561,9 +1284,8 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   RealVector x;
   copy_data(sub_model_x_vars.continuous_variables(), x);
 
-  //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec directly into x cv in submodel
-  //void  GEMV (ETransp trans, const OrdinalType m, const OrdinalType n, const alpha_type alpha, const A_type *A, const OrdinalType lda, const x_type *x, const OrdinalType incx, const beta_type beta, ScalarType *y, const OrdinalType incy) const
-  //  Performs the matrix-std::vector operation: y <- alpha*A*x+beta*y or y <- alpha*A'*x+beta*y where A is a general m by n matrix.
+  //  Calculate x = activeBasis*y + inactiveBasis*inactiveVars via matvec
+  //  directly into x cv in submodel
   const RealMatrix& W1 = asmInstance->activeBasis;
   int m = W1.numRows();
   int n = W1.numCols();
@@ -1594,10 +1316,10 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
   sub_model_x_vars.continuous_variables(x);
 
   if (asmInstance->outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nModel subspace: Recast vars are\n";
+    Cout << "\nSubspace Model: Subspace vars are\n";
     Cout << recast_y_vars << std::endl;
 
-    Cout << "\nModel subspace: Submodel vars are\n";
+    Cout << "\nSubspace Model: Fullspace vars are\n";
     Cout << sub_model_x_vars << std::endl;
   }
 
