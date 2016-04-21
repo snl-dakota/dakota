@@ -1,0 +1,79 @@
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=1200
+
+#environment,
+#	graphics
+
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling				
+	  pilot_samples = 20 seed = 1237
+#	  max_iterations = 0
+	  convergence_tolerance = .1			#s0
+#	  convergence_tolerance = .01			#s1
+#	  convergence_tolerance = .001
+#	  convergence_tolerance = .0001
+	output debug
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'HF_VARS'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LF' 'HF'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'LF'
+	variables_pointer = 'LF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+# linear in modes, linear in spatial coords:
+#	  solution_level_cost = 15. 45. 90. 180.
+# linear in modes, cubic in spatial coords:
+	  solution_level_cost = 375. 10125. 81000. 648000.
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+# linear in modes, linear in spatial coords:
+#	  solution_level_cost = 630. 1260. 2100. 4200.
+# linear in modes, cubic in spatial coords:
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 5 15 30 60 # number of spatial coords
+	    	       	 3 	    # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 30 60 100 200 # number of spatial coords
+	    	       	 21 	       # number of Fourier solution modes
+	    initial_state = 30 21
+	    descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians
