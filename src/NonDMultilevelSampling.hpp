@@ -166,12 +166,13 @@ private:
   void cv_raw_moments(IntRealVectorMap& sum_L,      IntRealVectorMap& mean_L,
 		      IntRealVectorMap& mean_H,     IntRealVectorMap& var_L,
 		      IntRealVectorMap& covar_LH,   const RealVector& rho2_LH,
-		      Real cost_ratio, size_t N_lf, RealMatrix& H_raw_mom);
+		      //Real cost_ratio,
+		      size_t N_lf,                  RealMatrix& H_raw_mom);
   /// compute control variate parameter and estimate raw moments
   void cv_raw_moments(IntRealMatrixMap& sum_L,     IntRealMatrixMap& mean_L,
 		      IntRealMatrixMap& mean_H,    IntRealMatrixMap& var_L,
-		      IntRealMatrixMap& covar_LH,
-		    //const RealMatrix& rho2_LH,   Real cost_ratio,
+		      IntRealMatrixMap& covar_LH,  const RealMatrix& rho2_LH,
+		      //Real cost_ratio,
 		      size_t lev, size_t N_lf,     RealMatrix& H_raw_mom);
 
   /// compute average of a set of observations

@@ -43115,18 +43115,14 @@ Sample moment statistics for each response function:
 dakota_uq_heat_eq_mlcvmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10992 total (10992 new, 0 duplicate)
-  response_fn_1: 10992 val (10992 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 10992 total (10992 new, 0 duplicate)
-  response_fn_1: 10992 val (10992 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Equivalent number of high fidelity evaluations: 2.6418785714e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0217139201e+01  1.0786691539e+02  1.9934741952e+00  5.9348193964e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 116690 total (116690 new, 0 duplicate)
-  response_fn_1: 116690 val (116690 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary: 116690 total (116690 new, 0 duplicate)
-  response_fn_1: 116690 val (116690 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Equivalent number of high fidelity evaluations: 2.8000453125e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis

@@ -13,7 +13,7 @@ method,
 #	  convergence_tolerance = .01			#s1
 #	  convergence_tolerance = .001
 #	  convergence_tolerance = .0001
-	output debug
+	output silent
 
 model,
 	id_model = 'HIERARCH'
