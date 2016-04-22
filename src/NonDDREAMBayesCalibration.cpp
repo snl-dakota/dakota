@@ -84,6 +84,8 @@ double sample_likelihood (int par_num, double zp[])
 
 namespace Dakota {
 
+extern PRPCache data_pairs; // global container
+
 //initialization of statics
 NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
 
@@ -468,7 +470,6 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
 
   //std::ofstream test_stream("kam_test.txt");
 
-  extern PRPCache data_pairs;
   int num_samples = 
       nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
