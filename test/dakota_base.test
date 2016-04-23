@@ -6062,13 +6062,13 @@ Simple Correlation Matrix among all inputs and outputs:
 response_fn_1 -6.81911e-01 -6.51320e-01  1.00000e+00 
 response_fn_2_1 -1.35189e-01 -7.17801e-01  6.61605e-01  1.00000e+00 
 response_fn_2_2 -5.35738e-01  5.07477e-02  3.91467e-01 -2.82851e-01  1.00000e+00 
-response_fn_3_1  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00 
-response_fn_3_2  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00 
-response_fn_3_3  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00 
+response_fn_3_1         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_2         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
+response_fn_3_3         -nan         -nan         -nan         -nan         -nan         -nan         -nan         -nan 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
-          x1 -8.90804e-01 -1.84687e-01 -5.36920e-01 -0.00000e+00 -0.00000e+00 -0.00000e+00 
-          x2 -8.81925e-01 -7.23227e-01  6.59424e-02 -0.00000e+00 -0.00000e+00 -0.00000e+00 
+          x1 -8.90804e-01 -1.84687e-01 -5.36920e-01         -nan         -nan         -nan 
+          x2 -8.81925e-01 -7.23227e-01  6.59424e-02         -nan         -nan         -nan 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2_1 response_fn_2_2 response_fn_3_1 response_fn_3_2 response_fn_3_3 
           x1  1.00000e+00 
@@ -11450,8 +11450,8 @@ response_fn_1_9 -9.59310e-01 -8.30700e-01  7.93349e-01  8.34441e-01  8.55195e-01
 response_fn_1_10 -8.61259e-01 -9.41539e-01  9.18036e-01  9.43793e-01  9.55907e-01 -9.82400e-01 -9.77076e-01 -9.96680e-01  1.99005e-01  9.98641e-01  9.69698e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1_1 response_fn_1_2 response_fn_1_3 response_fn_1_4 response_fn_1_5 response_fn_1_6 response_fn_1_7 response_fn_1_8 response_fn_1_9 response_fn_1_10 
-          x1  1.00000e+00 -1.00000e+00 -1.00000e+00  7.41848e-01  6.89936e-01  9.85774e-01  3.29873e-01 -8.75150e-01 -9.94342e-01 -8.61023e-01 
-          x2 -1.00000e+00 -1.00000e+00 -1.00000e+00  2.22080e-01  4.52458e-01  9.97545e-01 -6.61157e-02 -5.87746e-01 -9.97795e-01 -5.61758e-02 
+          x1  1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00  1.00000e+00  1.00000e+00  1.00000e+00 -1.00000e+00 -1.00000e+00 -1.00000e+00 
+          x2 -1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00  1.00000e+00  1.00000e+00 -1.00000e+00 -1.00000e+00 -1.00000e+00 -1.00000e+00 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1_1 response_fn_1_2 response_fn_1_3 response_fn_1_4 response_fn_1_5 response_fn_1_6 response_fn_1_7 response_fn_1_8 response_fn_1_9 response_fn_1_10 
           x1  1.00000e+00 
