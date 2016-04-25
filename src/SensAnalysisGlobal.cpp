@@ -99,26 +99,37 @@ valid_sample_matrix(const RealMatrix&     vars_samples,
 }
 
 
+/** When converting values to ranks, uses the average ranks of any tied values */
 void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
 {
   int num_corr = valid_data.numRows(), num_valid_samples = valid_data.numCols();
-  rawData.resize(num_valid_samples);
   // for each var/resp
   for (int i=0; i<num_corr; ++i) {
-    // intiialize the (unsorted) ranks
-    IntArray rank_col(boost::counting_iterator<int>(0),
-                      boost::counting_iterator<int>(num_valid_samples));
-    copy_row_vector(valid_data, i, rawData);
+    // create a multimap from value to array index (so it is sorted by value and
+    // the ranks are given by the map order); don't need a stable sort as we are
+    // replacing the tied values by their average rank
+    RealIntMultiMap vals_inds;
+    for (int j=0; j<num_valid_samples; ++j)
+      vals_inds.insert(std::make_pair(valid_data(i,j), j));
 
-    // rank_col will contain the indices (ranks), sorted by value
-    std::sort(rank_col.begin(), rank_col.end(), rank_sort);
-    IntArray final_rank(num_valid_samples);
-    for (int j=0; j<num_valid_samples; ++j)
-      final_rank[rank_col[j]] = j;
-    for (int j=0; j<num_valid_samples; ++j)
-      valid_data(i, j) = (Real)final_rank[j];
+    // iterate for each unique value and find tied values
+    RealIntMultiMap::const_iterator vi_it = vals_inds.begin();
+    RealIntMultiMap::const_iterator vi_end = vals_inds.end();
+    for (int rank=0; vi_it != vi_end; ) {
+      // find a range of tied values
+      double value = vi_it->first;
+      std::pair<RealIntMultiMap::const_iterator, RealIntMultiMap::const_iterator>
+	tied_range = vals_inds.equal_range(value); 
+      int num_ties = std::distance(tied_range.first, tied_range.second);
+      double avg_rank = (rank + rank+num_ties-1) / 2.0;
+      // all tied values get assigned the average rank
+      for ( ; tied_range.first != tied_range.second; ++tied_range.first)
+	valid_data(i, tied_range.first->second) = avg_rank;
+      // increment to the next unequal value
+      vi_it = tied_range.second;
+      rank += num_ties;
+    }
   }
-  rawData.clear();
 }
 
 
