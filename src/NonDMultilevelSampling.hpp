@@ -84,96 +84,76 @@ private:
 
   /// initialize the CV bookkeeping for sums, means, variances, and
   /// covariances across fidelity levels
-  void initialize_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
-			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t num_lev);
+  void initialize_ml_sums(IntRealMatrixMap& sum_Y, size_t num_lev);
   /// initialize the CV bookkeeping for sums, means, variances, and
   /// covariances across fidelity levels
-  void initialize_cv_sums_moments(IntRealVectorMap& sum_L,
+  void initialize_cv_sums_moments(IntRealVectorMap& sum_L_shared,
+				  IntRealVectorMap& sum_L_refined,
 				  IntRealVectorMap& sum_H,
-				  IntRealVectorMap& sum_LH,
-				  IntRealVectorMap& mean_L,
-				  IntRealVectorMap& mean_H,
-				  IntRealVectorMap& var_L,
-				  IntRealVectorMap& covar_LH);
+				  IntRealVectorMap& sum_LL,
+				  IntRealVectorMap& sum_LH);
   /// initialize the CV bookkeeping for sums, means, variances, and
   /// covariances across fidelity levels
-  void initialize_cv_sums_moments(IntRealMatrixMap& sum_L,
-				  IntRealMatrixMap& sum_H,
-				  IntRealMatrixMap& sum_LH,
-				  IntRealMatrixMap& mean_L,
-				  IntRealMatrixMap& mean_H,
-				  IntRealMatrixMap& var_L,
-				  IntRealMatrixMap& covar_LH, size_t num_lev);
+  void initialize_cv_sums_moments(IntRealMatrixMap& sum_L_shared,
+				  IntRealMatrixMap& sum_L_refined,
+				//IntRealMatrixMap& sum_H,
+				  IntRealMatrixMap& sum_LL,
+				  IntRealMatrixMap& sum_LH, size_t num_lev);
 
-  /// update running sums for one model (sum_map) up to order max_ord
-  /// using set of model evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_map, size_t max_ord = _NPOS);
+  /// update running sums for one model (sum_map) using set of model
+  /// evaluations within allResponses
+  void accumulate_cv_sums(IntRealVectorMap& sum_map);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
-			  IntRealVectorMap& sum_LH);
-  /// update running sums for one model (sum_map) up to order max_ord
-  /// using set of model evaluations within allResponses
-  void accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev,
-			  size_t max_ord = _NPOS);
+  void accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
+			  IntRealVectorMap& sum_L_refined,
+			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
+			  RealVector& sum_HH, IntRealVectorMap& sum_LH);
+  /// update running sums for one model (sum_map) using set of model
+  /// evaluations within allResponses
+  void accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within lf/hf_resp_map
   void accumulate_cv_sums(const IntResponseMap& lf_resp_map,
 			  const IntResponseMap& hf_resp_map,
-			  IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
+			  IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			//IntRealMatrixMap& sum_H,
+			  IntRealMatrixMap& sum_LL, //RealMatrix& sum_HH,
 			  IntRealMatrixMap& sum_LH, size_t lev);
 
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_sums(IntRealMatrixMap& sum_Y_diff_Qpow,
-			  IntRealMatrixMap& sum_Y_pow_Qdiff, size_t lev,
-			  size_t max_ord1 = _NPOS, size_t max_ord2 = _NPOS);
+  void accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			  size_t lev);
 
-  /// update higher-order means, variances, and covariances from sums
-  void update_high_order_stats(IntRealVectorMap& sum_L, IntRealVectorMap& sum_H,
-			       IntRealVectorMap& sum_LH,
-			       IntRealVectorMap& mean_L,
-			       IntRealVectorMap& mean_H,
-			       IntRealVectorMap& var_L,
-			       IntRealVectorMap& covar_LH, size_t N_LH);
-  /// update higher-order means, variances, and covariances from sums
-  void update_high_order_stats(IntRealMatrixMap& sum_L, IntRealMatrixMap& sum_H,
-			       IntRealMatrixMap& sum_LH,
-			       IntRealMatrixMap& mean_L,
-			       IntRealMatrixMap& mean_H,
-			       IntRealMatrixMap& var_L,
-			       IntRealMatrixMap& covar_LH,
-			       size_t lev, size_t N_LH);
-  
   /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(const RealVector& sum_L1, const RealVector& sum_H1,
-		  const RealVector& sum_L2, const RealVector& sum_H2,
-		  const RealVector& sum_L1H1, Real cost_ratio,
-		  RealVector& mean_L, RealVector& mean_H, RealVector& var_L,
-		  RealVector& var_H, RealVector& covar_LH, RealVector& rho2_LH,
-		  size_t N_LH);
+  Real eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
+		  const RealVector& sum_LL,       const RealVector& sum_HH,
+		  const RealVector& sum_LH,       Real cost_ratio,
+		  RealVector& var_H, RealVector& rho2_LH, size_t N_shared);
   /// compute the LF/HF evaluation ratio, averaged over the QoI
-  Real eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
-		  RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
-		  size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
-		  RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
-		  RealMatrix& rho2_LH, size_t N_LH);
+  Real eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H,
+		  RealMatrix& sum_LL, RealMatrix& sum_HH, RealMatrix& sum_LH,
+		  Real cost_ratio, size_t lev, RealMatrix& var_H,
+		  RealMatrix& rho2_LH, size_t N_shared);
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 		 const RealVector& rho2_LH, size_t iter, size_t N_hf);
 
   /// compute control variate parameter and estimate raw moments
-  void cv_raw_moments(IntRealVectorMap& sum_L,      IntRealVectorMap& mean_L,
-		      IntRealVectorMap& mean_H,     IntRealVectorMap& var_L,
-		      IntRealVectorMap& covar_LH,   const RealVector& rho2_LH,
-		      //Real cost_ratio,
-		      size_t N_lf,                  RealMatrix& H_raw_mom);
+  void cv_raw_moments(IntRealVectorMap& sum_L_shared,
+		      IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
+		      IntRealVectorMap& sum_LL,        IntRealVectorMap& sum_LH,
+		      const RealVector& rho2_LH,     //Real cost_ratio,
+		      size_t N_shared, size_t N_refined, RealMatrix& H_raw_mom);
   /// compute control variate parameter and estimate raw moments
-  void cv_raw_moments(IntRealMatrixMap& sum_L,     IntRealMatrixMap& mean_L,
-		      IntRealMatrixMap& mean_H,    IntRealMatrixMap& var_L,
-		      IntRealMatrixMap& covar_LH,  const RealMatrix& rho2_LH,
-		      //Real cost_ratio,
-		      size_t lev, size_t N_lf,     RealMatrix& H_raw_mom);
+  void cv_raw_moments(IntRealMatrixMap& sum_L_shared,
+		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
+		      IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
+		      const RealMatrix& rho2_LH,     //Real cost_ratio,
+		      size_t lev, size_t N_shared, size_t N_refined,
+		      RealMatrix& H_raw_mom);
 
   /// compute average of a set of observations
   Real average(const RealVector& vec) const;
@@ -205,26 +185,19 @@ private:
 
 
 inline Real NonDMultilevelSampling::
-eval_ratio(RealMatrix& sum_L1, RealMatrix& sum_H1, RealMatrix& sum_L2,
-	   RealMatrix& sum_H2, RealMatrix& sum_L1H1, Real cost_ratio,
-	   size_t lev, RealMatrix& mean_L, RealMatrix& mean_H,
-	   RealMatrix& var_L, RealMatrix& var_H, RealMatrix& covar_LH,
-	   RealMatrix& rho2_LH, size_t N_LH)
+eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
+	   RealMatrix& sum_HH, RealMatrix& sum_LH, Real cost_ratio, size_t lev,
+	   RealMatrix& var_H, RealMatrix& rho2_LH, size_t N_shared)
 {
-  RealVector mean_L_l(Teuchos::View, mean_L[lev],   numFunctions),
-             mean_H_l(Teuchos::View, mean_H[lev],   numFunctions),
-              var_L_l(Teuchos::View, var_L[lev],    numFunctions),
-              var_H_l(Teuchos::View, var_H[lev],    numFunctions),
-           covar_LH_l(Teuchos::View, covar_LH[lev], numFunctions),
-            rho2_LH_l(Teuchos::View, rho2_LH[lev],  numFunctions);
+  RealVector var_H_l(Teuchos::View,   var_H[lev], numFunctions),
+           rho2_LH_l(Teuchos::View, rho2_LH[lev], numFunctions);
   int i_lev = (int)lev;
-  return eval_ratio(getCol(Teuchos::View, sum_L1,   i_lev),
-		    getCol(Teuchos::View, sum_H1,   i_lev),
-		    getCol(Teuchos::View, sum_L2,   i_lev),
-		    getCol(Teuchos::View, sum_H2,   i_lev),
-		    getCol(Teuchos::View, sum_L1H1, i_lev), cost_ratio,
-		    mean_L_l, mean_H_l, var_L_l, var_H_l, covar_LH_l,
-		    rho2_LH_l, N_LH);
+  return eval_ratio(getCol(Teuchos::View, sum_L_shared, i_lev),
+		    getCol(Teuchos::View, sum_H,  i_lev),
+		    getCol(Teuchos::View, sum_LL, i_lev),
+		    getCol(Teuchos::View, sum_HH, i_lev),
+		    getCol(Teuchos::View, sum_LH, i_lev), cost_ratio,
+		    var_H_l, rho2_LH_l, N_shared);
 }
 
 
