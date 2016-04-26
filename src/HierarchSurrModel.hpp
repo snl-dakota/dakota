@@ -115,16 +115,17 @@ protected:
 
   IntIntPair estimate_partition_bounds(int max_eval_concurrency);
 
-  /// set up the low and high fidelity models for parallel operations
+  /// set up parallel operations for the array of ordered model fidelities
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
-  /// set up the low and high fidelity models for serial operations
+  /// set up serial operations for the array of ordered model fidelities
   void derived_init_serial();
-  /// set active parallel configuration within the low and high fidelity models
+  /// set active parallel configuration within the current low and
+  /// high fidelity models identified by {low,high}FidelityIndices
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the HierarchSurrModel
-  /// (request forwarded to the low and high fidelity models)
+  /// (request forwarded to the the array of ordered model fidelities)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
@@ -390,8 +391,9 @@ estimate_partition_bounds(int max_eval_concurrency)
 
 inline void HierarchSurrModel::derived_init_serial()
 {
-  orderedModels[lowFidelityIndices.first].init_serial();
-  orderedModels[highFidelityIndices.first].init_serial();
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].init_serial();
 }
 
 
