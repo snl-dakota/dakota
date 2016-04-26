@@ -82,8 +82,7 @@ protected:
   //
 
   void core_run();
-  //void print_results(std::ostream& s);
-
+  void print_results(std::ostream& s);
 
   // Member functions
 
@@ -128,7 +127,6 @@ protected:
   
   // compute chain stats for final chain
   void compute_statistics();
-  //void compute_intervals();
 
 private:
 

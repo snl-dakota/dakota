@@ -18,6 +18,7 @@
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "PRPMultiIndex.hpp"
+#include "LHSDriver.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples
@@ -174,18 +175,8 @@ void NonDDREAMBayesCalibration::core_run()
 
   // Set seed in both local generator and the one underlying DREAM in RNGLIB
   // BMA TODO: Burkhardt says replace RNGLIB with Dakota RNG
-  if (randomSeed) {
-    dream::set_seed(randomSeed, randomSeed);
-    rnumGenerator.seed(randomSeed);
-    Cout << " DREAM Seed (user-specified) = " << randomSeed << std::endl;
-  }
-  else {
-    // Use NonD convenience function for system seed
-    int clock_seed = generate_system_seed();
-    dream::set_seed(clock_seed, clock_seed); 
-    rnumGenerator.seed(clock_seed);
-    Cout << " DREAM Seed (system-generated) = " << clock_seed << std::endl;
-  }
+  dream::set_seed(randomSeed, randomSeed);
+  rnumGenerator.seed(randomSeed);
 
   // BMA TODO: share most of this code with QUESO class
 
@@ -283,7 +274,7 @@ void NonDDREAMBayesCalibration::core_run()
   /// DREAM will callback to cache_chain to store the chain
   dream_main(cache_chain);
 
-  if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= NORMAL_OUTPUT)
     retrieve_fn_vals();
 
   // Generate useful stats from the posterior samples
@@ -294,12 +285,13 @@ void NonDDREAMBayesCalibration::core_run()
 }
 
 
-//void NonDDREAMBayesCalibration::print_results(std::ostream& s)
-//{
-//  NonDBayesCalibration::print_results(s);
-//
-//  additional DREAM output
-//}
+void NonDDREAMBayesCalibration::print_results(std::ostream& s)
+{
+  // Print variables and response function final stats
+  NonDBayesCalibration::print_results(s);
+  
+  //additional DREAM output
+}
 
 // BMA TODO: share most of this code with QUESO, general hyperpriors, other distros
 /** Static callback function to evaluate the likelihood */
@@ -468,8 +460,7 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
   // TODO: account for transformations if present? optimize for copies?
   // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
 
-  //std::ofstream test_stream("kam_test.txt");
-
+  extern PRPCache data_pairs;
   int num_samples = 
       nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
@@ -483,11 +474,7 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
  
   int lookup_failures = 0, sample_index = 0, stop_index = num_samples;
-  //test_stream << "sample index = " << sample_index << '\n';
-  //test_stream << "num_samples = " << num_samples << '\n';
-  //test_stream << "stop index = " << stop_index << '\n';
   for ( ; sample_index < stop_index; ++sample_index) {
-    //test_stream << "sample index = " << sample_index << '\n';
 
     // get just the calibration variables, omitting hyper-parameters
     RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
@@ -498,7 +485,6 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
-      //test_stream << "surrogate fcn vals" << fn_vals << '\n';
       Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
     }
     else {
@@ -508,7 +494,6 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
 	++lookup_failures;
       else {
 	const RealVector& fn_vals = cache_it->response().function_values();
-        //test_stream << "lookup fcn vals" << fn_vals << '\n';
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
       }
     }
@@ -516,29 +501,40 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
   if (lookup_failures > 0)
     Cout << "Warning: could not retrieve function values for " 
 	 << lookup_failures << " MCMC chain points." << std::endl;
-  //test_stream << "\nfn vals\n" << acceptedFnVals;
 }
 
 
 void NonDDREAMBayesCalibration::compute_statistics()
 {
-  /*
+  
   // Copied from NonDQUESO 
   // implementation may need to be reconsidered for parallel chains
-  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  nond_rep->compute_moments(acceptanceChain);
-  */
+  //NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  //nond_rep->compute_moments(acceptanceChain);
 
-  std::ofstream test_intervals("kam_test.txt1");
-  if (outputLevel >= DEBUG_OUTPUT){
-    // Record corresponding function values
-    // placeholder empty matrix
-    int num_samples = 
-      nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
-    //acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
+  // Compute moments for chain
+  //NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
+  if (burnInSamples > 0 || subSamplingPeriod > 0)
+  {
+    int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+    int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+    int num_samples = acceptanceChain.numCols();
+    int num_filtered = int((num_samples-burnin)/num_skip);
+    RealMatrix filteredChain;
+    filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
+    filter_chain(acceptanceChain, filteredChain);
+    RealMatrix filteredFnVals;
+    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
+    filter_fnvals(acceptedFnVals, filteredFnVals);
+    NonDBayesCalibration::compute_statistics(filteredChain, filteredFnVals);
+  }
+  else
+    NonDBayesCalibration::compute_statistics(acceptanceChain, acceptedFnVals);
+  
+  if (outputLevel >= NORMAL_OUTPUT){
     compute_intervals(acceptanceChain, acceptedFnVals);
-    test_intervals << "Accepted Fn Vals" << acceptedFnVals << '\n';
   }
 }
+
 
 } // namespace Dakota

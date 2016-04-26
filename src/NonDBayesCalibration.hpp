@@ -75,7 +75,7 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  //void print_results(std::ostream& s);
+  void print_results(std::ostream& s);
 
   const Model& algorithm_space_model() const;
 
@@ -197,6 +197,11 @@ protected:
 
   /// Pointer to current class instance for use in static callback functions
   static NonDBayesCalibration* nonDBayesInstance;
+
+  /// Compute final stats for MCMC chains
+  void compute_statistics(RealMatrix& mcmcchain, RealMatrix& mcmcfnvals);
+  RealMatrix chainStats;
+  RealMatrix fnStats;
 
   /// Perform chain filtering with burn-in and sub-sampling
   void filter_chain(RealMatrix& acceptanceChain, RealMatrix& filteredChain);
