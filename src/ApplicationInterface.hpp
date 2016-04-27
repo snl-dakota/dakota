@@ -279,7 +279,9 @@ private:
 
   /// execute a nonblocking dynamic schedule in a master-slave partition
   void master_dynamic_schedule_evaluations_nowait();
-  /// execute a nonblocking static/dynamic schedule in a peer partition
+  /// execute a nonblocking static schedule in a peer partition
+  void peer_static_schedule_evaluations_nowait();
+  /// execute a nonblocking dynamic schedule in a peer partition
   void peer_dynamic_schedule_evaluations_nowait();
   /// launch new jobs in prp_queue asynchronously (if capacity is
   /// available), perform nonblocking query of all running jobs, and
@@ -516,7 +518,10 @@ private:
   PRPQueue asynchLocalActivePRPQueue;
   /// used by nonblocking message passing schedulers to bookkeep which
   /// jobs are running remotely
-  std::map<int, IntIntPair> msgPassRunningMap;
+  std::map<int, IntSizetPair> msgPassRunningMap;
+  /// fnEvalId reference point for preserving modulo arithmetic-based
+  /// job assignment in case of peer static nonblocking schedulers
+  int nowaitEvalIdRef;
 
   /// array of pack buffers for evaluation jobs queued to a server
   MPIPackBuffer*   sendBuffers;
