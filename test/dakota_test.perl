@@ -1354,7 +1354,9 @@ sub parse_test_output {
       }
     }
 
-    while (/^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
+    # BMA: Bayesian methods might have just "Response Level  Probability Level", 
+    # so Reliability Index  General Rel Index is optional
+    while (/^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
