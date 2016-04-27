@@ -1655,10 +1655,10 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
       server_id = i%numEvalServers; // 0 to numEvalServers-1
       if (server_id) { // 1 to numEvalServers-1
 	send_evaluation(assign_iter, buff_index, server_id, true); // peer
-	++buff_index;
 	// update bookkeeping
 	fn_eval_id = assign_iter->eval_id();
 	msgPassRunningMap[fn_eval_id] = IntSizetPair(server_id, buff_index);
+	++buff_index;
       }
       else
 	local_prp_queue.insert(*assign_iter);
