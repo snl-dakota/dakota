@@ -31,7 +31,6 @@ $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+";
 $nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND)";
 $infre = "-?(?:1\\.#)?[Ii][Nn][Ff]";
 $naninf = "(?:$nanre|$infre)";
-#$naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
 
 # numerical field printed as exponential (may contain NaN/Inf)
 # (?: --> group without capture)
@@ -727,15 +726,17 @@ sub diff {
 
   #print "Diffing $_[0] and $_[1]\n";
   
-
-  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) {
-    if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both +/- inf
-      return 0;
-    } elsif ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) { # both +/- nan
-      return 0;
+  # nan or inf, which is represented differently on posix and windows
+  # systems
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
+    if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both inf?
+      $first0 = substr($_[0],0,1); # Get 1st chars to compare sign
+      $first1 = substr($_[1],0,1);
+      return not (($first0 eq "-" && $first1 eq "-") || # true when negative
+	  ($first0 ne "-" && $first1 ne "-"))  # true when non-negative  
     } else {
-      return 1;
-    }
+      return not ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) # does not distinguish +/- nan
+    } 
   }
   # strings   
   if ( $_[0] =~ /^$s$/ || $_[1] =~ /^$s$/ ) {
