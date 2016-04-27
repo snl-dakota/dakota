@@ -139,7 +139,8 @@ void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix) {
     // normalize each row (input/output factor) by its mean across observations
     Real row_mean = 0.0;
     for (int j=0; j<num_col; j++)
-      row_mean += data_matrix(i,j) / (Real)num_col;
+      row_mean += data_matrix(i,j);
+    row_mean /= (Real)num_col;
     for (int j=0; j<num_col; j++)
       data_matrix(i,j) -= row_mean;
   }
