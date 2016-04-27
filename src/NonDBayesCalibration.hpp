@@ -207,6 +207,8 @@ protected:
   void filter_chain(RealMatrix& acceptanceChain, RealMatrix& filteredChain);
   void filter_fnvals(RealMatrix& acceptedFnVals, RealMatrix& filteredFnVals);
   /// Compute credibility and prediction intervals of final chain
+  RealMatrix predVals;
+  RealMatrix filteredFnVals;
   void compute_intervals(RealMatrix& acceptanceChain, 
       			 RealMatrix& acceptedFnVals);
   void compute_prediction_vals(RealMatrix& filteredFnVals_for_intervals,
