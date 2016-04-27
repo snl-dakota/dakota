@@ -27,9 +27,12 @@ my $exitcode = 0;
 # Definitions
 # numerical field in exponential notation
 $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
-# TODO: extend NaN/Inf to work cross-platform (funny Windows format)
 # invalid numerical field
-$naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
+$nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND)";
+$infre = "-?(?:1\\.#)?[Ii][Nn][Ff]";
+$naninf = "(?:$nanre|$infre)";
+#$naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
+
 # numerical field printed as exponential (may contain NaN/Inf)
 # (?: --> group without capture)
 $e = "(?:$expo|$naninf)";
@@ -724,8 +727,18 @@ sub diff {
 
   #print "Diffing $_[0] and $_[1]\n";
   
-  # for nan, inf, or discrete set string, require exact string match
-  if ( $_[0] =~ /$naninf|^$s$/ || $_[1] =~ /$naninf|^$s$/ ) {
+
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) {
+    if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both +/- inf
+      return 0;
+    } elsif ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) { # both +/- nan
+      return 0;
+    } else {
+      return 1;
+    }
+  }
+  # strings   
+  if ( $_[0] =~ /^$s$/ || $_[1] =~ /^$s$/ ) {
     if ( $_[0] ne $_[1] ) {
       return 1;
     }
@@ -733,7 +746,7 @@ sub diff {
       return 0;
     }
   }
-  	    
+
 
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
     $differ = abs($_[0] - $_[1]);     # absolute difference

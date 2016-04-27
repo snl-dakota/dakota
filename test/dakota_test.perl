@@ -58,9 +58,8 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 my $summary_exitcode = 0;
 
 # regular expressions for matching and extracting test results
-# TODO: extend NaN/Inf to work cross-platform (funny Windows format)
 # invalid numerical field
-my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
+my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff]|1\\.#INF|1\\.#IND)";
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
 my $i = "-?\\d+";                     # numerical field: integer notation
