@@ -25,6 +25,7 @@ model,
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
+	interface_pointer = 'LF_INT'
 	simulation
 	  solution_level_control = 'N_x'
 # linear in modes, linear in spatial coords:
@@ -35,6 +36,7 @@ model,
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
+	interface_pointer = 'HF_INT'
 	simulation
 	  solution_level_control = 'N_x'
 # linear in modes, linear in spatial coords:
@@ -58,6 +60,12 @@ variables,
 	    initial_state = 5 3
 	    descriptors 'N_x' 'N_mod'
 
+interface,
+	id_interface = 'LF_INT'
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+	  deactivate restart_file
+
 variables,
 	id_variables = 'HF_VARS'
 	uniform_uncertain = 7
@@ -75,8 +83,10 @@ variables,
 	    descriptors 'N_x' 'N_mod'
 
 interface,
+	id_interface = 'HF_INT'
 	direct
 	  analysis_driver = 'transient_diffusion_1d'
+	  deactivate restart_file
 
 responses,
 	response_functions = 1

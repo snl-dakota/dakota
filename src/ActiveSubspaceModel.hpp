@@ -64,8 +64,8 @@ public:
 
   /// lightweight constructor
   ActiveSubspaceModel(const Model& sub_model,
-                      int random_seed, int initial_samples, int batch_size,
-                      double conv_tol, size_t max_iter, size_t max_evals,
+                      int random_seed, int initial_samples,
+                      double conv_tol, size_t max_evals,
                       unsigned short subspace_id_method);
 
   /// destructor
@@ -145,7 +145,7 @@ protected:
 
   /// generate fullspace samples, append to matrix, and factor,
   /// returning whether tolerance met
-  void expand_basis(bool& svtol_met);
+  void expand_basis();
 
   /// determine the number of full space samples for next iteration,
   /// based on batchSize, limiting by remaining function evaluation
@@ -161,25 +161,17 @@ protected:
 
   /// factor the derivative matrix and analyze singular values,
   /// assessing convergence and rank, returning whether tolerance met
-  void compute_svd(bool& svtol_met);
+  void compute_svd();
 
   /// compute Bing Li's criterion to identify the active subspace
-  void computeBingLiCriterion(RealVector& singular_values, bool& svtol_met);
+  double computeBingLiCriterion(RealVector& singular_values);
 
   /// compute Constantine's metric to identify the active subspace
-  void computeConstantineMetric(RealVector& singular_values, bool& svtol_met);
+  double computeConstantineMetric(RealVector& singular_values);
 
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
-  void computeEnergyCriterion(RealVector& singular_values, bool& svtol_met);
-
-  /// print inner iteration stats after SVD
-  void print_svd_stats();
-
-  /// determine if the reduced basis yields acceptable reconstruction
-  /// error, based on sampling in the orthogonal complement of the
-  /// reduced basis
-  void assess_reconstruction(bool& recon_tol_met);
+  double computeEnergyCriterion(RealVector& singular_values);
 
 
   // ---
@@ -238,23 +230,8 @@ protected:
   /// initial number of samples at which to query the truth model
   int initialSamples;
 
-  /// number of points to add at each iteration
-  int batchSize;
-
-  /// maximum number of build iterations
-  int maxIterations;
-
   /// maximum number of build evaluations
   int maxFunctionEvals;
-
-  /// tolerance on singular value ratio, max of user-specified and macheps
-  double svTol;
-
-  /// boolean flag to determine if reconstruction assessment is performed
-  bool performAssessment;
-
-  /// user-specified tolerance on nullspace
-  double nullspaceTol;
 
   /// Boolean flag signaling use of Bing Li criterion to identify active
   /// subspace dimension
@@ -281,9 +258,6 @@ protected:
   /// max bases to retain
   //  int maxBases;
 
-  /// minimum variance to capture in reduced basis
-  //  double minVariance;
-
   // ---
 
   // Number of fullspace active continuous variables
@@ -291,17 +265,11 @@ protected:
   // Total number of response functions
   size_t numFunctions;
 
-  /// current iteration
-  unsigned int currIter;
-
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
   /// total evaluations of model (accounting for UQ phase)
   unsigned int totalEvals;
-
-  /// current singular value ratio (sigma_k/sigma_0)
-  double svRatio;
 
   /// boolean flag to determine if mapping has been fully initialized
   bool subspaceInitialized;

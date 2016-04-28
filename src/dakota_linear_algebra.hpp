@@ -50,5 +50,20 @@ namespace Dakota {
  */
 void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans);
 
+/**
+ * \brief Compute an in-place QR factorization A = QR
+
+   Uses Teuchos::LAPACK.GEQRF() to compute the QR decomposition,
+   overwriting A with the transformations and R.
+ */
+int qr(RealMatrix& A);
+
+/**
+ * \brief Perform a multiple right-hand sides Rinv * rhs solve using
+ * the R from a qr factorization.
+
+   Uses Teuchos::LAPACK.TRTRS() to perform a triangular backsolve
+ */
+int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs);
 
 }  // namespace Dakota

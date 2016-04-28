@@ -3175,15 +3175,6 @@
 	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
 	    <param type='INTEGER' />
 	  </keyword>
-	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" >
-	    <param type="INTEGERLIST" />
-	  </keyword>
-	  <keyword  id='max_iterations' name='max_iterations' code='{N_mom(int,maxIterations)}' label='max build iterations' help='' minOccurs='0' default='1'>
-	    <param type='INTEGER' />
-	  </keyword>
-	  <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence tolerance' help='' minOccurs='0' default='1.0e-4' >
-	    <param type='REAL' />
-	  </keyword>
 	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
 	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
 	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />

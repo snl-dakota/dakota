@@ -86,8 +86,20 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // and free and a more aggressive approach with set.
 
   if (recurse_flag) {
-    size_t model_index = probDescDB.get_db_model_node(); // for restoration
+    size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
+      num_models = orderedModels.size();
 
+    // init and free all models for any mode (but only set 2 models at runtime)
+    for (i=0; i<num_models; ++i) {
+      Model& model_i = orderedModels[i];
+      // superset of possible init calls (two configurations for i > 0)
+      probDescDB.set_db_model_nodes(model_i.model_id());
+      model_i.init_communicators(pl_iter, max_eval_concurrency);
+      if (i)
+	model_i.init_communicators(pl_iter, model_i.derivative_concurrency());
+    }
+
+    /* This version inits only two models
     Model& lf_model = orderedModels[lowFidelityIndices.first];
     Model& hf_model = orderedModels[highFidelityIndices.first];
 
@@ -98,8 +110,9 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     probDescDB.set_db_model_nodes(hf_model.model_id());
     hf_model.init_communicators(pl_iter, hf_model.derivative_concurrency());
     hf_model.init_communicators(pl_iter, max_eval_concurrency);
-
-    /*
+    */
+      
+    /* This version does not support runtime updating of responseMode
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
       // LF are used in iterator evals
@@ -202,14 +215,27 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   if (recurse_flag) {
+
+    // init and free all models for any mode (but only set 2 models at runtime)
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i) {
+      Model& model_i = orderedModels[i];
+      // superset of possible init calls (two configurations for i > 0)
+      model_i.free_communicators(pl_iter, max_eval_concurrency);
+      if (i)
+	model_i.free_communicators(pl_iter, model_i.derivative_concurrency());
+    }
+
+    /* This version frees only two models:
     // superset of possible free calls (two configurations for HF)
     orderedModels[lowFidelityIndices.first].free_communicators(pl_iter,
       max_eval_concurrency);
     Model& hf_model = orderedModels[highFidelityIndices.first];
     hf_model.free_communicators(pl_iter, hf_model.derivative_concurrency());
     hf_model.free_communicators(pl_iter, max_eval_concurrency);
+    */
 
-    /*
+    /* This version does not support runtime updating of responseMode:
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
       lf_model.free_communicators(pl_iter, max_eval_concurrency);

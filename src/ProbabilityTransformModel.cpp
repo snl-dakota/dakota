@@ -136,6 +136,16 @@ bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
 
 void ProbabilityTransformModel::initialize_sizes()
 {
+  // initialize sizes to zero:
+  numUncertainVars = 0;
+  numDesignVars = 0;
+  numStateVars = 0;
+  numAleatoryUncVars = 0;
+  numEpistemicUncVars = 0;
+  numContDesVars = 0;
+  numContIntervalVars = 0;
+  numContStateVars = 0;
+
   bool err_flag = false;
   const Variables& vars = subModel.current_variables();
   short active_view = vars.view().first;

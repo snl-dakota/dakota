@@ -1,4 +1,3 @@
-TEMPLATE
 Blurb::
 Specifies two-sided order statistics (an interval) to be used when
 determining sample sizes for random sampling using Wilks order statistics.

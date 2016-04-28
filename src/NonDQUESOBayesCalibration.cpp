@@ -388,7 +388,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   uniqueSamples.reserve(chainSamples * chainCycles);
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
 				     chainSamples * chainCycles);
-  if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= NORMAL_OUTPUT)
     acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
@@ -441,7 +441,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
   // archive accepted function values (this has to be done before the
   // surrogate gets updated)
-  if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= NORMAL_OUTPUT)
     retrieve_fn_vals(update_cntr);
 }
 
@@ -455,12 +455,24 @@ void NonDQUESOBayesCalibration::compute_statistics()
   nond_rep->compute_moments(acceptance_chain);
   */
 
-  // Prior to retirement of restarts and aggregation of acceptanceChain
-  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  nond_rep->compute_moments(acceptanceChain);
-
-  // BMA: temporary output until credible/prediction intervals are implemented
-  if (outputLevel >= DEBUG_OUTPUT) {
+  if (burnInSamples > 0 || subSamplingPeriod > 0)
+  {
+    int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+    int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+    int num_samples = acceptanceChain.numCols();
+    int num_filtered = int((num_samples-burnin)/num_skip);
+    RealMatrix filteredChain;
+    filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
+    filter_chain(acceptanceChain, filteredChain);
+    RealMatrix filteredFnVals;
+    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
+    filter_fnvals(acceptedFnVals, filteredFnVals);
+    NonDBayesCalibration::compute_statistics(filteredChain, filteredFnVals);
+  }
+  else
+    NonDBayesCalibration::compute_statistics(acceptanceChain, acceptedFnVals);
+  
+  if (outputLevel >= NORMAL_OUTPUT) {
     compute_intervals(acceptanceChain, acceptedFnVals);
   }
 }
@@ -477,7 +489,7 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity = 2;
-  envOptionsValues->m_seed = (randomSeed) ? randomSeed : 1 + (int)clock(); 
+  envOptionsValues->m_seed = randomSeed; 
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -1435,7 +1447,6 @@ void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 
 void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 {
-  //NonDBayesCalibration::print_results(s);
 
   if (bestSamples.empty()) return;
 
@@ -1506,8 +1517,8 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   }
   */
   
-  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  nond_rep->print_moments(s, "posterior variable", combined_labels);
+  // Print final stats for variables and responses 
+  NonDBayesCalibration::print_results(s);
 }
 
 

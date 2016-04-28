@@ -1,0 +1,68 @@
+dakota_opt_quasisine.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -8.5437286655e-01 x1
+                     -8.5437286655e-01 x2
+<<<<< Best objective function  =
+                      5.5840969194e-01
+<<<<< Best data captured at function evaluation 17
+<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -9.9983987194e-01 x1
+                      1.7709282202e-01 x2
+<<<<< Best objective function  =
+                      2.9140659596e-01
+<<<<< Best data captured at function evaluation 44
+<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.7709282202e-01 x1
+                     -9.9983987194e-01 x2
+<<<<< Best objective function  =
+                      2.9140659596e-01
+<<<<< Best data captured at function evaluation 72
+<<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+<<<<< Best parameters          =
+                      1.7709282174e-01 x1
+                      1.7709282174e-01 x2
+<<<<< Best objective function  =
+                      6.0247194598e-02
+<<<<< Best data captured at function evaluation 100
+<<<<< Function evaluation summary: 16 total (15 new, 1 duplicate)
+<<<<< Best parameters          =
+                      3.5729263749e-02 x1
+                      3.5729263749e-02 x2
+<<<<< Best objective function  =
+                      8.7304992388e-02
+<<<<< Best data captured at function evaluation 115
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -5.5099561922e-01 x1
+                     -1.0747907891e-01 x2
+<<<<< Best objective function  =
+                      3.2618165364e-01
+<<<<< Best data captured at function evaluation 134
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.7709283115e-01 x1
+                     -7.0241174878e-01 x2
+<<<<< Best objective function  =
+                      3.0302333980e-01
+<<<<< Best data captured at function evaluation 151
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.5729239873e-02 x1
+                      1.7709282199e-01 x2
+<<<<< Best objective function  =
+                      7.3776093493e-02
+<<<<< Best data captured at function evaluation 185
+<<<<< Results summary:
+   set_id             x1             x2            x1*            x2*         obj_fn 
+        1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
+        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
+        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
+        5              0              0  0.03572926375  0.03572926375  0.08730499239 
+        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 

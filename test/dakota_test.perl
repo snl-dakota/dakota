@@ -58,6 +58,8 @@ if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
 my $summary_exitcode = 0;
 
 # regular expressions for matching and extracting test results
+# invalid numerical field
+my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff]|1\\.#INF|1\\.#IND)";
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
 my $i = "-?\\d+";                     # numerical field: integer notation
@@ -1351,14 +1353,16 @@ sub parse_test_output {
       }
     }
 
-    while (/^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
+    # BMA: Bayesian methods might have just "Response Level  Probability Level", 
+    # so Reliability Index  General Rel Index is optional
+    while (/^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
-      while (/\s+$e/) {
+      while (/\s+($e|$naninf)/) {  # correlations may contain nan/inf
         print;
         print TEST_OUT;
         $_ = <OUTPUT>; # grab next line

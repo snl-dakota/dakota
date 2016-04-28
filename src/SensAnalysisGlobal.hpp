@@ -34,7 +34,6 @@ class ResultsManager;
     utility functions provide global sensitivity analysis through
     correlation calculations (e.g. simple, partial, rank, raw) as well
     as variance-based decomposition. */
-
 class SensAnalysisGlobal
 {
 public:
@@ -53,21 +52,21 @@ public:
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const VariablesArray& vars_samples,
-			    const IntResponseMap& resp_samples,
-			    const StringSetArray& dss_vals);
+                            const IntResponseMap& resp_samples,
+                            const StringSetArray& dss_vals);
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const RealMatrix&     vars_samples,
-			    const IntResponseMap& resp_samples);
+                            const IntResponseMap& resp_samples);
 
   /// save correlations to database
   void archive_correlations(const StrStrSizet& run_identifier,  
-			    ResultsManager& iterator_results,
-			    StringMultiArrayConstView cv_labels,
-			    StringMultiArrayConstView div_labels,
-			    StringMultiArrayConstView dsv_labels,
-			    StringMultiArrayConstView drv_labels,
-			    const StringArray& resp_labels) const;
+                            ResultsManager& iterator_results,
+                            StringMultiArrayConstView cv_labels,
+                            StringMultiArrayConstView div_labels,
+                            StringMultiArrayConstView dsv_labels,
+                            StringMultiArrayConstView drv_labels,
+                            const StringArray& resp_labels) const;
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked
@@ -91,20 +90,38 @@ private:
   size_t find_valid_samples(const IntResponseMap& resp_samples, 
 			    BoolDeque& valid_sample);
 
-  /// replace sample values with their ranks
-  void values_to_ranks(const RealMatrix& total_data, 
-		       RealMatrix& total_data_rank);
+  /// extract a compact valid sample (vars/resp) matrix from the passed data
+  void valid_sample_matrix(const VariablesArray& vars_samples,
+                           const IntResponseMap& resp_samples,
+                           const StringSetArray& dss_vals,
+                           const BoolDeque is_valid_sample,
+                           RealMatrix& valid_data);
 
+  /// extract a compact valid sample (vars/resp) matrix from the passed data
+  void valid_sample_matrix(const RealMatrix&     vars_samples,
+                           const IntResponseMap& resp_samples,
+                           const BoolDeque is_valid_sample,
+                           RealMatrix& valid_samples);
+
+  /// replace sample values with their ranks, in-place
+  void values_to_ranks(RealMatrix& valid_data);
 
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
+  /// center the passed matrix by its mean, in-place
+  void center_rows(RealMatrix& data_matrix);
+
+  /// if result was NaN/Inf, preserve it, otherwise truncate to [-1.0, 1.0]
+  void correl_adjust(Real& corr_value);
+
   /// computes simple correlations, populating corr_matrix
-  void simple_corr(RealMatrix& total_data, const int& num_in, 
-		   RealMatrix& corr_matrix);
+  void simple_corr(RealMatrix& total_data, const int& num_in,
+                   RealMatrix& corr_matrix);
   /// computes partial correlations, populating corr_matrix and numerical_issues
-  void partial_corr(RealMatrix& total_data, const int& num_in, 
-		    RealMatrix& corr_matrix, bool& numerical_issues);
+  void partial_corr(RealMatrix& total_data, const int num_in, 
+                    const RealMatrix& simple_corr_mat,
+                    RealMatrix& corr_matrix, bool& numerical_issues);
 
   //
   //- Heading: Data

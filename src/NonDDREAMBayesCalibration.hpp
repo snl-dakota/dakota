@@ -82,13 +82,13 @@ protected:
   //
 
   void core_run();
-  //void print_results(std::ostream& s);
-
+  void print_results(std::ostream& s);
 
   // Member functions
 
   /// Callback to archive the chain from DREAM
   static void cache_chain(const double* const z);
+  void retrieve_fn_vals();
 
   //
   //- Heading: Data
@@ -127,7 +127,6 @@ protected:
   
   // compute chain stats for final chain
   void compute_statistics();
-  //void compute_intervals();
 
 private:
 

@@ -27,9 +27,11 @@ my $exitcode = 0;
 # Definitions
 # numerical field in exponential notation
 $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
-# TODO: extend NaN/Inf to work cross-platform (funny Windows format)
 # invalid numerical field
-$naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff])";
+$nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND)";
+$infre = "-?(?:1\\.#)?[Ii][Nn][Ff]";
+$naninf = "(?:$nanre|$infre)";
+
 # numerical field printed as exponential (may contain NaN/Inf)
 # (?: --> group without capture)
 $e = "(?:$expo|$naninf)";
@@ -261,7 +263,7 @@ sub compare_output {
     # single quotes must be escaped here:
     my $best_re = '^<<<<< Best [ \w\(\)]+=$';
     my $pce_re = 'of Polynomial Chaos Expansion for';
-    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):)$';
+    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):)$';
 
     while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
 	    ($base =~ /${pce_re}/)  && ($test =~ /${pce_re}/)  ||
@@ -717,14 +719,27 @@ sub ignore_small_value_single {
 }
 
 # subroutine diff assesses whether two numbers differ by more than an epsilon
+# returns 1 if diff, 0 otherwise
 sub diff {
   # $_[0] = test value
   # $_[1] = baseline value
 
   #print "Diffing $_[0] and $_[1]\n";
   
-  # for nan, inf, or discrete set string, require exact string match
-  if ( $_[0] =~ /$naninf|^$s$/ || $_[1] =~ /$naninf|^$s$/ ) {
+  # nan or inf, which is represented differently on posix and windows
+  # systems
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
+    if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both inf?
+      $first0 = substr($_[0],0,1); # Get 1st chars to compare sign
+      $first1 = substr($_[1],0,1);
+      return not (($first0 eq "-" && $first1 eq "-") || # true when negative
+	  ($first0 ne "-" && $first1 ne "-"))  # true when non-negative  
+    } else {
+      return not ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) # does not distinguish +/- nan
+    } 
+  }
+  # strings   
+  if ( $_[0] =~ /^$s$/ || $_[1] =~ /^$s$/ ) {
     if ( $_[0] ne $_[1] ) {
       return 1;
     }
@@ -732,7 +747,7 @@ sub diff {
       return 0;
     }
   }
-  	    
+
 
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
     $differ = abs($_[0] - $_[1]);     # absolute difference

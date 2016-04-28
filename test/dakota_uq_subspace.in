@@ -75,9 +75,6 @@ model
     id_model = 'SUBSPACE'
     actual_model_pointer = 'FULLSPACE'
     initial_samples  100
-      refinement_samples 2
-    max_iterations = 10
-    convergence_tolerance = 1.0e-3
 #   truncation_method bing_li         #s1,#p1
 #   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#p11,#p12,#p13,#p14,#p15,#p17,#s20,#p19,#s21
 #   truncation_method                 #s17,#p16

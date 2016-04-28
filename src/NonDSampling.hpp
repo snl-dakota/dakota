@@ -84,6 +84,10 @@ public:
   /// prints the moments computed in compute_moments()
   void print_moments(std::ostream& s, String qoi_type,
 		     const StringArray& moment_labels) const;
+  /// core print moments that can be called without object
+  static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
+			    const RealMatrix moment_cis, String qoi_type,
+			    const StringArray& moment_labels, bool print_cis);
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
@@ -91,6 +95,10 @@ public:
 
   /// calculates sample moments for an array of observations for a set of QoI
   void compute_moments(const RealMatrix& samples);
+
+  /// core compute moments that can be called without object
+  static void compute_moments(const RealMatrix& samples, 
+			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
   /// Static for now so I can test without instantiating a NonDSampling object - RWH

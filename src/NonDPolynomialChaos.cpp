@@ -1208,9 +1208,9 @@ void NonDPolynomialChaos::multifidelity_expansion()
   size_t num_mf = iteratedModel.subordinate_models(false).size(),
      num_hf_lev = iteratedModel.truth_model().solution_levels();
      // for now, only SimulationModel supports solution_levels()
-  if (num_mf == 2 && num_hf_lev == 1)                     // multifidelity PCE
+  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
     NonDExpansion::multifidelity_expansion();
-  else if (num_mf == 1 && num_hf_lev > 1 &&               // multilevel LLS/CS
+  else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
 	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION)
     multilevel_regression(0);
   else {

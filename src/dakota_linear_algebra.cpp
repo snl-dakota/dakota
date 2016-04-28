@@ -59,4 +59,63 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans)
   }
 }
 
+
+int qr(RealMatrix& A)
+{
+  Teuchos::LAPACK<int, Real> la;
+ 
+  int M = A.numRows();
+  int N = A.numCols();
+  int LDA = A.stride();
+  int tau_size = std::min(M, N);
+  RealMatrix TAU(tau_size, tau_size);
+  int info = 0;
+
+  int work_size = -1;            // special code for workspace query
+  double* work = new double[1];  // temporary work array
+  la.GEQRF(M, N, A.values(), LDA, TAU.values(), work, work_size, &info);
+  work_size = (int)work[0];   // optimal work array size returned by query
+  delete [] work;
+
+  work = new double[work_size];
+  la.GEQRF(M, N, A.values(), LDA, TAU.values(), work, work_size, &info);
+  delete [] work;
+
+  if (info < 0) {
+    Cerr << "Error (qr): the " << -info << "-th argument had an illegal "
+	 << "value.";
+    abort_handler(-1);
+  }
+
+  return info;
+}
+
+
+/** Returns info > 0 if the matrix is singular */
+int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs)
+{
+  Teuchos::LAPACK<int, Real> la;
+
+  char UPLO = 'U';
+  char TRANS = transpose ? 'T' : 'N';
+  char DIAG = 'N';
+  int N = q_r.numCols();
+  int NRHS = rhs.numCols();
+  int LDA = q_r.stride();
+  int LDB = rhs.stride();
+  //int LDB = rhs.numRows();
+  int info = 0;
+
+  la.TRTRS(UPLO, TRANS, DIAG, N, NRHS, q_r.values(), LDA, rhs.values(), LDB, 
+	   &info);
+
+  if (info < 0) {
+    Cerr << "Error (qr_rsolve): the " << -info << "-th argument had an illegal "
+	 << "value.";
+    abort_handler(-1);
+  }
+  return info;
+}
+
+
 }  // namespace Dakota

@@ -1109,6 +1109,13 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 
 void NonDSampling::compute_moments(const RealMatrix& samples)
 {
+  compute_moments(samples, momentStats);
+}
+
+
+void NonDSampling::
+compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
+{
   // For a samples matrix, calculate mean, standard deviation,
   // skewness, and kurtosis
 
@@ -1117,7 +1124,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
     num_samp;
   Real sum, var, skew, kurt, sample;
 
-  if (momentStats.empty()) momentStats.shapeUninitialized(4, num_qoi);
+  if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
 
@@ -1143,7 +1150,7 @@ void NonDSampling::compute_moments(const RealMatrix& samples)
       abort_handler(-1);
     }
 
-    Real* moments_i = momentStats[i];
+    Real* moments_i = moment_stats[i];
     Real& mean = moments_i[0];
     mean = sum/((Real)num_samp);
 
@@ -1470,8 +1477,17 @@ void NonDSampling::
 print_moments(std::ostream& s, String qoi_type,
 	      const StringArray& moment_labels) const
 {
-  size_t i, j, width = write_precision+7, num_moments = momentStats.numRows(),
-    num_qoi = momentStats.numCols();
+  bool print_cis = (numSamples > 1);
+  print_moments(s, momentStats, momentCIs, qoi_type, moment_labels, print_cis);
+}
+
+void NonDSampling::
+print_moments(std::ostream& s, const RealMatrix& moment_stats,
+	      const RealMatrix moment_cis, String qoi_type,
+	      const StringArray& moment_labels, bool print_cis)
+{
+  size_t i, j, width = write_precision+7, num_moments = moment_stats.numRows(),
+    num_qoi = moment_stats.numCols();
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
@@ -1479,13 +1495,13 @@ print_moments(std::ostream& s, String qoi_type,
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
   for (i=0; i<num_qoi; ++i) {
-    const Real* moments_i = momentStats[i];
+    const Real* moments_i = moment_stats[i];
     s << std::setw(14) << moment_labels[i];
     for (j=0; j<num_moments; ++j)
       s << ' ' << std::setw(width) << moments_i[j];
     s << '\n';
   }
-  if (numSamples > 1 && !momentCIs.empty()) {
+  if (print_cis && !moment_cis.empty()) {
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
@@ -1493,12 +1509,11 @@ print_moments(std::ostream& s, String qoi_type,
       << std::setw(width+2) << "UpperCI_StdDev\n";
     for (i=0; i<num_qoi; ++i)
       s << std::setw(14) << moment_labels[i]
-	<< ' ' << std::setw(width) << momentCIs(0, i)
-	<< ' ' << std::setw(width) << momentCIs(1, i)
-	<< ' ' << std::setw(width) << momentCIs(2, i)
-	<< ' ' << std::setw(width) << momentCIs(3, i) << '\n';
+	<< ' ' << std::setw(width) << moment_cis(0, i)
+	<< ' ' << std::setw(width) << moment_cis(1, i)
+	<< ' ' << std::setw(width) << moment_cis(2, i)
+	<< ' ' << std::setw(width) << moment_cis(3, i) << '\n';
   }
 }
 
 } // namespace Dakota
-
