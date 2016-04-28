@@ -112,6 +112,9 @@ private:
   /// center the passed matrix by its mean, in-place
   void center_rows(RealMatrix& data_matrix);
 
+  /// if result was NaN/Inf, preserve it, otherwise truncate to [-1.0, 1.0]
+  void correl_adjust(Real& corr_value);
+
   /// computes simple correlations, populating corr_matrix
   void simple_corr(RealMatrix& total_data, const int& num_in,
                    RealMatrix& corr_matrix);

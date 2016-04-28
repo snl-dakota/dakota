@@ -133,7 +133,8 @@ void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
 }
 
 
-void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix) {
+void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix)
+{
   int num_row = data_matrix.numRows(), num_col = data_matrix.numCols();
   for (int i=0; i<num_row; i++) {
     // normalize each row (input/output factor) by its mean across observations
@@ -144,6 +145,13 @@ void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix) {
     for (int j=0; j<num_col; j++)
       data_matrix(i,j) -= row_mean;
   }
+}
+
+
+void SensAnalysisGlobal::correl_adjust(Real& corr_value)
+{
+  if (boost::math::isfinite(corr_value) && std::abs(corr_value) > 1.0)
+    corr_value = corr_value / std::abs(corr_value);
 }
 
 
@@ -307,6 +315,16 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
     corr_matrix.shape(num_corr, num_corr);
     corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
                          total_data, total_data, 0.0);
+    for (int i=0; i<num_corr; ++i) {
+      // set finite diagonal values to 1.0
+      if (boost::math::isfinite(corr_matrix(i,i)))
+	corr_matrix(i,i) = 1.0;
+      // snap all finite values to [-1.0, 1.0]
+      for (int j=0; j<i; ++j) {
+	correl_adjust(corr_matrix(i,j));
+	correl_adjust(corr_matrix(j,i));
+      }
+    }
   }
   else {  
     // input-to-output case
@@ -317,6 +335,10 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
                               num_in, 0);
     corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
                          total_data_in, total_data_out, 0.0);
+    // snap all finite values to [-1.0, 1.0]
+    for (int i=0; i<num_in; ++i)
+      for (int j=0; j<num_out; ++j)
+	correl_adjust(corr_matrix(i,j));
   }
 } 
 
@@ -449,6 +471,11 @@ partial_corr(RealMatrix& total_data, const int num_in,
         corr_matrix(i,k) = partial_cov(0, k+1) / std::sqrt(partial_cov(0,0)) / 
           std::sqrt(partial_cov(k+1, k+1));
   }
+
+  // snap all finite values to [-1.0, 1.0]
+  for (int i=0; i<num_in; ++i)
+    for (int j=0; j<num_out; ++j)
+      correl_adjust(corr_matrix(i,j));
 }
 
 
