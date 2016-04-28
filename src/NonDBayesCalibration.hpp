@@ -188,8 +188,9 @@ protected:
 
   /// Post-processing-related controls
 
-  /// accumulation of acceptance chain across restarts (stored in user-space)
-  /// TO DO: retire once restarts are retired
+  /// accumulation of acceptance chain across restarts (stored in
+  /// user-space) TO DO: retire once restarts are retired; optimize to
+  /// convert to user-space only in final results
   RealMatrix acceptanceChain;
   /// cached function values corresponding to acceptanceChain for
   /// final statistics reporting

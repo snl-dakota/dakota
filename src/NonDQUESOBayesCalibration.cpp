@@ -424,8 +424,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
   // archive accepted function values (this has to be done before the
   // surrogate gets updated)
-  if (outputLevel >= NORMAL_OUTPUT)
-    retrieve_fn_vals(update_cntr);
+  retrieve_fn_vals(update_cntr);
 }
 
 void NonDQUESOBayesCalibration::init_queso_environment()
@@ -1551,15 +1550,21 @@ void NonDQUESOBayesCalibration::retrieve_fn_vals(size_t cycle_num)
     // get just the calibration variables, omitting hyper-parameters
     RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
 			   numContinuousVars);
-    lookup_vars.continuous_variables(accept_vars);
-      
     if (mcmcModel.model_type() == "surrogate") {
+      if (standardizedSpace) {
+	RealVector u_vars;
+	natafTransform.trans_X_to_U(accept_vars, u_vars);
+	lookup_vars.continuous_variables(accept_vars);
+      }
+      else 
+	lookup_vars.continuous_variables(accept_vars);
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
       Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
     }
     else {
+      lookup_vars.continuous_variables(accept_vars);
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
       if (cache_it == data_pairs.get<hashed>().end())
