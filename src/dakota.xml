@@ -2355,6 +2355,23 @@
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="tabular format" >
+			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			<!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+			<required>
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  </keyword>
+			</required>
+			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
 		</keyword>
 	      </oneOf>
 	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
