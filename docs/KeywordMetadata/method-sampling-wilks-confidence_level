@@ -1,4 +1,3 @@
-TEMPLATE
 Blurb::
 The confidence level to be used when determining sample sizes
 for random sampling using Wilks order statistics.

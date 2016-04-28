@@ -1,4 +1,3 @@
-TEMPLATE
 Blurb::
 Specifies one-sided order statistics to be used when determining sample
 sizes for random sampling using Wilks order statistics.
