@@ -1687,7 +1687,9 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
       server_jobs[server_index].insert(buff_index);
     }
     bool running_mp, running_al, backfill_local = false;
-    for (; assign_iter != beforeSynchCorePRPQueue.end(); ++assign_iter) {
+    for (; assign_iter != beforeSynchCorePRPQueue.end() &&
+	   ( num_local_running  < local_capacity ||
+	     num_remote_running < remote_capacity ); ++assign_iter) {
       fn_eval_id = assign_iter->eval_id();
       // look here first
       running_mp = (msgPassRunningMap.find(fn_eval_id) !=
@@ -1857,7 +1859,9 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
       server_jobs[server_index].insert(buff_index);
     }
     bool running_mp, running_al, backfill_local = false;
-    for (; assign_iter != beforeSynchCorePRPQueue.end(); ++assign_iter) {
+    for (; assign_iter != beforeSynchCorePRPQueue.end() &&
+	   ( num_local_running  < local_capacity ||
+	     num_remote_running < remote_capacity ); ++assign_iter) {
       fn_eval_id = assign_iter->eval_id();
       // look here first
       running_mp = (msgPassRunningMap.find(fn_eval_id) !=

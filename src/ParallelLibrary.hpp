@@ -24,9 +24,11 @@
 #include "ProgramOptions.hpp"
 #include "OutputManager.hpp"
 
-// Aliasing of MPI comms seems sufficient at this time so long as we're
-// careful with deallocation, and MPI_Comm_dup may induce higher overhead.
-//#define DEEP_MPI_COPY
+// Aliasing of MPI comms seems sufficient in practice, but MPI_Comm_dup
+// guarantees a new context that prevents misassociation of messages
+// with the same source/dest and tag (e.g., reuse of fn_eval_id tag
+// across LF and HF models when using nonblocking scheduling of both)
+#define DEEP_MPI_COPY
 
 namespace Dakota {
 
@@ -255,14 +257,10 @@ inline void ParallelLevel::assign(const ParallelLevel& pl)
     if (idlePartition) ++num_hs_ic;
     hubServerInterComms = new MPI_Comm [num_hs_ic];
     for (i=0; i<num_hs_ic; ++i)
-//#if defined(DEEP_MPI_COPY) && defined(DAKOTA_HAVE_MPI)
       if (pl.hubServerInterComms[i] == MPI_COMM_NULL)
 	hubServerInterComms[i] = MPI_COMM_NULL;
       else
 	MPI_Comm_dup(pl.hubServerInterComms[i], &hubServerInterComms[i]);
-//#else
-//    hubServerInterComms[i] = pl.hubServerInterComms[i];
-//#endif
 #else
     // simple pointer assignment is sufficient for shallow copies
     hubServerInterComms = pl.hubServerInterComms;
