@@ -5761,6 +5761,25 @@ Partial Rank Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean         -nan -9.76738e-01 -9.92129e-01 
       Y_mean         -nan -9.86420e-01 -9.55272e-01 
+dakota_uq_diffusion_cvmc.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LF_INT): 2835 total (2835 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 77 total (77 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 8.1429687500e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5638895037e-02  6.7797292003e-03  4.1932153615e-01 -2.7555448547e-01
+ response_fn_2  1.2925299268e-01  1.4469413313e-02  2.6518201317e-01 -1.0083440575e+00
+ response_fn_3  2.5376118561e-02  6.9922253556e-03  5.3804402029e-01 -9.1020660194e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (LF_INT): 21924 total (21924 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 20 total (20 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.5352539062e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5225571176e-02  6.5767003327e-03  7.6644080011e-01 -1.4075286854e-01
+ response_fn_2  1.2968378243e-01  1.3595190642e-02  1.3818246848e+00  1.5479136287e+00
+ response_fn_3  2.5225571176e-02  6.5767003336e-03  7.6644079989e-01 -1.4075286925e-01
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
