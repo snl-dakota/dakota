@@ -94,9 +94,6 @@ protected:
   /// compute chain statistics for final MCMC chain
   void compute_statistics();
 
-  /// export the acceptance chain in user space
-  void export_chain(size_t update_cntr);
-
   /// accumulate unique samples drawn from the acceptance chain
   void accumulate_chain(size_t update_cntr);
   /// accumulate the acceptance chain across multiple restart cycles
@@ -205,15 +202,6 @@ protected:
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
 
-  /// output file stream for the MCMC chain (active based on output verbosity)
-  std::ofstream exportMCMCStream;
-  std::ofstream filteredMCMCStream;
-  /// output filename for the MCMC chain
-  String exportMCMCFilename;
-  /// output formatting options for MCMC export
-  short exportMCMCFormat;
-  short filteredMCMCFormat;
-
 private:
 
   //
@@ -265,13 +253,6 @@ private:
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
-
-  /// accumulation of acceptance chain across restarts
-  /// TO DO: retire once restarts are retired
-  RealMatrix acceptanceChain;
-  /// cached function values corresponding to acceptanceChain for
-  /// final statistics reporting
-  RealMatrix acceptedFnVals;
 
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains

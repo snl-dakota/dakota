@@ -13,12 +13,9 @@
 //- Version:
 
 #include "NonDDREAMBayesCalibration.hpp"
-#include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "ProbabilityTransformation.hpp"
 #include "PRPMultiIndex.hpp"
-#include "LHSDriver.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples
@@ -274,17 +271,20 @@ void NonDDREAMBayesCalibration::core_run()
   /// DREAM will callback to cache_chain to store the chain
   dream_main(cache_chain);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    retrieve_fn_vals();
+  // get the function values corresponding to the acceptance chain
+  retrieve_fn_vals();
 
   // Generate useful stats from the posterior samples
   compute_statistics();
 
+  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
+    export_chain();
 
   return;
 }
 
 
+  // BMA: Remove?
 void NonDDREAMBayesCalibration::print_results(std::ostream& s)
 {
   // Print variables and response function final stats
@@ -442,6 +442,8 @@ void NonDDREAMBayesCalibration::cache_chain(const double* const z)
   int num_samples = 
     nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
 
+  // TODO: verify whether the chain coming back is equivalent to an
+  // accepted chain
   nonDDREAMInstance->acceptanceChain.shape(par_num, num_samples);
 
   // BMA: loops taken from dream.cpp chain_write; don't change
@@ -457,13 +459,9 @@ void NonDDREAMBayesCalibration::cache_chain(const double* const z)
 
 void NonDDREAMBayesCalibration::retrieve_fn_vals()
 {
-  // TODO: account for transformations if present? optimize for copies?
-  // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
-
-  extern PRPCache data_pairs;
-  int num_samples = 
-      nonDDREAMInstance->numGenerations * nonDDREAMInstance->numChains;
+  int num_samples = acceptanceChain.numCols();
   acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
+
   // the MCMC model omits the hyper params and residual transformations...
   Variables lookup_vars = mcmcModel.current_variables().copy();
   String interface_id = mcmcModel.interface_id();
@@ -473,8 +471,8 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
  
-  int lookup_failures = 0, sample_index = 0, stop_index = num_samples;
-  for ( ; sample_index < stop_index; ++sample_index) {
+  int lookup_failures = 0;
+  for (int sample_index=0; sample_index < num_samples; ++sample_index) {
 
     // get just the calibration variables, omitting hyper-parameters
     RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
@@ -509,24 +507,23 @@ void NonDDREAMBayesCalibration::compute_statistics()
   
   // Copied from NonDQUESO 
   // implementation may need to be reconsidered for parallel chains
-  //NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  //nond_rep->compute_moments(acceptanceChain);
+
+  // BMA TODO: How does this differ from QUESO?  Consider elevating
+  // some/all to base class
 
   // Compute moments for chain
-  //NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
   if (burnInSamples > 0 || subSamplingPeriod > 0)
   {
     int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
     int burnin = (burnInSamples > 0) ? burnInSamples : 0;
     int num_samples = acceptanceChain.numCols();
     int num_filtered = int((num_samples-burnin)/num_skip);
-    RealMatrix filteredChain;
-    filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
-    filter_chain(acceptanceChain, filteredChain);
-    RealMatrix filteredFnVals;
+    RealMatrix filtered_chain;
+    filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
+    filter_chain(acceptanceChain, filtered_chain);
     filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
     filter_fnvals(acceptedFnVals, filteredFnVals);
-    NonDBayesCalibration::compute_statistics(filteredChain, filteredFnVals);
+    NonDBayesCalibration::compute_statistics(filtered_chain, filteredFnVals);
   }
   else
     NonDBayesCalibration::compute_statistics(acceptanceChain, acceptedFnVals);

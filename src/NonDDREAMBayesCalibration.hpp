@@ -98,10 +98,6 @@ protected:
   /// upper bounds on calibrated parameters
   RealVector paramMaxs;
 
-  /// aggregate final chain (need to verify if accepted only)
-  RealMatrix acceptanceChain;
-  RealMatrix acceptedFnVals;
-
   // DREAM Algorithm controls
 
   /// number of concurrent chains

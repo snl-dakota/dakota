@@ -141,14 +141,12 @@ protected:
   /// RecastModel for solving for MAP using negative log posterior
   Model negLogPostModel;
 
-  /// NonDSampling method for computing sample statistics on final MCMC chain
-  Iterator chainStatsSampler;
-
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
   Iterator stochExpIterator;
 
-  /// number of samples in the chain (e.g. number of MCMC samples)
+  /// number of samples in the chain (e.g. number of MCMC samples);
+  /// for iterative update cycles, number of samples per update cycle
   int chainSamples;
   /// number of update cycles for MCMC chain (implemented by restarting
   /// of short chains)
@@ -190,6 +188,13 @@ protected:
 
   /// Post-processing-related controls
 
+  /// accumulation of acceptance chain across restarts (stored in user-space)
+  /// TO DO: retire once restarts are retired
+  RealMatrix acceptanceChain;
+  /// cached function values corresponding to acceptanceChain for
+  /// final statistics reporting
+  RealMatrix acceptedFnVals;
+
   /// number of MCMC samples to discard from acceptance chain
   int burnInSamples;
   /// period or skip in post-processing the acceptance chain
@@ -203,15 +208,19 @@ protected:
   RealMatrix chainStats;
   RealMatrix fnStats;
 
+  /// export the acceptance chain in user space
+  void export_chain();
+
   /// Perform chain filtering with burn-in and sub-sampling
-  void filter_chain(RealMatrix& acceptanceChain, RealMatrix& filteredChain);
-  void filter_fnvals(RealMatrix& acceptedFnVals, RealMatrix& filteredFnVals);
+  void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
+  void filter_fnvals(RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
   /// Compute credibility and prediction intervals of final chain
   RealMatrix predVals;
+  /// cached filtered function values for printing
   RealMatrix filteredFnVals;
-  void compute_intervals(RealMatrix& acceptanceChain, 
-      			 RealMatrix& acceptedFnVals);
-  void compute_prediction_vals(RealMatrix& filteredFnVals_for_intervals,
+  void compute_intervals(RealMatrix& acceptance_chain, 
+      			 RealMatrix& accepted_fn_vals);
+  void compute_prediction_vals(RealMatrix& filtered_fn_vals,
       			       RealMatrix& PredVals, int num_filtered,
 			       size_t num_exp, size_t num_concatenated);
   void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
@@ -227,8 +236,11 @@ protected:
 			      size_t aug_length);
   void print_intervals_screen(std::ostream& stream, RealMatrix& functionvalsT,
   			      RealMatrix& predvalsT, int length);
-  /// output file stream and formatting options for tabular file output
-  std::ofstream filteredMCMCStream;
+  /// output filename for the MCMC chain
+  String exportMCMCFilename;
+  // BMA TODO: user control of filtered file name and format?  Or use
+  // a base name + extensions?
+  /// output formatting options for MCMC export
   short exportMCMCFormat;
   short filteredMCMCFormat;
 
