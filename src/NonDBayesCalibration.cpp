@@ -722,13 +722,37 @@ neg_log_post_resp_mapping(const Variables& residual_vars,
   //Cout << "nlpost_resp:\n" << nlpost_resp;
 }
 
-void NonDBayesCalibration::compute_statistics(RealMatrix& mcmcchain,
-    					      RealMatrix& mcmcfnvals)
+void NonDBayesCalibration::compute_statistics()
 {
   // mcmcchain is either acceptanceChain or filtered_chain
   // mcmcfnvals is either acceptedFnVals or filteredFnVals
-  NonDSampling::compute_moments(mcmcchain, chainStats);
-  NonDSampling::compute_moments(mcmcfnvals, fnStats);
+  int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
+  int burnin = (burnInSamples > 0) ? burnInSamples : 0;
+  int num_samples = acceptanceChain.numCols();
+  int num_filtered = int((num_samples-burnin)/num_skip);
+  size_t num_exp = expData.num_experiments();
+  if (burnInSamples > 0 || subSamplingPeriod > 0)
+  {
+    RealMatrix filtered_chain;
+    filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
+    filter_chain(acceptanceChain, filtered_chain);
+    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
+    filter_fnvals(acceptedFnVals, filteredFnVals);
+    NonDSampling::compute_moments(filtered_chain, chainStats);
+    NonDSampling::compute_moments(filteredFnVals, fnStats);
+    // Print tabular file for filtered chain
+    print_filtered_tabular(filtered_chain, filteredFnVals, predVals, 
+      			   num_filtered, num_exp);
+  }
+  else
+  {
+    NonDSampling::compute_moments(acceptanceChain, chainStats);
+    NonDSampling::compute_moments(acceptedFnVals, fnStats);
+  }
+  
+  if (outputLevel >= NORMAL_OUTPUT) {
+    compute_intervals(acceptanceChain, acceptedFnVals);
+  }
 }
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
@@ -839,11 +863,6 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
   if (num_levels > 0){
     print_intervals_file(interval_stream, filtered_fn_vals_transpose, 
       			   predVals_transpose, num_filtered, num_concatenated);
-  }
-  // Print tabular file
-  if (burnInSamples > 0 || subSamplingPeriod > 0 ){
-    print_filtered_tabular(filtered_chain, filteredFnVals, predVals, 
-      			   num_filtered, num_exp);
   }
 }
 

@@ -204,7 +204,7 @@ protected:
   static NonDBayesCalibration* nonDBayesInstance;
 
   /// Compute final stats for MCMC chains
-  void compute_statistics(RealMatrix& mcmcchain, RealMatrix& mcmcfnvals);
+  void compute_statistics();
   RealMatrix chainStats;
   RealMatrix fnStats;
 

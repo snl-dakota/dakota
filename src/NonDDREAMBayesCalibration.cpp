@@ -501,37 +501,4 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
 	 << lookup_failures << " MCMC chain points." << std::endl;
 }
 
-
-void NonDDREAMBayesCalibration::compute_statistics()
-{
-  
-  // Copied from NonDQUESO 
-  // implementation may need to be reconsidered for parallel chains
-
-  // BMA TODO: How does this differ from QUESO?  Consider elevating
-  // some/all to base class
-
-  // Compute moments for chain
-  if (burnInSamples > 0 || subSamplingPeriod > 0)
-  {
-    int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-    int burnin = (burnInSamples > 0) ? burnInSamples : 0;
-    int num_samples = acceptanceChain.numCols();
-    int num_filtered = int((num_samples-burnin)/num_skip);
-    RealMatrix filtered_chain;
-    filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
-    filter_chain(acceptanceChain, filtered_chain);
-    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
-    filter_fnvals(acceptedFnVals, filteredFnVals);
-    NonDBayesCalibration::compute_statistics(filtered_chain, filteredFnVals);
-  }
-  else
-    NonDBayesCalibration::compute_statistics(acceptanceChain, acceptedFnVals);
-  
-  if (outputLevel >= NORMAL_OUTPUT){
-    compute_intervals(acceptanceChain, acceptedFnVals);
-  }
-}
-
-
 } // namespace Dakota

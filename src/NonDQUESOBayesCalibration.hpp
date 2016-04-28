@@ -91,9 +91,6 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
-  /// compute chain statistics for final MCMC chain
-  void compute_statistics();
-
   /// accumulate unique samples drawn from the acceptance chain
   void accumulate_chain(size_t update_cntr);
   /// accumulate the acceptance chain across multiple restart cycles

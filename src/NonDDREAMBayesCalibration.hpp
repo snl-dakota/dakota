@@ -120,9 +120,6 @@ protected:
   //std::vector<boost::math::uniform> priorDistributions;
   // samplers for the uniform prior PDFs for each variable
   //std::vector<boost::uniform_real<double> > priorSamplers;
-  
-  // compute chain stats for final chain
-  void compute_statistics();
 
 private:
 
