@@ -170,11 +170,6 @@ compute_correlations(const VariablesArray& vars_samples,
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  else if (num_obs == 1) {
-    Cout << "Warning: correlation matrices not available for data with 1 " 
-         << "sample." << std::endl;
-    return;
-  }
   if (resp_samples.size() != num_obs) {
     Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
@@ -235,11 +230,6 @@ compute_correlations(const RealMatrix&     vars_samples,
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
-  }
-  else if (num_obs == 1) {
-    Cout << "Warning: correlation matrices not available for data with 1 " 
-         << "sample." << std::endl;
-    return;
   }
   if (resp_samples.size() != num_obs) {
     Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
@@ -313,16 +303,20 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
   if (num_corr == num_in) {
     // all-to-all case
     corr_matrix.shape(num_corr, num_corr);
-    corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
-                         total_data, total_data, 0.0);
-    for (int i=0; i<num_corr; ++i) {
-      // set finite diagonal values to 1.0
-      if (boost::math::isfinite(corr_matrix(i,i)))
-	corr_matrix(i,i) = 1.0;
-      // snap all finite values to [-1.0, 1.0]
-      for (int j=0; j<i; ++j) {
-	correl_adjust(corr_matrix(i,j));
-	correl_adjust(corr_matrix(j,i));
+    if (num_obs <= 1)
+      corr_matrix.putScalar(std::numeric_limits<double>::quiet_NaN());
+    else {
+      corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
+			   total_data, total_data, 0.0);
+      for (int i=0; i<num_corr; ++i) {
+	// set finite diagonal values to 1.0
+	if (boost::math::isfinite(corr_matrix(i,i)))
+	  corr_matrix(i,i) = 1.0;
+	// snap all finite values to [-1.0, 1.0]
+	for (int j=0; j<i; ++j) {
+	  correl_adjust(corr_matrix(i,j));
+	  correl_adjust(corr_matrix(j,i));
+	}
       }
     }
   }
@@ -330,17 +324,21 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
     // input-to-output case
     int num_out = num_corr - num_in;
     corr_matrix.shape(num_in, num_out);
-    RealMatrix total_data_in(Teuchos::View, total_data, num_in, num_obs, 0, 0);
-    RealMatrix total_data_out(Teuchos::View, total_data, num_out, num_obs, 
-                              num_in, 0);
-    corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
-                         total_data_in, total_data_out, 0.0);
-    // snap all finite values to [-1.0, 1.0]
-    for (int i=0; i<num_in; ++i)
-      for (int j=0; j<num_out; ++j)
-	correl_adjust(corr_matrix(i,j));
-  }
-} 
+    if (num_obs <= 1)
+      corr_matrix.putScalar(std::numeric_limits<double>::quiet_NaN());
+    else {
+      RealMatrix total_data_in(Teuchos::View, total_data, num_in, num_obs, 0, 0);
+      RealMatrix total_data_out(Teuchos::View, total_data, num_out, num_obs, 
+				num_in, 0);
+      corr_matrix.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, 
+			   total_data_in, total_data_out, 0.0);
+      // snap all finite values to [-1.0, 1.0]
+      for (int i=0; i<num_in; ++i)
+	for (int j=0; j<num_out; ++j)
+	  correl_adjust(corr_matrix(i,j));
+    }
+  } 
+}
 
 
 /** Calculates partial correlation coefficients between num_in inputs
@@ -357,6 +355,12 @@ partial_corr(RealMatrix& total_data, const int num_in,
   numerical_issues = false;
   // TODO: return numerical issues per-input
   BoolDeque numerical_except(num_in, false);
+
+  if (num_obs <= 1) {
+    corr_matrix.putScalar(std::numeric_limits<double>::quiet_NaN());
+    numerical_issues = true;
+    return;
+  }
   
   // For a single input factor, partial = simple (no controlling factors)
   if (num_in == 1) {

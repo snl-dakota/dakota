@@ -11804,6 +11804,136 @@ Test Number 11 succeeded
 dakota_pstudy_allvars.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1        nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1       ciuv_1        csv_1      ddriv_1      ddsiv_1        puv_1       biuv_1       nbuv_1       geuv_1       hguv_1       diuv_1      dusiv_1      dsriv_1      dssiv_1      ddsrv_1      hpruv_1      dusrv_1      dssrv_1 response_fn_1 
+       cdv_1          nan 
+       nuv_1          nan          nan 
+      lnuv_1          nan          nan          nan 
+       uuv_1          nan          nan          nan          nan 
+      luuv_1          nan          nan          nan          nan          nan 
+       tuv_1          nan          nan          nan          nan          nan          nan 
+       euv_1          nan          nan          nan          nan          nan          nan          nan 
+      beuv_1          nan          nan          nan          nan          nan          nan          nan          nan 
+      gauv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      guuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       fuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       wuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      hbuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      ciuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       csv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddriv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddsiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       puv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      biuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      nbuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      geuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      hguv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      diuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dusiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dsriv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dssiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddsrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     hpruv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dusrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dssrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+response_fn_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1          nan 
+       nuv_1          nan 
+      lnuv_1          nan 
+       uuv_1          nan 
+      luuv_1          nan 
+       tuv_1          nan 
+       euv_1          nan 
+      beuv_1          nan 
+      gauv_1          nan 
+      guuv_1          nan 
+       fuv_1          nan 
+       wuv_1          nan 
+      hbuv_1          nan 
+      ciuv_1          nan 
+       csv_1          nan 
+     ddriv_1          nan 
+     ddsiv_1          nan 
+       puv_1          nan 
+      biuv_1          nan 
+      nbuv_1          nan 
+      geuv_1          nan 
+      hguv_1          nan 
+      diuv_1          nan 
+     dusiv_1          nan 
+     dsriv_1          nan 
+     dssiv_1          nan 
+     ddsrv_1          nan 
+     hpruv_1          nan 
+     dusrv_1          nan 
+     dssrv_1          nan 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1        nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1       ciuv_1        csv_1      ddriv_1      ddsiv_1        puv_1       biuv_1       nbuv_1       geuv_1       hguv_1       diuv_1      dusiv_1      dsriv_1      dssiv_1      ddsrv_1      hpruv_1      dusrv_1      dssrv_1 response_fn_1 
+       cdv_1          nan 
+       nuv_1          nan          nan 
+      lnuv_1          nan          nan          nan 
+       uuv_1          nan          nan          nan          nan 
+      luuv_1          nan          nan          nan          nan          nan 
+       tuv_1          nan          nan          nan          nan          nan          nan 
+       euv_1          nan          nan          nan          nan          nan          nan          nan 
+      beuv_1          nan          nan          nan          nan          nan          nan          nan          nan 
+      gauv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      guuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       fuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       wuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      hbuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      ciuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       csv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddriv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddsiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+       puv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      biuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      nbuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      geuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      hguv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+      diuv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dusiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dsriv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dssiv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     ddsrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     hpruv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dusrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+     dssrv_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+response_fn_1          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan          nan 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1          nan 
+       nuv_1          nan 
+      lnuv_1          nan 
+       uuv_1          nan 
+      luuv_1          nan 
+       tuv_1          nan 
+       euv_1          nan 
+      beuv_1          nan 
+      gauv_1          nan 
+      guuv_1          nan 
+       fuv_1          nan 
+       wuv_1          nan 
+      hbuv_1          nan 
+      ciuv_1          nan 
+       csv_1          nan 
+     ddriv_1          nan 
+     ddsiv_1          nan 
+       puv_1          nan 
+      biuv_1          nan 
+      nbuv_1          nan 
+      geuv_1          nan 
+      hguv_1          nan 
+      diuv_1          nan 
+     dusiv_1          nan 
+     dsriv_1          nan 
+     dssiv_1          nan 
+     ddsrv_1          nan 
+     hpruv_1          nan 
+     dusrv_1          nan 
+     dssrv_1          nan 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 6561 total (6561 new, 0 duplicate)
 Simple Correlation Matrix among all inputs and outputs:
