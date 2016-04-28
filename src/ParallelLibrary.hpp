@@ -28,7 +28,7 @@
 // guarantees a new context that prevents misassociation of messages
 // with the same source/dest and tag (e.g., reuse of fn_eval_id tag
 // across LF and HF models when using nonblocking scheduling of both)
-#define DEEP_MPI_COPY
+//#define DEEP_MPI_COPY
 
 namespace Dakota {
 
