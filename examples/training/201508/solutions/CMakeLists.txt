@@ -106,3 +106,5 @@ endfunction()
 
 add_subdirectory(calibration)
 add_subdirectory(sens_analysis)
+add_subdirectory(optimization)
+add_subdirectory(uncertainty_analysis)
