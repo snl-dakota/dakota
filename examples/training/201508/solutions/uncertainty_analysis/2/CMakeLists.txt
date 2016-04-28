@@ -1,25 +1,28 @@
 # CMakeLists.txt for DAKOTA tests
 
-set(aux_files)
-set(aux_files " "
-  )
+if( NOT WIN32 )
 
-set(extra_files)
-set(extra_files " ")
+  set(aux_files)
+  set(aux_files " "
+    )
 
-set(input_files dakota_qsf_egra.in dakota_qsf_mpp.in dakota_qsf_mv.in dakota_qsf_pce.in dakota_qsf_sampling.in)
+  set(extra_files)
+  set(extra_files " ")
 
-foreach(infile ${input_files})
-  add_training_test(${infile} ${aux_files} ${extra_files})
-endforeach()
+  set(input_files dakota_qsf_egra.in dakota_qsf_mpp.in dakota_qsf_mv.in dakota_qsf_pce.in dakota_qsf_sampling.in)
 
-set(training_exe_deps)
-DakotaCopyTarget(quasi_sine_fcn training_exe_deps)
+  foreach(infile ${input_files})
+    add_training_test(${infile} ${aux_files} ${extra_files})
+  endforeach()
 
-# Create a single target to copy all the testing files
-add_custom_target(uncertainty_analysis_training_test_files ALL
-  DEPENDS ${input_files} ${training_exe_deps}
-  COMMENT
-  "Copy DAKOTA trainingtest files, and executables to binary subdirectories"
-  )
+  set(training_exe_deps)
+  DakotaCopyTarget(quasi_sine_fcn training_exe_deps)
 
+  # Create a single target to copy all the testing files
+  add_custom_target(uncertainty_analysis_training_test_files ALL
+    DEPENDS ${input_files} ${training_exe_deps}
+    COMMENT
+    "Copy DAKOTA trainingtest files, and executables to binary subdirectories"
+    )
+
+endif()
