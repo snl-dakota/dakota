@@ -95,9 +95,17 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // group the responseModes into two sets: (1) the correction-based set
     // commonly used in surrogate-based optimization et al., and (2) the
     // aggregation-based set commonly used in multilevel/multifidelity UQ.
-    bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
-                                   // responseMode == BYPASS_SURROGATE ||
-                                   // responseMode == AUTO_CORRECTED_SURROGATE);
+
+    // TO DO: would like a better detection option, but passing the mode from
+    // the Iterator does not work in parallel w/o an additional bcast (Iterator
+    // only instantiated on iteratorComm rank 0).  For now, we will infer it
+    // from an associated method spec at init time.
+    bool extra_deriv_config
+      = (probDescDB.get_ushort("method.algorithm") & MINIMIZER_BIT);
+      //(responseMode == UNCORRECTED_SURROGATE ||
+      // responseMode == BYPASS_SURROGATE ||
+      // responseMode == AUTO_CORRECTED_SURROGATE);
+
     for (i=0; i<num_models; ++i) {
       Model& model_i = orderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
