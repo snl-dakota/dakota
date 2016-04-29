@@ -1015,23 +1015,16 @@ size_t num_exp)
 				  "mcmc_id", exportMCMCFormat);
   size_t sample_cntr = 0;
   size_t wpp4 = write_precision+4;
-  for (int i=0; i<num_filtered; ++i, ++sample_cntr){
-    TabularIO::write_leading_columns(filtered_mcmc_stream, sample_cntr,
- 			       	     empty_id, exportMCMCFormat);
-    const RealVector& qv = Teuchos::getCol(Teuchos::View, filtered_chain, i);
-    if (standardizedSpace){
-      RealVector u_rv(numContinuousVars, false), x_rv;
-      natafTransform.trans_U_to_X(u_rv, x_rv);
-      output_vars.continuous_variables(x_rv);
-      write_data_tabular(filtered_mcmc_stream, x_rv);
-    }
-    // Write param values to filtered_tabular
-    else{
-      output_vars.continuous_variables(qv);
-      output_vars.write_tabular(filtered_mcmc_stream);
-    }
+  for (int i=0; i<filtered_chain.numCols(); ++i) {
+    String empty_id;
+    TabularIO::write_leading_columns(filtered_mcmc_stream, i+1,
+				     empty_id,//mcmcModel.interface_id(),
+				     exportMCMCFormat);
+    RealVector accept_pt = Teuchos::getCol(Teuchos::View, filtered_chain, i);
+    output_vars.continuous_variables(accept_pt);
+    output_vars.write_tabular(filtered_mcmc_stream);
     // Write function values to filtered_tabular
-    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+    RealVector col_vec = Teuchos::getCol(Teuchos::View, 
   			    	filtered_fn_vals, i);
     for (size_t j = 0; j<numFunctions; ++j){
       filtered_mcmc_stream << std::setw(wpp4) << col_vec[j] << ' ';

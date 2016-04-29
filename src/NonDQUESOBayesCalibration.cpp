@@ -420,11 +420,11 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << std::endl;
-  }
 
-  // archive accepted function values (this has to be done before the
-  // surrogate gets updated)
-  retrieve_fn_vals(update_cntr);
+    // archive accepted function values (this has to be done before the
+    // surrogate gets updated)
+    retrieve_fn_vals(update_cntr);
+  }
 }
 
 void NonDQUESOBayesCalibration::init_queso_environment()
