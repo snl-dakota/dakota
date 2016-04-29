@@ -95,9 +95,9 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // group the responseModes into two sets: (1) the correction-based set
     // commonly used in surrogate-based optimization et al., and (2) the
     // aggregation-based set commonly used in multilevel/multifidelity UQ.
-    bool extra_deriv_config = (responseMode == UNCORRECTED_SURROGATE ||
-			       responseMode == AUTO_CORRECTED_SURROGATE ||
-			       responseMode == BYPASS_SURROGATE);
+    bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
+                                   // responseMode == BYPASS_SURROGATE ||
+                                   // responseMode == AUTO_CORRECTED_SURROGATE);
     for (i=0; i<num_models; ++i) {
       Model& model_i = orderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
@@ -225,9 +225,9 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
 
     size_t i, num_models = orderedModels.size();
-    bool extra_deriv_config = (responseMode == UNCORRECTED_SURROGATE ||
-			       responseMode == AUTO_CORRECTED_SURROGATE ||
-			       responseMode == BYPASS_SURROGATE);
+    bool extra_deriv_config = true;//(responseMode == UNCORRECTED_SURROGATE ||
+                                   // responseMode == BYPASS_SURROGATE ||
+                                   // responseMode == AUTO_CORRECTED_SURROGATE);
     for (i=0; i<num_models; ++i) {
       Model& model_i = orderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
