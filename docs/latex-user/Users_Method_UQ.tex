@@ -2310,7 +2310,7 @@ updated through a Bayesian framework involving experimental data and a
 likelihood function.  Bayesian inference theory is best left to other
 sources ~\cite{Kenn01} and only a brief summary is given here.  In
 Bayesian methods, uncertain parameters are characterized by
-probability density functions. These probability densities functions
+probability density functions. These probability density functions
 define the permissible parameter values - the support, as well as the
 relative plausibility of each permissible parameter value. In the
 context of calibration or any inference step, the probability density
@@ -2432,7 +2432,7 @@ Los Alamos National Laboratory. At this point, the QUESO
 implementation is the most well-developed within Dakota and is the one
 that we recommend.
 
-\subsection{QUESO}
+\subsection{QUESO}\label{uq:bayesian:queso}
 The QUESO library includes several sampling algorithm variants.  One
 can use a standard Metropolis-Hastings algorithm
 (\texttt{metropolis\_hastings}), adaptive Metropolis
@@ -2441,9 +2441,16 @@ during the sampling, delayed rejection (\texttt{delayed\_rejection})
 for backtracking from sample rejections, the full DRAM (\texttt{dram})
 which involves both delayed rejection and adaptive Metropolis, or a
 multi-level algorithm (\texttt{multilevel}).  This last option is not
-yet production-ready in Dakota.
+yet production-ready in Dakota. 
 
-With QUESO method, one may run the MCMC sampling on the simulation
+With any choice of sampling algorithm, one may manually set the burn in 
+period for the MCMC chain with \texttt{burn\_in\_samples}. If a 
+\texttt{sub\_sampling\_period} is specified, the MCMC chain is further 
+filtered such that only the sample at the beginning of each period is in 
+the final MCMC chain. The \texttt{sub\_sampling\_period} should therefore 
+be greater than or equal to the correlation length of the samples.
+
+With the QUESO method, one may run the MCMC sampling on the simulation
 model directly.  However, if the model is expensive, use of a
 surrogate (emulator) model is recommended.  Options include a Gaussian
 process, a polynomial chaos expansion, or a stochastic collocation
@@ -2494,6 +2501,16 @@ circumvent a lot of initial searching for high posterior probability
 points.  The pre-solve option can be used with an emulator or with no
 emulator.
 
+Credible and prediction intervals will be calculated if 
+\texttt{probability\_levels} is specified. Credible intervals propagate 
+uncertainties in parameter density information to the quantity of interest
+and quantify how well the model fits the provided data. Prediction intervals
+propagate both parameter and experimental measurement uncertainties and 
+contain the next experimental or simulated observation with the specified 
+probability. Further details can be found in \cite{Smith2013}. Note that if
+\texttt{probability\_levels} is specified, both the credible and prediction
+intervals will be calculated. 
+
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
 \texttt{chains} specification.  The total number of generations per chain in DREAM is
@@ -2512,6 +2529,8 @@ statistic, which governs the convergence of the multiple chain
 process.  The integer \texttt{jump\_step} forces a long jump every 
 \texttt{jump\_step} generations.
 For more details about these parameters, refer to \cite{Vrugt}. 
+Credible and prediction intervals can be calculated by specifying
+\texttt{probability\_levels}, as described in Section \ref{uq:bayesian:queso}. 
 
 \subsection{GPMSA}
 For the GPMSA capability, a key part of the algorithm involves the 
