@@ -272,7 +272,7 @@ void NonDDREAMBayesCalibration::core_run()
   dream_main(cache_chain);
 
   // get the function values corresponding to the acceptance chain
-  retrieve_fn_vals();
+  archive_acceptance_chain();
 
   // Generate useful stats from the posterior samples
   compute_statistics();
@@ -457,11 +457,9 @@ void NonDDREAMBayesCalibration::cache_chain(const double* const z)
 	  z[i+j*par_num+k*par_num*nonDDREAMInstance->numChains];
 }
 
-void NonDDREAMBayesCalibration::retrieve_fn_vals()
+void NonDDREAMBayesCalibration::archive_acceptance_chain()
 {
-  int num_samples = acceptanceChain.numCols();
-  acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
-
+  // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
   Variables lookup_vars = mcmcModel.current_variables().copy();
   String interface_id = mcmcModel.interface_id();
@@ -471,27 +469,39 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
  
-  int lookup_failures = 0;
+  int lookup_failures = 0, num_samples = acceptanceChain.numCols();
+  acceptedFnVals.shapeUninitialized(numFunctions, num_samples);
   for (int sample_index=0; sample_index < num_samples; ++sample_index) {
 
-    // get just the calibration variables, omitting hyper-parameters
-    RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
-			   numContinuousVars);
+    if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
+      RealVector u_rv(Teuchos::Copy, acceptanceChain[sample_index], 
+		      numContinuousVars);
+      RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
+		      numContinuousVars);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      // trailing hyperparams are not transformed
+
+      // surrogate needs u-space variables for eval
+      if (mcmcModel.model_type() == "surrogate")
+	lookup_vars.continuous_variables(u_rv);
+      else
+	lookup_vars.continuous_variables(x_rv);
+    }
+    else {
+      RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
+		      numContinuousVars);
+      lookup_vars.continuous_variables(x_rv);
+    }
+
+    // now retreive function values
     if (mcmcModel.model_type() == "surrogate") {
-      if (standardizedSpace) {
-	RealVector u_vars;
-	natafTransform.trans_X_to_U(accept_vars, u_vars);
-	lookup_vars.continuous_variables(accept_vars);
-      }
-      else 
-	lookup_vars.continuous_variables(accept_vars);
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
-      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	
     }
     else {
-      lookup_vars.continuous_variables(accept_vars);
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
       if (cache_it == data_pairs.get<hashed>().end())
@@ -501,10 +511,12 @@ void NonDDREAMBayesCalibration::retrieve_fn_vals()
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
       }
     }
+
   }
-  if (lookup_failures > 0)
+  if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
     Cout << "Warning: could not retrieve function values for " 
 	 << lookup_failures << " MCMC chain points." << std::endl;
 }
+
 
 } // namespace Dakota

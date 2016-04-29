@@ -86,9 +86,10 @@ protected:
 
   // Member functions
 
-  /// Callback to archive the chain from DREAM
+  /// Callback to archive the chain from DREAM, potentially leaving it in u-space
   static void cache_chain(const double* const z);
-  void retrieve_fn_vals();
+  /// save the final x-space acceptance chain and corresponding function values
+  void archive_acceptance_chain();
 
   //
   //- Heading: Data

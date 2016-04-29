@@ -93,8 +93,9 @@ protected:
 
   /// accumulate unique samples drawn from the acceptance chain
   void accumulate_chain(size_t update_cntr);
-  /// accumulate the acceptance chain across multiple restart cycles
-  void aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain);
+  /// accumulate the acceptance chain across multiple restart cycles,
+  /// including recovering corresponding function values
+  void aggregate_acceptance_chain(size_t update_cntr);
 
   /// extract batch_size points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with highest
@@ -181,9 +182,6 @@ protected:
 
   /// equality tester for two GslVectors
   bool equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2);
-
-  /// recover the function values for each accepted point
-  void retrieve_fn_vals(size_t cycle_num);
 
   //
   //- Heading: Data

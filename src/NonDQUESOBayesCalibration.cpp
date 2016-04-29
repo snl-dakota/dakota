@@ -396,8 +396,10 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    // TO DO: retire once restarts are retired
-    aggregate_acceptance_chain(update_cntr, acceptanceChain);
+    // TO DO: retire once restarts are retired 
+    // archive accepted variable and function values (this has to be
+    // done before the surrogate gets updated)
+    aggregate_acceptance_chain(update_cntr);
     
     // retain best or accumulate unique samples from current MCMC chain
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
@@ -421,9 +423,6 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << std::endl;
 
-    // archive accepted function values (this has to be done before the
-    // surrogate gets updated)
-    retrieve_fn_vals(update_cntr);
   }
 }
 
@@ -626,31 +625,80 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 }
 
 
-void NonDQUESOBayesCalibration::
-aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain)
+/** Populate a subset of 
+    acceptanceChain(num_params, chainSamples * chainCycles) and 
+    acceptedFnVals(numFunctions, chainSamples * chainCycles) */
+void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
 {
+  // temporaries for evals/lookups
+  // the MCMC model omits the hyper params and residual transformations...
+  Variables lookup_vars = mcmcModel.current_variables().copy();
+  String interface_id = mcmcModel.interface_id();
+  Response lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
   QUESO::GslVector qv(paramSpace->zeroVector());
   
-  size_t i, j, num_params = numContinuousVars + numHyperparams,
-    sample_index = (update_cntr - 1) * chainSamples,
-    start = (update_cntr == 1) ? 0 : 1; // 1st chain pt is redundant
-  for (i=start; i<num_mcmc; ++i, ++sample_index) {
+  int lookup_failures = 0, num_params = numContinuousVars + numHyperparams,
+    sample_index = (cycle_num - 1) * chainSamples,
+    //stop_index   = sample_index + chainSamples;
+    start = (cycle_num == 1) ? 0 : 1; // 1st chain pt is redundant
+  for (int i=start; i<num_mcmc; ++i, ++sample_index) {
+
+    // translate the QUESO vector into x- or u-space lookup vars and
+    // x-space acceptanceChain
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
     if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
       RealVector u_rv(numContinuousVars, false);
       copy_gsl_partial(qv, 0, u_rv);
-      Real* acc_chain_i = accept_chain[sample_index];
+      Real* acc_chain_i = acceptanceChain[sample_index];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
       natafTransform.trans_U_to_X(u_rv, x_rv);
-      for (j=numContinuousVars; j<num_params; ++j)
+      for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
+
+      // surrogate needs u-space variables for eval
+      if (mcmcModel.model_type() == "surrogate")
+	lookup_vars.continuous_variables(u_rv);
+      else
+	lookup_vars.continuous_variables(x_rv);
     }
-    else
-      copy_gsl(qv, accept_chain, sample_index);
+    else {
+      copy_gsl(qv, acceptanceChain, sample_index);
+      RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
+		      numContinuousVars);
+      lookup_vars.continuous_variables(x_rv);
+    }
+
+    // now retreive function values
+    if (mcmcModel.model_type() == "surrogate") {
+      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	
+    }
+    else {
+      lookup_pr.variables(lookup_vars);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+      if (cache_it == data_pairs.get<hashed>().end())
+	++lookup_failures;
+      else {
+	const RealVector& fn_vals = cache_it->response().function_values();
+	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+      }
+    }
+
   }
+  if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning: could not retrieve function values for " 
+	 << lookup_failures << " MCMC chain points." << std::endl;
 }
 
 
@@ -1525,59 +1573,6 @@ equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2)
     if (qv1[i] != qv2[i])
       return false;
   return true;
-}
-
-
-void NonDQUESOBayesCalibration::retrieve_fn_vals(size_t cycle_num)
-{
-  // TODO: account for transformations if present? optimize for copies?
-  // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
-
-  // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
-  ActiveSet lookup_as = lookup_resp.active_set();
-  lookup_as.request_values(1);
-  lookup_resp.active_set(lookup_as);
-  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
- 
-  int lookup_failures = 0, 
-    sample_index = (cycle_num - 1) * chainSamples,
-    stop_index   = sample_index + chainSamples;
-  for ( ; sample_index < stop_index; ++sample_index) {
-
-    // get just the calibration variables, omitting hyper-parameters
-    RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
-			   numContinuousVars);
-    if (mcmcModel.model_type() == "surrogate") {
-      if (standardizedSpace) {
-	RealVector u_vars;
-	natafTransform.trans_X_to_U(accept_vars, u_vars);
-	lookup_vars.continuous_variables(accept_vars);
-      }
-      else 
-	lookup_vars.continuous_variables(accept_vars);
-      mcmcModel.active_variables(lookup_vars);
-      mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = mcmcModel.current_response().function_values();
-      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
-    }
-    else {
-      lookup_vars.continuous_variables(accept_vars);
-      lookup_pr.variables(lookup_vars);
-      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
-	++lookup_failures;
-      else {
-	const RealVector& fn_vals = cache_it->response().function_values();
-	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
-      }
-    }
-  }
-  if (lookup_failures > 0)
-    Cout << "Warning: could not retrieve function values for " 
-	 << lookup_failures << " MCMC chain points." << std::endl;
 }
 
 
