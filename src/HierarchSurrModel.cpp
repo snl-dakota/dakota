@@ -89,13 +89,21 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
       num_models = orderedModels.size();
 
-    // init and free all models for any mode (but only set 2 models at runtime)
+    // init and free must cover possible subset of active responseModes and
+    // ordered model fidelities, but only 2 models at mpst will be active at
+    // runtime.  In order to reduce the number of parallel configurations, we
+    // group the responseModes into two sets: (1) the correction-based set
+    // commonly used in surrogate-based optimization et al., and (2) the
+    // aggregation-based set commonly used in multilevel/multifidelity UQ.
+    bool extra_deriv_config = (responseMode == UNCORRECTED_SURROGATE ||
+			       responseMode == AUTO_CORRECTED_SURROGATE ||
+			       responseMode == BYPASS_SURROGATE);
     for (i=0; i<num_models; ++i) {
       Model& model_i = orderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       probDescDB.set_db_model_nodes(model_i.model_id());
       model_i.init_communicators(pl_iter, max_eval_concurrency);
-      if (i)
+      if (extra_deriv_config) // && i) // mid and high fidelity only?
 	model_i.init_communicators(pl_iter, model_i.derivative_concurrency());
     }
 
@@ -216,13 +224,15 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
 
-    // init and free all models for any mode (but only set 2 models at runtime)
     size_t i, num_models = orderedModels.size();
+    bool extra_deriv_config = (responseMode == UNCORRECTED_SURROGATE ||
+			       responseMode == AUTO_CORRECTED_SURROGATE ||
+			       responseMode == BYPASS_SURROGATE);
     for (i=0; i<num_models; ++i) {
       Model& model_i = orderedModels[i];
       // superset of possible init calls (two configurations for i > 0)
       model_i.free_communicators(pl_iter, max_eval_concurrency);
-      if (i)
+      if (extra_deriv_config) // && i) // mid and high fidelity only?
 	model_i.free_communicators(pl_iter, model_i.derivative_concurrency());
     }
 
