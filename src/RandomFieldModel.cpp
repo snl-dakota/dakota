@@ -528,7 +528,10 @@ void RandomFieldModel::generate_kl_realization()
   // dprepro to configure kl_realize.i with kl_coeffs, mesh number
   //std::system("dprepro randomcoeffs.txt KL_realize.template KL_realize.i");
   //std::system("launch -n 1 encore -i KL_realize.i");
-  std::system("./run_kl_realize.sh");
+
+  if (covarianceForm != NOCOVAR) { 
+    std::system("./run_kl_realize.sh");
+  }
 
   // post-condition: mesh file gets written containing the field realization
   // probably want to tag it with evalID...
