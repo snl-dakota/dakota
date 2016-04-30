@@ -1,7 +1,10 @@
 Blurb::
-Augments an existing Latin Hypercube Sampling (LHS) study
+(Deprecated keyword) Augments an existing Latin Hypercube Sampling (LHS) study
 
 Description::
+This keyword is deprecated.  Instead specify \c sample_type \c lhs
+with \c refinement_samples.
+
 \c incremental_lhs will augment an existing LHS sampling study with
 more samples to get better estimates of mean, variance, and
 percentiles.  The number of samples in the second set MUST currently

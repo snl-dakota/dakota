@@ -7,7 +7,7 @@
 #   1: single study to generate 400 + 200 + 100 D-optimal points
 #   2: initial study to generate 400 D-optimal points
 #   3: restarted study to generate (400) + 200 + 100 D-optimal points
-#      (should be identifcal to 1)
+#      (should be identical to 1)
 
 environment,
 #  tabular_data                                     #s1,#s3
@@ -16,6 +16,7 @@ environment,
 
 method,
 	sampling
+    sample_type random
     seed = 12347
     samples = 700                                   #s0
 #    initial_samples = 400                          #s1,#s2,#s3

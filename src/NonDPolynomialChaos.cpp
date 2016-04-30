@@ -256,6 +256,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 	      vary_pattern, ACTIVE);
 	  }
 	  // TO DO:
+	  // BMA NOTE: If this code is activated, need to instead use LHS, with
+	  // refinement samples
 	  //if (probDescDB.get_ushort("method.nond.expansion_sample_type") ==
 	  //    SUBMETHOD_INCREMENTAL_LHS))
 	  //  construct_incremental_lhs();

@@ -1095,11 +1095,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
             |
-            ( 
-              incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}
-              |
-              incremental_random {N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_RANDOM)}
-             )
+            incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
            ]
           [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
           [ d_optimal {N_mdm(true,dOptimal)}

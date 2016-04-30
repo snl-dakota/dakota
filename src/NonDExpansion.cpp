@@ -411,6 +411,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
 
 /*
+BMA NOTE: If this code is activated, need to instead use LHS, with
+refinement samples
 void NonDExpansion::
 construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
 			  int num_samples, int seed, const String& rng)

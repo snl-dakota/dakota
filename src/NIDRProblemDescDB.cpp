@@ -7033,8 +7033,6 @@ static Method_mp_utype
 	MP2s(reliabilitySearchType,NO_APPROX),
 	MP2s(reliabilitySearchType,TANA_U),
 	MP2s(reliabilitySearchType,TANA_X),
-	MP2s(sampleType,SUBMETHOD_INCREMENTAL_LHS),
-	MP2s(sampleType,SUBMETHOD_INCREMENTAL_RANDOM),
 	MP2s(sampleType,SUBMETHOD_LHS),
 	MP2s(sampleType,SUBMETHOD_RANDOM),
 	MP2s(subMethod,SUBMETHOD_COLLABORATIVE),

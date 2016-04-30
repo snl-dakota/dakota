@@ -1,7 +1,10 @@
 Blurb::
-Augments an existing random sampling study
+(Deprecated keyword) Augments an existing random sampling study
 
 Description::
+This keyword is deprecated.  Instead specify \c sample_type \c random
+with \c refinement_samples.
+
 \c incremental_random will augment an existing random sampling study
 with more samples to get better estimates of mean, variance, and
 percentiles.  There is no constraint on the number of samples in the second set

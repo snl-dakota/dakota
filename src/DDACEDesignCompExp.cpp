@@ -467,7 +467,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
     break;
   }
   default:
-    Cerr << "Error: DDACE method \"" << submethod_enum_to_string(daceMethod) 
+    Cerr << "Error: DDACE method \"" << submethod_enum_to_string(daceMethod) 
 	 << "\" is not an option." << std::endl;
     abort_handler(-1); break;
   }

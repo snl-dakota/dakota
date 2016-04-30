@@ -1578,12 +1578,8 @@
 			<oneOf>
 			  <keyword  id="lhs2" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
 			  <keyword  id="random3" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
-			  <required>
-			    <oneOf>
-			      <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
-			      <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_RANDOM)}" label="incremental_random" help=""  />
-			    </oneOf>
-			  </required>
+			  <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
+			  <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random" help=""  />
 			</oneOf>
 		      </keyword>
 		      <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" >
