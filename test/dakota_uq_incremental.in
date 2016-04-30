@@ -11,8 +11,7 @@ method,
 	sampling
     seed = 234
     initial_samples = 10	
-	  sample_type lhs               #s0
-#   sample_type incremental_lhs		#s1,#s2
+	  sample_type lhs
 #	    refinement_samples = 10	    #s1
 #	    refinement_samples = 10 20	#s2
 

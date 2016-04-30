@@ -58,6 +58,10 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
 
+  if (dOptimal && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning 'd_optimal' sampling is an experimental capability."
+         << std::endl;
+
   if (sampleType == SUBMETHOD_LHS && dOptimal && outputLevel > SILENT_OUTPUT)
     if (refineSamples.length() > 0)
       Cout << "Warning: 'd_optimal' currently has no effect for incrementally "
