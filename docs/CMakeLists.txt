@@ -171,7 +171,12 @@ add_custom_target(docs-pdf-ref
 
 # These needed for the SAND shells that follow
 add_subdirectory(latex-theory)
-add_subdirectory(latex-user)
+if(DAKOTA_ENABLE_TESTS)
+  add_subdirectory(latex-user)
+else()
+  message(WARNING 
+    "Users Manual will not be built; requires DAKOTA_ENABLE_TESTS")
+endif()
 
 
 #              ${CMAKE_CURRENT_BINARY_DIR}/latex-${manual}/${sourcePDFname}.pdf

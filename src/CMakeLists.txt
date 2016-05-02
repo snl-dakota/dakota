@@ -1022,7 +1022,7 @@ if (DAKOTA_API_JAVA)
   add_subdirectory(api/java)
 endif()
 
-if(BUILD_TESTING)
+if(DAKOTA_ENABLE_TESTS AND BUILD_TESTING)
   add_subdirectory(unit_test)
 endif()
 
