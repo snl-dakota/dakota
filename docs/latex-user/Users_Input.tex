@@ -137,27 +137,32 @@ Section~\ref{input:tabularformat}.
 
 \subsection{Calibration data import}\label{input:calib_data}
 
-Deterministic least squares and Bayesian Calibration methods allow
-specification of experimental observations to difference with
-responses in calculating a model misfit metric (such as a sum of
-squared residuals). 
+%Deterministic least squares and Bayesian Calibration methods allow
+%specification of experimental observations to difference with
+%responses in calculating a model misfit metric (such as a sum of
+%squared residuals). 
+
+Deterministic least squares and Bayesian calibration methods allow 
+specification of model misfit metrics (such as a sum of squared residuals) 
+to describe the discrepancies between experimental observations and model 
+responses.
 
 For scalar responses, a simple tabular format is allowed.  The default
 file format is {\tt annotated}, but the {\tt freeform} option is
 supported.  The data file is comprised of one or more experiments,
 each with one or more replicates, one row per replicate.  The columns
-of the data file contain, in sequence
+of the data file contain, in sequence,
 \begin{itemize}
 \item {\bf configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
-  length must agree with thee number of state variables active in the
+  length must agree with the number of state variables active in the
   study.
 \item {\bf experimental observations (required):} experimental data
-  values to difference with model responses; length number of
-  responses.
+  values to difference with model responses; length equal to the number 
+  of responses.
 \item {\bf experimental standard deviations (optional):} measurement
-  errors (standard deviations) associated with the data; 1 scalar for
-  each of the num\_responses.
+  errors (standard deviations) associated with the experimental observations; 
+  one scalar value may be specified for each of the responses.
 \end{itemize}
 
 Data informing field-valued responses are input using a separate file
@@ -174,7 +179,7 @@ scalar covariance for field 2, and full matrix covariance for field 3.
 In total, Dakota supports block diagonal covariance $\Sigma$ across
 the responses, with blocks $\Sigma_i$, which could be fully dense
 within a given field response group.  Covariance across the
-highest-level responses (off-diagonal blocks) are not supported.
+highest-level responses (off-diagonal blocks) is not supported.
 \begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.5]{images/ObsErrorCovariance}

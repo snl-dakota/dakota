@@ -2323,13 +2323,13 @@ each parameter value is supported by the data. Bayes
 Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used
 for inference: to derive the plausible parameter values, based on the
 prior probability density and the data $\boldsymbol{d}$. The result is
-the posterior parameter density of the parameters
+the posterior probability density function of the parameters
 $f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}}
 \right)$. It is interpreted the same way as the prior, but includes
 the information derived from the data.
  
 \begin{equation}
-{f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
+{f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}}. \label{eq:BayesThm}
 \end{equation}
 
 
@@ -2342,7 +2342,7 @@ The likelihood function is used to describe how well a model's
 predictions are supported by the data.  The likelihood function can be
 written generally as:
 \begin{equation*}
-  \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d})
+  \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d}),
 \end{equation*}
 where $\boldsymbol{\theta}$ are the parameters of model quantity of
 interest $q$.  The form of the function $\mathcal{F}$ can greatly
@@ -2488,15 +2488,15 @@ domains. %in order to reduce sample rejection due to an out-of-bounds condition.
 This option can be helpful when regions of high posterior density
 exist in the corners of a multi-dimensional bounded domain.  In these
 cases, it may be difficult to generate feasible samples from the
-proposal density, such that transformation to unbounded domains may
+proposal density, and transformation to unbounded domains may
 greatly reduce sample rejection rates.
 
 The \texttt{pre\_solve} option will perform a deterministic
 gradient-based optimization before the MCMC sampling to get a good
 starting point for the chain.  This pre-solve seeks to maximize the
-log posterior (the log-likelihood minus the log-prior) to identify the
+log-posterior (the log-likelihood minus the log-prior) to identify the
 maximum a posteriori probability point, also called the MAP point.
-The Markov Chain will then be started at the MAP point, which can
+The Markov Chain will then start at the MAP point, which can
 circumvent a lot of initial searching for high posterior probability
 points.  The pre-solve option can be used with an emulator or with no
 emulator.
@@ -2627,15 +2627,16 @@ generate in the acceptance chain\footnote{If delayed rejection is
   higher due to backtracking.}.  This example uses the
 \texttt{mod\_cantilever} algebraic model, so an emulator is not warranted,
 but the commented lines hint at related user options.  The proposal
-covariance used has diagonal element values of 1.e6 and 0.1.  The
-calibration terms in the responses section refers to the number of
-outputs that will be used in the calibration process: in this case, it
-is just two. The calibration data file has the observational data: in
+covariance used has diagonal element values of 1.e6 and 0.1. Two credible and
+prediction intervals will be calculated for each model output: a 5/95 interval
+and a 10/90 interval. The calibration terms in the responses section refers to 
+the number of outputs that will be used in the calibration process: in this 
+case, it is just two. The calibration data file has the observational data: in
 this case, it is a freeform file (e.g. no header or annotation) with
 ten experiments. For each experiment, there are two experiment values,
 one for stress and one for displacement, followed by two variance
 values for the error associated with that experiment for each quantity
-of interest.
+of interest. 
 
 \begin{figure}[htbp!]
   \centering
@@ -2656,7 +2657,8 @@ currently report an evaluation count summary and the best sample point
 that was visited during the MCMC process, as measured by maximum
 posterior probability (an estimate of the MAP point).  The final output 
 also summarizes the moments of the posterior samples from the chain (e.g. 
-mean of the chain, standard deviation of the chain samples, etc.)
+mean of the chain, standard deviation of the chain samples, etc.), as well as
+the credible and prediction intervals for each model output.
 
 A variety of auxilliary output also exists.  The MCMC sample output is
 put into a directory called \texttt{QuesoDiagnostics} in the directory from
@@ -2671,10 +2673,15 @@ chain values of the parameters\footnote{The full chain will be output
   refinement data or restarting points, respectively.}. 
 In addition, the accepted chain values that Dakota
 generates are written to a file in the run directory called
-\texttt{dakota\_mcmc\_tabular.dat}.  The first columns of this file are the posterior 
-values of the input variables.  
-Finally, if one wants to see the likelihood of each point, specifying 
-verbose output in the method section will result in the likelihoods being printed. 
+\texttt{dakota\_mcmc\_tabular.dat}. The first columns of this file are
+the posterior values of the input variables. If \texttt{burn\_in} or 
+\texttt{sub\_sampling\_period} are specified, the filtered acceptance chain
+is written to a file in the run directory called 
+\texttt{dakota\_mcmc\_filtered\_tabular.dat}. This file contains the posterior
+values of the filtered MCMC chain, as well as the values of state variables
+and the resulting model responses. Finally, if one wants to see the 
+likelihood of each point, specifying verbose output in the method section will 
+result in the likelihoods being printed. 
 
 %We expect to continue development of Bayesian calibration methods, 
 %so check for updates to this capability. The QUESO and GPMSA capabilities
@@ -2702,16 +2709,16 @@ includes this in the likelihood formulation:
 In some cases, it can be helpful to fine tune the assumptions in this
 covariance during the calibration process.  Dakota supports
 calibrating one or more multipliers on the blocks of the error
-covariance.  So if $\Sigma_d$ is block diagonal: $\Sigma_d =
+covariance.  So if $\Sigma_d$ is block diagonal such that $\Sigma_d =
 \mbox{diag}({\Sigma_d}_1, ..., {\Sigma_d}_N)$, we instead formulate as
 $\Sigma_d = \mbox{diag}(m_1{\Sigma_d}_1, ..., m_P{\Sigma_d}_P)$ and
 calibrate the multipliers $m_i$ as hyper-parameters in the Bayesian
 inference process.
 
 The supported modes for calibrating observation error multipliers are
-shown in Figure\ref{fig:uq:obs_err_mult}: \texttt{one},
+shown in Figure \ref{fig:uq:obs_err_mult}: \texttt{one},
 \texttt{per\_experiment}, \texttt{per\_response}, and \texttt{both}.
-Here the two major blocks denote two experiments, while the inner
+Here, the two major blocks denote two experiments, while the inner
 blocks denote five response groups (two scalar, three field).  The
 priors on the hyper-parameters $m_i$ are taken to be inverse gamma
 distributions, with mean and mode approximately 1.0 and standard
