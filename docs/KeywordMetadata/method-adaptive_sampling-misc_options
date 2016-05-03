@@ -1,5 +1,10 @@
-Blurb:: (Experimental) This is a capability used to send the adaptive sampling algorithm specific options.  
-Description:: The adaptive sampling algorithm is an experimental capability and not ready for production use at this time. 
+Blurb:: 
+(Experimental) Hook for algorithm-specific adaptive sampling options
+
+Description:: 
+The adaptive sampling algorithm is an experimental capability and not
+ready for production use at this time.
+
 Topics::	
 Examples::
 Theory::

@@ -7,11 +7,10 @@ desired cross-validation quality is achieved.
 
 <b> Default Behavior </b>
 
-<b> Expected Output </b>
-
-<b> Usage Tips </b>
-
-<b> Additional Discussion </b>
+When \c auto_refinement is specified the surrogate will be refined to
+a default tolerance of 1.0e-4 using the \c root_mean_square error
+metric with 10-fold cross-validation.  Default maximum iterations and
+function evaluations are 100 and 1000, respectively.
 
 Topics::
 
