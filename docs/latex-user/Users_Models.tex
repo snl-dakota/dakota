@@ -1105,3 +1105,47 @@ Chapter~\ref{adv_models}, most notably mixed epistemic-aleatory UQ in
 Section~\ref{adv_models:mixed_uq}, optimization under uncertainty
 (OUU) in Section~\ref{adv_models:ouu}, and surrogate-based UQ in
 Section~\ref{adv_models:sbuq}.
+
+\section{Random Field Models} \label{models:randomfield}
+As of Dakota 6.4, we have a preliminary capability to generate random fields. 
+This is an experimental capability that is undergoing active development, 
+so the following description and the associated syntax may change.  
+
+Our goal with a random field model is to have a fairly general capability, where 
+we can generate a random field representation in one of three ways: 
+from data, from simulation runs (e.g. running an ensemble of simulations where 
+each one produces a field response), or from a covariance matrix defined over 
+a mesh. Then, a random field model (such as a Karhunen-Loeve expansion) will be 
+built based on the data.  A final step is to draw realizations from the random 
+field model to propagate to another simulation model.  For example, the random 
+field may represent a pressure or temperature boundary condition for a simulation. 
+
+The random field model is currently specified with a model type of 
+\texttt{random\_field}.  The first 
+section of the random field specification tells Dakota what data to use to 
+build the random field.
+This is specified with \texttt{build\_source}.  The source of data to build the
+random field may be a file with data (where the N rows of data correspond to
+N samples of the random field and the M columns correspond to field values),
+or it may be a simulation that generates field data, or it may be specified
+given a mesh and a covariance matrix governing how the field varies over the mesh.
+In the case of using a simulation to generate field data, the simulation is
+defined with \texttt{dace\_method\_pointer}.  In the case of using a mesh and a
+covariance, the form of the covariance is defined with \texttt{analytic\_covariance}.
+
+The next section of the random field model specifies the form of the expansion,
+\texttt{expansion\_form}.  This can be either a Karhunen-Loeve expansion or a
+Principal components analysis.  These are very similar:  both involve the eigenvalues
+of the covariance matrix of the field data.  The only difference is in the treatment
+of the estimation of the coefficients of the eigenvector basis functions.  In the
+PCA case, we have developed an approach which makes the coefficients explicit
+functions of the uncertain variables used to generate the random field.
+The specification of the random field can also include the number of bases
+to retain or a truncation tolerance, which defines the percent variance
+that the expansion should capture.
+
+The final section of the random field model allows the user to specify
+a pointer to a model over which the random field will be propagated, 
+\texttt{propagation\_model\_pointer},
+meaning the model which will be driven with the random field input.
+
