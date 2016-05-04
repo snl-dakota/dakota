@@ -8,13 +8,13 @@ variables.
 
 <b> Default Behavior </b>
 
-Unlimited; the number of basis vectors will be chosen by one of the truncation
+Not active; the number of basis vectors will be chosen by one of the truncation
 methods.
 
 <b> Usage Tips </b>
 
-This control can be helpful when a priori studies have identified the
-essential information content in the variables space.
+This control can be helpful when \a a \a priori studies give insight to the appropriate
+subspace size.
 
 Topics::
 

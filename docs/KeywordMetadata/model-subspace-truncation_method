@@ -3,17 +3,17 @@ Metric that estimates active subspace size
 
 Description::
 Metric that controls how many basis vectors are retained in the active
-subspace.  For example based on bootstrap subspace variability or trade-off
-in eigenvalue energy vs. bootstrap replicate variability.
+subspace.
 
 <b> Default Behavior </b>
 
-The default is to use the Bing Li "ladle" diagnostic.
+The default is to use the \ref model-subspace-truncation_method-constantine
+diagnostic.
 
 <b> Usage Tips </b>
 
-If the automated diagnostics do not yield desirable results, consider
-using the explicit \c reduced_rank truncation option.
+If the automated subspace identification methods do not yield desirable results,
+consider using the explicit \ref model-subspace-dimension truncation option.
 
 Topics::
 
