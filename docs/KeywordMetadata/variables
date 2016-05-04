@@ -1,5 +1,6 @@
 Blurb::
 Specifies the parameter set to be iterated by a particular method.
+
 Description::
 The \c variables specification in a Dakota input file specifies the 
 parameter set to be iterated by a particular method. 

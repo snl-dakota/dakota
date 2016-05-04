@@ -568,15 +568,11 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/Ref_Main.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/Ref_Intro.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/Ref_Environment.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/Ref_Method.dox \
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/Ref_Method.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Model.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Variables.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Interface.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Responses.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/Ref_Bibliography.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/../src/dakota.input.summary
 
 # This tag can be used to specify the character encoding of the source files

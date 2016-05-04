@@ -1,9 +1,20 @@
 Blurb::
-Specifies how function evaluations will be performed in order to map the variables into the responses.
-Description::
-The interface section in a Dakota input file specifies how function evaluations will be performed in order to map the variables into the responses.
+Specifies how function evaluations will be performed in order to map
+the variables into the responses.
 
-In this context, a "function evaluation" is the series of operations that takes the variables and computes the responses. This can be comprised of one or many codes, scripts, and glue, which are generically referred to as "analysis drivers".
+Description::
+The interface section in a Dakota input file specifies how function
+evaluations will be performed in order to map the variables into the
+responses.
+
+In this context, a "function evaluation" is the series of operations
+that takes the variables and computes the responses. This can be
+comprised of one or many codes, scripts, and glue, which are
+generically referred to as "analysis drivers".  The mapping actions of
+analysis drivers may be combined with explicit \ref
+interface-algebraic_mappings
+
+<b>Parallelism Options</b>
 
 The optional \c asynchronous flag specifies use of asynchronous
 protocols (i.e., background system calls, nonblocking forks, POSIX

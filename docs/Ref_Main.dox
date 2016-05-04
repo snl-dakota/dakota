@@ -1,9 +1,13 @@
 /**
 \mainpage
 
-The \b Dakota (<b>D</b>esign <b>A</b>nalysis <b>K</b>it for <b>O</b>ptimization and <b>T</b>erascale
-<b>A</b>pplications) toolkit provides a flexible, extensible interface
-between analysis codes and iteration methods.
+The %Dakota software (http://dakota.sandia.gov/) delivers advanced
+parametric analysis techniques enabling quantification of margins and
+uncertainty, risk analysis, model calibration, and design exploration
+with computational models.  Its methods include optimization,
+uncertainty quantification, parameter estimation, and sensitivity
+analysis, which may be used individually or as components within
+surrogate-based and other advanced strategies.
 
 \author Brian M. Adams, Lara E. Bauman, William J. Bohnhoff, Keith
 R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Russell
@@ -35,8 +39,7 @@ organization closely mirrors the structure of \c
 dakota.input.summary. For more information see \ref input_spec.  For
 information on software structure, refer to the Developers Manual
 \cite DevMan, and for a tour of %Dakota features and capabilities,
-including a tutorial, refer to the User's Manual (Adams et al., 2010)
-\cite UsersMan.
+including a tutorial, refer to the User's Manual \cite UsersMan.
 
 \section main-how_to How to Use this Manual
 

@@ -1,14 +1,17 @@
 Blurb::
 Specifies how variables are mapped into a set of responses
+
 Description::
 A model is comprised of a mapping from variables, through an
 interface, to responses.
 
 <b> Model Group 1 </b>
 The type of model can be:
--# \c single
--# \c nested
+-# \c single (default)
 -# \c surrogate 
+-# \c nested
+-# \c subspace
+-# \c random_field
 
 The input file must specify one of these types. If the type is not
 specified, Dakota will assume a single model.

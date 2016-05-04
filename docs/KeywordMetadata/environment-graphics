@@ -1,5 +1,6 @@
 Blurb::
 Display a 2D graphics window of variables and responses
+
 Description::
 For most studies, the \c graphics flag activates a 2D graphics window
 containing history plots for the variables and response functions in

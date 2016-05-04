@@ -31,33 +31,30 @@ Laura P. Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
 
 \section DevIntro Introduction
 
-
-The %Dakota (Design Analysis Kit for Optimization and Terascale
-Applications) toolkit provides a flexible, extensible interface
-between analysis codes and iteration methods.  %Dakota contains
-algorithms for optimization with gradient and nongradient-based
-methods, uncertainty quantification with sampling, reliability,
-stochastic expansion, and interval estimation methods, parameter
-estimation with nonlinear least squares methods, and
-sensitivity/variance analysis with design of experiments and parameter
-study capabilities.  (Solution verification and Bayesian approaches
-are also in development.)  These capabilities may be used on their own
-or as components within advanced algorithms such as surrogate-based
-optimization, mixed integer nonlinear programming, mixed
-aleatory-epistemic uncertainty quantification, or optimization under
-uncertainty. By employing object-oriented design to implement
-abstractions of the key components required for iterative systems
-analyses, the %Dakota toolkit provides a flexible problem-solving
-environment for design and performance analysis of computational
-models on high performance computers.
+The %Dakota software (http://dakota.sandia.gov/) delivers advanced
+parametric analysis techniques enabling quantification of margins and
+uncertainty, risk analysis, model calibration, and design exploration
+with computational models.  %Dakota contains algorithms for
+optimization with gradient and nongradient-based methods, uncertainty
+quantification with sampling, reliability, stochastic expansion, and
+interval estimation methods, parameter estimation with nonlinear least
+squares methods, and sensitivity/variance analysis with design of
+experiments and parameter study capabilities.  (Solution verification
+and Bayesian approaches are also in development.)  These capabilities
+may be used on their own or as components within advanced algorithms
+such as surrogate-based optimization, mixed integer nonlinear
+programming, mixed aleatory-epistemic uncertainty quantification, or
+optimization under uncertainty. By employing object-oriented design to
+implement abstractions of the key components required for iterative
+systems analyses, the %Dakota toolkit provides a flexible
+problem-solving environment for design and performance analysis of
+computational models on high performance computers.
 
 The Developers Manual focuses on documentation of %Dakota design
 principles and class structures; it derives principally from annotated
-source code.  For information on input command syntax, refer to the <a
-href="../html-ref/index.html">Reference Manual</a>, and for more
-details on %Dakota features and capabilities, refer to the Users
-Manual.
-
+source code.  For information on input command syntax, refer to the
+Reference Manual \cite RefMan, and for more details on %Dakota
+features and capabilities, refer to the Users Manual.
 
 \section DevOverview Overview of Dakota
 
