@@ -142,10 +142,21 @@ Section~\ref{input:tabularformat}.
 %responses in calculating a model misfit metric (such as a sum of
 %squared residuals). 
 
-Deterministic least squares and Bayesian calibration methods allow 
-specification of model misfit metrics (such as a sum of squared residuals) 
-to describe the discrepancies between experimental observations and model 
-responses.
+By default, deterministic least squares and Bayesian calibration methods rely 
+on the processes in the \texttt{response} block to provide estimates of the 
+residuals,
+\begin{equation}
+\boldsymbol{r}(\boldsymbol{\theta}) = \boldsymbol{d} - 
+	\boldsymbol{q}(\boldsymbol{\theta}),
+\end{equation}
+between the data $\boldsymbol{d}$ and the model predictions 
+$\boldsymbol{q}(\boldsymbol{\theta})$. However, if \texttt{response} instead 
+provides the model predictions $\boldsymbol{q}(\boldsymbol{\theta})$ themselves, 
+experimental data $\boldsymbol{d}$ may be specified directly in a separate 
+text file through the \texttt{calibration\_data\_file} command. This indicates 
+that the residuals need to be calculated outside of the user-specified 
+\texttt{response}. The data file containing experimental observations, if 
+provided, must agree with the following guidelines. 
 
 For scalar responses, a simple tabular format is allowed.  The default
 file format is {\tt annotated}, but the {\tt freeform} option is
@@ -165,7 +176,7 @@ of the data file contain, in sequence,
   one scalar value may be specified for each of the responses.
 \end{itemize}
 
-Data informing field-valued responses are input using a separate file
+Data-informing field-valued responses are input using a separate file
 per response group, per experiment.  Field responses may optionally
 have scalar, diagonal, or matrix-valued error covariance information.
 See~\ref{nls:examples} and the Dakota Reference Manual Responses
