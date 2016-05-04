@@ -16,7 +16,7 @@ to satisfy is based on an error metric. Any of the surrogate diagnostic
  <li>max_abs</li>
 </ul>
 <b> Default Behavior </b>
-The default metric is the the root mean squared error ('root_mean_square').
+The default metric is the the root mean squared error ('root_mean_squared').
 
 Topics::
 
