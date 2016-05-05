@@ -1,47 +1,31 @@
 Blurb::
 Launch analysis drivers using fork command
+
 Description::
-The \c fork interface is the most common means by which %Dakota launches a
-separate application analysis process.
+The \c fork interface is the most common means by which %Dakota
+launches a separate application analysis process.
 
-The \c fork interface is recommended over \c system for most analysis 
-drivers that are external to Dakota (i.e. not using the \c direct interface).
+The \c fork interface is recommended over \c system for most analysis
+drivers that are external to Dakota, i.e., any driver not linked in
+via the \c direct interface.
 
-As explained in the Users Manual, the parameters and results file names are 
-passed on the command line to the analysis driver(s).
-If input/output filters are specified, they will be run
-before/after the analysis drivers.
-The \c verbatim keyword is used to modify the default driver/filter commands.
+As explained in the Users Manual, the parameters and results file
+names are passed on the command line to the analysis driver(s).  If
+input/output filters are specified, they will be run before/after the
+analysis drivers.  The \c verbatim keyword is used to modify the
+default driver/filter commands.
 
 For additional information on invocation syntax, see the Interfaces
 chapter of the Users Manual \cite UsersMan. 
 
-<!---- The \c fork keyword anchors
-the group specification and the \c parameters_file, \c results_file,
-\c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
-settings within the group specification. 
-
-The parameters and results
-file names are supplied as strings using the \c parameters_file and \c
-results_file specifications. Both specifications are optional with the
-default data transfer files being Unix temporary files with
-system-generated names (e.g., \c /usr/tmp/aaaa08861). 
-
-File
-tagging (appending parameters and results files with the function
-evaluation number) and file saving (leaving parameters and results
-files in existence after their use is complete) are controlled with
-the \c file_tag and \c file_save flags. If these specifications are
-omitted, the default is no file tagging (no appended function
-evaluation number) and no file saving (files will be removed after a
-function evaluation). File tagging is most useful when multiple
-function evaluations are running simultaneously using files in a
-shared disk space, and file saving is most useful when debugging the
-data communication between %Dakota and the simulation.
- --->
-
 Topics::
+
 Examples::
+Spawn (fork) an external executable/script called 'rosenbrock' which
+reads variables from params.in and writes responses to results.out.
+Preserve the analysis files for each function evaluation with tag and
+save.
+
 \verbatim
 interface
   analysis_drivers = 'rosenbrock'

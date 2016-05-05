@@ -1,8 +1,9 @@
 Blurb::
 Define how Dakota should run a function evaluation
-Description::
-The required \c analysis_drivers keyword provides the names of one or
-more executable analysis programs or scripts, a.k.a. "drivers" which
+
+Description:: 
+The \c analysis_drivers keyword provides the names of one or more
+executable analysis programs or scripts, a.k.a. "drivers" which
 comprise a function evaluation. The optional and required sub-keywords
 specify how Dakota will manage directories and files, and run the
 driver(s).
@@ -19,9 +20,9 @@ Other options are available for advanced users, and are not as well documented, 
 
 <b> Use Cases </b>
 
-The internally coupled codes have few options because many of the details are
-already handled with the coupling.
-Their behavior is described in the \ref interface-analysis_drivers-direct keyword. 
+The internally coupled codes have few options because many of the
+details are already handled with the coupling.  Their behavior is
+described in the \ref interface-analysis_drivers-direct keyword.
 
 For external processes using the \ref interface-analysis_drivers-fork keyword, 
 

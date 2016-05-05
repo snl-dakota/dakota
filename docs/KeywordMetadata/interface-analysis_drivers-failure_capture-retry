@@ -1,8 +1,8 @@
 Blurb::
 Rerun failed analyses
+
 Description::
-The \c retry selection supports an
-integer input for specifying a limit on retries
+Number of times to rety a failing analysis
 
 Topics::
 Examples::

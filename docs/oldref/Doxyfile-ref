@@ -571,7 +571,6 @@ WARN_LOGFILE           =
 INPUT                  = Ref_Method.dox \
                          Ref_Model.dox \
                          Ref_Variables.dox \
-                         Ref_Interface.dox \
                          Ref_Responses.dox \
                          ../src/dakota.input.summary
 

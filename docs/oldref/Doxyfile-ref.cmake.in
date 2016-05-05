@@ -571,7 +571,6 @@ WARN_LOGFILE           =
 INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/Ref_Method.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Model.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Variables.dox \
-                         @CMAKE_CURRENT_SOURCE_DIR@/Ref_Interface.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Ref_Responses.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/../src/dakota.input.summary
 
