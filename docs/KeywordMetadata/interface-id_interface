@@ -2,9 +2,9 @@ Blurb::
 Name the interface block; helpful when there are multiple
 
 Description::
-The optional \c id_interface keyword accepts to input a string that
-uniquely identifies this interface block.  A model can then use this
-interface by specifying the same string in its \c interface_pointer
+The optional \c id_interface keyword accepts a string that uniquely
+identifies this interface block.  A model can then use this interface
+by specifying the same string in its \c interface_pointer
 specification.
 
 <b>Default Behavior</b>

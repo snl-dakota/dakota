@@ -1,26 +1,41 @@
 Blurb::
-Name the response block, helpful when there are multiple
+Name the response block; helpful when there are multiple
 
 Description::
-The optional block identifier \c id_responses specifies a string to
-uniquely identify a particular responses specification (typically used
-when there are multiple present).  A \ref model can then specify or
-point to this response set by specifying the same string in its \c
-responses_pointer specification. For example, a model whose
-specification contains <tt>responses_pointer = 'R1'</tt> will use a
-responses set with <tt>id_responses = 'R1'</tt>.
+The optional \c id_responses keyword accepts a string that uniquely
+identifies this responses block.  A model can then use these responses
+by specifying the same string in its \c responses_pointer
+specification.
+
+<b>Default Behavior</b>
 
 If the \c id_responses specification is omitted, a particular
 responses specification will be used by a model only if that model
-omits specifying a \c responses_pointer and if the responses set was
-the last set parsed (or is the only set parsed). In common practice,
-if only one responses set exists, then \c id_responses can be safely
-omitted from the responses specification and \c responses_pointer can
-be omitted from the model specification(s), since there is no
-potential for ambiguity in this case.
+does not include an \c responses_pointer and the responses block was
+the last (or only) one parsed.
+
+<b>Usage Tips</b>
+- It is a best practice to always use explicit responses IDs and
+  pointers to avoid confusion.
+
+- If only one responses block exists, then \c id_responses can be
+  safely omitted from the responses block (and \c responses_pointer
+  omitted from the model specification(s)), since there is no
+  ambiguity.
 
 Topics::	block_identifier
+
 Examples::
+For example, a model specification including
+\verbatim
+model
+  responses_pointer = 'R1'
+\endverbatim
+will link to a response set with 
+\verbatim
+  id_responses = 'R1'
+\endverbatim
+
 Theory::
 Faq::
 See_Also::	

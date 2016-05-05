@@ -1,36 +1,38 @@
 Blurb::
 Step size used when computing gradients and Hessians
+
 Description::
-\c fd_gradient_step_size specifies the relative finite
+\c fd_step_size specifies the relative finite
 difference step size to be used in the computations. Either a single
 value may be entered for use with all parameters, or a list of step
 sizes may be entered, one for each parameter. 
 
-The latter option of a
-list of step sizes is only valid for use with the %Dakota finite
-differencing routine. For %Dakota with an interval scaling type of \c
-absolute, the differencing interval will be \c fd_gradient_step_size.
+The latter option of a list of step sizes is only valid for use with
+the %Dakota finite differencing routine. For %Dakota with an interval
+scaling type of \c absolute, the differencing interval will be \c
+fd_step_size.
 
 For %Dakota with and interval scaling type of \c bounds, the
 differencing intervals are computed by multiplying \c
-fd_gradient_step_size with the range of the parameter. For %Dakota
+fd_step_size with the range of the parameter. For %Dakota
 (with an interval scaling type of \c relative), DOT, CONMIN, and
 OPT++, the differencing intervals are computed by multiplying the \c
-fd_gradient_step_size with the current parameter value. In this case,
+fd_step_size with the current parameter value. In this case,
 a minimum absolute differencing interval is needed when the current
 parameter value is close to zero. This prevents finite difference
 intervals for the parameter which are too small to distinguish
 differences in the response quantities being computed. %Dakota, DOT,
-CONMIN, and OPT++ all use <tt>.01*fd_gradient_step_size</tt> as their
+CONMIN, and OPT++ all use <tt>.01*fd_step_size</tt> as their
 minimum absolute differencing interval. With a
-<tt>fd_gradient_step_size = .001</tt>, for example, %Dakota, DOT,
+<tt>fd_step_size = .001</tt>, for example, %Dakota, DOT,
 CONMIN, and OPT++ will use intervals of .001*current value with a
 minimum interval of 1.e-5. NPSOL and NLSSOL use a different formula
 for their finite difference intervals:
-<tt>fd_gradient_step_size*(1+|current parameter value|)</tt>. This
+<tt>fd_step_size*(1+|current parameter value|)</tt>. This
 definition has the advantage of eliminating the need for a minimum
 absolute differencing interval since the interval no longer goes to
 zero as the current parameter value goes to zero.
+
 Topics::	
 Examples::
 Theory::

@@ -1,5 +1,6 @@
 Blurb::
 Analysis driver will return gradients
+
 Description::
 The \c analytic_gradients specification means that gradient
 information is available directly from the simulation (finite

@@ -1,7 +1,13 @@
 Blurb::
 Choose how each constraint is scaled
+
 Description::
-See the \c scaling keyword in the \ref method section for details on how to use this keyword.
+Type of scaling to apply to nonlinear constraints: \c 'none', \c
+'value', \c 'auto' or \c 'log'.  If a single string is specified it
+will apply to all components of the relevant nonlinear constraint
+vector.
+
+See \ref method-scaling for details on how to use this keyword.
 
 Topics::	
 Examples::

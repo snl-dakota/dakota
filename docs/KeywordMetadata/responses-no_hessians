@@ -1,5 +1,6 @@
 Blurb::
 Hessians will not be used
+
 Description::
 The \c no_hessians specification means that the method does not
 require %Dakota to manage the computation of any Hessian

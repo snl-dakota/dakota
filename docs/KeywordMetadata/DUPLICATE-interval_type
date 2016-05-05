@@ -1,5 +1,6 @@
 Blurb::
 Specify how to compute gradients and hessians
+
 Description::
 The \c interval_type setting is used to select between \c forward and
 \c central differences in the numerical gradient calculations. The \c
