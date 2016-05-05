@@ -6,13 +6,11 @@
 #
 #
   if(PYTHON_EXECUTABLE)
-    message("In NUMARRAY: within PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}")
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/det_npp.py "try: import numpy; print numpy.get_include()\nexcept: pass\n")
     exec_program("${PYTHON_EXECUTABLE}"
       ARGS "\"${CMAKE_CURRENT_BINARY_DIR}/det_npp.py\""
       OUTPUT_VARIABLE NUMPY_PATH
     )
-    message("NUMPY_PATH is ${NUMPY_PATH}")
   endif(PYTHON_EXECUTABLE)
 
   # TODO The user might want to select between numpy/numarray

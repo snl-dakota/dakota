@@ -63,8 +63,8 @@
 ##############################################################################
 #set( DAKOTA_HAVE_MPI ON
 #     CACHE BOOL "Build with MPI enabled" FORCE)
-set( MPI_CXX_COMPILER "mpicxx"
-     CACHE FILEPATH "Use MPI compiler wrapper" FORCE)
+#set( MPI_CXX_COMPILER "path/to/mpicxx"
+#     CACHE FILEPATH "Use MPI compiler wrapper" FORCE)
 
 ##############################################################################
 # Set Boost path if CMake cannot find your installed version of Boost or
