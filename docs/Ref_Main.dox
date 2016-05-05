@@ -9,10 +9,11 @@ uncertainty quantification, parameter estimation, and sensitivity
 analysis, which may be used individually or as components within
 surrogate-based and other advanced strategies.
 
-\author Brian M. Adams, Lara E. Bauman, William J. Bohnhoff, Keith
+\author Brian M. Adams, William J. Bohnhoff, Keith
 R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Russell
-W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman, Ahmad Rushdi,
-Laura P. Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
+W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman, Kathryn A. Maupin,
+Jason A. Monschke, Elliott M. Ridgway, Ahmad Rushdi, Laura P. Swiler, J. Adam Stephens, 
+Dena M. Vigil, Timothy M. Wildey
 
 <!-----
  %Dakota contains algorithms for:
