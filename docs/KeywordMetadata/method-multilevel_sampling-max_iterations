@@ -11,8 +11,8 @@ enforced.
 
 <b> Default Behavior </b>
 
-The default value for max_iterations varies by method.  In this
-context, the default value is 25.
+The default value for max_iterations varies by method.  For
+multilevel_sampling, the default value is 25.
 
 Topics::
 Examples::

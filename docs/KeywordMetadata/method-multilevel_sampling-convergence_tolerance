@@ -15,7 +15,7 @@ could overrun available memory.
 <b> Default Behavior </b>
 
 The default value for convergence_tolerance is currently .0001, which
-may be too resolved for expensive simulations.
+may be too resolved for expensive simulations or high variance QoI.
 
 
 Topics::
