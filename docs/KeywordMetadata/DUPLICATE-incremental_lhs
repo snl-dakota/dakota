@@ -5,26 +5,25 @@ Description::
 This keyword is deprecated.  Instead specify \c sample_type \c lhs
 with \c refinement_samples.
 
-\c incremental_lhs will augment an existing LHS sampling study with
-more samples to get better estimates of mean, variance, and
-percentiles.  The number of samples in the second set MUST currently
-be 2 times the number of previous samples, although incremental
-sampling based on any power of two may be supported in future
-releases.
+An incremental random sampling approach will augment an existing
+random sampling study with refinement_samples to get better estimates
+of mean, variance, and percentiles. The number of refinement_samples
+in each refinement level must result in twice the number of previous
+samples.
 
-<b> Default Behavior </b>
+Typically, this approach is used when you have an initial study with
+sample size N1 and you want to perform an additional N1 samples.
+Ideally, a Dakota restart file containing the initial N1 samples, so
+only N1 (instead of 2 x N1) potentially expensive function
+evaluations will be performed.
 
-Incremental Latin Hypercube Sampling is not used by default.  To
-change this behavior, the \c incremental_lhs keyword must be specified
-in conjuction with the \c sample_type keyword.  Additionally, a
-previous LHS (or incremental LHS) sampling study with sample size \f$
-N \f$ must have already been performed, and <b> the dakota restart
-file must be available from this previous study.</b> The variables
-and responses specifications must be the same in both studies.
-Incremental LHS sampling support both continuous uncertain 
-variables and discrete uncertain variables such as discrete distributions (e.g.
-binomial, Poisson, etc.) as well as histogram variables and
-uncertain set types.
+This process can be extended by repeatedly doubling the \c refinement_samples:
+\verbatim
+method
+  sampling
+    samples = 50
+    refinement_samples = 50 100 200 400 800
+\endverbatim
 
 <b> Usage Tips </b>
 
@@ -36,29 +35,33 @@ the \ref running_dakota-usage and \ref dakota_restart pages.
 
 Topics::	
 Examples::
-For example, say a user performs
-an initial study using \c lhs as the \c sample_type, and generates 10
-samples.
+
+Suppose an initial study is conducted using \c sample_type \c random
+with \c samples = 50.  A follow-on study uses a new input file where
+\c samples = 50, and \c refinement_samples = 50, resulting in 50
+reused samples (from restart) and 50 new random samples.  The 50 new
+samples will be combined with the 50 previous samples to generate a
+combined sample of size 100 for the analysis.
 
 One way to ensure the restart file is saved is to specify a non-default name,
 via a command line option:
 \verbatim 
-dakota -input LHS_10.in -write_restart LHS_10.rst
+dakota -input LHS_50.in -write_restart LHS_50.rst
 \endverbatim
 
 which uses the input file:
 
 \verbatim 
-# LHS_10.in
+# LHS_50.in
 
 environment
   tabular_data
-    tabular_data_file = 'lhs10.dat'
+    tabular_data_file = 'LHS_50.dat'
 
 method
   sampling
     sample_type lhs
-    samples = 10
+    samples = 50
 
 model
   single
@@ -78,27 +81,27 @@ responses
   no_gradients
   no_hessians
 \endverbatim
-and the restart file is written to LHS_10.rst.
+and the restart file is written to \c LHS_50.rst.
 
 
 Then an incremental LHS study can be run with:
 \verbatim 
-dakota -input LHS_20.in -read_restart LHS_10.rst -write_restart LHS_20.rst
+dakota -input LHS_100.in -read_restart LHS_50.rst -write_restart LHS_100.rst
 \endverbatim
-where \c LHS_20.in is shown below, and LHS_10.rst is the restart
+where \c LHS_100.in is shown below, and \c LHS_50.rst is the restart
 file containing the results of the previous LHS study.
 \verbatim 
-# LHS_20.in
+# LHS_100.in
 
 environment
   tabular_data
-    tabular_data_file = 'lhs_incremental_20.dat'
+    tabular_data_file = 'LHS_100.dat'
 
 method
   sampling
     sample_type incremental_lhs
-    samples = 10
-      refinement_samples = 10
+    samples = 50
+      refinement_samples = 50
 
 model
   single
@@ -119,12 +122,10 @@ responses
   no_hessians
 \endverbatim
 
-The user will get 10 new LHS samples which
+The user will get 50 new LHS samples which
 maintain both the correlation and stratification of the original LHS
 sample. The new samples will be combined with the original
-samples to generate a combined sample of size 20.
-
-This is clearly seen by comparing the two tabular data files.
+samples to generate a combined sample of size 100.
 
 Theory::
 Faq::

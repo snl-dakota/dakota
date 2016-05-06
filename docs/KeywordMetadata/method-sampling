@@ -145,4 +145,4 @@ Faq::
 <b>Q: </b> Do I need to keep the LHS* and S4 files?
 <b>A: </b> No
 
-See_Also::	variables-active, method-sampling-sample_type-incremental_lhs
+See_Also::	variables-active
