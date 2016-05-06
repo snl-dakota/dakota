@@ -2,15 +2,17 @@
 <!------Keywords Area------------------------->
 
 \page keywords Keywords Area
-This page lists the six blocks. From here, you can navigate to every keyword.
 
-- \subpage environment 
-- \subpage method
-- \subpage model
-- \subpage variables
-- \subpage interface
-- \subpage responses
+This page summarizes the overall input file structure, syntac, and the
+six types of blocks that may appear in Dakota input.  Some are
+optional and some may appear multiple times:
 
+- \subpage environment (optional; 0 or 1 may appear)
+- \subpage method (required; 1 or more may appear)
+- \subpage model (optional; 0 or more may appear)
+- \subpage variables (required; 1 or more may appear)
+- \subpage interface (required; 1 or more may appear)
+- \subpage responses (required; 1 or more may appear)
 
 <b> Introduction to Dakota Keywords </b>
 

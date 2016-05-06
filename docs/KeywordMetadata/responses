@@ -8,28 +8,20 @@ types of data that can be returned by an interface when invoked during
 Dakota's execution. The specification includes three groups and two
 optional keywords.
 
-<b> Group 1 </b> is related to the type and number of responses expected by Dakota
+<b>The response type group</b>indicates the type and number of
+responses expected by Dakota.  It must be one of three types:
+-# Optimization: objective and constraint functions 
+-# Calibration: calibration (least squares) terms and constraint functions
+-# Uncertainty Quantifiation: generic response functions
 
-The specification must be one of three types: 
--# objective and constraint functions 
--# calibration (least squares) terms and constraint functions
--# a generic response functions specification.
+The response type specified should be consistent with the iterative
+technique called for in the method specification.  Certain
+general-purpose iterative techniques, such as parameter studies and
+design of experiments methods, can be used with any of these response
+types.
 
-These correspond to optimization, least squares, and uncertainty
-quantification methods, respectively.
-The response type chosen from Group 1
-should be consistent with the
-iterative technique called for in the method specification.
-Certain general-purpose iterative techniques, such as parameter
-studies and design of experiments methods, can be used with any of
-these data sets.
-
-Each type of response has additional required and optional 
-keywords.
-
-<b> Group 2 </b> is related to the availability of first 
-derivatives (gradient vectors) for the response
-functions.
+<b>The gradient type group</b> indicates the availability of first
+derivatives (gradient vectors) for the response functions.
 
 The gradient specification also links back to the iterative method
 used. Gradients commonly are needed when the iterative study involves
@@ -37,9 +29,8 @@ gradient-based optimization, local reliability analysis for
 uncertainty quantification, or local sensitivity analysis.  They can
 optionally be used to build some types of surrogate models.
 
-<b> Group 3 </b> is related to the availability of second
-derivatives (Hessian matrices) for the response
-functions.
+<b>The Hessian type group</b> specifies the availability of second
+derivatives (Hessian matrices) for the response functions.
 
 Hessian availability for the response functions is similar to the
 gradient availability specifications, with the addition of support for
@@ -98,6 +89,14 @@ be used with any of the function specification examples shown above.
 
 
 Theory::
-Responses specify the total data set that is available for use by the method over the course of iteration. This is distinguished from the data subset described by an active set vector (see Dakota File Data Formats in the Users Manual [Adams et al., 2010]) indicating the particular subset of the response data needed for a particular function evaluation. Thus, the responses specification is a broad description of the data to be used during a study whereas the active set vector indicates the subset currently needed.
+Responses specify the total data set that is available for use by the
+method over the course of iteration. This is distinguished from the
+data subset described by an active set vector (see Dakota File Data
+Formats in the Users Manual [Adams et al., 2010]) indicating the
+particular subset of the response data needed for a particular
+function evaluation. Thus, the responses specification is a broad
+description of the data to be used during a study whereas the active
+set vector indicates the subset currently needed.
+
 Faq::
 See_Also::

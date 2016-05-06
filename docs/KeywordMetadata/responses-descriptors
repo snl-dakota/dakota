@@ -1,11 +1,11 @@
 Blurb:: Labels for the responses
 
 Description::
-The optional response labels specification \c descriptors is a list of
-strings which identify the responses.  These are used in console and
-tabular output.  Response descriptors are ordered by primary response
-functions (objective, calibration, or response functions), followed by
-inequality, then equality constraints, if present.
+A list of strings which identify the responses.  These are used in
+console and tabular output.  Response descriptors are ordered by
+primary response functions (objective, calibration, or response
+functions), followed by inequality, then equality constraints, if
+present.
 
 <b> Default Behavior </b>
 

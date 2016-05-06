@@ -1,12 +1,13 @@
 Blurb::
 Hessians are needed and will be approximated by finite differences
+
 Description::
 The \c numerical_hessians specification means that Hessian information
 is needed and will be computed with finite differences using either
 first-order gradient differencing (for the cases of \c
 analytic_gradients or for the functions identified by \c
-id_analytic_gradients in the case of \c mixed_gradients) or
-first- or second-order function value differencing (all other gradient
+id_analytic_gradients in the case of \c mixed_gradients) or first- or
+second-order function value differencing (all other gradient
 specifications). In the former case, the following expression
 \f[
 \nabla^2 f ({\bf x})_i \cong 

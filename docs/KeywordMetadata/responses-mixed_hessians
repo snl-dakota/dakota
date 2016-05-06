@@ -1,10 +1,8 @@
 Blurb::
-Hessians are needed and will be obtained from a mix of numerical, analytic, and "quasi" sources
-Description::
-Hessian availability must be specified with either \c no_hessians, \c
-numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c
-mixed_hessians.
+Hessians are needed and will be obtained from a mix of numerical,
+analytic, and "quasi" sources
 
+Description::
 The \c mixed_hessians specification means that some Hessian
 information is available directly from the simulation (analytic)
 whereas the rest will have to be estimated by finite differences

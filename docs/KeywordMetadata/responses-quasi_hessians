@@ -1,5 +1,7 @@
 Blurb::
-Hessians are needed and will be approximated by secant updates (BFGS or SR1) from a series of gradient evaluations
+Hessians are needed and will be approximated by secant updates (BFGS
+or SR1) from a series of gradient evaluations
+
 Description::
 The \c quasi_hessians specification means that Hessian information is
 needed and will be approximated using secant updates (sometimes called
@@ -12,14 +14,16 @@ estimating all of the second-order information for every point of
 interest. Rather, they accumulate approximate curvature information
 over time using the existing gradient evaluations. 
 
-The supported
-secant approximations include the
+The supported secant approximations include the
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) update (specified with the
-keyword \c bfgs)
-and the Symmetric Rank 1 (SR1) update (specified with the keyword \c sr1).
+keyword \c bfgs) and the Symmetric Rank 1 (SR1) update (specified with
+the keyword \c sr1).
 
 Topics::	
 Examples::
 Theory::
+
+
+
 Faq::
 See_Also::	responses-no_hessians, responses-numerical_hessians, responses-analytic_hessians, responses-mixed_hessians

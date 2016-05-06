@@ -647,73 +647,81 @@ their specified probability distributions.
 In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean,
 variance, and percentiles, and to obtain more comprehensive sample
-coverage. We call this capability incremental sampling. Currently,
-the LHS incremental sampling capability we have in Dakota requires that
-the incremental samples are double the sample size of the previous
-sample. That is, if one starts with a very small sample size of 10,
-then one can use the incremental sampling capability to generate
-sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
-(dakota.rst) must be available from the original sample. 
-Incremental sampling supports continuous uncertain variables
-and discrete uncertain variables such as discrete distributions (e.g. 
-binomial, Poisson, etc.) as well as histogram variables and 
-uncertain set types.
+coverage. We call this capability incremental sampling.  Typically, a
+Dakota restart file (\texttt{dakota.rst}) would be available from the
+original sample, so only the newly generated samples would need to be
+evaluated.  Incremental sampling supports continuous uncertain
+variables and discrete uncertain variables such as discrete
+distributions (e.g.  binomial, Poisson, etc.) as well as histogram
+variables and uncertain set types.
 
-There are two
-cases, random incremental and Latin Hypercube incremental sampling.
-We assume that LHS incremental will be most frequently used. One
+There are two cases, incremental random and incremental Latin
+hypercube sampling, with incremental LHS being the most common.  One
 major advantage of LHS incremental sampling is that it maintains the
 stratification and correlation structure of the original LHS sample.
-That is, if one generated 2 independent LHS samples and just merged
-them, the calculation of the accuracy of statistical measures such as
-the mean and the variance would be slightly incorrect. However, in
-the incremental case, the full sample (double the original size) is a
-Latin Hypercube sample itself and statistical measures and their
-accuracy can be properly calculated. The incremental sampling
-capability is most useful when one is starting off with very small
-samples. Once the sample size is more than a few hundred, the benefit
-of incremental sampling diminishes.
+That is, if one generated two independent LHS samples and simply
+merged them, the calculation of the accuracy of statistical measures
+such as the mean and the variance would be slightly
+incorrect. However, in the incremental case, the full sample (double
+the original size) is a Latin Hypercube sample itself and statistical
+measures and their accuracy can be properly calculated. The
+incremental sampling capability is most useful when one is starting
+off with very small samples. Once the sample size is more than a few
+hundred, the benefit of incremental sampling diminishes.
 
 \begin{enumerate}
 
-\item Incremental Random Sampling. With incremental random sampling, 
-the original sample set with N samples must be 
-generated using \texttt{sample\_type} as \texttt{random}.
-Then, the user can create a new Dakota input file that is very similar to the 
-original one except the \texttt{sample\_type} should be defined to be 
-\texttt{incremental\_random}. Random incremental sampling does not 
-require a doubling of samples each time. Thus, the user 
-can specify the number of samples (\texttt{samples}) to be a desired 
-number (it can range from an additional one sample to a large integer), 
-and the \texttt{previous\_samples} should be specified as N. For example, if
-the first sample has 50 samples, and 10 more samples are desired, 
-in the second Dakota run, the number
-of samples should be set to 60 and the number of previous samples set
-to 50. In this situation, only 10 new samples will be generated and
-the final statistics will be reported on the full sample of 60. The
-command line syntax for running the second sample is \texttt{dakota -i
-input2.in -r dakota.rst} where input2.in is the input file with the
-incremental sampling specification and dakota.rst is the restart file.
-Note that if the restart file has a different name, that is fine; the
-correct restart file name should be used.
+\item Incremental random sampling: With incremental random sampling,
+  the original sample set with $N1$ samples must be generated using
+  \texttt{sample\_type = random} and \texttt{samples = N1}.  Then, the
+  user can duplicate the Dakota input file and add
+  \texttt{refinement\_samples = N2} with the number of new samples
+  $N2$ to be added.  Random incremental sampling does not require a
+  doubling of samples each time. Thus, the user can specify any number
+  of \texttt{refinement\_samples} (from an additional one sample to a
+  large integer).
 
-\item Incremental Latin Hypercube Sampling. With incremental LHS sampling, 
-the original sample set with N samples must be 
-generated using \texttt{sample\_type} as \texttt{lhs}.
-Then, the user can create a new Dakota input file that is very similar to the 
-original one except the \texttt{sample\_type} should be defined to be 
-\texttt{incremental\_lhs}, the number of samples (\texttt{samples}) should 
-be 2N (twice the number of original samples), and
-\texttt{previous\_samples} should be specified as N. For example, if
-the first sample has 50 samples, in the second Dakota run, the number
-of samples should be set to 100 and the number of previous samples set
-to 50. In this situation, only 50 new samples will be generated and
-the final statistics will be reported on the full sample of 100. The
-command line syntax for running the second sample is \texttt{dakota -i
-input2.in -r dakota.rst}, where input2.in is the input file with the
-incremental sampling specification and dakota.rst is the restart file.
-Note that if the restart file has a different name, that is fine; the
-correct restart file name should be used.
+  For example, if the first sample has 50 samples, and 10 more samples
+  are desired, the second Dakota run should specify \texttt{samples =
+    50}, \texttt{refinement\_samples = 10}.  In this situation, only
+  10 new samples will be generated and the final statistics will be
+  reported on the full sample of 60. The command line syntax for
+  running the second sample is \texttt{dakota -i input60.in -r
+    dakota.50.rst} where \texttt{input60.in} is the input file with
+  the refinement samples specification and \texttt{dakota.50.rst} is
+  the restart file containing the initial 50 samples.  Note that if
+  the restart file has a different name, that is fine; the correct
+  restart file name should be used.
+
+  This process can be repeated if desired,arbitrarily extending the
+  total sample size each time, e.g, \texttt{samples = 50},
+  \texttt{refinement\_samples = 10  3  73  102}.
+
+\item Incremental Latin hypercube sampling: With incremental LHS
+  sampling, the original sample set with $N1$ samples must be
+  generated using \texttt{sample\_type = lhs} and \texttt{samples =
+    N1}.  Then, the user can duplicate the Dakota input file and add
+  \texttt{refinement\_samples = N1}.  The sample size must double each
+  time, so the first set of refinement samples must be the same size
+  as the initial set.  That is, if one starts with a very small sample
+  size of 10, then one can use the incremental sampling capability to
+  generate sample sizes of 20, 40, 80, etc.
+
+  For example, if the first sample has 50 samples, in the second
+  Dakota run, the number of refinement samples should be set to 50 for
+  a total of 100. In this situation, only 50 new samples will be
+  generated and the final statistics will be reported on the full
+  sample of 100. The command line syntax for running the second sample
+  is \texttt{dakota -i input100.in -r dakota.50.rst}, where
+  \texttt{input100.in} is the input file with the incremental sampling
+  specification and \texttt{dakota.50.rst} is the restart file
+  containing the initial 50 samples.  Note that if the restart file
+  has a different name, that is fine; the correct restart file name
+  should be used.
+
+  This process can be repeated if desired, doubling the total sample
+  size each time, e.g, \texttt{samples = 50},
+  \texttt{refinement\_samples = 50  100  200  400}.
 
 \end{enumerate}
 

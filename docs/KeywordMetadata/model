@@ -1,14 +1,17 @@
 Blurb::
 Specifies how variables are mapped into a set of responses
+
 Description::
 A model is comprised of a mapping from variables, through an
 interface, to responses.
 
 <b> Model Group 1 </b>
 The type of model can be:
--# \c single
--# \c nested
+-# \c single (default)
 -# \c surrogate 
+-# \c nested
+-# \c subspace
+-# \c random_field
 
 The input file must specify one of these types. If the type is not
 specified, Dakota will assume a single model.
@@ -34,6 +37,15 @@ This top-down flow specifies all of the object interrelationships.
 
 Topics:: block
 Examples::
+The first example shows a minimal specification for a \c single model,
+which is the default model when no models are explicitly specified
+by the user.
+
+\verbatim
+model
+  single
+\endverbatim
+
 The next example displays a surrogate model specification which
 selects a quadratic polynomial from among the global approximation
 methods. It uses a pointer to a design of experiments method for
@@ -63,23 +75,22 @@ global surrogates (see \ref model-surrogate-global).
 Finally, an advanced nested model example would be
 \verbatim
 model
-	id_model = 'M1'
-	variables_pointer = 'V1'
-	responses_pointer = 'R1'
-	nested
-	 optional_interface_pointer = 'OI1'
-	  optional_interface_responses_pointer = 'OIR1'
-	 sub_method_pointer = 'SM1'
-	  primary_variable_mapping  = '' '' 'X'   'Y'
-	  secondary_variable_mapping = '' '' 'mean' 'mean'
-	  primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
-	  secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
-					 0. 0. 0. 0. 0. 0. 1. 3. 0.
+  id_model = 'M1'
+  variables_pointer = 'V1'
+  responses_pointer = 'R1'
+  nested
+    optional_interface_pointer = 'OI1'
+      optional_interface_responses_pointer = 'OIR1'
+     sub_method_pointer = 'SM1'
+       primary_variable_mapping  = '' '' 'X'   'Y'
+       secondary_variable_mapping = '' '' 'mean' 'mean'
+       primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
+       secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
+                                    0. 0. 0. 0. 0. 0. 1. 3. 0.
 \endverbatim 
-This example also supplies model independent controls for model
+This example illustrates controls for model
 identifier, variables pointer, and responses pointer
-and supplies model dependent controls for specifying
-details of the nested mapping.
+and for specifying details of the nested mapping.
 
 Theory::
 Faq::

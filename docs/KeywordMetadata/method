@@ -3,8 +3,8 @@ Begins Dakota method selection and behavioral settings.
 
 Description::
 The \c method keyword signifies the start of a block in the Dakota
-input file.  Said block contains the various keywords necessary to
-specify a method and to control its behavior.
+input file.  A method block contains the various keywords necessary to
+select a method and to control its behavior.
 
 <b> Method Block Requirements </b>
 

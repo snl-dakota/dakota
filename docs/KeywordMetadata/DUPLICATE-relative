@@ -1,7 +1,8 @@
-Blurb::
-Scale step size by the parameter value
+Blurb:: (Default) Scale step size by the parameter value
+
 Description::
 Scale step size by the parameter value
+
 Topics::	
 Examples::
 Theory::

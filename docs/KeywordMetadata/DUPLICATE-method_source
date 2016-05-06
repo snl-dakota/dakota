@@ -1,5 +1,6 @@
 Blurb::
 Specify which finite difference routine is used
+
 Description::
 The \c method_source setting specifies the source of the finite
 differencing routine that will be used to compute the numerical

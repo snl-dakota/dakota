@@ -270,36 +270,32 @@ manual.
 
 There are six specification blocks that may appear in Dakota input
 files. These are identified in the input file using the following
-keywords: variables, interface, responses, model, method, and environment. These
-keyword blocks can appear in any order in a Dakota input file. At
-least one \emph{variables}, \emph{interface}, \emph{responses}, and
-\emph{method} specification must appear, and no more than one
-\emph{environment} specification should appear.
-
-Figure~\ref{tutorial:inputfile_block_layout} shows the relationships
-between the six keyword blocks. The environment specifies high level
-Dakota settings, and identifies
-the top level method. A method runs a model. A model block defines the
-connections between variables, the interface, and
-responses. Figure~\ref{tutorial:inputfile_block_layout} shows the most
-common relationships between blocks but others are possible. Most
-Dakota analyses define a single method which runs a single model.
-Advanced cases are discussed in Chapter~\ref{adv_meth}.
+keywords: variables, interface, responses, model, method, and
+environment. While, these keyword blocks can appear in any order in a
+Dakota input file, there is an inherent relationship that ties them
+together. The simplest form of that relationship is shown in
+Figure~\ref{tutorial:inputfile_block_layout} and can be summarized as
+follows: In each iteration of its algorithm, a \emph{method} block
+requests a \emph{variables}-to-\emph{responses} mapping from its
+\emph{model}, which the model fulfills through an \emph{interface}.
+While most Dakota analyses satisfy this relationship, where a single
+method runs a single model, advanced cases are possible and are
+discussed in Chapter~\ref{adv_meth}.
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[height=2.5in]{images/inputfile_block_layout}
-  \caption{Relationship between the six blocks, for a simple study (left)
-            and an advanced, multi-method study (right)}
+  \includegraphics[height=2.5in]{images/InputBlocks}
+  \caption{Relationship between the six blocks, for a simple study.}
   \label{tutorial:inputfile_block_layout}
 \end{figure}
 
-For a more concrete example, a simple Dakota
-input file, \texttt{rosen\_multidim.in}, is shown in
-Figure~\ref{tutorial:rosenbrock_multidim} for a two-dimensional parameter
-study on Rosenbrock's function.  This input file will be used to describe
-the basic format and syntax used in all Dakota input files.  The results
-are shown later, in Section~\ref{tutorial:examples:param_study}.
+As a concrete example, a simple Dakota input file,
+\texttt{rosen\_multidim.in}, is shown in
+Figure~\ref{tutorial:rosenbrock_multidim} for a two-dimensional
+parameter study on Rosenbrock's function.  This input file will be
+used to describe the basic format and syntax used in all Dakota input
+files.  The results are shown later, in
+Section~\ref{tutorial:examples:param_study}.
 
 \begin{figure}[ht!]
   \centering
@@ -313,94 +309,112 @@ are shown later, in Section~\ref{tutorial:examples:param_study}.
   \label{tutorial:rosenbrock_multidim}
 \end{figure}
 
-Additional syntax features for Dakota input files include use of the \#
-symbol to indicate a comment, use of single or double quotes for string inputs
-(e.g., \texttt{'x1'}), use of commas and/or white space for separation of
-specifications, and optional use of ``='' symbols to indicate
-supplied data. See the Dakota Reference
-Manual~\cite{RefMan} for additional details on this input file syntax.
-
 The first block of the input file shown in
-Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{environment} block.
-This keyword block is used to specify the general Dakota settings
-such as Dakota's graphical output (via the \texttt{graphics}
+Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{environment}
+block.  This keyword block is used to specify the general Dakota
+settings such as Dakota's graphical output (via the \texttt{graphics}
 flag) and the tabular data output (via the
-\texttt{tabular\_graphics\_data} keyword). In addition, it 
-identifies the \texttt{top\_level\_method} that will control the Dakota study.
+\texttt{tabular\_graphics\_data} keyword).  In advanced cases, it also
+identifies the \texttt{top\_method\_pointer} that will control the
+Dakota study.  The \emph{environment} block is optional, and at most
+one such block can appear in a Dakota input file.
 
 The \emph{method} block of the input file specifies which iterative
-method Dakota will employ, such as a parameter study,
-optimization method, data sampling technique, etc.
-The keyword \texttt{multidim\_parameter\_study}
-in Figure~\ref{tutorial:rosenbrock_multidim} calls for a multidimensional
+method Dakota will employ and associated method options.
+The keyword \texttt{multidim\_parameter\_study} in
+Figure~\ref{tutorial:rosenbrock_multidim} calls for a multidimensional
 parameter study, while the keyword \texttt{partitions} specifies the
-number of intervals per variable. In this case, there will be eight
-intervals (nine data points) evaluated between the lower and upper
-bounds of both variables (bounds provided subsequently in the
-\emph{variables} section), for a total of 81 response function
-evaluations.
+number of intervals per variable (a method option). In this case,
+there will be eight intervals (nine data points) evaluated between the
+lower and upper bounds of both variables (bounds provided subsequently
+in the \emph{variables} section), for a total of 81 response function
+evaluations.  At least one \emph{method} block is required, and
+multiple blocks may appear in Dakota input files for advanced studies.
 
 The \emph{model} block of the input file specifies the model that
-Dakota will use. A model provides the logical unit for determining
-how a set of variables is mapped into a set of responses in support of
-an iterative method. The model allows one to specify a single
-interface, or to manage more sophisticated mappings involving
-surrogates or nested iteration. For example, one might want to use
-an approximate model for optimization or uncertainty quantification,
-due to the lower computational cost. The
-\texttt{model} keyword allows one to specify if the iterator will be
-operating on a data fit surrogate (such as a polynomial regression,
-neural net, etc.), a hierarchical surrogate (which uses the corrected
-results of a lower fidelity simulation model as an approximation to a
-higher fidelity simulation), or a nested model. See
-Chapter~\ref{models} for additional model specification details. If
-these advanced facilities for surrogate modeling or nested iteration
-are not required, then it is not necessary to specify the
-\texttt{model} keyword at all, since the default behavior is the use
-of a ``single'' model constructed with the last set of responses,
-variables, and interface specified. In
-Figure~\ref{tutorial:rosenbrock_multidim}, the keyword \texttt{single}
-explicitly specifies the use of a single model in the parameter study,
-even though this is the default.
+Dakota will use. A model provides the logical unit for determining how
+a set of variables is mapped through an interface into a set of
+responses when needed by an iterative method. In the default case, the
+model allows one to specify a single set of variables, interface, and
+responses.  The \emph{model} block is optional in this simple case.
+Alternatively, it can be explicitly defined as in
+Figure~\ref{tutorial:rosenbrock_multidim}, where the keyword
+\texttt{single} specifies the use of a single model in the parameter
+study.  If one wishes to perform more sophisticated studies such as
+surrogate-based analysis or optimization under uncertainty, the
+logical organization specified in the \emph{model} block becomes
+critical in informing Dakota on how to manage the different components
+of such studies, and multiple \emph{model} blocks are likely needed.
+See Chapter~\ref{models} for relevant advanced model specification
+details.
 
-The \emph{variables} block of the input file specifies the
-characteristics of the parameters that will be used in the problem
-formulation. The variables can be continuous or discrete, and can be
-classified as design variables, uncertain variables, or state
-variables. See Chapter~\ref{variables} for more information on the
-types of variables supported by Dakota. The \emph{variables} section
-shown in Figure~\ref{tutorial:rosenbrock_multidim} specifies that there are
-two continuous design variables. The sub-specifications for
-continuous design variables
-% use the abbreviation ``cdv'' in the input file and
-provide the descriptors ``x1'' and ``x2'' as well as lower
-and upper bounds for these variables. The information about the
+The \emph{variables} block of the input file specifies the number,
+type, and characteristics of the parameters that will be varied by
+Dakota. The variables can be classified as design variables, uncertain
+variables, or state variables.  Design variables are typically used in
+optimization and calibration, uncertain variables are used in UQ and
+sensitivity studies, and state variables are usually fixed.  In all
+three cases, variables can be continuous or discrete, with discrete
+having real, integer, and string subtypes. See Chapter~\ref{variables}
+for more information on the types of variables supported by
+Dakota. The \emph{variables} section shown in
+Figure~\ref{tutorial:rosenbrock_multidim} specifies that there are two
+continuous design variables. The sub-specifications for continuous
+design variables provide the descriptors ``x1'' and ``x2'' as well as
+lower and upper bounds for these variables. The information about the
 variables is organized in column format for readability. So, both
 variables $x_1$ and $x_2$ have a lower bound of -2.0 and an upper
-bound of 2.0.
+bound of 2.0. At least one \emph{variables} block is required, and
+multiple blocks may appear in Dakota input files for advanced studies.
 
-The \emph{interface} block of the input file specifies what approach
-will be used to map variables into responses as well as details on how
-Dakota will pass data to and from a simulation code.
-In this example, the keyword \texttt{direct} is used to indicate the
-use of a function linked directly into Dakota.
-Alternatively, \texttt{fork} or \texttt{system} executions can be used
-to invoke instances of a simulation code that is external to Dakota,
-as explained in Section \ref{tutorial:examples:user_supply:optimization2} 
-and Chapter~\ref{advint}.
-The \texttt{analysis\_driver} keyword indicates the name of the test
-function. With \texttt{fork} or \texttt{system}, default file names
-would be used for passing data between Dakota and the simulation code.
+The \emph{interface} block of the input file specifies the simulation
+code that will be used to map variables into responses as well as
+details on how Dakota will pass data to and from that code.  In this
+example, the keyword \texttt{direct} is used to indicate the use of a
+function linked directly into Dakota, and data is passed directly
+between the two.  The name of the function is identified by the
+\texttt{analysis\_driver} keyword.  Alternatively, \texttt{fork} or
+\texttt{system} executions can be used to invoke instances of a
+simulation code that is external to Dakota as explained in Section
+\ref{tutorial:examples:user_supply:optimization2} and
+Chapter~\ref{advint}.  In this case, data is passed between Dakota and
+the simulation via text files. At least one \emph{interface} block is
+required, and multiple blocks may appear in Dakota input files for
+advanced studies.
 
-The \emph{responses} block of the input file specifies the types
-of data that the interface will return to Dakota. For the example
-shown in Figure~\ref{tutorial:rosenbrock_multidim}, the assignment
-\texttt{response\_functions = 1} indicates that there is only one response
-function. Since there are no constraints associated with Rosenbrock's
-function, the keywords for constraint specifications are omitted. The
-keywords \texttt{no\_gradients} and \texttt{no\_hessians} indicate that
-no derivatives will be provided to the method; none are needed for a
-parameter study.
+The \emph{responses} block of the input file specifies the types of
+data that the interface will return to Dakota.  They are categorized
+primarily according to usage.  Objective functions are used in
+optimization, calibration terms in calibration, and response functions
+in sensitivity analysis and UQ. For the example shown in
+Figure~\ref{tutorial:rosenbrock_multidim}, the assignment
+\texttt{response\_functions = 1} indicates that there is only one
+response function. The \emph{responses} block can include additional
+information returned by the interface.  That includes constraints and
+derivative information, both discussed in Chapter~\ref{responses}.  In
+this example, there are no constraints associated with Rosenbrock's
+function, so the keywords for constraint specifications are
+omitted. The keywords \texttt{no\_gradients} and \texttt{no\_hessians}
+indicate that no derivatives will be provided to the method; none are
+needed for a parameter study.  At least one \emph{responses} block is
+required, and multiple blocks may appear in Dakota input files for
+advanced studies.
+
+We close this section with a list of rules regarding the formatting of
+the Dakota input file.
+\begin{itemize}
+\item ``Flat'' text only.
+\item Whitespace is ignored.
+\item Comments begin with \# and continue to the end of the line.
+\item Keyword order is largely unimportant as long as major sections
+  are respected and there is no ambiguity.
+\item Equal signs are optional.
+\item Strings can be surrounded by single or double quotes (but not
+  ``fancy'' quotes).
+\item Scientific notation is fine.
+\end{itemize}
+Please see the Dakota Reference Manual~\cite{RefMan} for additional
+details on this input file syntax.
 
 \section{Examples}\label{tutorial:examples}
 

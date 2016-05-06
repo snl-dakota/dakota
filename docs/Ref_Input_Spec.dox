@@ -3,27 +3,30 @@
 
 \page input_spec Dakota Input Specification
 
-\section input_spec-nidr Dakota NIDR
+Dakota input is specified in a text file, e.g., \c dakota_uq.in
+containing blocks of keywords that control program behavior.  This
+section describes the format and admissible elements of an input file.
 
-Valid %Dakota input is dictated governed by the NIDR \cite Gay2008
-input specification file, \c dakota.input.nspec. This file is used by
-a code generator to create parsing system components that are compiled
-into %Dakota. Therefore, dakota.input.nspec and its derived summary,
-dakota.input.summary, are the definitive source for input syntax,
-capability options, and optional and required capability
-sub-parameters for any given %Dakota version.
+\section input_spec-nidr Dakota Keywords
 
-Beginning users may find dakota.input.summary overwhelming or
+Valid %Dakota input keywords are dictated by \c dakota.xml, included
+in source and binary distributions of %Dakota.  This specification
+file is used with the NIDR \cite Gay2008 parser to validate user input
+and is therefore the definitive source for input syntax, capability
+options, and optional and required capability sub-parameters for any
+given %Dakota version.  A more readable variant of the specification
+\c dakota.input.summary is also distributed.
+
+While complete, users may find \c dakota.input.summary overwhelming or
 confusing and will likely derive more benefit from adapting example
 input files to a particular problem. Some examples can be found here:
 \subpage input_file_examples.  Advanced users can master the many
 input specification possibilities by understanding the structure of
 the input specification file.
 
-
 \section input_spec-overview Input Spec Overview 
 Refer to the dakota.input.summary file, in \subpage input_spec_summary, 
-for current input specifications. 
+for all current valid input keywords. 
 
 - The summary describes every keyword including:
   - Whether it is required or optional
@@ -42,8 +45,9 @@ common errors. Some causes of errors are more obscure:
 \li Documentation of new capability sometimes lags its availability in
 source and executables, especially stable releases. When parsing
 errors occur that the documentation cannot explain, reference to the
-particular input specification used in building the executable, which
-is installed alongside the executable, will often resolve the errors.
+particular input specification \c dakota.input.summary used in
+building the executable, which is installed alongside the executable,
+will often resolve the errors.
 
 \li If you want to compare results with those obtained using
 an earlier version of %Dakota (prior to 4.1), your input file
@@ -70,8 +74,10 @@ responses,                       \
 \endverbatim
 with no white space (blanks or tabs) after the \ character.
 
-In most cases, the NIDR system provides error messages that
-help the user isolate errors in %Dakota input files.
+In most cases, the %Dakota parser provides error messages that help
+the user isolate errors in input files.  Running \c dakota \c -input
+\c dakota_study.in \c -check will validate the input file without
+running the study.
 
 
 <!-------------------------------------------->
