@@ -12,8 +12,9 @@ mean, variance, and percentiles.
 <b> Default Behavior </b>
 
 If the \c sample_type keyword is present, it must be accompanied by \c
-lhs, \c random, \c incremental_lhs, or \c incremental_random.
-Otherwise, \c lhs will be used by default.
+lhs, \c random, \c incremental_lhs, or \c incremental_random.  In most
+contexts, \c lhs is the default (exception: multilevel_sampling uses
+Monte Carlo by default).
 
 
 Topics::	

@@ -9,9 +9,10 @@ selects variable values from a set of equi-probable bins.
 
 <b> Default Behavior </b>
 
-By default, Latin Hypercube Sampling is used.  To explicitly specify
-this in the Dakota input file, however, the \c lhs keyword must appear
-in conjunction with the \c sample_type keyword.
+Latin Hypercube Sampling is the default sampling mode in most contexts
+(exception: multilevel_sampling).  To explicitly specify LHS in the
+Dakota input file, the \c lhs keyword must appear in conjunction with
+the \c sample_type keyword.
 
 <b> Usage Tips </b>
 

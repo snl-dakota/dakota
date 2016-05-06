@@ -40,34 +40,48 @@ high fidelity denoted as HF), we employ a control variate approach:
 As opposed to the traditional control variate approach, we do not know
 \f$\mathbb{E}[Q_{LF}]\f$ precisely, but rather etimate it more
 accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
-in applied to the LF model.  This sampling increment is based again on
+applied to the LF model.  This sampling increment is based again on
 a total cost minimization procedure that incorporates the relative LF
 and HF costs and the observed Pearson correlation coefficient
 \f$\rho_{LH}\f$ between \f$Q_{LF}\f$ and \f$Q_{HF}\f$.  The
 coefficient \f$\beta\f$ is then determined from the observed LF-HF
-covariance and the LF variance.
+covariance and LF variance.
 
 <b> Multilevel Control Variate Monte Carlo </b>
 
-Experimental: if both multifidelity and multilevel structure are
-present, then control variates can be applied across fidelities for
-each level within an outer multilevel approach.
+<i> Experimental:</i> if both multifidelity and multilevel structure
+are included within the hierarchical model specification, then control
+variates can be applied across fidelities for each level within an
+outer multilevel approach.
 
 An initial prototype for multilevel control variate MC can be explored
 using \c dakota/test/dakota_uq_heat_eq_mlcvmc.in, and will be
 stabilized in future releases.
 
-<b> Default Behavior </b> The multilevel sampling method employs 
-Monte Carlo sampling be default, but this default can be overriden to
-use Latin hypercube sampling using \c sample_type \c lhs.
+<b> Default Behavior </b> 
 
-<b> Expected Output </b> The multilevel sampling method reports estimates
-of the first four moments and a summary of the evaluations performed for
-each model fidelity and discretization level.
+The multilevel sampling method employs Monte Carlo sampling be
+default, but this default can be overriden to use Latin hypercube
+sampling using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The multilevel sampling method reports estimates of the first four
+moments and a summary of the evaluations performed for each model
+fidelity and discretization level.  The method does not support any
+level mappings (response, probability, reliability, generalized
+reliability) at this time.
 
 <b> Usage Tips </b>
 
-<b> Additional Discussion </b>
+The multilevel sampling method must be used in combination with a
+hierarchical model specification.  When exploiting multiple
+discretization levels, it is necessary to identify the variable string
+identifier that controls these levels using \c solution_level_control.
+Associated relative costs also need to be supplied using \c
+solution_level_cost.
+
+<!-- <b> Additional Discussion </b> -->
 
 
 Topics::
@@ -84,7 +98,7 @@ method,
 \endverbatim
 
 results in multilevel Monte Carlo when the HIERARCH model
-specification has a single model fidelity with multiple discretization
+specification contains a single model fidelity with multiple discretization
 levels, in control variate Monte Carlo when the HIERARCH model
 specification has multiple ordered model fidelities each with a single
 discretization level, and multilevel control variate Monte Carlo when
@@ -111,4 +125,4 @@ additional examples.
 
 Theory::
 Faq::
-See_Also:: multilevel regression in method-polynomial_chaos
+See_Also:: multilevel regression in \ref method-polynomial_chaos
