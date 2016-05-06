@@ -1,5 +1,5 @@
 Blurb::
-Set-valued discrete state variables
+State variable - discrete set-valued
 
 Description::
 Discrete state variables whose values come from a set of admissible

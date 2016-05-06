@@ -1,5 +1,5 @@
 Blurb::
-Name the response block; helpful when there are multiple
+Name the responses block; helpful when there are multiple
 
 Description::
 The optional \c id_responses keyword accepts a string that uniquely
