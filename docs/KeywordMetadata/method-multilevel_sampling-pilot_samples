@@ -1,4 +1,4 @@
-Blurb:: Initial set of samples for multifidelity sampling methods.
+Blurb:: Initial set of samples for multilevel sampling methods.
 
 Description:: The pilot sample provides initial estimates of variance and/or
 correlation within the first iteration of a multilevel and/or control variate
@@ -12,13 +12,12 @@ approach.
 
 <b> Usage Tips </b>
 
-The number of specified values can be none (default values used), one
-(all fidelities and levels use the same value), the number of
-discretization levels for every model (each model uses the same
-discretization level profile), or the aggregate number of
-discretization levels for all models (each discretization level is
-distinct for each model).
-
+The number of specified values can be none (default values used for
+all fidelities and levels), one (all fidelities and levels use the
+same specified value), the number of discretization levels for every
+model (each model uses the same discretization level profile), or the
+aggregate number of discretization levels for all models (samples for
+each discretization level are distinct for each model).
 
 <!-- <b> Additional Discussion </b> -->
 

@@ -3,27 +3,38 @@ Hierarchical approximations use corrected results from a low fidelity
 model as an approximation to the results of a high fidelity "truth"
 model.
 Description::
+
 Hierarchical approximations use corrected results from a low fidelity
 model as an approximation to the results of a high fidelity "truth"
 model. These approximations are also known as model hierarchy,
 multifidelity, variable fidelity, and variable complexity
-approximations. The required \c low_fidelity_model_pointer
-specification points to the low fidelity model specification. This
-model is used to generate low fidelity responses which are then
-corrected and returned to an iterator. The required \c
-high_fidelity_model_pointer specification points to the specification
-for the high fidelity truth model. This model is used only for
-verifying low fidelity results and updating low fidelity corrections.
-The \c correction specification specifies which correction technique
-will be applied to the low fidelity results in order to match the high
-fidelity results at one or more points. In the hierarchical case (as
-compared to the global case), the \c correction specification is
-required, since the omission of a correction technique would
-effectively eliminate the purpose of the high fidelity model. If it
-is desired to use a low fidelity model without corrections, then a
-hierarchical approximation is not needed and a \c single model should
-be used. Refer to \ref model-surrogate-global for additional information on
-available correction approaches.
+approximations. The required \c ordered_model_fidelities specification
+points to a sequence of model specifications of varying fidelity,
+ordered from lowest to highest fidelity.
+The highest fidelity model provides the truth model, and each of the
+lower fidelity alternatives provides different levels of approximation
+at different levels of cost.
+
+In multifidelity optimization, the search algorithm relies primarily
+on the lower fidelity models, which are corrected for consistency with
+higher fidelity models.  The higher fidelity models are used primarily
+for verifying candidate steps based on solution of low fidelity
+approximate subproblems and updating for low fidelity corrections.  In
+multifidelity uncertainty quantification, resolution levels are
+tailored across the ordered model hierarchy with fine resolution of
+the lowest fidelity and then decreasing resolution for each level of
+model discrepancy.
+
+The \c correction specification specifies which
+correction technique will be applied to the low fidelity results in
+order to match the high fidelity results at one or more points. In the
+hierarchical case (as compared to the global case), the \c correction
+specification is required, since the omission of a correction
+technique would effectively eliminate the purpose of the high fidelity
+model. If it is desired to use a low fidelity model without
+corrections, then a hierarchical approximation is not needed and a \c
+single model should be used. Refer to \ref model-surrogate-global for
+additional information on available correction approaches.
 
 
 Topics::
@@ -56,4 +67,4 @@ model on a fine discretization.
 
 
 Faq::
-See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint
+See_Also::	model-surrogate-global, model-surrogate-local, model-surrogate-multipoint, method-multilevel_sampling, method-polynomial_chaos, method-stoch_collocation, method-surrogate_based_local
