@@ -91,16 +91,11 @@ protected:
   /// density computed from the emulator at a new starting point
   void run_chain_with_restarting();
 
-  /// compute chain statistics for final MCMC chain
-  void compute_statistics();
-
-  /// export the acceptance chain in user space
-  void export_chain(size_t update_cntr);
-
   /// accumulate unique samples drawn from the acceptance chain
   void accumulate_chain(size_t update_cntr);
-  /// accumulate the acceptance chain across multiple restart cycles
-  void aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain);
+  /// accumulate the acceptance chain across multiple restart cycles,
+  /// including recovering corresponding function values
+  void aggregate_acceptance_chain(size_t update_cntr);
 
   /// extract batch_size points from the MCMC chain and store final
   /// aggregated set within allSamples; unique points with highest
@@ -188,9 +183,6 @@ protected:
   /// equality tester for two GslVectors
   bool equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2);
 
-  /// recover the function values for each accepted point
-  void retrieve_fn_vals(size_t cycle_num);
-
   //
   //- Heading: Data
   //
@@ -204,15 +196,6 @@ protected:
   /** this option is useful for preventing rejection or resampling for
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
-
-  /// output file stream for the MCMC chain (active based on output verbosity)
-  std::ofstream exportMCMCStream;
-  std::ofstream filteredMCMCStream;
-  /// output filename for the MCMC chain
-  String exportMCMCFilename;
-  /// output formatting options for MCMC export
-  short exportMCMCFormat;
-  short filteredMCMCFormat;
 
 private:
 
@@ -265,13 +248,6 @@ private:
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
-
-  /// accumulation of acceptance chain across restarts
-  /// TO DO: retire once restarts are retired
-  RealMatrix acceptanceChain;
-  /// cached function values corresponding to acceptanceChain for
-  /// final statistics reporting
-  RealMatrix acceptedFnVals;
 
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains

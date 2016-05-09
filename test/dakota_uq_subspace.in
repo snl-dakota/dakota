@@ -34,10 +34,8 @@ method,
     model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
     seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
     samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21
-    sample_type random              #s0,#s1,#s2,#s3,#s4,#s17,#p0,#p1,#p2,#p3,#p4,#p16
-#   sample_type lhs                 #s5,#s18,#p5,#p17
-#   sample_type incremental_lhs     #s6,#s7,#p6,#p7
-#   sample_type incremental_random  #s8,#s9,#p8,#p9
+    sample_type random              #s0,#s1,#s2,#s3,#s4,#s8,#s9,#s17,#p0,#p1,#p2,#p3,#p4,#p8,#p9,#p16
+#   sample_type lhs                 #s5,#s6,#s7,#s18,#p5,#p6,#p7,#p17
 #     refinement_samples = 100      #s6,#s8,#p6,#p8
 #     refinement_samples = 100 200  #s7,#s9,#p7,#p9
 # polynomial_chaos                  #s10,#s11,#s12,#s13,#s14,#s15,#p10,#p11,#p12,#p13,#p14,#p15,#s19,#p18

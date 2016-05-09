@@ -1,0 +1,13 @@
+Blurb::
+Number of cross validation folds
+
+Description::
+
+Number of folds (partitions) of the training data to use in cross
+validation (default 10).
+
+Topics::	
+Examples::
+Theory::
+Faq::
+See_Also::	

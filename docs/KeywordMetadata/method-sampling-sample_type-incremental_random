@@ -1,24 +1,21 @@
 Blurb::
-Augments an existing random sampling study
+(Deprecated keyword) Augments an existing random sampling study
 
 Description::
-\c incremental_random will augment an existing random sampling study
-with more samples to get better estimates of mean, variance, and
-percentiles.  There is no constraint on the number of samples in the second set
-as there is with incremental LHS.  With \c incremental_random, 
-one can have different sample sizes in the original and incremental set. 
-This method can be used, for example, if you have 50 samples from a first 
-study and find out that you are able to run 10 more samples. 
+This keyword is deprecated.  Instead specify \c sample_type \c random
+with \c refinement_samples.
 
-<b> Default Behavior </b>
+An incremental random sampling approach will augment an existing
+random sampling study with refinement_samples to get better estimates of
+mean, variance, and percentiles.  There is no constraint on the number
+of samples in the second or subsequent sets as there is with
+incremental LHS.  
 
-Incremental random sampling is not used by default.  To change this
-behavior, the \c incremental_random keyword must be specified in
-conjuction with the \c sample_type keyword.  Additionally, a previous
-random sampling study with sample size N must have already been
-performed, and the dakota restart file must be available from this
-previous study. The variables and responses specifications must be the
-same in both studies.
+Typically, this approach is used when you have an initial study with
+sample size N1 and you want to perform an additional N2 samples.
+Ideally, a Dakota restart file containing the initial N1 samples, so
+only N2 (instead of N1 + N2) potentially expensive function
+evaluations will be performed.
 
 <b> Usage Tips </b>
 
@@ -28,15 +25,15 @@ simulations can be completed within available time.
 Topics::	
 Examples::
 
-For example, say a user performs an initial study using \c random as
-the \c sample_type, and generates 50 samples. If the user creates a
-new input file where \c samples is 50, the \c sample_type is defined
-to be \c incremental_random, and \c refinement_samples is specified to
-be 10, the user will get 10 new random samples.  The M new samples
-will be combined with the N previous samples to generate a combined
-sample of size M+N.
+Suppose an initial study is conducted using \c sample_type \c random
+with \c samples = 50.  A follow-on study uses a new input file where
+\c samples = 50, and \c refinement_samples = 10, resulting in 50
+reused samples (from restart) and 10 new random samples.  The 10 new
+samples will be combined with the 50 previous samples to generate a
+combined sample of size 60 for the analysis.
 
-The method block for the incremented study would be the following:
+The method block for the incremented study input60.in would be the
+following:
 \verbatim
 method
   sampling
@@ -45,13 +42,12 @@ method
       refinement_samples = 10
 \endverbatim
 The syntax for
-running the second sample set is: 
+running the second sample set night be: 
 \verbatim 
-dakota -i input2.in -r dakota.rst
+dakota -i input60.in -r dakota.50.rst
 \endverbatim
-where \c input2.in is the file which specifies
-incremental sampling and dakota.rst is the restart
-file containing the results of the previous study. 
+where \c dakota.50.rst is the restart file containing the results of the
+previous study.
 
 Theory::
 Faq::

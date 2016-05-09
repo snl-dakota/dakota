@@ -1,12 +1,13 @@
 Blurb:: 
-Labels for the variables or responses
+Labels for the variables
 
 Description::
-The optional variables and responses labels specification \c
-descriptors is a list of strings which identify the variables.  These
-are used in console and tabular output.
+The optional variable labels specification \c descriptors is a list of
+strings which identify the variables.  These are used in console and
+tabular output.
 
-The default descriptor strings use a root string plus a numeric identifier. 
+The default descriptor strings use a variable type-dependent root
+string plus a numeric identifier.
 
 Topics::	
 Examples::

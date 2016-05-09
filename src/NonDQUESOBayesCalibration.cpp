@@ -15,12 +15,9 @@
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
 #include "NonDExpansion.hpp"
-#include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
-#include "DakotaApproximation.hpp"
-#include "ProbabilityTransformation.hpp"
 #include "PRPMultiIndex.hpp"
 // then list QUESO headers
 #include "queso/StatisticalInverseProblem.h"
@@ -35,13 +32,9 @@
 #include "queso/ValidationCycle.h"
 #include "queso/GenericScalarFunction.h"
 #include "queso/UniformVectorRV.h"
-
 // for generic log prior eval
 #include "queso/JointPdf.h"
 #include "queso/VectorRV.h"
-
-#include "LHSDriver.hpp"
-#include "algorithm"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -217,10 +210,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   precondRequestValue(0),
-  logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
-  exportMCMCFilename(
-    probDescDB.get_string("method.nond.export_mcmc_points_file")),
-  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
+  logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
   ////////////////////////////////////////////////////////
   // Step 1 of 5: Instantiate the QUESO environment 
@@ -233,11 +223,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
          << "but have not provided experimental data information." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  // Construct sampler for posterior stats (elevate to NonDBayes in time)
-  RealMatrix acceptance_chain; // empty (allSamples not currently needed)
-  chainStatsSampler.assign_rep(new NonDSampling(mcmcModel, acceptance_chain),
-			       false);
 }
 
 
@@ -336,6 +321,9 @@ void NonDQUESOBayesCalibration::core_run()
 
   // Generate useful stats from the posterior samples
   compute_statistics();
+
+  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
+    export_chain();
 }
 
 
@@ -388,8 +376,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   uniqueSamples.reserve(chainSamples * chainCycles);
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
 				     chainSamples * chainCycles);
-  if (outputLevel >= NORMAL_OUTPUT)
-    acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
+  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
 
   //Real restart_metric = DBL_MAX;
   size_t update_cntr = 0;
@@ -409,12 +396,10 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     run_queso_solver(); // solve inverse problem with MCMC 
 
-    // export chain
-    if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
-      export_chain(update_cntr);
-
-    // TO DO: retire once restarts are retired
-    aggregate_acceptance_chain(update_cntr, acceptanceChain);
+    // TO DO: retire once restarts are retired 
+    // archive accepted variable and function values (this has to be
+    // done before the surrogate gets updated)
+    aggregate_acceptance_chain(update_cntr);
     
     // retain best or accumulate unique samples from current MCMC chain
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
@@ -437,43 +422,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << std::endl;
-  }
 
-  // archive accepted function values (this has to be done before the
-  // surrogate gets updated)
-  if (outputLevel >= NORMAL_OUTPUT)
-    retrieve_fn_vals(update_cntr);
-}
-
-
-void NonDQUESOBayesCalibration::compute_statistics()
-{
-  /* Once restarts are retired:
-  RealMatrix acceptance_chain(numContinuousVars + numHyperparams, chainSamples);
-  aggregate_acceptance_chain(1, acceptance_chain);
-  NonDSampling* nond_rep = (NonDSampling*)chainStatsSampler.iterator_rep();
-  nond_rep->compute_moments(acceptance_chain);
-  */
-
-  if (burnInSamples > 0 || subSamplingPeriod > 0)
-  {
-    int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-    int burnin = (burnInSamples > 0) ? burnInSamples : 0;
-    int num_samples = acceptanceChain.numCols();
-    int num_filtered = int((num_samples-burnin)/num_skip);
-    RealMatrix filteredChain;
-    filteredChain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
-    filter_chain(acceptanceChain, filteredChain);
-    RealMatrix filteredFnVals;
-    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
-    filter_fnvals(acceptedFnVals, filteredFnVals);
-    NonDBayesCalibration::compute_statistics(filteredChain, filteredFnVals);
-  }
-  else
-    NonDBayesCalibration::compute_statistics(acceptanceChain, acceptedFnVals);
-  
-  if (outputLevel >= NORMAL_OUTPUT) {
-    compute_intervals(acceptanceChain, acceptedFnVals);
   }
 }
 
@@ -676,94 +625,80 @@ void NonDQUESOBayesCalibration::run_queso_solver()
 }
 
 
-void NonDQUESOBayesCalibration::export_chain(size_t update_cntr)
+/** Populate a subset of 
+    acceptanceChain(num_params, chainSamples * chainCycles) and 
+    acceptedFnVals(numFunctions, chainSamples * chainCycles) */
+void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
 {
-  // Approach 1: open and close each time and not persist the stream
-  //             (clobber if update_cntr == 1, else append)
-  // Approach 2: persist the stream and clobber on open at 1st chain cycle.
+  // temporaries for evals/lookups
+  // the MCMC model omits the hyper params and residual transformations...
+  Variables lookup_vars = mcmcModel.current_variables().copy();
+  String interface_id = mcmcModel.interface_id();
+  Response lookup_resp = mcmcModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
 
-  String empty_id, mcmc_filename = (exportMCMCFilename.empty()) ?
-    "dakota_mcmc_tabular.dat" : exportMCMCFilename;
-  size_t i, start;
-  if (update_cntr == 1) { // overwrite as new file
-    TabularIO::open_file(exportMCMCStream, mcmc_filename,
-			 "NonDQUESOBayesCalibration chain export");
-    // the residual model includes labels for the hyper-parameters, if present
-    TabularIO::
-      write_header_tabular(exportMCMCStream, residualModel.current_variables(), 
-			   StringArray(), "mcmc_id", exportMCMCFormat);
-    start = 0;
-  }
-  else
-    start = 1; // first chain point is redundant
-
-  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
-    mcmc_chain = inverseProb->chain();
-  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  size_t j, wpp4 = write_precision+4,
-    num_params = numContinuousVars + numHyperparams;
-  QUESO::GslVector qv(paramSpace->zeroVector());
-  exportMCMCStream << std::setprecision(write_precision) 
-		   << std::resetiosflags(std::ios::floatfield);
-  size_t sample_cntr = (update_cntr - 1) * chainSamples + 1;
-  for (i=start; i<num_mcmc; ++i, ++sample_cntr) {
-    TabularIO::write_leading_columns(exportMCMCStream, sample_cntr,
-				     empty_id,//mcmcModel.interface_id(),
-				     exportMCMCFormat);
-    mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
-    Variables output_vars = residualModel.current_variables().copy();
-    RealVector u_rv(numContinuousVars, false), x_rv;
-    copy_gsl_partial(qv, 0, u_rv);
-    if (standardizedSpace) {
-      //RealVector u_rv(numContinuousVars, false), x_rv;
-      //copy_gsl_partial(qv, 0, u_rv);
-      natafTransform.trans_U_to_X(u_rv, x_rv);
-      output_vars.continuous_variables(x_rv);
-      write_data_tabular(exportMCMCStream, x_rv);
-    }
-    else{
-      output_vars.continuous_variables(u_rv);
-      output_vars.write_tabular(exportMCMCStream);
-      //for (j=0; j<numContinuousVars; ++j)
-	//exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
-    }
-    // trailing calibrated hyperparams are not transformed
-    for (j=numContinuousVars; j<num_params; ++j)
-      exportMCMCStream << std::setw(wpp4) << qv[j] << ' ';
-    exportMCMCStream << '\n';
-  }
-
-  if (update_cntr == chainCycles)
-    TabularIO::close_file(exportMCMCStream, mcmc_filename,
-			  "NonDQUESOBayesCalibration chain export");
-}
-
-
-void NonDQUESOBayesCalibration::
-aggregate_acceptance_chain(size_t update_cntr, RealMatrix& accept_chain)
-{
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
   QUESO::GslVector qv(paramSpace->zeroVector());
   
-  size_t i, j, num_params = numContinuousVars + numHyperparams,
-    sample_index = (update_cntr - 1) * chainSamples,
-    start = (update_cntr == 1) ? 0 : 1; // 1st chain pt is redundant
-  for (i=start; i<num_mcmc; ++i, ++sample_index) {
+  int lookup_failures = 0, num_params = numContinuousVars + numHyperparams,
+    sample_index = (cycle_num - 1) * chainSamples,
+    //stop_index   = sample_index + chainSamples;
+    start = (cycle_num == 1) ? 0 : 1; // 1st chain pt is redundant
+  for (int i=start; i<num_mcmc; ++i, ++sample_index) {
+
+    // translate the QUESO vector into x- or u-space lookup vars and
+    // x-space acceptanceChain
     mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
     if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
       RealVector u_rv(numContinuousVars, false);
       copy_gsl_partial(qv, 0, u_rv);
-      Real* acc_chain_i = accept_chain[sample_index];
+      Real* acc_chain_i = acceptanceChain[sample_index];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
       natafTransform.trans_U_to_X(u_rv, x_rv);
-      for (j=numContinuousVars; j<num_params; ++j)
+      for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
+
+      // surrogate needs u-space variables for eval
+      if (mcmcModel.model_type() == "surrogate")
+	lookup_vars.continuous_variables(u_rv);
+      else
+	lookup_vars.continuous_variables(x_rv);
     }
-    else
-      copy_gsl(qv, accept_chain, sample_index);
+    else {
+      copy_gsl(qv, acceptanceChain, sample_index);
+      RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
+		      numContinuousVars);
+      lookup_vars.continuous_variables(x_rv);
+    }
+
+    // now retreive function values
+    if (mcmcModel.model_type() == "surrogate") {
+      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	
+    }
+    else {
+      lookup_pr.variables(lookup_vars);
+      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+      if (cache_it == data_pairs.get<hashed>().end())
+	++lookup_failures;
+      else {
+	const RealVector& fn_vals = cache_it->response().function_values();
+	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
+      }
+    }
+
   }
+  if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning: could not retrieve function values for " 
+	 << lookup_failures << " MCMC chain points." << std::endl;
 }
 
 
@@ -1386,7 +1321,7 @@ void NonDQUESOBayesCalibration::set_mh_options()
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
   calIpMhOptionsValues->m_rawChainDataInputFileName   = ".";
-  calIpMhOptionsValues->m_rawChainSize = (chainSamples) ? chainSamples : 48576;
+  calIpMhOptionsValues->m_rawChainSize = (chainSamples) ? chainSamples : 1000;
   //calIpMhOptionsValues->m_rawChainGenerateExtra     = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod     = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes   = true;
@@ -1638,53 +1573,6 @@ equal_gsl(const QUESO::GslVector& qv1, const QUESO::GslVector& qv2)
     if (qv1[i] != qv2[i])
       return false;
   return true;
-}
-
-
-void NonDQUESOBayesCalibration::retrieve_fn_vals(size_t cycle_num)
-{
-  // TODO: account for transformations if present? optimize for copies?
-  // acceptedFnValues: (numFunctions, chainSamples * chainCycles);
-
-  // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
-  ActiveSet lookup_as = lookup_resp.active_set();
-  lookup_as.request_values(1);
-  lookup_resp.active_set(lookup_as);
-  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
- 
-  int lookup_failures = 0, 
-    sample_index = (cycle_num - 1) * chainSamples,
-    stop_index   = sample_index + chainSamples;
-  for ( ; sample_index < stop_index; ++sample_index) {
-
-    // get just the calibration variables, omitting hyper-parameters
-    RealVector accept_vars(Teuchos::View, acceptanceChain[sample_index], 
-			   numContinuousVars);
-    lookup_vars.continuous_variables(accept_vars);
-      
-    if (mcmcModel.model_type() == "surrogate") {
-      mcmcModel.active_variables(lookup_vars);
-      mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = mcmcModel.current_response().function_values();
-      Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
-    }
-    else {
-      lookup_pr.variables(lookup_vars);
-      PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
-	++lookup_failures;
-      else {
-	const RealVector& fn_vals = cache_it->response().function_values();
-	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
-      }
-    }
-  }
-  if (lookup_failures > 0)
-    Cout << "Warning: could not retrieve function values for " 
-	 << lookup_failures << " MCMC chain points." << std::endl;
 }
 
 

@@ -568,15 +568,9 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = Ref_Main.dox \
-                         Ref_Intro.dox \
-                         Ref_Environment.dox \
-                         Ref_Method.dox \
+INPUT                  = Ref_Method.dox \
                          Ref_Model.dox \
                          Ref_Variables.dox \
-                         Ref_Interface.dox \
-                         Ref_Responses.dox \
-                         Ref_Bibliography.dox \
                          ../src/dakota.input.summary
 
 # This tag can be used to specify the character encoding of the source files

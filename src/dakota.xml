@@ -1578,12 +1578,8 @@
 			<oneOf>
 			  <keyword  id="lhs2" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
 			  <keyword  id="random3" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
-			  <required>
-			    <oneOf>
-			      <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
-			      <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_RANDOM)}" label="incremental_random" help=""  />
-			    </oneOf>
-			  </required>
+			  <keyword  id="incremental_lhs1" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs" help=""  default="no sample reuse in coefficient estimation" />
+			  <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random" help=""  />
 			</oneOf>
 		      </keyword>
 		      <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" >
@@ -2354,6 +2350,23 @@
 		      </keyword>
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+		  </keyword>
+		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="tabular format" >
+			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			<!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+			<required>
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  </keyword>
+			</required>
+			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
 		  </keyword>
 		</keyword>
 	      </oneOf>
@@ -4035,7 +4048,7 @@
 	    <keyword  id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="file_tag" help="" minOccurs="0" default="no tagging" />
             <keyword  id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="file_save" help="" minOccurs="0" default="file cleanup" />
             <keyword  id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="work_directory" help="" minOccurs="0" default="no work directory" >
-              <keyword  id="named" name="named" code="{N_ifm(str,workDir)}" label="named" help="" minOccurs="0" default="workdir" >
+              <keyword  id="named" name="named" code="{N_ifm(str,workDir)}" label="named" help="" minOccurs="0" default="dakota_work_xxxxxxxx" >
                 <param type="STRING" />
               </keyword>
               <keyword  id="directory_tag" name="directory_tag" code="{N_ifm(true,dirTag)}" label="directory_tag" help="" minOccurs="0" default="no work directory tagging" >
@@ -4054,7 +4067,7 @@
             </keyword>
           </required>
           <keyword  id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct function interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" >
-            <keyword  id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of processors per analysis server" help="InterfCommands.html#InterfApplicDF" minOccurs="0" default="no override of auto configure" >
+            <keyword  id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of processors per analysis server" help="InterfCommands.html#InterfApplicDF" minOccurs="0" default="automatic (see discussion)" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
           </keyword>
@@ -4106,7 +4119,7 @@
           <param type="INTEGER" constraint="> 0" />
         </keyword>
       </keyword>
-      <keyword  id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of evaluation servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="no override of auto configure" >
+      <keyword  id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of evaluation servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
         <param type="INTEGER" constraint="> 0" />
       </keyword>
       <keyword  id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message passing configuration for scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
@@ -4120,13 +4133,13 @@
           </keyword>
         </oneOf>
       </keyword>
-      <keyword  id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(pint,procsPerEval)}" label="Number of processors per evaluation server" help="InterfCommands.html#InterfIndControl" minOccurs="0" >
+      <keyword  id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(pint,procsPerEval)}" label="Number of processors per evaluation server" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
         <param type="INTEGER" constraint="> 0" />
       </keyword>
-      <keyword  id="analysis_servers" name="analysis_servers" code="{N_ifm(pint,analysisServers)}" label="Number of analysis servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="no override of auto configure" >
+      <keyword  id="analysis_servers" name="analysis_servers" code="{N_ifm(pint,analysisServers)}" label="Number of analysis servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
         <param type="INTEGER" constraint="> 0" />
       </keyword>
-      <keyword  id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message passing configuration for scheduling of analyses" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="no override of auto configure" >
+      <keyword  id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message passing configuration for scheduling of analyses" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
         <oneOf>
           <keyword  id="master3" name="master" code="{N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
           <keyword  id="peer3" name="peer" code="{N_ifm(type,analysisScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
@@ -4152,7 +4165,7 @@
            #       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
            #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
         -->
-      <oneOf>
+      <oneOf label="response type">
         <keyword  id="objective_functions" name="objective_functions" code="{N_rem(sizet,numObjectiveFunctions)}" label="Optimization" help="RespCommands.html#RespFnOpt" minOccurs="1" >
           <alias name="num_objective_functions"/>
           <param type="INTEGER" constraint=">= 0" />
@@ -4385,7 +4398,7 @@
               <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota" help="" minOccurs="1" default="relative" >
                 <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds" help="" minOccurs="0" default="bounds respected" />
                 <optional>
-                  <oneOf>
+                  <oneOf label="step scaling" >
                     <keyword  id="relative" name="relative" code="{N_rem(lit,fdGradStepType_relative)}" label="relative" help=""  />
                     <keyword  id="absolute" name="absolute" code="{N_rem(lit,fdGradStepType_absolute)}" label="absolute" help=""  default="relative" />
                     <keyword  id="bounds" name="bounds" code="{N_rem(lit,fdGradStepType_bounds)}" label="bounds" help=""  />
@@ -4417,7 +4430,7 @@
             <param type="REALLIST" />
           </keyword>
           <optional>
-            <oneOf>
+            <oneOf label="step scaling" >
               <keyword  id="relative1" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
               <keyword  id="absolute1" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
               <keyword  id="bounds1" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
@@ -4448,7 +4461,7 @@
             </keyword>
           </keyword>
           <optional>
-            <oneOf>
+            <oneOf label="step scaling">
               <keyword  id="relative2" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
               <keyword  id="absolute2" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
               <keyword  id="bounds2" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />

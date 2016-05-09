@@ -2,28 +2,28 @@ Blurb::
 Active (variable) subspace model
 
 Description::
-A model that transforms the original model (given by \c
-actual_model_pointer) to one with a reduced set of variables.  This
+A model that transforms the original model (given by \ref
+model-subspace-actual_model_pointer) to one with a reduced set of variables.  This
 reduced model is identified by iteratively sampling the gradient of
 the original model and performing a singular value decomposition of
 the gradient matrix.
 
 <b> Expected Output </b>
 
-When active, a subspace model will perform an initial sampling design,
-potentially followed by bootstrap sampling-guided refinement steps to
-identify the active subspace.
+A subspace model will perform an initial sampling design to
+identify an active subspace using one of the truncation methods.
 
 <b> Usage Tips </b>
 
-Consider using options for total energy vs. eigenvalue gap to avoid missing the most efficient subspace truncation.
+If the desired subspace size is not identified, consider using the explicit
+\ref model-subspace-dimension truncation option or one of the other truncation methods.
 
 Topics::
 
 Examples::
-Perform an initial 100 samples to identify the active subspace, then
-refine by adding 2 samples at a time until either the convergence
-tolerance or maximum iterations are reached.
+Perform an initial 100 gradient samples and use the \ref model-subspace-truncation_method-bing_li
+truncation method to identify an active subspace. The truncation method uses 150 bootstrap samples
+to compute the Bing Li truncation metric.
 
 \verbatim
 model                             
@@ -31,10 +31,8 @@ model
     id_model = 'SUBSPACE'
     actual_model_pointer = 'FULLSPACE'
     initial_samples  100
-      refinement_samples 2
-    max_iterations = 10
-    convergence_tolerance = 1.0e-3
     truncation_method bing_li
+    bootstrap_samples 150
 \endverbatim
 
 Theory::
@@ -53,7 +51,7 @@ the input variables, this method can allow significant dimension reduction. Belo
     contains eigenvalues, and \f$N\f$ is the total number of parameters.
 
 3. Using a \ref model-subspace-truncation_method or specifying a
-    \ref model-subspace-reduced_rank to estimate the active subspace size, 
+    \ref model-subspace-dimension to estimate the active subspace size, 
     split the eigenvectors into active and inactive directions,
     \f[\hat{\mathbf{W}} = \left[\hat{\mathbf{W}}_1\quad\hat{\mathbf{W}}_2\right].\f]
     These eigenvectors are used to rotate the input variables.

@@ -1,7 +1,7 @@
 Blurb::
 Response type suitable for calibration or least squares
-Description::
 
+Description::
 Responses for a calibration study are specified using \c
 calibration_terms and optional keywords for weighting/scaling, data,
 and constraints.  In general when calibrating, Dakota automatically
@@ -24,32 +24,34 @@ There are two use cases:
 
 <b> Constraints </b>
 
-The keywords \c nonlinear_inequality_constraints, and \c nonlinear_equality_constraints 
-specify the number of nonlinear inequality
-constraints, and nonlinear equality constraints, respectively. 
-When interfacing to external applications, the responses must be returned
-to %Dakota in this order: calibration terms, nonlinear_inequality_constraints,
-then nonlinear_equality_constraints.
+The keywords \c nonlinear_inequality_constraints, and \c
+nonlinear_equality_constraints specify the number of nonlinear
+inequality constraints, and nonlinear equality constraints,
+respectively.  When interfacing to external applications, the
+responses must be returned to %Dakota in this order: calibration
+terms, nonlinear_inequality_constraints, then
+nonlinear_equality_constraints.
 
 Any linear constraints present in an application need only be input to
 an optimizer at start up and do not need to be part of the data
-returned on every function evaluation. These are therefore specified in the method block.
+returned on every function evaluation. These are therefore specified
+in the method block.
 
 <b> Optional Keywords </b>
 
-The optional keywords relate to scaling responses 
-(for better numerical results),
-dealing with multiple residuals, and importing data.
+The optional keywords relate to scaling responses (for better
+numerical results), dealing with multiple residuals, and importing
+data.
 
-See the \c scaling keyword in the \ref method section for more details on scaling.
-If scaling is specified, then it is
-applied to each residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
-(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f] 
+See the \c scaling keyword in the \ref method section for more details
+on scaling.  If scaling is specified, then it is applied to each
+residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
+(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
 
-In the case where experimental
-data uncertainties are supplied, then the weights are automatically
-defined to be the inverse of the experimental variance:
-\f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
+In the case where experimental data uncertainties are supplied, then
+the weights are automatically defined to be the inverse of the
+experimental variance: \f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i}
+(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
 
 
 Topics::	

@@ -1,0 +1,25 @@
+Blurb:: Export the MCMC chain to the specified filename
+
+Description::
+The filename to which the final MCMC posterior chain will be exported.
+
+<b> Default Behavior </b>
+No export to file.
+
+<b> Expected Output </b>
+
+A tabular data file will be produced in the specified format
+(annotated by default) containing samples from the posterior distribution.
+
+<b> Usage Tips </b>
+
+<b> Additional Discussion </b>
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::
+

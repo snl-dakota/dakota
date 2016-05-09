@@ -1078,9 +1078,11 @@ sub protected_test
   }
   else {
 
+    # Make sure CTRL-C kills the child process group 
     local $SIG{INT} = sub { kill -9, $pid;
 			    $exitcode = 103 << 8;
 			    print ("aborted\n");
+			    die "User CTRL-C abort";
 			    return ($exitcode);  };
 
     $t0 = time;

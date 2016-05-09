@@ -422,14 +422,11 @@ void ProblemDescDB::check_input()
 	  // exactly one method
 	  // TODO: Test for iterator concurrency
 	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
-	  unsigned short method_name = dm->dataMethodRep->methodName,
-	    sample_type = dm->dataMethodRep->sampleType;
+	  unsigned short method_name = dm->dataMethodRep->methodName;
 	  if ( !(method_name & PSTUDYDACE_BIT) &&
-	       !(method_name == RANDOM_SAMPLING &&
-		 sample_type != SUBMETHOD_INCREMENTAL_LHS &&
-		 sample_type != SUBMETHOD_INCREMENTAL_RANDOM) ) {
+	       !(method_name == RANDOM_SAMPLING) ) {
 	    Cerr << "Error: pre-run output not supported for method "
-		 << method_name << "\n       (supported for LHS, "
+		 << method_name << "\n       (supported for sampling, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
 	    ++num_errors;
 	  }
@@ -451,14 +448,11 @@ void ProblemDescDB::check_input()
 	  // exactly one method
 	  // TODO: Test for iterator concurrency
 	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
-	  unsigned short method_name = dm->dataMethodRep->methodName,
-	    sample_type = dm->dataMethodRep->sampleType;
+	  unsigned short method_name = dm->dataMethodRep->methodName;
 	  if ( !(method_name & PSTUDYDACE_BIT) &&
-	       !(method_name == RANDOM_SAMPLING &&
-		 sample_type != SUBMETHOD_INCREMENTAL_LHS &&
-		 sample_type != SUBMETHOD_INCREMENTAL_RANDOM) ) {
+	       !(method_name == RANDOM_SAMPLING) ) {
 	    Cerr << "Error: post-run input not supported for method "
-		 << method_name << "\n       (supported for LHS, "
+		 << method_name << "\n       (supported for sampling, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
 	    ++num_errors;
 	  }

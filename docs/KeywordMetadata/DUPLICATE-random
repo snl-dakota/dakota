@@ -8,9 +8,10 @@ distributions.
 
 <b> Default Behavior </b>
 
-Monte Carlo sampling is not used by default.  To change this behavior,
-the \c random keyword must be specified in conjuction with the \c
-sample_type keyword.
+In most contexts, Monte Carlo sampling is not the default sampling mode
+(exception: multilevel_sampling).  To change this behavior, the \c
+random keyword must be specified in conjuction with the \c sample_type
+keyword.
 
 <b> Usage Tips </b>
 

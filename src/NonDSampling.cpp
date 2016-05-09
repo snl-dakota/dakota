@@ -63,34 +63,36 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 
   if ( wilksFlag ) {
     // Only works with sample_type of random
+    // BMA: consider relaxing, despite no theory
     if ( sampleType != SUBMETHOD_RANDOM ) {
       Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type." << std::endl;
       abort_handler(-1);
     }
 
-    // Check for conflicting samples spec
-    if ( numSamples > 0 ) { // Note that this still allows a user to specify "samples = 0" alongside wilks
-      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"." << std::endl;
+    // Check for conflicting samples spec. Note that this still allows
+    // a user to specify "samples = 0" alongside wilks
+    if ( numSamples > 0 ) { 
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"." 
+	   << std::endl;
       abort_handler(-1);
     }
 
     // Wilks order statistics
     unsigned short order = probDescDB.get_ushort("method.order");
-
     // Wilks interval sidedness
-    short wilksSidedInterval = probDescDB.get_short("method.wilks.sided_interval");
-    bool twosided = (wilksSidedInterval == TWO_SIDED);
+    short wilks_sidedness = probDescDB.get_short("method.wilks.sided_interval");
+    bool twosided = (wilks_sidedness == TWO_SIDED);
 
     // Support multiple probability_levels
-    Real maxProbLevel = 0.0;
+    Real max_prob_level = 0.0;
     for (size_t i=0; i<numFunctions; ++i) {
       size_t pl_len = requestedProbLevels[i].length();
       for (size_t j=0; j<pl_len; ++j) {
-        if (requestedProbLevels[i][j] > maxProbLevel)
-          maxProbLevel = requestedProbLevels[i][j] ;
+        if (requestedProbLevels[i][j] > max_prob_level)
+          max_prob_level = requestedProbLevels[i][j] ;
       }
     }
-    Real alpha = maxProbLevel;
+    Real alpha = max_prob_level;
     if (alpha <= 0.0) // Assign a default if probability_levels unspecified
       alpha = 0.95;
 
@@ -98,6 +100,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     if (beta <= 0.0) // Assign a default if probability_levels unspecified
       beta = 0.95;
     numSamples = compute_wilks_sample_size(order, alpha, beta, twosided);
+    samplesRef = numSamples;
   }
 
   // update concurrency
@@ -1191,7 +1194,8 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
 }
 
 
-int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha, Real beta, bool twosided)
+int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha, 
+					    Real beta, bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1201,7 +1205,8 @@ int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha, Re
   Real n = rorder + 1.0;
   if( twosided ) {
     n = 2.0*rorder;
-    while( boost::math::ibeta<Real>(n-2.0*rorder+1.0, 2.0*rorder, alpha) > 1.0-beta )
+    while( boost::math::ibeta<Real>(n-2.0*rorder+1.0, 2.0*rorder, alpha) > 
+	   1.0-beta )
       n += 1.0;
   }
   else {

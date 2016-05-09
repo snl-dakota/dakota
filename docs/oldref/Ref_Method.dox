@@ -2162,12 +2162,11 @@ Specification detail for the NPSOL SQP method
 \subsection MethodNLPQL NLPQL Methods
 
 
-The NLPQL library is a commercially-licensed library containing a
-sequential quadratic programming (SQP) optimizer, specified as
-%Dakota's \c nlpql_sqp method, for constrained optimization. The
-particular implementation used is NLPQLP 
-[\ref Schitt2004 "Schittkowski, 2004"], a variant with distributed 
-and non-monotone line search.  %Dakota provides access to the NLPQL 
+The NLPQL library includes a sequential quadratic programming (SQP)
+optimizer, specified as %Dakota's \c nlpql_sqp method, for constrained
+optimization. The particular implementation used is NLPQLP [\ref
+Schitt2004 "Schittkowski, 2004"], a variant with distributed and
+non-monotone line search.  %Dakota provides access to the NLPQL
 library through the NLPQLPOptimizer class.
 
 

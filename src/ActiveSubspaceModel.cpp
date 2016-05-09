@@ -40,6 +40,9 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   asmInstance = this;
   modelType = "subspace";
 
+  // Set seed of bootstrap sampler:
+  BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
+
   componentParallelMode = CONFIG_PHASE;
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
@@ -104,6 +107,9 @@ ActiveSubspaceModel(const Model& sub_model,
 {
   asmInstance = this;
   modelType = "subspace";
+
+  // Set seed of bootstrap sampler:
+  BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
 
   componentParallelMode = CONFIG_PHASE;
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
@@ -784,8 +790,10 @@ computeBingLiCriterion(RealVector& singular_values)
     svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
 
     // Overwrite bootstrap replicate with singular matrix product
+    RealMatrix bootstrapped_sample_copy = bootstrapped_sample;
     bootstrapped_sample.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0,
-                                 leftSingularVectors, bootstrapped_sample, 0.0);
+                                 leftSingularVectors, bootstrapped_sample_copy,
+                                 0.0);
 
     for(size_t j = 1; j < num_vars; ++j)
     {

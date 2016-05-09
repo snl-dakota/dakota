@@ -7,6 +7,11 @@ the \ref responses block.
 
 See \ref topic-block_pointer for details about pointers.
 
+<b> Default Behavior </b>
+
+When a responses pointer is not specified, the model will use the last
+responses block parsed from the input file.
+
 Topics::	block_pointer
 Examples::
 Theory::

@@ -2,28 +2,40 @@ Blurb::
 Name the variables block; helpful when there are multiple
 
 Description::
-The optional set identifier specification uses the keyword \c
-id_variables to input a unique string for use in identifying a
-particular variables set. A model can then identify the use of this
-variables set by specifying the same string in its \c
-variables_pointer specification.
+The optional \c id_variables keyword accepts a string that uniquely
+identifies this variables block.  A model can then use these variables
+by specifying the same string in its \c variables_pointer
+specification.
 
-If the \c id_variables specification is omitted, a particular variables
-set will be used by a model only if that model omits specifying a \c 
-variables_pointer and if the variables set was the last set parsed (or
-is the only set parsed). In common practice, if only one variables set
-exists, then \c id_variables can be safely omitted from the variables
-specification and \c variables_pointer can be omitted from the model
-specification(s), since there is no potential for ambiguity in this
-case.
+<b>Default Behavior</b>
 
-Topics::	block_pointer
+If the \c id_variables specification is omitted, a particular
+variables specification will be used by a model only if that model
+does not include an \c variables_pointer and the variables block was
+the last (or only) one parsed.
+
+<b>Usage Tips</b>
+- It is a best practice to always use explicit variables IDs and
+  pointers to avoid confusion.
+
+- If only one variables block exists, then \c id_variables can be
+  safely omitted from the variables block (and \c variables_pointer
+  omitted from the model specification(s)), since there is no
+  ambiguity.
+
+Topics::	block_identifier
+
 Examples::
-For
-example, a model whose specification contains 
-<tt>variables_pointer = 'V1'</tt> will use a variables specification 
-containing the set identifier <tt>id_variables = 'V1'</tt>.
+For example, a model specification including
+\verbatim
+model
+  variables_pointer = 'V1'
+\endverbatim
+will link to a response set with 
+\verbatim
+  id_variables = 'V1'
+\endverbatim
 
 Theory::
 Faq::
-See_Also::	model-variables_pointer
+See_Also::	

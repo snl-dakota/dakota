@@ -1,15 +1,20 @@
 Blurb::
 Choose a scaling type for each response
-Description::
-The \c primary_scale_types keyword specifies one of number of primary
-functions strings indicating the scaling type for each response value
-in methods that support scaling, when scaling is enabled.
 
-See the \c scaling keyword in the \ref method section for details on how to use this
-keyword.  Note that primary response functions (objective,
-calibration, or response functions) cannot be automaticaly scaled due
-to lack of bounds, so valid scale types are \c 'none' \c 'value' and
-\c 'log'.
+Description::
+The \c primary_scale_types keyword specifies one or number of primary
+functions strings indicating the scaling type for each response value
+in methods that support scaling, when scaling is enabled.  If only one
+type is specified, it will apply to each prinary response function.
+
+See \ref method-scaling for details on how to use this keyword.  
+
+Note that primary response functions (objective, calibration, or
+response functions) cannot be automaticaly scaled due to lack of
+bounds, so valid scale types are \c 'none' \c 'value' and \c 'log'.
+
+If scaling is specified, it is applied before multi-objective weighted
+sums are formed.
 
 Topics::	
 Examples::

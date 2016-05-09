@@ -1,5 +1,7 @@
 Blurb::
-Gradients are needed and will be obtained from a mix of numerical and analytic sources
+Gradients are needed and will be obtained from a mix of numerical and
+analytic sources
+
 Description::
 The \c mixed_gradients specification means that some gradient
 information is available directly from the simulation (analytic)

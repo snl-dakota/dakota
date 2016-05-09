@@ -1,10 +1,10 @@
 Blurb::
 Substitute dummy values for the responses
+
 Description::
-The \c recover
-selection supports a list of reals for specifying the dummy function
-values (only zeroth order information is supported) to use for the
-failed function evaluation.
+When a simulation failure is detected, substitute the provided dummy
+function values in the response.  Gradient and Hessian are not
+supported.
 
 Topics::
 Examples::

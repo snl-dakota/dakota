@@ -47,6 +47,9 @@ licenses; see their contents for the most up to date details.  Here
 [SNL] denotes software originating at Sandia National Laboratories.
 
 dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
+		    (including any source, test, unit_test, example,
+		     script, build system, or other files not
+		     specifically marked)
   acro              Revised BSD License [SNL]
     (including colin, dummy, interfaces, pebbl, scolib, utilib)
     tpl
@@ -83,6 +86,11 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   surfpack	    GNU Lesser General Public License (LGPL) [SNL]
   teuchos	    BSD License [SNL]
   VPISparseGrid     GNU Lesser General Public License (LGPL)
+
+The commerically licensed packages are not distributed with public
+versions of Dakota.  To use one of them with Dakota, obtain the source
+code under an appropriate license and include it under the appropriate
+packages directory when compiling Dakota.
 
 Third-party system libraries: In addition to standard compiler and
 system runtime libraries, Dakota requires the following external

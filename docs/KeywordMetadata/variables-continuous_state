@@ -1,9 +1,11 @@
 Blurb::
-Continuous state variables
+State variable - continuous
+
 Description::
 Continuous state variables are defined by bounds.
 
-Default behavior for most methods is that only the initial_state values are used.
+Default behavior for most methods is that only the initial_state
+values are used.
 
 See the \ref topic-state_variables page for details on the behavior of state
 variables.

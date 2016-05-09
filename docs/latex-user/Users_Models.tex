@@ -1105,3 +1105,118 @@ Chapter~\ref{adv_models}, most notably mixed epistemic-aleatory UQ in
 Section~\ref{adv_models:mixed_uq}, optimization under uncertainty
 (OUU) in Section~\ref{adv_models:ouu}, and surrogate-based UQ in
 Section~\ref{adv_models:sbuq}.
+
+\section{Random Field Models} \label{models:randomfield}
+As of Dakota 6.4, we have a preliminary capability to generate random fields. 
+This is an experimental capability that is undergoing active development, 
+so the following description and the associated syntax may change.  
+
+Our goal with a random field model is to have a fairly general capability, where 
+we can generate a random field representation in one of three ways: 
+from data, from simulation runs (e.g. running an ensemble of simulations where 
+each one produces a field response), or from a covariance matrix defined over 
+a mesh. Then, a random field model (such as a Karhunen-Loeve expansion) will be 
+built based on the data.  A final step is to draw realizations from the random 
+field model to propagate to another simulation model.  For example, the random 
+field may represent a pressure or temperature boundary condition for a simulation. 
+
+The random field model is currently specified with a model type of 
+\texttt{random\_field}.  The first 
+section of the random field specification tells Dakota what data to use to 
+build the random field.
+This is specified with \texttt{build\_source}.  The source of data to build the
+random field may be a file with data (where the N rows of data correspond to
+N samples of the random field and the M columns correspond to field values),
+or it may be a simulation that generates field data, or it may be specified
+given a mesh and a covariance matrix governing how the field varies over the mesh.
+In the case of using a simulation to generate field data, the simulation is
+defined with \texttt{dace\_method\_pointer}.  In the case of using a mesh and a
+covariance, the form of the covariance is defined with \texttt{analytic\_covariance}.
+
+The next section of the random field model specifies the form of the expansion,
+\texttt{expansion\_form}.  This can be either a Karhunen-Loeve expansion or a
+Principal components analysis.  These are very similar:  both involve the eigenvalues
+of the covariance matrix of the field data.  The only difference is in the treatment
+of the estimation of the coefficients of the eigenvector basis functions.  In the
+PCA case, we have developed an approach which makes the coefficients explicit
+functions of the uncertain variables used to generate the random field.
+The specification of the random field can also include the number of bases
+to retain or a truncation tolerance, which defines the percent variance
+that the expansion should capture.
+
+The final section of the random field model allows the user to specify
+a pointer to a model over which the random field will be propagated, 
+\texttt{propagation\_model\_pointer},
+meaning the model which will be driven with the random field input.
+
+
+\section{Active Subspace Models} \label{models:subspace}
+An initial active subspace capability has been implemented beginning with Dakota
+6.4 as model type \texttt{subspace}. The active subspace technique~\cite{constantine2015active}
+seeks directions in the input space for which the response function(s) show little
+variation. After a rotation to align with these directions, significant dimension
+reduction may be possible. This model is under active development so the following
+information may change.
+
+In Dakota 6.4, the active subspace model can be used in conjunction with the following
+uncertainty quantification methods:
+\begin{itemize}
+\item \texttt{polynomial\_chaos}
+\item \texttt{sampling}
+\item \texttt{local\_reliability}
+\end{itemize}
+An error message similar to:
+\begin{quote}
+\texttt{Error: Resizing is not yet supported in method <method name>.}
+\end{quote}
+will be written and Dakota will exit if the active subspace model is used with a
+non-compatible method. The list of compatible methods will be expanded in future
+releases.
+
+The active subspace implementation in Dakota 6.4 first transforms uncertain variables
+to standard normal distributions using a Nataf transformm before forming the subspace.
+This is a nonlinear transformation for non-normally distributed uncertain variables
+and may potentially decrease sparse structure in a fullspace model. Future Dakota
+releases will not use this transformation and should perform better in the general case.
+
+The only required keyword when using a subspace model is the
+\texttt{actual\_model\_pointer} which points to the underlying model (specified
+by its \texttt{id\_model}) on which to build the subspace. The \texttt{subspace}
+model requires either analytical (preferred) or numerical gradients of the response
+functions. The active subspace model first samples the gradient
+of the fullspace model. The number of gradient samples can be specified with 
+\texttt{initial\_samples}. The gradient samples are compiled into the columns of
+a matrix. A singular value decomposition is performed of the derivative matrix and
+the resulting singular values and vectors are used to determine the basis vectors
+and size of the active subspace.
+
+Constantine~\cite{constantine2015active} recommends choosing \texttt{initial\_samples}
+such that:
+$$\text{\texttt{initial\_samples}} = \alpha k \log(m),$$
+where $\alpha$ is an oversampling factor between 2 and 10, $k$ is the number of
+singular values to approximate, and $m$ is the number of fullspace variables. To
+ensure accurate results, $k$ should be greater than the estimated subspace size
+determined by one of the truncation methods described below.
+
+There are three methods implemented in Dakota to estimate the size of an active subspace:
+\begin{itemize}
+\item \texttt{constantine} (default)
+\item \texttt{bing\_li}
+\item \texttt{energy}
+\end{itemize}
+Additionally, if the desired subspace size is known it can be enforced using the
+input parameter \texttt{dimension}. The \texttt{constantine} and \texttt{bing\_li}
+truncation methods both use bootstrap sampling of the compiled derivative matrix
+to estimate an active subspace size. The number of bootstrap samples used with
+these methods can be specified with the keyword \texttt{bootstrap\_samples}, but
+typically the default value works well. The \texttt{energy} method computes the number of
+bases so that the subspace representation accounts for all but a maximum percentage
+(specified as a decimal) of the total eigenvalue energy. This value is specified
+using the \texttt{truncation\_tolerance} keyword.
+
+For more information on active subspaces please consult the Theory
+Manual~\cite{TheoMan} and/or references~\cite{Constantine-preprint-active,constantine2014active,constantine2015active}.
+
+
+
+

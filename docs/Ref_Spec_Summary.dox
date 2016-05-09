@@ -1,22 +1,22 @@
 \page input_spec_summary Input Spec Summary
 
-This file is derived automatically from dakota.input.nspec, which is
-used in the generation of parser system files that are compiled into
-the %Dakota executable. Therefore, these files are the definitive
-source for input syntax, capability options, and associated data
-inputs. Refer to the Developers Manual information on how to modify the
-input specification and propagate the changes through the parsing
+This file is derived automatically from dakota.xml, which is used in
+the generation of parser system files that are compiled into the
+%Dakota executable. Therefore, these files are the definitive source
+for input syntax, capability options, and associated data
+inputs. Refer to the Developers Manual information on how to modify
+the input specification and propagate the changes through the parsing
 system.
 
 Key features of the input specification and the associated user
 input files include:
 
-\li In the input specification, required individual specifications simply
-appear, optional individual and group specifications are enclosed in
-\c [], required group specifications are enclosed in \c (), and either-or
-relationships are denoted by the \c | symbol. These symbols only
-appear in dakota.input.nspec; they must not appear in actual user input
-files.
+\li In the input specification, required individual specifications
+simply appear, optional individual and group specifications are
+enclosed in \c [], required group specifications are enclosed in \c
+(), and either-or relationships are denoted by the \c | symbol. These
+symbols only appear in dakota.input.summary; they must not appear in
+actual user input files.
 
 \li Keyword specifications (i.e., \c environment, \c method, \c model, \c
 variables, \c interface, and \c responses) begin with the keyword
@@ -54,3 +54,4 @@ preceded by \c #.
 \li ALIAS refers to synonymous keywords, which often exist for backwards
 compatability. Users are encouraged to use the most current keyword.
 
+<b>dakota.input.summary:</b>

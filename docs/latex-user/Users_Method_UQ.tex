@@ -647,73 +647,81 @@ their specified probability distributions.
 In many situations, one may run an initial sample set and then need to
 perform further sampling to get better estimates of the mean,
 variance, and percentiles, and to obtain more comprehensive sample
-coverage. We call this capability incremental sampling. Currently,
-the LHS incremental sampling capability we have in Dakota requires that
-the incremental samples are double the sample size of the previous
-sample. That is, if one starts with a very small sample size of 10,
-then one can use the incremental sampling capability to generate
-sample sizes of 20, 40, 80, etc. Also, a Dakota restart file
-(dakota.rst) must be available from the original sample. 
-Incremental sampling supports continuous uncertain variables
-and discrete uncertain variables such as discrete distributions (e.g. 
-binomial, Poisson, etc.) as well as histogram variables and 
-uncertain set types.
+coverage. We call this capability incremental sampling.  Typically, a
+Dakota restart file (\texttt{dakota.rst}) would be available from the
+original sample, so only the newly generated samples would need to be
+evaluated.  Incremental sampling supports continuous uncertain
+variables and discrete uncertain variables such as discrete
+distributions (e.g.  binomial, Poisson, etc.) as well as histogram
+variables and uncertain set types.
 
-There are two
-cases, random incremental and Latin Hypercube incremental sampling.
-We assume that LHS incremental will be most frequently used. One
+There are two cases, incremental random and incremental Latin
+hypercube sampling, with incremental LHS being the most common.  One
 major advantage of LHS incremental sampling is that it maintains the
 stratification and correlation structure of the original LHS sample.
-That is, if one generated 2 independent LHS samples and just merged
-them, the calculation of the accuracy of statistical measures such as
-the mean and the variance would be slightly incorrect. However, in
-the incremental case, the full sample (double the original size) is a
-Latin Hypercube sample itself and statistical measures and their
-accuracy can be properly calculated. The incremental sampling
-capability is most useful when one is starting off with very small
-samples. Once the sample size is more than a few hundred, the benefit
-of incremental sampling diminishes.
+That is, if one generated two independent LHS samples and simply
+merged them, the calculation of the accuracy of statistical measures
+such as the mean and the variance would be slightly
+incorrect. However, in the incremental case, the full sample (double
+the original size) is a Latin Hypercube sample itself and statistical
+measures and their accuracy can be properly calculated. The
+incremental sampling capability is most useful when one is starting
+off with very small samples. Once the sample size is more than a few
+hundred, the benefit of incremental sampling diminishes.
 
 \begin{enumerate}
 
-\item Incremental Random Sampling. With incremental random sampling, 
-the original sample set with N samples must be 
-generated using \texttt{sample\_type} as \texttt{random}.
-Then, the user can create a new Dakota input file that is very similar to the 
-original one except the \texttt{sample\_type} should be defined to be 
-\texttt{incremental\_random}. Random incremental sampling does not 
-require a doubling of samples each time. Thus, the user 
-can specify the number of samples (\texttt{samples}) to be a desired 
-number (it can range from an additional one sample to a large integer), 
-and the \texttt{previous\_samples} should be specified as N. For example, if
-the first sample has 50 samples, and 10 more samples are desired, 
-in the second Dakota run, the number
-of samples should be set to 60 and the number of previous samples set
-to 50. In this situation, only 10 new samples will be generated and
-the final statistics will be reported on the full sample of 60. The
-command line syntax for running the second sample is \texttt{dakota -i
-input2.in -r dakota.rst} where input2.in is the input file with the
-incremental sampling specification and dakota.rst is the restart file.
-Note that if the restart file has a different name, that is fine; the
-correct restart file name should be used.
+\item Incremental random sampling: With incremental random sampling,
+  the original sample set with $N1$ samples must be generated using
+  \texttt{sample\_type = random} and \texttt{samples = N1}.  Then, the
+  user can duplicate the Dakota input file and add
+  \texttt{refinement\_samples = N2} with the number of new samples
+  $N2$ to be added.  Random incremental sampling does not require a
+  doubling of samples each time. Thus, the user can specify any number
+  of \texttt{refinement\_samples} (from an additional one sample to a
+  large integer).
 
-\item Incremental Latin Hypercube Sampling. With incremental LHS sampling, 
-the original sample set with N samples must be 
-generated using \texttt{sample\_type} as \texttt{lhs}.
-Then, the user can create a new Dakota input file that is very similar to the 
-original one except the \texttt{sample\_type} should be defined to be 
-\texttt{incremental\_lhs}, the number of samples (\texttt{samples}) should 
-be 2N (twice the number of original samples), and
-\texttt{previous\_samples} should be specified as N. For example, if
-the first sample has 50 samples, in the second Dakota run, the number
-of samples should be set to 100 and the number of previous samples set
-to 50. In this situation, only 50 new samples will be generated and
-the final statistics will be reported on the full sample of 100. The
-command line syntax for running the second sample is \texttt{dakota -i
-input2.in -r dakota.rst}, where input2.in is the input file with the
-incremental sampling specification and dakota.rst is the restart file.
-Note that if the restart file has a different name, that is fine; the
-correct restart file name should be used.
+  For example, if the first sample has 50 samples, and 10 more samples
+  are desired, the second Dakota run should specify \texttt{samples =
+    50}, \texttt{refinement\_samples = 10}.  In this situation, only
+  10 new samples will be generated and the final statistics will be
+  reported on the full sample of 60. The command line syntax for
+  running the second sample is \texttt{dakota -i input60.in -r
+    dakota.50.rst} where \texttt{input60.in} is the input file with
+  the refinement samples specification and \texttt{dakota.50.rst} is
+  the restart file containing the initial 50 samples.  Note that if
+  the restart file has a different name, that is fine; the correct
+  restart file name should be used.
+
+  This process can be repeated if desired,arbitrarily extending the
+  total sample size each time, e.g, \texttt{samples = 50},
+  \texttt{refinement\_samples = 10  3  73  102}.
+
+\item Incremental Latin hypercube sampling: With incremental LHS
+  sampling, the original sample set with $N1$ samples must be
+  generated using \texttt{sample\_type = lhs} and \texttt{samples =
+    N1}.  Then, the user can duplicate the Dakota input file and add
+  \texttt{refinement\_samples = N1}.  The sample size must double each
+  time, so the first set of refinement samples must be the same size
+  as the initial set.  That is, if one starts with a very small sample
+  size of 10, then one can use the incremental sampling capability to
+  generate sample sizes of 20, 40, 80, etc.
+
+  For example, if the first sample has 50 samples, in the second
+  Dakota run, the number of refinement samples should be set to 50 for
+  a total of 100. In this situation, only 50 new samples will be
+  generated and the final statistics will be reported on the full
+  sample of 100. The command line syntax for running the second sample
+  is \texttt{dakota -i input100.in -r dakota.50.rst}, where
+  \texttt{input100.in} is the input file with the incremental sampling
+  specification and \texttt{dakota.50.rst} is the restart file
+  containing the initial 50 samples.  Note that if the restart file
+  has a different name, that is fine; the correct restart file name
+  should be used.
+
+  This process can be repeated if desired, doubling the total sample
+  size each time, e.g, \texttt{samples = 50},
+  \texttt{refinement\_samples = 50  100  200  400}.
 
 \end{enumerate}
 
@@ -2310,7 +2318,7 @@ updated through a Bayesian framework involving experimental data and a
 likelihood function.  Bayesian inference theory is best left to other
 sources ~\cite{Kenn01} and only a brief summary is given here.  In
 Bayesian methods, uncertain parameters are characterized by
-probability density functions. These probability densities functions
+probability density functions. These probability density functions
 define the permissible parameter values - the support, as well as the
 relative plausibility of each permissible parameter value. In the
 context of calibration or any inference step, the probability density
@@ -2323,13 +2331,13 @@ each parameter value is supported by the data. Bayes
 Theorem~\cite{Jaynes}, shown in Equation~\ref{eq:BayesThm}, is used
 for inference: to derive the plausible parameter values, based on the
 prior probability density and the data $\boldsymbol{d}$. The result is
-the posterior parameter density of the parameters
+the posterior probability density function of the parameters
 $f_{\boldsymbol{{\Theta |D}}}\left( \boldsymbol{{\theta |d}}
 \right)$. It is interpreted the same way as the prior, but includes
 the information derived from the data.
  
 \begin{equation}
-{f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}} \label{eq:BayesThm}
+{f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) = \frac{{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)\mathcal{L}\left( \boldsymbol{\theta;d} \right)}}{{{f_{\boldsymbol{D}}}\left( \boldsymbol{d} \right)}}. \label{eq:BayesThm}
 \end{equation}
 
 
@@ -2342,7 +2350,7 @@ The likelihood function is used to describe how well a model's
 predictions are supported by the data.  The likelihood function can be
 written generally as:
 \begin{equation*}
-  \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d})
+  \mathcal{L}\left(\boldsymbol{{\theta ;d}} \right) =  \mathcal{F}(q(\boldsymbol{\theta)} -\boldsymbol{d}),
 \end{equation*}
 where $\boldsymbol{\theta}$ are the parameters of model quantity of
 interest $q$.  The form of the function $\mathcal{F}$ can greatly
@@ -2432,7 +2440,7 @@ Los Alamos National Laboratory. At this point, the QUESO
 implementation is the most well-developed within Dakota and is the one
 that we recommend.
 
-\subsection{QUESO}
+\subsection{QUESO}\label{uq:bayesian:queso}
 The QUESO library includes several sampling algorithm variants.  One
 can use a standard Metropolis-Hastings algorithm
 (\texttt{metropolis\_hastings}), adaptive Metropolis
@@ -2441,9 +2449,16 @@ during the sampling, delayed rejection (\texttt{delayed\_rejection})
 for backtracking from sample rejections, the full DRAM (\texttt{dram})
 which involves both delayed rejection and adaptive Metropolis, or a
 multi-level algorithm (\texttt{multilevel}).  This last option is not
-yet production-ready in Dakota.
+yet production-ready in Dakota. 
 
-With QUESO method, one may run the MCMC sampling on the simulation
+With any choice of sampling algorithm, one may manually set the burn in 
+period for the MCMC chain with \texttt{burn\_in\_samples}. If a 
+\texttt{sub\_sampling\_period} is specified, the MCMC chain is further 
+filtered such that only the sample at the beginning of each period is in 
+the final MCMC chain. The \texttt{sub\_sampling\_period} should therefore 
+be greater than or equal to the correlation length of the samples.
+
+With the QUESO method, one may run the MCMC sampling on the simulation
 model directly.  However, if the model is expensive, use of a
 surrogate (emulator) model is recommended.  Options include a Gaussian
 process, a polynomial chaos expansion, or a stochastic collocation
@@ -2481,18 +2496,28 @@ domains. %in order to reduce sample rejection due to an out-of-bounds condition.
 This option can be helpful when regions of high posterior density
 exist in the corners of a multi-dimensional bounded domain.  In these
 cases, it may be difficult to generate feasible samples from the
-proposal density, such that transformation to unbounded domains may
+proposal density, and transformation to unbounded domains may
 greatly reduce sample rejection rates.
 
 The \texttt{pre\_solve} option will perform a deterministic
 gradient-based optimization before the MCMC sampling to get a good
 starting point for the chain.  This pre-solve seeks to maximize the
-log posterior (the log-likelihood minus the log-prior) to identify the
+log-posterior (the log-likelihood minus the log-prior) to identify the
 maximum a posteriori probability point, also called the MAP point.
-The Markov Chain will then be started at the MAP point, which can
+The Markov Chain will then start at the MAP point, which can
 circumvent a lot of initial searching for high posterior probability
 points.  The pre-solve option can be used with an emulator or with no
 emulator.
+
+Credible and prediction intervals will be calculated if 
+\texttt{probability\_levels} is specified. Credible intervals propagate 
+uncertainties in parameter density information to the quantity of interest
+and quantify how well the model fits the provided data. Prediction intervals
+propagate both parameter and experimental measurement uncertainties and 
+contain the next experimental or simulated observation with the specified 
+probability. Further details can be found in \cite{Smith2013}. Note that if
+\texttt{probability\_levels} is specified, both the credible and prediction
+intervals will be calculated. 
 
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
@@ -2512,6 +2537,8 @@ statistic, which governs the convergence of the multiple chain
 process.  The integer \texttt{jump\_step} forces a long jump every 
 \texttt{jump\_step} generations.
 For more details about these parameters, refer to \cite{Vrugt}. 
+Credible and prediction intervals can be calculated by specifying
+\texttt{probability\_levels}, as described in Section \ref{uq:bayesian:queso}. 
 
 \subsection{GPMSA}
 For the GPMSA capability, a key part of the algorithm involves the 
@@ -2608,15 +2635,16 @@ generate in the acceptance chain\footnote{If delayed rejection is
   higher due to backtracking.}.  This example uses the
 \texttt{mod\_cantilever} algebraic model, so an emulator is not warranted,
 but the commented lines hint at related user options.  The proposal
-covariance used has diagonal element values of 1.e6 and 0.1.  The
-calibration terms in the responses section refers to the number of
-outputs that will be used in the calibration process: in this case, it
-is just two. The calibration data file has the observational data: in
+covariance used has diagonal element values of 1.e6 and 0.1. Two credible and
+prediction intervals will be calculated for each model output: a 5/95 interval
+and a 10/90 interval. The calibration terms in the responses section refers to 
+the number of outputs that will be used in the calibration process: in this 
+case, it is just two. The calibration data file has the observational data: in
 this case, it is a freeform file (e.g. no header or annotation) with
 ten experiments. For each experiment, there are two experiment values,
 one for stress and one for displacement, followed by two variance
 values for the error associated with that experiment for each quantity
-of interest.
+of interest. 
 
 \begin{figure}[htbp!]
   \centering
@@ -2637,7 +2665,8 @@ currently report an evaluation count summary and the best sample point
 that was visited during the MCMC process, as measured by maximum
 posterior probability (an estimate of the MAP point).  The final output 
 also summarizes the moments of the posterior samples from the chain (e.g. 
-mean of the chain, standard deviation of the chain samples, etc.)
+mean of the chain, standard deviation of the chain samples, etc.), as well as
+the credible and prediction intervals for each model output.
 
 A variety of auxilliary output also exists.  The MCMC sample output is
 put into a directory called \texttt{QuesoDiagnostics} in the directory from
@@ -2652,10 +2681,15 @@ chain values of the parameters\footnote{The full chain will be output
   refinement data or restarting points, respectively.}. 
 In addition, the accepted chain values that Dakota
 generates are written to a file in the run directory called
-\texttt{dakota\_mcmc\_tabular.dat}.  The first columns of this file are the posterior 
-values of the input variables.  
-Finally, if one wants to see the likelihood of each point, specifying 
-verbose output in the method section will result in the likelihoods being printed. 
+\texttt{dakota\_mcmc\_tabular.dat}. The first columns of this file are
+the posterior values of the input variables. If \texttt{burn\_in} or 
+\texttt{sub\_sampling\_period} are specified, the filtered acceptance chain
+is written to a file in the run directory called 
+\texttt{dakota\_mcmc\_filtered\_tabular.dat}. This file contains the posterior
+values of the filtered MCMC chain, as well as the values of state variables
+and the resulting model responses. Finally, if one wants to see the 
+likelihood of each point, specifying verbose output in the method section will 
+result in the likelihoods being printed. 
 
 %We expect to continue development of Bayesian calibration methods, 
 %so check for updates to this capability. The QUESO and GPMSA capabilities
@@ -2683,16 +2717,16 @@ includes this in the likelihood formulation:
 In some cases, it can be helpful to fine tune the assumptions in this
 covariance during the calibration process.  Dakota supports
 calibrating one or more multipliers on the blocks of the error
-covariance.  So if $\Sigma_d$ is block diagonal: $\Sigma_d =
+covariance.  So if $\Sigma_d$ is block diagonal such that $\Sigma_d =
 \mbox{diag}({\Sigma_d}_1, ..., {\Sigma_d}_N)$, we instead formulate as
 $\Sigma_d = \mbox{diag}(m_1{\Sigma_d}_1, ..., m_P{\Sigma_d}_P)$ and
 calibrate the multipliers $m_i$ as hyper-parameters in the Bayesian
 inference process.
 
 The supported modes for calibrating observation error multipliers are
-shown in Figure\ref{fig:uq:obs_err_mult}: \texttt{one},
+shown in Figure \ref{fig:uq:obs_err_mult}: \texttt{one},
 \texttt{per\_experiment}, \texttt{per\_response}, and \texttt{both}.
-Here the two major blocks denote two experiments, while the inner
+Here, the two major blocks denote two experiments, while the inner
 blocks denote five response groups (two scalar, three field).  The
 priors on the hyper-parameters $m_i$ are taken to be inverse gamma
 distributions, with mean and mode approximately 1.0 and standard

@@ -71,9 +71,9 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
 
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  // override default SurrogateModel::responseMode for purposes of
+  // HierarchSurrModel::set_communicators(), which precedes mode
+  // updates in {multifidelity,multilevel}_expansion().
   if (iteratedModel.surrogate_type() == "hierarchical")
     iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 }
@@ -411,6 +411,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
 
 /*
+BMA NOTE: If this code is activated, need to instead use LHS, with
+refinement samples
 void NonDExpansion::
 construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
 			  int num_samples, int seed, const String& rng)

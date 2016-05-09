@@ -86,9 +86,10 @@ protected:
 
   // Member functions
 
-  /// Callback to archive the chain from DREAM
+  /// Callback to archive the chain from DREAM, potentially leaving it in u-space
   static void cache_chain(const double* const z);
-  void retrieve_fn_vals();
+  /// save the final x-space acceptance chain and corresponding function values
+  void archive_acceptance_chain();
 
   //
   //- Heading: Data
@@ -97,10 +98,6 @@ protected:
   RealVector paramMins;
   /// upper bounds on calibrated parameters
   RealVector paramMaxs;
-
-  /// aggregate final chain (need to verify if accepted only)
-  RealMatrix acceptanceChain;
-  RealMatrix acceptedFnVals;
 
   // DREAM Algorithm controls
 
@@ -124,9 +121,6 @@ protected:
   //std::vector<boost::math::uniform> priorDistributions;
   // samplers for the uniform prior PDFs for each variable
   //std::vector<boost::uniform_real<double> > priorSamplers;
-  
-  // compute chain stats for final chain
-  void compute_statistics();
 
 private:
 

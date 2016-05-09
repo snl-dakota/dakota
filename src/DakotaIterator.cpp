@@ -903,8 +903,6 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_name) const
   case SUBMETHOD_SEQUENTIAL: return String("sequential"); break;
   case SUBMETHOD_LHS: return String("lhs"); break;
   case SUBMETHOD_RANDOM: return String("random"); break;
-  case SUBMETHOD_INCREMENTAL_LHS: return String("incremental_lhs"); break;
-  case SUBMETHOD_INCREMENTAL_RANDOM: return String("incremental_random"); break;
   case SUBMETHOD_BOX_BEHNKEN: return String("box_behnken"); break;
   case SUBMETHOD_CENTRAL_COMPOSITE: return String("central_composite"); break;
   case SUBMETHOD_GRID: return String("grid"); break; 

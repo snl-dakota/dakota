@@ -1549,6 +1549,13 @@ int TestDriverInterface::steady_state_diffusion_1d()
   size_t kernel_index = find_index(xDSLabels, "kernel_type");
   String kernel = ( kernel_index == _NPOS ) ? "default" : xDS[kernel_index];
 
+  if (order + 1 < xC.length() && kernel == "exponential") {
+    Cerr << "Error: Mesh size must be greater than or equal "
+         << "to the number of random variables + 1 when using "
+         << "the exponential kernel." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
   // Get the positivity flag from the discrete string variables
   size_t pos_index = find_index(xDSLabels, "positivity");
   String pos_string = ( pos_index == _NPOS ) ? "on" : xDS[pos_index];

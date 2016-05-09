@@ -1,7 +1,11 @@
-Blurb::
-(Experimental) Build a GP surrogate and refine it adaptively
-Description::
-This is an experimental capability that is not ready for production use at this point. 
+Blurb:: 
+(Experimental) Adaptively refine a Gaussian process surrogate
+
+Description:: 
+This is an experimental capability that is not ready for production
+use at this point.  It was part of an investigation into computational
+topology-based approaches to feature identification and surrogate
+refinement.
 
 The goal in performing adaptive sampling is to construct a surrogate model that
 can be used as an accurate predictor to some expensive simulation, thus it is

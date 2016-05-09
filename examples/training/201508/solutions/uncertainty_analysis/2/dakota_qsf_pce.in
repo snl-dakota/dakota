@@ -6,6 +6,7 @@ method
      sparse_grid_level 3
      samples 5e5
      response_levels 0.11 0.3
+     seed = 12347 rng rnum2
 
 variables
   uniform_uncertain 2

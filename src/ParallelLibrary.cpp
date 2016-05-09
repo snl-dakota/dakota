@@ -593,6 +593,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // special case for which we assign child = parent without partitioning
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
+    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
@@ -656,6 +657,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   // special case for which we assign child = parent without partitioning
   if (child_pl.numServers < 1) { // no check on idlePartition for ded master
+    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 1; // 1st peer, no dedication of master
@@ -746,6 +748,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   // special case for which we assign child = parent without partitioning
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
+    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
@@ -802,7 +805,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   if (end_rank+1 < parent_pl.serverCommSize)
     child_pl.idlePartition = true;
 
-  // verify that all processors except master have a color
+  // verify that all processors have a color
   if (!color) {
     Cerr << "\nError: processor " << parent_pl.serverCommRank
 	 << " missing color assignment" << std::endl;
@@ -811,6 +814,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   // special case for which we assign child = parent without partitioning
   if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
+    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
     child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 1; // one peer server with id = 1
@@ -922,7 +926,7 @@ void ParallelLibrary::print_configuration()
   ParallelLevel ea_pl, ie_pl; int buffer_len;
   int tag = 1001;
   if (server1_messaging) {
-    ie_pl = *ie_iter; // *** failure in MPI_Comm_dup of 0x0 (not MPI_COMM_NULL)
+    ie_pl.copy_config(*ie_iter);
     if (ie_iter->dedicatedMasterFlag) {
       // EA SEND: eval server 1 master sends ea data to iterator server 1 master
       if (ie_iter->serverId == 1 && ie_iter->serverCommRank == 0) {
@@ -942,7 +946,7 @@ void ParallelLibrary::print_configuration()
       }
     }
     else
-      ea_pl = *ea_iter;
+      ea_pl.copy_config(*ea_iter);
   }
 
   // Now cascade messages up mi_iters in reverse order
@@ -954,7 +958,7 @@ void ParallelLibrary::print_configuration()
 	{ server1_messaging = false; break; }
     if (server1_messaging) {
       ParLevLIter mi_iter = mi_iters[i];
-      mi_pls[i] = *mi_iter;
+      mi_pls[i].copy_config(*mi_iter);
       // SEND: iter server 1 master sends combined info to meta-iter master
       if (mi_iter->dedicatedMasterFlag) {
 	tag += 2;

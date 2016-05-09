@@ -10,10 +10,10 @@ the Dakota Reference Manual~\cite{RefMan}, and the restart file is
 described in Chapter~\ref{restart}.
 
 A Dakota input file may be prepared with a text editor such as Emacs,
-Vi, or WordPad, or with the JAGUAR Dakota graphical user interface.
-The JAGUAR Dakota GUI is built on the Java-based Eclipse Framework
+Vi, or WordPad, or with the Dakota graphical user interface.
+The Dakota GUI is built on the Java-based Eclipse Framework
 \cite{Eclipse} and presents the Dakota input specification options in
-synchronized text-editing and graphical views.  JAGUAR includes
+synchronized text-editing and graphical views.  The Dakota GUI includes
 templates and wizards for helping create Dakota studies and can invoke
 Dakota to run an analysis.  The Dakota GUI for Linux, Windows, and
 Mac, is available for download from the Dakota website
@@ -137,30 +137,46 @@ Section~\ref{input:tabularformat}.
 
 \subsection{Calibration data import}\label{input:calib_data}
 
-Deterministic least squares and Bayesian Calibration methods allow
-specification of experimental observations to difference with
-responses in calculating a model misfit metric (such as a sum of
-squared residuals). 
+%Deterministic least squares and Bayesian Calibration methods allow
+%specification of experimental observations to difference with
+%responses in calculating a model misfit metric (such as a sum of
+%squared residuals). 
+
+By default, deterministic least squares and Bayesian calibration methods rely 
+on the processes in the \texttt{response} block to provide estimates of the 
+residuals,
+\begin{equation}
+\boldsymbol{r}(\boldsymbol{\theta}) = \boldsymbol{d} - 
+	\boldsymbol{q}(\boldsymbol{\theta}),
+\end{equation}
+between the data $\boldsymbol{d}$ and the model predictions 
+$\boldsymbol{q}(\boldsymbol{\theta})$. However, if \texttt{response} instead 
+provides the model predictions $\boldsymbol{q}(\boldsymbol{\theta})$ themselves, 
+experimental data $\boldsymbol{d}$ may be specified directly in a separate 
+text file through the \texttt{calibration\_data\_file} command. This indicates 
+that the residuals need to be calculated outside of the user-specified 
+\texttt{response}. The data file containing experimental observations, if 
+provided, must agree with the following guidelines. 
 
 For scalar responses, a simple tabular format is allowed.  The default
 file format is {\tt annotated}, but the {\tt freeform} option is
 supported.  The data file is comprised of one or more experiments,
 each with one or more replicates, one row per replicate.  The columns
-of the data file contain, in sequence
+of the data file contain, in sequence,
 \begin{itemize}
 \item {\bf configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
-  length must agree with thee number of state variables active in the
+  length must agree with the number of state variables active in the
   study.
 \item {\bf experimental observations (required):} experimental data
-  values to difference with model responses; length number of
-  responses.
+  values to difference with model responses; length equal to the number 
+  of responses.
 \item {\bf experimental standard deviations (optional):} measurement
-  errors (standard deviations) associated with the data; 1 scalar for
-  each of the num\_responses.
+  errors (standard deviations) associated with the experimental observations; 
+  one scalar value may be specified for each of the responses.
 \end{itemize}
 
-Data informing field-valued responses are input using a separate file
+Data-informing field-valued responses are input using a separate file
 per response group, per experiment.  Field responses may optionally
 have scalar, diagonal, or matrix-valued error covariance information.
 See~\ref{nls:examples} and the Dakota Reference Manual Responses
@@ -174,7 +190,7 @@ scalar covariance for field 2, and full matrix covariance for field 3.
 In total, Dakota supports block diagonal covariance $\Sigma$ across
 the responses, with blocks $\Sigma_i$, which could be fully dense
 within a given field response group.  Covariance across the
-highest-level responses (off-diagonal blocks) are not supported.
+highest-level responses (off-diagonal blocks) is not supported.
 \begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.5]{images/ObsErrorCovariance}

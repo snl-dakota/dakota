@@ -1,8 +1,8 @@
 Blurb::
-Discrete state variables; each defined by an integer interval
+State variables - discrete range-valued
 
 Description::
-Discrete state variables defined by bounds.
+Discrete state variables defined by bounds (an integer interval).
 
 The details of how to specify this discrete variable are located on the 
 \ref topic-discrete_variables page.

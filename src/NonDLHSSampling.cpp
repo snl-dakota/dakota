@@ -52,11 +52,25 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 {
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
-  if (!sampleType)
+  if (sampleType == SUBMETHOD_DEFAULT)
     sampleType = SUBMETHOD_LHS;
 
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
+
+  if (dOptimal && outputLevel > SILENT_OUTPUT)
+    Cout << "Warning 'd_optimal' sampling is an experimental capability."
+         << std::endl;
+
+  if (sampleType == SUBMETHOD_LHS && dOptimal && outputLevel > SILENT_OUTPUT)
+    if (refineSamples.length() > 0)
+      Cout << "Warning: 'd_optimal' currently has no effect for incrementally "
+           << "refined LHS \n         sampling" << std::endl;
+    else
+      Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
+           << "designs" << " will be\n         Latin, but final design will not."
+           << std::endl;
+  // TODO: if (dOptimal && unsupported variable types)
 }
 
 
@@ -140,8 +154,10 @@ void NonDLHSSampling::pre_run()
 {
   Analyzer::pre_run();
 
-  // incremental needs CDF to compute ranks
-  if (sampleType == SUBMETHOD_INCREMENTAL_LHS) {
+  // incremental LHS needs CDF to compute ranks
+  bool increm_lhs_active = (sampleType == SUBMETHOD_LHS && 
+			    refineSamples.length() > 0);
+  if (increm_lhs_active) {
     initialize_random_variable_transformation();
     initialize_random_variable_types(); // x_types only
   }
@@ -166,7 +182,6 @@ void NonDLHSSampling::pre_run()
       varyPattern = true;
 
     IntVector samples_vec(seq_len);
-    // BMA TODO: should this be samplesRef?
     samples_vec[0] = numSamples;
     if (sample_all_batches)
       copy_data_partial(refineSamples, samples_vec, 1);
@@ -186,7 +201,7 @@ void NonDLHSSampling::pre_run()
         allSamples.numCols() != total_samples)
       allSamples.shape(num_vars, total_samples);
     IntMatrix all_ranks;
-    if (sampleType == SUBMETHOD_INCREMENTAL_LHS)
+    if (increm_lhs_active)
       all_ranks.shape(num_vars, total_samples);
 
     for (int batch_ind = 0; batch_ind < seq_len; ++batch_ind) {
@@ -195,10 +210,9 @@ void NonDLHSSampling::pre_run()
       // of increments, including the point selection
       int new_samples = samples_vec[batch_ind];
 
-      // BMA TODO: incremental LHS isn't a special method any longer;
-      // do it automatically for seq_len > 1; also allow D-Optimal
-      // selection when augmenting the batch (at least for MC)
-      if (sampleType == SUBMETHOD_INCREMENTAL_LHS) {
+      if (increm_lhs_active) {
+        // CASE: incremental LHS
+        // BMA TODO: allow each batch to be D-optimal w.r.t. previous batch
         if (batch_ind == 0)
           initial_increm_lhs_set(new_samples, allSamples, all_ranks);
         else 
@@ -206,11 +220,12 @@ void NonDLHSSampling::pre_run()
                                    allSamples, all_ranks);
       }
       else if (dOptimal) {
+        // CASES: random, incremental random, LHS w/ D-optimal
         // populate the correct subset of allSamples, preserving previous
         d_optimal_parameter_set(previous_samples, new_samples, allSamples);
       }
       else {
-        // NOTE: this case subsumes SUBMETHOD_INCREMENTAL_RANDOM
+	// CASES: random, incremental random, LHS
         // sub-matrix of allSamples to populate
         RealMatrix batch_samples(Teuchos::View, allSamples, 
                                  num_vars, new_samples,  // num row/col
@@ -517,11 +532,6 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // transform from u back to x space
   bool u_to_x = false;
   transform_samples(selected_samples, u_to_x);
-
-  // Cout << "initial samples " << initial_samples << std::endl;
-  // Cout << "candidate samples " << candidate_samples << std::endl;
-  // Cout << "selected samples " << selected_samples << std::endl;
-  // Cout << "full_samples " << full_samples << std::endl;
 }
 
 void NonDLHSSampling::post_input()

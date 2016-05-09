@@ -3,18 +3,20 @@ Experimental auto-refinement of surrogate model
 
 Description::
 (Experimental option) Automatically refine the surrogate model until
-desired cross-validation quality is achieved.
+desired cross-validation quality is achieved. Refinement is accomplished
+by iteratively adding more data to the training set until the cross-validation
+\c convergence_tolerance is achieved, or \c max_function_evaluations or 
+\c max_iterations is exceeded.
+
+The amount of new training data that is incorporated each iteration is specified
+in the DACE method that is referred to by the model's \c dace_method_pointer.
+See \ref method-sampling-refinement_samples for more information.
 
 <b> Default Behavior </b>
-
-<b> Expected Output </b>
-
-<b> Usage Tips </b>
-
-<b> Additional Discussion </b>
+By default, the surrogate will not be iteratively refined.
 
 Topics::
-
+surrogate_models
 Examples::
 
 Theory::

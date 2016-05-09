@@ -13,7 +13,7 @@ project("Dakota" NONE)
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 3)
+set(Dakota_VERSION_MINOR 4)
 set(Dakota_VERSION_PATCH 0)
 # TODO?: set(Dakota_VERSION_TWEAK SVNREV)
 set(Dakota_VERSION_PAIR

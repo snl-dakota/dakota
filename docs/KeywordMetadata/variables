@@ -1,16 +1,19 @@
 Blurb::
 Specifies the parameter set to be iterated by a particular method.
+
 Description::
 The \c variables specification in a Dakota input file specifies the 
-parameter set to be iterated by a particular method. 
+parameter set to be iterated by a particular method. In the case of 
+- An optimization study: These variables are adjusted in order to
+  locate an optimal design.
 
-In the case of 
-- An optimization study:
- - These variables are adjusted in order to locate an optimal design.
-- Parameter studies/sensitivity analysis/design of experiments: 
- - These parameters are perturbed to explore the parameter space.
-- Uncertainty analysis: 
- - The variables are associated with distribution/interval characterizations which are used to compute corresponding distribution/interval characterizations for response functions. 
+- Parameter studies/sensitivity analysis/design of experiments: These
+  parameters are perturbed to explore the parameter space.
+
+- Uncertainty analysis: The variables are associated with
+  distribution/interval characterizations which are used to compute
+  corresponding distribution/interval characterizations for response
+  functions.
 
 To accommodate these different studies, Dakota supports different:
 - Variable types
@@ -33,11 +36,10 @@ available variables by type and domain.
 <b> Variable Types </b>
 - Design Variables 
   - Design variables are those variables which are modified for the
-    purposes of computing an optimal design.
+    purposes of seeking an optimal design.
   - The most common type of design variables encountered in engineering
     applications are of the continuous type. These variables may assume
-    any real value within
-    their bounds.
+    any real value within their bounds.
   - All but a handful of the optimization algorithms in
     Dakota support continuous design variables exclusively.
 - Aleatory Uncertain Variables
@@ -47,9 +49,9 @@ available variables by type and domain.
     probability theory. This is the only option implemented in Dakota.
 - Epistemic Uncertain Variables
   - Epistemic uncertainty is uncertainty due to lack of knowledge.
-  - In %Dakota, epistemic uncertainty is characterized by interval analysis or the Dempster-Shafer theory of evidence.
-  - Note that epistemic uncertainty can also be modeled with probability density functions (as done with aleatory uncertainty). 
-    Dakota does not support this capability.
+  - In %Dakota, epistemic uncertainty is assessed by interval analysis or the Dempster-Shafer theory of evidence
+  - Continuous or discrete interval or set-valued variables are used to define set-valued probabilities or basic probabiliy assignments (BPA) which define a belief structure.
+  - Note that epistemic uncertainty can also be modeled with probability density functions (as done with aleatory uncertainty). Dakota does not support this capability.
 - State Variables
   - State variables consist of "other" variables which are to be mapped through
     the simulation interface, in that they are not to be used for design and
@@ -66,14 +68,16 @@ available variables by type and domain.
 
 <b> Variable Domains </b>
 
-Continuous variables are defined by bounds. Discrete variables can be defined in
-one of three ways, which are discussed on the page \ref topic-discrete_variables.
+Continuous variables are typically defined by bounds. Discrete
+variables can be defined in one of three ways, which are discussed on
+the page \ref topic-discrete_variables.
 
 <b> Ordering of Variables </b>
 
 The ordering of variables is important, and a consistent ordering is
 employed throughout the Dakota software.  The ordering is shown in
-dakota.input.summary and can be summarized as:
+dakota.input.summary (and in the hierarchical order of this reference
+manual) and can be summarized as:
 -# design
  -# continuous 
  -# discrete integer 
@@ -113,6 +117,43 @@ topics pages that relate to classes of methods.  In addition, the
 default behavior can be modified using the \ref variables-active
 keyword.
 
+At least one type of variables that are active for the method in use
+must have nonzero size (at least 1 active variable) or an input error
+message will result.
+
+<b>Inferred Default Values and Bounds</b>
+
+The concept of active variables allows any Dakota variable type to be
+used in any method context.  Some methods, e.g., bound-constrained
+optimization or multi-dimensional or centered parameter studies,
+require bounds and/or an initial point on the variables, however
+uncertain variables may not be naturally defined in terms of these
+characteristics.
+
+Distribution lower and upper bounds are explicit portions of the
+normal, lognormal, uniform, loguniform, triangular, and beta
+specifications, whereas they are implicitly defined for others.  For
+example, bounds are naturally defined for histogram bin, histogram
+point, and interval variables (from the extreme values within the
+bin/point/interval specifications) as well as for binomial (0 to \c
+num_trials) and hypergeometric (0 to min(\c num_drawn, \c
+num_selected)) variables.
+
+If not specified, distribution bounds are also inferred for normal and
+lognormal (if optional bounds are unspecified) as well as for
+exponential, gamma, gumbel, frechet, weibull, poisson, negative
+binomial, and geometric (which have no bounds specifications); these
+bounds are [0, \f$\mu + 3 \sigma\f$] for exponential, gamma, frechet,
+weibull, poisson, negative binomial, geometric, and unspecified
+lognormal, and [\f$\mu - 3 \sigma\f$, \f$\mu + 3 \sigma\f$] for gumbel
+and unspecified normal.
+
+When an intial point is needed, uncertain variables are initialized to
+their means, where mean values for bounded normal and bounded
+lognormal may be further adjusted to satisfy any user-specified
+distribution bounds, mean values for discrete integer range
+distributions are rounded down to the nearest integer, and mean values
+for discrete set distributions are rounded to the nearest set value.
 
 Topics::	block
 Examples::
@@ -130,12 +171,11 @@ variables,
 
 In the next example, defaults are employed. In this case, \c
 initial_point will default to a vector of \c 0. values, \c
-upper_bounds will default to vector values of \c DBL_MAX (the
-maximum number representable in double precision for a particular
-platform, as defined in the platform's \c float.h C header file), \c
-lower_bounds will default to a vector of \c -DBL_MAX values, and
-\c descriptors will default to a vector of <tt>'cdv_i'</tt>
-strings, where \c i ranges from one to two:
+upper_bounds will default to vector values of \c DBL_MAX (the maximum
+number representable in double precision for a particular platform),
+\c lower_bounds will default to a vector of \c -DBL_MAX values, and \c
+descriptors will default to a vector of <tt>'cdv_i'</tt> strings,
+where \c i ranges from one to two:
 
 \verbatim
 variables,
@@ -207,10 +247,11 @@ variables,
 	continuous_state = 2
 	  initial_state = 1.e-4  1.e-6
 	  descriptors   = 'EPSIT1' 'EPSIT2'
-	discrete_state_set_int = 1
-	  initial_state = 100
-	  set_values    = 100 212 375
-	  descriptors   = 'load_case'
+	discrete_state_set
+          integer = 1
+	    initial_state = 100
+	    set_values    = 100 212 375
+	    descriptors   = 'load_case'
 \endverbatim
 
 Theory::

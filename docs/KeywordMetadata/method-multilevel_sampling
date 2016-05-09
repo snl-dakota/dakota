@@ -1,22 +1,128 @@
-Blurb::
-Experimental multi-level Monte Carlo sampling
+Blurb:: Multilevel methods for sampling-based UQ
 
-Description::
-A nascent method to perform multi-level Monte Carlo sampling.
+Description:: A nascent sampling method that utilizes both multifidelity and
+multilevel relationships within a hierarchical surrogate model in order to
+improve convergence behavior in sampling methods.   
 
-<b> Default Behavior </b>
+In the case of a multilevel relationship, multilevel Monte Carlo
+methods are used to compute an optimal sample allocation per level,
+and in the case of a multifidelity relationship, control variate Monte
+Carlo methods are used to compute an optimal sample allocation per
+fidelity.  These two approaches can also be combined, resulting in the
+three approaches below.
 
-<b> Expected Output </b>
+<b> Multilevel Monte Carlo </b>
+
+The Monte Carlo estimator for the mean is defined as
+\f[ \mathbb{E}[Q] \equiv \hat{Q}^{MC} = \frac{1}{N} \sum_{i=1}^N Q^{(i)} \f]
+
+In a multilevel method with \f$L\f$ levels, we replace this estimator
+with a telescoping sum:
+\f[ \mathbb{E}[Q] \equiv \hat{Q}^{ML}
+ = \sum_{l=0}^L \frac{1}{N_l} \sum_{i=1}^{N_l} (Q_l^{(i)} - Q_{l-1}^{(i)}) 
+ \equiv \sum_{l=0}^L \hat{Y}^{MC}_l \f]
+
+This decomposition forms discrepancies for each level greater than 0,
+seeking reduction in the variance of the discrepancy \f$Y\f$ relative
+to the variance of the original response \f$Q\f$.  The number of samples
+allocated for each level (\f$N_l\f$) is based on a total cost minimization
+procedure that incorporates the relative cost and observed variance for each 
+of the \f$Y_l\f$.
+
+<b> Control Variate Monte Carlo </b>
+
+In the case of two model fidelities (low fidelity denoted as LF and
+high fidelity denoted as HF), we employ a control variate approach:
+
+\f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
+- \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) \f]
+
+As opposed to the traditional control variate approach, we do not know
+\f$\mathbb{E}[Q_{LF}]\f$ precisely, but rather etimate it more
+accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
+applied to the LF model.  This sampling increment is based again on
+a total cost minimization procedure that incorporates the relative LF
+and HF costs and the observed Pearson correlation coefficient
+\f$\rho_{LH}\f$ between \f$Q_{LF}\f$ and \f$Q_{HF}\f$.  The
+coefficient \f$\beta\f$ is then determined from the observed LF-HF
+covariance and LF variance.
+
+<b> Multilevel Control Variate Monte Carlo </b>
+
+<i> Experimental:</i> if both multifidelity and multilevel structure
+are included within the hierarchical model specification, then control
+variates can be applied across fidelities for each level within an
+outer multilevel approach.
+
+An initial prototype for multilevel control variate MC can be explored
+using \c dakota/test/dakota_uq_heat_eq_mlcvmc.in, and will be
+stabilized in future releases.
+
+<b> Default Behavior </b> 
+
+The multilevel sampling method employs Monte Carlo sampling be
+default, but this default can be overriden to use Latin hypercube
+sampling using \c sample_type \c lhs.
+
+<b> Expected Output </b> 
+
+The multilevel sampling method reports estimates of the first four
+moments and a summary of the evaluations performed for each model
+fidelity and discretization level.  The method does not support any
+level mappings (response, probability, reliability, generalized
+reliability) at this time.
 
 <b> Usage Tips </b>
 
-<b> Additional Discussion </b>
+The multilevel sampling method must be used in combination with a
+hierarchical model specification.  When exploiting multiple
+discretization levels, it is necessary to identify the variable string
+identifier that controls these levels using \c solution_level_control.
+Associated relative costs also need to be supplied using \c
+solution_level_cost.
+
+<!-- <b> Additional Discussion </b> -->
 
 
 Topics::
 
 Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+	multilevel_sampling				
+	  pilot_samples = 20 seed = 1237
+	  max_iterations = 10
+	  convergence_tolerance = .001
+\endverbatim
+
+results in multilevel Monte Carlo when the HIERARCH model
+specification contains a single model fidelity with multiple discretization
+levels, in control variate Monte Carlo when the HIERARCH model
+specification has multiple ordered model fidelities each with a single
+discretization level, and multilevel control variate Monte Carlo when
+the HIERARCH model specification contains multiple model fidelities
+each with multiple discretization levels.
+
+An example of the former (single model fidelity with multiple discretization
+levels) follows:
+\verbatim
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'SIM1'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 630. 1260. 2100. 4200.
+\endverbatim
+Refer to \c dakota/test/dakota_uq_heat_eq_{mlmc,cvmc,mlcvmc}.in for 
+additional examples.
 
 Theory::
 Faq::
-See_Also::
+See_Also:: multilevel regression in \ref method-polynomial_chaos

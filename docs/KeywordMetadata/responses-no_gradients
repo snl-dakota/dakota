@@ -1,5 +1,6 @@
 Blurb::
 Gradients will not be used
+
 Description::
 The \c no_gradients specification means that gradient information is
 not needed in the study. Therefore, it will neither be retrieved from

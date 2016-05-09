@@ -1095,11 +1095,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
             |
-            ( 
-              incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_LHS)}
-              |
-              incremental_random {N_mdm(utype,sampleType_SUBMETHOD_INCREMENTAL_RANDOM)}
-             )
+            incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
            ]
           [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
           [ d_optimal {N_mdm(true,dOptimal)}
@@ -1838,6 +1836,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+         ]
+        [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
+           ]
          ]
        )
       [ standardized_space {N_mdm(true,standardizedSpace)} ]

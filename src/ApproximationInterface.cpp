@@ -868,11 +868,7 @@ approximation_variances(const Variables& vars)
     to active only.  */
 void ApproximationInterface::read_challenge_points(bool active_only)
 {
-  size_t num_vars = active_only ? actualModelVars.cv() + actualModelVars.div()
-    + actualModelVars.dsv() + actualModelVars.drv() : actualModelVars.tv();
   size_t num_fns = functionSurfaces.size();
-  size_t num_cols = num_vars + num_fns;
-
   // use a Variables object to easily read active vs. all
   RealArray pts_array;
   RealMatrix pts_matrix;
