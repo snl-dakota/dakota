@@ -14,7 +14,7 @@
 #define NIDR_PROBLEM_DESC_DB_H
 
 #include "ProblemDescDB.hpp"
-#include <nidr/nidr.h>
+#include <external/nidr/nidr.h>
 
 namespace Dakota {
 
