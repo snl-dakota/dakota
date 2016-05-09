@@ -1,0 +1,20 @@
+Blurb:: Restrict the cross validation process to estimating only the
+best noise tolerance.
+
+Description:: By default, cross validation estimates both the best
+noise tolerance and the best candidate basis order.  For reasons of
+reducing computational cost by reducing the number of candidate
+solves, the user may wish to restrict this process to estimating only
+the best noise tolerance.
+
+Generally speaking, computing the best noise tolerance through cross
+validation mitigates issues with over-fitting the data.  Computing the
+best candidate basis order can also mitigate overfitting, while also
+controlling levels of mutual coherence resulting from high-order
+Vandermonde-like matrix systems.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
