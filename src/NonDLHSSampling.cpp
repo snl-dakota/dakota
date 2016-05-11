@@ -164,10 +164,16 @@ void NonDLHSSampling::pre_run()
 
   // BMA TODO: need to resolve interaction of MC/LHS with D-Optimal
 
-  // run LHS to generate parameter sets; for VBD we defer to run for now
-  // BMA TODO: There's no reason VBD can't be supported in pre-run
-  if (!varBasedDecompFlag) {
+  // BMA TODO: resolve interaction between VBD and batch sampling
+  // (need to generate the VBD replicates for each batch instead of
+  // doing VBD on each sequences of samples in order to properly
+  // detect duplicates); probably this means this pre_run code
+  // migrates to another get_parameter_sets variant that VBD can call
 
+  if (varBasedDecompFlag) {
+    get_vbd_parameter_sets(iteratedModel, numSamples);
+  }
+  else {
     // DataFitSurrModel sets subIteratorFlag; if true it will manage
     // batch increments 
     // BMA TODO: refactor to handle increments more gracefully
@@ -230,7 +236,7 @@ void NonDLHSSampling::pre_run()
         RealMatrix batch_samples(Teuchos::View, allSamples, 
                                  num_vars, new_samples,  // num row/col
                                  0, previous_samples);   // start row/col
-        get_lhs_samples(iteratedModel, new_samples, batch_samples);
+        get_parameter_sets(iteratedModel, new_samples, batch_samples);
       }
       previous_samples += new_samples;
     }
@@ -249,7 +255,7 @@ initial_increm_lhs_set(int new_samples,
   RealMatrix batch_samples(Teuchos::View, full_samples, 
                            num_vars, new_samples, 0, 0);
   sampleRanksMode = GET_RANKS;
-  get_lhs_samples(iteratedModel, new_samples, batch_samples);
+  get_parameter_sets(iteratedModel, new_samples, batch_samples);
 
   // sub-matrix of all_ranks to populate
   IntMatrix batch_ranks(Teuchos::View, full_ranks,
@@ -318,7 +324,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 
   // generate the candidate set for the increment batch
   sampleRanksMode = GET_RANKS;
-  get_lhs_samples(iteratedModel, new_samples, increm_samples);
+  get_parameter_sets(iteratedModel, new_samples, increm_samples);
   // Temporarily store the ranks of the new sample in increm_ranks, as
   // they are needed in the combined rank calculation
   store_ranks(increm_samples, increm_ranks);
@@ -365,7 +371,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   // allocation, so Laura's approach may be better (caches a matrix of
   // half the size)
   RealMatrix all_samples(num_vars, total_samples);
-  get_lhs_samples(iteratedModel, total_samples, all_samples);
+  get_parameter_sets(iteratedModel, total_samples, all_samples);
   RealMatrix concat_samples(Teuchos::View, all_samples,
                             num_vars, new_samples, 0, previous_samples);
   increm_samples.assign(concat_samples);
@@ -491,7 +497,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 
   // generate a parameter set of size candidate 
   RealMatrix candidate_samples(num_vars, num_candidates);
-  get_lhs_samples(iteratedModel, num_candidates, candidate_samples);
+  get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
 
   // initial samples is a view of the first previous samples columns
   RealMatrix initial_samples(Teuchos::View, full_samples, 
@@ -550,28 +556,23 @@ void NonDLHSSampling::post_input()
     statistics on the set of responses if statsFlag is set. */
 void NonDLHSSampling::core_run()
 {
-  // If VBD has been selected, evaluate a series of parameter sets
-  // (each of the size specified by the user) in order to compute VBD metrics.
-  // If there are active discrete vars, they are included within allSamples.
-  if (varBasedDecompFlag)
-    variance_based_decomp(numContinuousVars, numDiscreteIntVars,
-			  numDiscreteRealVars, numSamples);
-  // if VBD has not been selected, generate allResponses from a single
-  // set of allSamples or allVariables
-  else {
-    bool log_resp_flag = (allDataFlag || statsFlag);
-    bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
+  bool log_resp_flag = (allDataFlag || statsFlag);
+  bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
     evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
-  }
 }
 
 
 void NonDLHSSampling::post_run(std::ostream& s)
 {
-  //Statistics are generated here and output in NonDLHSSampling's
+  // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag && !varBasedDecompFlag) // calculate statistics on allResponses
-    compute_statistics(allSamples, allResponses);
+  if (statsFlag)
+    // BMA TODO: always compute all stats, even in VBD mode (stats on
+    // first two replicates)
+    if (varBasedDecompFlag)
+      compute_vbd_stats(numSamples, allResponses);
+    else 
+      compute_statistics(allSamples, allResponses);
 
   Analyzer::post_run(s);
  

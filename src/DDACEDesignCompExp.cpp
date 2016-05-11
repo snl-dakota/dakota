@@ -44,6 +44,12 @@ DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model):
   varyPattern(!probDescDB.get_bool("method.fixed_seed")),
   mainEffectsFlag(probDescDB.get_bool("method.main_effects"))
 {
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: dace methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
   if (daceMethod == SUBMETHOD_BOX_BEHNKEN)
     maxEvalConcurrency *= 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
   else if (daceMethod == SUBMETHOD_CENTRAL_COMPOSITE)
@@ -74,6 +80,11 @@ DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
   seedSpec(seed), randomSeed(seed), allDataFlag(true), numDACERuns(0),
   varyPattern(true), mainEffectsFlag(false)
 {
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: dace methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
   // Verify symbol & sample input.  The experimental design may not use exactly
   // the requests passed in, but it always will use >= the incoming requests.
   resolve_samples_symbols();
@@ -101,27 +112,24 @@ void DDACEDesignCompExp::pre_run()
 {
   Analyzer::pre_run();
 
-  // obtain a set of samples for evaluation; if VBD, defer to run phase
-  if (!varBasedDecompFlag)
+  // Sanity check the user specification for samples/symbols
+  resolve_samples_symbols();
+
+  // If VBD has been selected, generate a series of replicate parameter sets
+  // (each of the size specified by the user) in order to compute VBD metrics.
+  if (varBasedDecompFlag)
+    get_vbd_parameter_sets(iteratedModel, numSamples);
+  else
     get_parameter_sets(iteratedModel);
 }
 
 
 void DDACEDesignCompExp::core_run()
 {
-  // If VBD has been selected, evaluate a series of parameter sets
-  // (each of the size specified by the user) in order to compute VBD metrics.
-  // If there are active discrete variables, DDACE currently ignores them.
-  if (varBasedDecompFlag)
-    variance_based_decomp(numContinuousVars, 0, 0, numSamples);
-  // if VBD has not been selected, evaluate a single parameter set of the size
-  // specified by the user and stored in allSamples
-  else {
-    bool log_best_flag  = (numObjFns || numLSqTerms), // opt or NLS data set
-      compute_corr_flag = (!subIteratorFlag),
-      log_resp_flag     = (mainEffectsFlag || allDataFlag || compute_corr_flag);
-    evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
-  }
+  bool log_best_flag  = (numObjFns || numLSqTerms), // opt or NLS data set
+    compute_corr_flag = (!subIteratorFlag),
+    log_resp_flag     = (mainEffectsFlag || allDataFlag || compute_corr_flag);
+  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -152,8 +160,13 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
       create_sampler(iteratedModel);
     symbolMapping = ddace_sampler->getP();
   }
-  // In VBD case, stats are managed in the run phase
-  if (!varBasedDecompFlag) {
+
+  // BMA TODO: always compute all stats, even in VBD mode (stats on
+  // first two replicates)
+  if (varBasedDecompFlag) {
+    compute_vbd_stats(numSamples, allResponses);
+  }
+  else {
     if (mainEffectsFlag) // need allResponses
       compute_main_effects();
     else {
@@ -170,14 +183,18 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
 
 void DDACEDesignCompExp::get_parameter_sets(Model& model)
 {
-  // Sanity check the user specification
-  resolve_samples_symbols();
+  get_parameter_sets(model, numSamples, allSamples);
+}
 
+
+void DDACEDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
+					    RealMatrix& design_matrix)
+{
   // keep track of number of DACE executions for this object
   numDACERuns++;
 
   Cout << "\nDACE method = " << submethod_enum_to_string(daceMethod) 
-       << " Samples = " << numSamples << " Symbols = " << numSymbols;
+       << " Samples = " << num_samples << " Symbols = " << numSymbols;
 
   // If a seed is specified, use it to get repeatable behavior, else allow
   // DDACE to generate different samples each time (seeded from a system clock).
@@ -203,7 +220,7 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
     Cout << " Seed (system-generated) = " << randomSeed << '\n';
 
   // vector used for DDace getSamples
-  std::vector<DDaceSamplePoint> sample_points(numSamples);
+  std::vector<DDaceSamplePoint> sample_points(num_samples);
 
   // in get_parameter_sets, generate the samples; could omit the symbolMapping
   boost::shared_ptr<DDaceSamplerBase> ddace_sampler = 
@@ -212,30 +229,30 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   if (mainEffectsFlag)
     symbolMapping = ddace_sampler->getP();
 
-  // copy the DDace sample array to allSamples
-  if (allSamples.numRows() != numContinuousVars ||
-      allSamples.numCols() != numSamples)
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
-  for (int i=0; i<numSamples; ++i) {
-    Real* all_samp_i = allSamples[i];
+  // copy the DDace sample array to design_matrix
+  if (design_matrix.numRows() != numContinuousVars ||
+      design_matrix.numCols() != num_samples)
+    design_matrix.shapeUninitialized(numContinuousVars, num_samples);
+  for (int i=0; i<num_samples; ++i) {
+    Real* all_samp_i = design_matrix[i];
     const DDaceSamplePoint& sample_pt_i = sample_points[i];
     for (int j=0; j<numContinuousVars; ++j)
       all_samp_i[j] = sample_pt_i[j];
   }
 
   if (volQualityFlag) {
-    double* dace_points = new double [numContinuousVars*numSamples];
-    copy_data(sample_points, dace_points, numContinuousVars*numSamples);
+    double* dace_points = new double [numContinuousVars*num_samples];
+    copy_data(sample_points, dace_points, numContinuousVars*num_samples);
     const RealVector& c_l_bnds = model.continuous_lower_bounds();
     const RealVector& c_u_bnds = model.continuous_upper_bounds();
     for (int i=0; i<numContinuousVars; i++) {
       const double& offset = c_l_bnds[i];
       double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
-      for (int j=0; j<numSamples; j++)
+      for (int j=0; j<num_samples; j++)
         dace_points[i+j*numContinuousVars]
 	  = (dace_points[i+j*numContinuousVars] - offset) * norm;
     }
-    volumetric_quality(numContinuousVars, numSamples, dace_points);
+    volumetric_quality(numContinuousVars, num_samples, dace_points);
     delete [] dace_points;
   }
 }
@@ -519,6 +536,7 @@ void DDACEDesignCompExp::compute_main_effects()
     Cout << "\n--------------------------------\nMain effects for "
 	 << std::setw(14) << fn_labels[f] << ":\n--------------------------------";
     DDaceMainEffects::OneWayANOVA main_effects(ddace_factors);	
+    // BMA TODO: should this instead be printed at print_results time?
     main_effects.printANOVATables();
   }
 }
