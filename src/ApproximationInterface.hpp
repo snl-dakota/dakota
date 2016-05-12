@@ -111,8 +111,8 @@ protected:
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
-				  const RealMatrix& challenge_pts,
-                                  const RealVector& challenge_resps);
+				    const RealMatrix& challenge_pts,
+				    const RealVector& challenge_resps);
 
   void clear_current();
   void clear_all();

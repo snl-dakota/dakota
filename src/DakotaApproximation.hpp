@@ -127,7 +127,8 @@ public:
                             const RealVector& challenge_responses);
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  virtual void challenge_diagnostics(const RealMatrix& challenge_points, 
+  virtual void challenge_diagnostics(int fn_index, 
+				     const RealMatrix& challenge_points, 
                                      const RealVector& challenge_responses);
   // TODO: private implementation of cross-validation:
   //  void cross_validate(metrics, folds)

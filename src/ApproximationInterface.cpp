@@ -631,14 +631,14 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       // for user-provided challenge data, we assume there are
       // function values for all functions in the analysis, not just
       // the indices for which surrogates are being built
-
+      
       // BMA TODO: can this move to ctor?
       bool active_only = false;
       if (!challengeFile.empty()) {
-	if (challengePoints.empty())
-	  read_challenge_points(active_only);
-        functionSurfaces[index].challenge_diagnostics(challengePoints,
-                        getCol(Teuchos::View,challengeResponses,index));
+        if (challengePoints.empty())
+          read_challenge_points(active_only);
+        functionSurfaces[index].challenge_diagnostics(index, challengePoints,
+          getCol(Teuchos::View,challengeResponses,index));
       }
     }
   }

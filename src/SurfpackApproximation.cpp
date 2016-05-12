@@ -702,7 +702,7 @@ Real SurfpackApproximation::diagnostic(const String& metric_type)
 { 
   if (!model) { 
     Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
-	 << std::endl;  
+         << std::endl;  
     abort_handler(-1);
   }
 
@@ -725,34 +725,32 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  Cout << metric_type << " goodness of fit: " << approx_diag << '\n';
+  Cout << std::setw(20) << metric_type << std::setw(20) << approx_diag << '\n';
   return approx_diag;
 }
 
 
 void SurfpackApproximation::primary_diagnostics(int fn_index)
 {
-  String func_description;
-  if(approxLabel.size()) 
-    func_description = "; function " + approxLabel;  
+  String func_description = approxLabel.empty() ? 
+    "function " + boost::lexical_cast<std::string>(fn_index+1) : approxLabel;  
   SharedSurfpackApproxData* shared_surf_data_rep
     = (SharedSurfpackApproxData*)sharedDataRep;
   const StringArray& diag_set = shared_surf_data_rep->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "\n--- Default surrogate metrics" << func_description << std::endl;
+      Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
       diagnostic("root_mean_squared");	
       diagnostic("mean_abs");
       diagnostic("rsquared");
     }
   }
   else {
-    Cout << "\n--- User-requested surrogate metrics" << func_description  << std::endl;
+    Cout << "\nSurrogate quality metrics for " << func_description << ":\n";
     int num_diag = diag_set.size();
     for (int j = 0; j < num_diag; ++j)
       diagnostic(diag_set[j]);
-
    
     // BMA TODO: at runtime verify (though Surfpack will too) 
     //  * 1/N <= percentFold <= 0.5
@@ -761,46 +759,45 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       int num_folds = shared_surf_data_rep->numFolds;
       // if no folds, try percent, otherwise set default = 10
       if (num_folds == 0) {
-	if (shared_surf_data_rep->percentFold > 0.0) {
-	  num_folds = boost::math::iround(1./shared_surf_data_rep->percentFold);
-	  if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Info: cross_validate num_folds = " << num_folds 
-		 << " calculated from specified percent = "
-		 << shared_surf_data_rep->percentFold << "." << std::endl;
-	}
-	else {
-	  num_folds = 10;
-	  if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Info: default num_folds = " << num_folds << " used."
-		 << std::endl;
-	}
+        if (shared_surf_data_rep->percentFold > 0.0) {
+          num_folds = boost::math::iround(1./shared_surf_data_rep->percentFold);
+          if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
+            Cout << "Info: cross_validate num_folds = " << num_folds 
+                 << " calculated from specified percent = "
+                 << shared_surf_data_rep->percentFold << "." << std::endl;
+        }
+        else {
+          num_folds = 10;
+          if (sharedDataRep->outputLevel >= DEBUG_OUTPUT)
+            Cout << "Info: default num_folds = " << num_folds << " used."
+                 << std::endl;
+        }
       }
 
-      Cout << "\n--- Cross validation (" << num_folds << " folds) of user-"
-	   << "requested surrogate metrics; function" << func_description << std::endl;
-
+      Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for " 
+           << func_description << ":\n";
       RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
       //CrossValidationFitness CV_fitness(num_folds);
       //VecDbl cv_metrics;
       //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
       
       for (int j = 0; j < num_diag; ++j) {
-	const String& metric_type = diag_set[j];
-	if (metric_type == "rsquared")
-	  Cout << metric_type << " goodness of fit: " 
-	       << std::numeric_limits<Real>::quiet_NaN()
-	       << " (n/a for cross-validation)" 
-	       << std::endl;
-	else
-	  Cout << metric_type << " goodness of fit: " << cv_metrics[j] 
-	       << std::endl;
+        const String& metric_type = diag_set[j];
+        if (metric_type == "rsquared")
+          Cout << std::setw(20) << metric_type
+               << std::setw(20) << std::numeric_limits<Real>::quiet_NaN()
+               << "  (n/a for cross-validation)" 
+               << std::endl;
+        else
+          Cout << std::setw(20) << metric_type << std::setw(20) << cv_metrics[j] 
+               << std::endl;
       }
 
     }
     if (shared_surf_data_rep->pressFlag) {
-      Cout << "\n--- PRESS (leave one out CV) of user-requested "
-	   << "surrogate metrics" << func_description << std::endl;
-
+      Cout << "\nSurrogate quality metrics (PRESS/leave-one-out) for " 
+           << func_description << ":\n";
+     
       // perform press as CV with N folds
       RealArray cv_metrics = cv_diagnostic(diag_set, surfData->size());
       //CrossValidationFitness CV_fitness(surfData->size());
@@ -808,15 +805,14 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
       //CV_fitness.eval_metrics(cv_metrics, *model, *surfData, diag_set);
      
       for (int j = 0; j < num_diag; ++j) {
-	const String& metric_type = diag_set[j];
-	if (metric_type == "rsquared")
-	  Cout << metric_type << " goodness of fit: " 
-	       << std::numeric_limits<Real>::quiet_NaN()
-	       << " (n/a for PRESS)" 
-	       << std::endl;
-	else
-	  Cout << metric_type << " goodness of fit: " << cv_metrics[j] 
-	       << std::endl;
+        const String& metric_type = diag_set[j];
+        if (metric_type == "rsquared")
+          Cout << std::setw(20) << metric_type 
+               << std::setw(20) << std::numeric_limits<Real>::quiet_NaN()
+               << "  (n/a for PRESS)" << std::endl;
+        else
+          Cout << std::setw(20) << metric_type << std::setw(20) << cv_metrics[j] 
+               << std::endl;
       }
 
     }
@@ -825,7 +821,7 @@ void SurfpackApproximation::primary_diagnostics(int fn_index)
 
 
 void SurfpackApproximation::
-challenge_diagnostics(const RealMatrix& challenge_points,
+challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_responses)
 {
   if (!model) { 
@@ -834,25 +830,26 @@ challenge_diagnostics(const RealMatrix& challenge_points,
     abort_handler(-1);
   }
   
-  String func_description;
-  if(approxLabel.size()) 
-    func_description = "; function " + approxLabel;  
-    
-  const StringArray& diag_set
-    = ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
+  String func_description = approxLabel.empty() ? 
+    "function " + boost::lexical_cast<std::string>(fn_index+1) : approxLabel;  
+
+  // copy
+  StringArray diag_set = 
+    ((SharedSurfpackApproxData*)sharedDataRep)->diagnosticSet;
   if (diag_set.empty()) {
     // conditionally print default diagnostics
     if (sharedDataRep->outputLevel > NORMAL_OUTPUT) {
-      Cout << "\n--- Default surrogate metrics for user challenge "
-	   << "data" << func_description << std::endl;
-      diagnostic("root_mean_squared");	
-      diagnostic("mean_abs");
-      diagnostic("rsquared");
+      Cout << "\nSurrogate quality metrics (challenge data) for " 
+	   << func_description << ":\n";
+      diag_set.push_back("root_mean_squared");	
+      diag_set.push_back("mean_abs");
+      diag_set.push_back("rsquared");
+      challenge_diagnostic(diag_set, challenge_points, challenge_responses);
     }
   }
   else {
-    Cout << "\n--- User-requested surrogate metrics for user " 
-	 << "challenge data" << func_description << std::endl;
+    Cout << "\nSurrogate quality metrics (challenge data) for " 
+	 << func_description << ":\n";
     challenge_diagnostic(diag_set, challenge_points, challenge_responses);
   }
 
