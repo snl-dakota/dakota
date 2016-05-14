@@ -100,6 +100,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // the Iterator does not work in parallel w/o an additional bcast (Iterator
     // only instantiated on iteratorComm rank 0).  For now, we will infer it
     // from an associated method spec at init time.
+    // Note: responseMode gets bcast at run time in component_parallel_mode()
     bool extra_deriv_config
       = (probDescDB.get_ushort("method.algorithm") & MINIMIZER_BIT);
       //(responseMode == UNCORRECTED_SURROGATE ||

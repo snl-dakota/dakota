@@ -22,10 +22,10 @@ namespace Dakota {
 
 DataMethodRep::DataMethodRep():
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
-  methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxFunctionEvaluations(1000),
-  speculativeFlag(false), methodUseDerivsFlag(false),
-  convergenceTolerance(1.e-4), constraintTolerance(0.), methodScaling(false),
-  numFinalSolutions(0),
+  methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
+  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
+  methodUseDerivsFlag(false), convergenceTolerance(1.e-4),
+  constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
   iteratorScheduling(DEFAULT_SCHEDULING), hybridLSProb(0.1),
@@ -156,13 +156,13 @@ DataMethodRep::DataMethodRep():
 void DataMethodRep::write(MPIPackBuffer& s) const
 {
   s << idMethod << modelPointer << methodOutput << maxIterations
-    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << linearIneqConstraintCoeffs << linearIneqLowerBnds
-    << linearIneqUpperBnds << linearIneqScaleTypes << linearIneqScales
-    << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
-    << linearEqScales << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << maxRefineIterations << maxSolverIterations << maxFunctionEvaluations
+    << speculativeFlag << methodUseDerivsFlag << convergenceTolerance
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
+    << subMethod << subMethodName << subModelPointer << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -296,13 +296,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 void DataMethodRep::read(MPIUnpackBuffer& s)
 {
   s >> idMethod >> modelPointer >> methodOutput >> maxIterations
-    >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
-    >> convergenceTolerance >> constraintTolerance >> methodScaling
-    >> numFinalSolutions >> linearIneqConstraintCoeffs >> linearIneqLowerBnds
-    >> linearIneqUpperBnds >> linearIneqScaleTypes >> linearIneqScales
-    >> linearEqConstraintCoeffs >> linearEqTargets >> linearEqScaleTypes
-    >> linearEqScales >> methodName >> subMethod >> subMethodName
-    >> subModelPointer >> subMethodPointer;
+    >> maxRefineIterations >> maxSolverIterations >> maxFunctionEvaluations
+    >> speculativeFlag >> methodUseDerivsFlag >> convergenceTolerance
+    >> constraintTolerance >> methodScaling >> numFinalSolutions
+    >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
+    >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
+    >> linearEqTargets >> linearEqScaleTypes >> linearEqScales >> methodName
+    >> subMethod >> subMethodName >> subModelPointer >> subMethodPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -437,13 +437,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 void DataMethodRep::write(std::ostream& s) const
 {
   s << idMethod << modelPointer << methodOutput << maxIterations
-    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
-    << convergenceTolerance << constraintTolerance << methodScaling
-    << numFinalSolutions << linearIneqConstraintCoeffs << linearIneqLowerBnds
-    << linearIneqUpperBnds << linearIneqScaleTypes << linearIneqScales
-    << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
-    << linearEqScales << methodName << subMethod << subMethodName
-    << subModelPointer << subMethodPointer;
+    << maxRefineIterations << maxSolverIterations << maxFunctionEvaluations
+    << speculativeFlag << methodUseDerivsFlag << convergenceTolerance
+    << constraintTolerance << methodScaling << numFinalSolutions
+    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
+    << subMethod << subMethodName << subModelPointer << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling

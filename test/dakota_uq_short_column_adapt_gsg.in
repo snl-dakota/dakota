@@ -7,7 +7,7 @@ method,
 	polynomial_chaos  askey			#s0,#s1,#s2,#s3
 #	stoch_collocation askey			#s4,#s5,#s6,#s7
 	  dimension_adaptive p_refinement generalized
-#	    max_iterations  = 10
+#	    max_refinement_iterations = 10
 	    convergence_tol = 1.e-6
 	  sparse_grid_level = 0
 #	  non_nested					#s1,#s3,#s5,#s7

@@ -6826,6 +6826,8 @@ static int
 	MP_(jumpStep),
 	MP_(maxFunctionEvaluations),
 	MP_(maxIterations),
+	MP_(maxRefineIterations),
+	MP_(maxSolverIterations),
 	MP_(mutationRange),
         MP_(neighborOrder),
 	MP_(newSolnsGenerated),

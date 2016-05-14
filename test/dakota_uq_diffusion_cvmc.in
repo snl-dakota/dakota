@@ -2,6 +2,8 @@
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
+#@ p0: MPIProcs=2
+#@ p1: MPIProcs=3
 
 #environment,
 #	graphics

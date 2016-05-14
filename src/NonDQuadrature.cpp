@@ -51,7 +51,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 	       outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
 	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
 	       probDescDB.get_short("method.nond.expansion_refinement_control"),
-	       maxIterations, convergenceTol,
+	       //maxIterations,
+	       probDescDB.get_int("method.nond.max_refinement_iterations"),
+	       probDescDB.get_int("method.nond.max_solver_iterations"),
+	       convergenceTol,
 	       probDescDB.get_ushort("method.soft_convergence_limit"));
 
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||

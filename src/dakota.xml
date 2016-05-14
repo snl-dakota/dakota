@@ -105,6 +105,16 @@
         <param type='INTEGER' constraint='>= 0' />
       </keyword>"
     >
+    <!ENTITY default_max_solver_iterations
+      "<keyword  id='max_solver_iterations' name='max_solver_iterations' code='{N_mdm(nnint,maxSolverIterations)}' label='Maximum solver iterations' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='100' >
+        <param type='INTEGER' constraint='>= 0' />
+      </keyword>"
+    >
+    <!ENTITY default_max_refinement_iterations
+      "<keyword  id='max_refinement_iterations' name='max_refinement_iterations' code='{N_mdm(nnint,maxRefineIterations)}' label='Maximum refinement iterations' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='100' >
+        <param type='INTEGER' constraint='>= 0' />
+      </keyword>"
+    >
     <!ENTITY default_constraint_tolerance
       "<keyword  id='constraint_tolerance' name='constraint_tolerance' code='{N_mdm(Real,constraintTolerance)}' label='Constraint tolerance' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='Library default' >
         <param type='REAL' />
@@ -1207,7 +1217,7 @@
 			<param type='INTEGER' constraint='> 0' />
 		      </keyword>
 		      <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
-		      &default_max_iterations;
+		      &default_max_refinement_iterations;
 		      &default_convergence_tolerance;
 		      <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no refinement" >
 			<oneOf label="p-refinement type">
@@ -1354,6 +1364,8 @@
 				  <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
 				    <alias name="reuse_samples"/>
 				  </keyword>
+				  &default_max_iterations;
+				  &default_max_solver_iterations;
 				</required>
 				<!-- TODO: should this be refinement samples -->
 				<keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
@@ -1451,7 +1463,8 @@
 			<param type='INTEGER' constraint='> 0' />
 		      </keyword>
 		      <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
-		      &default_max_iterations;
+		      <!-- &default_max_iterations; for future multilevel SC -->
+		      &default_max_refinement_iterations;
 		      &default_convergence_tolerance;
 		      <optional>
 			<oneOf label="Automated refinement type">

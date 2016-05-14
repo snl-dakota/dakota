@@ -2562,6 +2562,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
 	{"nond.chain_samples", P chainSamples},
+	{"nond.max_refinement_iterations", P maxRefineIterations},
+	{"nond.max_solver_iterations", P maxSolverIterations},
 	{"nond.proposal_covariance_updates", P proposalCovUpdates},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
