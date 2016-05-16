@@ -2,8 +2,6 @@
 #@ p1: MPIProcs=3
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
-#@ p0: MPIProcs=2
-#@ p1: MPIProcs=3
 
 #environment,
 #	graphics
@@ -13,7 +11,7 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
-	  convergence_tolerance =    .1			#s0,#s2,#p0,#p1
+	  convergence_tolerance =    .1			#s0,#s2
 #	  convergence_tolerance =   .01			#s1,#s3
 #	  convergence_tolerance =  .001			# too expensive
 #	  convergence_tolerance = .0001			# too expensive
@@ -35,8 +33,8 @@ model,
 # dense matrices --> direct solvers --> cubic cost growth
 #   cos64 -> exp16: 64x for 4^3, 10x assumed for kernel
 #   cos64 -> cos4:  4096x for 16^3
-	  solution_level_cost = 6.4			#s0,#s1,#p0
-#	  solution_level_cost = 1.			#s2,#s3,#p1
+	  solution_level_cost = 6.4			#s0,#s1
+#	  solution_level_cost = 1.			#s2,#s3
 
 model,
 	id_model = 'HF'
@@ -55,10 +53,10 @@ variables,
 # LF = exp16 case tests different model forms
 # LF = cos4 case tests the extreme values of the discretization levels 
 	  integer = 1 # even poly degree for odd mesh pts including boundary
-	    initial_state = 16	  	     	 #s0,#s1,#p0
-	    set_values = 16	     	 	 #s0,#s1,#p0
-#	    initial_state = 4	  	   	 #s2,#s3,#p1
-#	    set_values = 4	     	 	 #s2,#s3,#p1
+	    initial_state = 16	  	     	 #s0,#s1
+	    set_values = 16	     	 	 #s0,#s1
+#	    initial_state = 4	  	   	 #s2,#s3
+#	    set_values = 4	     	 	 #s2,#s3
       descriptors = 'mesh_size'
     real = 4
       elements_per_variable = 2 2 1 1
@@ -67,12 +65,12 @@ variables,
                    1     # kernel order
                    0.2   # kernel length
       descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
-      initial_state = 0.1 0.5 1 0.2		 #s0,#s1,#p0
-#     initial_state = 1 4 1 0.2  	 	 #s2,#s3,#p1
+      initial_state = 0.1 0.5 1 0.2		 #s0,#s1
+#     initial_state = 1 4 1 0.2  	 	 #s2,#s3
 	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
       elements_per_variable = 2 2
-	    initial_state = 'exponential' 'on'	 #s0,#s1,#p0
-#	    initial_state = 'cosine' 'off'  	 #s2,#s3,#p1
+	    initial_state = 'exponential' 'on'	 #s0,#s1
+#	    initial_state = 'cosine' 'off'  	 #s2,#s3
       set_values = 'cosine' 'exponential'
                    'off' 'on'
       descriptors = 'kernel_type' 'positivity'
