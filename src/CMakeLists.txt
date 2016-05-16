@@ -565,18 +565,20 @@ if(HAVE_ACRO)
   endforeach()
 endif(HAVE_ACRO)
 
+# ANN does approximate k-nearest neighbor search
+if(HAVE_ANN)
+  add_definitions("-DHAVE_ANN")
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
+  set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} ANN PARENT_SCOPE)
+  list(APPEND EXPORT_TARGETS ANN)
+endif()
+
 if(HAVE_ADAPTIVE_SAMPLING)
   add_definitions("-DHAVE_ADAPTIVE_SAMPLING")
   list(APPEND iterator_src NonDAdaptiveSampling.cpp)
   if(HAVE_MORSE_SMALE)
     add_definitions("-DHAVE_MORSE_SMALE")
     list(APPEND iterator_src MorseSmaleComplex.cpp)
-
-    # ANN does approximate k-nearest neighbor search
-    list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
-    list(APPEND DAKOTA_PKG_LIBS ANN)
-    list(APPEND EXPORT_TARGETS ANN)
-
     # Dionysus provides persistence diagram and bottleneck distance
     # The MS_Complex class requires this unconditionally
     add_definitions("-DHAVE_DIONYSUS")
@@ -594,6 +596,7 @@ if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DHAVE_QUESO")
   add_definitions("-DQUESO_HAVE_BOOST_SCOPED_PTR_HPP")
+  add_definitions("-DQUESO_HAVE_BOOST_SHARED_PTR_HPP")
   if(DAKOTA_HAVE_MPI)
     add_definitions("-DQUESO_HAVE_MPI")
   endif()
