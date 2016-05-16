@@ -595,7 +595,6 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return;
   }
@@ -659,7 +658,6 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   if (child_pl.numServers < 1) { // no check on idlePartition for ded master
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 1; // 1st peer, no dedication of master
     return;
   }
@@ -750,7 +748,6 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return;
   }
@@ -816,7 +813,6 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
     inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
     child_pl.serverId = 1; // one peer server with id = 1
     return;
   }
