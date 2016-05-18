@@ -583,7 +583,7 @@ if(HAVE_ADAPTIVE_SAMPLING)
     list(APPEND iterator_src MorseSmaleComplex.cpp)
 
     # ANN does approximate k-nearest neighbor search
-    list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
+    list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/ann/include)
     list(APPEND DAKOTA_PKG_LIBS ANN)
     list(APPEND EXPORT_TARGETS ANN)
 

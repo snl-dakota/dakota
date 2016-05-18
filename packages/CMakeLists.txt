@@ -146,7 +146,7 @@ endif(HAVE_QUESO)
 
 if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
   #svn co https://software.sandia.gov/svn/public/tpl/ann/trunk ann
-  add_subdirectory(ann/src)
+  add_subdirectory(external/ann/src)
 
   # Extract Dionysus, but no build required
   externalproject_add(dionysus_ext
