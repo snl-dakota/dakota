@@ -1096,10 +1096,8 @@ void ProbabilityTransformModel::initialize_random_variable_types()
     x_types[av_cntr] = Pecos::BINOMIAL;
   for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  /*
   for (i=0; i<numGeometricVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::GEOMETRIC;
-  */
   for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
   /*
