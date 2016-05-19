@@ -514,10 +514,15 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
+  ShortArray basis_types, colloc_rules;
   Pecos::SharedOrthogPolyApproxData::
     construct_basis(natafTransform.u_types(),
 		    iteratedModel.aleatory_distribution_parameters(), 
-		    bc_options, poly_basis);
+		    bc_options, poly_basis, basis_types, colloc_rules);
+  Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true,
+							     basis_types,
+							     poly_basis);
+  
 
   // BMA TODO: construct and preserve the LejaSampler if possible
   // BMA TODO: discuss with John what's needed...
