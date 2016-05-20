@@ -15211,6 +15211,172 @@ Test Number 9 succeeded
 <<<<< Best objective function  =
                       7.6180045513e-05
 <<<<< Best data captured at function evaluation 109
+dakota_sampling_doptimal.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  8.3519191138e+09  2.5048499045e+09  1.1028068369e-01 -6.7158460767e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  7.1796132726e+09  9.5242249550e+09  1.9049142916e+09  3.6585127232e+09
+Simple Correlation Matrix among all inputs and outputs:
+                    nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
+       nuv_1  1.00000e+00 
+      lnuv_1 -6.63127e-02  1.00000e+00 
+       uuv_1  2.25848e-02 -2.10391e-03  1.00000e+00 
+      luuv_1 -1.00859e-01  5.46454e-02  1.99937e-01  1.00000e+00 
+       tuv_1  3.46783e-01  1.81746e-01 -2.78255e-01 -9.20136e-02  1.00000e+00 
+       euv_1  1.15412e-01 -1.26845e-01 -1.42740e-01 -5.42497e-01  6.67000e-02  1.00000e+00 
+      beuv_1 -6.48564e-01  3.87965e-02  1.54111e-01  9.56009e-02 -3.15511e-01 -3.07412e-01  1.00000e+00 
+      gauv_1 -3.30615e-01 -1.67379e-01 -5.72620e-02 -1.42981e-01 -9.56291e-04  6.02950e-02  2.09107e-01  1.00000e+00 
+      guuv_1 -2.54477e-01 -4.38284e-02  1.63333e-03 -3.00066e-01 -2.27489e-01  2.01186e-01  5.50186e-01 -1.76129e-01  1.00000e+00 
+       fuv_1  1.36982e-02  5.10669e-02  3.33203e-01  1.15040e-01 -3.75425e-01 -8.43959e-02  3.08768e-01 -3.76460e-03  1.24852e-01  1.00000e+00 
+       wuv_1  2.41665e-01  2.23604e-01  1.40671e-01  4.99033e-02  1.24670e-01 -8.66205e-02 -1.48280e-01  6.93227e-02 -2.53348e-02  2.30562e-01  1.00000e+00 
+      hbuv_1 -6.30072e-02 -4.27775e-01 -7.35859e-02  3.90501e-01 -9.15589e-02  1.01866e-01 -5.11974e-02  2.04858e-01 -3.57619e-01 -3.32575e-02 -1.15515e-01  1.00000e+00 
+response_fn_1  1.38661e-01  8.11510e-02  8.96189e-01  2.04453e-01 -2.25385e-01 -1.93094e-01  1.11728e-01 -8.14964e-03  1.20628e-02  4.34912e-01  5.45754e-01 -1.08071e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       nuv_1  6.19161e-01 
+      lnuv_1  2.77863e-02 
+       uuv_1  9.92900e-01 
+      luuv_1  1.29787e-01 
+       tuv_1 -4.73078e-01 
+       euv_1 -1.17515e-01 
+      beuv_1  3.61698e-01 
+      gauv_1  2.74793e-01 
+      guuv_1  7.32336e-03 
+       fuv_1  2.03099e-01 
+       wuv_1  9.71544e-01 
+      hbuv_1 -3.49759e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
+       nuv_1  1.00000e+00 
+      lnuv_1 -5.26316e-02  1.00000e+00 
+       uuv_1  1.05263e-02 -6.01504e-03  1.00000e+00 
+      luuv_1 -1.56391e-01  2.25564e-01  3.23308e-01  1.00000e+00 
+       tuv_1  3.17293e-01  1.36842e-01 -2.43609e-01 -1.50376e-01  1.00000e+00 
+       euv_1  2.70677e-01 -1.44361e-01 -1.09774e-01 -5.90977e-01  9.02256e-03  1.00000e+00 
+      beuv_1 -5.77444e-01  4.51128e-02  1.35338e-01  1.93985e-01 -1.80451e-01 -3.54887e-01  1.00000e+00 
+      gauv_1 -4.69173e-01 -1.35338e-01 -3.00752e-03 -1.32331e-01 -2.76692e-01 -1.51880e-01  3.15789e-01  1.00000e+00 
+      guuv_1 -2.06015e-01 -7.51880e-03 -5.86466e-02 -1.90977e-01 -1.06767e-01 -4.06015e-02  6.16541e-01 -7.66917e-02  1.00000e+00 
+       fuv_1  1.95489e-02 -2.70677e-02  3.29323e-01  2.30075e-01 -2.85714e-01  6.61654e-02  4.33083e-01 -2.54135e-01  2.27068e-01  1.00000e+00 
+       wuv_1  6.76692e-02 -2.10526e-02  3.24812e-01  1.47368e-01 -4.06015e-02  1.69925e-01 -2.46617e-01 -9.02256e-02  7.51880e-03  1.65414e-01  1.00000e+00 
+      hbuv_1 -2.18045e-01 -2.42105e-01  4.51128e-02  2.81203e-01 -1.21805e-01  6.16541e-02  2.40602e-02 -4.51128e-03 -3.50376e-01  2.13534e-01 -1.38346e-01  1.00000e+00 
+response_fn_1  1.08271e-01  7.06767e-02  9.11278e-01  2.90226e-01 -1.75940e-01 -4.66165e-02  9.02256e-03 -1.12782e-01  3.00752e-02  3.08271e-01  6.19549e-01 -4.06015e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       nuv_1  6.80699e-01 
+      lnuv_1  7.29163e-01 
+       uuv_1  9.83287e-01 
+      luuv_1 -5.92310e-01 
+       tuv_1 -4.47912e-01 
+       euv_1 -5.89287e-01 
+      beuv_1  3.56722e-01 
+      gauv_1 -4.19108e-01 
+      guuv_1  9.35279e-02 
+       fuv_1 -5.17599e-01 
+       wuv_1  9.04256e-01 
+      hbuv_1  6.90130e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0707930500e+06  3.4738071217e+06  4.3968095214e+00  1.9520037900e+01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1 -5.5499872806e+05  2.6965848281e+06  2.6417969478e+06  5.0737441512e+06
+Simple Correlation Matrix among all inputs and outputs:
+                    puv_1       biuv_1       nbuv_1       geuv_1       hguv_1 response_fn_1 
+       puv_1  1.00000e+00 
+      biuv_1 -2.74618e-02  1.00000e+00 
+      nbuv_1 -1.73396e-01  6.47597e-02  1.00000e+00 
+      geuv_1  3.73204e-01  2.23372e-03 -4.01114e-01  1.00000e+00 
+      hguv_1 -8.72779e-02  2.80692e-01 -1.85235e-01 -2.23622e-01  1.00000e+00 
+response_fn_1 -1.54909e-01  1.55371e-01  8.25372e-01 -1.94056e-01 -1.70762e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       puv_1 -1.18394e-01 
+      biuv_1  1.67045e-01 
+      nbuv_1  8.17986e-01 
+      geuv_1  2.72014e-01 
+      hguv_1  1.97349e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    puv_1       biuv_1       nbuv_1       geuv_1       hguv_1 response_fn_1 
+       puv_1  1.00000e+00 
+      biuv_1 -1.00374e-02  1.00000e+00 
+      nbuv_1 -9.85525e-02 -8.14297e-02  1.00000e+00 
+      geuv_1 -3.77221e-02  1.26498e-02 -5.06562e-01  1.00000e+00 
+      hguv_1  6.51497e-03  2.92152e-01 -1.56752e-01 -7.91341e-02  1.00000e+00 
+response_fn_1 -1.06982e-01 -7.48460e-02  9.98871e-01 -4.86880e-01 -1.74102e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       puv_1 -1.73725e-01 
+      biuv_1  2.95569e-01 
+      nbuv_1  9.99006e-01 
+      geuv_1  4.37085e-01 
+      hguv_1 -4.09043e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+response_fn_1:  Min = 1.3645063505e+00  Max = 2.3624031465e+03
+Simple Correlation Matrix among all inputs and outputs:
+                   ciuv_1 response_fn_1 
+      ciuv_1  1.00000e+00 
+response_fn_1  9.13656e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+      ciuv_1  9.13656e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                   ciuv_1 response_fn_1 
+      ciuv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+      ciuv_1  1.00000e+00 
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.1214574170e+04  4.3458166067e+04  6.5877204155e-01 -1.1118530255e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0875526374e+04  7.1553621966e+04  3.3049517849e+04  6.3473764715e+04
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1 response_fn_1 
+       cdv_1  1.00000e+00 
+response_fn_1  9.69708e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1  9.69708e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1 response_fn_1 
+       cdv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1  1.00000e+00 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.1214574170e+04  4.3458166067e+04  6.5877204155e-01 -1.1118530255e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0875526374e+04  7.1553621966e+04  3.3049517849e+04  6.3473764715e+04
+Simple Correlation Matrix among all inputs and outputs:
+                    csv_1 response_fn_1 
+       csv_1  1.00000e+00 
+response_fn_1  9.69708e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       csv_1  9.69708e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    csv_1 response_fn_1 
+       csv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       csv_1  1.00000e+00 
 dakota_sbgouu_short_column_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 126250 total (126250 new, 0 duplicate)

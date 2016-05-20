@@ -1,0 +1,155 @@
+# Tests for D-optimal sampling over all variable types, capturing 
+# issues
+# test 0: continuous aleatory
+# test 1: discrete aleatory
+# test 2: epistemic
+# test 3: mixed design
+# test 4: mixed state
+environment,				
+	  tabular_data		
+
+method, 				 
+  sampling
+    sample_type random
+    samples = 20
+      d_optimal
+    seed 8272
+
+## ERROR: Want samples greater, but get this error on s1:
+#  terminate called after throwing an instance of 'std::runtime_error'
+#    what():  enrich_samples: The basis matrix has rank 21 less than num_total_samples 30. Try increasing the degree of the basis.
+
+
+variables,								 
+# (default is active uncertain)
+# active design                                   #s3
+# active state                                    #s4
+
+## DESIGN
+#	continuous_design = 1                           #s3
+#          upper_bounds = 20.			                #s3
+#          lower_bounds = 10.			                #s3
+## ERROR:
+#   Distribution required, not found for DiscDesRange2   
+#   Error: code 1 returned from lhs_prep in LHSDriver.
+#	discrete_design_range = 1         
+#          upper_bounds =  7			 
+#          lower_bounds = -3			 
+## ERROR (no discrete histogram):
+##   Error: RandomVariable type 0 not available.
+#	discrete_design_set     		 
+#	  integer = 1				
+#            elements = 3 4 5	
+#	  string = 1				
+#            elements = 'dog' 'fleas' 'has' 'my'
+#	  real = 1				
+#            elements = 30. 40. 50.       
+
+## ALEATORY UNCERTAIN
+  normal_uncertain = 1                            #s0
+    means = 69.0       	                          #s0
+    std_deviations = 1.0  	                      #s0
+	lognormal_uncertain = 1		                      #s0
+    means             =  1.	                      #s0
+    std_deviations    =  0.5                      #s0
+	uniform_uncertain = 1                           #s0     
+	  lower_bounds      = 200.	                    #s0
+    upper_bounds = 300.		                        #s0
+ 	loguniform_uncertain = 1	                      #s0
+    lower_bounds      =  0.1	                    #s0
+    upper_bounds      =  10.	                    #s0
+ 	triangular_uncertain = 1	                      #s0
+    modes             =  0.  	                    #s0
+    lower_bounds      = -2.	                      #s0
+	  upper_bounds      =  2.  	                    #s0
+	exponential_uncertain = 1	                      #s0
+	  betas             =  2.	                      #s0
+	beta_uncertain = 1		                          #s0
+	  alphas            =  1.5  	                  #s0
+	  betas             =  2. 	                    #s0
+	  lower_bounds      = -2.	                      #s0
+	  upper_bounds      =  2.	                      #s0
+	gamma_uncertain = 1                             #s0
+	  alphas            =  2.5  	                  #s0
+	  betas             =  2.  	                    #s0
+	gumbel_uncertain = 1		                        #s0
+	  alphas            = 1.5 	                    #s0
+	  betas             = 2.5	                      #s0
+	frechet_uncertain = 1		                        #s0
+	  alphas            = 2.5 	                    #s0
+	  betas             = 3.5 	                    #s0
+	weibull_uncertain = 1		                        #s0
+	  alphas            =   12.                     #s0
+	  betas             =  250.	                    #s0
+	histogram_bin_uncertain = 1	                    #s0
+	  abscissas   =  5  8 10 	                      #s0
+	  counts      = 17 21  0	                      #s0
+# poisson_uncertain = 1		                        #s1
+#   lambdas           =  0.2   	                  #s1
+# binomial_uncertain = 1		                      #s1
+#   prob_per_trial    =  0.3  	                  #s1
+#   num_trials        =  10  	                    #s1
+# negative_binomial_uncertain = 1	                #s1
+#   prob_per_trial    =  0.3  	                  #s1
+#   num_trials        =  10    	                  #s1
+# geometric_uncertain = 1		                      #s1
+#   prob_per_trial    = 0.1                       #s1
+#	hypergeometric_uncertain = 1	                  #s1
+#         total_population    = 50 	              #s1
+#         selected_population = 20	              #s1
+#         num_drawn           =  5 	              #s1
+## UNSUPPORTED
+##   Error: RandomVariable type 0 not available.
+#	histogram_point_uncertain
+#          real = 1		    
+#	  abscissas   = 3 4 5		
+#	  counts      = 1 1 1		
+
+## EPISTEMIC UNCERTAIN
+#	continuous_interval_uncertain = 1               #s2
+#	  interval_probabilities = .4 .6	              #s2
+#	  lower_bounds = 2. 4.	      		              #s2
+#	  upper_bounds = 5. 8.			                    #s2
+## ERROR (no discrete histogram)
+#	discrete_interval_uncertain = 1		
+#	  interval_probabilities = .4 .6	
+#	  lower_bounds = 2 4	      		
+#	  upper_bounds = 5 8			
+#	discrete_uncertain_set		
+#	  integer = 1			
+#	    set_probabilities = .4 .3 .2 .1	
+#	    set_values        =  2  4  5  8	
+## TODO: string
+#	  real = 1		       	  
+#	    set_probabilities =  .1  .2  .3  .4	
+#	    set_values        = 3.1 5.2 6.3 7.4	
+
+## STATE
+#	continuous_state = 1                            #s4
+#          upper_bounds = 20.			                #s4
+#          lower_bounds = 10.			                #s4
+## ERROR:
+#   Distribution required, not found for DiscDesRange2   
+#   Error: code 1 returned from lhs_prep in LHSDriver.
+#	discrete_state_range = 1		
+#          upper_bounds =  7	
+#          lower_bounds = -3	
+## ERROR (no discrete histogram):
+##   Error: RandomVariable type 0 not available.
+#	discrete_state_set		
+#	  integer = 1			
+#            set_values = 3 4 5		
+## TODO: string
+#	  real = 1		
+#            set_values = 30. 40. 50.		
+
+interface,								 
+	direct					 
+	  analysis_driver = 'text_book'
+	  deactivate evaluation_cache restart_file
+
+responses,                                      			 
+	response_functions= 1					 
+	no_gradients
+	no_hessians
+
