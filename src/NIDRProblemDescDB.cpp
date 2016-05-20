@@ -7241,6 +7241,7 @@ static int
         MP_(pointsTotal),
         MP_(dimension),
         MP_(refineCVFolds),
+        MP_(softConvergenceLimit),
         MP_(subMethodProcs),
         MP_(subMethodServers);
 

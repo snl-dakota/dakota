@@ -4,6 +4,7 @@
 # 2: convergence_tolerance convergence
 # 3: Surrogate built from combination of imported data and DACE samples
 # 4: Change surrogate from MARS to GP
+# 5: Soft convergence limit convergence
 
 environment
   method_pointer 'ps'
@@ -18,14 +19,15 @@ model
   id_model 'surr'
   surrogate global
   mars                                                          #s0,#s1,#s2,#s3
-# gaussian_process surfpack                                     #s4
+# gaussian_process surfpack                                     #s4,#s5
 #  import_build_points_file 'dakota_surrogate_refine.dat'       #s3
   dace_method_pointer 'truth'
   auto_refinement
 #    max_iterations 5                                           #s1
     max_function_evaluations 50                                 #s0,#s1,#s3,#s4
     convergence_tolerance 1e-1                                  #s0,#s1,#s2,#s3,#s4
-
+#    convergence_tolerance 1e-3                                 #s5
+#    soft_convergence_limit 3                                   #s5
 method
   id_method 'truth'
   sampling sample_type random 

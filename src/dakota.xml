@@ -2985,6 +2985,9 @@
 		      <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence tolerance' help='' minOccurs='0' default='1.0e-4' >
 			<param type='REAL' />
 		      </keyword>
+		      <keyword  id='soft_convergence_limit' name='soft_convergence_limit' code='{N_mom(int,softConvergenceLimit)}' label='Soft convergence limit' help='' minOccurs='0' default='0' >
+		        <param type='INTEGER' constraint=">= 0" />
+		      </keyword>
 		      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-validation metric type" help="" minOccurs="0" default="root-mean-squared error" >
 			<param type="STRING" />
 			<keyword  id='folds' name='folds' code='{N_mom(int,refineCVFolds)}' label='CV folds' help='' minOccurs='0' default='10'>

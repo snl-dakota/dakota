@@ -2315,6 +2315,7 @@ KEYWORD model
 		  [ max_iterations INTEGER > 0 ]
 		  [ max_function_evaluations INTEGER > 0 ]
 		  [ convergence_tolerance REAL ]
+		  [ soft_convergence_limit INTEGER >= 0 ]
 		  [ cross_validation_metric STRING
 		    [ folds INTEGER > 0 ]
 		    ]

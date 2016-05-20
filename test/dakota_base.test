@@ -58055,6 +58055,9 @@ Test Number 3 succeeded
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
 <<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate
 dakota_uq_rosenbrock_pce_import.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)

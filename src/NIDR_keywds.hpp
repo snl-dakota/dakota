@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1879 distinct keywords (plus 249 aliases) **/
+/** 1880 distinct keywords (plus 249 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2309,14 +2309,15 @@ static KeyWord
 	kw_355[1] = {
 		{"folds",0x19,0,1,0,0,0.,0.,0,N_mom(int,refineCVFolds)}
 		},
-	kw_356[4] = {
+	kw_356[5] = {
 		{"convergence_tolerance",10,0,3,0,0,0.,0.,0,N_mom(Real,convergenceTolerance)},
-		{"cross_validation_metric",11,1,4,0,kw_355,0.,0.,0,N_mom(str,refineCVMetric)},
+		{"cross_validation_metric",11,1,5,0,kw_355,0.,0.,0,N_mom(str,refineCVMetric)},
 		{"max_function_evaluations",0x19,0,2,0,0,0.,0.,0,N_mom(int,maxFunctionEvals)},
-		{"max_iterations",0x19,0,1,0,0,0.,0.,0,N_mom(int,maxIterations)}
+		{"max_iterations",0x19,0,1,0,0,0.,0.,0,N_mom(int,maxIterations)},
+		{"soft_convergence_limit",0x29,0,4,0,0,0.,0.,0,N_mom(int,softConvergenceLimit)}
 		},
 	kw_357[1] = {
-		{"auto_refinement",8,4,1,0,kw_356,0.,0.,0,N_mom(true,autoRefine)}
+		{"auto_refinement",8,5,1,0,kw_356,0.,0.,0,N_mom(true,autoRefine)}
 		},
 	kw_358[2] = {
 		{"folds",9,0,1,0,0,0.,0.,0,N_mom(int,numFolds)},

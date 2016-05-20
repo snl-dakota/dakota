@@ -2594,6 +2594,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nested.iterator_servers", P subMethodServers},
 	{"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P dimension},
+        {"soft_convergence_limit", P softConvergenceLimit},
         {"subspace.bootstrap_samples", P numReplicates},
         {"subspace.dimension", P dimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},

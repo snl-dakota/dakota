@@ -322,9 +322,11 @@ public:
   int maxFunctionEvals;
   /// metric to use in cross-validation guided refinement
   String refineCVMetric;
+  /// max number of iterations in refinement without improvement
+  int softConvergenceLimit;
   /// number of cross-validation folds in guided refinement
   int refineCVFolds;
-
+  
   // random field models
 
   /// Contains which type of random field model 

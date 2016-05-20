@@ -2346,6 +2346,7 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ max_iterations INTEGER > 0 {N_mom(int,maxIterations)} ]
             [ max_function_evaluations INTEGER > 0 {N_mom(int,maxFunctionEvals)} ]
             [ convergence_tolerance REAL {N_mom(Real,convergenceTolerance)} ]
+            [ soft_convergence_limit INTEGER >= 0 {N_mom(int,softConvergenceLimit)} ]
             [ cross_validation_metric STRING {N_mom(str,refineCVMetric)}
               [ folds INTEGER > 0 {N_mom(int,refineCVFolds)} ]
              ]

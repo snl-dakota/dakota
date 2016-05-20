@@ -51,6 +51,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   maxIterations(problem_db.get_int("model.max_iterations")),
   maxFuncEvals(problem_db.get_int("model.max_function_evals")),
   convergenceTolerance(problem_db.get_real("model.convergence_tolerance")),
+  softConvergenceLimit(problem_db.get_int("model.soft_convergence_limit")),
   refineCVMetric(problem_db.get_string("model.surrogate.refine_cv_metric")),
   refineCVFolds(problem_db.get_int("model.surrogate.refine_cv_folds"))
 {
@@ -175,8 +176,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   manageRecasting(false), exportPointsFile(export_approx_points_file),
   exportFormat(export_approx_format), importPointsFile(import_build_points_file),
   autoRefine(false), maxIterations(100), maxFuncEvals(1000),
-  convergenceTolerance(1e-4), refineCVMetric("root_mean_square"),
-  refineCVFolds(10)
+  convergenceTolerance(1e-4), softConvergenceLimit(0), 
+  refineCVMetric("root_mean_square"), refineCVFolds(10)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -1116,25 +1117,15 @@ void DataFitSurrModel::refine_surrogate()
 {
   StringArray diag_metrics(1, refineCVMetric);
   int curr_iter = 0; // initial surrogate build is iteration 0
-
-  // parameter to be added to spec: compute a moving average of 
-  // the reduction in CV error over soft_conv_limit iterations.
-  // If it falls below convergencTolerance, halt.
-  // Elsewhere in Dakota, soft_convergence_limit caps the number of 
-  // consecutive iterations that show limited improvement.
-  // In my limited testing, cv error reduction can be 
-  // "noisy" with respect to increasing sample count. If the noise is 'bigger' 
-  // than the convergence tolerance, the count can be reset frequently
-  // even though the overall trend in the error is not downward. Filtering 
-  // with a moving average helps to capture the trend instead of the 
-  // noisy, instantaneous change.
-  int soft_conv_limit = maxIterations;
-  char *soft_conv_limit_env = std::getenv("SOFT_CONV_LIMIT");
-  if(soft_conv_limit_env) 
-    soft_conv_limit = atoi(soft_conv_limit_env);
     
   // accumulate num_samples in each iteration in total_evals.
   int total_evals = 0, num_samples;
+
+  // Disable the soft convergence limit by setting it to maxIterations if
+  // the user didn't set it
+  int soft_conv_limit = maxIterations;
+  if(softConvergenceLimit != 0)
+    soft_conv_limit = softConvergenceLimit;
 
   // accumulator for rolling average of length soft_conv_limit 
   using namespace boost::accumulators;
