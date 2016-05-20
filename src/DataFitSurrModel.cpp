@@ -308,7 +308,10 @@ void DataFitSurrModel::build_approximation()
     // build_approximation if global approximations had easy access
     // to the truth/approx responses.  Instead, it is called from
     // SurrBasedLocalMinimizer using data from the trust region center.
-    if (!autoRefine)  // if autoRefine, approx already built in build_global
+    if (autoRefine)
+      // BMA TODO: Move this to an external refiner
+      refine_surrogate();
+    else
       interface_build_approx();
   }
 
@@ -412,7 +415,10 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // build_approximation if global approximations had easy access
     // to the truth/approx responses.  Instead, it is called from
     // SurrBasedLocalMinimizer using data from the trust region center.
-    if (!autoRefine)  // if autoRefine, approx already built in build_global
+    if (autoRefine)
+      // BMA TODO: Move this to an external refiner
+      refine_surrogate();
+    else
       interface_build_approx();
   }
 
@@ -1070,11 +1076,6 @@ void DataFitSurrModel::build_global()
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
 
-    // BMA TODO: Move this to an external refiner
-    // on subsequent builds, samples will get reset to base via above
-    // sampling reset
-    if (autoRefine)
-      refine_surrogate();
   }
 
   // *******************************
@@ -1127,10 +1128,10 @@ void DataFitSurrModel::refine_surrogate()
   // even though the overall trend in the error is not downward. Filtering 
   // with a moving average helps to capture the trend instead of the 
   // noisy, instantaneous change.
-  int soft_conv_limit = std::numeric_limits<int>::max();
-  String scl_string ( std::getenv(String("SOFT_CONV_LIMIT").c_str()));
-  if(scl_string.size() > 0)
-    soft_conv_limit = atoi(scl_string.c_str());
+  int soft_conv_limit = maxIterations;
+  char *soft_conv_limit_env = std::getenv("SOFT_CONV_LIMIT");
+  if(soft_conv_limit_env) 
+    soft_conv_limit = atoi(soft_conv_limit_env);
     
   // accumulate num_samples in each iteration in total_evals.
   int total_evals = 0, num_samples;
@@ -1163,7 +1164,8 @@ void DataFitSurrModel::refine_surrogate()
         << "Cross-validation error criterion met.\n";
       break;
     } else if(curr_iter++ == maxIterations) {
-      Cout << "\n------------\nAuto-refinment halted: Maximum iterations.\n";
+      Cout << "\n------------\nAuto-refinment halted: Maximum iterations "
+        << "met or exceeded.\n";
       break;
     } else if( curr_iter >= soft_conv_limit && 
         rolling_mean(mean_err) < convergenceTolerance) {
@@ -1174,7 +1176,7 @@ void DataFitSurrModel::refine_surrogate()
       break;
     } else if(total_evals >= maxFuncEvals) {
       Cout << "\n------------\nAuto-refinment halted: Maximum function "
-	   << "evaluations met or exceeded.\n";
+	<< "evaluations met or exceeded.\n";
       break;
     }
 

@@ -1,0 +1,57 @@
+# Test Summary:
+# 0: max_function_evaluations convergence
+# 1: max_iterations convergence
+# 2: convergence_tolerance convergence
+# 3: Surrogate built from combination of imported data and DACE samples
+# 4: Change surrogate from MARS to GP
+
+environment
+  method_pointer 'ps'
+
+method
+  id_method 'ps'
+  list_parameter_study  
+  list_of_points = 0.5  0.5
+  model_pointer 'surr'
+
+model
+  id_model 'surr'
+  surrogate global
+  mars                                                          #s0,#s1,#s2,#s3
+# gaussian_process surfpack                                     #s4
+#  import_build_points_file 'dakota_surrogate_refine.dat'       #s3
+  dace_method_pointer 'truth'
+  auto_refinement
+#    max_iterations 5                                           #s1
+    max_function_evaluations 50                                 #s0,#s1,#s3,#s4
+    convergence_tolerance 1e-1                                  #s0,#s1,#s2,#s3,#s4
+
+method
+  id_method 'truth'
+  sampling sample_type random 
+  seed 4567
+  d_optimal
+  samples 10
+  refinement_samples 5
+  model_pointer 'truthm'
+
+model
+  id_model 'truthm'
+  single
+
+variables
+  uniform_uncertain 2
+  descriptors 'x1' 'x2'
+  lower_bounds -1.0 -1.0
+  upper_bounds  1.0  1.0
+
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+
+interface
+  direct
+    analysis_drivers 'text_book'
+
+ 

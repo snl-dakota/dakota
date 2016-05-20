@@ -38,7 +38,7 @@ DataModelRep::DataModelRep():
   importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
   subMethodScheduling(DEFAULT_SCHEDULING),
-  initialSamples(0), maxIterations(-1), convergenceTolerance(1.0e-4), 
+  initialSamples(0), maxIterations(100), convergenceTolerance(1.0e-4), 
   subspaceIdBingLi(false), subspaceIdConstantine(false), subspaceIdEnergy(false),
   referenceCount(1), dimension(0), numReplicates(100), autoRefine(false),
   maxFunctionEvals(1000), refineCVMetric("root_mean_squared"), refineCVFolds(10),

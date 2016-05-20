@@ -58039,6 +58039,22 @@ Partial Rank Correlation Matrix between input and output:
           u4  5.25602e-01  9.95487e-01  8.29718e-01 
           u5  5.49541e-01 -9.59147e-01  9.80030e-01 
           u6 -8.05950e-01  5.57221e-01 -6.87370e-01 
+dakota_surrogate_refine.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 35 total (35 new, 0 duplicate)
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 80 total (80 new, 0 duplicate)
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+Test Number 4 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
 dakota_uq_rosenbrock_pce_import.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
