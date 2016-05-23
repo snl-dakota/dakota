@@ -5,6 +5,7 @@ include(AddFileCopyCommand)
 include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(DakotaCopyTarget)
+include(ListFilterEmacsBackups)
 
 # Macro: dakota_get_test_properties; macro so can set in parent context.
 #
@@ -248,7 +249,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     file(GLOB test_all_files
       RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*" "${test_name}-*"
       )
-    
+    list_filter_emacs_backups(test_all_files)
+
     # TODO: apply properties on on a per-subtest basis
 
     # --- Add serial test ---
