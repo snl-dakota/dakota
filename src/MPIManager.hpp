@@ -27,8 +27,10 @@ namespace Dakota {
 typedef int MPI_Comm;
 typedef struct { int MPI_SOURCE; int MPI_TAG; int MPI_ERROR; } MPI_Status;
 typedef void* MPI_Request;
-static const int MPI_COMM_WORLD   =  1;
-static const int MPI_COMM_NULL    =  0;
+static const int MPI_COMM_WORLD   = 1;
+static const int MPI_COMM_NULL    = 0;
+// From older MPICH (could use 1140850689 = 0x44000001 from newer MPICH):
+static const int MPI_COMM_SELF    = 92;
 static const int MPI_ANY_TAG      = -1;
 static void*     MPI_REQUEST_NULL = NULL;
 #endif // not DAKOTA_HAVE_MPI
