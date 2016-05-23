@@ -8,7 +8,7 @@ set(aux_files "cantilever cantilever.template"
 set(extra_files)
 set(extra_files "driver.sh")
 
-add_training_test(dakota_cantilever_nominal.in ${aux_files} ${extra_files})
+add_training_test(dakota_cantilever_nominal.in ${aux_files} ${extra_files} TRUE)
 
 
 # Thhe grid problem is having issues

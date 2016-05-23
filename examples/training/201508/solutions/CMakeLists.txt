@@ -5,7 +5,8 @@ include(AddFileCopyCommand)
 include(CheckIncludeFile)
 include(CMakeParseArguments)
 
-function(add_training_test _test_input_file aux_file_string extra_file_string)
+function(add_training_test _test_input_file aux_file_string extra_file_string
+    copy_dakota)
 
   #message("add_training_test: input file=${_test_input_file}, CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
   string(REPLACE solutions exercises alt_path ${CMAKE_CURRENT_SOURCE_DIR})
@@ -88,13 +89,15 @@ function(add_training_test _test_input_file aux_file_string extra_file_string)
     # expressions don't work in OUTPUTs, so use a manually specified
     # executable name with the CMake exe suffix
     set(test_exe_deps)
-    DakotaCopyTarget(dakota test_exe_deps)
+    if (copy_dakota)
+      DakotaCopyTarget(dakota test_exe_deps)
+    endif()
 
     # Create a single target to copy all the testing files
     add_custom_target(${test_name}_test_files ALL 
       DEPENDS ${copied_test_files_abs} ${test_exe_deps}
       COMMENT 
-      "Copy DAKOTA test inputs, aux files, and executables to binary test/ and subdirectories"
+      "Copy DAKOTA test inputs, aux files, and executables to binary examples/ and subdirectories"
       )
 
     # Clean up test dir

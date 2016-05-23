@@ -8,4 +8,4 @@ set(extra_files)
 set(extra_files "cant_exp_data.5perc.50.dat"
   )
 
-add_training_test(dakota_cantilever_nl2sol.in ${aux_files} ${extra_files})
+add_training_test(dakota_cantilever_nl2sol.in ${aux_files} ${extra_files} TRUE)
