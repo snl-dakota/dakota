@@ -569,7 +569,7 @@ endif(HAVE_ACRO)
 if(HAVE_ANN)
   add_definitions("-DHAVE_ANN")
   list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
-  set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} ANN PARENT_SCOPE)
+  set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} ANN)
   list(APPEND EXPORT_TARGETS ANN)
 endif()
 
