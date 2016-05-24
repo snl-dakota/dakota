@@ -11,8 +11,8 @@
 method,
 	model_pointer = 'HIERARCH'
         polynomial_chaos				
-	  sparse_grid_level_sequence = 3 2 1 #s0
-#	  sparse_grid_level_sequence = 4 3 2 #s1
+	  sparse_grid_level_sequence = 3 2 1 #s0,#p0
+#	  sparse_grid_level_sequence = 4 3 2 #s1,#p1
 	unrestricted
 	output silent
 
@@ -26,6 +26,7 @@ model,
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
+	interface_pointer = 'LF_INT'
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 1. # relative cost for cosine4
@@ -33,6 +34,7 @@ model,
 model,
 	id_model = 'MF'
 	variables_pointer = 'MF_VARS'
+	interface_pointer = 'MF_INT'
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 64. # relative cost for cosine16
@@ -40,6 +42,7 @@ model,
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
+	interface_pointer = 'HF_INT'
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 4096. # relative cost for cosine64
@@ -120,6 +123,19 @@ variables,
       	    descriptors = 'kernel_type' 'positivity'
 
 interface,
+	id_interface = 'LF_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate restart_file
+
+interface,
+	id_interface = 'MF_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate restart_file
+
+interface,
+	id_interface = 'HF_INT'
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
 	  deactivate restart_file
