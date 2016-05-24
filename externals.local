@@ -5,6 +5,26 @@
 #    branching/tagging a release
 #  - Use Subversion 1.5 externals format
 #
+-r2751 https://software.sandia.gov/svn/tpl/conmin/tags/1.0                      packages/CONMIN        
+-r445  https://software.sandia.gov/svn/ddace/ddace/tags/dakota-6.2              packages/DDACE                 
+-r2751 https://software.sandia.gov/svn/tpl/FSUDace/trunk                        packages/FSUDace       
+-r5365 https://software.sandia.gov/svn/LHS/trunk                                packages/LHS           
+-r2751 https://software.sandia.gov/svn/tpl/NCSUOpt/trunk                        packages/NCSUOpt       
+-r2751 https://software.sandia.gov/svn/tpl/NL2SOL/trunk                         packages/NL2SOL        
+-r2751 https://software.sandia.gov/svn/tpl/NOMAD/trunk                          packages/NOMAD         
+-r761  https://software.sandia.gov/svn/optpp/optpp/tags/dakota-6.2              packages/OPTPP                 
+-r2751 https://software.sandia.gov/svn/tpl/PSUADE/trunk                         packages/PSUADE        
+-r2751 https://software.sandia.gov/svn/tpl/VPISparseGrid/trunk                  packages/VPISparseGrid     
+-r2751 https://software.sandia.gov/svn/tpl/ampl/trunk                           packages/ampl          
+-r2751 https://software.sandia.gov/svn/tpl/dfftpack/tags/1.0                    packages/dfftpack        
+-r2751 https://software.sandia.gov/svn/tpl/dream/trunk                          packages/dream         
+-r2751 https://software.sandia.gov/svn/tpl/fftw/tags/3.2.2                      packages/fftw          
+-r225  https://software.sandia.gov/svn/hopspack/tags/dakota-6.2                 packages/hopspack           
+-r126  https://software.sandia.gov/svn/nidr/trunk                               packages/nidr          
+-r1011 https://software.sandia.gov/svn/pecos/branches/1.5                       packages/pecos         
+-r2751 https://software.sandia.gov/svn/tpl/queso/trunk                          packages/queso         
+-r747  https://software.sandia.gov/svn/surfpack/tags/dakota-6.2                 packages/surfpack           
+-r2751 https://software.sandia.gov/svn/tpl/teuchos/tags/11.0.3                  packages/teuchos           
 -rHEAD	 svn+ssh://development.sandia.gov/usr/local/svn/dakota/snl/branches/6.2	local
 -r12019	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/DOT/tags/1993	packages/DOT
 -r12019	 svn+ssh://development.sandia.gov/usr/local/svn/tpl/NLPQL/trunk 	packages/NLPQL

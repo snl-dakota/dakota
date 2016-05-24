@@ -89,7 +89,35 @@ Built from SVN revision ${Dakota_SVN_REV}
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
 
-else() # source tree NOT an SVN checkout
+elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
+  set(DAKOTA_GIT_checkout TRUE)
+  # GIT checkout, determine revision level
+
+  find_package(Git)
+
+  if(GIT_FOUND)
+    # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
+    # and the Dakota/ directory may be symlinked.
+    get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} log --pretty=format:"%h on %cd" -1 
+      WORKING_DIRECTORY ${abs_source_dir}
+      OUTPUT_VARIABLE Dakota_GIT_REV)
+  endif(GIT_FOUND) # GIT_FOUND
+
+  # Create VERSION file
+  file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
+        "DAKOTA Version ${Dakota_VERSION_SRC}
+Built from GIT revision ${Dakota_GIT_REV}
+" )
+  set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
+  install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
+	  .)
+
+  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
+  message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
+
+else() # source tree NOT an SVN or GIT checkout
   set(DAKOTA_SVN_checkout FALSE)
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Appear to building from source package.")
@@ -494,6 +522,7 @@ install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.am" EXCLUDE
   PATTERN ".svn" EXCLUDE
+  PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.f" EXCLUDE 
   )
@@ -502,6 +531,7 @@ install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.*" EXCLUDE
   PATTERN ".svn" EXCLUDE
+  PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.cpp" EXCLUDE 
   PATTERN "*.f" EXCLUDE 

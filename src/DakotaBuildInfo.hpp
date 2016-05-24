@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description: Monostate storage class for Subversion revision,
+//- Description: Monostate storage class for repository revision,
 //-              build time and date.
 //- 
 //- Owner:       Bill Bohnhoff
@@ -26,7 +26,7 @@ public:
 
   /// Release number such as 5.4, 5.4+, or 5.3.1
   static std::string get_release_num();
-  /// Subversion revision number
+  /// Repository revision number
   static std::string get_rev_number();
   /// Release date, as set by CMake, or fallback on build date
   static std::string get_release_date();
@@ -44,13 +44,13 @@ private:
   /// Release data; if empty, the build date is used as release date
   /// to support stable
   static std::string releaseDate;
-  /// Subversion revision of Dakota core
-  static std::string subversionRev;
+  /// Repository revision of Dakota core
+  static std::string revision;
 };
 
 
 inline std::string DakotaBuildInfo::get_release_num() { return releaseNum; }
-inline std::string DakotaBuildInfo::get_rev_number()  { return subversionRev; }
+inline std::string DakotaBuildInfo::get_rev_number()  { return revision; }
 inline std::string DakotaBuildInfo::get_release_date()  
 { 
   if (releaseDate.empty())
