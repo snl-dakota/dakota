@@ -60,7 +60,10 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     ec_options(exp_coeffs_soln_approach, exp_basis_type, outputLevel,
 	       probDescDB.get_bool("method.variance_based_decomp"),
 	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
-	       /*refine_type,*/ refine_control, maxIterations, convergenceTol,
+	       /*refine_type,*/ refine_control, //maxIterations,
+	       probDescDB.get_int("method.nond.max_refinement_iterations"),
+	       probDescDB.get_int("method.nond.max_solver_iterations"),
+	       convergenceTol,
 	       probDescDB.get_ushort("method.soft_convergence_limit"));
 
   // define BasisConfigOptions

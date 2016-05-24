@@ -5495,51 +5495,6 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.0625565391e-01 cdv_1
-                      1.7966183297e-01 cdv_2
-                      1.9281970958e-01 cdv_3
-                                    -3 ddsiv_1
-                                     2 ddsiv_2
-                      2.1916471235e+00 csv_1
-<<<<< Best objective function  =
-                      2.6012546899e+02
-<<<<< Best constraint values   =
-                      3.9616090681e-03
-                     -1.2084945273e-01
-<<<<< Best data captured at function evaluation 20
-Simple Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  5.16495e-02  1.00000e+00 
-       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00 
-       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00 
-      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00 
-nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00 
-nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00 
-Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01 
-       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01 
-       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02 
-       csv_1  8.33463e-01  3.13943e-02  8.45201e-02 
-Simple Rank Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  6.35714e-02  1.00000e+00 
-       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00 
-       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00 
-      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00 
-nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00 
-nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00 
-Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01 
-       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01 
-       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01 
-       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01 
-Test Number 9 succeeded
-<<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
-<<<<< Best parameters          =
                       1.2021486421e-01 cdv_1
                       3.4637098521e-02 cdv_2
                       1.2623545899e+00 cdv_3
@@ -5580,7 +5535,7 @@ Partial Rank Correlation Matrix between input and output:
        cdv_2 -7.28695e-02 -8.56853e-01  9.88141e-01 
        cdv_3 -5.40213e-02  1.10211e-01  1.53494e-01 
        csv_1  9.86310e-01 -1.14127e-01 -2.68944e-01 
-Test Number 10 succeeded
+Test Number 9 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.0625565391e-01 cdv_1
@@ -5593,7 +5548,7 @@ Test Number 10 succeeded
                       3.9616090681e-03
                      -1.2084945273e-01
 <<<<< Best data captured at function evaluation 20
-Test Number 11 succeeded
+Test Number 10 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.0625565390e-01 cdv_1
@@ -5606,7 +5561,7 @@ Test Number 11 succeeded
                       3.9616090680e-03
                      -1.2084945270e-01
 <<<<< Best data captured at function evaluation 20
-Test Number 12 succeeded
+Test Number 11 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e-02 cdv_1
@@ -15256,6 +15211,172 @@ Test Number 9 succeeded
 <<<<< Best objective function  =
                       7.6180045513e-05
 <<<<< Best data captured at function evaluation 109
+dakota_sampling_doptimal.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  8.3519191138e+09  2.5048499045e+09  1.1028068369e-01 -6.7158460767e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  7.1796132726e+09  9.5242249550e+09  1.9049142916e+09  3.6585127232e+09
+Simple Correlation Matrix among all inputs and outputs:
+                    nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
+       nuv_1  1.00000e+00 
+      lnuv_1 -6.63127e-02  1.00000e+00 
+       uuv_1  2.25848e-02 -2.10391e-03  1.00000e+00 
+      luuv_1 -1.00859e-01  5.46454e-02  1.99937e-01  1.00000e+00 
+       tuv_1  3.46783e-01  1.81746e-01 -2.78255e-01 -9.20136e-02  1.00000e+00 
+       euv_1  1.15412e-01 -1.26845e-01 -1.42740e-01 -5.42497e-01  6.67000e-02  1.00000e+00 
+      beuv_1 -6.48564e-01  3.87965e-02  1.54111e-01  9.56009e-02 -3.15511e-01 -3.07412e-01  1.00000e+00 
+      gauv_1 -3.30615e-01 -1.67379e-01 -5.72620e-02 -1.42981e-01 -9.56291e-04  6.02950e-02  2.09107e-01  1.00000e+00 
+      guuv_1 -2.54477e-01 -4.38284e-02  1.63333e-03 -3.00066e-01 -2.27489e-01  2.01186e-01  5.50186e-01 -1.76129e-01  1.00000e+00 
+       fuv_1  1.36982e-02  5.10669e-02  3.33203e-01  1.15040e-01 -3.75425e-01 -8.43959e-02  3.08768e-01 -3.76460e-03  1.24852e-01  1.00000e+00 
+       wuv_1  2.41665e-01  2.23604e-01  1.40671e-01  4.99033e-02  1.24670e-01 -8.66205e-02 -1.48280e-01  6.93227e-02 -2.53348e-02  2.30562e-01  1.00000e+00 
+      hbuv_1 -6.30072e-02 -4.27775e-01 -7.35859e-02  3.90501e-01 -9.15589e-02  1.01866e-01 -5.11974e-02  2.04858e-01 -3.57619e-01 -3.32575e-02 -1.15515e-01  1.00000e+00 
+response_fn_1  1.38661e-01  8.11510e-02  8.96189e-01  2.04453e-01 -2.25385e-01 -1.93094e-01  1.11728e-01 -8.14964e-03  1.20628e-02  4.34912e-01  5.45754e-01 -1.08071e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       nuv_1  6.19161e-01 
+      lnuv_1  2.77863e-02 
+       uuv_1  9.92900e-01 
+      luuv_1  1.29787e-01 
+       tuv_1 -4.73078e-01 
+       euv_1 -1.17515e-01 
+      beuv_1  3.61698e-01 
+      gauv_1  2.74793e-01 
+      guuv_1  7.32336e-03 
+       fuv_1  2.03099e-01 
+       wuv_1  9.71544e-01 
+      hbuv_1 -3.49759e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
+       nuv_1  1.00000e+00 
+      lnuv_1 -5.26316e-02  1.00000e+00 
+       uuv_1  1.05263e-02 -6.01504e-03  1.00000e+00 
+      luuv_1 -1.56391e-01  2.25564e-01  3.23308e-01  1.00000e+00 
+       tuv_1  3.17293e-01  1.36842e-01 -2.43609e-01 -1.50376e-01  1.00000e+00 
+       euv_1  2.70677e-01 -1.44361e-01 -1.09774e-01 -5.90977e-01  9.02256e-03  1.00000e+00 
+      beuv_1 -5.77444e-01  4.51128e-02  1.35338e-01  1.93985e-01 -1.80451e-01 -3.54887e-01  1.00000e+00 
+      gauv_1 -4.69173e-01 -1.35338e-01 -3.00752e-03 -1.32331e-01 -2.76692e-01 -1.51880e-01  3.15789e-01  1.00000e+00 
+      guuv_1 -2.06015e-01 -7.51880e-03 -5.86466e-02 -1.90977e-01 -1.06767e-01 -4.06015e-02  6.16541e-01 -7.66917e-02  1.00000e+00 
+       fuv_1  1.95489e-02 -2.70677e-02  3.29323e-01  2.30075e-01 -2.85714e-01  6.61654e-02  4.33083e-01 -2.54135e-01  2.27068e-01  1.00000e+00 
+       wuv_1  6.76692e-02 -2.10526e-02  3.24812e-01  1.47368e-01 -4.06015e-02  1.69925e-01 -2.46617e-01 -9.02256e-02  7.51880e-03  1.65414e-01  1.00000e+00 
+      hbuv_1 -2.18045e-01 -2.42105e-01  4.51128e-02  2.81203e-01 -1.21805e-01  6.16541e-02  2.40602e-02 -4.51128e-03 -3.50376e-01  2.13534e-01 -1.38346e-01  1.00000e+00 
+response_fn_1  1.08271e-01  7.06767e-02  9.11278e-01  2.90226e-01 -1.75940e-01 -4.66165e-02  9.02256e-03 -1.12782e-01  3.00752e-02  3.08271e-01  6.19549e-01 -4.06015e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       nuv_1  6.80699e-01 
+      lnuv_1  7.29163e-01 
+       uuv_1  9.83287e-01 
+      luuv_1 -5.92310e-01 
+       tuv_1 -4.47912e-01 
+       euv_1 -5.89287e-01 
+      beuv_1  3.56722e-01 
+      gauv_1 -4.19108e-01 
+      guuv_1  9.35279e-02 
+       fuv_1 -5.17599e-01 
+       wuv_1  9.04256e-01 
+      hbuv_1  6.90130e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.0707930500e+06  3.4738071217e+06  4.3968095214e+00  1.9520037900e+01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1 -5.5499872806e+05  2.6965848281e+06  2.6417969478e+06  5.0737441512e+06
+Simple Correlation Matrix among all inputs and outputs:
+                    puv_1       biuv_1       nbuv_1       geuv_1       hguv_1 response_fn_1 
+       puv_1  1.00000e+00 
+      biuv_1 -2.74618e-02  1.00000e+00 
+      nbuv_1 -1.73396e-01  6.47597e-02  1.00000e+00 
+      geuv_1  3.73204e-01  2.23372e-03 -4.01114e-01  1.00000e+00 
+      hguv_1 -8.72779e-02  2.80692e-01 -1.85235e-01 -2.23622e-01  1.00000e+00 
+response_fn_1 -1.54909e-01  1.55371e-01  8.25372e-01 -1.94056e-01 -1.70762e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       puv_1 -1.18394e-01 
+      biuv_1  1.67045e-01 
+      nbuv_1  8.17986e-01 
+      geuv_1  2.72014e-01 
+      hguv_1  1.97349e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    puv_1       biuv_1       nbuv_1       geuv_1       hguv_1 response_fn_1 
+       puv_1  1.00000e+00 
+      biuv_1 -1.00374e-02  1.00000e+00 
+      nbuv_1 -9.85525e-02 -8.14297e-02  1.00000e+00 
+      geuv_1 -3.77221e-02  1.26498e-02 -5.06562e-01  1.00000e+00 
+      hguv_1  6.51497e-03  2.92152e-01 -1.56752e-01 -7.91341e-02  1.00000e+00 
+response_fn_1 -1.06982e-01 -7.48460e-02  9.98871e-01 -4.86880e-01 -1.74102e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       puv_1 -1.73725e-01 
+      biuv_1  2.95569e-01 
+      nbuv_1  9.99006e-01 
+      geuv_1  4.37085e-01 
+      hguv_1 -4.09043e-01 
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+response_fn_1:  Min = 1.3645063505e+00  Max = 2.3624031465e+03
+Simple Correlation Matrix among all inputs and outputs:
+                   ciuv_1 response_fn_1 
+      ciuv_1  1.00000e+00 
+response_fn_1  9.13656e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+      ciuv_1  9.13656e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                   ciuv_1 response_fn_1 
+      ciuv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+      ciuv_1  1.00000e+00 
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.1214574170e+04  4.3458166067e+04  6.5877204155e-01 -1.1118530255e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0875526374e+04  7.1553621966e+04  3.3049517849e+04  6.3473764715e+04
+Simple Correlation Matrix among all inputs and outputs:
+                    cdv_1 response_fn_1 
+       cdv_1  1.00000e+00 
+response_fn_1  9.69708e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1  9.69708e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    cdv_1 response_fn_1 
+       cdv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       cdv_1  1.00000e+00 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.1214574170e+04  4.3458166067e+04  6.5877204155e-01 -1.1118530255e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0875526374e+04  7.1553621966e+04  3.3049517849e+04  6.3473764715e+04
+Simple Correlation Matrix among all inputs and outputs:
+                    csv_1 response_fn_1 
+       csv_1  1.00000e+00 
+response_fn_1  9.69708e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       csv_1  9.69708e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    csv_1 response_fn_1 
+       csv_1  1.00000e+00 
+response_fn_1  1.00000e+00  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       csv_1  1.00000e+00 
 dakota_sbgouu_short_column_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 126250 total (126250 new, 0 duplicate)
@@ -42319,8 +42440,9 @@ Moment statistics for each response function:
   integration:  4.5504343852e-06  8.2461471435e-05 -1.8453613961e-01 -2.3847825527e+00
   expansion:    7.9225759964e-08  3.1101555868e-06
   integration:  7.9225759964e-08  3.1112141853e-06 -7.5408314970e-02 -2.3358864563e+00
-<<<<< Function evaluation summary: 1955 total (1737 new, 218 duplicate)
-<<<<< Function evaluation summary: 1955 total (1737 new, 218 duplicate)
+<<<<< Function evaluation summary (LF_INT): 1718 total (1519 new, 199 duplicate)
+<<<<< Function evaluation summary (MF_INT): 218 total (199 new, 19 duplicate)
+<<<<< Function evaluation summary (HF_INT): 19 total (19 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273478505e-02  6.5975181314e-03
@@ -42354,8 +42476,9 @@ Moment statistics for each response function:
   integration:  6.9950451943e-06  1.0083975262e-04 -1.4508222223e-01 -1.3816999060e+00
   expansion:    8.8577957782e-08  3.8689828634e-06
   integration:  8.8577957782e-08  3.8672747912e-06 -4.5399183341e-02 -9.9456817399e-01
-<<<<< Function evaluation summary: 12875 total (11157 new, 1718 duplicate)
-<<<<< Function evaluation summary: 12875 total (11157 new, 1718 duplicate)
+<<<<< Function evaluation summary (LF_INT): 10958 total (9439 new, 1519 duplicate)
+<<<<< Function evaluation summary (MF_INT): 1718 total (1519 new, 199 duplicate)
+<<<<< Function evaluation summary (HF_INT): 199 total (199 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273313474e-02  6.5968685823e-03
@@ -57106,6 +57229,837 @@ response_fn_1 Sobol' indices:
    4.1236031110e+03   9.0000000000e-01
    9.5374447678e+03   9.9000000000e-01
    1.8430027804e+04   9.9900000000e-01
+dakota_surrogate_import.in
+Test Number 0 succeeded
+Surrogate quality metrics for response_fn_1:
+   root_mean_squared    3.8207874962e+02
+            mean_abs    3.0833254425e+02
+            rsquared    9.9204163247e-01
+Surrogate quality metrics (challenge data) for response_fn_1:
+   root_mean_squared    3.8207874962e+02
+            mean_abs    3.0833254425e+02
+            rsquared    9.9204163247e-01
+Surrogate quality metrics for response_fn_2:
+   root_mean_squared    3.2735181342e-10
+            mean_abs    2.4040562300e-10
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (challenge data) for response_fn_2:
+   root_mean_squared    3.2735181342e-10
+            mean_abs    2.4040562300e-10
+            rsquared    1.0000000000e+00
+Surrogate quality metrics for response_fn_3:
+   root_mean_squared    4.0369307798e-10
+            mean_abs    3.1434551956e-10
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (challenge data) for response_fn_3:
+   root_mean_squared    4.0369307798e-10
+            mean_abs    3.1434551956e-10
+            rsquared    1.0000000000e+00
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.3635089269e+03  3.9275362053e+03  3.3444556965e-01  6.3708808646e-02
+ response_fn_2  3.0966768929e-01  5.9111560983e-01  4.7978344180e-01 -7.5031633789e-01
+ response_fn_3  5.2976953829e-01  6.5703546543e-01  4.5364158974e-01 -6.2963558274e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5842005353e+03  7.1428173186e+03  3.4484036738e+03  4.5625216240e+03
+ response_fn_2  1.9237752795e-01  4.2695785063e-01  5.1900355186e-01  6.8668437696e-01
+ response_fn_3  3.9939944746e-01  6.6013962912e-01  5.7688163632e-01  7.6326184205e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.24034e-02  1.00000e+00 
+          d1 -2.42666e-02 -1.55353e-03  1.00000e+00 
+          d2 -3.75379e-02  8.72320e-03 -4.23207e-02  1.00000e+00 
+          u6 -2.69987e-02 -2.12552e-02  3.48354e-02 -1.48163e-02  1.00000e+00 
+          s7  1.04448e-01  5.75941e-02  1.05802e-02 -8.00000e-02  5.92652e-02  1.00000e+00 
+          d3 -3.71327e-02  6.29686e-02 -1.05802e-02  5.00000e-03 -5.43265e-02  2.50000e-02  1.00000e+00 
+          s8 -6.33938e-02  9.46760e-03  1.05802e-02  1.00000e-02  6.42040e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -5.44651e-02  7.31808e-02  1.19912e-02  4.43633e-01  1.00195e-01  5.52539e-01  3.52282e-01  3.57211e-01  1.00000e+00 
+response_fn_2  9.34852e-01 -2.83802e-01 -2.22374e-02 -3.86673e-02 -1.84216e-03  5.73783e-02 -1.77904e-02 -5.75297e-02 -7.92508e-02  1.00000e+00 
+response_fn_3 -2.47485e-01  9.49122e-01  5.86999e-03  1.56749e-02 -1.42524e-02  3.84511e-02  7.35040e-02  2.73005e-02  8.75946e-02 -5.16860e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -1.29501e-01  9.82941e-01 -8.53067e-01 
+          u5  3.20905e-02 -8.66339e-01  9.85513e-01 
+          d1  4.70917e-02  5.06986e-04  4.18413e-03 
+          d2  7.11304e-01 -1.40879e-02 -1.14619e-02 
+          u6  1.39802e-01  1.16229e-01 -1.15085e-02 
+          s7  7.68601e-01 -1.46494e-01  6.96097e-02 
+          d3  5.53154e-01  2.11839e-01  1.79851e-02 
+          s8  5.51992e-01  1.33251e-02  5.75026e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.29343e-02  1.00000e+00 
+          d1 -2.42760e-02  1.03070e-03  1.00000e+00 
+          d2 -3.67442e-02  9.06357e-03 -4.18285e-02  1.00000e+00 
+          u6  3.37343e-03 -1.56159e-02  2.34782e-02 -3.19243e-02  1.00000e+00 
+          s7  1.04598e-01  5.78108e-02  1.00240e-02 -8.00000e-02  6.82304e-02  1.00000e+00 
+          d3 -3.69891e-02  6.27101e-02 -9.52897e-03  5.00000e-03 -6.25967e-02  2.50000e-02  1.00000e+00 
+          s8 -6.34450e-02  9.79845e-03  1.05190e-02  1.00000e-02  8.41300e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -3.88359e-02  7.67477e-02  4.54053e-02  4.35541e-01  7.89689e-02  5.26667e-01  3.40496e-01  3.61808e-01  1.00000e+00 
+response_fn_2  9.40906e-01 -2.76160e-01 -1.99956e-02 -4.23783e-02  7.15167e-03  1.07293e-01 -6.61395e-02 -5.58512e-02 -4.22682e-02  1.00000e+00 
+response_fn_3 -2.26031e-01  9.59544e-01  1.22956e-02  1.34729e-02 -4.23457e-02  3.62543e-02  8.27969e-02  2.00868e-02  8.34083e-02 -4.95938e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -8.80890e-02  9.85990e-01 -8.85254e-01 
+          u5  3.79676e-02 -8.82617e-01  9.91029e-01 
+          d1  1.09020e-01  1.73704e-02  4.44543e-02 
+          d2  6.74412e-01 -1.81995e-02 -3.38054e-02 
+          u6  9.04220e-02 -2.58956e-02 -1.96823e-01 
+          s7  7.23845e-01  1.59717e-01  5.85846e-02 
+          d3  5.06208e-01 -8.59278e-02  8.87259e-02 
+          s8  5.26412e-01  4.84725e-02 -2.83429e-02 
+Test Number 1 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    1.4598417091e+07
+        mean_squared    1.4598417091e+05
+   root_mean_squared    3.8207874962e+02
+             sum_abs    3.0833254425e+04
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics (5-fold CV) for response_fn_1:
+         sum_squared    6.0224761973e+07
+        mean_squared    6.0224761973e+05
+   root_mean_squared    7.7604614536e+02
+             sum_abs    6.0298213347e+04
+            mean_abs    6.0298213347e+02
+             max_abs    2.5222313408e+03
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
+         sum_squared    5.6458394067e+07
+        mean_squared    5.6458394067e+05
+   root_mean_squared    7.5138800940e+02
+             sum_abs    5.9345642713e+04
+            mean_abs    5.9345642713e+02
+             max_abs    2.1565919077e+03
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    1.4598417091e+07
+        mean_squared    1.4598417091e+05
+   root_mean_squared    3.8207874962e+02
+             sum_abs    3.0833254425e+04
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics for response_fn_2:
+         sum_squared    1.0715920975e-17
+        mean_squared    1.0715920975e-19
+   root_mean_squared    3.2735181342e-10
+             sum_abs    2.4040562300e-08
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_2:
+         sum_squared    4.1060558239e-17
+        mean_squared    4.1060558239e-19
+   root_mean_squared    6.4078512966e-10
+             sum_abs    4.6730952562e-08
+            mean_abs    4.6730952562e-10
+             max_abs    2.1671271444e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
+         sum_squared    4.0362753697e-17
+        mean_squared    4.0362753697e-19
+   root_mean_squared    6.3531687918e-10
+             sum_abs    4.6257121471e-08
+            mean_abs    4.6257121471e-10
+             max_abs    2.1188635291e-09
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    1.0715920975e-17
+        mean_squared    1.0715920975e-19
+   root_mean_squared    3.2735181342e-10
+             sum_abs    2.4040562300e-08
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics for response_fn_3:
+         sum_squared    1.6296810121e-17
+        mean_squared    1.6296810121e-19
+   root_mean_squared    4.0369307798e-10
+             sum_abs    3.1434551956e-08
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_3:
+         sum_squared    6.2882224700e-17
+        mean_squared    6.2882224700e-19
+   root_mean_squared    7.9298313160e-10
+             sum_abs    6.4469683902e-08
+            mean_abs    6.4469683902e-10
+             max_abs    1.9086131425e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
+         sum_squared    6.2047500326e-17
+        mean_squared    6.2047500326e-19
+   root_mean_squared    7.8770235702e-10
+             sum_abs    6.0566975440e-08
+            mean_abs    6.0566975440e-10
+             max_abs    2.3492203738e-09
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    1.6296810121e-17
+        mean_squared    1.6296810121e-19
+   root_mean_squared    4.0369307798e-10
+             sum_abs    3.1434551956e-08
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.3635089269e+03  3.9275362053e+03  3.3444556965e-01  6.3708808646e-02
+ response_fn_2  3.0966768929e-01  5.9111560983e-01  4.7978344180e-01 -7.5031633789e-01
+ response_fn_3  5.2976953829e-01  6.5703546543e-01  4.5364158974e-01 -6.2963558274e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5842005353e+03  7.1428173186e+03  3.4484036738e+03  4.5625216240e+03
+ response_fn_2  1.9237752795e-01  4.2695785063e-01  5.1900355186e-01  6.8668437696e-01
+ response_fn_3  3.9939944746e-01  6.6013962912e-01  5.7688163632e-01  7.6326184205e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.24034e-02  1.00000e+00 
+          d1 -2.42666e-02 -1.55353e-03  1.00000e+00 
+          d2 -3.75379e-02  8.72320e-03 -4.23207e-02  1.00000e+00 
+          u6 -2.69987e-02 -2.12552e-02  3.48354e-02 -1.48163e-02  1.00000e+00 
+          s7  1.04448e-01  5.75941e-02  1.05802e-02 -8.00000e-02  5.92652e-02  1.00000e+00 
+          d3 -3.71327e-02  6.29686e-02 -1.05802e-02  5.00000e-03 -5.43265e-02  2.50000e-02  1.00000e+00 
+          s8 -6.33938e-02  9.46760e-03  1.05802e-02  1.00000e-02  6.42040e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -5.44651e-02  7.31808e-02  1.19912e-02  4.43633e-01  1.00195e-01  5.52539e-01  3.52282e-01  3.57211e-01  1.00000e+00 
+response_fn_2  9.34852e-01 -2.83802e-01 -2.22374e-02 -3.86673e-02 -1.84216e-03  5.73783e-02 -1.77904e-02 -5.75297e-02 -7.92508e-02  1.00000e+00 
+response_fn_3 -2.47485e-01  9.49122e-01  5.86999e-03  1.56749e-02 -1.42524e-02  3.84511e-02  7.35040e-02  2.73005e-02  8.75946e-02 -5.16860e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -1.29501e-01  9.82941e-01 -8.53067e-01 
+          u5  3.20905e-02 -8.66339e-01  9.85513e-01 
+          d1  4.70917e-02  5.06986e-04  4.18413e-03 
+          d2  7.11304e-01 -1.40879e-02 -1.14619e-02 
+          u6  1.39802e-01  1.16229e-01 -1.15085e-02 
+          s7  7.68601e-01 -1.46494e-01  6.96097e-02 
+          d3  5.53154e-01  2.11839e-01  1.79851e-02 
+          s8  5.51992e-01  1.33251e-02  5.75026e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.29343e-02  1.00000e+00 
+          d1 -2.42760e-02  1.03070e-03  1.00000e+00 
+          d2 -3.67442e-02  9.06357e-03 -4.18285e-02  1.00000e+00 
+          u6  3.37343e-03 -1.56159e-02  2.34782e-02 -3.19243e-02  1.00000e+00 
+          s7  1.04598e-01  5.78108e-02  1.00240e-02 -8.00000e-02  6.82304e-02  1.00000e+00 
+          d3 -3.69891e-02  6.27101e-02 -9.52897e-03  5.00000e-03 -6.25967e-02  2.50000e-02  1.00000e+00 
+          s8 -6.34450e-02  9.79845e-03  1.05190e-02  1.00000e-02  8.41300e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -3.88359e-02  7.67477e-02  4.54053e-02  4.35541e-01  7.89689e-02  5.26667e-01  3.40496e-01  3.61808e-01  1.00000e+00 
+response_fn_2  9.40906e-01 -2.76160e-01 -1.99956e-02 -4.23783e-02  7.15167e-03  1.07293e-01 -6.61395e-02 -5.58512e-02 -4.22682e-02  1.00000e+00 
+response_fn_3 -2.26031e-01  9.59544e-01  1.22956e-02  1.34729e-02 -4.23457e-02  3.62543e-02  8.27969e-02  2.00868e-02  8.34083e-02 -4.95938e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -8.80890e-02  9.85990e-01 -8.85254e-01 
+          u5  3.79676e-02 -8.82617e-01  9.91029e-01 
+          d1  1.09020e-01  1.73704e-02  4.44543e-02 
+          d2  6.74412e-01 -1.81995e-02 -3.38054e-02 
+          u6  9.04220e-02 -2.58956e-02 -1.96823e-01 
+          s7  7.23845e-01  1.59717e-01  5.85846e-02 
+          d3  5.06208e-01 -8.59278e-02  8.87259e-02 
+          s8  5.26412e-01  4.84725e-02 -2.83429e-02 
+Test Number 2 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    1.4598417091e+07
+        mean_squared    1.4598417091e+05
+   root_mean_squared    3.8207874962e+02
+             sum_abs    3.0833254425e+04
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
+         sum_squared    5.6458394067e+07
+        mean_squared    5.6458394067e+05
+   root_mean_squared    7.5138800940e+02
+             sum_abs    5.9345642713e+04
+            mean_abs    5.9345642713e+02
+             max_abs    2.1565919077e+03
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    1.4598417091e+07
+        mean_squared    1.4598417091e+05
+   root_mean_squared    3.8207874962e+02
+             sum_abs    3.0833254425e+04
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics for response_fn_2:
+         sum_squared    1.0715920975e-17
+        mean_squared    1.0715920975e-19
+   root_mean_squared    3.2735181342e-10
+             sum_abs    2.4040562300e-08
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
+         sum_squared    4.0362753697e-17
+        mean_squared    4.0362753697e-19
+   root_mean_squared    6.3531687918e-10
+             sum_abs    4.6257121471e-08
+            mean_abs    4.6257121471e-10
+             max_abs    2.1188635291e-09
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    1.0715920975e-17
+        mean_squared    1.0715920975e-19
+   root_mean_squared    3.2735181342e-10
+             sum_abs    2.4040562300e-08
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics for response_fn_3:
+         sum_squared    1.6296810121e-17
+        mean_squared    1.6296810121e-19
+   root_mean_squared    4.0369307798e-10
+             sum_abs    3.1434551956e-08
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
+         sum_squared    6.2047500326e-17
+        mean_squared    6.2047500326e-19
+   root_mean_squared    7.8770235702e-10
+             sum_abs    6.0566975440e-08
+            mean_abs    6.0566975440e-10
+             max_abs    2.3492203738e-09
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    1.6296810121e-17
+        mean_squared    1.6296810121e-19
+   root_mean_squared    4.0369307798e-10
+             sum_abs    3.1434551956e-08
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.3635089269e+03  3.9275362053e+03  3.3444556965e-01  6.3708808646e-02
+ response_fn_2  3.0966768929e-01  5.9111560983e-01  4.7978344180e-01 -7.5031633789e-01
+ response_fn_3  5.2976953829e-01  6.5703546543e-01  4.5364158974e-01 -6.2963558274e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5842005353e+03  7.1428173186e+03  3.4484036738e+03  4.5625216240e+03
+ response_fn_2  1.9237752795e-01  4.2695785063e-01  5.1900355186e-01  6.8668437696e-01
+ response_fn_3  3.9939944746e-01  6.6013962912e-01  5.7688163632e-01  7.6326184205e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.24034e-02  1.00000e+00 
+          d1 -2.42666e-02 -1.55353e-03  1.00000e+00 
+          d2 -3.75379e-02  8.72320e-03 -4.23207e-02  1.00000e+00 
+          u6 -2.69987e-02 -2.12552e-02  3.48354e-02 -1.48163e-02  1.00000e+00 
+          s7  1.04448e-01  5.75941e-02  1.05802e-02 -8.00000e-02  5.92652e-02  1.00000e+00 
+          d3 -3.71327e-02  6.29686e-02 -1.05802e-02  5.00000e-03 -5.43265e-02  2.50000e-02  1.00000e+00 
+          s8 -6.33938e-02  9.46760e-03  1.05802e-02  1.00000e-02  6.42040e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -5.44651e-02  7.31808e-02  1.19912e-02  4.43633e-01  1.00195e-01  5.52539e-01  3.52282e-01  3.57211e-01  1.00000e+00 
+response_fn_2  9.34852e-01 -2.83802e-01 -2.22374e-02 -3.86673e-02 -1.84216e-03  5.73783e-02 -1.77904e-02 -5.75297e-02 -7.92508e-02  1.00000e+00 
+response_fn_3 -2.47485e-01  9.49122e-01  5.86999e-03  1.56749e-02 -1.42524e-02  3.84511e-02  7.35040e-02  2.73005e-02  8.75946e-02 -5.16860e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -1.29501e-01  9.82941e-01 -8.53067e-01 
+          u5  3.20905e-02 -8.66339e-01  9.85513e-01 
+          d1  4.70917e-02  5.06986e-04  4.18413e-03 
+          d2  7.11304e-01 -1.40879e-02 -1.14619e-02 
+          u6  1.39802e-01  1.16229e-01 -1.15085e-02 
+          s7  7.68601e-01 -1.46494e-01  6.96097e-02 
+          d3  5.53154e-01  2.11839e-01  1.79851e-02 
+          s8  5.51992e-01  1.33251e-02  5.75026e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.29343e-02  1.00000e+00 
+          d1 -2.42760e-02  1.03070e-03  1.00000e+00 
+          d2 -3.67442e-02  9.06357e-03 -4.18285e-02  1.00000e+00 
+          u6  3.37343e-03 -1.56159e-02  2.34782e-02 -3.19243e-02  1.00000e+00 
+          s7  1.04598e-01  5.78108e-02  1.00240e-02 -8.00000e-02  6.82304e-02  1.00000e+00 
+          d3 -3.69891e-02  6.27101e-02 -9.52897e-03  5.00000e-03 -6.25967e-02  2.50000e-02  1.00000e+00 
+          s8 -6.34450e-02  9.79845e-03  1.05190e-02  1.00000e-02  8.41300e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -3.88359e-02  7.67477e-02  4.54053e-02  4.35541e-01  7.89689e-02  5.26667e-01  3.40496e-01  3.61808e-01  1.00000e+00 
+response_fn_2  9.40906e-01 -2.76160e-01 -1.99956e-02 -4.23783e-02  7.15167e-03  1.07293e-01 -6.61395e-02 -5.58512e-02 -4.22682e-02  1.00000e+00 
+response_fn_3 -2.26031e-01  9.59544e-01  1.22956e-02  1.34729e-02 -4.23457e-02  3.62543e-02  8.27969e-02  2.00868e-02  8.34083e-02 -4.95938e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -8.80890e-02  9.85990e-01 -8.85254e-01 
+          u5  3.79676e-02 -8.82617e-01  9.91029e-01 
+          d1  1.09020e-01  1.73704e-02  4.44543e-02 
+          d2  6.74412e-01 -1.81995e-02 -3.38054e-02 
+          u6  9.04220e-02 -2.58956e-02 -1.96823e-01 
+          s7  7.23845e-01  1.59717e-01  5.85846e-02 
+          d3  5.06208e-01 -8.59278e-02  8.87259e-02 
+          s8  5.26412e-01  4.84725e-02 -2.83429e-02 
+Test Number 3 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    1.4598417091e+07
+   root_mean_squared    3.8207874962e+02
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics (5-fold CV) for response_fn_1:
+         sum_squared    6.0224761973e+07
+   root_mean_squared    7.7604614536e+02
+            mean_abs    6.0298213347e+02
+             max_abs    2.5222313408e+03
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    1.4598417091e+07
+   root_mean_squared    3.8207874962e+02
+            mean_abs    3.0833254425e+02
+             max_abs    1.0764853114e+03
+            rsquared    9.9204163247e-01
+Surrogate quality metrics for response_fn_2:
+         sum_squared    1.0715920975e-17
+   root_mean_squared    3.2735181342e-10
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_2:
+         sum_squared    4.1060558239e-17
+   root_mean_squared    6.4078512966e-10
+            mean_abs    4.6730952562e-10
+             max_abs    2.1671271444e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    1.0715920975e-17
+   root_mean_squared    3.2735181342e-10
+            mean_abs    2.4040562300e-10
+             max_abs    1.0076464108e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics for response_fn_3:
+         sum_squared    1.6296810121e-17
+   root_mean_squared    4.0369307798e-10
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_3:
+         sum_squared    6.2882224700e-17
+   root_mean_squared    7.9298313160e-10
+            mean_abs    6.4469683902e-10
+             max_abs    1.9086131425e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    1.6296810121e-17
+   root_mean_squared    4.0369307798e-10
+            mean_abs    3.1434551956e-10
+             max_abs    1.1688536805e-09
+            rsquared    1.0000000000e+00
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.3635089269e+03  3.9275362053e+03  3.3444556965e-01  6.3708808646e-02
+ response_fn_2  3.0966768929e-01  5.9111560983e-01  4.7978344180e-01 -7.5031633789e-01
+ response_fn_3  5.2976953829e-01  6.5703546543e-01  4.5364158974e-01 -6.2963558274e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5842005353e+03  7.1428173186e+03  3.4484036738e+03  4.5625216240e+03
+ response_fn_2  1.9237752795e-01  4.2695785063e-01  5.1900355186e-01  6.8668437696e-01
+ response_fn_3  3.9939944746e-01  6.6013962912e-01  5.7688163632e-01  7.6326184205e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.24034e-02  1.00000e+00 
+          d1 -2.42666e-02 -1.55353e-03  1.00000e+00 
+          d2 -3.75379e-02  8.72320e-03 -4.23207e-02  1.00000e+00 
+          u6 -2.69987e-02 -2.12552e-02  3.48354e-02 -1.48163e-02  1.00000e+00 
+          s7  1.04448e-01  5.75941e-02  1.05802e-02 -8.00000e-02  5.92652e-02  1.00000e+00 
+          d3 -3.71327e-02  6.29686e-02 -1.05802e-02  5.00000e-03 -5.43265e-02  2.50000e-02  1.00000e+00 
+          s8 -6.33938e-02  9.46760e-03  1.05802e-02  1.00000e-02  6.42040e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -5.44651e-02  7.31808e-02  1.19912e-02  4.43633e-01  1.00195e-01  5.52539e-01  3.52282e-01  3.57211e-01  1.00000e+00 
+response_fn_2  9.34852e-01 -2.83802e-01 -2.22374e-02 -3.86673e-02 -1.84216e-03  5.73783e-02 -1.77904e-02 -5.75297e-02 -7.92508e-02  1.00000e+00 
+response_fn_3 -2.47485e-01  9.49122e-01  5.86999e-03  1.56749e-02 -1.42524e-02  3.84511e-02  7.35040e-02  2.73005e-02  8.75946e-02 -5.16860e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -1.29501e-01  9.82941e-01 -8.53067e-01 
+          u5  3.20905e-02 -8.66339e-01  9.85513e-01 
+          d1  4.70917e-02  5.06986e-04  4.18413e-03 
+          d2  7.11304e-01 -1.40879e-02 -1.14619e-02 
+          u6  1.39802e-01  1.16229e-01 -1.15085e-02 
+          s7  7.68601e-01 -1.46494e-01  6.96097e-02 
+          d3  5.53154e-01  2.11839e-01  1.79851e-02 
+          s8  5.51992e-01  1.33251e-02  5.75026e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           d1           d2           u6           s7           d3           s8 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5  2.29343e-02  1.00000e+00 
+          d1 -2.42760e-02  1.03070e-03  1.00000e+00 
+          d2 -3.67442e-02  9.06357e-03 -4.18285e-02  1.00000e+00 
+          u6  3.37343e-03 -1.56159e-02  2.34782e-02 -3.19243e-02  1.00000e+00 
+          s7  1.04598e-01  5.78108e-02  1.00240e-02 -8.00000e-02  6.82304e-02  1.00000e+00 
+          d3 -3.69891e-02  6.27101e-02 -9.52897e-03  5.00000e-03 -6.25967e-02  2.50000e-02  1.00000e+00 
+          s8 -6.34450e-02  9.79845e-03  1.05190e-02  1.00000e-02  8.41300e-02  1.50000e-02  5.50000e-02  1.00000e+00 
+response_fn_1 -3.88359e-02  7.67477e-02  4.54053e-02  4.35541e-01  7.89689e-02  5.26667e-01  3.40496e-01  3.61808e-01  1.00000e+00 
+response_fn_2  9.40906e-01 -2.76160e-01 -1.99956e-02 -4.23783e-02  7.15167e-03  1.07293e-01 -6.61395e-02 -5.58512e-02 -4.22682e-02  1.00000e+00 
+response_fn_3 -2.26031e-01  9.59544e-01  1.22956e-02  1.34729e-02 -4.23457e-02  3.62543e-02  8.27969e-02  2.00868e-02  8.34083e-02 -4.95938e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -8.80890e-02  9.85990e-01 -8.85254e-01 
+          u5  3.79676e-02 -8.82617e-01  9.91029e-01 
+          d1  1.09020e-01  1.73704e-02  4.44543e-02 
+          d2  6.74412e-01 -1.81995e-02 -3.38054e-02 
+          u6  9.04220e-02 -2.58956e-02 -1.96823e-01 
+          s7  7.23845e-01  1.59717e-01  5.85846e-02 
+          d3  5.06208e-01 -8.59278e-02  8.87259e-02 
+          s8  5.26412e-01  4.84725e-02 -2.83429e-02 
+Test Number 4 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    7.5307805825e+08
+   root_mean_squared    3.1273366501e+03
+            mean_abs    2.6143998542e+03
+             max_abs    7.3574646481e+03
+            rsquared    4.1380379569e-01
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
+         sum_squared    1.0213999938e+09
+   root_mean_squared    3.6421058447e+03
+            mean_abs    3.0263607163e+03
+             max_abs    8.8185901599e+03
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    1.9472472712e+09
+   root_mean_squared    4.4127624808e+03
+            mean_abs    3.5063130267e+03
+             max_abs    1.3029276665e+04
+            rsquared    7.4822641193e-02
+Surrogate quality metrics for response_fn_2:
+         sum_squared    2.3079665149e+01
+   root_mean_squared    5.4748142529e-01
+            mean_abs    4.5488157062e-01
+             max_abs    1.3984247441e+00
+            rsquared    6.1201798871e-02
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
+         sum_squared    3.2405272235e+01
+   root_mean_squared    6.4872774826e-01
+            mean_abs    5.2971818875e-01
+             max_abs    2.1985245926e+00
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    3.5907423714e+01
+   root_mean_squared    5.9922803434e-01
+            mean_abs    4.9302172878e-01
+             max_abs    1.5655270244e+00
+            rsquared    3.9716269971e-02
+Surrogate quality metrics for response_fn_3:
+         sum_squared    2.7332399299e+01
+   root_mean_squared    5.9579042009e-01
+            mean_abs    5.0605687305e-01
+             max_abs    1.2864965029e+00
+            rsquared    1.1085667650e-01
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
+         sum_squared    3.5152374127e+01
+   root_mean_squared    6.7566584885e-01
+            mean_abs    5.7805313687e-01
+             max_abs    1.3699161148e+00
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    5.4693084971e+01
+   root_mean_squared    7.3954773322e-01
+            mean_abs    6.0436899003e-01
+             max_abs    2.0579907905e+00
+            rsquared    3.8647083520e-01
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.5883063397e+03  2.6724260603e+03  6.8816893539e-01 -4.8927124721e-01
+ response_fn_2  3.0804829682e-01  1.3588794620e-01  1.8854667141e-01 -6.7565023940e-03
+ response_fn_3  5.6689815475e-01  2.0533490042e-01 -1.6082285303e-01  4.1740817886e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.0580390307e+03  7.1185736488e+03  2.3464083747e+03  3.1044912258e+03
+ response_fn_2  2.8108518019e-01  3.3501141346e-01  1.1931054697e-01  1.5785766459e-01
+ response_fn_3  5.2615525573e-01  6.0764105376e-01  1.8028544817e-01  2.3853247286e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       d1           d2           d3 response_fn_1 response_fn_2 response_fn_3 
+          d1  1.00000e+00 
+          d2 -3.20612e-02  1.00000e+00 
+          d3 -3.56235e-03 -3.00000e-02  1.00000e+00 
+response_fn_1  2.04201e-01  6.80693e-01  3.83719e-01  1.00000e+00 
+response_fn_2  1.45219e-01 -6.66911e-02 -6.30086e-01 -4.59891e-01  1.00000e+00 
+response_fn_3 -1.29714e-01 -1.48270e-01  3.31093e-01 -1.40483e-02  1.46687e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          d1  3.73187e-01  1.81775e-01 -1.42553e-01 
+          d2  7.76976e-01 -1.06221e-01 -1.52556e-01 
+          d3  5.81739e-01 -6.39758e-01  3.32927e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       d1           d2           d3 response_fn_1 response_fn_2 response_fn_3 
+          d1  1.00000e+00 
+          d2 -3.25456e-02  1.00000e+00 
+          d3 -3.21744e-03 -3.00000e-02  1.00000e+00 
+response_fn_1  1.55659e-01  6.54832e-01  4.18671e-01  1.00000e+00 
+response_fn_2  1.07821e-01 -8.77030e-02 -5.82318e-01 -4.60006e-01  1.00000e+00 
+response_fn_3 -1.51154e-01 -1.33269e-01  2.86137e-01  1.34350e-01  1.94738e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          d1  2.90647e-01  1.27234e-01 -1.62510e-01 
+          d2  7.52608e-01 -1.26316e-01 -1.37072e-01 
+          d3  5.97846e-01 -5.90329e-01  2.87717e-01 
+Test Number 5 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    1.7810590786e+09
+        mean_squared    1.7810590786e+07
+   root_mean_squared    4.2202595639e+03
+             sum_abs    3.4446949027e+05
+            mean_abs    3.4446949027e+03
+             max_abs    1.1656949283e+04
+            rsquared    2.9050707467e-02
+Surrogate quality metrics (5-fold CV) for response_fn_1:
+         sum_squared    2.3400799249e+09
+        mean_squared    2.3400799249e+07
+   root_mean_squared    4.8374372605e+03
+             sum_abs    3.8590392874e+05
+            mean_abs    3.8590392874e+03
+             max_abs    1.4552410862e+04
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    1.8233066600e+09
+        mean_squared    1.8233066600e+07
+   root_mean_squared    4.2700195081e+03
+             sum_abs    3.4674692514e+05
+            mean_abs    3.4674692514e+03
+             max_abs    1.1756268847e+04
+            rsquared    3.8122864282e-02
+Surrogate quality metrics for response_fn_2:
+         sum_squared    2.0820066921e-17
+        mean_squared    2.0820066921e-19
+   root_mean_squared    4.5629011518e-10
+             sum_abs    2.9407383762e-08
+            mean_abs    2.9407383762e-10
+             max_abs    1.5533070385e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_2:
+         sum_squared    3.0555068977e-17
+        mean_squared    3.0555068977e-19
+   root_mean_squared    5.5276639711e-10
+             sum_abs    3.4625361043e-08
+            mean_abs    3.4625361043e-10
+             max_abs    1.9435379972e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    2.2622457711e-17
+        mean_squared    2.2622457711e-19
+   root_mean_squared    4.7563071506e-10
+             sum_abs    3.1097662879e-08
+            mean_abs    3.1097662879e-10
+             max_abs    1.5967684952e-09
+            rsquared    1.0000000001e+00
+Surrogate quality metrics for response_fn_3:
+         sum_squared    2.5963068589e-17
+        mean_squared    2.5963068589e-19
+   root_mean_squared    5.0953968039e-10
+             sum_abs    3.3757729028e-08
+            mean_abs    3.3757729028e-10
+             max_abs    1.4914547375e-09
+            rsquared    1.0000000000e+00
+Surrogate quality metrics (5-fold CV) for response_fn_3:
+         sum_squared    3.7678928272e-17
+        mean_squared    3.7678928272e-19
+   root_mean_squared    6.1383164037e-10
+             sum_abs    4.0739292774e-08
+            mean_abs    4.0739292774e-10
+             max_abs    2.1082464663e-09
+            rsquared                 nan  (n/a for cross-validation)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    2.6048805063e-17
+        mean_squared    2.6048805063e-19
+   root_mean_squared    5.1038030000e-10
+             sum_abs    3.4308223998e-08
+            mean_abs    3.4308223998e-10
+             max_abs    1.4914547375e-09
+            rsquared    1.0000000000e+00
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.3210550149e+03  7.6473590215e+02 -8.2740288993e-01 -9.6271759685e-02
+ response_fn_2  3.0966768930e-01  6.0204792228e-01  4.1223452333e-01 -9.3440549185e-01
+ response_fn_3  5.2976953829e-01  6.6966570329e-01  3.2931433497e-01 -1.2197548316e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.1693148208e+03  6.4727952089e+03  6.7144335701e+02  8.8837477436e+02
+ response_fn_2  1.9020831999e-01  4.2912705861e-01  5.2860219703e-01  6.9938417382e-01
+ response_fn_3  3.9689333426e-01  6.6264574233e-01  5.8797107162e-01  7.7793407683e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5 -6.18220e-02  1.00000e+00 
+          u6  1.91742e-02 -1.46653e-02  1.00000e+00 
+response_fn_1 -7.18853e-01  1.66554e-01 -5.39756e-02  1.00000e+00 
+response_fn_2  9.42240e-01 -3.40854e-01  1.06779e-02 -8.01905e-01  1.00000e+00 
+response_fn_3 -3.14734e-01  9.53102e-01 -3.86292e-02  3.70265e-01 -5.66762e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -7.20119e-01  9.81794e-01 -8.48329e-01 
+          u5  1.75527e-01 -8.45944e-01  9.85725e-01 
+          u6 -5.63346e-02 -6.26860e-02 -1.24049e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5 -6.24302e-02  1.00000e+00 
+          u6  2.24329e-02 -2.34325e-02  1.00000e+00 
+response_fn_1 -6.77348e-01  1.68473e-01 -8.55247e-02  1.00000e+00 
+response_fn_2  9.44230e-01 -3.63828e-01  1.74594e-02 -7.09463e-01  1.00000e+00 
+response_fn_3 -3.37030e-01  9.51767e-01 -2.45671e-02  3.65053e-01 -5.96100e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4 -6.78560e-01  9.91315e-01 -9.06634e-01 
+          u5  1.70574e-01 -9.28228e-01  9.90500e-01 
+          u6 -9.32396e-02 -8.51740e-02  2.76551e-02 
+Test Number 6 succeeded
+Surrogate quality metrics for response_fn_1:
+         sum_squared    3.2143429217e+11
+        mean_squared    3.2143429217e+09
+   root_mean_squared    5.6695175471e+04
+             sum_abs    5.6283696896e+06
+            mean_abs    5.6283696896e+04
+             max_abs    7.1118929906e+04
+            rsquared    1.7405682951e+02
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
+         sum_squared    6.6555510170e+36
+        mean_squared    6.6555510170e+34
+   root_mean_squared    2.5798354632e+17
+             sum_abs    1.5636497906e+19
+            mean_abs    1.5636497906e+17
+             max_abs    1.1529215046e+18
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_1:
+         sum_squared    3.2143429217e+11
+        mean_squared    3.2143429217e+09
+   root_mean_squared    5.6695175471e+04
+             sum_abs    5.6283696896e+06
+            mean_abs    5.6283696896e+04
+             max_abs    7.1118929906e+04
+            rsquared    1.7405682951e+02
+Surrogate quality metrics for response_fn_2:
+         sum_squared    4.3866180422e+03
+        mean_squared    4.3866180422e+01
+   root_mean_squared    6.6231548692e+00
+             sum_abs    6.4433598552e+02
+            mean_abs    6.4433598552e+00
+             max_abs    1.0191998463e+01
+            rsquared    1.3562572751e+02
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
+         sum_squared    2.2880317706e+11
+        mean_squared    2.2880317706e+09
+   root_mean_squared    4.7833375070e+04
+             sum_abs    3.0539618894e+06
+            mean_abs    3.0539618894e+04
+             max_abs    1.9660873479e+05
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_2:
+         sum_squared    4.3866180422e+03
+        mean_squared    4.3866180422e+01
+   root_mean_squared    6.6231548692e+00
+             sum_abs    6.4433598552e+02
+            mean_abs    6.4433598552e+00
+             max_abs    1.0191998463e+01
+            rsquared    1.3562572751e+02
+Surrogate quality metrics for response_fn_3:
+         sum_squared    1.0768437203e+04
+        mean_squared    1.0768437203e+02
+   root_mean_squared    1.0377108076e+01
+             sum_abs    9.9577543077e+02
+            mean_abs    9.9577543077e+00
+             max_abs    1.6689437455e+01
+            rsquared    2.6531447144e+02
+Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
+         sum_squared    6.4213177513e+10
+        mean_squared    6.4213177513e+08
+   root_mean_squared    2.5340319160e+04
+             sum_abs    1.4217796605e+06
+            mean_abs    1.4217796605e+04
+             max_abs    9.8305748368e+04
+            rsquared                 nan  (n/a for PRESS)
+Surrogate quality metrics (challenge data) for response_fn_3:
+         sum_squared    1.0768437203e+04
+        mean_squared    1.0768437203e+02
+   root_mean_squared    1.0377108076e+01
+             sum_abs    9.9577543077e+02
+            mean_abs    9.9577543077e+00
+             max_abs    1.6689437455e+01
+            rsquared    2.6531447144e+02
+<<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
+  response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.7802990002e+04  1.2526538712e+04 -2.5117353588e+00  9.3067859455e+00
+ response_fn_2  6.7707692584e+00  2.1841495374e+00  2.2786637109e-01 -1.0512097118e+00
+ response_fn_3  1.0422584513e+01  3.3371303337e+00  6.3820974174e-01 -2.9652068906e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.5317452956e+04  6.0288527048e+04  1.0998386738e+04  1.4551770056e+04
+ response_fn_2  6.3373866047e+00  7.2041519121e+00  1.9176982452e+00  2.5372724715e+00
+ response_fn_3  9.7604254556e+00  1.1084743571e+01  2.9300232770e+00  3.8766617324e+00
+Simple Correlation Matrix among all inputs and outputs:
+                       u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5 -6.18220e-02  1.00000e+00 
+          u6  1.91742e-02 -1.46653e-02  1.00000e+00 
+response_fn_1  2.48250e-01  1.78236e-01 -7.33163e-01  1.00000e+00 
+response_fn_2  9.45448e-01 -3.60434e-01  8.97470e-02  1.32619e-01  1.00000e+00 
+response_fn_3  2.77205e-01  8.96738e-01 -2.01745e-01  3.69967e-01 -4.68728e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4  4.14481e-01  9.94177e-01  8.41223e-01 
+          u5  2.93272e-01 -9.49099e-01  9.73020e-01 
+          u6 -7.74967e-01  5.59380e-01 -6.68824e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
+          u4  1.00000e+00 
+          u5 -6.24302e-02  1.00000e+00 
+          u6  2.24329e-02 -2.34325e-02  1.00000e+00 
+response_fn_1  2.87477e-01  3.42622e-01 -7.16081e-01  1.00000e+00 
+response_fn_2  9.47819e-01 -3.59160e-01  8.70885e-02  1.17468e-01  1.00000e+00 
+response_fn_3  2.20222e-01  9.24200e-01 -1.95371e-01  5.14791e-01 -8.97690e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          u4  5.25602e-01  9.95487e-01  8.29718e-01 
+          u5  5.49541e-01 -9.59147e-01  9.80030e-01 
+          u6 -8.05950e-01  5.57221e-01 -6.87370e-01 
+dakota_surrogate_refine.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 35 total (35 new, 0 duplicate)
+Test Number 2 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 80 total (80 new, 0 duplicate)
+Test Number 3 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 50 total (50 new, 0 duplicate)
+Test Number 4 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate
 dakota_uq_rosenbrock_pce_import.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)

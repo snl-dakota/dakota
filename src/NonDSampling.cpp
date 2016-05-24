@@ -247,14 +247,14 @@ void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
     class member allSamples. */
 void NonDSampling::get_parameter_sets(Model& model)
 {
-  get_lhs_samples(model, numSamples, allSamples);
+  get_parameter_sets(model, numSamples, allSamples);
 }
 
 /** This version of get_parameter_sets() extracts data from the
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
-void NonDSampling::get_lhs_samples(const Model& model, int num_samples,
-				   RealMatrix& design_matrix)
+void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
+				      RealMatrix& design_matrix)
 {
   initialize_lhs(true);
 

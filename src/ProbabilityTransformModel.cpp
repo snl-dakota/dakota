@@ -963,10 +963,22 @@ void ProbabilityTransformModel::initialize_random_variable_types(
       break;
     }
   }
-  /*
-  for (i=0; i<numGeometricVars; ++i, ++av_cntr)
+  
+  for (i=0; i<numGeometricVars; ++i, ++av_cntr){
     x_types[av_cntr] = u_types[av_cntr] = Pecos::GEOMETRIC;
-  */
+    switch (u_space_type) {
+    case STD_NORMAL_U:
+    case STD_UNIFORM_U:
+      err_flag = true;
+      break;
+    case ASKEY_U:
+    case EXTENDED_U:
+     u_types[av_cntr] = Pecos::GEOMETRIC;
+     break;
+    }
+  }
+
+  
   for (i=0; i<numHyperGeomVars; ++i, ++av_cntr) {
     x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
     switch (u_space_type) {
@@ -1084,10 +1096,8 @@ void ProbabilityTransformModel::initialize_random_variable_types()
     x_types[av_cntr] = Pecos::BINOMIAL;
   for (i=0; i<numNegBinomialVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::NEGATIVE_BINOMIAL;
-  /*
   for (i=0; i<numGeometricVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::GEOMETRIC;
-  */
   for (i=0; i<numHyperGeomVars; ++i, ++av_cntr)
     x_types[av_cntr] = Pecos::HYPERGEOMETRIC;
   /*

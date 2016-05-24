@@ -263,6 +263,8 @@ protected:
   const int maxFuncEvals;
   /// Convergence criterion, compared to CV score for specified metric
   const Real convergenceTolerance;
+  /// Max number of iterations for which there is no average improvement
+  const int softConvergenceLimit;
   /// Type of error metric to test for surrogate refinement convegence 
   const String refineCVMetric;
   /// Number of cross validation folds for surrogate refinement

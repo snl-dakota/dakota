@@ -74,8 +74,17 @@ protected:
   //- Heading: Virtual functions
   //
 
-  /// Returns one block of samples (ndim * num_samples)
+  /// Generate one block of numSamples samples (ndim * num_samples),
+  /// populating allSamples; ParamStudy is the only class that
+  /// specializes to use allVariables
   virtual void get_parameter_sets(Model& model);
+
+  // Can we alleviate the need to pass the number of samples?
+
+  /// Generate one block of numSamples samples (ndim * num_samples),
+  /// populating design_matrix
+  virtual void get_parameter_sets(Model& model, const int num_samples, 
+				  RealMatrix& design_matrix);
 
   /// update model's current variables with data from sample
   virtual void update_model_from_sample(Model& model, const Real* sample_vars);
@@ -122,9 +131,13 @@ protected:
   void evaluate_parameter_sets(Model& model, bool log_resp_flag,
 			       bool log_best_flag);
 
-  void variance_based_decomp(int ncont, int ndiscint, int ndiscreal,
-			     int num_samples);
- 
+  /// generate replicate parameter sets for use in variance-based decomposition
+  void get_vbd_parameter_sets(Model& model, int num_samples);
+
+  /// compute VBD-based Sobol indices
+  void compute_vbd_stats(const int num_samples, 
+			 const IntResponseMap& resp_samples);
+
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
   void read_variables_responses(int num_evals, size_t num_vars);

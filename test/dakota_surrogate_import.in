@@ -31,6 +31,12 @@ model,
 #        challenge_points_file = 'surrogate_build_pts.dat' annotated         #s1,#s2,#s4,#s5
 #        challenge_points_file = 'surrogate_build_pts_unc_ff.dat' freeform   #s6
 #        active_only                                                         #s6
+        metrics = "root_mean_squared" "mean_abs" "rsquared" #s0
+#        metrics = "sum_squared" "mean_squared" "root_mean_squared" "sum_abs" "mean_abs" "max_abs" "rsquared" #s1,#s2
+#        metrics = "sum_squared" "root_mean_squared" "mean_abs" "max_abs" "rsquared" #s3,#s4
+#        metrics = "sum_squared" "mean_squared" "root_mean_squared" "sum_abs" "mean_abs" "max_abs" "rsquared" #s5,#s6
+#        cross_validation folds = 5 #s1,#s3,#s5
+#        press #s1,#s2,#s4,#s6
 
 variables,
   active all          #s0,#s1,#s2,#s3

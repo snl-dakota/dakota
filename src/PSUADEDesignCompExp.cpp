@@ -39,8 +39,13 @@ PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model):
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec)
 {
   if (methodName != PSUADE_MOAT) {
-    Cerr << "Error: PSUADE method \"" << methodName << "\" is not an option."
-	 << std::endl;
+    Cerr << "\nError: PSUADE method \"" << method_string() 
+	 << "\" is not an option." << std::endl;
+    abort_handler(-1);
+  }
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: psuade_* methods do not support discrete variables.\n";
     abort_handler(-1);
   }
 
@@ -68,6 +73,9 @@ void PSUADEDesignCompExp::pre_run()
 {
   Analyzer::pre_run();
 
+  // error check on input parameters; also adjusts numSamples if needed
+  enforce_input_rules();
+
   // obtain a set of samples for evaluation
   get_parameter_sets(iteratedModel);
 }
@@ -75,6 +83,9 @@ void PSUADEDesignCompExp::pre_run()
 
 void PSUADEDesignCompExp::post_input()
 {
+  // error check on input parameters; also adjusts numSamples if needed
+  enforce_input_rules();
+
   // call convenience function from Analyzer
   read_variables_responses(numSamples, numContinuousVars);
 }
@@ -92,6 +103,9 @@ void PSUADEDesignCompExp::core_run()
 
 void PSUADEDesignCompExp::post_run(std::ostream& s)
 {
+  // error check on input parameters; also adjusts numSamples if needed
+  enforce_input_rules();
+
   // Perform post-processing with MOAT Analyzer
   
   // define the data structure necessary for analyzing a PSUADE MOAT sample
@@ -153,9 +167,6 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
 
 void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 {
-  // error check on input parameters
-  enforce_input_rules();
-
   // keep track of number of DACE executions for this object
   numDACERuns++;
 
@@ -290,49 +301,40 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
     enforce any restrictions imposed by the sampling algorithms. */
 void PSUADEDesignCompExp::enforce_input_rules()
 {
-  if (methodName == PSUADE_MOAT) {
-
-    // if no samples specified, make at 10*number of inputs
-    // otherwise round up to next largest permissible number
-    if (numSamples <= 0) {
-      numSamples = 10*(numContinuousVars+1);
-      Cout << "\nWarning: Number of samples not specified for PSUADE MOAT.\n"
-	   << "         Resetting samples to " << numSamples 
-	   << " 10*(num_cdv+1).\n";
-    }
-    else if (numSamples/(numContinuousVars+1)*(numContinuousVars+1) != 
-	     numSamples) {
-      int num_reps = numSamples/(numContinuousVars+1);
-      numSamples = (num_reps+1)*(numContinuousVars+1);
-      Cout << "\nWarning: PSUADE MOAT requires number of samples to be a "
-	   << "multiple of num_cdv+1.\n         Resetting samples to " 
-	   << numSamples <<".\n";
-    }
-    if (varPartitionsSpec.size() >= 1) {
-      numPartitions = varPartitionsSpec[0];
-      if (varPartitionsSpec.size() > 1)
-	Cout << "\nWarning: PSUADE MOAT accepts one partition specification "
-	     << "(which applies to all\n         variables). Taking first "
-	     << "component.\n";
-    }
-    if (numPartitions <= 0) {
-      numPartitions = 3;
-      Cout << "\nWarning: PSUADE MOAT partitions must be positive.\n"
-	   << "         Setting to" << " default partitions = 3 (levels = 4)."
-	   << "\n";
-    }
-    else if (numPartitions % 2 == 0) {
-      numPartitions++;
-      Cout << "\nWarning: PSUADE MOAT partitions must be odd (even number of "
-	   << "levels).\n         Setting to partitions = "
-	   << numPartitions << " (levels = " << numPartitions+1 << ").\n";
-    }
- 
-  }  
-  else if (numSamples <= 0) {
-    Cout << "Error: number of DACE samples must be greater than zero."
-         << std::endl;
-    abort_handler(-1);
+  // if no samples specified, make at 10*number of inputs
+  // otherwise round up to next largest permissible number
+  if (numSamples <= 0) {
+    numSamples = 10*(numContinuousVars+1);
+    Cout << "\nWarning: Number of samples not specified for PSUADE MOAT.\n"
+	 << "         Resetting samples to " << numSamples 
+	 << " 10*(num_cdv+1).\n";
+  }
+  else if (numSamples/(numContinuousVars+1)*(numContinuousVars+1) != 
+	   numSamples) {
+    int num_reps = numSamples/(numContinuousVars+1);
+    numSamples = (num_reps+1)*(numContinuousVars+1);
+    Cout << "\nWarning: PSUADE MOAT requires number of samples to be a "
+	 << "multiple of num_cdv+1.\n         Resetting samples to " 
+	 << numSamples <<".\n";
+  }
+  if (varPartitionsSpec.size() >= 1) {
+    numPartitions = varPartitionsSpec[0];
+    if (varPartitionsSpec.size() > 1)
+      Cout << "\nWarning: PSUADE MOAT accepts one partition specification "
+	   << "(which applies to all\n         variables). Taking first "
+	   << "component.\n";
+  }
+  if (numPartitions <= 0) {
+    numPartitions = 3;
+    Cout << "\nWarning: PSUADE MOAT partitions must be positive.\n"
+	 << "         Setting to" << " default partitions = 3 (levels = 4)."
+	 << "\n";
+  }
+  else if (numPartitions % 2 == 0) {
+    numPartitions++;
+    Cout << "\nWarning: PSUADE MOAT partitions must be odd (even number of "
+	 << "levels).\n         Setting to partitions = "
+	 << numPartitions << " (levels = " << numPartitions+1 << ").\n";
   }
 }
 

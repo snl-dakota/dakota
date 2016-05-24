@@ -1,6 +1,8 @@
 # TODO: make documentation build cross-platform
 # TODO: dep for latex_modify
 
+include(ListFilterEmacsBackups)
+
 find_package(Doxygen REQUIRED)
 find_package(LATEX REQUIRED)
 # Only required for PDFs of Doxygen, but unconditional currently
@@ -21,9 +23,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
 
 # Doxygen reference dependencies
 file(GLOB ref_kw_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "KeywordMetadata/*")
+list_filter_emacs_backups(ref_kw_md)
 file(GLOB ref_topic_md RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "TopicMetadata/*")
+list_filter_emacs_backups(ref_topic_md)
 file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
 file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
+list_filter_emacs_backups(ref_images)
 set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} Doxyfile-ref 
   ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 

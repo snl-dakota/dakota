@@ -56,13 +56,12 @@ public:
 
   bool resize();
     
+protected:
+
   //
-  //- Heading: Member functions
+  //- Heading: Virtual member function redefinitions
   //
 
-  // NOTE: these should be protected (letter-envelope), but DDACEDesignCompExp
-  // instantiation in ApproximationInterface currently bypasses envelope,
-  // which requires that they be public.
   void pre_run();
   void core_run();
   void post_input();
@@ -72,9 +71,8 @@ public:
   unsigned short sampling_scheme() const;
   void vary_pattern(bool pattern_flag);
   void get_parameter_sets(Model& model);
-
-protected:
-
+  void get_parameter_sets(Model& model, const int num_samples, 
+			  RealMatrix& design_matrix);
 private:
 
   //

@@ -192,14 +192,9 @@ set_evaluation_communicators(const IntArray& message_lengths)
   evalCommSize    = ie_pl.server_communicator_size();
   evalServerId    = ie_pl.server_id();
   if (ieDedMasterFlag)
-//#ifdef COMM_SPLIT_TO_SINGLE
     multiProcEvalFlag = (ie_pl.processors_per_server() > 1 ||
 			 ie_pl.processor_remainder());
-//#else
-    // want multiProcEvalFlag=true on iterator master when slave evalCommSize>1
-    //multiProcEvalFlag = ie_pl.communicator_split();
-//#endif
-  else // split flag insufficient if 1 server (no split in peer case)
+  else // peer: split flag insufficient if 1 server
     multiProcEvalFlag = (evalCommSize > 1); // could vary
 
   // simplify downstream logic by resetting default asynch local concurrency
@@ -226,14 +221,9 @@ void ApplicationInterface::set_analysis_communicators()
   analysisCommSize   = ea_pl.server_communicator_size();
   analysisServerId   = ea_pl.server_id();
   if (eaDedMasterFlag)
-//#ifdef COMM_SPLIT_TO_SINGLE
     multiProcAnalysisFlag = (ea_pl.processors_per_server() > 1 ||
 			     ea_pl.processor_remainder());
-//#else
-    // want multiProcAnalysisFlag=true on eval master when slave analysis size>1
-    //multiProcAnalysisFlag = ea_pl.communicator_split();
-//#endif
-  else // split flag insufficient if 1 server (no split in peer case)
+  else // peer: split flag insufficient if 1 server
     multiProcAnalysisFlag = (analysisCommSize > 1); // could vary
 
   if ( iteratorCommRank // any processor other than rank 0 in iteratorComm

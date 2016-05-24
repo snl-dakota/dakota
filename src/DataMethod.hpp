@@ -253,12 +253,21 @@ public:
   /// method verbosity control: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   /// (from the \c output specification in \ref MethodIndControl)
   short methodOutput;
+
   /// maximum number of iterations allowed for the method (from the \c
   /// max_iterations specification in \ref MethodIndControl)
   int maxIterations;
+  /// maximum number of refinement iterations allowed for a uniform/adaptive
+  /// refinement approach (from the \c max_refinement_iterations specification
+  /// in \ref MethodIndControl)
+  int maxRefineIterations;
+  /// maximum number of internal solver iterations allowed for the method
+  /// (from the \c max_solver_iterations specification in \ref MethodIndControl)
+  int maxSolverIterations;
   /// maximum number of function evaluations allowed for the method (from
   /// the \c max_function_evaluations specification in \ref MethodIndControl)
   int maxFunctionEvaluations;
+  
   /// flag for use of speculative gradient approaches for maintaining parallel
   /// load balance during the line search portion of optimization algorithms
   /// (from the \c speculative specification in \ref MethodIndControl)

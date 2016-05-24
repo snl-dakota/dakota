@@ -24,11 +24,6 @@
 #include "ProgramOptions.hpp"
 #include "OutputManager.hpp"
 
-// Aliasing of MPI comms seems sufficient in practice, but MPI_Comm_dup
-// guarantees a new context that prevents misassociation of messages
-// with the same source/dest and tag (e.g., reuse of fn_eval_id tag
-// across LF and HF models when using nonblocking scheduling of both)
-//#define DEEP_MPI_COPY
 
 namespace Dakota {
 
@@ -67,8 +62,9 @@ public:
   //- Heading: Member functions
   //
 
+  //bool own_communicators() const;              // return ownCommFlag
   bool dedicated_master() const;               ///< return dedicatedMasterFlag
-  bool communicator_split() const;             ///< return commSplitFlag
+  //bool communicator_split() const;             // return commSplitFlag
   bool server_master() const;                  ///< return serverMasterFlag
   bool message_pass() const;                   ///< return messagePass
   bool idle_partition() const;                 ///< return idlePartition
@@ -93,6 +89,11 @@ public:
   /// write a ParallelLevel object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
 
+  /// test comm for MPI_COMM_NULL
+  bool null(const MPI_Comm& comm);
+  /// test comm for special identity that cannot be deallocated
+  bool special(const MPI_Comm& comm);
+
   /// deallocate the communicators in this ParallelLevel
   /** This appears to be more robust outside of the destructor due to
       interactions among managed deallocation and default deallocation
@@ -103,7 +104,7 @@ public:
   /// assign the attributes of the incoming pl to this object.  For
   /// communicators, this is a lightweight copy which assigns the same
   /// pointer values as the incoming pl, resulting in the same context.
-  void assign(const ParallelLevel& pl);
+  void alias(const ParallelLevel& pl);
   /// deep copy the attributes of the incoming pl to this object using
   /// MPI_Comm_dup to create equivalent communicators with a unique context.
   void copy(const ParallelLevel& pl);
@@ -117,10 +118,13 @@ private:
   //- Heading: Data
   //
 
+  bool ownCommFlag;              ///< signals Comm ownership for deallocation
+
   bool dedicatedMasterFlag;      ///< signals dedicated master partitioning
   bool commSplitFlag;            ///< signals a communicator split was used
   bool serverMasterFlag;         ///< identifies master server processors
-  bool messagePass;              ///< flag for message passing at this level
+  bool messagePass;              ///< flag for message passing at this level,
+                                 ///< indicating work assignment among servers
   bool idlePartition;            ///< identifies presence of an idle processor
                                  ///< partition at this level
 
@@ -144,12 +148,12 @@ private:
 };
 
 
-inline ParallelLevel::ParallelLevel(): dedicatedMasterFlag(false),
-  commSplitFlag(false), serverMasterFlag(true), messagePass(false),
-  idlePartition(false), numServers(0), procsPerServer(0), procRemainder(0),
-  serverId(0), serverIntraComm(MPI_COMM_NULL), serverCommRank(0),
-  serverCommSize(1), hubServerIntraComm(MPI_COMM_NULL), hubServerCommRank(0),
-  hubServerCommSize(1), hubServerInterComm(MPI_COMM_NULL),
+inline ParallelLevel::ParallelLevel(): ownCommFlag(true),
+  dedicatedMasterFlag(false), commSplitFlag(false), serverMasterFlag(true),
+  messagePass(false), idlePartition(false), numServers(0), procsPerServer(0),
+  procRemainder(0), serverId(0), serverIntraComm(MPI_COMM_NULL),
+  serverCommRank(0), serverCommSize(1), hubServerIntraComm(MPI_COMM_NULL),
+  hubServerCommRank(0), hubServerCommSize(1), hubServerInterComm(MPI_COMM_NULL),
   hubServerInterComms(NULL)
 { }
 
@@ -162,51 +166,60 @@ inline ParallelLevel::~ParallelLevel()
 
   // There are temporaries that go out of scope (list insertions by value
   // and print_configuration()) so dellocating here generally requires a
-  // DEEP_MPI_COPY approach with MPI_Comm_dup().
+  // deep copy() approach with MPI_Comm_dup().
 }
+
+inline bool ParallelLevel::special(const MPI_Comm& comm)
+{
+  return (comm == MPI_COMM_NULL || comm == MPI_COMM_SELF ||
+	  comm == MPI_COMM_WORLD);
+}
+
+inline bool ParallelLevel::null(const MPI_Comm& comm)
+{ return (comm == MPI_COMM_NULL); }
 
 inline void ParallelLevel::clear()
 {
-#ifndef DEEP_MPI_COPY
-  if (commSplitFlag) { // dealloc intra/inter comms (exclude shallow inherits)
-#endif
 #ifdef DAKOTA_HAVE_MPI
-    if (serverIntraComm    != MPI_COMM_NULL) MPI_Comm_free(&serverIntraComm);
-    if (hubServerIntraComm != MPI_COMM_NULL) MPI_Comm_free(&hubServerIntraComm);
+  // ownCommFlag needs to prevent multiple deallocations (e.g., shallow
+  // inherits).  MPI_Comm_free sets the current MPI_Comm pointer to 
+  // MPI_COMM_NULL but it can't do so for other pointers pointing to the
+  // same memory (that has now been deallocated...)
+  if (ownCommFlag) { // dealloc intra/inter comms
+    if (!special(serverIntraComm))    MPI_Comm_free(&serverIntraComm);
+    if (!special(hubServerIntraComm)) MPI_Comm_free(&hubServerIntraComm);
     if (dedicatedMasterFlag) { // master-slave interComms
       if (serverId == 0 && hubServerInterComms) { // if dedicated master
 	int i;
 	for(i=0; i<numServers; ++i)
-	  if (hubServerInterComms[i] != MPI_COMM_NULL)
+	  if (!special(hubServerInterComms[i]))
 	    MPI_Comm_free(&hubServerInterComms[i]);
 	// trailing server of idle processors
-	if (idlePartition && hubServerInterComms[i] != MPI_COMM_NULL)
+	if (idlePartition && !special(hubServerInterComms[i]))
 	  MPI_Comm_free(&hubServerInterComms[i]);
 	delete [] hubServerInterComms;
 	hubServerInterComms = NULL;
       }
-      else if (hubServerInterComm != MPI_COMM_NULL) // servers 1 through n
+      else if (!special(hubServerInterComm)) // servers 1 through n
 	MPI_Comm_free(&hubServerInterComm);
     }
     else { // peer interComms
       if (serverId == 1 && hubServerInterComms) { // 1st peer
 	int i;
 	for(i=0; i<numServers-1; ++i) 
-	  if (hubServerInterComms[i] != MPI_COMM_NULL)
+	  if (!special(hubServerInterComms[i]))
 	    MPI_Comm_free(&hubServerInterComms[i]);
 	// trailing server of idle processors
-	if (idlePartition && hubServerInterComms[i] != MPI_COMM_NULL)
+	if (idlePartition && !special(hubServerInterComms[i]))
 	  MPI_Comm_free(&hubServerInterComms[i]);
 	delete [] hubServerInterComms;
 	hubServerInterComms = NULL;
       }
-      else if (hubServerInterComm != MPI_COMM_NULL) // peers 2 through n
+      else if (!special(hubServerInterComm)) // peers 2 through n
 	MPI_Comm_free(&hubServerInterComm);
     }
-#endif // DAKOTA_HAVE_MPI
-#ifndef DEEP_MPI_COPY
   }
-#endif
+#endif // DAKOTA_HAVE_MPI
 }
 
 inline void ParallelLevel::copy_config(const ParallelLevel& pl)
@@ -215,26 +228,35 @@ inline void ParallelLevel::copy_config(const ParallelLevel& pl)
 
   // these are shared configuration attributes (also passed in read/write)
   dedicatedMasterFlag = pl.dedicatedMasterFlag;
-  commSplitFlag = pl.commSplitFlag;  serverMasterFlag = pl.serverMasterFlag;
-  messagePass   = pl.messagePass;    idlePartition    = pl.idlePartition;
-  numServers    = pl.numServers;     procsPerServer   = pl.procsPerServer;
+  commSplitFlag = pl.commSplitFlag; serverMasterFlag = pl.serverMasterFlag;
+  messagePass   = pl.messagePass;   idlePartition    = pl.idlePartition;
+  numServers    = pl.numServers;    procsPerServer   = pl.procsPerServer;
   procRemainder = pl.procRemainder;
 
   // these are local configuration attributes (not passed in read/write)
   serverId          = pl.serverId;
-  serverCommRank    = pl.serverCommRank; serverCommSize = pl.serverCommSize;
+  serverCommRank    = pl.serverCommRank;
+  serverCommSize    = pl.serverCommSize;
   hubServerCommRank = pl.hubServerCommRank;
   hubServerCommSize = pl.hubServerCommSize;
 }
 
-inline void ParallelLevel::assign(const ParallelLevel& pl)
+inline void ParallelLevel::alias(const ParallelLevel& pl)
 {
-  // This function is invoked by the copy constructor and operator=.  Since
-  // the former does not define an initializer list (to avoid initializing
-  // data that will be immediately copied over), assign to all values.
+  // This function is invoked by the copy constructor and operator=, as
+  // "aliasing" of MPI comms (sharing the pointer to struct) seems sufficient
+  // in practice and avoids the collective communication necessary for
+  // MPI_Comm_dup().  Since the copy ctor does not define an initializer list
+  // (to avoid initializing data that will be immediately copied over), assign
+  // to all values.
 
   copy_config(pl);
 
+  // For the MPI communicators below, this is a shallow copy.  For many MPI
+  // implementations, an MPI_Comm is a pointer to struct so assuming these 
+  // pointer values requires care on deallocation (see ownCommFlag protection
+  // in ParallelLibrary::clear()).
+  ownCommFlag         = false; // shallow copy
   serverIntraComm     = pl.serverIntraComm;     // MPI_Comm is pointer to struct
   hubServerIntraComm  = pl.hubServerIntraComm;  // MPI_Comm is pointer to struct
   hubServerInterComm  = pl.hubServerInterComm;  // MPI_Comm is pointer to struct
@@ -243,65 +265,62 @@ inline void ParallelLevel::assign(const ParallelLevel& pl)
 
 inline void ParallelLevel::copy(const ParallelLevel& pl)
 {
-  // This function is invoked by the copy constructor and operator=.  Since
-  // the former does not define an initializer list (to avoid initializing
-  // data that will be immediately copied over), assign to all values.
+  // This function is _not_ invoked by the copy constructor and operator=.
+  // It is for explicit use when the communication config is the same but
+  // a separate communication context is required.
+
+  // MPI_Comm_dup guarantees a new context that prevents misassociation of
+  // messages with the same source/dest and tag (e.g., reuse of fn_eval_id
+  // tag across LF and HF models when using nonblocking scheduling of both).
 
 #ifdef DAKOTA_HAVE_MPI
   copy_config(pl);
 
-  if (pl.serverIntraComm == MPI_COMM_NULL) serverIntraComm = MPI_COMM_NULL;
-  else MPI_Comm_dup(pl.serverIntraComm, &serverIntraComm);
+  //if (mpiManager.mpirun_flag()) { // not accessible from ParallelLevel
+    ownCommFlag = true; // deep copy
 
-  if (pl.hubServerIntraComm == MPI_COMM_NULL)
-    hubServerIntraComm = MPI_COMM_NULL;
-  else MPI_Comm_dup(pl.hubServerIntraComm, &hubServerIntraComm);
+    if (null(pl.serverIntraComm))    serverIntraComm    = MPI_COMM_NULL;
+    else MPI_Comm_dup(pl.serverIntraComm,    &serverIntraComm);
 
-  if (pl.hubServerInterComm == MPI_COMM_NULL)
-    hubServerInterComm = MPI_COMM_NULL;
-  else MPI_Comm_dup(pl.hubServerInterComm, &hubServerInterComm);
+    if (null(pl.hubServerIntraComm)) hubServerIntraComm = MPI_COMM_NULL;
+    else MPI_Comm_dup(pl.hubServerIntraComm, &hubServerIntraComm);
 
-  if (pl.hubServerInterComms == NULL)
-    hubServerInterComms = NULL;
-  else { // reallocate + MPI_Comm_dup()
-    int i, num_hs_ic = (dedicatedMasterFlag) ? numServers : numServers - 1;
-    if (idlePartition) ++num_hs_ic;
-    hubServerInterComms = new MPI_Comm [num_hs_ic];
-    for (i=0; i<num_hs_ic; ++i)
-      if (pl.hubServerInterComms[i] == MPI_COMM_NULL)
-	hubServerInterComms[i] = MPI_COMM_NULL;
-      else
-	MPI_Comm_dup(pl.hubServerInterComms[i], &hubServerInterComms[i]);
-  }
+    if (null(pl.hubServerInterComm)) hubServerInterComm = MPI_COMM_NULL;
+    else MPI_Comm_dup(pl.hubServerInterComm, &hubServerInterComm);
+
+    if (pl.hubServerInterComms == NULL) hubServerInterComms = NULL;
+    else { // reallocate + MPI_Comm_dup()
+      int i, num_hs_ic = (dedicatedMasterFlag) ? numServers : numServers - 1;
+      if (idlePartition) ++num_hs_ic;
+      hubServerInterComms = new MPI_Comm [num_hs_ic];
+      for (i=0; i<num_hs_ic; ++i)
+	if (null(pl.hubServerInterComms[i]))
+	  hubServerInterComms[i] = MPI_COMM_NULL;
+	else
+	  MPI_Comm_dup(pl.hubServerInterComms[i], &hubServerInterComms[i]);
+    }
+  //}
+  //else
+  //  alias(pl);
 #else
-  assign(pl);
+  alias(pl);
 #endif
 }
 
 inline ParallelLevel::ParallelLevel(const ParallelLevel& pl)
-{
-#ifdef DEEP_MPI_COPY
-  copy(pl);
-#else
-  assign(pl);
-#endif
-}
+{ alias(pl); }
 
 inline ParallelLevel& ParallelLevel::operator=(const ParallelLevel& pl)
-{
-#ifdef DEEP_MPI_COPY
-  copy(pl);
-#else
-  assign(pl);
-#endif
-  return *this;
-}
+{ alias(pl); return *this; }
+
+//inline bool ParallelLevel::own_communicators() const
+//{ return ownCommFlag; }
 
 inline bool ParallelLevel::dedicated_master() const
 { return dedicatedMasterFlag; }
 
-inline bool ParallelLevel::communicator_split() const
-{ return commSplitFlag; }
+//inline bool ParallelLevel::communicator_split() const
+//{ return commSplitFlag; }
 
 inline bool ParallelLevel::server_master() const
 { return serverMasterFlag; }
@@ -975,13 +994,21 @@ private:
   void check_error(const String& err_source, int err_code);
 
   /// convenience function for updating child serverIntraComm from
-  /// parent serverIntraComm
-  void inherit_as_server_comm(const ParallelLevel& parent_pl,
-			      ParallelLevel& child_pl);
+  /// parent serverIntraComm (shallow Comm copy)
+  void alias_as_server_comm(const ParallelLevel& parent_pl,
+			    ParallelLevel& child_pl);
+  /// convenience function for updating child serverIntraComm from
+  /// parent serverIntraComm (deep Comm copy)
+  void copy_as_server_comm(const ParallelLevel& parent_pl,
+			   ParallelLevel& child_pl);
   /// convenience function for updating child hubServerIntraComm from
-  /// parent serverIntraComm
-  void inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
-				  ParallelLevel& child_pl);
+  /// parent serverIntraComm (shallow Comm copy)
+  void alias_as_hub_server_comm(const ParallelLevel& parent_pl,
+				ParallelLevel& child_pl);
+  /// convenience function for updating child hubServerIntraComm from
+  /// parent serverIntraComm (deep Comm copy)
+  void copy_as_hub_server_comm(const ParallelLevel& parent_pl,
+			       ParallelLevel& child_pl);
 
   //
   //- Heading: Data
@@ -2000,96 +2027,95 @@ inline void ParallelLibrary::free(MPI_Request& request)
 
 
 inline void ParallelLibrary::
-inherit_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
+alias_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-  child_pl.commSplitFlag = false; // prevents dealloc of shallow copy in clear()
-  //child_pl.messagePass = false; // default
+  // true if servers are created for assignment of distributed work
+  child_pl.messagePass   = false;
+  // important for correct branch in send/recv
+  child_pl.commSplitFlag = false;
 
-  if (parent_pl.serverIntraComm != MPI_COMM_NULL) {
-#if defined(DEEP_MPI_COPY) && defined(DAKOTA_HAVE_MPI)
-    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.serverIntraComm);
-#else
-    child_pl.serverIntraComm = parent_pl.serverIntraComm;
-#endif
-    child_pl.serverCommRank = parent_pl.serverCommRank;
-    child_pl.serverCommSize = parent_pl.serverCommSize;
-  }
+  child_pl.ownCommFlag      =  false;
+  child_pl.serverIntraComm  =  parent_pl.serverIntraComm; // same comm
+  child_pl.serverCommRank   =  parent_pl.serverCommRank;
+  child_pl.serverCommSize   =  parent_pl.serverCommSize;
+  child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
 
-  /* Proposed new:
-  child_pl.messagePass = parent_pl.messagePass;
-
-  if (parent_pl.serverIntraComm != MPI_COMM_NULL) {
-
-    // force deep copy in this case to ensure inherited comm context is distinct
-#if defined(DAKOTA_HAVE_MPI) // && defined(DEEP_MPI_COPY)
-    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.serverIntraComm);
-    child_pl.commSplitFlag   = parent_pl.commSplitFlag;
-#else
-    child_pl.serverIntraComm = parent_pl.serverIntraComm;
-    child_pl.commSplitFlag   = false; // for clear()
-#endif
-
-    child_pl.serverCommRank  = parent_pl.serverCommRank;
-    child_pl.serverCommSize  = parent_pl.serverCommSize;
-  }
-  */
-
-  child_pl.hubServerIntraComm = MPI_COMM_NULL; // or MPI_COMM_SELF
+  child_pl.hubServerIntraComm = MPI_COMM_NULL;
   // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
 }
 
 
 inline void ParallelLibrary::
-inherit_as_hub_server_comm(const ParallelLevel& parent_pl,
-			   ParallelLevel& child_pl)
+copy_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-  child_pl.commSplitFlag = false; // prevents dealloc of shallow copy in clear()
-  child_pl.messagePass   = true;
+#ifdef DAKOTA_HAVE_MPI
+  if (mpiManager.mpirun_flag() && parent_pl.serverIntraComm != MPI_COMM_NULL) {
+    // servers are not created for assignment of distributed work
+    child_pl.messagePass   = false;
+    // use parent_pl in send/recv (child_pl.hubServerInterComms not defined)
+    child_pl.commSplitFlag = false;
 
-  child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
-  // use ctor defaults for child_pl.serverCommRank/serverCommSize
+    // deep copy ensures inherited comm context is distinct
+    child_pl.ownCommFlag = true;
+    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.serverIntraComm);
+    child_pl.serverCommRank   =  parent_pl.serverCommRank;
+    child_pl.serverCommSize   =  parent_pl.serverCommSize;
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
 
-  // This change would allow retirement of COMM_SPLIT_TO_SINGLE, but will need
-  // to expand special case checks (e.g., MPI_COMM_NULL) in fns like clear().
-  //child_pl.serverIntraComm = MPI_COMM_SELF; // *** TO DO
-
-  if (parent_pl.serverIntraComm != MPI_COMM_NULL) {
-
-#if defined(DEEP_MPI_COPY) && defined(DAKOTA_HAVE_MPI)
-    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.hubServerIntraComm);
+    child_pl.hubServerIntraComm = MPI_COMM_NULL;
+    // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
+  }
+  else
+    alias_as_server_comm(parent_pl, child_pl);
 #else
-    child_pl.hubServerIntraComm = parent_pl.serverIntraComm;
-#endif
+  alias_as_server_comm(parent_pl, child_pl);
+#endif // DAKOTA_HAVE_MPI
+}
 
+
+inline void ParallelLibrary::
+alias_as_hub_server_comm(const ParallelLevel& parent_pl,
+			 ParallelLevel& child_pl)
+{
+  // single-processor servers are defined for assignment of distributed work
+  child_pl.messagePass   = (parent_pl.serverCommSize > 1);
+  // use parent_pl in send/recv (child_pl.hubServerInterComms not defined)
+  child_pl.commSplitFlag = false;
+
+  child_pl.ownCommFlag = false;
+  child_pl.hubServerIntraComm = parent_pl.serverIntraComm;
+  child_pl.hubServerCommRank  = parent_pl.serverCommRank;
+  child_pl.hubServerCommSize  = parent_pl.serverCommSize;
+
+  child_pl.serverIntraComm = MPI_COMM_SELF;
+  // use ctor defaults for child_pl.serverCommRank/serverCommSize
+}
+
+
+inline void ParallelLibrary::
+copy_as_hub_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
+{
+#ifdef DAKOTA_HAVE_MPI
+  if (mpiManager.mpirun_flag() && parent_pl.serverIntraComm != MPI_COMM_NULL) {
+    // single-processor servers are defined for assignment of distributed work
+    child_pl.messagePass   = (parent_pl.serverCommSize > 1);
+    // use parent_pl in send/recv (child_pl.hubServerInterComms not defined)
+    child_pl.commSplitFlag = false;
+
+    // deep copy ensures inherited comm context is distinct
+    child_pl.ownCommFlag = true;
+    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.hubServerIntraComm);
     child_pl.hubServerCommRank = parent_pl.serverCommRank;
     child_pl.hubServerCommSize = parent_pl.serverCommSize;
+
+    child_pl.serverIntraComm = MPI_COMM_SELF;
+    // use ctor defaults for child_pl.serverCommRank/serverCommSize
   }
-
-  /* Proposed new:
-  child_pl.messagePass = true;
-
-  child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
-  // use ctor defaults for child_pl.serverCommRank/serverCommSize
-
-  // This change would allow retirement of COMM_SPLIT_TO_SINGLE, but will need
-  // to expand special case checks (e.g., MPI_COMM_NULL) in fns like clear().
-  //child_pl.serverIntraComm = MPI_COMM_SELF; // *** TO DO
-
-  if (parent_pl.serverIntraComm != MPI_COMM_NULL) {
-
-    // force deep copy in this case to ensure inherited comm context is distinct
-#if defined(DAKOTA_HAVE_MPI) // && defined(DEEP_MPI_COPY)
-    MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.hubServerIntraComm);
-    child_pl.commSplitFlag      = true;
+  else
+    alias_as_hub_server_comm(parent_pl, child_pl);
 #else
-    child_pl.hubServerIntraComm = parent_pl.serverIntraComm;
-    child_pl.commSplitFlag      = false; // for clear()
-#endif
-
-    child_pl.hubServerCommRank  = parent_pl.serverCommRank;
-    child_pl.hubServerCommSize  = parent_pl.serverCommSize;
-  }
-  */
+  alias_as_hub_server_comm(parent_pl, child_pl);
+#endif // DAKOTA_HAVE_MPI
 }
 
 } // namespace Dakota

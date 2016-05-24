@@ -9,7 +9,7 @@ if( NOT WIN32 )
   set(extra_files)
   set(extra_files " ")
 
-  add_training_test(dakota_opt_quasisine.in ${aux_files} ${extra_files})
+  add_training_test(dakota_opt_quasisine.in ${aux_files} ${extra_files} TRUE)
 
   set(training_exe_deps)
   DakotaCopyTarget(quasi_sine_fcn training_exe_deps)

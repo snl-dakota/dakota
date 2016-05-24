@@ -436,8 +436,9 @@ inline void HierarchSurrModel::set_evaluation_reference()
 
 inline void HierarchSurrModel::fine_grained_evaluation_counters()
 {
-  orderedModels[lowFidelityIndices.first].fine_grained_evaluation_counters();
-  orderedModels[highFidelityIndices.first].fine_grained_evaluation_counters();
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].fine_grained_evaluation_counters();
 }
 
 
@@ -445,10 +446,10 @@ inline void HierarchSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
-  orderedModels[lowFidelityIndices.first].print_evaluation_summary(s,
-    minimal_header, relative_count);
-  orderedModels[highFidelityIndices.first].print_evaluation_summary(s,
-    minimal_header, relative_count);
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].print_evaluation_summary(s, minimal_header,
+					      relative_count);
 }
 
 } // namespace Dakota

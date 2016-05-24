@@ -113,6 +113,12 @@ FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: fsu_* methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
@@ -157,6 +163,12 @@ FSUDesignCompExp(Model& model, int samples, int seed,
     abort_handler(-1);
   }
 
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: fsu_* methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
@@ -180,32 +192,32 @@ void FSUDesignCompExp::pre_run()
 {
   Analyzer::pre_run();
 
-  // obtain a set of samples for evaluation; in VBD case, defer to run
-  if (!varBasedDecompFlag)
+  // error check on input parameters
+  enforce_input_rules();
+
+  // If VBD has been selected, generate a series of replicate parameter sets
+  // (each of the size specified by the user) in order to compute VBD metrics.
+  if (varBasedDecompFlag)
+    get_vbd_parameter_sets(iteratedModel, numSamples);
+  else
     get_parameter_sets(iteratedModel);
 }
 
 
 void FSUDesignCompExp::core_run()
 {
-  // If VBD has been selected, evaluate a series of parameter sets
-  // (each of the size specified by the user) in order to compute VBD metrics.
-  // If there are active discrete variables, FSUDace currently ignores them.
-  if (varBasedDecompFlag)
-    variance_based_decomp(numContinuousVars, 0, 0, numSamples);
-  // if VBD has not been selected, evaluate a single parameter set of the size
-  // specified by the user and stored in allSamples
-  else {
-    bool compute_corr_flag = (!subIteratorFlag),
-      log_resp_flag = (allDataFlag || compute_corr_flag),
-      log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-    evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
-  }
+  bool compute_corr_flag = (!subIteratorFlag),
+    log_resp_flag = (allDataFlag || compute_corr_flag),
+    log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
+  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
 void FSUDesignCompExp::post_input()
 {
+  // error check on input parameters (make sure numSamples is valid)
+  enforce_input_rules();
+
   // call convenience function from Analyzer
   read_variables_responses(numSamples, numContinuousVars);
 }
@@ -213,8 +225,14 @@ void FSUDesignCompExp::post_input()
 
 void FSUDesignCompExp::post_run(std::ostream& s)
 {
-  // In VBD case, stats are managed in the run phase  
-  if (!varBasedDecompFlag) {
+  // error check on input parameters (make sure numSamples is valid)
+  enforce_input_rules();
+
+  // BMA TODO: always compute all stats, even in VBD mode (stats on
+  // first two replicates)
+  if (varBasedDecompFlag)
+    compute_vbd_stats(numSamples, allResponses);
+  else {
     // compute correlation statistics if (compute_corr_flag)
     bool compute_corr_flag = (!subIteratorFlag);
     if (compute_corr_flag)
@@ -227,9 +245,13 @@ void FSUDesignCompExp::post_run(std::ostream& s)
 
 void FSUDesignCompExp::get_parameter_sets(Model& model)
 {
-  // error check on input parameters
-  enforce_input_rules();
+  get_parameter_sets(model, numSamples, allSamples);
+}
 
+
+void FSUDesignCompExp::get_parameter_sets(Model& model, const int num_samples,
+					  RealMatrix& design_matrix)
+{
   // keep track of number of DACE executions for this object
   numDACERuns++;
 
@@ -260,23 +282,23 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
     c_bnds_range[i] = c_u_bnds[i] - c_l_bnds[i];
   }
 
-  //Real* sample_points = new Real [numContinuousVars*numSamples];
-  if (allSamples.numRows() != numContinuousVars ||
-      allSamples.numCols() != numSamples)
-    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+  //Real* sample_points = new Real [numContinuousVars*num_samples];
+  if (design_matrix.numRows() != numContinuousVars ||
+      design_matrix.numCols() != num_samples)
+    design_matrix.shapeUninitialized(numContinuousVars, num_samples);
 
   switch (methodName) {
   case FSU_HALTON: {
-    int qmc_step = (varyPattern) ? (numDACERuns-1)*numSamples+1 : 1;
-    fsu_halton(numContinuousVars, numSamples, qmc_step, sequenceStart.values(),
-	       sequenceLeap.values(), primeBase.values(), allSamples.values());
+    int qmc_step = (varyPattern) ? (numDACERuns-1)*num_samples+1 : 1;
+    fsu_halton(numContinuousVars, num_samples, qmc_step, sequenceStart.values(),
+	       sequenceLeap.values(), primeBase.values(), design_matrix.values());
     break;
   }
   case FSU_HAMMERSLEY: {
-    int qmc_step = (varyPattern) ? (numDACERuns-1)*numSamples+1 : 1;
-    fsu_hammersley(numContinuousVars, numSamples, qmc_step,
+    int qmc_step = (varyPattern) ? (numDACERuns-1)*num_samples+1 : 1;
+    fsu_hammersley(numContinuousVars, num_samples, qmc_step,
 		   sequenceStart.values(), sequenceLeap.values(),
-		   primeBase.values(), allSamples.values());
+		   primeBase.values(), design_matrix.values());
     break;
   }
   case FSU_CVT: {
@@ -304,8 +326,8 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
 
     // batch_size is no longer part of the spec; we now use:
     int batch_size = std::min(10000, numCVTTrials);
-    if (numCVTTrials < numSamples)
-      numCVTTrials = numSamples *10;
+    if (numCVTTrials < num_samples)
+      numCVTTrials = num_samples *10;
 
     // assign default maxIterations (DataMethod default is -1)
     if (maxIterations < 0)
@@ -348,7 +370,7 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
       std::srand(randomSeed);
       randomSeed = 1 + std::rand(); // from 1 to RANDMAX+1
     }
-    Cout << "\nFSU DACE method = " << methodName << " Samples = " << numSamples;
+    Cout << "\nFSU DACE method = " << methodName << " Samples = " << num_samples;
     if (numDACERuns == 1 || !varyPattern) {
       if (seedSpec) Cout << " Seed (user-specified) = ";
       else          Cout << " Seed (system-generated) = ";
@@ -363,8 +385,8 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
     int* diag_num_iter = new int; // CVT returns actual number of iterations
 
     // Now generate the array of samples
-    fsu_cvt(numContinuousVars, numSamples, batch_size, init_type, trialType,
-	    numCVTTrials, maxIterations, p_seed, allSamples.values(),
+    fsu_cvt(numContinuousVars, num_samples, batch_size, init_type, trialType,
+	    numCVTTrials, maxIterations, p_seed, design_matrix.values(),
 	    diag_num_iter);
 
     p_seed = NULL;
@@ -374,14 +396,14 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
   }
 
   if (latinizeFlag)
-    fsu_latinize(numContinuousVars, numSamples, allSamples.values());
+    fsu_latinize(numContinuousVars, num_samples, design_matrix.values());
 
   if (volQualityFlag)
-    volumetric_quality(numContinuousVars, numSamples, allSamples.values());
+    volumetric_quality(numContinuousVars, num_samples, design_matrix.values());
 
   // Convert from [0,1] to [lower,upper]
-  for (i=0; i<numSamples; ++i) {
-    Real* samples_i = allSamples[i];
+  for (i=0; i<num_samples; ++i) {
+    Real* samples_i = design_matrix[i];
     for (j=0; j<numContinuousVars; ++j)
       samples_i[j] = c_l_bnds[j] + samples_i[j] * c_bnds_range[j];
   }

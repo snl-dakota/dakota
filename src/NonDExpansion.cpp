@@ -48,6 +48,9 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   refineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
+  maxRefineIterations(
+    probDescDB.get_int("method.nond.max_refinement_iterations")),
+  maxSolverIterations(probDescDB.get_int("method.nond.max_solver_iterations")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
@@ -88,7 +91,8 @@ NonDExpansion(unsigned short method_name, Model& model,
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
-  softConvLimit(3), ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
+  softConvLimit(3), maxRefineIterations(100), maxSolverIterations(-1),
+  ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
@@ -441,9 +445,9 @@ void NonDExpansion::initialize_u_space_model()
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   Pecos::ExpansionConfigOptions
-    ec_options(expansionCoeffsApproach, expansionBasisType,
-	       outputLevel, vbdFlag, vbdOrderLimit, refineControl,
-	       maxIterations, convergenceTol, softConvLimit);
+    ec_options(expansionCoeffsApproach, expansionBasisType, outputLevel,
+	       vbdFlag, vbdOrderLimit, refineControl, maxRefineIterations,
+	       maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset
@@ -870,10 +874,11 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  // DataMethod default for maxIterations is -1, indicating no user spec.
+  // DataMethod default for maxRefineIterations is -1, indicating no user spec.
   // Assign a context-specific default in this case.
-  size_t i, iter = 1, max_iter = (maxIterations < 0) ? 100 : maxIterations;
-  bool converged = (iter > max_iter);
+  size_t i, iter = 1,
+    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
+  bool converged = (iter > max_refine);
   Real metric;
 
   // post-process nominal expansion
@@ -952,7 +957,7 @@ void NonDExpansion::refine_expansion()
       break;
     }
 
-    converged = (metric <= convergenceTol || ++iter > max_iter);
+    converged = (metric <= convergenceTol || ++iter > max_refine);
     if (!converged)
       compute_print_iteration_results(false);
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';

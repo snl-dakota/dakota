@@ -57,7 +57,6 @@ MPIManager::MPIManager(int& argc, char**& argv):
     MPI_Comm_size(dakotaMPIComm, &dakotaWorldSize);
   }
 #endif
-  
 }
 
 

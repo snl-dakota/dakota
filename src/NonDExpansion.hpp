@@ -308,6 +308,13 @@ private:
   /// evaluated at the means (used as uncertainty importance metrics)
   RealMatrix expGradsMeanX;
 
+  /// maximum number of uniform/adaptive refinement iterations
+  /// (specialization of maxIterations)
+  int maxRefineIterations;
+  /// maximum number of regression solver iterations (specialization
+  /// of maxIterations)
+  int maxSolverIterations;
+  
   /// flag indicating the activation of variance-bsaed decomposition
   /// for computing Sobol' indices
   bool vbdFlag;

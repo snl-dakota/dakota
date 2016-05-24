@@ -25,9 +25,6 @@
 #include <pm_util.h>  // for pm_child_sig_handler
 #endif // HAVE_AIX_MPI
 
-// on by default from consensus among library users Collis/Drake/Keiter/Salinger
-#define COMM_SPLIT_TO_SINGLE
-
 //#define MPI_DEBUG
 
 static const char rcsId[]="@(#) $Id: ParallelLibrary.cpp 7013 2010-10-08 01:03:38Z wjbohnh $";
@@ -171,8 +168,7 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   else
     split_communicator_peer_partition(parent_pl,   child_pl);
 
-  // update the number of parallelism levels (child_pl.messagePass is
-  // preferred to child_pl.commSplitFlag due to COMM_SPLIT_TO_SINGLE)
+  // update the number of parallelism levels
   if (child_pl.messagePass)
     ++currPCIter->numParallelLevels;
 
@@ -591,26 +587,13 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // Check to see if resulting partition sizes require comm splitting
   // ----------------------------------------------------------------
 
-  // special case for which we assign child = parent without partitioning
+  // prevent further partitioning of an idle server
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
-    inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    alias_as_server_comm(parent_pl, child_pl);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return;
   }
-
-#ifndef COMM_SPLIT_TO_SINGLE
-  // In some direct interfacing cases, the simulation requires its own comm
-  // even if the comm is single processor.  In this case, the code block below
-  // is bypassed and the additional comm split overhead is incurred.
-  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
-    inherit_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
-    child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
-    return;
-  }
-#endif
 
   // ------------------------------------------------------
   // Split parent Comm to create new intra- and inter-comms
@@ -655,22 +638,40 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-  // special case for which we assign child = parent without partitioning
+  // special case: lightweight comm_dup alternative to comm_split
+  // Note: can safely comment out this special case if heavier weight
+  //       approach required for future contexts.
+  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder &&
+      !child_pl.idlePartition) {
+    copy_as_hub_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
+    child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
+    return;
+  }
+  // special case: assign child = parent without partitioning
   if (child_pl.numServers < 1) { // no check on idlePartition for ded master
-    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
-    inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    // complete deep copy can be a problem since idle partition must
+    // participate in MPI_Comm_dup() collective for hubServerInterComms
+    //child_pl.copy(parent_pl);
+    // but partial copy of serverIntraComm is OK
+    copy_as_server_comm(parent_pl, child_pl);
     child_pl.serverId = 1; // 1st peer, no dedication of master
     return;
   }
 
-  child_pl.messagePass = true;
 #ifdef DAKOTA_HAVE_MPI
+  // messagePass and commSplitFlag are the same for dedicated master
+  child_pl.messagePass = child_pl.commSplitFlag = true;
+
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
+
   child_pl.serverId = color; // master = 0, slaves = 1/2/3/.../n, idle = n+1
+  // child partition master excludes parent dedicated master:
+  child_pl.serverMasterFlag
+    = (child_pl.serverCommRank == 0 && parent_pl.serverCommRank);
 
   // Create intercommunicators.  All processors in both intracommunicators 
   // (child_pl.serverIntraComm for master and slaves) must participate in call
@@ -726,11 +727,6 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
 #endif // DAKOTA_HAVE_MPI
-
-  // child partition master excludes parent dedicated master
-  child_pl.serverMasterFlag
-    = (child_pl.serverCommRank == 0 && parent_pl.serverCommRank);
-  child_pl.commSplitFlag = true;
 }
 
 
@@ -746,26 +742,13 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // processor is not dedicated for scheduling, one server means that
   // child_pl.serverIntraComm == parent_pl.serverIntraComm.
 
-  // special case for which we assign child = parent without partitioning
+  // prevent further partitioning of an idle server
   if (parent_pl.serverId > parent_pl.numServers) { // parent is idle partition
     //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
-    inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    alias_as_server_comm(parent_pl, child_pl);
     child_pl.serverId = child_pl.numServers + 1; // trip at next level as well
     return;
   }
-
-#ifndef COMM_SPLIT_TO_SINGLE
-  // In some direct interfacing cases, the simulation requires its own comm
-  // even if the comm is single processor.  In this case, the code block below
-  // is bypassed and the additional comm split overhead is incurred.
-  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {// 1-proc. peers
-    inherit_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = true;
-    child_pl.serverId = parent_pl.serverCommRank+1; // peer id's = 1/2/3/.../n
-    return;
-  }
-#endif
 
   // -----------------------------------------------------------
   // Split parent Comm to create new peer intra- and inter-comms
@@ -812,22 +795,41 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-  // special case for which we assign child = parent without partitioning
-  if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
-    //child_pl.copy(parent_pl); // problem w/ MPI_Comm_dup collectives + idle
-    inherit_as_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
-    child_pl.serverId = 1; // one peer server with id = 1
-    return;
+  if (!child_pl.idlePartition) {
+    // special case: lightweight comm_dup alternative to comm_split
+    // Note: can safely comment out this special case if heavier weight
+    //       approach required for future contexts.
+    if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc peers
+      copy_as_hub_server_comm(parent_pl, child_pl);
+      child_pl.serverMasterFlag = true;
+      child_pl.serverId = parent_pl.serverCommRank + 1;//peer id's = 1/2/3/.../n
+      return;
+    }
+    // special case: assign child = parent without partitioning
+    if (child_pl.numServers < 2) { // 1 peer, no idle
+      // complete deep copy can be a problem since idle partition must
+      // participate in MPI_Comm_dup() collective for hubServerInterComms
+      //child_pl.copy(parent_pl);
+      // but partial deep copy of serverIntraComm is OK
+      copy_as_server_comm(parent_pl, child_pl);
+      child_pl.serverId = 1; // one peer server with id = 1
+      return;
+    }
   }
 
-  child_pl.messagePass = (child_pl.numServers > 1); // exclude 1 server + idle
 #ifdef DAKOTA_HAVE_MPI
+  // messagePass and commSplitFlag differ for peer in case of idle servers
+  child_pl.messagePass = (child_pl.numServers > 1); // exclude 1 server + idle
+  child_pl.commSplitFlag = true;
+
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
+
   child_pl.serverId = color; // peer id's = 1/2/3/.../n, idle id = n+1
+  // child partition master (don't need to exclude parent master):
+  child_pl.serverMasterFlag = (child_pl.serverCommRank == 0);
 
   // Create intercommunicators.  Current implementation is very similar to
   // master-slave in that only the 1st server has an array of intercomms.  This
@@ -884,10 +886,6 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
 #endif // DAKOTA_HAVE_MPI
-
-  // child partition master (don't need to exclude parent master)
-  child_pl.serverMasterFlag = (child_pl.serverCommRank == 0);
-  child_pl.commSplitFlag = true;
 }
 
 
@@ -997,7 +995,7 @@ void ParallelLibrary::print_configuration()
     // Meta-iterator diagnostics
     for (i=1; i<num_mi; ++i) {
       const ParallelLevel& mi_pl = mi_pls[i];
-      if (mi_pl.messagePass) {// commSplitFlag true if 1 server + idle partition
+      if (mi_pl.messagePass) {
 	Cout << "concurrent iterators\t  " << std::setw(4) << mi_pl.numServers
 	     << "\t\t   " << std::setw(4) << mi_pl.procsPerServer << "\t\t   ";
 	if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
@@ -1249,8 +1247,8 @@ void ParallelLibrary::output_timers()
   Real totalCPU = (Real)(clock() - startClock)/CLOCKS_PER_SEC;
 #ifdef DAKOTA_UTILIB
   Real parentCPU = CPUSeconds() - startCPUTime, 
-    childCPU  = totalCPU - parentCPU,
-    totalWC   = WallClockSeconds() - startWCTime;
+        childCPU = totalCPU - parentCPU,
+         totalWC = WallClockSeconds() - startWCTime;
 #endif // DAKOTA_UTILIB
 
   if (mpiManager.mpirun_flag()) { // MPI functions are available

@@ -323,176 +323,106 @@ variables_array_to_samples(const VariablesArray& vars_array,
 }
 
 
+
+/** Generate (numvars + 2)*num_samples replicate sets for VBD,
+    populating allSamples( numvars, (numvars + 2)*num_samples ) */
+void Analyzer::get_vbd_parameter_sets(Model& model, int num_samples)
+{
+  if (!compactMode) {
+    Cerr << "\nError: get_vbd_parameter_sets requires compactMode.\n";
+    abort_handler(-1);
+  }
+
+  // BMA TODO: This may not be right for all LHS active/inactive
+  // sampling modes, but is equivalent to previous code.
+  size_t num_vars = numContinuousVars + numDiscreteIntVars + 
+    numDiscreteStringVars + numDiscreteRealVars;
+  size_t num_replicates = num_vars + 2;
+
+  allSamples.shape(num_vars, (num_vars+2)*num_samples);
+
+  // run derived sampling routine generate two initial matrices
+  vary_pattern(true);
+
+  // populate the first num_samples cols of allSamples
+  RealMatrix sample_1(Teuchos::View, allSamples, num_vars, num_samples, 0, 0);
+  get_parameter_sets(model, num_samples, sample_1);
+  if (sample_1.numCols() != num_samples) {
+    Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	 << num_samples << " variable samples; received "
+	 << sample_1.numCols() << std::endl;
+    abort_handler(-1);
+  }
+  
+  // populate the second num_samples cols of allSamples
+  RealMatrix sample_2(Teuchos::View, allSamples, num_vars, num_samples, 0, 
+		     num_samples);
+  get_parameter_sets(model, num_samples, sample_2);
+  if (sample_2.numCols() != num_samples) {
+    Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	 << num_samples << " variable samples; received "
+	 << sample_2.numCols() << std::endl;
+    abort_handler(-1);
+  }
+
+  // one additional replicate per variable
+  for (int i=0; i<num_vars; ++i) {
+    int replicate_index = i+2;
+    RealMatrix sample_r(Teuchos::View, allSamples, num_vars, num_samples, 0, 
+			replicate_index * num_samples);
+    // initialize the replicate to the second sample
+    sample_r.assign(sample_2);
+    // now swap in a row from the first sample
+    for (int j=0; j<num_samples; ++j)
+      sample_r(i, j) = sample_1(i, j);
+  }
+}
+
+
 /** Calculation of sensitivity indices obtained by variance based
     decomposition.  These indices are obtained by the Saltelli version
     of the Sobol VBD which uses (K+2)*N function evaluations, where K
     is the number of dimensions (uncertain vars) and N is the number
     of samples.  */
-void Analyzer::
-variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
+void Analyzer::compute_vbd_stats(const int num_samples, 
+				 const IntResponseMap& resp_samples)
 {
   using boost::multi_array;
   using boost::extents;
-  size_t i, j, k;
-  int ndimtotal = ncont + ndiscreal + ndiscint;
 
-  // run derived sampling routine twice to generate input matrices, M1 and M2
+  // BMA TODO: This may not be right for all LHS active/inactive
+  // sampling modes, but is equivalent to previous code.
+  size_t i, j, k, num_vars = numContinuousVars + numDiscreteIntVars + 
+    numDiscreteStringVars + numDiscreteRealVars;
 
-  // WJB - ToDo: confer with MSE: RealVector2DArray total_c_vars(ncont+2);
-  multi_array<RealVector, 2> total_c_vars(extents[ndimtotal+2][num_samples]);
-
-  multi_array<IntVector, 2> total_di_vars = (ndiscint > 0) ?
-    multi_array<IntVector, 2>(extents[ndimtotal+2][num_samples]):
-    multi_array<IntVector, 2>();
-
-  multi_array<RealVector, 2> total_dr_vars = (ndiscreal > 0 ) ? 
-    multi_array<RealVector, 2>(extents[ndimtotal+2][num_samples]):
-    multi_array<RealVector, 2>();
-
-  // get first sample block
-  vary_pattern(true);
-  get_parameter_sets(iteratedModel);
-  if (compactMode) {
-    if (allSamples.numCols() != num_samples) {
-      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
-	   << num_samples << " variable samples; received "
-	   << allSamples.numCols() << std::endl;
-      abort_handler(-1);
-    }
-    for (j=0; j<num_samples; ++j) {
-      const Real* sample_j = allSamples[j];
-      if (ncont)
-	copy_data(sample_j, ncont, total_c_vars[0][j]);
-      if (ndiscint) {
-	IntVector& t_div_0j = total_di_vars[0][j];
-        t_div_0j.sizeUninitialized(ndiscint);
-	for (k=0; k<ndiscint; ++k)
-	  t_div_0j[k] = (int)sample_j[ncont+k];
-      }
-      if (ndiscreal)
-	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[0][j]);
-    }
+  if (resp_samples.size() != num_samples*(num_vars+2)) {
+    Cerr << "\nError in Analyzer::compute_vbd_stats: expected "
+	 << num_samples << " responses; received " << resp_samples.size()
+	 << std::endl;
+    abort_handler(-1);
   }
-  else {
-    if (allVariables.size() != num_samples) {
-      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
-	   << num_samples << " variables sets; received "
-	   << allVariables.size() << std::endl;
-      abort_handler(-1);
-    }
-    for (j=0; j<num_samples; ++j) {
-      const Variables& all_vars_j = allVariables[j];
-      if (ncont)
-	copy_data(all_vars_j.continuous_variables(),    total_c_vars[0][j]);
-      if (ndiscint)
-	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[0][j]);
-      if (ndiscreal)
-	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[0][j]);
-    }
-  }
-
-  // get second sample block
-  get_parameter_sets(iteratedModel);
-  if (compactMode) {
-    if (allSamples.numCols() != num_samples) {
-      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
-	   << num_samples << " variable samples; received "
-	   << allSamples.numCols() << std::endl;
-      abort_handler(-1);
-    }
-    for (j=0; j<num_samples; ++j) {
-      const Real* sample_j = allSamples[j];
-      if (ncont)
-	copy_data(sample_j, ncont, total_c_vars[1][j]);
-      if (ndiscint) {
-	IntVector& t_div_1j = total_di_vars[1][j];
-        t_div_1j.sizeUninitialized(ndiscint);
-	for (k=0; k<ndiscint; ++k)
-	  t_div_1j[k] = (int)sample_j[ncont+k];
-      }
-      if (ndiscreal)
-	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[1][j]);
-    }
-  }
-  else {
-    if (allVariables.size() != num_samples) {
-      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
-	   << num_samples << " variables sets; received "
-	   << allVariables.size() << std::endl;
-      abort_handler(-1);
-    }
-    for (j=0; j<num_samples; ++j) {
-      const Variables& all_vars_j = allVariables[j];
-      if (ncont)
-	copy_data(all_vars_j.continuous_variables(),    total_c_vars[1][j]);
-      if (ndiscint)
-	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[1][j]);
-      if (ndiscreal)
-	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[1][j]);
-    }
-  }
-
-  for (i=2; i<ndimtotal+2; ++i) {
-    total_c_vars[i]  = total_c_vars[1];
-    total_di_vars[i] = total_di_vars[1];
-    total_dr_vars[i] = total_dr_vars[1];
-  }
- 
-  for (i=0; i<ncont; ++i)
-    for (j=0; j<num_samples; ++j)   
-      total_c_vars[i+2][j][i] = total_c_vars[0][j][i];
-
-  for (i=0; i<ndiscint; ++i)
-    for (j=0; j<num_samples; ++j)   
-      total_di_vars[ncont+i+2][j][i] = total_di_vars[0][j][i];
   
-  for (i=0; i<ndiscreal; ++i)
-    for (j=0; j<num_samples; ++j)   
-      total_dr_vars[ncont+ndiscint+i+2][j][i] = total_dr_vars[0][j][i];
-  
-  // call evaluate parameter sets (ncont)*num_samples to get data
-  //WJB - ToDo: confer with MSE: Array<Real2DArray> total_fn_vals(numFunctions);
+  // BMA: for now copy the data to previous data structure 
+  //      total_fn_vals[respFn][replicate][sample]
+  // This is making the assumption that the responses are ordered as allSamples
+  // BMA TODO: compute statistics on finite samples only
   multi_array<Real,3>
-    total_fn_vals(extents[numFunctions][ndimtotal+2][num_samples]);
-
-  for (i=0; i<ndimtotal+2; ++i) {
-    if (compactMode)
-      for (j=0; j<num_samples; ++j) {
-	Real* sample_j = allSamples[j];
-	if (ncont)
-	  copy_data(total_c_vars[i][j],  sample_j,                  ncont);
-	if (ndiscint) {
-	  const IntVector& t_div_ij = total_di_vars[i][j];
-	  for (k=0; k<ndiscint; ++k)
-	    sample_j[ncont+k] = (Real)t_div_ij[k];
-	}
-	if (ndiscreal)
-	  copy_data(total_dr_vars[i][j], &sample_j[ncont+ndiscint], ndiscreal);
-      }
-    else
-      for (j=0; j<num_samples; ++j) {   
-	Variables& all_vars_j = allVariables[j];
-	if (ncont)
-	  all_vars_j.continuous_variables(total_c_vars[i][j]);
-	if (ndiscint)
-	  all_vars_j.discrete_int_variables(total_di_vars[i][j]);
-	if (ndiscreal)
-	  all_vars_j.discrete_real_variables(total_dr_vars[i][j]);
-      }
-
-    // evaluate each of the parameter sets in allVariables
-    evaluate_parameter_sets(iteratedModel, true, false);
-    if (allResponses.size() != num_samples) {
-      Cerr << "\nError in Analyzer::variance_based_decomp(): expected "
-	   << num_samples << " responses; received " << allResponses.size()
-	   << std::endl;
-      abort_handler(-1);
-    }
-    IntRespMCIter r_it;
-    for (k=0; k<numFunctions; ++k)
-      for (r_it=allResponses.begin(), j=0; j<num_samples; ++r_it, ++j)
+    total_fn_vals(extents[numFunctions][num_vars+2][num_samples]);
+  IntRespMCIter r_it = resp_samples.begin();
+  for (i=0; i<(num_vars+2); ++i)
+    for (j=0; j<num_samples; ++r_it, ++j)
+      for (k=0; k<numFunctions; ++k)
 	total_fn_vals[k][i][j] = r_it->second.function_value(k);
-  }
+
+#ifdef DEBUG
+    Cout << "allSamples:\n" << allSamples << '\n';
+    for (k=0; k<numFunctions; ++k)
+      for (i=0; i<num_vars+2; ++i)
+	for (j=0; j<num_samples; ++j)
+	  Cout << "Response " << k << " for replicate " << i << ", sample " << j 
+	       << ": " << total_fn_vals[k][i][j] << '\n';
+#endif
+
   // There are four versions of the indices being calculated. 
   // S1 is a corrected version from Saltelli's 2004 "Sensitivity 
   // Analysis in Practice" book.  S1 does not have scaled output Y, 
@@ -512,35 +442,15 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
   //RealVectorArray S1(numFunctions), T1(numFunctions);
   //RealVectorArray S2(numFunctions), T2(numFunctions);
   //RealVectorArray S3(numFunctions), T3(numFunctions);
-  S4.resize(numFunctions); T4.resize(numFunctions);
-  for (k=0; k<numFunctions; ++k) {
-//    S1[k].resize(ndimtotal);
-//    T1[k].resize(ndimtotal);
-//    S2[k].resize(ndimtotal);
-//    T2[k].resize(ndimtotal);
-//    S3[k].resize(ndimtotal);
-//    T3[k].resize(ndimtotal);
-      S4[k].resize(ndimtotal);
-      T4[k].resize(ndimtotal);
-  }
+  S4.resize(numFunctions, RealVector(num_vars)); 
+  T4.resize(numFunctions, RealVector(num_vars));
+
   multi_array<Real,3>
-    total_norm_vals(extents[numFunctions][ndimtotal+2][num_samples]);
+    total_norm_vals(extents[numFunctions][num_vars+2][num_samples]);
 
   // Loop over number of responses to obtain sensitivity indices for each
   for (k=0; k<numFunctions; ++k) {
  
-#ifdef DEBUG
-    Cout << "Total Samples\n"; 
-    for (i=0; i<ndimtotal+2; ++i) {
-      for (j=0; j<num_samples; ++j) {
-	Cout << "Cvar " << j << '\n' << total_c_vars[i][j] << " " ;
-	Cout << "DRVar " << j << '\n' << total_dr_vars[i][j] << " " ;
-	Cout << "DIVar " << j << '\n' << total_di_vars[i][j] << " " ;
-	Cout << "Response " << i << '\n' << total_fn_vals[k][i][j] << '\n';
-      }
-    }
-#endif
-
     // calculate expected value of Y
     Real mean_hatY = 0., var_hatYS = 0., var_hatYT = 0.,
       mean_sq1=0., mean_sq2 = 0., var_hatYnom = 0., 
@@ -568,15 +478,15 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       var_hatYT += std::pow(total_fn_vals[k][1][j], 2.);
     var_hatYT = var_hatYT/(Real)(num_samples) - (mean_hatB*mean_hatB);
     for (j=0; j<num_samples; j++){
-      for(i=0; i<(ndimtotal+2); i++){ 
+      for(i=0; i<(num_vars+2); i++){ 
         total_norm_vals[k][i][j]=total_fn_vals[k][i][j];
         overall_mean += total_norm_vals[k][i][j];
       } 
     }
    
-    overall_mean /= Real((num_samples)* (ndimtotal+2));
+    overall_mean /= Real((num_samples)* (num_vars+2));
     for (j=0; j<num_samples; j++)
-      for(i=0; i<(ndimtotal+2); i++)
+      for(i=0; i<(num_vars+2); i++)
         total_norm_vals[k][i][j]-=overall_mean;
     mean_C=mean_hatB*(Real)(num_samples)+mean_hatY*(Real)(num_samples);
     mean_C=mean_C/(2*(Real)(num_samples));
@@ -609,7 +519,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 #endif
 
     // calculate first order sensitivity indices and first order total indices
-    for (i=0; i<ndimtotal; i++) {
+    for (i=0; i<num_vars; i++) {
       Real sum_S = 0., sum_T = 0., sum_J = 0., sum_J2 = 0., sum_3 = 0., sum_32=0.,sum_5=0, sum_6=0;
       for (j=0; j<num_samples; j++) {
 	//sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
@@ -640,6 +550,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
     }
   }
 }
+
 
 /** Generate tabular output with active variables (compactMode) or all
     variables with their labels and response labels, with no data.
@@ -1066,7 +977,16 @@ void Analyzer::vary_pattern(bool pattern_flag)
 
 void Analyzer::get_parameter_sets(Model& model)
 {
-  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets()"
+  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets(1)"
+       << " function.\n       This analyzer does not support parameter sets."
+       << std::endl;
+  abort_handler(-1);
+}
+
+void Analyzer::get_parameter_sets(Model& model, const int num_samples, 
+				  RealMatrix& design_matrix)
+{
+  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets(3)"
        << " function.\n       This analyzer does not support parameter sets."
        << std::endl;
   abort_handler(-1);

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1877 distinct keywords (plus 249 aliases) **/
+/** 1880 distinct keywords (plus 249 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1619,7 +1619,7 @@ static KeyWord
 	kw_266[1] = {
 		{"noise_tolerance",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,regressionNoiseTol)}
 		},
-	kw_267[17] = {
+	kw_267[19] = {
 		{"basis_pursuit",8,0,2,0,0,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT)},
 		{"basis_pursuit_denoising",8,1,2,0,kw_261,0.,0.,0,N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)},
 		{"bp",0,0,2,0,0,0.,0.,-2,N_mdm(type,regressionType_BASIS_PURSUIT)},
@@ -1630,6 +1630,8 @@ static KeyWord
 		{"least_absolute_shrinkage",8,2,2,0,kw_264,0.,0.,0,N_mdm(type,regressionType_LASSO_REGRESSION)},
 		{"least_angle_regression",8,1,2,0,kw_263,0.,0.,0,N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)},
 		{"least_squares",8,2,2,0,kw_265,0.,0.,0,N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)},
+		{"max_iterations",0x29,0,7,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"max_solver_iterations",0x29,0,8,0,0,0.,0.,0,N_mdm(nnint,maxSolverIterations)},
 		{"omp",0,1,2,0,kw_266,0.,0.,1,N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)},
 		{"orthogonal_matching_pursuit",8,1,2,0,kw_266,0.,0.,0,N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)},
 		{"ratio_order",10,0,1,0,0,0.,0.,0,N_mdm(Realp,collocRatioTermsOrder)},
@@ -1646,8 +1648,8 @@ static KeyWord
 	kw_269[6] = {
 		{0,0,2,0,0,kw_258},
 		{"basis_type",8,3,2,0,kw_260},
-		{"collocation_points_sequence",13,17,3,1,kw_267,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"collocation_ratio",10,17,3,1,kw_267,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points_sequence",13,19,3,1,kw_267,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_ratio",10,19,3,1,kw_267,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoDimPref)},
 		{"expansion_samples_sequence",13,3,3,1,kw_268,0.,0.,0,N_mdm(szarray,expansionSamples)}
 		},
@@ -1733,7 +1735,7 @@ static KeyWord
 		{"import_approx_points_file",11,4,14,0,kw_273,0.,0.,0,N_mdm(str,importApproxPtsFile)},
 		{"import_expansion_file",11,0,8,1,0,0.,0.,0,N_mdm(str,importExpansionFile)},
 		{"least_interpolation",0,5,8,1,kw_275,0.,0.,4,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
-		{"max_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"max_refinement_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxRefineIterations)},
 		{"normalized",8,0,11,0,0,0.,0.,0,N_mdm(true,normalizedCoeffs)},
 		{"oli",0,5,8,1,kw_275,0.,0.,1,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"orthogonal_least_interpolation",8,5,8,1,kw_275,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
@@ -1885,7 +1887,7 @@ static KeyWord
 		{"full_covariance",8,0,13,0,0,0.,0.,0,N_mdm(type,covarianceControl_FULL_COVARIANCE)},
 		{"h_refinement",8,3,6,0,kw_298,0.,0.,0,N_mdm(type,refinementType_H_REFINEMENT)},
 		{"import_approx_points_file",11,4,16,0,kw_300,0.,0.,0,N_mdm(str,importApproxPtsFile)},
-		{"max_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"max_refinement_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxRefineIterations)},
 		{"nested",8,0,11,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,11,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
 		{"p_refinement",8,2,6,0,kw_302,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
@@ -2307,14 +2309,15 @@ static KeyWord
 	kw_355[1] = {
 		{"folds",0x19,0,1,0,0,0.,0.,0,N_mom(int,refineCVFolds)}
 		},
-	kw_356[4] = {
+	kw_356[5] = {
 		{"convergence_tolerance",10,0,3,0,0,0.,0.,0,N_mom(Real,convergenceTolerance)},
-		{"cross_validation_metric",11,1,4,0,kw_355,0.,0.,0,N_mom(str,refineCVMetric)},
+		{"cross_validation_metric",11,1,5,0,kw_355,0.,0.,0,N_mom(str,refineCVMetric)},
 		{"max_function_evaluations",0x19,0,2,0,0,0.,0.,0,N_mom(int,maxFunctionEvals)},
-		{"max_iterations",0x19,0,1,0,0,0.,0.,0,N_mom(int,maxIterations)}
+		{"max_iterations",0x19,0,1,0,0,0.,0.,0,N_mom(int,maxIterations)},
+		{"soft_convergence_limit",0x29,0,4,0,0,0.,0.,0,N_mom(int,softConvergenceLimit)}
 		},
 	kw_357[1] = {
-		{"auto_refinement",8,4,1,0,kw_356,0.,0.,0,N_mom(true,autoRefine)}
+		{"auto_refinement",8,5,1,0,kw_356,0.,0.,0,N_mom(true,autoRefine)}
 		},
 	kw_358[2] = {
 		{"folds",9,0,1,0,0,0.,0.,0,N_mom(int,numFolds)},

@@ -546,11 +546,12 @@ challenge_diagnostic(const StringArray& metric_types,
 
 
 void Approximation::
-challenge_diagnostics(const RealMatrix& challenge_points,
+challenge_diagnostics(int fn_index, const RealMatrix& challenge_points,
                       const RealVector& challenge_resps)
 {
   if (approxRep)
-    approxRep->challenge_diagnostics(challenge_points, challenge_resps);
+    approxRep->challenge_diagnostics(fn_index, challenge_points, 
+				     challenge_resps);
   // else no-op
 }
 

@@ -65,6 +65,8 @@ protected:
   unsigned short sampling_scheme() const;
   void vary_pattern(bool pattern_flag);
   void get_parameter_sets(Model& model);
+  void get_parameter_sets(Model& model, const int num_samples, 
+			  RealMatrix& design_matrix);
 
 private:
 

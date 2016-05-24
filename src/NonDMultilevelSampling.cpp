@@ -43,9 +43,9 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     sampleType = SUBMETHOD_RANDOM;
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for {init,set}_communicators.
+  // set initial response mode for set_communicators() (precedes core_run()).
   if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // init,set LF,HF
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // set LF,HF
   else {
     Cerr << "Error: Multilevel Monte Carlo requires a hierarchical "
 	 << "surrogate model specification." << std::endl;
