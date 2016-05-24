@@ -234,7 +234,7 @@ void OutputManager::output_version(std::ostream& os) const
     version_info += " released " + DakotaBuildInfo::get_release_date() + ".\n"; 
 
     // subversion revision
-    version_info += "Subversion revision " 
+    version_info += "Repository revision " 
       + DakotaBuildInfo::get_rev_number()
       + " built " + DakotaBuildInfo::get_build_date()
       + " " + DakotaBuildInfo::get_build_time() + ".";

@@ -97,16 +97,26 @@ endif()
 # Generat DakotaBuildInfo.src if needed
 
 set(DAKOTA_BUILDINFO_PATH)
-if(DAKOTA_SVN_checkout)
-  file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
-        "// -- AUTO GENERATED FILE; DO NOT EDIT --
-        #include \"DakotaBuildInfo.hpp\"
-        std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
-        std::string Dakota::DakotaBuildInfo::subversionRev=\"${Dakota_SVN_REV}\";
-        std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
-        // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
-        //       Lower priority - a post-5.4 release task
-        " )
+if(DAKOTA_SVN_checkout OR DAKOTA_GIT_checkout)
+  if(DAKOTA_SVN_checkout)
+    file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
+      "// -- AUTO GENERATED FILE; DO NOT EDIT --
+      #include \"DakotaBuildInfo.hpp\"
+      std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
+      std::string Dakota::DakotaBuildInfo::revision=\"${Dakota_SVN_REV}\";
+      std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
+      // ToDo: Gather SVN rev for key TPLs, e.g. pecos, surfpack, etc.
+      //       Lower priority - a post-5.4 release task
+      " )
+  else()
+    file( WRITE ${Dakota_BINARY_DIR}/generated/src/DakotaBuildInfo.cpp
+      "// -- AUTO GENERATED FILE; DO NOT EDIT --
+      #include \"DakotaBuildInfo.hpp\"
+      std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
+      std::string Dakota::DakotaBuildInfo::revision=${Dakota_GIT_REV};
+      std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
+      " )
+  endif(DAKOTA_SVN_checkout)
   set(DAKOTA_BUILDINFO_PATH "${Dakota_BINARY_DIR}/generated/src/")
   
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/DakotaBuildInfo.cpp)
