@@ -595,16 +595,6 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     return;
   }
 
-  /*
-  // A lightweight alternative to full comm split collective:
-  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
-    copy_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
-    child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
-    return;
-  }
-  */
-
   // ------------------------------------------------------
   // Split parent Comm to create new intra- and inter-comms
   // ------------------------------------------------------
@@ -648,7 +638,17 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-  // special case for which we assign child = parent without partitioning
+  // special case: lightweight comm_dup alternative to comm_split
+  // Note: can safely comment out this special case if heavier weight
+  //       approach required for future contexts.
+  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder &&
+      !child_pl.idlePartition) {
+    copy_as_hub_server_comm(parent_pl, child_pl);
+    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
+    child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
+    return;
+  }
+  // special case: assign child = parent without partitioning
   if (child_pl.numServers < 1) { // no check on idlePartition for ded master
     // complete deep copy can be a problem since idle partition must
     // participate in MPI_Comm_dup() collective for hubServerInterComms
@@ -750,16 +750,6 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     return;
   }
 
-  /*
-  // A lightweight alternative to full comm split collective:
-  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {// 1-proc. peers
-    copy_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = true;
-    child_pl.serverId = parent_pl.serverCommRank+1; // peer id's = 1/2/3/.../n
-    return;
-  }
-  */
-
   // -----------------------------------------------------------
   // Split parent Comm to create new peer intra- and inter-comms
   // -----------------------------------------------------------
@@ -805,15 +795,26 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-  // special case for which we assign child = parent without partitioning
-  if (child_pl.numServers < 2 && !child_pl.idlePartition) { // 1 peer, no idle
-    // complete deep copy can be a problem since idle partition must
-    // participate in MPI_Comm_dup() collective for hubServerInterComms
-    //child_pl.copy(parent_pl);
-    // but partial deep copy of serverIntraComm is OK
-    copy_as_server_comm(parent_pl, child_pl);
-    child_pl.serverId = 1; // one peer server with id = 1
-    return;
+  if (!child_pl.idlePartition) {
+    // special case: lightweight comm_dup alternative to comm_split
+    // Note: can safely comment out this special case if heavier weight
+    //       approach required for future contexts.
+    if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc peers
+      copy_as_hub_server_comm(parent_pl, child_pl);
+      child_pl.serverMasterFlag = true;
+      child_pl.serverId = parent_pl.serverCommRank + 1;//peer id's = 1/2/3/.../n
+      return;
+    }
+    // special case: assign child = parent without partitioning
+    if (child_pl.numServers < 2) { // 1 peer, no idle
+      // complete deep copy can be a problem since idle partition must
+      // participate in MPI_Comm_dup() collective for hubServerInterComms
+      //child_pl.copy(parent_pl);
+      // but partial deep copy of serverIntraComm is OK
+      copy_as_server_comm(parent_pl, child_pl);
+      child_pl.serverId = 1; // one peer server with id = 1
+      return;
+    }
   }
 
 #ifdef DAKOTA_HAVE_MPI
