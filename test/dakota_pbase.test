@@ -5856,7 +5856,6 @@ Moment statistics for each response function:
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -5864,7 +5863,6 @@ Sample moment statistics for each response function:
  response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915603e-01 -7.2020797069e-01
  response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857917e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:

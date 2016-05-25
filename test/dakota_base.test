@@ -42490,7 +42490,6 @@ Moment statistics for each response function:
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -42498,7 +42497,6 @@ Sample moment statistics for each response function:
  response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915603e-01 -7.2020797069e-01
  response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857917e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 225 total (225 new, 0 duplicate)
 <<<<< Function evaluation summary: 225 total (225 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5723876953e+01
 Sample moment statistics for each response function:
@@ -42508,7 +42506,6 @@ Sample moment statistics for each response function:
  response_fn_3  2.6200675906e-02  6.8449760602e-03  7.7239908891e-01 -1.7226169499e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1196 total (1196 new, 0 duplicate)
-<<<<< Function evaluation summary: 1196 total (1196 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.6473632812e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -42516,7 +42513,6 @@ Sample moment statistics for each response function:
  response_fn_2  1.2909185639e-01  1.3332010710e-02  7.8547518798e-01 -8.3564940796e-01
  response_fn_3  2.5526774340e-02  6.7124750460e-03  8.0019589750e-01 -4.3358949118e-02
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
@@ -42526,7 +42522,6 @@ Sample moment statistics for each response function:
  response_fn_3  2.5405652704e-02  6.9278457374e-03  9.2245000658e-01  1.1118239318e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 231 total (231 new, 0 duplicate)
-<<<<< Function evaluation summary: 231 total (231 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5728759766e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -42534,7 +42529,6 @@ Sample moment statistics for each response function:
  response_fn_2  1.2922507010e-01  1.5043459300e-02  8.5442840593e-01 -1.3243496771e+00
  response_fn_3  2.5328822585e-02  6.8070499435e-03  8.7929081153e-01 -8.3011254264e-02
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 1349 total (1349 new, 0 duplicate)
 <<<<< Function evaluation summary: 1349 total (1349 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.6712646484e+01
 Sample moment statistics for each response function:
@@ -42545,7 +42539,6 @@ Sample moment statistics for each response function:
 dakota_uq_diffusion_mlpce.in
 Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.3002685546875000e+01
-<<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
 <<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
@@ -43415,14 +43408,14 @@ Sample moment statistics for each response function:
  response_fn_1  4.3597879571e+01  1.0665641290e+02  2.0179271206e+00  6.3664721458e+00
 dakota_uq_heat_eq_mlcvmc.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (HF_INT): 164 total (164 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 11303 total (11303 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 164 total (164 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.6436799107e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.2959409081e+01  1.0914737983e+02  2.1734462516e+00  7.0601550614e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (HF_INT): 564 total (564 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 114135 total (114135 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 564 total (564 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.8016334821e+01
 Sample moment statistics for each response function:
@@ -43431,20 +43424,17 @@ Sample moment statistics for each response function:
 dakota_uq_heat_eq_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 140 total (140 new, 0 duplicate)
-<<<<< Function evaluation summary: 140 total (140 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.6215000000e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  5.3641259944e+01  9.2864878974e+01  3.1933547723e-01  3.2697533050e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 234 total (234 new, 0 duplicate)
-<<<<< Function evaluation summary: 234 total (234 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.6532250000e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  2.6432112790e+01  8.1290451740e+01  9.8170030064e-01  2.4475331837e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1369 total (1369 new, 0 duplicate)
 <<<<< Function evaluation summary: 1369 total (1369 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 3.0362875000e+01
 Sample moment statistics for each response function:
