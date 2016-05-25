@@ -3219,6 +3219,7 @@
       <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
         <param type='INTEGER' />
       </keyword>
+      <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0" />
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
 	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">

@@ -310,6 +310,9 @@ public:
   /// Flag to use eigenvalue energy method to identify active subspace dimension
   bool subspaceIdEnergy;
 
+  /// Flag to build surrogate over active subspace
+  bool subspaceBuildSurrogate;
+
   /// Size of subspace
   int dimension;
 

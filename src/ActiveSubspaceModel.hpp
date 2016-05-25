@@ -107,6 +107,7 @@ protected:
   void derived_evaluate_nowait(const ActiveSet& set);
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
+  int evaluation_id() const;
 
 
   /// update component parallel mode for supporting parallelism in
@@ -172,6 +173,9 @@ protected:
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
   double computeEnergyCriterion(RealVector& singular_values);
+
+  /// Build surrogate over active subspace
+  void build_surrogate();
 
 
   // ---
@@ -309,6 +313,19 @@ protected:
   /// Truncation tolerance for eigenvalue energy subspace identification
   Real truncationTolerance;
 
+  /// the truth model which provides evaluations for building the active subspace
+  Model actualModel;
+
+  /// the result of performing a Nataf transformation to u-space from the truth
+  /// model
+  Model transformModel;
+
+  /// model containing a surrogate built over the active subspace
+  Model surrogateModel;
+
+  /// flag specifying whether or not a surrogate is built over the subspace
+  bool buildSurrogate;
+
 
   // Helper members
 
@@ -329,6 +346,14 @@ protected:
   int offlineEvalConcurrency;
 
 };
+
+inline int ActiveSubspaceModel::evaluation_id() const
+{
+  if (buildSurrogate)
+    return subModel.evaluation_id() + surrogateModel.evaluation_id();
+  else
+    return subModel.evaluation_id();
+}
 
 } // namespace Dakota
 

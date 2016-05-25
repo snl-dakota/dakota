@@ -12,6 +12,7 @@
 #include "BootstrapSampler.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
+#include "DataFitSurrModel.hpp"
 
 namespace Dakota {
 
@@ -35,7 +36,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   totalSamples(0), totalEvals(0), subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance"))
+  truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -67,17 +69,16 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 
   //check_submodel_compatibility(actualModel);
 
-  Model return_model;
+  actualModel = problem_db.get_model();
 
   transformVars = true;
 
   if (transformVars) {
-    ProbabilityTransformModel* transform_model
-       = new ProbabilityTransformModel(problem_db.get_model());
-    sub_model.assign_rep(transform_model, false);
+    transformModel.assign_rep(new ProbabilityTransformModel(actualModel), false);
+    sub_model = transformModel;
   }
   else {
-    sub_model = problem_db.get_model();
+    sub_model = actualModel;
   }
 
   problem_db.set_db_model_nodes(model_index); // restore
@@ -103,7 +104,8 @@ ActiveSubspaceModel(const Model& sub_model,
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
   totalSamples(0), totalEvals(0),
   subspaceInitialized(false), reducedRank(0),
-  gradientScaleFactors(RealArray(numFunctions, 1.0))
+  gradientScaleFactors(RealArray(numFunctions, 1.0)),
+  buildSurrogate(false)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -208,6 +210,9 @@ bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 
   // set new subspace variable labels
   update_var_labels();
+
+  if (buildSurrogate)
+    build_surrogate();
 
   subspaceInitialized = true;
 
@@ -352,7 +357,15 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
   component_parallel_mode(ONLINE_PHASE);
   
-  RecastModel::derived_evaluate(set);
+  if (buildSurrogate) {
+    Variables& surrogate_vars = surrogateModel.current_variables();
+    surrogate_vars = currentVariables;
+    surrogateModel.evaluate(set);
+    currentResponse.active_set(set);
+    currentResponse.update(surrogateModel.current_response());
+  }
+  else
+    RecastModel::derived_evaluate(set);
 }
 
 
@@ -366,7 +379,13 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
   component_parallel_mode(ONLINE_PHASE);
   
-  RecastModel::derived_evaluate_nowait(set);
+  if (buildSurrogate) {
+    Variables& surrogate_vars = surrogateModel.current_variables();
+    surrogate_vars = currentVariables;
+    surrogateModel.evaluate_nowait(set);
+  }
+  else
+    RecastModel::derived_evaluate_nowait(set);
 }
 
 
@@ -380,7 +399,11 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
   component_parallel_mode(ONLINE_PHASE);
   
-  return RecastModel::derived_synchronize();
+  if (buildSurrogate) {
+    return surrogateModel.synchronize();
+  }
+  else
+    return RecastModel::derived_synchronize();
 }
 
 
@@ -394,7 +417,11 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 
   component_parallel_mode(ONLINE_PHASE);
   
-  return RecastModel::derived_synchronize_nowait();
+  if (buildSurrogate) {
+    return surrogateModel.synchronize_nowait();
+  }
+  else
+    return RecastModel::derived_synchronize_nowait();
 }
 
 
@@ -1418,6 +1445,52 @@ response_mapping(const Variables& recast_y_vars,
 
     recast_resp.function_hessians(H_y_all);
   }
+}
+
+
+/**
+  Build surrogate over active subspace
+*/
+void ActiveSubspaceModel::build_surrogate()
+{
+  // Initialize surrogateModel here, switch it out with subModel after subspace
+  // is built.
+  Model asm_model;
+  asm_model.assign_rep(asmInstance, false);
+
+  String sample_reuse = "", approx_type = "global_moving_least_squares";
+  ActiveSet surr_set = current_response().active_set(); // copy
+
+  UShortArray approx_order(reducedRank, 2);
+  short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
+  Iterator dace_iterator;
+
+  surrogateModel.assign_rep(new DataFitSurrModel(dace_iterator, asm_model,
+    surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, sample_reuse), false);
+
+  const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
+  const IntResponseMap& all_responses = fullspaceSampler.all_responses();
+
+  Teuchos::BLAS<int, Real> teuchos_blas;
+
+  //  Project fullspace samples onto active directions
+  //  Calculate y = W1^T*x
+  Real alpha = 1.0;
+  Real beta = 0.0;
+
+  RealMatrix all_vars_y(reducedRank, all_vars_x.numCols());
+
+  const RealMatrix& W1 = activeBasis;
+  int m = W1.numCols();
+  int k = W1.numRows();
+  int n = all_vars_x.numCols();
+
+  teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
+                    W1.values(), k, all_vars_x.values(), k, beta,
+                    all_vars_y.values(), m);
+
+  surrogateModel.append_approximation(all_vars_y, all_responses, true);
 }
 
 }  // namespace Dakota

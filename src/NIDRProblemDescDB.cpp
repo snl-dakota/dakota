@@ -7216,7 +7216,8 @@ static bool
         MP_(pressFlag),
   MP_(subspaceIdBingLi),
   MP_(subspaceIdConstantine),
-  MP_(subspaceIdEnergy);
+  MP_(subspaceIdEnergy),
+  MP_(subspaceBuildSurrogate);
 
 static short
 	MP_(annNodes),

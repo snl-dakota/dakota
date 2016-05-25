@@ -3047,6 +3047,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
 	{"hierarchical_tags", P hierarchicalTags},
+	{"subspace.build_surrogate", P subspaceBuildSurrogate},
 	{"subspace.truncation_method.bing_li", P subspaceIdBingLi},
 	{"subspace.truncation_method.constantine", P subspaceIdConstantine},
 	{"subspace.truncation_method.energy", P subspaceIdEnergy},
