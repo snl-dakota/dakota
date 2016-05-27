@@ -166,7 +166,7 @@ if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
 endif()
 
 if(HAVE_ANN)
-  add_subdirectory(ann/src)
+  add_subdirectory(external/ann/src)
 endif()
 
 
