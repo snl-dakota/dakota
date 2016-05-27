@@ -236,7 +236,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
       approx_type == "global_gaussian" || approx_type == "global_kriging" ||
       strends(approx_type, "_orthogonal_polynomial") ||
       strends(approx_type, "_interpolation_polynomial") ||
-      strbegins(approx_type, "local_") || strbegins(approx_type, "multipoint_"))
+      strbegins(approx_type, "local_") ||
+      strbegins(approx_type, "multipoint_") ||
+      approx_type == "global_moving_least_squares")
       ? "analytic" : "numerical";
   else 
     gradientType = "none";

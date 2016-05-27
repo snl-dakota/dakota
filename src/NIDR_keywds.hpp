@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1880 distinct keywords (plus 249 aliases) **/
+/** 1881 distinct keywords (plus 249 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2280,9 +2280,10 @@ static KeyWord
 		{"constantine",8,0,2,0,0,0.,0.,0,N_mom(true,subspaceIdConstantine)},
 		{"energy",8,1,3,0,kw_349,0.,0.,0,N_mom(true,subspaceIdEnergy)}
 		},
-	kw_351[5] = {
+	kw_351[6] = {
 		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,actualModelPointer)},
 		{"bootstrap_samples",9,0,5,0,0,0.,0.,0,N_mom(int,numReplicates)},
+		{"build_surrogate",8,0,6,0,0,0.,0.,0,N_mom(true,subspaceBuildSurrogate)},
 		{"dimension",9,0,4,0,0,0.,0.,0,N_mom(int,dimension)},
 		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
 		{"truncation_method",8,3,3,0,kw_350}
@@ -2549,7 +2550,7 @@ static KeyWord
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
 		{"simulation",0,2,5,1,kw_348,0.,0.,1,N_mom(lit,modelType_simulation)},
 		{"single",8,2,5,1,kw_348,0.,0.,0,N_mom(lit,modelType_simulation)},
-		{"subspace",8,5,5,1,kw_351,0.,0.,0,N_mom(lit,modelType_subspace)},
+		{"subspace",8,6,5,1,kw_351,0.,0.,0,N_mom(lit,modelType_subspace)},
 		{"surrogate",8,5,5,1,kw_396,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},

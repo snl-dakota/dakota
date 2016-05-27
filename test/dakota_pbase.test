@@ -5856,7 +5856,6 @@ Moment statistics for each response function:
 dakota_uq_diffusion_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -5864,7 +5863,6 @@ Sample moment statistics for each response function:
  response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915603e-01 -7.2020797069e-01
  response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857917e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
@@ -7071,6 +7069,36 @@ response_fn_1 Sobol' indices:
    1.6499999999999999e+00   0.0000000000000000e+00
    1.7000000000000000e+00   0.0000000000000000e+00
    1.7500000000000000e+00   0.0000000000000000e+00
+Test Number 20 succeeded
+<<<<< Function evaluation summary (ID_I): 0 total (0 new, 0 duplicate)
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  5.7284180653046315e+03  2.4622067474696928e+03  9.6603422199974731e-01  2.1367422885706824e+00
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  5.2398628286406492e+03  6.2169733019686137e+03  2.1618343790779895e+03  2.8602846519549939e+03
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  9.11538e-03  1.00000e+00 
+       ssv_3 -1.40047e-02  2.85354e-02  1.00000e+00 
+response_fn_1  9.55464e-01  5.26637e-02  5.48743e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1  9.56513e-01 
+       ssv_2  1.47479e-01 
+       ssv_3  6.03718e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -2.45545e-02  1.00000e+00 
+       ssv_3 -9.02490e-03  1.23132e-02  1.00000e+00 
+response_fn_1  9.58788e-01 -1.17492e-02 -3.42034e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1  9.58868e-01 
+       ssv_2  4.13077e-02 
+       ssv_3  1.79321e-02 
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
