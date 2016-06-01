@@ -1911,6 +1911,10 @@ KEYWORD12 method
 	      ]
 	    ]
 	  [ burn_in_samples INTEGER ]
+	  [ posterior_stats
+	    [ kl_divergence ]
+	    [ mutual_info ]
+	    ]
 	  [ sub_sampling_period INTEGER ]
 	  [ probability_levels REALLIST
 	    [ num_probability_levels INTEGERLIST ]

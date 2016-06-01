@@ -2404,6 +2404,10 @@
 		  <keyword  id='burn_in_samples' name='burn_in_samples' code='{N_mdm(int,burnInSamples)}' label='Burn-in samples' help='' minOccurs='0' default='0'>
 		  	<param type='INTEGER' />
 		  </keyword>
+	          <keyword id="posterior_stats" name="posterior_stats" code="{0}" minOccurs="0">
+	             <keyword id="kl_divergence" name="kl_divergence" code="{N_mdm(true,posteriorStatsKL)}" minOccurs="0" />
+	             <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" />
+		  </keyword>
 	      <keyword  id='sub_sampling_period' name='sub_sampling_period' code='{N_mdm(int,subSamplingPeriod)}' label='Chain sampling period for statistics' help='' minOccurs='0' default='0'>
 		  	<param type='INTEGER' />
 		  </keyword>
