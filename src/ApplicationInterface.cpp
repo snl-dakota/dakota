@@ -814,6 +814,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       else // local to processor
 	asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
     }
+    // suppress header on next pass if no new completions on this pass
     headerFlag = !rawResponseMap.empty();
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {

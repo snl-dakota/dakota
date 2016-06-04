@@ -227,7 +227,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   const ShortArray& asv = set.request_vector();
   size_t i, num_fns = asv.size();
   bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_fns; i++) {
+  for (i=0; i<num_fns; ++i) {
     if (asv[i] & 2) grad_flag = true;
     if (asv[i] & 4) hess_flag = true;
   }
@@ -1242,19 +1242,19 @@ inside(const RealVector& c_vars, const IntVector& di_vars,
       abort_handler(-1);
     }
 
-    for (i=0; i<num_c_vars; i++) {
+    for (i=0; i<num_c_vars; ++i) {
       if (c_vars[i] < c_l_bnds[i] || c_vars[i] > c_u_bnds[i]) {
 	inside = false;
 	break;
       }
     }
-    for (i=0; i<num_di_vars; i++) {
+    for (i=0; i<num_di_vars; ++i) {
       if (di_vars[i] < di_l_bnds[i] || di_vars[i] > di_u_bnds[i]) {
 	inside = false;
 	break;
       }
     }
-    for (i=0; i<num_dr_vars; i++) {
+    for (i=0; i<num_dr_vars; ++i) {
       if (dr_vars[i] < dr_l_bnds[i] || dr_vars[i] > dr_u_bnds[i]) {
 	inside = false;
 	break;
@@ -1502,16 +1502,13 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
     component_parallel_mode(ACTUAL_MODEL);
     const IntResponseMap& actual_resp_map = actualModel.synchronize();
 
-    // update map keys to use surrModelEvalCntr (proxy simplifies logic)
-    IntResponseMap& actual_resp_map_proxy
-      = (approx_evals) ? actual_resp_map_rekey : surrResponseMap;
-    for (IntRespMCIter r_cit = actual_resp_map.begin();
-	 r_cit != actual_resp_map.end(); r_cit++)
-      actual_resp_map_proxy[truthIdMap[r_cit->first]] = r_cit->second;
-    truthIdMap.clear();
-
-    if (!approx_evals)        // return ref to non-temporary
-      return surrResponseMap; // rekeyed by proxy
+    // update map keys to use surrModelEvalCntr
+    if (approx_evals)
+      rekey_response_map(actual_resp_map, actual_resp_map_rekey, truthIdMap);
+    else {
+      rekey_response_map(actual_resp_map, surrResponseMap,       truthIdMap);
+      return surrResponseMap; // if no approx evals, return actual results
+    }
   }
 
   // ---------------------------------
@@ -1520,18 +1517,16 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
-    //parallelLib.parallel_configuration_iterator(modelPCIter);
+    const IntResponseMap& approx_resp_map = approxInterface.synch();
 
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
-    derived_synchronize_approx(approxInterface.synch(), approx_resp_map_rekey);
-
-    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
-
-    surrIdMap.clear();
-    if (!actual_evals)        // return ref to non-temporary
-      return surrResponseMap; // rekeyed and corrected by proxy
+    if (actual_evals)
+      derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    else {
+      derived_synchronize_approx(approx_resp_map, surrResponseMap);
+      return surrResponseMap; // if no approx evals, return actual results
+    }
   }
 
   // --------------------------------------
@@ -1547,11 +1542,21 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   case MODEL_DISCREPANCY: {
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     for (; act_it != actual_resp_map_rekey.end() && 
-	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it)
+	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it) {
+      check_key(act_it->first, app_it->first);
       deltaCorr.compute(act_it->second, app_it->second,
 			surrResponseMap[act_it->first], quiet_flag);
+    }
     break;
   }
+  case AGGREGATED_MODELS:
+    for (; act_it != actual_resp_map_rekey.end() && 
+	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it) {
+      check_key(act_it->first, app_it->first);
+      aggregate_response(act_it->second, app_it->second,
+			 surrResponseMap[act_it->first]);
+    }
+    break;
   default: // {UN,AUTO_}CORRECTED_SURROGATE modes
     // process any combination of HF and LF completions
     while (act_it != actual_resp_map_rekey.end() ||
@@ -1598,22 +1603,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     const IntResponseMap& actual_resp_map = actualModel.synchronize_nowait();
 
     // update map keys to use surrModelEvalCntr
-    for (IntRespMCIter r_cit = actual_resp_map.begin();
-	 r_cit != actual_resp_map.end(); r_cit++) {
-      int am_eval_id = r_cit->first;
-      if (approx_evals)
-	actual_resp_map_rekey[truthIdMap[am_eval_id]] = r_cit->second;
-      else {
-	surrResponseMap[truthIdMap[am_eval_id]] = r_cit->second;
-	truthIdMap.erase(am_eval_id); // erase now prior to return below
-      }
+    if (approx_evals)
+      rekey_response_map(actual_resp_map, actual_resp_map_rekey, truthIdMap);
+    else {
+      rekey_response_map(actual_resp_map, surrResponseMap,       truthIdMap);
+      return surrResponseMap; // if no approx evals, return actual results
     }
-
-    // if no approx evals (BYPASS_SURROGATE mode or rare case of empty
-    // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return all
-    // actual results.  MODEL_DISCREPANCY mode has both approx & actual evals.
-    if (!approx_evals)
-      return surrResponseMap;
   }
 
   // ---------------------------------
@@ -1622,19 +1617,15 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
-    //parallelLib.parallel_configuration_iterator(modelPCIter);
+    const IntResponseMap& approx_resp_map = approxInterface.synch_nowait();
 
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
-    derived_synchronize_approx(approxInterface.synch_nowait(),
-			       approx_resp_map_rekey);
-
-    //parallelLib.parallel_configuration_iterator(pc_iter); // restore
-
-    if (!actual_evals) {      // return ref to non-temporary
-      surrIdMap.clear();      // approx_resp_map is complete
-      return surrResponseMap; // rekeyed and corrected by proxy
+    if (actual_evals)
+      derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    else {
+      derived_synchronize_approx(approx_resp_map, surrResponseMap);
+      return surrResponseMap; // if no approx evals, return actual results
     }
   }
 
@@ -1650,14 +1641,10 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   IntRespMCIter act_it = actual_resp_map_rekey.begin(),
                 app_it = approx_resp_map_rekey.begin();
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  // invert truthIdMap and surrIdMap
-  IntIntMap inverse_truth_id_map, inverse_surr_id_map;
-  for (IntIntMCIter tim_it=truthIdMap.begin();
-       tim_it!=truthIdMap.end(); ++tim_it)
-    inverse_truth_id_map[tim_it->second] = tim_it->first;
-  for (IntIntMCIter sim_it=surrIdMap.begin();
-       sim_it!=surrIdMap.end(); ++sim_it)
-    inverse_surr_id_map[sim_it->second] = sim_it->first;
+  // remaining values from truthIdMap key-value pairs
+  IntSet remain_truth_ids; IntIntMIter im_it;
+  for (im_it=truthIdMap.begin(); im_it!=truthIdMap.end(); ++im_it)
+    remain_truth_ids.insert(im_it->second);
   // process any combination of actual and approx completions
   while (act_it != actual_resp_map_rekey.end() ||
 	 app_it != approx_resp_map_rekey.end()) {
@@ -1668,7 +1655,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     // process approx/actual results or cache them for next pass
     if (act_eval_id < app_eval_id) { // only actual available
       switch (responseMode) {
-      case MODEL_DISCREPANCY:
+      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
 	Cerr << "Error: approx eval missing in DataFitSurrModel::"
 	     << "derived_synchronize_nowait()" << std::endl;
 	abort_handler(-1); break;
@@ -1676,25 +1663,22 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 	// there is no approx component to this response
 	response_mapping(act_it->second, empty_resp,
 			 surrResponseMap[act_eval_id]);
-	truthIdMap.erase(inverse_truth_id_map[act_eval_id]);
 	break;
       }
       ++act_it;
     }
     else if (app_eval_id < act_eval_id) { // only approx available
       switch (responseMode) {
-      case MODEL_DISCREPANCY:
+      case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
 	// cache approx response since actual contribution not yet available
 	cachedApproxRespMap[app_eval_id] = app_it->second; break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
-	if (inverse_truth_id_map.count(app_eval_id))
-	  // cache approx response since actual contribution not yet available
+	if (remain_truth_ids.find(app_eval_id) != remain_truth_ids.end())
+	  // cache approx response since actual contribution still pending
 	  cachedApproxRespMap[app_eval_id] = app_it->second;
-	else { // response complete: there is no actual contribution
+	else // response complete: there is no actual contribution
 	  response_mapping(empty_resp, app_it->second, 
 			   surrResponseMap[app_eval_id]);
-	  surrIdMap.erase(inverse_surr_id_map[app_eval_id]);
-	}
 	break;
       }
       ++app_it;
@@ -1704,17 +1688,67 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
       case MODEL_DISCREPANCY:
 	deltaCorr.compute(act_it->second, app_it->second,
 			  surrResponseMap[act_eval_id], quiet_flag); break;
+      case AGGREGATED_MODELS:
+	aggregate_response(act_it->second, app_it->second,
+			   surrResponseMap[act_eval_id]);            break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
 	response_mapping(act_it->second, app_it->second,
 			 surrResponseMap[act_eval_id]);              break;
       }
-      truthIdMap.erase(inverse_truth_id_map[act_eval_id]);
-      surrIdMap.erase(inverse_surr_id_map[app_eval_id]);
       ++act_it; ++app_it;
     }
   }
 
   return surrResponseMap;
+}
+
+
+void DataFitSurrModel::
+derived_synchronize_approx(const IntResponseMap& approx_resp_map,
+			   IntResponseMap& approx_resp_map_rekey)
+{
+  bool actual_evals = !truthIdMap.empty();
+
+  // update map keys to use surrModelEvalCntr
+  rekey_response_map(approx_resp_map, approx_resp_map_rekey, surrIdMap);
+
+  IntRespMIter r_it;
+  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
+    // Interface::rawResponseMap can be corrected directly in the case of an
+    // ApproximationInterface since data_pairs is not used (not true for
+    // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
+    // The response map from ApproximationInterface's quasi-asynch mode is
+    // complete and in order.
+
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+    //if (!deltaCorr.computed() && !approx_resp_map_rekey.empty())
+    //  deltaCorr.compute(rawVarsMap.begin()->second, ...,
+    //                    approx_resp_map_rekey.begin()->second, quiet_flag);
+    IntVarsMIter v_it;
+    for (r_it  = approx_resp_map_rekey.begin(), v_it = rawVarsMap.begin();
+	 r_it != approx_resp_map_rekey.end(); ++r_it, ++v_it) {
+      deltaCorr.apply(v_it->second,//rawVarsMap[r_it->first],
+		      r_it->second, quiet_flag);
+      // decided to export auto-corrected approx response
+      export_point(r_it->first, v_it->second, r_it->second);
+    }
+    rawVarsMap.clear();
+  }
+  else if (!exportPointsFile.empty()) {
+    IntVarsMIter v_it;
+    for (r_it  = approx_resp_map_rekey.begin(), v_it = rawVarsMap.begin();
+	 r_it != approx_resp_map_rekey.end(); ++r_it, ++v_it)
+      export_point(r_it->first, v_it->second, r_it->second);
+    rawVarsMap.clear();
+  }
+
+  // add cached evals (synchronized approx evals that could not be returned
+  // since truth eval portions were still pending) for processing.  Do not
+  // correct them a second time.
+  for (r_it  = cachedApproxRespMap.begin();
+       r_it != cachedApproxRespMap.end(); ++r_it)
+    approx_resp_map_rekey[r_it->first] = r_it->second;
+  cachedApproxRespMap.clear();
 }
 
 
@@ -1839,57 +1873,6 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
   else
     TabularIO::write_data_tabular(exportFileStream, vars, interface_id(), resp, 
 				  eval_id, exportFormat);
-}
-
-
-void DataFitSurrModel::
-derived_synchronize_approx(const IntResponseMap& approx_resp_map,
-			   IntResponseMap& approx_resp_map_rekey)
-{
-  // update map keys to use surrModelEvalCntr
-  bool actual_evals = !truthIdMap.empty();
-  IntResponseMap& approx_resp_map_proxy
-    = (actual_evals) ? approx_resp_map_rekey : surrResponseMap;
-  for (IntRespMCIter r_cit = approx_resp_map.begin();
-       r_cit != approx_resp_map.end(); ++r_cit)
-    approx_resp_map_proxy[surrIdMap[r_cit->first]] = r_cit->second;
-
-  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
-    // Interface::rawResponseMap can be corrected directly in the case of an
-    // ApproximationInterface since data_pairs is not used (not true for
-    // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
-    // The response map from ApproximationInterface's quasi-asynch mode is
-    // complete and in order.
-
-    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-    //if (!deltaCorr.computed() && !approx_resp_map_proxy.empty())
-    //  deltaCorr.compute(rawVarsMap.begin()->second, ...,
-    //                    approx_resp_map_proxy.begin()->second, quiet_flag);
-    IntVarsMIter v_it; IntRespMIter r_it;
-    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
-	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it) {
-      deltaCorr.apply(v_it->second,//rawVarsMap[r_it->first],
-		      r_it->second, quiet_flag);
-      // decided to export auto-corrected approx response
-      export_point(r_it->first, v_it->second, r_it->second);
-    }
-    rawVarsMap.clear();
-  }
-  else if (!exportPointsFile.empty()) {
-    IntVarsMIter v_it; IntRespMIter r_it;
-    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
-	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
-      export_point(r_it->first, v_it->second, r_it->second);
-    rawVarsMap.clear();
-  }
-
-  // add cached evals (synchronized approx evals that could not be returned
-  // since truth eval portions were still pending) for processing.  Do not
-  // correct them a second time.
-  for (IntRespMCIter r_cit = cachedApproxRespMap.begin();
-       r_cit != cachedApproxRespMap.end(); r_cit++)
-    approx_resp_map_proxy[r_cit->first] = r_cit->second;
-  cachedApproxRespMap.clear();
 }
 
 
@@ -2248,6 +2231,5 @@ void DataFitSurrModel::update_from_actual_model()
     userDefinedConstraints.nonlinear_eq_constraint_targets(
       actualModel.nonlinear_eq_constraint_targets());
 }
-
 
 } // namespace Dakota

@@ -320,7 +320,7 @@ private:
   //- Heading: Data members
   //
 
-  /// number of calls to derived_evaluate()/derived_evaluate_nowait()
+  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
   int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate

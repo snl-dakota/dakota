@@ -253,7 +253,7 @@ private:
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
   /// locate existing or allocate new entry in nestedResponseMap
-  Response& find_nested_response(int nested_cntr);
+  Response& nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
   void check_response_map(const ShortArray& mapped_asv);
 
@@ -575,7 +575,7 @@ inline void NestedModel::stop_servers()
 { component_parallel_mode(0); }
 
 
-inline Response& NestedModel::find_nested_response(int nested_cntr)
+inline Response& NestedModel::nested_response(int nested_cntr)
 {
   IntRespMIter r_it = nestedResponseMap.find(nested_cntr);
   if (r_it == nestedResponseMap.end()) {
