@@ -1015,20 +1015,20 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
 
-  /*
   // Early return options avoid some overhead:
-  if (surrIdMap.empty())  { combined_resp_map = hf_resp_map; return; }
+  if (lf_resp_map.empty() && surrIdMap.empty())  // none completed, none pending
+    { combined_resp_map = hf_resp_map; return; }
   if (responseMode == AUTO_CORRECTED_SURROGATE)
     compute_apply_delta(lf_resp_map);
-  if (truthIdMap.empty()) { combined_resp_map = lf_resp_map; return; }
-  */
+  if (hf_resp_map.empty() && truthIdMap.empty()) // none completed, none pending
+    { combined_resp_map = lf_resp_map; return; }
 
-  // invert truthIdMap and surrIdMap
-  IntIntMap inverse_truth_id_map, inverse_surr_id_map; IntIntMCIter id_it;
+  // invert remaining entries (pending jobs) in truthIdMap and surrIdMap
+  IntIntMap remain_truth_ids, remain_surr_ids; IntIntMCIter id_it;
   for (id_it=truthIdMap.begin(); id_it!=truthIdMap.end(); ++id_it)
-    inverse_truth_id_map[id_it->second] = id_it->first;
+    remain_truth_ids[id_it->second] = id_it->first;
   for (id_it=surrIdMap.begin();  id_it!=surrIdMap.end();  ++id_it)
-    inverse_surr_id_map[id_it->second]  = id_it->first;
+    remain_surr_ids[id_it->second]  = id_it->first;
   
   // process any combination of HF and LF completions
   IntRespMCIter hf_cit = hf_resp_map.begin();
@@ -1042,17 +1042,15 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
     if (hf_eval_id < lf_eval_id) { // only HF available
       switch (responseMode) {
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-	// cache HF response since LF contribution not yet available
+	// LF contribution is pending -> cache HF response
 	cachedTruthRespMap[hf_eval_id] = hf_cit->second; break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-	if (inverse_surr_id_map.find(hf_eval_id) != inverse_surr_id_map.end())
+	if (remain_surr_ids.find(hf_eval_id) != remain_surr_ids.end())
 	  // LF contribution is pending -> cache HF response
 	  cachedTruthRespMap[hf_eval_id] = hf_cit->second;
-	else { // no LF component is pending -> HF contribution is sufficient
+	else // no LF component is pending -> HF contribution is sufficient
 	  response_mapping(hf_cit->second, empty_resp,
 			   surrResponseMap[hf_eval_id]);
-	  truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
-	}
 	break;
       }
       ++hf_cit;
@@ -1060,17 +1058,15 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
     else if (lf_eval_id < hf_eval_id) { // only LF available
       switch (responseMode) {
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
-	// cache LF response since HF contribution is pending is sufficient
+	// HF contribution is pending -> cache LF response
 	cachedApproxRespMap[lf_eval_id] = lf_it->second; break;
       default: // {UNCORRECTED,AUTO_CORRECTED,BYPASS}_SURROGATE modes
-	if (inverse_truth_id_map.find(lf_eval_id) != inverse_truth_id_map.end())
+	if (remain_truth_ids.find(lf_eval_id) != remain_truth_ids.end())
           // HF contribution is pending -> cache LF response
 	  cachedApproxRespMap[lf_eval_id] = lf_it->second;
-	else { // no HF component is pending -> LF contribution is sufficient
+	else // no HF component is pending -> LF contribution is sufficient
 	  response_mapping(empty_resp, lf_it->second,
 			   surrResponseMap[lf_eval_id]);
-	  surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
-	}
 	break;
       }
       ++lf_it;
@@ -1088,8 +1084,6 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
 	response_mapping(hf_cit->second, lf_it->second,
 			 surrResponseMap[hf_eval_id]);              break;
       }
-      truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
-      surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
       ++hf_cit; ++lf_it;
     }
   }
