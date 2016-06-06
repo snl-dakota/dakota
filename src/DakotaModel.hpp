@@ -1122,17 +1122,22 @@ protected:
   Real forward_grad_step(size_t num_deriv_vars, size_t xj_index,
                          Real x0_j, Real lb_j, Real ub_j);
 
-  /// rekey jobs from resp_map to resp_map_rekey according to id_map;
-  /// this version iterates over resp_map and searches id_map
+  /// rekey jobs from resp_map to resp_map_rekey according to id_map; this
+  /// version selects a loop over response or id map based on the smaller
+  /// array size
   void rekey_response_map(const IntResponseMap& resp_map,
 			  IntResponseMap& resp_map_rekey, IntIntMap& id_map,
 			  bool deep_copy_resp = false);
   /// rekey jobs from resp_map to resp_map_rekey according to id_map;
-  /// this version iterates over id_map and searches resp_map
-  void rekey_response_map_by_id(IntIntMap& id_map,
-				const IntResponseMap& resp_map,
+  /// this version iterates over resp_map and searches id_map
+  void rekey_response_map_rloop(const IntResponseMap& resp_map,
 				IntResponseMap& resp_map_rekey,
-				bool deep_copy_resp = false);
+				IntIntMap& id_map, bool deep_copy_resp = false);
+  /// rekey jobs from resp_map to resp_map_rekey according to id_map;
+  /// this version iterates over id_map and searches resp_map
+  void rekey_response_map_iloop(const IntResponseMap& resp_map,
+				IntResponseMap& resp_map_rekey,
+				IntIntMap& id_map, bool deep_copy_resp = false);
 
   //
   //- Heading: Data
@@ -3360,11 +3365,23 @@ rekey_response_map(const IntResponseMap& resp_map,
 		   IntResponseMap& resp_map_rekey, IntIntMap& id_map,
 		   bool deep_copy_resp)
 {
+  if (resp_map.size() <= id_map.size()) // e.g., nonblocking synch
+    rekey_response_map_rloop(resp_map, resp_map_rekey, id_map, deep_copy_resp);
+  else                   // e.g., derived_synchronize_same_model()
+    rekey_response_map_iloop(resp_map, resp_map_rekey, id_map, deep_copy_resp);
+}
+
+
+inline void Model::
+rekey_response_map_rloop(const IntResponseMap& resp_map,
+			 IntResponseMap& resp_map_rekey, IntIntMap& id_map,
+			 bool deep_copy_resp)
+{
   // rekey registered evals
   resp_map_rekey.clear();
   IntIntMIter id_it; IntRespMCIter r_cit;
   for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-    id_it = id_map.find(r_cit->first);
+    id_it = id_map.find(r_cit->first); // Note: no iterator hint accelerator
     // unfound jobs may be from another Model using a shared Interface instance
     if (id_it != id_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy_resp) ?
@@ -3376,16 +3393,16 @@ rekey_response_map(const IntResponseMap& resp_map,
 
 
 inline void Model::
-rekey_response_map_by_id(IntIntMap& id_map, const IntResponseMap& resp_map,
-			 IntResponseMap& resp_map_rekey, bool deep_copy_resp)
+rekey_response_map_iloop(const IntResponseMap& resp_map,
+			 IntResponseMap& resp_map_rekey, IntIntMap& id_map,
+			 bool deep_copy_resp)
 {
   // rekey registered evals
   resp_map_rekey.clear();
-
   // Immediate erasure relying on iterator invalidation + postfix rules
   IntIntMIter id_it = id_map.begin(); IntRespMCIter r_cit;
   while (id_it!=id_map.end()) {
-    r_cit = resp_map.find(id_it->first);
+    r_cit = resp_map.find(id_it->first); // Note: no iterator hint accelerator
     if (r_cit != resp_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy_resp) ?
 	r_cit->second.copy() : r_cit->second;
@@ -3396,50 +3413,7 @@ rekey_response_map_by_id(IntIntMap& id_map, const IntResponseMap& resp_map,
     else
       ++id_it;
   }
-
-  /* Defer erasure until end
-  IntSet found_keys; // defer erasure until end
-  IntIntMIter id_it; IntRespMCIter r_cit; ISIter k_it;
-  for (id_it=id_map.begin(); id_it!=id_map.end(); ++id_it) {
-    int key = id_it->first;
-    r_cit = resp_map.find(key);
-    if (r_cit != resp_map.end()) {
-      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
-	r_cit->second.copy() : r_cit->second;
-      found_keys.insert(key);
-    }
-  }
-  for (k_it=found_keys.begin(); k_it!=found_keys.end(); ++k_it)
-    id_map.erase(*k_it);
-  */
 }
-
-
-/* Rekey a response map into two pieces based on two id maps:
-inline void Model::
-rekey_response_map(const IntResponseMap& resp_map,
-		   IntResponseMap& resp_map_rekey1, IntIntMap& id_map1,
-		   IntResponseMap& resp_map_rekey2, IntIntMap& id_map2,
-		   bool deep_copy_resp1, bool deep_copy_resp2)
-{
-  resp_map_rekey1.clear(); resp_map_rekey2.clear();
-  for (r_cit = resp_map.begin(); r_cit != resp_map.end(); ++r_cit) {
-    id_it = id_map1.find(r_cit->first);
-    if (id_it != id_map1.end()) {
-      resp_map_rekey1[id_it->second] = r_cit->second;
-      id_map1.erase(id_it);
-    }
-    else {
-      id_it = id_map2.find(r_cit->first);
-      if (id_it != id_map2.end()) {
-	resp_map_rekey2[id_it->second] = (deep_copy_resp2) ?
-	  r_cit->second.copy() : r_cit->second;
-	id_map2.erase(id_it);
-      }
-    }
-  }
-}
-*/
 
 
 /// global comparison function for Model

@@ -697,9 +697,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_same_model()
   // Separate & rekey LF/HF resp maps for input to derived_synchronize_combine()
   // don't loop over combined_resp_map twice; loop once over each IdMap
   IntResponseMap hf_resp_map, lf_resp_map;
-  rekey_response_map_by_id(truthIdMap, combined_resp_map, hf_resp_map);
+  rekey_response_map_iloop(combined_resp_map, hf_resp_map, truthIdMap);
   bool deep_cp = (responseMode == AUTO_CORRECTED_SURROGATE);
-  rekey_response_map_by_id(surrIdMap, combined_resp_map, lf_resp_map, deep_cp);
+  rekey_response_map_iloop(combined_resp_map, lf_resp_map, surrIdMap, deep_cp);
   
   // cached response maps keyed with hierModelEvalCntr in evaluate_nowait()
   hf_resp_map.insert(cachedTruthRespMap.begin(),  cachedTruthRespMap.end());
@@ -726,12 +726,12 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_same_interface()
 
   // Rekey LF/HF resp maps for input to derived_synchronize_combine()
   IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-  rekey_response_map(hf_resp_map, hf_resp_map_rekey, truthIdMap);
+  rekey_response_map_rloop(hf_resp_map, hf_resp_map_rekey, truthIdMap);
   // Interface::rawResponseMap should _not_ be corrected directly since
   // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
   // responseRep -> modifying rawResponseMap affects data_pairs.
   bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-  rekey_response_map(lf_resp_map, lf_resp_map_rekey, surrIdMap, deep_copy);
+  rekey_response_map_rloop(lf_resp_map, lf_resp_map_rekey, surrIdMap,deep_copy);
 
   // cached response maps keyed with hierModelEvalCntr in evaluate_nowait()
   hf_resp_map_rekey.insert(cachedTruthRespMap.begin(),cachedTruthRespMap.end());
@@ -774,8 +774,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_distinct_model()
   IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey; IntRespMCIter r_cit;
   if (!truthIdMap.empty()) { // synchronize HF evals
     component_parallel_mode(HF_MODEL);
-    rekey_response_map(orderedModels[highFidelityIndices.first].synchronize(),
-		       hf_resp_map_rekey, truthIdMap);
+    rekey_response_map_rloop(
+      orderedModels[highFidelityIndices.first].synchronize(),
+      hf_resp_map_rekey, truthIdMap);
   }
   // add cached truth evals from:
   // (a) recovered HF asynch evals that could not be returned since LF
@@ -794,8 +795,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_distinct_model()
     // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share a
     // responseRep -> modifying rawResponseMap affects data_pairs.
     bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-    rekey_response_map(orderedModels[lowFidelityIndices.first].synchronize(),
-		       lf_resp_map_rekey, surrIdMap, deep_copy);
+    rekey_response_map_rloop(
+      orderedModels[lowFidelityIndices.first].synchronize(),
+      lf_resp_map_rekey, surrIdMap, deep_copy);
   }
   // add cached approx evals from:
   // (a) recovered LF asynch evals that could not be returned since HF
@@ -904,9 +906,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_same_model_nowait()
   // derived_synchronize_combine_nowait().  Don't loop over
   // combined_resp_map twice; loop once over each IdMap.
   IntResponseMap hf_resp_map, lf_resp_map;
-  rekey_response_map_by_id(truthIdMap, combined_resp_map, hf_resp_map);
+  rekey_response_map_iloop(combined_resp_map, hf_resp_map, truthIdMap);
   bool deep_cp = (responseMode == AUTO_CORRECTED_SURROGATE);
-  rekey_response_map_by_id(surrIdMap, combined_resp_map, lf_resp_map, deep_cp);
+  rekey_response_map_iloop(combined_resp_map, lf_resp_map, surrIdMap, deep_cp);
 
   // add any cached results (keyed with hierModelEvalCntr in evaluate_nowait())
   hf_resp_map.insert(cachedTruthRespMap.begin(),  cachedTruthRespMap.end());
@@ -934,9 +936,9 @@ derived_synchronize_same_interface_nowait()
   // extract and rekey the LF and HF results
   // Rekey LF/HF resp maps for input to derived_synchronize_combine()
   IntResponseMap hf_resp_map_rekey, lf_resp_map_rekey;
-  rekey_response_map(hf_resp_map, hf_resp_map_rekey, truthIdMap);
+  rekey_response_map_rloop(hf_resp_map, hf_resp_map_rekey, truthIdMap);
   bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-  rekey_response_map(lf_resp_map, lf_resp_map_rekey, surrIdMap, deep_copy);
+  rekey_response_map_rloop(lf_resp_map, lf_resp_map_rekey, surrIdMap,deep_copy);
 
   // add any cached results (keyed with hierModelEvalCntr in evaluate_nowait())
   hf_resp_map_rekey.insert(cachedTruthRespMap.begin(),cachedTruthRespMap.end());
@@ -964,7 +966,7 @@ derived_synchronize_distinct_model_nowait()
     const IntResponseMap& hf_resp_map
       = orderedModels[highFidelityIndices.first].synchronize_nowait();
     // update map keys to use hierModelEvalCntr
-    rekey_response_map(hf_resp_map, hf_resp_map_rekey, truthIdMap);
+    rekey_response_map_rloop(hf_resp_map, hf_resp_map_rekey, truthIdMap);
   }
   // add cached truth evals for processing, where evals are cached from:
   // (a) recovered HF asynch evals that could not be returned since LF
@@ -984,7 +986,8 @@ derived_synchronize_distinct_model_nowait()
       = orderedModels[lowFidelityIndices.first].synchronize_nowait();
     // update map keys to use hierModelEvalCntr
     bool deep_copy = (responseMode == AUTO_CORRECTED_SURROGATE);
-    rekey_response_map(lf_resp_map, lf_resp_map_rekey, surrIdMap, deep_copy);
+    rekey_response_map_rloop(lf_resp_map, lf_resp_map_rekey,
+			     surrIdMap, deep_copy);
   }
   // add cached approx evals for processing, where evals are cached from:
   // (a) recovered LF asynch evals that could not be returned since HF

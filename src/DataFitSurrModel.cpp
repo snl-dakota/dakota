@@ -1504,9 +1504,10 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_response_map(actual_resp_map, actual_resp_map_rekey, truthIdMap);
+      rekey_response_map_rloop(actual_resp_map, actual_resp_map_rekey,
+			       truthIdMap);
     else {
-      rekey_response_map(actual_resp_map, surrResponseMap,       truthIdMap);
+      rekey_response_map_rloop(actual_resp_map, surrResponseMap, truthIdMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1604,9 +1605,10 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_response_map(actual_resp_map, actual_resp_map_rekey, truthIdMap);
+      rekey_response_map_rloop(actual_resp_map, actual_resp_map_rekey,
+			       truthIdMap);
     else {
-      rekey_response_map(actual_resp_map, surrResponseMap,       truthIdMap);
+      rekey_response_map_rloop(actual_resp_map, surrResponseMap, truthIdMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1710,7 +1712,7 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
   bool actual_evals = !truthIdMap.empty();
 
   // update map keys to use surrModelEvalCntr
-  rekey_response_map(approx_resp_map, approx_resp_map_rekey, surrIdMap);
+  rekey_response_map_rloop(approx_resp_map, approx_resp_map_rekey, surrIdMap);
 
   IntRespMIter r_it;
   if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
