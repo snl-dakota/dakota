@@ -1447,8 +1447,9 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
 
     // load up queue of iterator jobs to be scheduled in derived synchronize:
     // > use the subIterator's method id as the PRP interface id
-    // > the subIterator's execNum cannot be used as the execution counter for
-    //   mapping since it doesn't increment until run time (see Iterator::run())
+    // > subIterator's execNum could potentially be used as execution counter
+    //   for id mapping but it isn't defined/incremented until run time (see
+    //   Iterator::run())
     subIterator.response_results_active_set(sub_iterator_set);
     ++subIteratorJobCntr;
     ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
@@ -1495,17 +1496,24 @@ const IntResponseMap& NestedModel::derived_synchronize()
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
     subIteratorSched.schedule_iterators(*this, subIterator);
     // overlay response sets
-    for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
-	 q_it!=subIteratorPRPQueue.end(); ++q_it) {
+    PRPQueueIter q_it = subIteratorPRPQueue.begin();
+    while (q_it != subIteratorPRPQueue.end()) {
       id_it = subIteratorIdMap.find(q_it->eval_id());
       if (id_it != subIteratorIdMap.end()) {
 	iterator_response_overlay(q_it->response(),
 				  nested_response(id_it->second));
 	subIteratorIdMap.erase(id_it);
+	// postfix increment must generate a copy _before_ fn call
+	// --> increment occurs before iterator invalidation
+	subIteratorPRPQueue.erase(q_it++);
       }
+      else
+	++q_it;
     }
-    // update bookkeeping
-    subIteratorPRPQueue.clear(); subIteratorJobCntr = 0;
+    // Reset the sub-iterator job counter so that the IteratorScheduler
+    // callbacks (e.g., {pack,unpack}_* in NestedModel.hpp) can use the
+    // passed job_index for subIteratorPRPQueue lookups
+    subIteratorJobCntr = 0;
   }
 
   //nestedVarsMap.clear();
