@@ -3406,8 +3406,8 @@ rekey_response_map_iloop(const IntResponseMap& resp_map,
     if (r_cit != resp_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy_resp) ?
 	r_cit->second.copy() : r_cit->second;
-      // postfix must generate a copy _before_ fn call --> increment occurs
-      // before iterator invalidation
+      // postfix increment must generate a copy _before_ fn call
+      // --> increment occurs before iterator invalidation
       id_map.erase(id_it++);
     }
     else

@@ -1447,9 +1447,8 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
 
     // load up queue of iterator jobs to be scheduled in derived synchronize:
     // > use the subIterator's method id as the PRP interface id
-    // > subIterator's execNum could potentially be used as execution counter
-    //   for id mapping but it isn't defined/incremented until run time (see
-    //   Iterator::run())
+    // > the subIterator's execNum cannot be used as the execution counter for
+    //   mapping since it doesn't increment until run time (see Iterator::run())
     subIterator.response_results_active_set(sub_iterator_set);
     ++subIteratorJobCntr;
     ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
@@ -1470,7 +1469,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   // TO DO: optInt/subIter scheduling is currently sequential, but could be
   // overlapped as in HierarchSurrModel, given IteratorScheduler nowait support
 
-  IntIntMIter id_it; IntRespMCIter rit;
+  IntIntMIter id_it; IntRespMCIter r_it;
   if (!optInterfacePointer.empty()) {
     component_parallel_mode(OPTIONAL_INTERFACE);
 
@@ -1480,10 +1479,11 @@ const IntResponseMap& NestedModel::derived_synchronize()
     parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // overlay response sets
-    for (rit=opt_int_resp_map.begin(); rit!=opt_int_resp_map.end(); ++rit) {
-      id_it = optInterfaceIdMap.find(rit->first);
+    for (r_it=opt_int_resp_map.begin(); r_it!=opt_int_resp_map.end(); ++r_it) {
+      id_it = optInterfaceIdMap.find(r_it->first);
       if (id_it != optInterfaceIdMap.end()) {
-	interface_response_overlay(rit->second, nested_response(id_it->second));
+	interface_response_overlay(r_it->second,
+				   nested_response(id_it->second));
 	optInterfaceIdMap.erase(id_it);
       }
     }
@@ -1495,30 +1495,25 @@ const IntResponseMap& NestedModel::derived_synchronize()
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
     subIteratorSched.schedule_iterators(*this, subIterator);
     // overlay response sets
-    IntSet remove_prp;
-    for (PRPQueueIter qit=subIteratorPRPQueue.begin();
-	 qit!=subIteratorPRPQueue.end(); ++qit) {
-      int si_job_id = qit->eval_id();
-      id_it = subIteratorIdMap.find(si_job_id);
+    for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
+	 q_it!=subIteratorPRPQueue.end(); ++q_it) {
+      id_it = subIteratorIdMap.find(q_it->eval_id());
       if (id_it != subIteratorIdMap.end()) {
-	interface_response_overlay(qit->response(),
-				   nested_response(id_it->second));
+	iterator_response_overlay(q_it->response(),
+				  nested_response(id_it->second));
 	subIteratorIdMap.erase(id_it);
-	remove_prp.insert(si_job_id);
       }
     }
     // update bookkeeping
-    //subIteratorJobCntr = 0; // don't think it's necessary to reset this
-    for (ISIter rm_it=remove_prp.begin(); rm_it!=remove_prp.end(); ++rm_it)
-      subIteratorPRPQueue.erase(*rm_it);
+    subIteratorPRPQueue.clear(); subIteratorJobCntr = 0;
   }
 
   //nestedVarsMap.clear();
-  for (rit=nestedResponseMap.begin(); rit!=nestedResponseMap.end(); ++rit)
+  for (r_it=nestedResponseMap.begin(); r_it!=nestedResponseMap.end(); ++r_it)
     Cout << "\n---------------------------\nNestedModel Evaluation "
-	 << std::setw(4) << rit->first << " total response:"
+	 << std::setw(4) << r_it->first << " total response:"
 	 << "\n---------------------------\n\nActive response data "
-	 << "from nested mapping:\n" << rit->second << '\n';
+	 << "from nested mapping:\n" << r_it->second << '\n';
   return nestedResponseMap;
 }
 
