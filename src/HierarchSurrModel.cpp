@@ -1015,11 +1015,13 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
 
+  /*
   // Early return options avoid some overhead:
   if (surrIdMap.empty())  { combined_resp_map = hf_resp_map; return; }
   if (responseMode == AUTO_CORRECTED_SURROGATE)
     compute_apply_delta(lf_resp_map);
   if (truthIdMap.empty()) { combined_resp_map = lf_resp_map; return; }
+  */
 
   // invert truthIdMap and surrIdMap
   IntIntMap inverse_truth_id_map, inverse_surr_id_map; IntIntMCIter id_it;
