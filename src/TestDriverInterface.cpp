@@ -56,6 +56,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["lf_rosenbrock"]          = LF_ROSENBROCK;
   driverTypeMap["mf_rosenbrock"]          = MF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
+  driverTypeMap["modified_rosenbrock"]    = MODIFIED_ROSENBROCK;
   driverTypeMap["lf_poly_prod"]           = LF_POLY_PROD;
   driverTypeMap["poly_prod"]              = POLY_PROD;
   driverTypeMap["gerstner"]               = GERSTNER;
@@ -143,6 +144,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
     case ROSENBROCK:   case LF_ROSENBROCK:   case MF_ROSENBROCK:
+    case MODIFIED_ROSENBROCK:
     case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
     case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
@@ -227,6 +229,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = cyl_head(); break;
   case ROSENBROCK:
     fail_code = rosenbrock(); break;
+  case MODIFIED_ROSENBROCK:
+    fail_code = modified_rosenbrock(); break;
   case GENERALIZED_ROSENBROCK:
     fail_code = generalized_rosenbrock(); break;
   case EXTENDED_ROSENBROCK:
@@ -804,7 +808,6 @@ int TestDriverInterface::multimodal()
   return 0; // no failure
 }
 
-
 int TestDriverInterface::rosenbrock()
 {
   if (multiProcAnalysisFlag) {
@@ -890,6 +893,105 @@ int TestDriverInterface::rosenbrock()
   return 0; // no failure
 }
 
+int TestDriverInterface::modified_rosenbrock()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: modified rosenbrock direct fn does not yet support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
+    Cerr << "Error: Bad number of variables in modified rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns > 2) { // 1 fn -> opt, 2 fns -> least sq
+    Cerr << "Error: Bad number of functions in modified rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  bool least_sq_flag = (numFns > 1);
+  Real x1 = xCM[VAR_x1], x2 = xCM[VAR_x2], f1 = x2-x1*x1, f2 = 1.-x1,
+    f3 = std::sin(2.*PI*x1+x2);
+
+  if (least_sq_flag) {
+    // **** Residual R1:
+    if (directFnASV[0] & 1)
+      fnVals[0] = 10.*f1;
+    // **** Residual R2:
+    if (directFnASV[1] & 1)
+      fnVals[1] = f2;
+    // **** Residual R3:
+    if (directFnASV[2] & 1)
+      fnVals[2] = f3;
+
+    // **** dR1/dx:
+    if (directFnASV[0] & 2)
+      for (size_t i=0; i<numDerivVars; ++i)
+	switch (varTypeDVV[i]) {
+	case VAR_x1: fnGrads[0][i] = -20.*x1; break;
+	case VAR_x2: fnGrads[0][i] =  10.;    break;
+	}
+    // **** dR2/dx:
+    if (directFnASV[1] & 2)
+      for (size_t i=0; i<numDerivVars; ++i)
+	switch (varTypeDVV[i]) {
+	case VAR_x1: fnGrads[1][i] = -1.; break;
+	case VAR_x2: fnGrads[1][i] =  0.; break;
+	}
+    // **** dR3/dx:
+    if (directFnASV[2] & 2)
+      for (size_t i=0; i<numDerivVars; ++i)
+	switch (varTypeDVV[i]) {
+	case VAR_x1: fnGrads[2][i] = 2.*PI*std::cos(2.*PI*x1+x2);break;
+	case VAR_x2: fnGrads[2][i] = std::cos(2.*PI*x1+x2); break;
+	}
+
+    // **** d^2R1/dx^2:
+    if (directFnASV[0] & 4)
+      for (size_t i=0; i<numDerivVars; ++i)
+	for (size_t j=0; j<=i; ++j)
+	  if (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x1)
+	    fnHessians[0](i,j) = -20.;
+	  else
+	    fnHessians[0](i,j) =   0.;
+    // **** d^2R2/dx^2:
+    if (directFnASV[1] & 4)
+      fnHessians[1] = 0.;
+  }
+  else {
+    // **** f:
+    if (directFnASV[0] & 1)
+      fnVals[0] = 100.*f1*f1+f2*f2+f3*f3;
+
+    // **** df/dx:
+    if (directFnASV[0] & 2)
+      for (size_t i=0; i<numDerivVars; ++i)
+	switch (varTypeDVV[i]) {
+	case VAR_x1: fnGrads[0][i] = -400.*f1*x1 - 2.*f2+
+	    2.*PI*std::sin(2.*(2.*PI*x1+x2));
+	  break;
+	case VAR_x2: fnGrads[0][i] =  200.*f1+std::sin(2.*(2.*PI*x1+x2));
+	  break;
+	}
+    
+    // **** d^2f/dx^2:
+    if (directFnASV[0] & 4)
+      for (size_t i=0; i<numDerivVars; ++i)
+	for (size_t j=0; j<=i; ++j)
+	  if (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x1)
+	    fnHessians[0](i,j) = -400.*(x2 - 3.*x1*x1) + 2.+
+	      8.*PI*PI*std::cos(2.*(2.*PI*x1+x2));
+	  else if ( (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x2) ||
+		    (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x1) )
+	    fnHessians[0](i,j) = -400.*x1+4.*PI*std::cos(2.*(2.*PI*x1+x2));
+	  else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
+	    fnHessians[0](i,j) =  200.+2.*std::cos(2.*(2.*PI*x1+x2));
+  }
+
+  return 0; // no failure
+}  
 
 int TestDriverInterface::generalized_rosenbrock()
 {
