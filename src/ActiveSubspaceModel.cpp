@@ -55,6 +55,16 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   // initialize the fullspace Monte Carlo derivative sampler; this
   // will configure it to perform initialSamples
   init_fullspace_sampler();
+
+  const IntVector& db_refine_samples = 
+    problem_db.get_iv("model.refinement_samples"); 
+  if (db_refine_samples.length() == 1) 
+    refinementSamples = db_refine_samples[0]; 
+  else if (db_refine_samples.length() > 1) { 
+    Cerr << "\nError (subspace model): refinement_samples must be " 
+         << "length 1 if specified." << std::endl; 
+    abort_handler(PARSE_ERROR); 
+  } 
 }
 
 
@@ -105,7 +115,7 @@ ActiveSubspaceModel(const Model& sub_model,
   totalSamples(0), totalEvals(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false)
+  buildSurrogate(false), refinementSamples(0)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -1185,7 +1195,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "\nSubspace Model: Wrong correlation size." << std::endl;
+    Cerr << "\nError (subspace model): Wrong correlation size." << std::endl;
     abort_handler(-1);
   }
 
@@ -1455,13 +1465,15 @@ void ActiveSubspaceModel::build_surrogate()
 {
   // Initialize surrogateModel here, switch it out with subModel after subspace
   // is built.
+
   Model asm_model;
   asm_model.assign_rep(asmInstance, false);
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = current_response().active_set(); // copy
 
-  UShortArray approx_order(reducedRank, 2);
+  int poly_degree = 2; // quadratic bases
+  UShortArray approx_order(reducedRank, poly_degree);
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
@@ -1490,7 +1502,65 @@ void ActiveSubspaceModel::build_surrogate()
                     W1.values(), k, all_vars_x.values(), k, beta,
                     all_vars_y.values(), m);
 
-  surrogateModel.append_approximation(all_vars_y, all_responses, true);
+  // Check to make sure we have enough samples to build a moving least squares
+  // surrogate. If not, add them using additional refinement samples.
+  // First calculate the number of samples needed.
+  // num_samples_req = (reducedRank + poly_degree)!/(reducedRank! * poly_degree!)
+  // Below is a simplified form of the equation above: (avoids large factorials)
+  int num_samples_req = 1;
+  for (int ii = reducedRank + poly_degree; ii > reducedRank; ii--) {
+    num_samples_req *= ii; // Numerator
+  }
+  for (int ii = poly_degree; ii > 0; ii--) {
+    num_samples_req /= ii; // Denomenator
+  }
+
+  if ((n + refinementSamples) < num_samples_req) {
+    int num_new_samples = num_samples_req - (n + refinementSamples);
+    refinementSamples += num_new_samples;
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "\nWarning (subspace model):  Moving least squares surrogate needs at least "
+           << num_samples_req << " samples. Adding " << num_new_samples
+           << " additional refinement_samples for building surrogate."
+           << std::endl;
+    }
+  }
+
+  surrogateModel.append_approximation(all_vars_y, all_responses, (refinementSamples == 0));
+
+  // If user requested refinement_samples for building the surrogate evaluate
+  // them here. Since moving least squares doesn't use gradients only request
+  // function values here.
+  if (refinementSamples > 0) {
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "\nSubspace Model: adding " << refinementSamples
+           << " refinement_samples for building surrogate." << std::endl;
+    }
+    
+    ActiveSet dace_set = fullspaceSampler.active_set(); // copy
+    unsigned short request_value = 1;
+    dace_set.request_values(request_value);
+    fullspaceSampler.active_set(dace_set);
+    fullspaceSampler.sampling_reference(refinementSamples);
+    fullspaceSampler.sampling_reset(refinementSamples, true, false);
+
+    // and generate the additional samples
+    ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+    fullspaceSampler.run(pl_iter);
+
+    const RealMatrix& all_vars_x_ref = fullspaceSampler.all_samples();
+    const IntResponseMap& all_responses_ref = fullspaceSampler.all_responses();
+
+    RealMatrix all_vars_y_ref(reducedRank, all_vars_x_ref.numCols());
+
+    n = all_vars_x_ref.numCols();
+
+    teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
+                      W1.values(), k, all_vars_x_ref.values(), k, beta,
+                      all_vars_y_ref.values(), m);
+
+    surrogateModel.append_approximation(all_vars_y_ref, all_responses_ref, true);
+  }
 }
 
 }  // namespace Dakota

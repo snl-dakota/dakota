@@ -326,6 +326,9 @@ protected:
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;
 
+  /// Number of refinement samples to use when building a surrogate
+  int refinementSamples;
+
 
   // Helper members
 

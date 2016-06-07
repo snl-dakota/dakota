@@ -20,6 +20,8 @@
 #@ p18: MPIProcs=3
 #@ p19: MPIProcs=3
 #@ p20: MPIProcs=3
+#@ p21: MPIProcs=2
+#@ p22: MPIProcs=2
 # DAKOTA INPUT FILE - dakota_uq_subspace.in
 # Contains regression tests for using model subspace
 # with several methods
@@ -28,14 +30,13 @@ environment
   output_precision = 16
   method_pointer = 'ID_METHOD'
 
-# Tests 0-9 are for sampling methods:
 method,
   id_method = 'ID_METHOD'
-  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20
-    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20
-    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20
-    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20
-    sample_type random              #s0,#s1,#s2,#s3,#s4,#s8,#s9,#s17,#p0,#p1,#p2,#p3,#p4,#p8,#p9,#p16,#s22,#p20
+  sampling                          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20,#s23,#p21,#s24,#p22
+    model_pointer = 'SUBSPACE'      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20,#s23,#p21,#s24,#p22
+    seed = 24620                    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20,#s23,#p21,#s24,#p22
+    samples = 100                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p16,#p17,#s21,#s22,#p20,#s23,#p21,#s24,#p22
+    sample_type random              #s0,#s1,#s2,#s3,#s4,#s8,#s9,#s17,#p0,#p1,#p2,#p3,#p4,#p8,#p9,#p16,#s22,#p20,#s23,#p21,#s24,#p22
 #   sample_type lhs                 #s5,#s6,#s7,#s18,#p5,#p6,#p7,#p17
 #     refinement_samples = 100      #s6,#s8,#p6,#p8
 #     refinement_samples = 100 200  #s7,#s9,#p7,#p9
@@ -67,22 +68,22 @@ method,
 #                     1.35 1.4 1.5 1.55 1.6 1.65 1.7 1.75         #s20,#p19
 #   variance_based_decomp                   #s20,#p19
 
-# Tests 0-4 test the various subspace input parameters
-# with method sampling
 model                             
   subspace
     id_model = 'SUBSPACE'
     actual_model_pointer = 'FULLSPACE'
-    initial_samples  100
+    initial_samples  100              #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20,#s23,#p21
+#   initial_samples  10               #s24,#p22
 #   truncation_method bing_li         #s1,#p1
-#   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#p11,#p12,#p13,#p14,#p15,#p17,#s20,#p19,#s21,#s22,#p20
+#   truncation_method constantine     #s2,#s11,#s12,#s13,#s14,#s15,#s16,#s18,#p2,#p11,#p12,#p13,#p14,#p15,#p17,#s20,#p19,#s21,#s22,#p20,#s23,#p21,#s24,#p22
 #   truncation_method                 #s17,#p16
 #     energy                          #s17,#p16
 #       truncation_tolerance 1e-6     #s17,#p16
 #   dimension 5                       #s3,#p3,#s19,#p18
 #   bootstrap_samples 150             #s4,#p4
 #   dimension 6                       #s10,#p10
-#   build_surrogate                   #s22,#p20
+#   build_surrogate                   #s22,#p20,#s23,#p21,#s24,#p22
+#     refinement_samples 10           #s23,#p21
 
 model 
   single
@@ -96,9 +97,12 @@ variables,
   normal_uncertain = 100              #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11
     means = 100*0.5                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11
     std_deviations = 100*0.2          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11
-# normal_uncertain = 10               #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20
-#   means = 10*0.5                    #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20
-#   std_deviations = 10*0.2           #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20
+# normal_uncertain = 10               #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20,#s23,#p21
+#   means = 10*0.5                    #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20,#s23,#p21
+#   std_deviations = 10*0.2           #s12,#s13,#s14,#s15,#s16,#s17,#p12,#p13,#p14,#p15,#p16,#s20,#p19,#s22,#p20,#s23,#p21
+# normal_uncertain = 7                #s24,#p22
+#   means = 7*0.5                     #s24,#p22
+#   std_deviations = 7*0.2            #s24,#p22
 # normal_uncertain = 15               #s10,#p10
 #   means = 15*0.                     #s10,#p10
 #   std_deviations = 15*1.            #s10,#p10
@@ -143,14 +147,14 @@ variables,
 interface,
   id_interface = 'ID_I'
   direct
-    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20
-    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21
-#   analysis_components = 'seed:61043' 'eigenvals: 100e2 90e2 80e2 10e1 5e1 3e1 1e1 5e0 3e0 1e0' #s22,#p20
+    analysis_driver = 'aniso_quad_form'                                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20,#s23,#p21,#s24,#p22
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1'   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s24,#p22
+#   analysis_components = 'seed:61043' 'eigenvals: 100e2 90e2 80e2 10e1 5e1 3e1 1e1 5e0 3e0 1e0' #s22,#p20,#s23,#p21
 #   analysis_driver = 'steady_state_diffusion_1d'  	  #s10,#p10
 
 responses,
   id_responses = 'ID_R'
   num_response_functions = 1
-  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20
+  analytic_gradients          #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20,#s23,#p21,#s24,#p22
 # numerical_gradients         #s10,#p10
   no_hessians

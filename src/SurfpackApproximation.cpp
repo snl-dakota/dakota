@@ -379,8 +379,10 @@ SurfpackApproximation(const SharedApproxData& shared_data):
   }
   else if (sharedDataRep->approxType == "global_neural_network")
     args["type"] = "ann";
-  else if (sharedDataRep->approxType == "global_moving_least_squares")
+  else if (sharedDataRep->approxType == "global_moving_least_squares") {
     args["type"] = "mls";
+    args["order"] = toString<unsigned short>(shared_surf_data_rep->approxOrder);
+  }
   else if (sharedDataRep->approxType == "global_radial_basis")
     args["type"] = "rbf";
   else if (sharedDataRep->approxType == "global_mars")

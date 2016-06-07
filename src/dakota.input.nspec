@@ -2497,7 +2497,9 @@ KEYWORD model {N_mom3(start,0,stop)}
      ]
     [ dimension INTEGER {N_mom(int,dimension)} ]
     [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]
-    [ build_surrogate {N_mom(true,subspaceBuildSurrogate)} ]
+    [ build_surrogate {N_mom(true,subspaceBuildSurrogate)}
+      [ refinement_samples INTEGERLIST {N_mom(ivec,refineSamples)} ]
+     ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

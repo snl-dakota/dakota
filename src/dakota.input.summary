@@ -2437,7 +2437,9 @@ KEYWORD model
 	    ]
 	  [ dimension INTEGER ]
 	  [ bootstrap_samples INTEGER ]
-	  [ build_surrogate ]
+	  [ build_surrogate
+	    [ refinement_samples INTEGERLIST ]
+	    ]
 	  )
 	|
 	( random_field
