@@ -1250,10 +1250,11 @@ void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 }
 
 
-void Iterator::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
+void Iterator::
+unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->unpack_parameters_buffer(recv_buffer);
+    iteratorRep->unpack_parameters_buffer(recv_buffer, job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
@@ -1262,10 +1263,11 @@ void Iterator::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
 }
 
 
-void Iterator::unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
+void Iterator::
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->unpack_parameters_initialize(recv_buffer);
+    iteratorRep->unpack_parameters_initialize(recv_buffer, job_index);
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_initialize"
 	 << " virtual fn.\nNo default defined at base class." << std::endl;

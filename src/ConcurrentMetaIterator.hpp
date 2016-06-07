@@ -75,7 +75,8 @@ protected:
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
+  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
+				    int job_index);
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
@@ -194,10 +195,10 @@ pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 
 
 inline void ConcurrentMetaIterator::
-unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
 {
   RealVector param_set;
-  recv_buffer >> param_set;
+  recv_buffer >> param_set; // job_index can be ignored
   initialize_iterator(param_set);
 }
 
