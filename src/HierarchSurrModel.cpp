@@ -58,7 +58,8 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
     { sameModelInstance = true;  highFidelityIndices.second = 1; }
   else
     { sameModelInstance = false; highFidelityIndices.second = 0; }
-  
+  check_interface_instance();
+
   // Correction is required in the hierarchical case (since without correction,
   // all HF model evaluations are wasted).  Omission of a correction type
   // should be prevented by the input specification.

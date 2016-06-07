@@ -160,6 +160,10 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// update sameInterfaceInstance based on interface ids for models
+  /// identified by current {low,high}FidelityIndices
+  void check_interface_instance();
+
   /// update the passed model (low or high fidelity) with current variable
   /// values/bounds/labels
   void update_model(Model& model);
@@ -246,6 +250,16 @@ inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline void HierarchSurrModel::check_interface_instance()
+{
+  if (sameModelInstance) sameInterfaceInstance = true;
+  else
+    sameInterfaceInstance
+      = (orderedModels[lowFidelityIndices.first].interface_id() ==
+	 orderedModels[highFidelityIndices.first].interface_id());
+}
+
+
 inline Model& HierarchSurrModel::surrogate_model()
 { return orderedModels[lowFidelityIndices.first]; }
 
@@ -256,6 +270,7 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   lowFidelityIndices.first  = lf_model_index;
   lowFidelityIndices.second = lf_soln_lev_index; // including _NPOS default
   sameModelInstance = (lf_model_index == highFidelityIndices.first);
+  check_interface_instance();
 
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
@@ -273,6 +288,7 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
   size_t lf_model_index = lf_form_level.first,
       lf_soln_lev_index = lf_form_level.second;
   sameModelInstance = (lf_model_index == highFidelityIndices.first);
+  check_interface_instance();
 
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
@@ -297,6 +313,7 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
   highFidelityIndices.first  = hf_model_index;
   highFidelityIndices.second = hf_soln_lev_index; // including _NPOS default
   sameModelInstance = (hf_model_index == lowFidelityIndices.first);
+  check_interface_instance();
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
@@ -310,6 +327,7 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
   size_t hf_model_index = hf_form_level.first,
       hf_soln_lev_index = hf_form_level.second;
   sameModelInstance = (hf_model_index == lowFidelityIndices.first);
+  check_interface_instance();
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
