@@ -175,6 +175,9 @@ private:
   /// map of simulation-based responses returned by derived_synchronize()
   /// and derived_synchronize_nowait()
   IntResponseMap simResponseMap;
+  /// caching of simulation-based responses returned by userDefinedInterface
+  /// but not matched within current simIdMap
+  IntResponseMap cachedSimResponseMap;
 };
 
 
@@ -217,7 +220,8 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  rekey_response_map(userDefinedInterface.synch(), simResponseMap, simIdMap);
+  rekey_response_map(userDefinedInterface.synch(), simIdMap, simResponseMap,
+		     cachedSimResponseMap);
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
@@ -230,8 +234,8 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  rekey_response_map(userDefinedInterface.synch_nowait(),
-		     simResponseMap, simIdMap);
+  rekey_response_map(userDefinedInterface.synch_nowait(), simIdMap,
+		     simResponseMap, cachedSimResponseMap);
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;

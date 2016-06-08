@@ -1125,19 +1125,27 @@ protected:
   /// rekey jobs from resp_map to resp_map_rekey according to id_map; this
   /// version selects a loop over response or id map based on the smaller
   /// array size
-  void rekey_response_map(const IntResponseMap& resp_map,
-			  IntResponseMap& resp_map_rekey, IntIntMap& id_map,
+  void rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
+			  IntResponseMap& resp_map_rekey,
 			  bool deep_copy_resp = false);
   /// rekey jobs from resp_map to resp_map_rekey according to id_map;
   /// this version iterates over resp_map and searches id_map
   void rekey_response_map_rloop(const IntResponseMap& resp_map,
+				IntIntMap& id_map,
 				IntResponseMap& resp_map_rekey,
-				IntIntMap& id_map, bool deep_copy_resp = false);
+				bool deep_copy_resp = false);
   /// rekey jobs from resp_map to resp_map_rekey according to id_map;
   /// this version iterates over id_map and searches resp_map
   void rekey_response_map_iloop(const IntResponseMap& resp_map,
+				IntIntMap& id_map, 
 				IntResponseMap& resp_map_rekey,
-				IntIntMap& id_map, bool deep_copy_resp = false);
+				bool deep_copy_resp = false);
+  /// migrate and rekey jobs from resp_map and cached_resp_map to resp_map_rekey
+  /// according to id_map; insert unmatched resp_map jobs into cached_resp_map
+  void rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
+			  IntResponseMap& resp_map_rekey,
+			  IntResponseMap& cached_resp_map, 
+			  bool deep_copy_resp = false);
 
   //
   //- Heading: Data
@@ -3361,21 +3369,19 @@ inline Model* Model::model_rep() const
 
 
 inline void Model::
-rekey_response_map(const IntResponseMap& resp_map,
-		   IntResponseMap& resp_map_rekey, IntIntMap& id_map,
-		   bool deep_copy_resp)
+rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
+		   IntResponseMap& resp_map_rekey, bool deep_copy_resp)
 {
   if (resp_map.size() <= id_map.size()) // e.g., nonblocking synch
-    rekey_response_map_rloop(resp_map, resp_map_rekey, id_map, deep_copy_resp);
+    rekey_response_map_rloop(resp_map, id_map, resp_map_rekey, deep_copy_resp);
   else                   // e.g., derived_synchronize_same_model()
-    rekey_response_map_iloop(resp_map, resp_map_rekey, id_map, deep_copy_resp);
+    rekey_response_map_iloop(resp_map, id_map, resp_map_rekey, deep_copy_resp);
 }
 
 
 inline void Model::
-rekey_response_map_rloop(const IntResponseMap& resp_map,
-			 IntResponseMap& resp_map_rekey, IntIntMap& id_map,
-			 bool deep_copy_resp)
+rekey_response_map_rloop(const IntResponseMap& resp_map, IntIntMap& id_map,
+			 IntResponseMap& resp_map_rekey, bool deep_copy_resp)
 {
   // rekey registered evals
   resp_map_rekey.clear();
@@ -3393,16 +3399,15 @@ rekey_response_map_rloop(const IntResponseMap& resp_map,
 
 
 inline void Model::
-rekey_response_map_iloop(const IntResponseMap& resp_map,
-			 IntResponseMap& resp_map_rekey, IntIntMap& id_map,
-			 bool deep_copy_resp)
+rekey_response_map_iloop(const IntResponseMap& resp_map, IntIntMap& id_map,
+			 IntResponseMap& resp_map_rekey, bool deep_copy_resp)
 {
   // rekey registered evals
   resp_map_rekey.clear();
   // Immediate erasure relying on iterator invalidation + postfix rules
   IntIntMIter id_it = id_map.begin(); IntRespMCIter r_cit;
   while (id_it!=id_map.end()) {
-    r_cit = resp_map.find(id_it->first); // Note: no iterator hint accelerator
+    r_cit = resp_map.find(id_it->first); // Note: no iterator hint API
     if (r_cit != resp_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy_resp) ?
 	r_cit->second.copy() : r_cit->second;
@@ -3412,6 +3417,50 @@ rekey_response_map_iloop(const IntResponseMap& resp_map,
     }
     else
       ++id_it;
+  }
+}
+
+
+inline void Model::
+rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
+		   IntResponseMap& resp_map_rekey,
+		   IntResponseMap& cached_resp_map, bool deep_copy_resp)
+{
+  // rekey registered evals
+  resp_map_rekey.clear();
+  IntIntMIter id_it;
+
+  // process current cache for completions against incoming id_map
+  IntRespMIter r_it = cached_resp_map.begin();
+  while (r_it != cached_resp_map.end()) {
+    id_it = id_map.find(r_it->first); // Note: no iterator hint API
+    if (id_it != id_map.end()) {
+      resp_map_rekey[id_it->second] = r_it->second; // shallow copy
+      id_map.erase(id_it);
+      // postfix increment must generate a copy _before_ fn call
+      // --> increment occurs before iterator invalidation
+      cached_resp_map.erase(r_it++);
+    }
+    else
+      ++r_it;
+  }
+
+  // process incoming resp_map against remaining id_map
+  IntRespMCIter r_cit;
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+    id_it = id_map.find(r_cit->first); // Note: no iterator hint API
+    if (id_it != id_map.end()) {
+      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
+	r_cit->second.copy() : r_cit->second;
+      id_map.erase(id_it);
+    }
+    // insert unfound resp_map jobs into cache (may be from another
+    // Model using a shared Interface instance).  Honor deep copy
+    // request here (cache recovery uses shallow copy), but can't
+    // rekey until cache recovery since no id mapping available.
+    else
+      cached_resp_map[r_cit->first] = (deep_copy_resp) ?
+	r_cit->second.copy() : r_cit->second;;
   }
 }
 
