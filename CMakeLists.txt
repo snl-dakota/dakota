@@ -310,19 +310,10 @@ option(HAVE_QUESO_GPMSA "Use the QUESO GPMSA package when QUESO enabled." ON)
 option(HAVE_QUESO_GRVY "Use optional QUESO GRVY package; not recommended." OFF)
 option(DAKOTA_QUESO_CMAKE "Experimental: Dakota building QUESO with CMake" ON)
 
-
-option(HAVE_APPROXNN "Build the Approximate Nearest Neighbor package." ON)
-
 # Options for adaptive sampling that affect both packages and src
 option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" ON)
 option(HAVE_MORSE_SMALE 
-  "Use Morse-Smale; requires APPROXNN and Dionysus libraries" OFF)
-if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
-  if (NOT HAVE_APPROXNN)
-    set(HAVE_APPROXNN TRUE CACHE BOOL 
-      "HAVE_APPROXNN enabled for Morse-Smale Adaptive Sampling")
-  endif()
-endif()
+  "Use Morse-Smale; requires ANN and Dionysus libraries" OFF)
 
 # Options that affect both src/ and test/
 option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)

@@ -566,11 +566,11 @@ if(HAVE_ACRO)
 endif(HAVE_ACRO)
 
 # ANN does approximate k-nearest neighbor search
-if(HAVE_APPROXNN)
-  add_definitions("-DHAVE_APPROXNN")
+if(HAVE_ANN)
+  add_definitions("-DHAVE_ANN")
   list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/ann/include)
-  set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} approxnn)
-  list(APPEND EXPORT_TARGETS approxnn)
+  set(DAKOTA_PKG_LIBS ${DAKOTA_PKG_LIBS} ANN)
+  list(APPEND EXPORT_TARGETS ANN)
 endif()
 
 if(HAVE_ADAPTIVE_SAMPLING)

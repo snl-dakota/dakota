@@ -1,5 +1,6 @@
 # CMakeLists.txt for DAKOTA packages
 option(HAVE_AMPL "Build the AMPL package." ON)
+option(HAVE_ANN "Build the ANN package." ON)
 option(HAVE_CONMIN "Build the CONMIN package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DOT "Build the DOT package." ON)
@@ -145,6 +146,9 @@ endif(HAVE_QUESO)
 
 
 if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
+  if (NOT HAVE_ANN)
+    set(HAVE_ANN TRUE CACHE BOOL "ANN enabled for Morse-Smale Adaptive Sampling")
+  endif()
   # Extract Dionysus, but no build required
   externalproject_add(dionysus_ext
     # svn co 
@@ -161,8 +165,8 @@ if(HAVE_ADAPTIVE_SAMPLING AND HAVE_MORSE_SMALE)
     )
 endif()
 
-if(HAVE_APPROXNN)
-  add_subdirectory(approxnn/src)
+if(HAVE_ANN)
+  add_subdirectory(ann/src)
 endif()
 
 
