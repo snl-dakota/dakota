@@ -319,6 +319,10 @@ public:
   /// Model at runtime
   virtual size_t mi_parallel_level_index() const;
 
+  /// migrate an unmatched response record from active response map (computed
+  /// by synchronize() or synhronize_nowait()) to cached response map
+  virtual void cache_unmatched_response(int raw_id);
+
   /// return derived model synchronization setting
   virtual short local_eval_synchronization();
   /// return derived model asynchronous evaluation concurrency
@@ -1122,6 +1126,7 @@ protected:
   Real forward_grad_step(size_t num_deriv_vars, size_t xj_index,
                          Real x0_j, Real lb_j, Real ub_j);
 
+  /*
   /// rekey jobs from resp_map to resp_map_rekey according to id_map; this
   /// version selects a loop over response or id map based on the smaller
   /// array size
@@ -1146,6 +1151,19 @@ protected:
 			  IntResponseMap& resp_map_rekey,
 			  IntResponseMap& cached_resp_map, 
 			  bool deep_copy_resp = false);
+  */
+
+  /// rekey returned jobs matched in id_map into resp_map_rekey;
+  /// unmatched jobs are cached within the meta_object
+  template <typename MetaType>
+  void rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
+			  IntIntMap& id_map, IntResponseMap& resp_map_rekey,
+			  bool deep_copy_resp = false);
+  /// synchronize via meta_object and rekey returned jobs matched in id_map
+  /// into resp_map_rekey; unmatched jobs are cached within the meta_object
+  template <typename MetaType>
+  void rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
+		   IntResponseMap& resp_map_rekey, bool deep_copy_resp = false);
 
   //
   //- Heading: Data
@@ -3368,6 +3386,7 @@ inline Model* Model::model_rep() const
 { return modelRep; }
 
 
+/*
 inline void Model::
 rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 		   IntResponseMap& resp_map_rekey, bool deep_copy_resp)
@@ -3428,25 +3447,9 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 {
   // rekey registered evals
   resp_map_rekey.clear();
-  IntIntMIter id_it;
-
-  // process current cache for completions against incoming id_map
-  IntRespMIter r_it = cached_resp_map.begin();
-  while (r_it != cached_resp_map.end()) {
-    id_it = id_map.find(r_it->first); // Note: no iterator hint API
-    if (id_it != id_map.end()) {
-      resp_map_rekey[id_it->second] = r_it->second; // shallow copy
-      id_map.erase(id_it);
-      // postfix increment must generate a copy _before_ fn call
-      // --> increment occurs before iterator invalidation
-      cached_resp_map.erase(r_it++);
-    }
-    else
-      ++r_it;
-  }
 
   // process incoming resp_map against remaining id_map
-  IntRespMCIter r_cit;
+  IntIntMIter id_it; IntRespMCIter r_cit;
   for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
     id_it = id_map.find(r_cit->first); // Note: no iterator hint API
     if (id_it != id_map.end()) {
@@ -3454,14 +3457,64 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 	r_cit->second.copy() : r_cit->second;
       id_map.erase(id_it);
     }
-    // insert unfound resp_map jobs into cache (may be from another
-    // Model using a shared Interface instance).  Honor deep copy
-    // request here (cache recovery uses shallow copy), but can't
-    // rekey until cache recovery since no id mapping available.
+    // insert unmatched resp_map jobs into cache (may be from another Model
+    // using a shared Interface instance).  Neither deep copy nor rekey are
+    // performed until id is matched above (on a subsequent pass).
     else
-      cached_resp_map[r_cit->first] = (deep_copy_resp) ?
-	r_cit->second.copy() : r_cit->second;;
+      // Approach 1: the resp_map record is duplicated, not migrated, due to
+      // const ref --> rely on subsequent clearing of resp_map on reentry
+      cached_resp_map[r_cit->first] = r_cit->second;
+      // Approach 2: virtual fn approach could accomplish a migration and
+      // avoid duplication, but it lacks level clarity (SimulationModel:
+      // augment its own cache or delegate to userDefinedInterface?) 
+      //cache_unmatched_response(r_cit->first); // virtual fn
+      // Approach 3: resolve level clarity by passing a meta-object in a
+      // template.  Consistency: use meta-object to synchronize and cache,
+      // requiring renaming of Interface fns and adding nowait variant.
+      //meta_object.cache_unmatched_response(r_cit->first); // level clarity
   }
+}
+*/
+
+
+template <typename MetaType> void Model::
+rekey_response_map(MetaType& meta_object, const IntResponseMap& resp_map,
+		   IntIntMap& id_map, IntResponseMap& resp_map_rekey,
+		   bool deep_copy_resp)
+{
+  // rekey the resp_map evals matched in id_map, else move to cache
+  resp_map_rekey.clear();
+  IntIntMIter id_it; IntRespMCIter r_cit = resp_map.begin();
+  while (r_cit != resp_map.end()) {
+    int raw_id = r_cit->first;
+    id_it = id_map.find(raw_id); // Note: no iterator hint API
+    if (id_it != id_map.end()) {
+      resp_map_rekey[id_it->second] = (deep_copy_resp) ?
+	r_cit->second.copy() : r_cit->second;
+      id_map.erase(id_it);
+      ++r_cit;
+    }
+    // insert unmatched resp_map jobs into cache (may be from another Model
+    // using a shared Interface instance).  Neither deep copy nor rekey are
+    // performed until id is matched above (on a subsequent pass).
+    else {
+      // Approach 3: resolve level clarity by passing a meta-object in a
+      // template.  Consistency: use meta-object to synchronize and cache,
+      // requiring renaming of Interface fns and adding nowait variant.
+      ++r_cit; // prior to invalidation from erase()
+      meta_object.cache_unmatched_response(raw_id);// same level as synchronize
+    }
+  }
+}
+
+
+template <typename MetaType> void Model::
+rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
+	    IntResponseMap& resp_map_rekey, bool deep_copy)
+{
+  const IntResponseMap& resp_map = (block) ? meta_object.synchronize() :
+    meta_object.synchronize_nowait();
+  rekey_response_map(meta_object, resp_map, id_map, resp_map_rekey, deep_copy);
 }
 
 

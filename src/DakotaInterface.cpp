@@ -878,28 +878,43 @@ int Interface::algebraic_function_type(String functionTag)
 #endif // HAVE_AMPL
 }
 
-const IntResponseMap& Interface::synch()
+const IntResponseMap& Interface::synchronize()
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual synch function.\n"
-         << "No default synch defined at Interface base class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual synchronize() "
+	 << "function.\nNo default defined at Interface base class."
+	 << std::endl;
     abort_handler(-1);
   }
 
-  return interfaceRep->synch();
+  return interfaceRep->synchronize();
 }
 
 
-const IntResponseMap& Interface::synch_nowait()
+const IntResponseMap& Interface::synchronize_nowait()
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual synch_nowait "
-	 << "function.\nNo default synch_nowait defined at Interface base "
-	 << "class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual synchronize_nowait"
+	 << "() function.\nNo default defined at Interface base class."
+	 << std::endl;
     abort_handler(-1);
   }
 
-  return interfaceRep->synch_nowait();
+  return interfaceRep->synchronize_nowait();
+}
+
+
+void Interface::cache_unmatched_response(int raw_id)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_unmatched_response(raw_id);
+  else { // base definition; not virtual
+    IntRespMIter rr_it = rawResponseMap.find(raw_id);
+    if (rr_it != rawResponseMap.end()) {
+      cachedResponseMap.insert(*rr_it);
+      rawResponseMap.erase(rr_it);
+    }
+  }
 }
 
 

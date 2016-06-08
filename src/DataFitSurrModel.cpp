@@ -1492,7 +1492,8 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 const IntResponseMap& DataFitSurrModel::derived_synchronize()
 {
   surrResponseMap.clear();
-  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
+  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty(),
+    block = true;
 
   // -----------------------------
   // synchronize actualModel evals
@@ -1500,14 +1501,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
     component_parallel_mode(ACTUAL_MODEL);
-    const IntResponseMap& actual_resp_map = actualModel.synchronize();
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_response_map_rloop(actual_resp_map, truthIdMap,
-			       actual_resp_map_rekey);
+      rekey_synch(actualModel, block, truthIdMap, actual_resp_map_rekey);
     else {
-      rekey_response_map_rloop(actual_resp_map, truthIdMap, surrResponseMap);
+      rekey_synch(actualModel, block, truthIdMap, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1517,15 +1516,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   // ---------------------------------
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
-    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    const IntResponseMap& approx_resp_map = approxInterface.synch();
-
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
     if (actual_evals)
-      derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+      derived_synchronize_approx(block, approx_resp_map_rekey);
     else {
-      derived_synchronize_approx(approx_resp_map, surrResponseMap);
+      derived_synchronize_approx(block, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1593,7 +1589,8 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
 const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 {
   surrResponseMap.clear();
-  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
+  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty(),
+    block = false;
 
   // -----------------------------
   // synchronize actualModel evals
@@ -1601,14 +1598,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
     component_parallel_mode(ACTUAL_MODEL);
-    const IntResponseMap& actual_resp_map = actualModel.synchronize_nowait();
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_response_map_rloop(actual_resp_map, truthIdMap,
-			       actual_resp_map_rekey);
+      rekey_synch(actualModel, block, truthIdMap, actual_resp_map_rekey);
     else {
-      rekey_response_map_rloop(actual_resp_map, truthIdMap, surrResponseMap);
+      rekey_synch(actualModel, block, truthIdMap, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1618,15 +1613,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   // ---------------------------------
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
-    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    const IntResponseMap& approx_resp_map = approxInterface.synch_nowait();
-
     // derived_synchronize() and derived_synchronize_nowait() share code since
     // approx_resp_map is complete in both cases
     if (actual_evals)
-      derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+      derived_synchronize_approx(block, approx_resp_map_rekey);
     else {
-      derived_synchronize_approx(approx_resp_map, surrResponseMap);
+      derived_synchronize_approx(block, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1706,13 +1698,18 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 
 
 void DataFitSurrModel::
-derived_synchronize_approx(const IntResponseMap& approx_resp_map,
-			   IntResponseMap& approx_resp_map_rekey)
+derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 {
   bool actual_evals = !truthIdMap.empty();
 
-  // update map keys to use surrModelEvalCntr
-  rekey_response_map_rloop(approx_resp_map, surrIdMap, approx_resp_map_rekey);
+  //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+  //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
+  //parallelLib.parallel_configuration_iterator(modelPCIter);
+
+  // synchronize and rekey to use surrModelEvalCntr
+  rekey_synch(approxInterface, block, surrIdMap, approx_resp_map_rekey);
+
+  //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
   IntRespMIter r_it;
   if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {

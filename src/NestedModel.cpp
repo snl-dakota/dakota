@@ -1478,22 +1478,29 @@ const IntResponseMap& NestedModel::derived_synchronize()
   // TO DO: optInt/subIter scheduling is currently sequential, but could be
   // overlapped as in HierarchSurrModel, given IteratorScheduler nowait support
 
-  IntIntMIter id_it; IntRespMCIter r_it;
+  IntIntMIter id_it; IntRespMCIter r_cit;
   if (!optInterfacePointer.empty()) {
     component_parallel_mode(OPTIONAL_INTERFACE);
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    const IntResponseMap& opt_int_resp_map = optionalInterface.synch();
+    const IntResponseMap& opt_int_resp_map = optionalInterface.synchronize();
     parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // overlay response sets
-    for (r_it=opt_int_resp_map.begin(); r_it!=opt_int_resp_map.end(); ++r_it) {
-      id_it = optInterfaceIdMap.find(r_it->first);
+    r_cit = opt_int_resp_map.begin();
+    while (r_cit != opt_int_resp_map.end()) {
+      int oi_eval_id = r_cit->first;
+      id_it = optInterfaceIdMap.find(oi_eval_id);
       if (id_it != optInterfaceIdMap.end()) {
-	interface_response_overlay(r_it->second,
+	interface_response_overlay(r_cit->second,
 				   nested_response(id_it->second));
 	optInterfaceIdMap.erase(id_it);
+	++r_cit;
+      }
+      else { // see also DakotaModel::rekey_synch()
+	++r_cit; // prior to invalidation from erase()
+	optionalInterface.cache_unmatched_response(oi_eval_id);
       }
     }
   }
@@ -1503,7 +1510,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
     component_parallel_mode(SUB_MODEL);
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
     subIteratorSched.schedule_iterators(*this, subIterator);
-    // overlay response sets (no rekey necessary)
+    // overlay response sets (no rekey or cache necessary)
     for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
 	 q_it!=subIteratorPRPQueue.end(); ++q_it)
       iterator_response_overlay(q_it->response(),
@@ -1518,11 +1525,11 @@ const IntResponseMap& NestedModel::derived_synchronize()
   }
 
   //nestedVarsMap.clear();
-  for (r_it=nestedResponseMap.begin(); r_it!=nestedResponseMap.end(); ++r_it)
+  for (r_cit=nestedResponseMap.begin(); r_cit!=nestedResponseMap.end(); ++r_cit)
     Cout << "\n---------------------------\nNestedModel Evaluation "
-	 << std::setw(4) << r_it->first << " total response:"
+	 << std::setw(4) << r_cit->first << " total response:"
 	 << "\n---------------------------\n\nActive response data "
-	 << "from nested mapping:\n" << r_it->second << '\n';
+	 << "from nested mapping:\n" << r_cit->second << '\n';
   return nestedResponseMap;
 }
 

@@ -82,10 +82,9 @@ public:
 		   Response& response, bool asynch_flag = false);
 
   /// recovers data from a series of asynchronous evaluations (blocking)
-  virtual const IntResponseMap& synch(); 
-
+  virtual const IntResponseMap& synchronize(); 
   /// recovers data from a series of asynchronous evaluations (nonblocking)
-  virtual const IntResponseMap& synch_nowait(); 
+  virtual const IntResponseMap& synchronize_nowait(); 
 
   /// evaluation server function for multiprocessor executions
   virtual void serve_evaluations();
@@ -230,6 +229,10 @@ public:
   //- Heading: Set and Inquire functions
   //
 
+  /// migrate an unmatched response record from rawResponseMap to
+  /// cachedResponseMap
+  void cache_unmatched_response(int raw_id);
+
   /// assign letter or replace existing letter with a new one
   void assign_rep(Interface* interface_rep, bool ref_count_incr = true);
 
@@ -364,12 +367,15 @@ protected:
   IntArray newFnGradRefPt;   ///< iteration reference point for newFnGradCounter
   IntArray newFnHessRefPt;   ///< iteration reference point for newFnHessCounter
 
-  /// Set of responses returned after either a blocking or nonblocking schedule
-  /// of asynchronous evaluations.
+  /// Set of responses returned by either a blocking or nonblocking schedule
   /** The map is a full/partial set of completions which are identified through
       their evalIdCntr key.  The raw set is postprocessed (i.e., finite diff
       grads merged) in Model::synchronize() where it becomes responseMap. */
   IntResponseMap rawResponseMap;
+  /// Set of available asynchronous responses completed within a blocking
+  /// or nonblocking scheduler that cannot be processed in a higher
+  /// level context and need to be stored for later
+  IntResponseMap cachedResponseMap;
 
   /// response function descriptors (used in
   /// print_evaluation_summary() and derived direct interface

@@ -3300,6 +3300,18 @@ size_t Model::mi_parallel_level_index() const
 }
 
 
+void Model::cache_unmatched_response(int raw_id)
+{
+  if (modelRep)
+    modelRep->cache_unmatched_response(raw_id);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual "
+	 << "cache_unmatched_response() function.\n." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** SimulationModels and HierarchSurrModels redefine this virtual function.
     A default value of "synchronous" prevents asynch local operations for:
 \li NestedModels: a subIterator can support message passing parallelism,

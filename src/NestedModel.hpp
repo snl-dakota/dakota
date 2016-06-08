@@ -752,17 +752,7 @@ unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
   // map from job id (index+1) to nestedModelEvalCntr (insert or overwrite)
   subIteratorIdMap[job_index+1] = eval_id;
 
-  /* No longer needed now that PRPQueue eval_ids are unique
-  PRPQueueIter q_it = lookup_by_eval_id(subIteratorPRPQueue, eval_id);
-  if (q_it != subIteratorPRPQueue.end()) {
-    // Can't do this since it affects Queue hash-by-value ordering
-    //prp_it->variables(vars);
-    //prp_it->active_set(set);
-
-    subIteratorPRPQueue.erase(q_it); // remove and reinsert below
-  }
-  */
-  
+  // add new job to local queue
   Response resp = subIterator.response_results().copy();
   resp.active_set(set);
   ParamResponsePair pair(vars, subIterator.method_id(), resp, eval_id, false);
