@@ -289,7 +289,7 @@ private:
 
   /// Common code for processing of approximate response maps shared by
   /// derived_synchronize() and derived_synchronize_nowait()
-  void derived_synchronize_approx(const IntResponseMap& approx_resp_map,
+  void derived_synchronize_approx(bool block,
 				  IntResponseMap& approx_resp_map_rekey);
 
   /// Updates fit arrays for global approximations
@@ -320,7 +320,7 @@ private:
   //- Heading: Data members
   //
 
-  /// number of calls to derived_evaluate()/derived_evaluate_nowait()
+  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
   int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate

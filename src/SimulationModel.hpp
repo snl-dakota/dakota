@@ -76,6 +76,9 @@ protected:
   /// (invokes synch_nowait() on userDefinedInterface)
   const IntResponseMap& derived_synchronize_nowait();
 
+  /// migrate unmatched response from simResponseMap to cachedSimResponseMap
+  void cache_unmatched_response(int raw_id);
+
   /// SimulationModel only supports parallelism in userDefinedInterface,
   /// so this virtual function redefinition is simply a sanity check.
   void component_parallel_mode(short mode);
@@ -116,8 +119,7 @@ protected:
 
   /// return the userDefinedInterface identifier
   const String& interface_id() const;
-  /// return the current evaluation id for the SimulationModel
-  /// (request forwarded to userDefinedInterface)
+  /// return the current evaluation id (simModelEvalCntr)
   int evaluation_id() const;
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
@@ -166,6 +168,19 @@ private:
   size_t solnCntlSetIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::map<Real, size_t> solnCntlCostMap;
+
+  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
+  size_t simModelEvalCntr;
+  /// map from userDefinedInterface evaluation ids to SimulationModel ids
+  /// (may differ in case where the same interface instance is shared by
+  /// multiple models)
+  IntIntMap simIdMap;
+  /// map of simulation-based responses returned by derived_synchronize()
+  /// and derived_synchronize_nowait()
+  IntResponseMap simResponseMap;
+  /// caching of simulation-based responses returned by userDefinedInterface
+  /// but not matched within current simIdMap
+  IntResponseMap cachedSimResponseMap;
 };
 
 
@@ -187,6 +202,7 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
+  ++simModelEvalCntr;
   userDefinedInterface.map(currentVariables, set, currentResponse);
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
@@ -194,7 +210,11 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
 
 
 inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
-{ userDefinedInterface.map(currentVariables, set, currentResponse, true); }
+{
+  ++simModelEvalCntr;
+  userDefinedInterface.map(currentVariables, set, currentResponse, true);
+  simIdMap[userDefinedInterface.evaluation_id()] = simModelEvalCntr;
+}
 
 
 inline const IntResponseMap& SimulationModel::derived_synchronize()
@@ -203,10 +223,19 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  const IntResponseMap& resp_map = userDefinedInterface.synch();
+  // Any responses from userDefinedInterface.synchronize() that are unmatched
+  // in simIdMap are cached in Interface::cachedResponseMap
+  rekey_synch(userDefinedInterface, true, simIdMap, simResponseMap);
+  // Now augment rekeyed interface evals with locally cached evals.  If
+  // these are not matched in a higher-level rekey process using by the
+  // calling context, then they are returned to cachedSimResponseMap
+  // using SimulationModel::cache_unmatched_response().
+  simResponseMap.insert(cachedSimResponseMap.begin(),
+			cachedSimResponseMap.end());
+  cachedSimResponseMap.clear();
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
-  return resp_map;
+  return simResponseMap;
 }
 
 
@@ -216,10 +245,24 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  const IntResponseMap& resp_map = userDefinedInterface.synch_nowait();
+  // See comments above regarding levels of rekeying / caching
+  rekey_synch(userDefinedInterface, false, simIdMap, simResponseMap);
+  simResponseMap.insert(cachedSimResponseMap.begin(),
+			cachedSimResponseMap.end());
+  cachedSimResponseMap.clear();
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
-  return resp_map;
+  return simResponseMap;
+}
+
+
+inline void SimulationModel::cache_unmatched_response(int raw_id)
+{
+  IntRespMIter rr_it = simResponseMap.find(raw_id);
+  if (rr_it != simResponseMap.end()) {
+    cachedSimResponseMap.insert(*rr_it);
+    simResponseMap.erase(rr_it);
+  }
 }
 
 
@@ -315,7 +358,7 @@ inline const String& SimulationModel::interface_id() const
 
 
 inline int SimulationModel::evaluation_id() const
-{ return userDefinedInterface.evaluation_id(); }
+{ return simModelEvalCntr; }
 
 
 inline bool SimulationModel::evaluation_cache() const

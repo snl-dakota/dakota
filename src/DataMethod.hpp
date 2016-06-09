@@ -957,6 +957,12 @@ public:
   bool adaptPosteriorRefine;
   /// flag indicating user activation of logit transform option within QUESO
   bool logitTransform;
+  /// flag indicating the calculation of KL divergence between prior
+  /// and posterior in Bayesian methods 
+  bool posteriorStatsKL;
+  /// flag indicating the calculation of mutual information between prior
+  /// and posterior in Bayesian methods 
+  bool posteriorStatsMutual;
   /// the method used for performing a pre-solve for the MAP point
   unsigned short preSolveMethod;
   /// the type of proposal covariance: user, derivatives, or prior

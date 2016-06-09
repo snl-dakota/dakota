@@ -135,6 +135,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
+  posteriorStatsKL(false), posteriorStatsMutual(false),
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
@@ -265,6 +266,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
     << samplesOnEmulator
     << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << posteriorStatsKL << posteriorStatsMutual 
     << adaptPosteriorRefine << logitTransform << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
@@ -406,6 +408,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityLevels >> genReliabilityLevels >> chainSamples >> buildSamples 
     >> samplesOnEmulator
     >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
+    >> posteriorStatsKL >> posteriorStatsMutual
     >> adaptPosteriorRefine >> logitTransform >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
@@ -547,6 +550,7 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
     << samplesOnEmulator
     << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << posteriorStatsKL << posteriorStatsMutual
     << adaptPosteriorRefine << logitTransform << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType

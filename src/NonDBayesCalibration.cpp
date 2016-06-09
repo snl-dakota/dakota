@@ -57,6 +57,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   proposalCovarInputType(
     probDescDB.get_string("method.nond.proposal_covariance_input_type")),
   burnInSamples(probDescDB.get_int("method.burn_in_samples")),
+  posteriorStatsKL(probDescDB.get_bool("method.posterior_stats.kl_divergence")),
+  posteriorStatsMutual(probDescDB.get_bool("method.posterior_stats.mutual_info")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
@@ -448,6 +450,8 @@ void NonDBayesCalibration::initialize_model()
     if (emulatorType)      mcmcModel.build_approximation();
     break;
   }
+  Cout << "KL Divergence Flag " << posteriorStatsKL << '\n';
+  Cout << "Mutual Info Flag " << posteriorStatsMutual << '\n';
 }
 
 

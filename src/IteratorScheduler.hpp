@@ -426,7 +426,7 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 	  MPI_Status status;
 	  MPIUnpackBuffer recv_buffer(paramsMsgLen);
 	  parallelLib.recv_mi(recv_buffer, 0, i+1, status, miPLIndex);
-	  meta_object.unpack_parameters_buffer(recv_buffer);
+	  meta_object.unpack_parameters_buffer(recv_buffer, i);
 	}
       }
       else if (numIteratorServers > 1) { // peer 1: recv results from peers 2-n
@@ -517,7 +517,7 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
       parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status, miPLIndex);
       job_id = status.MPI_TAG;
       if (job_id)
-	meta_object.unpack_parameters_initialize(recv_buffer);
+	meta_object.unpack_parameters_initialize(recv_buffer, job_id-1);
     }
     if (iteratorCommSize > 1) // must Bcast job_id over iteratorComm
       parallelLib.bcast_i(job_id, miPLIndex);

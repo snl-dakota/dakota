@@ -131,8 +131,8 @@ protected:
   // mimic asynchronous operations for those iterators which call
   // asynch_compute_response and synchronize/synchronize_nowait on an
   // approximateModel
-  const IntResponseMap& synch();
-  const IntResponseMap& synch_nowait();
+  const IntResponseMap& synchronize();
+  const IntResponseMap& synchronize_nowait();
 
 private:
 
@@ -212,8 +212,8 @@ private:
   /// the interface id from the actualModel used for ordered PRPCache lookups
   String actualModelInterfaceId;
 
-  /// bookkeeping map to catalogue responses generated in map() for use
-  /// in synch() and synch_nowait().  This supports pseudo-asynchronous
+  /// bookkeeping map to catalogue responses generated in map() for use in
+  /// synchronize() and synchronize_nowait(). This supports pseudo-asynchronous
   /// operations (approximate responses are always computed synchronously,
   /// but asynchronous virtual functions are supported through bookkeeping).
   IntResponseMap beforeSynchResponseMap;

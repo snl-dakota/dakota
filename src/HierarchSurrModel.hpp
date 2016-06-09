@@ -160,6 +160,10 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// update sameInterfaceInstance based on interface ids for models
+  /// identified by current {low,high}FidelityIndices
+  void check_interface_instance();
+
   /// update the passed model (low or high fidelity) with current variable
   /// values/bounds/labels
   void update_model(Model& model);
@@ -167,6 +171,10 @@ private:
   /// called from derived_synchronize() for case of a shared model form
   /// between low and high fidelity, resulting in a single combined job queue
   const IntResponseMap& derived_synchronize_same_model();
+  // called from derived_synchronize() for case of a shared interface between
+  // low and high fidelity models, resulting in shared processing of a single
+  // interface job queue
+  //const IntResponseMap& derived_synchronize_same_interface();
   /// called from derived_synchronize() for case of distinct model forms
   /// with competing job queues
   const IntResponseMap& derived_synchronize_competing();
@@ -182,6 +190,10 @@ private:
   /// called from derived_synchronize_nowait() for case of a shared model form
   /// between low and high fidelity, resulting in a single combined job queue
   const IntResponseMap& derived_synchronize_same_model_nowait();
+  // called from derived_synchronize_nowait() for case of a shared interface
+  // between low and high fidelity models, resulting in shared processing of
+  // a single interface job queue 
+  //const IntResponseMap& derived_synchronize_same_interface_nowait();
   /// called from derived_synchronize_nowait() for case of distinct model forms
   /// with separate job queues
   const IntResponseMap& derived_synchronize_distinct_model_nowait();
@@ -194,16 +206,9 @@ private:
   /// resize currentResponse based on responseMode
   void resize_response();
   
-  /// aggregate LF and HF response to create a new response with 2x size
-  void aggregate_response(const Response& hf_resp, const Response& lf_resp,
-			  Response& agg_resp);
-
   /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
-
-  /// check for consistency in response map keys
-  void check_key(int key1, int key2) const;
 
   //
   //- Heading: Data members
@@ -223,8 +228,13 @@ private:
   /// to the low fidelity results.
   SizetSizetPair highFidelityIndices;
   /// flag indicating that the {low,high}FidelityIndices correspond to the
-  /// same model instance, requiring modifications to the updating process
-  bool sameModelForm;
+  /// same model instance, requiring modifications to updating and evaluation
+  /// scheduling processes
+  bool sameModelInstance;
+  /// flag indicating that the models identified by {low,high}FidelityIndices
+  /// employ the same interface instance, requiring modifications to evaluation
+  /// scheduling processes
+  bool sameInterfaceInstance;
   
   /// the reference truth (high fidelity) response computed in
   /// build_approximation() and used for calculating corrections
@@ -240,6 +250,16 @@ inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
+inline void HierarchSurrModel::check_interface_instance()
+{
+  if (sameModelInstance) sameInterfaceInstance = true;
+  else
+    sameInterfaceInstance
+      = (orderedModels[lowFidelityIndices.first].interface_id() ==
+	 orderedModels[highFidelityIndices.first].interface_id());
+}
+
+
 inline Model& HierarchSurrModel::surrogate_model()
 { return orderedModels[lowFidelityIndices.first]; }
 
@@ -249,7 +269,8 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 {
   lowFidelityIndices.first  = lf_model_index;
   lowFidelityIndices.second = lf_soln_lev_index; // including _NPOS default
-  sameModelForm = (lf_model_index == highFidelityIndices.first);
+  sameModelInstance = (lf_model_index == highFidelityIndices.first);
+  check_interface_instance();
 
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
@@ -266,7 +287,8 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
   lowFidelityIndices = lf_form_level;
   size_t lf_model_index = lf_form_level.first,
       lf_soln_lev_index = lf_form_level.second;
-  sameModelForm = (lf_model_index == highFidelityIndices.first);
+  sameModelInstance = (lf_model_index == highFidelityIndices.first);
+  check_interface_instance();
 
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
@@ -290,7 +312,8 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
 {
   highFidelityIndices.first  = hf_model_index;
   highFidelityIndices.second = hf_soln_lev_index; // including _NPOS default
-  sameModelForm = (hf_model_index == lowFidelityIndices.first);
+  sameModelInstance = (hf_model_index == lowFidelityIndices.first);
+  check_interface_instance();
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
@@ -303,7 +326,8 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
   highFidelityIndices = hf_form_level;
   size_t hf_model_index = hf_form_level.first,
       hf_soln_lev_index = hf_form_level.second;
-  sameModelForm = (hf_model_index == lowFidelityIndices.first);
+  sameModelInstance = (hf_model_index == lowFidelityIndices.first);
+  check_interface_instance();
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
@@ -350,16 +374,6 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
   if (mode == BYPASS_SURROGATE) // recurse in this case
     orderedModels[highFidelityIndices.first].surrogate_response_mode(mode);
-}
-
-
-inline void HierarchSurrModel::check_key(int key1, int key2) const
-{
-  if (key1 != key2) {
-    Cerr << "Error: failure in HierarchSurrModel::check_key().  Keys are not "
-	 << "consistent." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
 }
 
 

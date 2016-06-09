@@ -74,6 +74,8 @@ protected:
   /// attributes of the submodel (DataFitSurrModel::actualModel or
   /// HierarchSurrModel::highFidelityModel)
   void check_submodel_compatibility(const Model& sub_model);
+  /// check for consistency in response map keys
+  void check_key(int key1, int key2) const;
 
   /// evaluate whether a rebuild of the approximation should be
   /// forced based on changes in the inactive data
@@ -89,6 +91,9 @@ protected:
   void response_mapping(const Response& actual_response,
                         const Response& approx_response,
                         Response& combined_response);
+  /// aggregate LF and HF response to create a new response with 2x size
+  void aggregate_response(const Response& hf_resp, const Response& lf_resp,
+			  Response& agg_resp);
 
   //
   //- Heading: Data
@@ -98,8 +103,8 @@ protected:
   /// subset that is approximated
   IntSet surrogateFnIndices;
 
-  /// map of surrogate responses used in derived_synchronize() and
-  /// derived_synchronize_nowait() functions
+  /// map of surrogate responses returned by derived_synchronize() and
+  /// derived_synchronize_nowait()
   IntResponseMap surrResponseMap;
 
   /// map of raw continuous variables used by apply_correction().
@@ -108,10 +113,10 @@ protected:
   IntVariablesMap rawVarsMap;
 
   /// map from actualModel/highFidelityModel evaluation ids to
-  /// DataFitSurrModel.hppierarchSurrModel ids
+  /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap truthIdMap;
   /// map from approxInterface/lowFidelityModel evaluation ids to
-  /// DataFitSurrModel.hppierarchSurrModel ids
+  /// DataFitSurrModel/HierarchSurrModel ids
   IntIntMap surrIdMap;
 
   /// map of approximate responses retrieved in derived_synchronize_nowait()
@@ -208,6 +213,16 @@ inline size_t SurrogateModel::mi_parallel_level_index() const
 
 inline DiscrepancyCorrection& SurrogateModel::discrepancy_correction()
 { return deltaCorr; }
+
+
+inline void SurrogateModel::check_key(int key1, int key2) const
+{
+  if (key1 != key2) {
+    Cerr << "Error: failure in SurrogateModel::check_key().  Keys are not "
+	 << "consistent." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
 
 } // namespace Dakota
 

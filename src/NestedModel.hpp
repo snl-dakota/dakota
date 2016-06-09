@@ -152,8 +152,9 @@ protected:
 
   void initialize_iterator(int job_index);
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer);
-  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer);
+  void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
+  void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
+				    int job_index);
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
@@ -167,14 +168,17 @@ private:
   /// update subIterator with mapping data and set subIterator-based counts
   void update_sub_iterator();
 
+  /// convert job_index to an eval_id through subIteratorIdMap and
+  /// eval_id to a subIteratorPRPQueue queue iterator
+  PRPQueueIter job_index_to_queue_iterator(int job_index);
   /// lower level function shared by initialize_iterator(int) and
   /// unpack_parameters_initialize()
   void initialize_iterator(const Variables& vars, const ActiveSet& set,
 			   int eval_id);
   /// lower level function shared by unpack_parameters_buffer() and
   /// unpack_parameters_initialize()
-  void unpack(MPIUnpackBuffer& recv_buffer, Variables& vars, ActiveSet& set,
-	      int& eval_id);
+  void unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
+	      ActiveSet& set, int& eval_id);
 
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
@@ -253,7 +257,7 @@ private:
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
   /// locate existing or allocate new entry in nestedResponseMap
-  Response& find_nested_response(int nested_cntr);
+  Response& nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
   void check_response_map(const ShortArray& mapped_asv);
 
@@ -575,7 +579,7 @@ inline void NestedModel::stop_servers()
 { component_parallel_mode(0); }
 
 
-inline Response& NestedModel::find_nested_response(int nested_cntr)
+inline Response& NestedModel::nested_response(int nested_cntr)
 {
   IntRespMIter r_it = nestedResponseMap.find(nested_cntr);
   if (r_it == nestedResponseMap.end()) {
@@ -687,16 +691,34 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 }
 
 
-inline void NestedModel::initialize_iterator(int job_index)
+inline PRPQueueIter NestedModel::job_index_to_queue_iterator(int job_index)
 {
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index+1);
-  if (prp_it == subIteratorPRPQueue.end()) {
-    Cerr << "Error: lookup failure in NestedModel::initialize_iterator()"
-	 << std::endl;
+  // This approach is insufficient on remote servers with local PRPQueues:
+  //PRPQueueIter prp_it = subIteratorPRPQueue.begin();
+  //std::advance(prp_it, job_index);
+
+  // map from job_index to nestedModelEvalCntr:
+  IntIntMIter id_it = subIteratorIdMap.find(job_index+1); // index to id
+  if (id_it == subIteratorIdMap.end()) {
+    Cerr << "Error: map lookup failure for job index " << job_index
+	 << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  initialize_iterator(prp_it->variables(), prp_it->active_set(),
-		      prp_it->eval_id());
+  // map from nestedModelEvalCntr to queue iterator:
+  PRPQueueIter q_it = lookup_by_eval_id(subIteratorPRPQueue, id_it->second);
+  if (q_it == subIteratorPRPQueue.end()) {
+    Cerr << "Error: queue lookup failure for evaluation id " << id_it->second
+	 << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  return q_it;
+}
+
+
+inline void NestedModel::initialize_iterator(int job_index)
+{
+  PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
+  initialize_iterator(q_it->variables(), q_it->active_set(), q_it->eval_id());
 }
 
 
@@ -706,8 +728,8 @@ initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
   update_sub_model(vars, userDefinedConstraints);
   subIterator.response_results_active_set(set);
   if (hierarchicalTagging) {
-    String eval_tag
-      = evalTagPrefix + '.' + boost::lexical_cast<String>(eval_id);
+    String eval_tag = evalTagPrefix + '.' +
+      boost::lexical_cast<String>(eval_id); // unique id from nested eval cntr
     subIterator.eval_tag_prefix(eval_tag);
   }
 }
@@ -716,30 +738,21 @@ initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
 inline void NestedModel::
 pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index+1);
-  if (prp_it == subIteratorPRPQueue.end()) {
-    Cerr << "Error: lookup failure in NestedModel::pack_parameters_buffer()"
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  send_buffer << prp_it->variables() << prp_it->active_set()
-	      << prp_it->eval_id();
+  PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
+  send_buffer << q_it->variables() << q_it->active_set() << q_it->eval_id();
 }
 
 
 inline void NestedModel::
-unpack(MPIUnpackBuffer& recv_buffer, Variables& vars,
+unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
        ActiveSet& set, int& eval_id)
 {
   recv_buffer >> vars >> set >> eval_id;
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, eval_id);
-  if (prp_it != subIteratorPRPQueue.end()) {
-    // Can't do this since it affects Queue hash-by-value ordering
-    //prp_it->variables(vars);
-    //prp_it->active_set(set);
 
-    subIteratorPRPQueue.erase(prp_it); // remove and reinsert below
-  }
+  // map from job id (index+1) to nestedModelEvalCntr (insert or overwrite)
+  subIteratorIdMap[job_index+1] = eval_id;
+
+  // add new job to local queue
   Response resp = subIterator.response_results().copy();
   resp.active_set(set);
   ParamResponsePair pair(vars, subIterator.method_id(), resp, eval_id, false);
@@ -747,18 +760,19 @@ unpack(MPIUnpackBuffer& recv_buffer, Variables& vars,
 }
 
 
-inline void NestedModel::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer)
+inline void NestedModel::
+unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
   Variables vars; ActiveSet set; int eval_id;
-  unpack(recv_buffer, vars, set, eval_id);
+  unpack(recv_buffer, job_index, vars, set, eval_id);
 }
 
 
 inline void NestedModel::
-unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
 {
   Variables vars; ActiveSet set; int eval_id;
-  unpack(recv_buffer, vars, set, eval_id);
+  unpack(recv_buffer, job_index, vars, set, eval_id);
   initialize_iterator(vars, set, eval_id);
 }
 
@@ -766,49 +780,38 @@ unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
 inline void NestedModel::
 pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index+1);
-  if (prp_it == subIteratorPRPQueue.end()) {
-    Cerr << "Error: lookup failure in NestedModel::pack_results_buffer()"
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  send_buffer << prp_it->response();
+  PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
+  send_buffer << q_it->response();
+
+  // local job complete: clean up
+  subIteratorIdMap.erase(job_index+1);
+  subIteratorPRPQueue.erase(q_it);
 }
 
 
 inline void NestedModel::
 unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index+1);
-  if (prp_it == subIteratorPRPQueue.end()) {
-    Cerr << "Error: lookup failure in NestedModel::unpack_results_buffer()"
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+  PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
+
   // Bypassing PRPQueue const-ness is OK for the PRP response since this
   // should not affect hash-by-value ordering
-  Response resp = prp_it->response(); // shallow copy
+  Response resp = q_it->response(); // shallow copy
   recv_buffer >> resp;
 }
 
 
 inline void NestedModel::update_local_results(int job_index)
 {
-  PRPQueueIter prp_it = lookup_by_eval_id(subIteratorPRPQueue, job_index+1);
-  if (prp_it == subIteratorPRPQueue.end()) {
-    Cerr << "Error: lookup failure in NestedModel::update_local_results()"
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  else {
-    // Can't do this since it affects Queue hash-by-value ordering
-    //prp_it->variables(subIterator.variables_results());
+  PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
 
-    // Bypassing PRPQueue const-ness is OK for the PRP response since
-    // this should not affect hash-by-value ordering
-    Response resp = prp_it->response(); // shallow copy
-    resp.update(subIterator.response_results());
-  }
+  // Can't do this since it affects Queue hash-by-value ordering
+  //q_it->variables(subIterator.variables_results());
+
+  // Bypassing PRPQueue const-ness is OK for the PRP response since
+  // this should not affect hash-by-value ordering
+  Response resp = q_it->response(); // shallow copy
+  resp.update(subIterator.response_results());
 }
 
 } // namespace Dakota

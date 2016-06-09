@@ -98,11 +98,11 @@ protected:
 
   /// executes a blocking schedule for asynchronous evaluations in the
   /// beforeSynchCorePRPQueue and returns all jobs
-  const IntResponseMap& synch();
+  const IntResponseMap& synchronize();
 
   /// executes a nonblocking schedule for asynchronous evaluations in the
   /// beforeSynchCorePRPQueue and returns a partial set of completed jobs
-  const IntResponseMap& synch_nowait();
+  const IntResponseMap& synchronize_nowait();
 
   /// run on evaluation servers to serve the iterator master
   void serve_evaluations();
@@ -256,7 +256,7 @@ private:
   /// to post-construct time Response size changes.
   void init_default_asv(size_t num_fns);
 
-  // Scheduling routines employed by synch():
+  // Scheduling routines employed by synchronize():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
   /// using message passing on a dedicated master partition; executes on
@@ -275,7 +275,7 @@ private:
   /// the local processor
   void synchronous_local_evaluations(PRPQueue& prp_queue);
 
-  // Scheduling routines employed by synch_nowait():
+  // Scheduling routines employed by synchronize_nowait():
 
   /// execute a nonblocking dynamic schedule in a master-slave partition
   void master_dynamic_schedule_evaluations_nowait();
@@ -443,7 +443,7 @@ private:
   /// or asynchronous
   short interfaceSynchronization;
 
-  /// used by synch_nowait to manage header output frequency (since this
+  /// used by synchronize_nowait to manage header output frequency (since this
   /// function may be called many times prior to any completions)
   bool headerFlag;
 
@@ -505,12 +505,12 @@ private:
 
   /// used to bookkeep vars/set/response of nonduplicate asynchronous core
   /// evaluations.  This is the queue of jobs populated by asynchronous map()
-  /// that is later scheduled in synch() or synch_nowait().
+  /// that is later scheduled in synchronize() or synchronize_nowait().
   PRPQueue beforeSynchCorePRPQueue;
 
   /// used to bookkeep vars/set/response of asynchronous algebraic evaluations.
   /// This is the queue of algebraic jobs populated by asynchronous map()
-  /// that is later evaluated in synch() or synch_nowait().
+  /// that is later evaluated in synchronize() or synchronize_nowait().
   PRPQueue beforeSynchAlgPRPQueue;
 
   /// used by nonblocking asynchronous local schedulers to bookkeep

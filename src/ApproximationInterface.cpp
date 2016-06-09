@@ -314,20 +314,30 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 
 // Little distinction between blocking and nonblocking synch since all 
 // responses are completed.
-const IntResponseMap& ApproximationInterface::synch()
+const IntResponseMap& ApproximationInterface::synchronize()
 {
   // move data from beforeSynch map to completed map
-  rawResponseMap = beforeSynchResponseMap;
-  beforeSynchResponseMap.clear();
+  rawResponseMap.clear();
+  std::swap(beforeSynchResponseMap, rawResponseMap);
+
+  // augment with any cached evals
+  rawResponseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
+  cachedResponseMap.clear();
+
   return rawResponseMap;
 }
 
 
-const IntResponseMap& ApproximationInterface::synch_nowait()
+const IntResponseMap& ApproximationInterface::synchronize_nowait()
 {
   // move data from beforeSynch map to completed map
-  rawResponseMap = beforeSynchResponseMap;
-  beforeSynchResponseMap.clear();
+  rawResponseMap.clear();
+  std::swap(beforeSynchResponseMap, rawResponseMap);
+
+  // augment with any cached evals
+  rawResponseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
+  cachedResponseMap.clear();
+
   return rawResponseMap;
 }
 

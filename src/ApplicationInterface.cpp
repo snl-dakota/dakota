@@ -365,8 +365,8 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
     derived_evaluate() and derived_evaluate_nowait() in derived Model
     classes.  If asynch_flag is not set, perform a blocking evaluation
     (using derived_map()).  If asynch_flag is set, add the job to the
-    beforeSynchCorePRPQueue queue for execution by one of the
-    scheduler routines in synch() or synch_nowait().  Duplicate
+    beforeSynchCorePRPQueue queue for execution by one of the scheduler
+    routines in synchronize() or synchronize_nowait().  Duplicate
     function evaluations are detected with duplication_detect(). */
 void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 			       Response& response, bool asynch_flag)
@@ -467,8 +467,9 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	// use this constructor since deep copies of vars/response are needed
 	ParamResponsePair prp(vars, interfaceId, core_resp, evalIdCntr);
 	beforeSynchCorePRPQueue.insert(prp);
-	// jobs are not queued until call to synch() to allow dynamic sched.
-	// Response data headers & data_pair list insertion appear in synch().
+	// jobs are not queued until call to synchronize() to allow dynamic
+	// scheduling. Response data headers and data_pair list insertion
+	// appear in synchronize().
       }
       else { // local synchronous evaluation
 
@@ -663,26 +664,37 @@ void ApplicationInterface::init_default_asv(size_t num_fns) {
     (background system call, nonblocking fork, & multithreads), the
     message passing case, and the hybrid case.  Called from
     derived_synchronize() in derived Model classes. */
-const IntResponseMap& ApplicationInterface::synch()
+const IntResponseMap& ApplicationInterface::synchronize()
 {
+  rawResponseMap.clear();
+
+  size_t cached_eval = cachedResponseMap.size(),
+    hist_duplicates  = historyDuplicateMap.size(),
+    queue_duplicates = beforeSynchDuplicateMap.size();
+
+  // Process cached responses
+  if (cached_eval) std::swap(rawResponseMap, cachedResponseMap);
+
   // Process history duplicates (see duplication_detect) since response data 
   // has been extracted from the data_pairs list.  These duplicates are not 
   // written to data_pairs or write_restart.
-  size_t hist_duplicates = historyDuplicateMap.size(),
-        queue_duplicates = beforeSynchDuplicateMap.size();
   if (hist_duplicates) {
-    rawResponseMap = historyDuplicateMap;
-    historyDuplicateMap.clear();
+    if (rawResponseMap.empty()) std::swap(rawResponseMap, historyDuplicateMap);
+    else {
+      rawResponseMap.insert(historyDuplicateMap.begin(),
+			    historyDuplicateMap.end());
+      historyDuplicateMap.clear();
+    }
   }
-  else rawResponseMap.clear();
 
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
     Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
     if (!interfaceId.empty()) Cout << interfaceId << ' ';
     Cout << "evaluations";
-    if (hist_duplicates || queue_duplicates)
-      Cout << " and " << hist_duplicates + queue_duplicates << " duplicates";
+    if (cached_eval || hist_duplicates || queue_duplicates)
+      Cout << ", " << cached_eval << " cached evaluations, and "
+	   << hist_duplicates + queue_duplicates << " duplicates";
     Cout << std::endl;
 
     // Process nonduplicate evaluations for either the message passing or local 
@@ -773,12 +785,14 @@ const IntResponseMap& ApplicationInterface::synch()
 /** This function provides nonblocking synchronization for the local
     asynchronous case and selected nonblocking message passing schedulers.
     Called from derived_synchronize_nowait() in derived Model classes. */
-const IntResponseMap& ApplicationInterface::synch_nowait()
+const IntResponseMap& ApplicationInterface::synchronize_nowait()
 {
   rawResponseMap.clear();
 
-  bool hist_duplicates = !historyDuplicateMap.empty(),
-      queue_duplicates = !beforeSynchDuplicateMap.empty();
+  size_t cached_eval = cachedResponseMap.size(),
+    hist_duplicates  = historyDuplicateMap.size(),
+    queue_duplicates = beforeSynchDuplicateMap.size();
+
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
     // suppress repeated header output for longer jobs;
@@ -788,9 +802,9 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 	   << " asynchronous ";
       if (!interfaceId.empty()) Cout << interfaceId << ' ';
       Cout << "evaluations";
-      if (hist_duplicates || queue_duplicates)
-	Cout << " and " << historyDuplicateMap.size()
-	  + beforeSynchDuplicateMap.size() << " duplicates";
+      if (cached_eval || hist_duplicates || queue_duplicates)
+	Cout << ", " << cached_eval << " cached evaluations, and "
+	     << hist_duplicates + queue_duplicates << " duplicates";
       Cout << std::endl;
     }
 
@@ -814,6 +828,7 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       else // local to processor
 	asynchronous_local_evaluations_nowait(beforeSynchCorePRPQueue);
     }
+    // suppress header on next pass if no new completions on this pass
     headerFlag = !rawResponseMap.empty();
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
@@ -839,12 +854,17 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
       }
     }
 
-  // Process history duplicates (see duplication_detect).  In the _nowait case,
-  // this goes after the schedulers so as to not interfere with rawResponseMap
-  // usage in the schedulers and after the beforeSynchDuplicates in order to 
-  // streamline their rawResponseMap searches.  Note: since data_pairs is
-  // checked first in duplication_detect(), it is not possible to have a
-  // beforeSynchDuplicateMap entry that references a historyDuplicateMap entry.
+  // Process history duplicates (see duplication_detect) and cached evaluations.
+  // In the _nowait case, this goes after the schedulers so as to not interfere
+  // with rawResponseMap usage in the schedulers and after the
+  // beforeSynchDuplicates in order to streamline their rawResponseMap searches.
+  // Note: since data_pairs is checked first in duplication_detect(), it is not
+  // possible to have a beforeSynchDuplicateMap entry that references a
+  // historyDuplicateMap entry.
+  if (cached_eval) {
+    rawResponseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
+    cachedResponseMap.clear(); headerFlag = true;
+  }
   if (hist_duplicates) {
     rawResponseMap.insert(historyDuplicateMap.begin(),
 			  historyDuplicateMap.end());
@@ -909,8 +929,8 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
 }
 
 
-/** This code is called from synch() to provide the master portion of a
-    master-slave algorithm for the dynamic scheduling of evaluations among
+/** This code is called from synchronize() to provide the master portion of
+    a master-slave algorithm for the dynamic scheduling of evaluations among
     slave servers.  It performs no evaluations locally and matches either
     serve_evaluations_synch() or serve_evaluations_asynch() on the slave
     servers, depending on the value of asynchLocalEvalConcurrency.  Dynamic 
@@ -991,9 +1011,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
 
 
 /** This code runs on the iteratorCommRank 0 processor (the iterator) and is
-    called from synch() in order to manage a static schedule for cases where
-    peer 1 must block when evaluating its local job allocation (e.g., single
-    or multiprocessor direct interface evaluations).  It matches
+    called from synchronize() in order to manage a static schedule for cases
+    where peer 1 must block when evaluating its local job allocation (e.g.,
+    single or multiprocessor direct interface evaluations).  It matches
     serve_evaluations_peer() for any other processors within the first
     evaluation partition and serve_evaluations_{synch,asynch}() for all other
     evaluation partitions (depending on asynchLocalEvalConcurrency).  It
@@ -1065,7 +1085,7 @@ void ApplicationInterface::peer_static_schedule_evaluations()
     synchronous_local_evaluations(local_prp_queue);
   }
   // reassign used to be required for beforeSynchDuplicates to work properly in
-  // synch(), but is now unnecessary due to handle-body response representation
+  // synchronize(), but is now unnecessary due to response representation
   // sharing between local_prp_queue and beforeSynchCorePRPQueue.
   //for (i=0; i<num_peer1_jobs; ++i)
   //  beforeSynchCorePRPQueue[core_index].response(
@@ -1101,10 +1121,10 @@ void ApplicationInterface::peer_static_schedule_evaluations()
 
 
 /** This code runs on the iteratorCommRank 0 processor (the iterator) and is
-    called from synch() in order to manage a dynamic schedule, as enabled by
-    nonblocking management of local asynchronous jobs.  It matches
-    serve_evaluations_{synch,asynch}() for other evaluation partitions,
-    depending on asynchLocalEvalConcurrency; it does not match
+    called from synchronize() in order to manage a dynamic schedule, as
+    enabled by nonblocking management of local asynchronous jobs.  It
+    matches serve_evaluations_{synch,asynch}() for other evaluation
+    partitions, depending on asynchLocalEvalConcurrency; it does not match
     serve_evaluations_peer() since, for local asynchronous jobs, the first
     evaluation partition cannot be multiprocessor.  It performs function
     evaluations locally for its portion of the job allocation using
@@ -1178,7 +1198,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
 
 /** This function provides blocking synchronization for the local asynch
     case (background system call, nonblocking fork, or threads).  It can
-    be called from synch() for a complete local scheduling of all
+    be called from synchronize() for a complete local scheduling of all
     asynchronous jobs or from peer_{static,dynamic}_schedule_evaluations()
     to perform a local portion of the total job set.  It uses 
     derived_map_asynch() to initiate asynchronous evaluations and 
@@ -1452,7 +1472,7 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 }
 
 
-/** This code is called from synch_nowait() to provide the master 
+/** This code is called from synchronize_nowait() to provide the master 
     portion of a nonblocking master-slave algorithm for the dynamic 
     scheduling of evaluations among slave servers.  It performs no
     evaluations locally and matches either serve_evaluations_synch() 
@@ -1467,8 +1487,8 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 {
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
-  // previous completions have been removed by synch_nowait().  Thus, the queue
-  // size could be larger or smaller than on the previous nowait invocation.
+  // previous completions have been removed by synchronize_nowait().  Thus,
+  // queue size could be larger or smaller than on previous nowait invocation.
   size_t i, num_jobs = beforeSynchCorePRPQueue.size(), buff_index, server_index,
     server_job_index, num_running  = msgPassRunningMap.size(),
     num_backfill = num_jobs - num_running, capacity = numEvalServers;
@@ -1575,8 +1595,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 
 
 /** This code runs on the iteratorCommRank 0 processor (the iterator)
-    and is called from synch_nowait() in order to manage a nonblocking
-    static schedule.  It matches serve_evaluations_synch()
+    and is called from synchronize_nowait() in order to manage a
+    nonblocking static schedule.  It matches serve_evaluations_synch()
     for other evaluation partitions (asynchLocalEvalConcurrency == 1).
     It performs blocking local function evaluations, one at a time, 
     for its portion of the static schedule and checks for remote 
@@ -1594,8 +1614,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 void ApplicationInterface::peer_static_schedule_evaluations_nowait()
 {
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
-  // previous completions have been removed by synch_nowait().  Thus, the queue
-  // size could be larger or smaller than on the previous nowait invocation.
+  // previous completions have been removed by synchronize_nowait().  Thus,
+  // queue size could be larger or smaller than on previous nowait invocation.
   // Rounding down num_local_jobs offloads this processor (which has additional
   // work relative to other peers), but results in a few more passed messages.
   int fn_eval_id, server_id;
@@ -1760,26 +1780,25 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
 }
 
 
-/** This code runs on the iteratorCommRank 0 processor (the iterator)
-    and is called from synch_nowait() in order to manage a nonblocking
-    static schedule.  It matches serve_evaluations_{synch,asynch}()
-    for other evaluation partitions (depending on
-    asynchLocalEvalConcurrency).  It performs nonblocking local
-    function evaluations for its portion of the static schedule using
-    asynchronous_local_evaluations().  Single-level and multilevel
-    parallel use intra- and inter-communicators, respectively, for
-    send/receive, with specific syntax as encapsulated within
-    ParallelLibrary.  The iteratorCommRank 0 processor assigns the
+/** This code runs on the iteratorCommRank 0 processor (the iterator) and
+    is called from synchronize_nowait() in order to manage a nonblocking
+    static schedule.  It matches serve_evaluations_{synch,asynch}() for
+    other evaluation partitions (depending on asynchLocalEvalConcurrency).
+    It performs nonblocking local function evaluations for its portion of
+    the static schedule using asynchronous_local_evaluations().
+    Single-level and multilevel parallel use intra- and inter-communicators,
+    respectively, for send/receive, with specific syntax as encapsulated
+    within ParallelLibrary.  The iteratorCommRank 0 processor assigns the
     dynamic schedule since it is the only processor with access to
-    beforeSynchCorePRPQueue (it runs the iterator and calls
-    synchronize).  The alternate design of each peer selecting its own
-    jobs using the modulus operator would be applicable if execution
-    of this function (and therefore the job list) were distributed. */
+    beforeSynchCorePRPQueue (it runs the iterator and calls synchronize).
+    The alternate design of each peer selecting its own jobs using the
+    modulus operator would be applicable if execution of this function
+    (and therefore the job list) were distributed. */
 void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 {
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
-  // previous completions have been removed by synch_nowait().  Thus, the queue
-  // size could be larger or smaller than on the previous nowait invocation.
+  // previous completions have been removed by synchronize_nowait().  Thus,
+  // queue size could be larger or smaller than on previous nowait invocation.
   // Rounding down num_local_jobs offloads this processor (which has additional
   // work relative to other peers), but results in a few more passed messages.
   int fn_eval_id, server_id;
@@ -1938,7 +1957,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 
 /** This function provides nonblocking synchronization for the local
     asynch case (background system call, nonblocking fork, or
-    threads).  It is called from synch_nowait() and passed the
+    threads).  It is called from synchronize_nowait() and passed the
     complete set of all asynchronous jobs (beforeSynchCorePRPQueue).
     It uses derived_map_asynch() to initiate asynchronous evaluations
     and test_local_evaluations() to capture completed jobs in
@@ -1947,7 +1966,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     after MPI_Testsome()).  The result of this function is
     rawResponseMap, which uses eval_id as a key.  It is assumed that
     the incoming local_prp_queue contains only active and new jobs - 
-    i.e., all completed jobs are cleared by synch_nowait(). 
+    i.e., all completed jobs are cleared by synchronize_nowait(). 
 
     Also supports asynchronous local evaluations with static
     scheduling.  This scheduling policy specifically ensures that a
@@ -2256,9 +2275,10 @@ void ApplicationInterface::serve_evaluations_asynch()
   // scheduler would not normally need to support a multiprocessor evalComm
   // (ApplicationInterface::init_communicators_checks() normally prevents this
   // in its check for multiproc evalComm and asynchLocalEvalConcurrency > 1).
-  // However, direct interface plug-ins can use derived_{synch,synch_nowait} to
-  // provide a poor man's batch processing capability, so this function has been
-  // extended to allow for multiProcEvalFlag to accommodate this case.
+  // However, direct interface plug-ins can use derived_{synchronize,
+  // synchronize_nowait} to provide a poor man's batch processing capability,
+  // so this function has been extended to allow for multiProcEvalFlag to
+  // accommodate this case.
   // ---------------------------------------------------------------------------
 
   // ----------------------------------------------------------

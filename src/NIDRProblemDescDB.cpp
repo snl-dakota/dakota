@@ -6791,6 +6791,8 @@ static bool
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
 	MP_(pcaFlag),
+	MP_(posteriorStatsKL),
+	MP_(posteriorStatsMutual),
 	MP_(printPopFlag),
 	MP_(pstudyFileActive),
 	MP_(randomizeOrderFlag),

@@ -63,6 +63,9 @@ private:
   int side_impact_perf(); ///< the side_impact_perf UQ/OUU test function
 
   int rosenbrock();  ///< the Rosenbrock optimization and least squares test fn
+  int modified_rosenbrock();  ///< the modified Rosenbrock optimization and
+  /// least squares test fn. The modification is the addition of an sin^2
+  /// term so that function can not be exactly approximated by a low degree polynomial
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
   int extended_rosenbrock();    ///< n-dimensional Rosenbrock (Nocedal/Wright)
   int lf_rosenbrock(); ///< a low fidelity version of the Rosenbrock function
