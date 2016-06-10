@@ -1,5 +1,7 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
+#@ p2: MPIProcs=2
+#@ p3: MPIProcs=3
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
 
@@ -11,7 +13,7 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
-	  convergence_tolerance =    .1			#s0,#s2,#p0,#p1
+	  convergence_tolerance =    .1			#s0,#s2,#s4,#p0,#p1,#p2,#p3
 #	  convergence_tolerance =   .01			#s1,#s3
 #	  convergence_tolerance =  .001			# too expensive
 #	  convergence_tolerance = .0001			# too expensive
@@ -27,19 +29,19 @@ model,
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
-	interface_pointer = 'LF_INT'
+#	interface_pointer = 'LF_INT'			#s4,#p2,#p3
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic cost growth
 #   cos64 -> exp16: 64x for 4^3, 10x assumed for kernel
 #   cos64 -> cos4:  4096x for 16^3
 	  solution_level_cost = 6.4			#s0,#s1,#p0
-#	  solution_level_cost = 1.			#s2,#s3,#p1
+#	  solution_level_cost = 1.			#s2,#s3,#s4,#p1,#p2,#p3
 
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
-	interface_pointer = 'HF_INT'
+#	interface_pointer = 'HF_INT'			#s4,#p2,#p3
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 4096. # MLMC cost for cosine64
@@ -55,8 +57,8 @@ variables,
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 16	  	     	 #s0,#s1,#p0
 	    set_values = 16	     	 	 #s0,#s1,#p0
-#	    initial_state = 4	  	   	 #s2,#s3,#p1
-#	    set_values = 4	     	 	 #s2,#s3,#p1
+#	    initial_state = 4	  	   	 #s2,#s3,#s4,#p1,#p2,#p3
+#	    set_values = 4	     	 	 #s2,#s3,#s4,#p1,#p2,#p3
       descriptors = 'mesh_size'
     real = 4
       elements_per_variable = 2 2 1 1
@@ -66,11 +68,11 @@ variables,
                    0.2   # kernel length
       descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
       initial_state = 0.1 0.5 1 0.2		 #s0,#s1,#p0
-#     initial_state = 1 4 1 0.2  	 	 #s2,#s3,#p1
+#     initial_state = 1 4 1 0.2  	 	 #s2,#s3,#s4,#p1,#p2,#p3
 	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
       elements_per_variable = 2 2
 	    initial_state = 'exponential' 'on'	 #s0,#s1,#p0
-#	    initial_state = 'cosine' 'off'  	 #s2,#s3,#p1
+#	    initial_state = 'cosine' 'off'  	 #s2,#s3,#s4,#p1,#p2,#p3
       set_values = 'cosine' 'exponential'
                    'off' 'on'
       descriptors = 'kernel_type' 'positivity'
@@ -101,16 +103,16 @@ variables,
       descriptors = 'kernel_type' 'positivity'
 
 interface,
-	id_interface = 'LF_INT'
+#	id_interface = 'LF_INT'				#s4,#p2,#p3
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
 	  deactivate evaluation_cache restart_file
 
-interface,
-	id_interface = 'HF_INT'
-	direct
-	  analysis_driver = 'steady_state_diffusion_1d'
-	  deactivate evaluation_cache restart_file
+#interface,						#s4,#p2,#p3
+#	id_interface = 'HF_INT'				#s4,#p2,#p3
+#	direct	       					#s4,#p2,#p3
+#	  analysis_driver = 'steady_state_diffusion_1d'	#s4,#p2,#p3
+#	  deactivate evaluation_cache restart_file	#s4,#p2,#p3
 
 responses,
 	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
