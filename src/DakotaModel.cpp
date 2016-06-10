@@ -665,11 +665,12 @@ void Model::evaluate_nowait()
     // perform an asynchronous parameter-to-response mapping
     derived_evaluate_nowait(temp_set);
 
-    // history of vars must be catalogued for use in synchronize()
-    if (modelAutoGraphicsFlag)
-      varsList.push_back(currentVariables.copy());
     rawEvalIdMap[evaluation_id()] = modelEvalCntr;
     numFDEvalsMap[modelEvalCntr] = -1;//no deriv est; distinguish from QN update
+
+    // history of vars must be catalogued for use in synchronize()
+    if (modelAutoGraphicsFlag)
+      varsMap[modelEvalCntr] = currentVariables.copy();
   }
 }
 
@@ -680,39 +681,39 @@ void Model::evaluate_nowait(const ActiveSet& set)
     modelRep->evaluate_nowait(set);
   else { // letter
     ++modelEvalCntr;
+    // derived evaluation_id() not yet incremented (for first of several if est
+    // derivs); want the key for id map to be the first raw eval of the set
+    rawEvalIdMap[evaluation_id() + 1] = modelEvalCntr;
 
     // Manage use of estimate_derivatives() for a particular asv based on
     // the user's gradients/Hessians spec.
-    ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0),
-      fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
+    ShortArray map_asv(numFns, 0),    fd_grad_asv(numFns, 0),
+           fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
     bool use_est_deriv = manage_asv(set, map_asv, fd_grad_asv,
 				    fd_hess_asv, quasi_hess_asv);
     int num_fd_evals;
     if (use_est_deriv) {
-      // Compute requested derivatives not available from the simulation.  Since
-      // we expect multiple evaluate_nowait()/estimate_derivatives()
+      // Compute requested derivatives not available from the simulation.
+      // Since we expect multiple evaluate_nowait()/estimate_derivatives()
       // calls prior to synchronize()/synchronize_derivatives(), we must perform
       // some additional bookkeeping so that the response arrays can be properly
       // recombined into estimated gradients/Hessians.
-      estDerivsFlag = true;
-      asvList.push_back(fd_grad_asv);
-      asvList.push_back(fd_hess_asv);
-      asvList.push_back(quasi_hess_asv);
-      setList.push_back(set);
-      // This estimate_derivatives() call always uses asynch evals.
-      num_fd_evals = estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv,
-					  quasi_hess_asv, set, true);
+      estDerivsFlag = true; // flipped once per set of asynch evals
+      asvList.push_back(fd_grad_asv);     asvList.push_back(fd_hess_asv);
+      asvList.push_back(quasi_hess_asv);  setList.push_back(set);
+      num_fd_evals
+	= estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv,
+			       quasi_hess_asv, set, true); // always asynch
     }
     else {
       derived_evaluate_nowait(set);
-      num_fd_evals = -1; // no deriv est; distinguish from QN updating
+      num_fd_evals = -1; // no deriv est; distinguish from QN update
     }
+    numFDEvalsMap[modelEvalCntr] = num_fd_evals;
 
     // history of vars must be catalogued for use in synchronize
     if (modelAutoGraphicsFlag || num_fd_evals >= 0)
-      varsList.push_back(currentVariables.copy());
-    rawEvalIdMap[evaluation_id()] = modelEvalCntr;
-    numFDEvalsMap[modelEvalCntr] = num_fd_evals;
+      varsMap[modelEvalCntr] = currentVariables.copy();
   }
 }
 
@@ -724,10 +725,8 @@ const IntResponseMap& Model::synchronize()
   else { // letter
     responseMap.clear();
 
-    const IntResponseMap& raw_response_map = derived_synchronize();
-    VarsLIter     v_it;
-    IntRespMCIter r_cit;
-    IntIntMIter   m_it;
+    const IntResponseMap& raw_resp_map = derived_synchronize();
+    IntVarsMIter v_it; IntRespMCIter r_cit; IntIntMIter id_it;
 
     if (estDerivsFlag) { // merge several responses into response gradients
       if (outputLevel > QUIET_OUTPUT)
@@ -735,46 +734,49 @@ const IntResponseMap& Model::synchronize()
              << "Raw asynchronous response data captured.\n"
 	     << "Merging data to estimate derivatives:\n"
 	     << "----------------------------------------\n\n";
-      v_it  = varsList.begin();
-      r_cit = raw_response_map.begin();
-      for (m_it = numFDEvalsMap.begin(); m_it != numFDEvalsMap.end(); ++m_it) {
-	int model_id = m_it->first, num_fd_evals = m_it->second;
-        if (num_fd_evals >= 0) {
-	  // estimate_derivatives() was used: merge raw FD responses into 1
-	  // response or augment response with quasi-Hessian updating
-          if (outputLevel > QUIET_OUTPUT) {
-	    if (num_fd_evals > 1)
-	      Cout << "Merging asynchronous responses " << r_cit->first
-		   << " through " << r_cit->first+num_fd_evals-1 << '\n';
-	    else
-	      Cout << "Augmenting asynchronous response " << r_cit->first
-		   << " with quasi-Hessian updating\n";
+      id_it = rawEvalIdMap.begin(); IntIntMIter fd_it = numFDEvalsMap.begin();
+      while (id_it != rawEvalIdMap.end() && fd_it != numFDEvalsMap.end()) {
+	int raw_id = id_it->first;
+	r_cit = raw_resp_map.find(raw_id);
+	if (r_cit != raw_resp_map.end()) {
+	  int model_id = fd_it->first, num_fd_evals = fd_it->second;
+	  if (num_fd_evals >= 0) {
+	    // estimate_derivatives() was used: merge raw FD responses into 1
+	    // response or augment response with quasi-Hessian updating
+	    if (outputLevel > QUIET_OUTPUT) {
+	      if (num_fd_evals > 1)
+		Cout << "Merging asynchronous responses " << r_cit->first
+		     << " through " << r_cit->first+num_fd_evals-1 << '\n';
+	      else
+		Cout << "Augmenting asynchronous response " << r_cit->first
+		     << " with quasi-Hessian updating\n";
+	    }
+	    v_it = varsMap.find(model_id);
+	    IntRespMCIter re = r_cit; std::advance(re, num_fd_evals);
+	    IntResponseMap tmp_response_map(r_cit, re);
+	    // Recover fd_grad/fd_hess/quasi_hess asv's from asvList and
+	    // orig_set from setList
+	    ShortArray fd_grad_asv    = asvList.front(); asvList.pop_front();
+	    ShortArray fd_hess_asv    = asvList.front(); asvList.pop_front();
+	    ShortArray quasi_hess_asv = asvList.front(); asvList.pop_front();
+	    ActiveSet  orig_set       = setList.front(); setList.pop_front();
+	    synchronize_derivatives(v_it->second, tmp_response_map,
+				    responseMap[model_id], fd_grad_asv,
+				    fd_hess_asv, quasi_hess_asv, orig_set);
+	    // cleanup
+	    if (!modelAutoGraphicsFlag) varsMap.erase(v_it);
 	  }
-          IntResponseMap tmp_response_map;
-          for (size_t j=0; j<num_fd_evals; ++j, ++r_cit)
-            tmp_response_map[r_cit->first] = r_cit->second;
-          // Recover fd_grad/fd_hess/quasi_hess asv's from asvList and
-	  // orig_set from setList
-          ShortArray fd_grad_asv    = asvList.front(); asvList.pop_front();
-          ShortArray fd_hess_asv    = asvList.front(); asvList.pop_front();
-	  ShortArray quasi_hess_asv = asvList.front(); asvList.pop_front();
-	  ActiveSet  orig_set       = setList.front(); setList.pop_front();
-          synchronize_derivatives(*v_it, tmp_response_map,
-				  responseMap[model_id], fd_grad_asv,
-				  fd_hess_asv, quasi_hess_asv, orig_set);
-	  ++v_it;
+	  else { // number of maps==1, derivs not estimated
+	    if (outputLevel > QUIET_OUTPUT)
+	      Cout << "Asynchronous response " << r_cit->first
+		   << " does not require merging.\n";
+	    responseMap[model_id] = r_cit->second;
+	  }
+	  // cleanup: postfix increment manages iterator invalidation
+	  numFDEvalsMap.erase(fd_it++); rawEvalIdMap.erase(id_it++);
 	}
-        else {
-	  // number of maps==1, estimate_derivatives() not called for this eval,
-	  // no need to merge
-          if (outputLevel > QUIET_OUTPUT)
-            Cout << "Asynchronous response " << r_cit->first
-		 << " does not require merging.\n";
-          responseMap[model_id] = r_cit->second;
-	  ++r_cit;
-	  if (modelAutoGraphicsFlag)
-	    ++v_it;
-	}
+	else
+	  { ++fd_it; ++id_it; }
       }
       // reset flags
       estDerivsFlag = false;
@@ -782,21 +784,27 @@ const IntResponseMap& Model::synchronize()
     else // no calls to estimate_derivatives()
       // rekey the raw response map (lower level evaluation ids may be offset
       // from modelEvalCntr if previous finite differencing occurred)
-      for (r_cit  = raw_response_map.begin(), m_it = numFDEvalsMap.begin();
-	   r_cit != raw_response_map.end(); ++r_cit, ++m_it)
-	responseMap[m_it->first] = r_cit->second;
+      //rekey_response_map(raw_resp_map, rawEvalIdMap, responseMap);
+      for (r_cit = raw_resp_map.begin(); r_cit != raw_resp_map.end(); ++r_cit) {
+	id_it = rawEvalIdMap.find(r_cit->first);
+	if (id_it != rawEvalIdMap.end()) {
+	  int model_id = id_it->second;
+	  responseMap[model_id] = r_cit->second;
+	  rawEvalIdMap.erase(id_it);
+	  numFDEvalsMap.erase(model_id);
+	}
+      }
 
     // update graphics
     if (modelAutoGraphicsFlag) {
       OutputManager& output_mgr = parallelLib.output_manager();
-      for (r_cit  = responseMap.begin(), v_it = varsList.begin();
-	   r_cit != responseMap.end(); ++r_cit, ++v_it)
-	output_mgr.add_datapoint(*v_it, interface_id(), r_cit->second);
+      for (r_cit = responseMap.begin(); r_cit != responseMap.end(); ++r_cit) {
+	v_it = varsMap.find(r_cit->first);
+	output_mgr.add_datapoint(v_it->second, interface_id(), r_cit->second);
+	varsMap.erase(v_it);
+      }
     }
-    // reset bookkeeping lists
-    numFDEvalsMap.clear();
-    rawEvalIdMap.clear();
-    varsList.clear();
+
     // return final map
     return responseMap;
   }
@@ -821,19 +829,22 @@ const IntResponseMap& Model::synchronize_nowait()
       abort_handler(MODEL_ERROR);
     }
 
-    const IntResponseMap& raw_response_map = derived_synchronize_nowait();
+    const IntResponseMap& raw_resp_map = derived_synchronize_nowait();
 
     // rekey and cleanup.
     // Note 1: rekeying is needed for the case of mixed usage of synchronize()
     // and synchronize_nowait(), since the former can introduce offsets.
     // Note 2: if estimate_derivatives() support is added, then rawEvalIdMap
     // data input must be expanded to include FD evals.
-    for (IntRespMCIter r_cit = raw_response_map.begin();
-	 r_cit != raw_response_map.end(); ++r_cit) {
-      int raw_id = r_cit->first, model_id = rawEvalIdMap[raw_id];
-      responseMap[model_id] = r_cit->second;
-      rawEvalIdMap.erase(raw_id);
-      numFDEvalsMap.erase(model_id);
+    IntRespMCIter r_cit; IntIntMIter id_it;
+    for (r_cit = raw_resp_map.begin(); r_cit != raw_resp_map.end(); ++r_cit) {
+      id_it = rawEvalIdMap.find(r_cit->first);
+      if (id_it != rawEvalIdMap.end()) {
+	int model_id = id_it->second;
+	responseMap[model_id] = r_cit->second;
+	rawEvalIdMap.erase(id_it);
+	numFDEvalsMap.erase(model_id);
+      }
     }
 
     // Update graphics.  There are two possible ways to do this:
@@ -858,15 +869,12 @@ const IntResponseMap& Model::synchronize_nowait()
 	if (g_it == graphicsRespMap.end())
 	  found = false;
 	else {
-	  output_mgr.add_datapoint(varsList.front(), interface_id(), 
-				   g_it->second);
-	  varsList.pop_front();
-	  graphicsRespMap.erase(g_it);
+	  IntVarsMIter v_it = varsMap.find(graphics_cntr);
+	  output_mgr.add_datapoint(v_it->second, interface_id(), g_it->second);
+	  varsMap.erase(v_it); graphicsRespMap.erase(g_it);
 	}
       }
     }
-    //else // varsList already empty since estimate_derivatives() not supported
-    //  varsList.clear();
 
     return responseMap;
   }

@@ -1427,7 +1427,7 @@ private:
 
   /// history of vars populated in evaluate_nowait() and used in
   /// synchronize().
-  VariablesList varsList;
+  IntVariablesMap varsMap;
   /// if estimate_derivatives() is used, transfers ASVs from
   /// evaluate_nowait() to synchronize()
   std::list<ShortArray> asvList;

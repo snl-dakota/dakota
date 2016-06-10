@@ -168,37 +168,21 @@ private:
   /// values/bounds/labels
   void update_model(Model& model);
 
-  /// called from derived_synchronize() for case of a shared model form
-  /// between low and high fidelity, resulting in a single combined job queue
-  const IntResponseMap& derived_synchronize_same_model();
-  // called from derived_synchronize() for case of a shared interface between
-  // low and high fidelity models, resulting in shared processing of a single
-  // interface job queue
-  //const IntResponseMap& derived_synchronize_same_interface();
-  /// called from derived_synchronize() for case of distinct model forms
-  /// with competing job queues
-  const IntResponseMap& derived_synchronize_competing();
-  /// called from derived_synchronize() for case of distinct model forms
-  /// without competing job queues
-  const IntResponseMap& derived_synchronize_distinct_model();
+  /// called from derived_synchronize() and derived_synchronize_nowait() to
+  /// extract and rekey response maps using blocking or nonblocking
+  /// synchronization on the LF and HF models
+  void derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
+				      IntResponseMap& lf_resp_map_rekey,
+				      bool block);
+  /// called from derived_synchronize() for case of distinct models/interfaces
+  /// with competing LF/HF job queues
+  void derived_synchronize_competing();
   /// combine the HF and LF response maps into a combined response map
-  /// according to the responseMode
   void derived_synchronize_combine(const IntResponseMap& hf_resp_map,
 				   IntResponseMap& lf_resp_map,
 				   IntResponseMap& combined_resp_map);
-
-  /// called from derived_synchronize_nowait() for case of a shared model form
-  /// between low and high fidelity, resulting in a single combined job queue
-  const IntResponseMap& derived_synchronize_same_model_nowait();
-  // called from derived_synchronize_nowait() for case of a shared interface
-  // between low and high fidelity models, resulting in shared processing of
-  // a single interface job queue 
-  //const IntResponseMap& derived_synchronize_same_interface_nowait();
-  /// called from derived_synchronize_nowait() for case of distinct model forms
-  /// with separate job queues
-  const IntResponseMap& derived_synchronize_distinct_model_nowait();
   /// combine the available components from HF and LF response maps
-  /// into a combined response map according to the responseMode
+  /// into a combined response map
   void derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
 					  IntResponseMap& lf_resp_map,
 					  IntResponseMap& combined_resp_map);
