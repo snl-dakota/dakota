@@ -17,7 +17,7 @@
 
 #include "NonDCalibration.hpp"
 #include "InvGammaRandomVariable.hpp"
-
+#include "ANN/ANN.h" 
 
 namespace Dakota {
 
@@ -248,6 +248,16 @@ protected:
   /// output formatting options for MCMC export
   short exportMCMCFormat;
   short filteredMCMCFormat;
+
+  /// Compute information metrics
+  void kl_post_prior(RealMatrix& acceptanceChain);
+  void prior_sample_matrix(RealMatrix& prior_dist_samples);
+  Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples); 
+  void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
+     		RealVector& distances, int NX, int NY, int dim, IntVector& k, 
+		double eps);
+  Real kl_est;	
+  void print_kl(std::ostream& stream);		
 
 private:
 

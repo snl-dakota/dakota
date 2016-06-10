@@ -135,6 +135,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
+  subSamplingPeriod(1), burnInSamples(0), 
   posteriorStatsKL(false), posteriorStatsMutual(false),
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
