@@ -744,12 +744,12 @@ const IntResponseMap& Model::synchronize()
 	    // estimate_derivatives() was used: merge raw FD responses into 1
 	    // response or augment response with quasi-Hessian updating
 	    if (outputLevel > QUIET_OUTPUT) {
-	      if (num_fd_evals > 1)
-		Cout << "Merging asynchronous responses " << r_cit->first
-		     << " through " << r_cit->first+num_fd_evals-1 << '\n';
-	      else
-		Cout << "Augmenting asynchronous response " << r_cit->first
-		     << " with quasi-Hessian updating\n";
+	      //if (num_fd_evals > 1) // inconclusive due to initial_map lookup
+		Cout << "Merging asynchronous responses " << raw_id
+		     << " through " << raw_id + num_fd_evals - 1 << '\n';
+	      //else
+	      //  Cout << "Augmenting asynchronous response " << raw_id
+	      //       << " with quasi-Hessian updating\n";
 	    }
 	    v_it = varsMap.find(model_id);
 	    IntRespMCIter re = r_cit; std::advance(re, num_fd_evals);
@@ -768,14 +768,14 @@ const IntResponseMap& Model::synchronize()
 	  }
 	  else { // number of maps==1, derivs not estimated
 	    if (outputLevel > QUIET_OUTPUT)
-	      Cout << "Asynchronous response " << r_cit->first
+	      Cout << "Asynchronous response " << raw_id
 		   << " does not require merging.\n";
 	    responseMap[model_id] = r_cit->second;
 	  }
 	  // cleanup: postfix increment manages iterator invalidation
 	  numFDEvalsMap.erase(fd_it++); rawEvalIdMap.erase(id_it++);
 	}
-	else
+	else // preserve bookkeeping for a subsequent synchronization pass
 	  { ++fd_it; ++id_it; }
       }
       // reset flags
@@ -804,6 +804,13 @@ const IntResponseMap& Model::synchronize()
 	varsMap.erase(v_it);
       }
     }
+
+    // Now augment rekeyed response map with locally cached evals.  If
+    // these are not matched in a higher-level rekey process used by the
+    // calling context, then they are returned to cachedResponseMap
+    // using Model::cache_unmatched_response().
+    responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
+    cachedResponseMap.clear();
 
     // return final map
     return responseMap;
@@ -875,6 +882,13 @@ const IntResponseMap& Model::synchronize_nowait()
 	}
       }
     }
+
+    // Now augment rekeyed response map with locally cached evals.  If
+    // these are not matched in a higher-level rekey process used by the
+    // calling context, then they are returned to cachedResponseMap
+    // using Model::cache_unmatched_response().
+    responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
+    cachedResponseMap.clear();
 
     return responseMap;
   }
@@ -3313,9 +3327,16 @@ void Model::cache_unmatched_response(int raw_id)
   if (modelRep)
     modelRep->cache_unmatched_response(raw_id);
   else {
-    Cerr << "Error: Letter lacking redefinition of virtual "
-	 << "cache_unmatched_response() function.\n." << std::endl;
-    abort_handler(MODEL_ERROR);
+    // due to deriv estimation rekeying and removal of intermediate bookkeeping
+    // data in Model::synchronize{,_nowait}(), caching needs to occur at the 
+    // base class level using Model::responseMap, rather than derived maps.
+    IntRespMIter rr_it = responseMap.find(raw_id);
+    if (rr_it != responseMap.end()) {
+      // insert unmatched record into cache:
+      cachedResponseMap.insert(*rr_it);
+      // not essential due to subsequent clear(), but avoid any redundancy:
+      responseMap.erase(rr_it);
+    }
   }
 }
 

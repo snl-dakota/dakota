@@ -76,9 +76,6 @@ protected:
   /// (invokes synch_nowait() on userDefinedInterface)
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// migrate unmatched response from simResponseMap to cachedSimResponseMap
-  void cache_unmatched_response(int raw_id);
-
   /// SimulationModel only supports parallelism in userDefinedInterface,
   /// so this virtual function redefinition is simply a sanity check.
   void component_parallel_mode(short mode);
@@ -178,9 +175,6 @@ private:
   /// map of simulation-based responses returned by derived_synchronize()
   /// and derived_synchronize_nowait()
   IntResponseMap simResponseMap;
-  /// caching of simulation-based responses returned by userDefinedInterface
-  /// but not matched within current simIdMap
-  IntResponseMap cachedSimResponseMap;
 };
 
 
@@ -226,13 +220,10 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   // Any responses from userDefinedInterface.synchronize() that are unmatched
   // in simIdMap are cached in Interface::cachedResponseMap
   rekey_synch(userDefinedInterface, true, simIdMap, simResponseMap);
-  // Now augment rekeyed interface evals with locally cached evals.  If
-  // these are not matched in a higher-level rekey process using by the
-  // calling context, then they are returned to cachedSimResponseMap
-  // using SimulationModel::cache_unmatched_response().
-  simResponseMap.insert(cachedSimResponseMap.begin(),
-			cachedSimResponseMap.end());
-  cachedSimResponseMap.clear();
+  // Caching for Models must also occur at the base class level
+  // (Model::cachedResponseMap) since deriv estimation-based rekeying
+  // is performed as this level (lower level mappings are erased as records
+  // are rekeyed/promoted).
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
@@ -247,22 +238,9 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
 
   // See comments above regarding levels of rekeying / caching
   rekey_synch(userDefinedInterface, false, simIdMap, simResponseMap);
-  simResponseMap.insert(cachedSimResponseMap.begin(),
-			cachedSimResponseMap.end());
-  cachedSimResponseMap.clear();
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
-}
-
-
-inline void SimulationModel::cache_unmatched_response(int raw_id)
-{
-  IntRespMIter rr_it = simResponseMap.find(raw_id);
-  if (rr_it != simResponseMap.end()) {
-    cachedSimResponseMap.insert(*rr_it);
-    simResponseMap.erase(rr_it);
-  }
 }
 
 

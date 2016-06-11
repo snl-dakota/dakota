@@ -11,7 +11,7 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
-	  convergence_tolerance = .1			#s0
+	  convergence_tolerance = .1			#s0,#p0,#p1
 #	  convergence_tolerance = .01			#s1
 #	  convergence_tolerance = .001
 #	  convergence_tolerance = .0001

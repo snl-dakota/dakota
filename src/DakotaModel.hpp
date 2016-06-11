@@ -1468,6 +1468,9 @@ private:
   /// used to return a map of responses for asynchronous evaluations in final
   /// concatenated form.  The similar map in Interface contains raw responses.
   IntResponseMap responseMap;
+  /// caching of responses returned by derived_synchronize{,_nowait}()
+  /// but not matched within current rawEvalIdMap
+  IntResponseMap cachedResponseMap;
   /// used to cache the data returned from derived_synchronize_nowait() prior
   /// to sequential input into the graphics
   IntResponseMap graphicsRespMap;
