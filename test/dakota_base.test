@@ -42547,13 +42547,29 @@ Sample moment statistics for each response function:
  response_fn_3  2.5265353575e-02  6.5714139612e-03  7.8816791232e-01 -6.1360544774e-02
 dakota_uq_diffusion_mlpce.in
 Test Number 0 succeeded
-<<<<< Equivalent number of high fidelity evaluations: 1.3002685546875000e+01
-<<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 1.2861816406250000e+01
+<<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5273113900100883e-02  6.5910964026953634e-03
- response_fn_2  1.2899060332640971e-01  1.3695444202540109e-02
- response_fn_3  2.5273113899963510e-02  6.5910964026781533e-03
+ response_fn_1  2.5317924799791003e-02  6.0210229048278489e-03
+ response_fn_2  1.3038068243651293e-01  2.0814311917720301e-02
+ response_fn_3  2.5317924799651243e-02  6.0210229047207601e-03
+Test Number 1 succeeded
+<<<<< Equivalent number of high fidelity evaluations: 1.2915527343750000e+01
+<<<<< Function evaluation summary: 213 total (213 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5240462465606260e-02  6.5332467895179618e-03
+ response_fn_2  1.2887700415879605e-01  1.3456368523400179e-02
+ response_fn_3  2.5240462465465182e-02  6.5332467895332274e-03
+Test Number 2 succeeded
+<<<<< Equivalent number of high fidelity evaluations: 1.3146972656250000e+01
+<<<<< Function evaluation summary: 538 total (538 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5278860255452916e-02  6.6039799715405471e-03
+ response_fn_2  1.2897077487532910e-01  1.3734168487514737e-02
+ response_fn_3  2.5278860255312063e-02  6.6039799715217383e-03
 dakota_uq_genz_pce_lls_adapted.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)

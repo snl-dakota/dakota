@@ -5888,6 +5888,23 @@ Sample moment statistics for each response function:
  response_fn_1  2.6604300416e-02  7.7680238816e-03  6.6844505131e-01 -5.4338857919e-01
  response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915603e-01 -7.2020797069e-01
  response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857917e-01
+dakota_uq_diffusion_mlpce.in
+Test Number 0 succeeded
+<<<<< Equivalent number of high fidelity evaluations: 1.2861816406250000e+01
+<<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5317924799791003e-02  6.0210229048278489e-03
+ response_fn_2  1.3038068243651293e-01  2.0814311917720301e-02
+ response_fn_3  2.5317924799651243e-02  6.0210229047207601e-03
+Test Number 1 succeeded
+<<<<< Equivalent number of high fidelity evaluations: 1.2861816406250000e+01
+<<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5317924799791003e-02  6.0210229048278489e-03
+ response_fn_2  1.3038068243651293e-01  2.0814311917720301e-02
+ response_fn_3  2.5317924799651243e-02  6.0210229047207601e-03
 dakota_uq_heat_eq_mlcvmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11467 total (11467 new, 0 duplicate)
