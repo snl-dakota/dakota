@@ -256,17 +256,10 @@ protected:
   /// before active subspace initialization
   bool transformVars;
 
-  // ---
-  // TODO: add these criteria
-
-  /// max bases to retain
-  //  int maxBases;
-
-  // ---
-
-  // Number of fullspace active continuous variables
+  /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
-  // Total number of response functions
+
+  /// Total number of response functions
   size_t numFunctions;
 
   /// total construction samples evaluated so far
@@ -348,12 +341,22 @@ protected:
   /// Concurrency to use when building subspace.
   int offlineEvalConcurrency;
 
+  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
+  int asmModelEvalCntr;
+
+  /// map of responses returned by derived_synchronize() and
+  /// derived_synchronize_nowait()
+  IntResponseMap asmResponseMap;
+
+  /// map from surrogateModel evaluation ids to
+  /// ActiveSubspaceModel ids
+  IntIntMap asmIdMap;
 };
 
 inline int ActiveSubspaceModel::evaluation_id() const
 {
   if (buildSurrogate)
-    return subModel.evaluation_id() + surrogateModel.evaluation_id();
+    return asmModelEvalCntr; 
   else
     return subModel.evaluation_id();
 }

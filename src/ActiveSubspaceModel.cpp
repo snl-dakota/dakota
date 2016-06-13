@@ -37,7 +37,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
+  asmModelEvalCntr(0)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -115,7 +116,7 @@ ActiveSubspaceModel(const Model& sub_model,
   totalSamples(0), totalEvals(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0)
+  buildSurrogate(false), refinementSamples(0), asmModelEvalCntr(0)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -359,6 +360,8 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
+  asmModelEvalCntr++;
+
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -381,6 +384,8 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
+  asmModelEvalCntr++;
+
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -388,11 +393,14 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   }
 
   component_parallel_mode(ONLINE_PHASE);
-  
+
   if (buildSurrogate) {
     Variables& surrogate_vars = surrogateModel.current_variables();
     surrogate_vars = currentVariables;
     surrogateModel.evaluate_nowait(set);
+    
+    // store map from surrogateModel eval id to ActiveSubspaceModel id
+    asmIdMap[surrogateModel.evaluation_id()] = asmModelEvalCntr;
   }
   else
     RecastModel::derived_evaluate_nowait(set);
@@ -401,6 +409,8 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
+  asmResponseMap.clear();
+
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -410,7 +420,8 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    return surrogateModel.synchronize();
+    rekey_synch(surrogateModel, true, asmIdMap, asmResponseMap);
+    return asmResponseMap;
   }
   else
     return RecastModel::derived_synchronize();
@@ -419,6 +430,8 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
+  asmResponseMap.clear();
+
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -428,7 +441,8 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    return surrogateModel.synchronize_nowait();
+    rekey_synch(surrogateModel, false, asmIdMap, asmResponseMap);
+    return asmResponseMap;
   }
   else
     return RecastModel::derived_synchronize_nowait();

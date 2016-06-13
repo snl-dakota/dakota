@@ -530,7 +530,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
   size_t i, index, num_pts = resp_map.size();
   if (samples.numCols() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
-	 << "ApproximationInterface::update_approximation()." << std::endl;
+	 << "ApproximationInterface::append_approximation()." << std::endl;
     abort_handler(-1);
   }
   // append multiple points to SurrogateData::{vars,resp}Data
@@ -578,7 +578,7 @@ append_approximation(const VariablesArray& vars_array,
   size_t i, index, num_pts = resp_map.size();
   if (vars_array.size() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
-	 << "ApproximationInterface::update_approximation()." << std::endl;
+	 << "ApproximationInterface::append_approximation()." << std::endl;
     abort_handler(-1);
   }
   // append multiple points to SurrogateData::{vars,resp}Data
