@@ -91,7 +91,8 @@
 		<attribute name="label" type="string" use="optional" ></attribute>
 		<attribute name="help" type="string" use="optional" ></attribute>           
 		<attribute name="group" type="string" use="optional" ></attribute>                                                  
-		<attribute name="default" type="string" use="optional" ></attribute>                                                  
+		<attribute name="default" type="string" use="optional" ></attribute>
+        <attribute name="complexity" type="dak:minMaxType" use="optional" default="0"></attribute>
 	</complexType>
 
 	<simpleType name="argTypeType">
