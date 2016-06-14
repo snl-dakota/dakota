@@ -4,18 +4,12 @@
 #
 ##############################################################################
 
-set( CTEST_BUILD_NAME "dakota_rhel6" )
+if ( NOT DEFINED ${CTEST_BUILD_NAME} )
+  set( CTEST_BUILD_NAME "dakota_rhel6" )
+endif()
 
 set( DAKOTA_CMAKE_PLATFORM "RHEL6.cmake")
 set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
-
-#********* MUST SET CORRECTLY!!! *********** #
-# TODO: comment or test and error
-#set( CTEST_DASHBOARD_ROOT 
-#     "$ENV{HOME}/dakota-devel" )
-#set( CTEST_SOURCE_DIRECTORY
-#     "${CTEST_DASHBOARD_ROOT}/dakota")
-#******************************************* #
 
 set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
 set( CTEST_BUILD_CONFIGURATION RelWithDebInfo )
