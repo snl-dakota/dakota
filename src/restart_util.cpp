@@ -42,7 +42,7 @@ void print_restart(StringArray pos_args, String print_dest);
 void print_restart_pdb(StringArray pos_args, String print_dest);
 /// print a restart file (tabular format)
 void print_restart_tabular(StringArray pos_args, String print_dest, 
-			   unsigned short tabular_format);
+			   unsigned short tabular_format, int tabular_precision);
 /// read a restart file (neutral file format)
 void read_neutral(StringArray pos_args);
 /// repair a restart file by removing corrupted evaluations
@@ -61,9 +61,10 @@ void concatenate_restart(StringArray pos_args);
 
 int main(int argc, char* argv[])
 {
-  std::string util_command;               // restart utility mode
-  std::vector<std::string> pos_args;      // all remaining positional args
-  std::vector<std::string> tabular_opts;  // custom_annotated options
+  std::string util_command;                 // restart utility mode
+  std::vector<std::string> pos_args;        // all remaining positional args
+  std::vector<std::string> tabular_opts;    // custom_annotated options
+  int tabular_precision = write_precision;  // tabular write precision
   try {
     // setup command-line options
     namespace bpo = boost::program_options;
@@ -74,6 +75,9 @@ int main(int argc, char* argv[])
       ("custom_annotated",
        bpo::value<std::vector<std::string> >(&tabular_opts)->multitoken(), 
        "tabular file options: header, eval_id, interface_id")
+      ("output_precision", 
+       bpo::value<int>(&tabular_precision)->default_value(write_precision),
+       "set tabular output precision")
       ;
     // positional arguments to hide
     bpo::options_description hidden_opts("positional options");
@@ -106,6 +110,10 @@ int main(int argc, char* argv[])
       Cerr << general_opts << std::endl;
       return -1;
     }
+    if (tabular_precision < 1) {
+      Cerr << "\nError: output_precision must be a positive integer.\n";
+      return -1;
+    }
   }
   catch (const std::exception& e) {
     Cerr << "\nError parsing command-line options: " << e.what() << std::endl;
@@ -131,7 +139,7 @@ int main(int argc, char* argv[])
     if (found_error)
       return -1;
   }
-
+  
   if (util_command == "print")
     print_restart(pos_args, "stdout");
   else if (util_command == "to_neutral")
@@ -141,7 +149,8 @@ int main(int argc, char* argv[])
   else if (util_command == "to_pdb")
     print_restart_pdb(pos_args, "pdb_file");
   else if (util_command == "to_tabular")
-    print_restart_tabular(pos_args, "text_file", tabular_format);
+    print_restart_tabular(pos_args, "text_file", tabular_format, 
+			  tabular_precision);
   else if (util_command == "remove")
     repair_restart(pos_args, "by_value");
   else if (util_command == "remove_ids")
@@ -169,7 +178,7 @@ void print_usage(std::ostream& s)
 #ifdef HAVE_PDB_H
     << "    dakota_restart_util to_pdb <restart_file> <pdb_file>\n"
 #endif
-    << "    dakota_restart_util to_tabular <restart_file> <text_file> [--custom_annotated [header] [eval_id] [interface_id]]\n"
+    << "    dakota_restart_util to_tabular <restart_file> <text_file> [--custom_annotated [header] [eval_id] [interface_id]] [--output_precision <int>]\n"
     << "    dakota_restart_util remove <double> <old_restart_file> <new_restart_file>\n"
     << "    dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>\n"
     << "    dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>" 
@@ -408,8 +417,8 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
     Unrolls all data associated with a particular tag for all
     evaluations and then writes this data in a tabular format
     (e.g., to a PDB database or MATLAB/TECPLOT data file). */
-  void print_restart_tabular(StringArray pos_args, String print_dest,
-			     unsigned short tabular_format)
+void print_restart_tabular(StringArray pos_args, String print_dest,
+			   unsigned short tabular_format, int tabular_precision)
 {
   if (pos_args.size() != 2) {
     Cerr << "Usage: dakota_restart_util to_tabular <restart_file> "
@@ -435,12 +444,12 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
   StringMultiArray curr_adrv_labels;
   StringArray curr_resp_labels;
 
-  // Note: tabular not written in maximum precision; need command-line option).
-  // Override default to output data in full precision (double = 16 digits).
+  // Note: tabular defaults to write_precision from global defs
   // Note: setprecision(write_precision) and std::ios::floatfield are embedded
-  // in write_data_tabular() functions.
+  //       in write_data_tabular() functions.
 
-  //write_precision = 16;  // extern defined in dakota_global_defs.cpp
+  int wp_save = write_precision;  // later restore since this is global data
+  write_precision = tabular_precision;
 
   restart_input_fs.peek();  // peek to force EOF if no records in restart file
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
@@ -491,6 +500,8 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
 
   cout << "Restart file processing completed: " << num_evals
        << " evaluations tabulated.\n";
+
+  write_precision = wp_save;  // restore since this is global data
 }
 
 
