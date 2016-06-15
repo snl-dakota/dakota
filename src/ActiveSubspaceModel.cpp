@@ -400,10 +400,14 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
     surrogateModel.evaluate_nowait(set);
     
     // store map from surrogateModel eval id to ActiveSubspaceModel id
-    asmIdMap[surrogateModel.evaluation_id()] = asmModelEvalCntr;
+    surrIdMap[surrogateModel.evaluation_id()] = asmModelEvalCntr;
   }
-  else
+  else {
     RecastModel::derived_evaluate_nowait(set);
+
+    // store map from subModel eval id to ActiveSubspaceModel id
+    asmIdMap[subModel.evaluation_id()] = asmModelEvalCntr;
+  }
 }
 
 
@@ -420,11 +424,14 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    rekey_synch(surrogateModel, true, asmIdMap, asmResponseMap);
+    rekey_synch(surrogateModel, true, surrIdMap, asmResponseMap);
     return asmResponseMap;
   }
-  else
-    return RecastModel::derived_synchronize();
+  else {
+    const IntResponseMap& recast_resp_map = RecastModel::derived_synchronize();
+    rekey_response_map(subModel, recast_resp_map, asmIdMap, asmResponseMap);
+    return asmResponseMap;
+  }
 }
 
 
@@ -441,11 +448,14 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    rekey_synch(surrogateModel, false, asmIdMap, asmResponseMap);
+    rekey_synch(surrogateModel, false, surrIdMap, asmResponseMap);
     return asmResponseMap;
   }
-  else
-    return RecastModel::derived_synchronize_nowait();
+  else {
+    const IntResponseMap& recast_resp_map = RecastModel::derived_synchronize_nowait();
+    rekey_response_map(subModel, recast_resp_map, asmIdMap, asmResponseMap);
+    return asmResponseMap;
+  }
 }
 
 

@@ -350,16 +350,15 @@ protected:
 
   /// map from surrogateModel evaluation ids to
   /// ActiveSubspaceModel ids
+  IntIntMap surrIdMap;
+
+  /// map from subModel evaluation ids to
+  /// ActiveSubspaceModel ids
   IntIntMap asmIdMap;
 };
 
 inline int ActiveSubspaceModel::evaluation_id() const
-{
-  if (buildSurrogate)
-    return asmModelEvalCntr; 
-  else
-    return subModel.evaluation_id();
-}
+{ return asmModelEvalCntr; }
 
 } // namespace Dakota
 
