@@ -207,6 +207,10 @@ inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++simModelEvalCntr;
   userDefinedInterface.map(currentVariables, set, currentResponse, true);
+  // Even though each evaluate on SimulationModel results in a corresponding
+  // Interface mapping, we utilize an id mapping to protect against the case
+  // where multiple Models use the same Interface instance, for which this
+  // Model instance will only match a subset of the Interface eval ids.
   simIdMap[userDefinedInterface.evaluation_id()] = simModelEvalCntr;
 }
 
@@ -221,9 +225,9 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   // in simIdMap are cached in Interface::cachedResponseMap
   rekey_synch(userDefinedInterface, true, simIdMap, simResponseMap);
   // Caching for Models must also occur at the base class level
-  // (Model::cachedResponseMap) since deriv estimation-based rekeying
-  // is performed as this level (lower level mappings are erased as records
-  // are rekeyed/promoted).
+  // (Model::cachedResponseMap) since deriv estimation-based rekeying is
+  // performed as this top level (and any lower level mappings are erased
+  // as records are rekeyed/promoted, making them unavailable for caching).
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;

@@ -234,8 +234,6 @@ protected:
 
   /// return the approxInterface identifier
   const String& interface_id() const;
-  /// return the current evaluation id for the DataFitSurrModel
-  int evaluation_id() const;
 
   /// set the evaluation counter reference points for the DataFitSurrModel
   /// (request forwarded to approxInterface and actualModel)
@@ -319,9 +317,6 @@ private:
   //
   //- Heading: Data members
   //
-
-  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
-  int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate
   int pointsTotal;
@@ -589,14 +584,6 @@ inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 
 inline const String& DataFitSurrModel::interface_id() const
 { return approxInterface.interface_id(); }
-
-
-/** return the DataFitSurrModel evaluation count.  Due to possibly
-    intermittent use of surrogate bypass, this is not the same as
-    either the approxInterface or actualModel model evaluation counts.
-    It also does not distinguish duplicate evals. */
-inline int DataFitSurrModel::evaluation_id() const
-{ return surrModelEvalCntr; }
 
 
 inline void DataFitSurrModel::set_evaluation_reference()

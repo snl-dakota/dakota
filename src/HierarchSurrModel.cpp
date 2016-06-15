@@ -20,8 +20,7 @@ static const char rcsId[]="@(#) $Id: HierarchSurrModel.cpp 6656 2010-02-26 05:20
 namespace Dakota {
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), hierModelEvalCntr(0),
-  truthResponseRef(currentResponse.copy())
+  SurrogateModel(problem_db), truthResponseRef(currentResponse.copy())
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
@@ -299,7 +298,7 @@ void HierarchSurrModel::build_approximation()
   Model& hf_model = orderedModels[highFidelityIndices.first];
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(hierModelEvalCntr+1);
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
     hf_model.eval_tag_prefix(eval_tag);
   }
 
@@ -383,7 +382,7 @@ build_approximation(const RealVector& c_vars, const Response& response)
     correction is active, correct the low fidelity results. */
 void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
 {
-  ++hierModelEvalCntr;
+  ++surrModelEvalCntr;
 
   // define LF/HF evaluation requirements
   ShortArray hi_fi_asv, lo_fi_asv; bool hi_fi_eval, lo_fi_eval, mixed_eval;
@@ -403,7 +402,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   Model& hf_model = orderedModels[highFidelityIndices.first];
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(hierModelEvalCntr+1);
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
     if (sameModelInstance) lf_model.eval_tag_prefix(eval_tag);
     else {
       if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
@@ -545,7 +544,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     derived_synchronize_nowait()) if not performed previously. */
 void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  ++hierModelEvalCntr;
+  ++surrModelEvalCntr;
 
   Model& lf_model = orderedModels[lowFidelityIndices.first];
   Model& hf_model = orderedModels[highFidelityIndices.first];
@@ -565,7 +564,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + 
-      boost::lexical_cast<String>(hierModelEvalCntr+1);
+      boost::lexical_cast<String>(surrModelEvalCntr+1);
     if (sameModelInstance) lf_model.eval_tag_prefix(eval_tag);
     else {
       if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
@@ -621,7 +620,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       hf_model.solution_level_index(highFidelityIndices.second);
     hf_model.evaluate_nowait(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
-    truthIdMap[hf_model.evaluation_id()] = hierModelEvalCntr;
+    truthIdMap[hf_model.evaluation_id()] = surrModelEvalCntr;
   }
   if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
     // don't need to set component parallel mode since only queues the job
@@ -629,10 +628,10 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       lf_model.solution_level_index(lowFidelityIndices.second);
     lf_model.evaluate_nowait(lo_fi_set);
     // store map from LF eval id to HierarchSurrModel id
-    surrIdMap[lf_model.evaluation_id()] = hierModelEvalCntr;
+    surrIdMap[lf_model.evaluation_id()] = surrModelEvalCntr;
     // store variables set needed for correction
     if (responseMode == AUTO_CORRECTED_SURROGATE)
-      rawVarsMap[hierModelEvalCntr] = currentVariables.copy();
+      rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
   }
 
   // now launch any blocking evals
@@ -641,8 +640,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     if (sameModelInstance)
       hf_model.solution_level_index(highFidelityIndices.second);
     hf_model.evaluate(hi_fi_set);
-    cachedTruthRespMap[hierModelEvalCntr/*hf_model.evaluation_id()*/]
-      = hf_model.current_response().copy();
+    cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
     component_parallel_mode(LF_MODEL);
@@ -661,8 +659,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       deltaCorr.apply(currentVariables, lo_fi_response, quiet_flag);
     }
     // cache corrected LF response for retrieval during synchronization
-    cachedApproxRespMap[hierModelEvalCntr/*lf_model.evaluation_id()*/]
-      = lo_fi_response; // already deep copied
+    cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
   }
 }
 
