@@ -107,8 +107,6 @@ protected:
   void derived_evaluate_nowait(const ActiveSet& set);
   const IntResponseMap& derived_synchronize();
   const IntResponseMap& derived_synchronize_nowait();
-  int evaluation_id() const;
-
 
   /// update component parallel mode for supporting parallelism in
   /// the offline and online phases
@@ -337,28 +335,14 @@ protected:
 
   /// Concurrency to use once subspace has been built.
   int onlineEvalConcurrency;
-
   /// Concurrency to use when building subspace.
   int offlineEvalConcurrency;
 
-  /// counter for calls to derived_evaluate()/derived_evaluate_nowait()
-  int asmModelEvalCntr;
-
-  /// map of responses returned by derived_synchronize() and
-  /// derived_synchronize_nowait()
-  IntResponseMap asmResponseMap;
-
-  /// map from surrogateModel evaluation ids to
-  /// ActiveSubspaceModel ids
+  /// map of responses returned in buildSurrogate mode
+  IntResponseMap surrResponseMap;
+  /// map from surrogateModel evaluation ids to RecastModel ids
   IntIntMap surrIdMap;
-
-  /// map from subModel evaluation ids to
-  /// ActiveSubspaceModel ids
-  IntIntMap asmIdMap;
 };
-
-inline int ActiveSubspaceModel::evaluation_id() const
-{ return asmModelEvalCntr; }
 
 } // namespace Dakota
 

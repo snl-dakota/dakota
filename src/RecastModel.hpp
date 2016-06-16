@@ -159,6 +159,10 @@ public:
 			  const Variables& sub_model_vars,
 			  const Response& sub_model_resp,
 			  Response& recast_resp);
+  /// invoke transform_response() on each response within old_resp_map
+  /// to create new_resp_map
+  void transform_response_map(const IntResponseMap& old_resp_map,
+			      IntResponseMap& new_resp_map);
 
   /// perform inverse transformation of Variables (sub-model --> recast)
   void inverse_transform_variables(const Variables& sub_model_vars,
@@ -315,8 +319,7 @@ protected:
 
   /// return the subModel interface identifier
   const String& interface_id() const;
-  /// return the current evaluation id for the RecastModel (request
-  /// forwarded to subModel)
+  /// return the current evaluation id for the RecastModel
   int evaluation_id() const;
   /// set the evaluation counter reference points for the RecastModel
   /// (request forwarded to subModel)
@@ -353,8 +356,15 @@ protected:
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
 
-  /// the sub-model underlying the function pointers
+  //
+  //- Heading: Data members
+  //
+
+  /// the sub-model underlying the transformations
   Model subModel;
+
+  /// local evaluation id counter used for id mapping
+  int recastModelEvalCntr;
 
 private:
 
@@ -415,6 +425,8 @@ private:
   /// map of recast responses used by RecastModel::derived_synchronize()
   /// and RecastModel::derived_synchronize_nowait()
   IntResponseMap recastResponseMap;
+  /// mapping from subModel evaluation ids to RecastModel evaluation ids
+  IntIntMap recastIdMap;
 
   /// holds pointer for variables mapping function passed in ctor/initialize
   void (*variablesMapping)     (const Variables& recast_vars,
@@ -727,7 +739,7 @@ inline const String& RecastModel::interface_id() const
 
 
 inline int RecastModel::evaluation_id() const
-{ return subModel.evaluation_id(); }
+{ return recastModelEvalCntr; }
 
 
 inline void RecastModel::set_evaluation_reference()

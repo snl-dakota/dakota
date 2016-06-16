@@ -37,8 +37,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
-  asmModelEvalCntr(0)
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -116,7 +115,7 @@ ActiveSubspaceModel(const Model& sub_model,
   totalSamples(0), totalEvals(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0), asmModelEvalCntr(0)
+  buildSurrogate(false), refinementSamples(0)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -360,8 +359,6 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
-  asmModelEvalCntr++;
-
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -371,9 +368,11 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    Variables& surrogate_vars = surrogateModel.current_variables();
-    surrogate_vars = currentVariables;
+    ++recastModelEvalCntr;
+
+    surrogateModel.active_variables(currentVariables);
     surrogateModel.evaluate(set);
+
     currentResponse.active_set(set);
     currentResponse.update(surrogateModel.current_response());
   }
@@ -384,8 +383,6 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  asmModelEvalCntr++;
-
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -395,26 +392,21 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   component_parallel_mode(ONLINE_PHASE);
 
   if (buildSurrogate) {
-    Variables& surrogate_vars = surrogateModel.current_variables();
-    surrogate_vars = currentVariables;
+    ++recastModelEvalCntr;
+
+    surrogateModel.active_variables(currentVariables);
     surrogateModel.evaluate_nowait(set);
     
     // store map from surrogateModel eval id to ActiveSubspaceModel id
-    surrIdMap[surrogateModel.evaluation_id()] = asmModelEvalCntr;
+    surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
   }
-  else {
+  else
     RecastModel::derived_evaluate_nowait(set);
-
-    // store map from subModel eval id to ActiveSubspaceModel id
-    asmIdMap[subModel.evaluation_id()] = asmModelEvalCntr;
-  }
 }
 
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
-  asmResponseMap.clear();
-
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -424,21 +416,17 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    rekey_synch(surrogateModel, true, surrIdMap, asmResponseMap);
-    return asmResponseMap;
+    surrResponseMap.clear();
+    rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
+    return surrResponseMap;
   }
-  else {
-    const IntResponseMap& recast_resp_map = RecastModel::derived_synchronize();
-    rekey_response_map(subModel, recast_resp_map, asmIdMap, asmResponseMap);
-    return asmResponseMap;
-  }
+  else
+    return RecastModel::derived_synchronize();
 }
 
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
-  asmResponseMap.clear();
-
   if (!mapping_initialized()) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
@@ -448,21 +436,18 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
   component_parallel_mode(ONLINE_PHASE);
   
   if (buildSurrogate) {
-    rekey_synch(surrogateModel, false, surrIdMap, asmResponseMap);
-    return asmResponseMap;
+    surrResponseMap.clear();
+    rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
+    return surrResponseMap;
   }
-  else {
-    const IntResponseMap& recast_resp_map = RecastModel::derived_synchronize_nowait();
-    rekey_response_map(subModel, recast_resp_map, asmIdMap, asmResponseMap);
-    return asmResponseMap;
-  }
+  else
+    return RecastModel::derived_synchronize_nowait();
 }
 
 
 bool ActiveSubspaceModel::mapping_initialized()
-{
-  return subspaceInitialized;
-}
+{ return subspaceInitialized; }
+
 
 void ActiveSubspaceModel::update_var_labels()
 {
@@ -474,6 +459,7 @@ void ActiveSubspaceModel::update_var_labels()
   continuous_variable_labels(
     subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
+
 
 void ActiveSubspaceModel::init_fullspace_sampler()
 {
