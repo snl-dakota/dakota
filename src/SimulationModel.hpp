@@ -117,7 +117,7 @@ protected:
   /// return the userDefinedInterface identifier
   const String& interface_id() const;
   /// return the current evaluation id (simModelEvalCntr)
-  int evaluation_id() const;
+  int derived_evaluation_id() const;
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
   bool evaluation_cache() const;
@@ -339,7 +339,7 @@ inline const String& SimulationModel::interface_id() const
 { return userDefinedInterface.interface_id(); }
 
 
-inline int SimulationModel::evaluation_id() const
+inline int SimulationModel::derived_evaluation_id() const
 { return simModelEvalCntr; }
 
 

@@ -665,7 +665,7 @@ void Model::evaluate_nowait()
     // perform an asynchronous parameter-to-response mapping
     derived_evaluate_nowait(temp_set);
 
-    rawEvalIdMap[evaluation_id()] = modelEvalCntr;
+    rawEvalIdMap[derived_evaluation_id()] = modelEvalCntr;
     numFDEvalsMap[modelEvalCntr] = -1;//no deriv est; distinguish from QN update
 
     // history of vars must be catalogued for use in synchronize()
@@ -683,7 +683,7 @@ void Model::evaluate_nowait(const ActiveSet& set)
     ++modelEvalCntr;
     // derived evaluation_id() not yet incremented (for first of several if est
     // derivs); want the key for id map to be the first raw eval of the set
-    rawEvalIdMap[evaluation_id() + 1] = modelEvalCntr;
+    rawEvalIdMap[derived_evaluation_id() + 1] = modelEvalCntr;
 
     // Manage use of estimate_derivatives() for a particular asv based on
     // the user's gradients/Hessians spec.
@@ -4297,12 +4297,15 @@ const RealSetArray& Model::discrete_set_real_values(short active_view)
 }
 
 
-int Model::evaluation_id() const
+int Model::derived_evaluation_id() const
 {
-  if (modelRep) // envelope fwd to letter
-    return modelRep->evaluation_id();
-  else // letter lacking redefinition of virtual fn.
-    return modelEvalCntr; // default
+  if (!modelRep) {
+    Cerr << "Error: Letter lacking redefinition of virtual "
+	 << "derived_evaluation_id() function.\n" << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  
+  return modelRep->derived_evaluation_id();
 }
 
 

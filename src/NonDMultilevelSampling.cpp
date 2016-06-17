@@ -258,8 +258,7 @@ multilevel_control_variate_mc(size_t lf_model_form, size_t hf_model_form)
 	evaluate_parameter_sets(iteratedModel, true, false);
 	// update total samples performed for this level
 	N_hf[lev] += numSamples;
-	// accumulate all orders (only order 2 for sum_HH for
-	// computing agg_var_hf_l)
+	// accumulate all orders (only order 1 in sum_HH for agg_var_hf_l)
 	accumulate_ml_sums(sum_H, sum_HH, lev);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (H[1], H[2], HH):\n";

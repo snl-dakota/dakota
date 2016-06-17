@@ -320,7 +320,7 @@ protected:
   /// return the subModel interface identifier
   const String& interface_id() const;
   /// return the current evaluation id for the RecastModel
-  int evaluation_id() const;
+  int derived_evaluation_id() const;
   /// set the evaluation counter reference points for the RecastModel
   /// (request forwarded to subModel)
   void set_evaluation_reference();
@@ -738,7 +738,7 @@ inline const String& RecastModel::interface_id() const
 { return subModel.interface_id(); }
 
 
-inline int RecastModel::evaluation_id() const
+inline int RecastModel::derived_evaluation_id() const
 { return recastModelEvalCntr; }
 
 

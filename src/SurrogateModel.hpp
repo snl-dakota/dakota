@@ -61,7 +61,7 @@ protected:
   short surrogate_response_mode() const;
 
   /// return the current evaluation id for this Model
-  int evaluation_id() const;
+  int derived_evaluation_id() const;
 
   /// return miPLIndex
   size_t mi_parallel_level_index() const;
@@ -233,7 +233,7 @@ inline void SurrogateModel::check_key(int key1, int key2) const
     intermittent use of lower level components, this is not the same as
     approxInterface, actualModel, or orderedModels evaluation counts,
     which requires a consistent evaluation rekeying process. */
-inline int SurrogateModel::evaluation_id() const
+inline int SurrogateModel::derived_evaluation_id() const
 { return surrModelEvalCntr; }
 
 } // namespace Dakota
