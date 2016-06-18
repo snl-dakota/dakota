@@ -70,9 +70,15 @@ private:
   void control_variate_mc(const SizetSizetPair& lf_form_level,
 			  const SizetSizetPair& hf_form_level);
   /// Perform multilevel Monte Carlo across levels in combination with
-  /// control variate Monte Carlo across model forms at each level
-  void multilevel_control_variate_mc(size_t lf_model_form,
-				     size_t hf_model_form);
+  /// control variate Monte Carlo across model forms at each level; CV
+  /// computes correlations for Y (LH correlations for level discrepancies)
+  void multilevel_control_variate_mc_Ycorr(size_t lf_model_form,
+					   size_t hf_model_form);
+  /// Perform multilevel Monte Carlo across levels in combination with
+  /// control variate Monte Carlo across model forms at each level; CV
+  /// computes correlations for Q (LH correlations for QoI)
+  void multilevel_control_variate_mc_Qcorr(size_t lf_model_form,
+					   size_t hf_model_form);
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
@@ -82,23 +88,39 @@ private:
   bool lf_increment(Real avg_eval_ratio, size_t N_hf,
 		    size_t& delta_N_lf, size_t& N_lf);
 
-  /// initialize the CV bookkeeping for sums, means, variances, and
+  /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_sums(IntRealMatrixMap& sum_Y, size_t num_lev);
-  /// initialize the CV bookkeeping for sums, means, variances, and
+
+  /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
-  void initialize_cv_sums_moments(IntRealVectorMap& sum_L_shared,
-				  IntRealVectorMap& sum_L_refined,
-				  IntRealVectorMap& sum_H,
-				  IntRealVectorMap& sum_LL,
-				  IntRealVectorMap& sum_LH);
-  /// initialize the CV bookkeeping for sums, means, variances, and
+  void initialize_cv_sums(IntRealVectorMap& sum_L_shared,
+			  IntRealVectorMap& sum_L_refined,
+			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
+			  IntRealVectorMap& sum_LH);
+  /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
-  void initialize_cv_sums_moments(IntRealMatrixMap& sum_L_shared,
-				  IntRealMatrixMap& sum_L_refined,
-				//IntRealMatrixMap& sum_H,
-				  IntRealMatrixMap& sum_LL,
-				  IntRealMatrixMap& sum_LH, size_t num_lev);
+  void initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+                        //IntRealMatrixMap& sum_H,
+			  IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
+			  size_t num_lev);
+  /// initialize the CV accumulators for computing means, variances, and
+  /// covariances across fidelity levels
+  void initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  IntRealMatrixMap& sum_Ll_Ll,
+			  IntRealMatrixMap& sum_Ll_Llm1,
+			  IntRealMatrixMap& sum_Llm1_Llm1,
+			  IntRealMatrixMap& sum_Hl_Ll,
+			  IntRealMatrixMap& sum_Hl_Llm1,
+			  IntRealMatrixMap& sum_Hlm1_Ll,
+			  IntRealMatrixMap& sum_Hlm1_Llm1, size_t num_lev);
+
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			  size_t lev);
 
   /// update running sums for one model (sum_map) using set of model
   /// evaluations within allResponses
@@ -109,23 +131,39 @@ private:
 			  IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
 			  RealVector& sum_HH, IntRealVectorMap& sum_LH);
-  /// update running sums for one model (sum_map) using set of model
-  /// evaluations within allResponses
-  void accumulate_cv_sums(IntRealMatrixMap& sum_map, size_t lev);
-  /// update running sums for two models (sum_L, sum_H, and sum_LH)
-  /// from set of low/high fidelity model evaluations within lf/hf_resp_map
-  void accumulate_cv_sums(const IntResponseMap& lf_resp_map,
-			  const IntResponseMap& hf_resp_map,
-			  IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			//IntRealMatrixMap& sum_H,
-			  IntRealMatrixMap& sum_LL, //RealMatrix& sum_HH,
-			  IntRealMatrixMap& sum_LH, size_t lev);
 
-  /// update accumulators for multilevel telescoping running sums
-  /// using set of model evaluations within allResponses
-  void accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			  size_t lev);
+  /// update running discrepancy sums for one model (sum_map) using
+  /// set of model evaluations within allResponses
+  void accumulate_mlcv_Ysums(IntRealMatrixMap& sum_map, size_t lev);
+  /// update running QoI sums for one model (sum_map) using set of
+  /// model evaluations within allResponses
+  void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_map, size_t lev);
+  /// update running two-level discrepancy sums for two models (sum_L,
+  /// sum_H, and sum_LH) from set of low/high fidelity model evaluations
+  /// within lf/hf_resp_map
+  void accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     IntRealMatrixMap& sum_L_shared,
+			     IntRealMatrixMap& sum_L_refined,
+			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
+			     IntRealMatrixMap& sum_LH, RealMatrix& sum_HH,
+			     size_t lev);
+  /// update running QoI sums for two models and two levels from set
+  /// of low/high fidelity model evaluations within lf/hf_resp_map
+  void accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
+			     const IntResponseMap& hf_resp_map,
+			     IntRealMatrixMap& sum_L_shared,
+			     IntRealMatrixMap& sum_L_refined,
+			     IntRealMatrixMap& sum_H,
+			     IntRealMatrixMap& sum_Ll_Ll,
+			     IntRealMatrixMap& sum_Ll_Llm1,
+			     IntRealMatrixMap& sum_Llm1_Llm1,
+			     IntRealMatrixMap& sum_Hl_Ll,
+			     IntRealMatrixMap& sum_Hl_Llm1,
+			     IntRealMatrixMap& sum_Hlm1_Ll,
+			     IntRealMatrixMap& sum_Hlm1_Llm1,
+			     RealMatrix& sum_Hl_Hl, RealMatrix& sum_Hl_Hlm1,
+			     RealMatrix& sum_Hlm1_Hlm1, size_t lev);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
