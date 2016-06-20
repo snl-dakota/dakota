@@ -468,14 +468,12 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[1] = (Y^i)^2 for i=1).
-  IntRealMatrixMap sum_H; RealMatrix sum_HH(numFunctions, num_hf_lev);
-  initialize_ml_sums(sum_H, num_hf_lev);
-
-  IntRealMatrixMap sum_L_refined, sum_L_shared, sum_LL, sum_LH;
-  initialize_cv_sums(sum_L_shared, sum_L_refined, //sum_H,
-		     sum_LL, /*sum_HH,*/ sum_LH, num_cv_lev);
-  RealMatrix var_H(numFunctions, num_cv_lev, false),
-           rho2_LH(numFunctions, num_cv_lev, false);
+  IntRealMatrixMap sum_L_refined, sum_L_shared, sum_H, sum_LL, sum_LH;
+  initialize_mlcv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, //sum_HH,
+		       sum_LH, num_hf_lev, num_cv_lev);
+  RealMatrix sum_HH(numFunctions, num_hf_lev),
+              var_H(numFunctions, num_cv_lev, false),
+            rho2_LH(numFunctions, num_cv_lev, false);
   RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
@@ -687,7 +685,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
-  IntRealMatrixMap sum_L_shared, sum_L_refined, sum_H,
+  IntRealMatrixMap sum_Ll, sum_Llm1, sum_L_refined, sum_Hl, sum_Hlm1,
     sum_Ll_Ll, sum_Ll_Llm1,   // for Var(Q_l^L), Covar(Q_l^L,Q_lm1^L)
     sum_Llm1_Llm1, sum_Hl_Ll, // for Var(Q_lm1^L), Covar(Q_l^H,Q_l^L)
     sum_Hl_Llm1, sum_Hlm1_Ll, // for Covar(Q_l^H,Q_lm1^L), Covar(Q_lm1^H,Q_l^L)
@@ -697,13 +695,13 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
              sum_Hlm1_Hlm1(numFunctions, num_hf_lev); // for Var(Q_lm1^H)
   // Initialize accumulators and related arrays/maps, allowing for different
   // number of ML and CV levels (num_hf_lev & num_cv_lev, respectively).
-  initialize_ml_sums(sum_H, num_hf_lev);
-  initialize_cv_sums(sum_L_shared, sum_L_refined, sum_Ll_Ll, sum_Ll_Llm1,
-		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		     sum_Hlm1_Llm1, num_cv_lev);
-  RealMatrix var_Hl(numFunctions, num_cv_lev, false),
-             covar_Hl_Hlm1(numFunctions, num_cv_lev, false),
-             var_Hlm1(numFunctions, num_cv_lev, false),
+  initialize_mlcv_sums(sum_Ll, sum_Llm1, sum_L_refined, sum_Hl, sum_Hlm1,
+		       sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+		       sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1,
+		       num_hf_lev, num_cv_lev);
+  RealMatrix //var_Hl(numFunctions, num_cv_lev, false),
+             //covar_Hl_Hlm1(numFunctions, num_cv_lev, false),
+             //var_Hlm1(numFunctions, num_cv_lev, false),
              rho2_LH(numFunctions, num_cv_lev, false);
   RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
   
@@ -772,23 +770,22 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  // update total samples performed for this level
 	  N_lf[lev] += numSamples;
 	  // process previous and new set of allResponses for MLCV sums;
-	  accumulate_mlcv_Qsums(allResponses, hf_resp, sum_L_shared,
-				sum_L_refined, sum_H, sum_Ll_Ll, sum_Ll_Llm1,
-				sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
-				sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
-				sum_Hl_Hlm1, sum_Hlm1_Hlm1, lev);
+	  accumulate_mlcv_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
+				sum_L_refined, sum_Hl, sum_Hlm1, sum_Ll_Ll,
+				sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+				sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1,
+				sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1, lev);
 	  if (outputLevel == DEBUG_OUTPUT) {
-	    Cout << "Accumulated sums (L_shared[1,2], L_refined[1,2], "
-		 << "sum_H[1,2]):\n";
-	    write_data(Cout,sum_L_shared[1]); write_data(Cout,sum_L_shared[2]);
+	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n";
+	    write_data(Cout,sum_Ll[1]); write_data(Cout,sum_Ll[2]);
 	    write_data(Cout,sum_L_refined[1]);write_data(Cout,sum_L_refined[2]);
-	    write_data(Cout,sum_H[1]);        write_data(Cout,sum_H[2]);
+	    write_data(Cout,sum_Hl[1]); write_data(Cout,sum_Hl[2]);
 	  }
 
 	  /*
 	  // compute the average evaluation ratio and Lambda factor
 	  avg_eval_ratio
-	    = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_HH,
+	    = eval_ratio(sum_Ll[1], sum_H[1], sum_LL[1], sum_HH,
 			 sum_LH[1], hf_lev_cost/lf_lev_cost, lev, var_H,
 			 rho2_LH, N_hf[lev]);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
@@ -807,17 +804,17 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  */
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
-	  accumulate_ml_sums(sum_H, sum_Hl_Hl, lev); // *** TO DO: more needed?
+	  accumulate_ml_sums(sum_Hl, sum_Hl_Hl, lev);
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n";
-	    write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
+	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
 	    write_data(Cout, sum_Hl_Hl);
 	  }
 	}
 
 	// compute estimator mean & variance from current sample accumulation:
 	agg_var_hf_l = 0.; size_t N_l = N_hf[lev];
-	Real *sum_H1_l = sum_H[1][lev], *sum_HH1_l = sum_Hl_Hl[lev],
+	Real *sum_H1_l = sum_Hl[1][lev], *sum_HH1_l = sum_Hl_Hl[lev],
 	  bias_corr = 1./(N_l - 1);
 	for (qoi=0; qoi<numFunctions; ++qoi) {
 	  Real mu_Y = sum_H1_l[qoi] / N_l;
@@ -865,16 +862,16 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   // CVMC and MLMC estimators.
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
-    cv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_Ll_Ll, sum_Ll_Llm1,
-		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		   rho2_LH, //hf_lev_cost/lf_lev_cost,
-		   lev, N_hf[lev], N_lf[lev], Y_cvmc_mom);// N_shared,N_refined
+    cv_raw_moments(sum_Ll, sum_Llm1, sum_L_refined, sum_Hl, sum_Hlm1, sum_Ll_Ll,
+		   sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
+		   sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
+		   sum_Hlm1_Hlm1, rho2_LH, //hf_lev_cost/lf_lev_cost,
+		   lev, N_hf[lev], N_lf[lev], Y_cvmc_mom); // N_shared,N_refined
     Y_mlmc_mom += Y_cvmc_mom;
   }
   if (num_hf_lev > num_lf_lev) {
-    RealMatrix &sum_H1 = sum_H[1], &sum_H2 = sum_H[2],
-               &sum_H3 = sum_H[3], &sum_H4 = sum_H[4];
+    RealMatrix &sum_H1 = sum_Hl[1], &sum_H2 = sum_Hl[2],
+               &sum_H3 = sum_Hl[3], &sum_H4 = sum_Hl[4];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real *Y_ml_q = Y_mlmc_mom[qoi];
       for (lev=num_lf_lev; lev<num_hf_lev; ++lev) {
@@ -997,10 +994,11 @@ initialize_cv_sums(IntRealVectorMap& sum_L_shared,
 
 
 void NonDMultilevelSampling::
-initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
-		   IntRealMatrixMap& sum_L_refined, //IntRealMatrixMap& sum_H,
-		   IntRealMatrixMap& sum_LL,        //IntRealMatrixMap& sum_HH,
-		   IntRealMatrixMap& sum_LH, size_t num_lev)
+initialize_mlcv_sums(IntRealMatrixMap& sum_L_shared,
+		     IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
+		     IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
+		     //IntRealMatrixMap& sum_HH,
+		     size_t num_ml_lev, size_t num_cv_lev)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealMatrix> empty_pr;
@@ -1008,23 +1006,30 @@ initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
     empty_pr.first = i;
     // std::map::insert() returns std::pair<IntRVMIter, bool>:
     // use IntRVMIter to shape RealMatrix in place and init sums to 0
-    sum_L_shared.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_L_refined.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-  //sum_H.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_LL.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-  //sum_HH.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_LH.insert(empty_pr).first->second.shape(numFunctions, num_lev);
+
+    // num_cv_lev:
+    sum_L_shared.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_L_refined.insert(empty_pr).first->second.shape(numFunctions,num_cv_lev);
+    sum_LL.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_LH.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+
+    // num_ml_lev:
+    sum_H.insert(empty_pr).first->second.shape(numFunctions, num_ml_lev);
+    //sum_HH.insert(empty_pr).first->second.shape(numFunctions, num_ml_lev);
   }
 }
 
 
 void NonDMultilevelSampling::
-initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
-		   IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_Ll_Ll,
-		   IntRealMatrixMap& sum_Ll_Llm1,
-		   IntRealMatrixMap& sum_Llm1_Llm1, IntRealMatrixMap& sum_Hl_Ll,
-		   IntRealMatrixMap& sum_Hl_Llm1, IntRealMatrixMap& sum_Hlm1_Ll,
-		   IntRealMatrixMap& sum_Hlm1_Llm1, size_t num_lev)
+initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
+		     IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_Hl,
+		     IntRealMatrixMap& sum_Hlm1, IntRealMatrixMap& sum_Ll_Ll,
+		     IntRealMatrixMap& sum_Ll_Llm1,
+		     IntRealMatrixMap& sum_Llm1_Llm1,
+		     IntRealMatrixMap& sum_Hl_Ll, IntRealMatrixMap& sum_Hl_Llm1,
+		     IntRealMatrixMap& sum_Hlm1_Ll,
+		     IntRealMatrixMap& sum_Hlm1_Llm1,
+		     size_t num_ml_lev, size_t num_cv_lev)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealMatrix> empty_pr;
@@ -1032,15 +1037,21 @@ initialize_cv_sums(IntRealMatrixMap& sum_L_shared,
     empty_pr.first = i;
     // std::map::insert() returns std::pair<IntRVMIter, bool>:
     // use IntRVMIter to shape RealMatrix in place and init sums to 0
-    sum_L_shared.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_L_refined.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Ll_Ll.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Ll_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Llm1_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Hl_Ll.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Hl_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Hlm1_Ll.insert(empty_pr).first->second.shape(numFunctions, num_lev);
-    sum_Hlm1_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_lev);
+
+    // num_cv_lev:
+    sum_Ll.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_L_refined.insert(empty_pr).first->second.shape(numFunctions,num_cv_lev);
+    sum_Hlm1.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Ll_Ll.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Ll_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Llm1_Llm1.insert(empty_pr).first->second.shape(numFunctions,num_cv_lev);
+    sum_Hl_Ll.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Hl_Llm1.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Hlm1_Ll.insert(empty_pr).first->second.shape(numFunctions, num_cv_lev);
+    sum_Hlm1_Llm1.insert(empty_pr).first->second.shape(numFunctions,num_cv_lev);
+    // num_ml_lev:
+    sum_Hl.insert(empty_pr).first->second.shape(numFunctions, num_ml_lev);
   }
 }
 
@@ -1441,8 +1452,9 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 void NonDMultilevelSampling::
 accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const IntResponseMap& hf_resp_map,
-		      IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
+		      IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
+		      IntRealMatrixMap& sum_L_refined,
+		      IntRealMatrixMap& sum_Hl, IntRealMatrixMap& sum_Hlm1,
 		      IntRealMatrixMap& sum_Ll_Ll,
 		      IntRealMatrixMap& sum_Ll_Llm1,
 		      IntRealMatrixMap& sum_Llm1_Llm1,
@@ -1458,15 +1470,15 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
   // case with discrepancies, indexed by level.
 
   if (lev == 0) // level lm1 not available; accumulate only level l
-    accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_L_shared, sum_L_refined,
-			  sum_H, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl, lev);
+    accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_Ll, sum_L_refined,
+			  sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl, lev);
   else {
     Real lf_l_prod, lf_l, lf_lm1_prod, lf_lm1,
       hf_l_prod, hf_l, hf_lm1_prod, hf_lm1;
     IntRespMCIter lf_r_it, hf_r_it;
-    IntRMMIter ls_it, lr_it, h_it, ll1_it, ll2_it, ll3_it,
+    IntRMMIter l1_it, l2_it, lr_it, h1_it, h2_it, ll1_it, ll2_it, ll3_it,
       lh1_it, lh2_it, lh3_it, lh4_it;
-    int ls_ord, lr_ord, h_ord, ll1_ord, ll2_ord, ll3_ord,
+    int l1_ord, l2_ord, lr_ord, h1_ord, h2_ord, ll1_ord, ll2_ord, ll3_ord,
       lh1_ord, lh2_ord, lh3_ord, lh4_ord, active_ord;
     size_t qoi;
 
@@ -1483,13 +1495,17 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
 	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
 
-	// Low: L_shared, L_refined
-	ls_it = sum_L_shared.begin(); lr_it = sum_L_refined.begin();
-	ls_ord = (ls_it == sum_L_shared.end())  ? 0 : ls_it->first;
+	// Low: Ll, Llm1, L_refined
+	l1_it = sum_Ll.begin(); l2_it = sum_Llm1.begin();
+	lr_it = sum_L_refined.begin();
+	l1_ord = (l1_it == sum_Ll.end())        ? 0 : l1_it->first;
+	l2_ord = (l2_it == sum_Llm1.end())      ? 0 : l2_it->first;
 	lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
-	// High: H
-	h_it  = sum_H.begin();
-	h_ord = (h_it == sum_H.end()) ? 0 :  h_it->first;
+	// High: Hl, Hlm1
+	h1_it  = sum_Hl.begin();
+	h2_it  = sum_Hlm1.begin();
+	h1_ord = (h1_it == sum_Hl.end())   ? 0 : h1_it->first;
+	h2_ord = (h2_it == sum_Hlm1.end()) ? 0 : h2_it->first;
 	// Low-Low: Ll_Ll, Ll_Llm1, Llm1_Llm1
 	ll1_it = sum_Ll_Ll.begin(); ll2_it = sum_Ll_Llm1.begin();
 	ll3_it = sum_Llm1_Llm1.begin();
@@ -1506,26 +1522,35 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 	// High-High: Hl_Hl, Hl_Hlm1, Hlm1_Hlm1
 	active_ord = 1;
 
-	while (ls_it !=sum_L_shared.end() || lr_it !=sum_L_refined.end() ||
-	       h_it  !=sum_H.end()        || ll1_it!=sum_Ll_Ll.end()     ||
-	       ll2_it!=sum_Ll_Llm1.end()  || ll3_it!=sum_Llm1_Llm1.end() ||
-	       lh1_it!=sum_Hl_Ll.end()    || lh2_it!=sum_Hl_Llm1.end()   ||
-	       lh3_it!=sum_Hlm1_Ll.end()  || lh4_it!=sum_Hlm1_Llm1.end() ||
+	while (l1_it !=sum_Ll.end()        || l2_it !=sum_Llm1.end()      ||
+	       lr_it !=sum_L_refined.end() || h1_it !=sum_Hl.end()        ||
+	       h2_it !=sum_Hlm1.end()      || ll1_it!=sum_Ll_Ll.end()     ||
+	       ll2_it!=sum_Ll_Llm1.end()   || ll3_it!=sum_Llm1_Llm1.end() ||
+	       lh1_it!=sum_Hl_Ll.end()     || lh2_it!=sum_Hl_Llm1.end()   ||
+	       lh3_it!=sum_Hlm1_Ll.end()   || lh4_it!=sum_Hlm1_Llm1.end() ||
 	       active_ord <= 1) {
 
-	  // Low: L_shared, L_refined
-	  if (ls_ord == active_ord) {
-	    ls_it->second(qoi,lev) += lf_l_prod; ++ls_it;
-	    ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+	  // Low: Ll, Llm1, L_refined
+	  if (l1_ord == active_ord) {
+	    l1_it->second(qoi,lev) += lf_l_prod; ++l1_it;
+	    l1_ord = (l1_it == sum_Ll.end()) ? 0 : l1_it->first;
+	  }
+	  if (l2_ord == active_ord) {
+	    l2_it->second(qoi,lev) += lf_lm1_prod; ++l2_it;
+	    l2_ord = (l2_it == sum_Llm1.end()) ? 0 : l2_it->first;
 	  }
 	  if (lr_ord == active_ord) {
 	    lr_it->second(qoi,lev) += lf_l_prod; ++lr_it;
 	    lr_ord = (lr_it == sum_L_refined.end()) ? 0 : lr_it->first;
 	  }
-	  // High: H
-	  if (h_ord == active_ord) {
-	    h_it->second(qoi,lev) += hf_l_prod; ++h_it;
-	    h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+	  // High: Hl, Hlm1
+	  if (h1_ord == active_ord) {
+	    h1_it->second(qoi,lev) += hf_l_prod; ++h1_it;
+	    h1_ord = (h1_it == sum_Hl.end()) ? 0 : h1_it->first;
+	  }
+	  if (h2_ord == active_ord) {
+	    h2_it->second(qoi,lev) += hf_lm1_prod; ++h2_it;
+	    h2_ord = (h2_it == sum_Hlm1.end()) ? 0 : h2_it->first;
 	  }
 	  // Low-Low: Ll_Ll, Ll_Llm1, Llm1_Llm1
 	  if (ll1_ord == active_ord) {
@@ -1564,11 +1589,12 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 	    sum_Hlm1_Hlm1(qoi,lev) += hf_lm1_prod * hf_lm1_prod;
 	  }
 
-	  if (ls_ord || lr_ord || ll1_ord || ll2_ord || lh1_ord || lh3_ord)
+	  if (l1_ord || lr_ord || ll1_ord || ll2_ord || lh1_ord || lh3_ord)
 	    lf_l_prod   *= lf_l;
-	  if (ll2_ord || ll3_ord || lh2_ord || lh4_ord) lf_lm1_prod *= lf_lm1;
-	  if (h_ord || lh1_ord || lh2_ord)              hf_l_prod   *= hf_l;
-	  if (lh3_ord || lh4_ord)                       hf_lm1_prod *= hf_lm1;
+	  if (l2_ord || ll2_ord || ll3_ord || lh2_ord || lh4_ord)
+	    lf_lm1_prod *= lf_lm1;
+	  if (h1_ord || lh1_ord || lh2_ord) hf_l_prod   *= hf_l;
+	  if (h2_ord || lh3_ord || lh4_ord) hf_lm1_prod *= hf_lm1;
 	  ++active_ord;
 	}
       }
@@ -1744,18 +1770,19 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 
 
 void NonDMultilevelSampling::
-cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
-	       IntRealMatrixMap& sum_H,        IntRealMatrixMap& sum_Ll_Ll,
-	       IntRealMatrixMap& sum_Ll_Llm1,  IntRealMatrixMap& sum_Llm1_Llm1,
-	       IntRealMatrixMap& sum_Hl_Ll,    IntRealMatrixMap& sum_Hl_Llm1,
-	       IntRealMatrixMap& sum_Hlm1_Ll,  IntRealMatrixMap& sum_Hlm1_Llm1,
-	       RealMatrix& sum_Hl_Hl,          RealMatrix& sum_Hl_Hlm1,
-	       RealMatrix& sum_Hlm1_Hlm1,      const RealMatrix& rho2_LH,
-	       /*Real cost_ratio,*/            size_t lev,
-	       size_t N_shared, size_t N_refined, RealMatrix& H_raw_mom)
+cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
+	       IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_Hl,
+	       IntRealMatrixMap& sum_Hlm1,      IntRealMatrixMap& sum_Ll_Ll,
+	       IntRealMatrixMap& sum_Ll_Llm1,   IntRealMatrixMap& sum_Llm1_Llm1,
+	       IntRealMatrixMap& sum_Hl_Ll,     IntRealMatrixMap& sum_Hl_Llm1,
+	       IntRealMatrixMap& sum_Hlm1_Ll,   IntRealMatrixMap& sum_Hlm1_Llm1,
+	       RealMatrix& sum_Hl_Hl,           RealMatrix& sum_Hl_Hlm1,
+	       RealMatrix& sum_Hlm1_Hlm1,       const RealMatrix& rho2_LH,
+	       /*Real cost_ratio,*/ size_t lev, size_t N_shared,
+	       size_t N_refined,                RealMatrix& H_raw_mom)
 {
   if (lev == 0)
-    cv_raw_moments(sum_L_shared, sum_L_refined, sum_H, sum_Ll_Ll, sum_Hl_Ll,
+    cv_raw_moments(sum_Ll, sum_L_refined, sum_Hl, sum_Ll_Ll, sum_Hl_Ll,
 		   /*sum_Hl_Hl,*/ rho2_LH, /*Real cost_ratio,*/ lev,
 		   N_shared, N_refined, H_raw_mom);
   else {
@@ -1767,60 +1794,56 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
       bias_corr = 1./(N_shared - 1);//, cr1 = cost_ratio + 1.;
 
     for (int i=1; i<=4; ++i) {
-      size_t lm1 = lev - 1;
       // Note: sum_*[i][lm1] is not the same as sum_*lm1[i][lev] due to
       //       discrepancy evaluations with different sample sets!
-      const Real *sum_Ls_il = sum_L_shared[i][lev],
-	*sum_Ls_ilm1      = sum_L_refined[i][lm1], // *** NO? ***
-	*sum_Lr_il        = sum_L_refined[i][lev],
-	*sum_H_il         = sum_H[i][lev],
-	*sum_H_ilm1       = sum_H[i][lm1],         // *** NO? ***
-	*sum_Ll_Ll_il     = sum_Ll_Ll[i][lev],
-	*sum_Ll_Llm1_il   = sum_Ll_Llm1[i][lev],
-	*sum_Llm1_Llm1_il = sum_Llm1_Llm1[i][lev],
-	*sum_Hl_Ll_il     = sum_Hl_Ll[i][lev],
-	*sum_Hl_Llm1_il   = sum_Hl_Llm1[i][lev],
-	*sum_Hlm1_Ll_il   = sum_Hlm1_Ll[i][lev],
-	*sum_Hlm1_Llm1_il = sum_Hlm1_Llm1[i][lev],
-	*sum_Hl_Hl_il     = sum_Hl_Hl[lev],
-	*sum_Hl_Hlm1_il   = sum_Hl_Hlm1[lev],
-	*sum_Hlm1_Hlm1_il = sum_Hlm1_Hlm1[lev],
-        *rho2_LHi         = rho2_LH[lev];
+      const Real *sum_Ll_i = sum_Ll[i][lev], *sum_Llm1_i = sum_Llm1[i][lev],
+	*sum_Lr_i   = sum_L_refined[i][lev],   *sum_Hl_i = sum_Hl[i][lev],
+	*sum_Hlm1_i = sum_Hlm1[i][lev],     *sum_Ll_Ll_i = sum_Ll_Ll[i][lev],
+	*sum_Ll_Llm1_i   = sum_Ll_Llm1[i][lev],
+	*sum_Llm1_Llm1_i = sum_Llm1_Llm1[i][lev],
+	*sum_Hl_Ll_i = sum_Hl_Ll[i][lev], *sum_Hl_Llm1_i = sum_Hl_Llm1[i][lev],
+	*sum_Hlm1_Ll_i   = sum_Hlm1_Ll[i][lev],
+	*sum_Hlm1_Llm1_i = sum_Hlm1_Llm1[i][lev],
+	*sum_Hl_Hl_i = sum_Hl_Hl[lev],    *sum_Hl_Hlm1_i = sum_Hl_Hlm1[lev],
+	*sum_Hlm1_Hlm1_i = sum_Hlm1_Hlm1[lev], *rho2_LHi = rho2_LH[lev];
 
       for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
 	// expectations based on shared samples (prior to LF sample increment)
-	mu_Ll   = sum_Ls_il[qoi]   / N_shared;
-	mu_Llm1 = sum_Ls_ilm1[qoi] / N_shared;
-	mu_Hl   = sum_H_il[qoi]    / N_shared;
-	mu_Hlm1 = sum_H_ilm1[qoi]  / N_shared;
+	mu_Ll   = sum_Ll_i[qoi]   / N_shared;
+	mu_Llm1 = sum_Llm1_i[qoi] / N_shared;
+	mu_Hl   = sum_Hl_i[qoi]   / N_shared;
+	mu_Hlm1 = sum_Hlm1_i[qoi] / N_shared;
 
-	var_Ll  = (sum_Ll_Ll_il[qoi] - N_shared * mu_Ll * mu_Ll) * bias_corr;
+	var_Ll  = (sum_Ll_Ll_i[qoi] - N_shared * mu_Ll * mu_Ll) * bias_corr;
 	var_Llm1
-	  = (sum_Llm1_Llm1_il[qoi] - N_shared * mu_Llm1 * mu_Llm1) * bias_corr;
-	var_Hl  = (sum_Hl_Hl_il[qoi] - N_shared * mu_Hl * mu_Hl) * bias_corr;
+	  = (sum_Llm1_Llm1_i[qoi] - N_shared * mu_Llm1 * mu_Llm1) * bias_corr;
+	var_Hl  = (sum_Hl_Hl_i[qoi] - N_shared * mu_Hl * mu_Hl) * bias_corr;
 	var_Hlm1
-	  = (sum_Hlm1_Hlm1_il[qoi] - N_shared * mu_Hlm1 * mu_Hlm1) * bias_corr;
+	  = (sum_Hlm1_Hlm1_i[qoi] - N_shared * mu_Hlm1 * mu_Hlm1) * bias_corr;
 
-	cov_Hl_Ll = (sum_Hl_Ll_il[qoi] - N_shared * mu_Hl * mu_Ll) * bias_corr;
+	cov_Hl_Ll = (sum_Hl_Ll_i[qoi] - N_shared * mu_Hl * mu_Ll) * bias_corr;
 	cov_Hl_Llm1
-	  = (sum_Hl_Llm1_il[qoi] - N_shared * mu_Hl * mu_Llm1) * bias_corr;
+	  = (sum_Hl_Llm1_i[qoi] - N_shared * mu_Hl * mu_Llm1) * bias_corr;
 	cov_Hlm1_Ll
-	  = (sum_Hlm1_Ll_il[qoi] - N_shared * mu_Hlm1 * mu_Ll) * bias_corr;
+	  = (sum_Hlm1_Ll_i[qoi] - N_shared * mu_Hlm1 * mu_Ll) * bias_corr;
 	cov_Hlm1_Llm1
-	  = (sum_Hlm1_Llm1_il[qoi] - N_shared * mu_Hlm1 * mu_Llm1) * bias_corr;
+	  = (sum_Hlm1_Llm1_i[qoi] - N_shared * mu_Hlm1 * mu_Llm1) * bias_corr;
 
 	cov_Ll_Llm1
-	  = (sum_Ll_Llm1_il[qoi] - N_shared * mu_Ll * mu_Llm1) * bias_corr;
+	  = (sum_Ll_Llm1_i[qoi] - N_shared * mu_Ll * mu_Llm1) * bias_corr;
 	cov_Hl_Hlm1
-	  = (sum_Hl_Hlm1_il[qoi] - N_shared * mu_Hl * mu_Hlm1) * bias_corr;
+	  = (sum_Hl_Hlm1_i[qoi] - N_shared * mu_Hl * mu_Hlm1) * bias_corr;
 
-	//gamma_l = ( * cov_Ll_Llm1 - var_Llm1 * )
-	//        / (var_Ll * - * cov_Ll_Llm1);
-	//cov_YH_YLdot = gamma_l * (cov_Hl_Ll - cov_Hlm1_Ll)
-	//             - cov_Hl_Llm1 + cov_Hlm1_Llm1;
-	//var_YLdot = ;
-	//beta = cov_YH_YLdot / var_YLdot;
+	Real cov_YHl_Ll   = cov_Hl_Ll   - cov_Hlm1_Ll,
+	     cov_YHl_Llm1 = cov_Hl_Llm1 - cov_Hlm1_Llm1,
+	     gamma_l = (cov_YHl_Llm1 * cov_Ll_Llm1 - var_Llm1 * cov_YHl_Ll)
+	             / (var_Ll * cov_YHl_Llm1 - cov_YHl_Ll * cov_Ll_Llm1),
+	     cov_YHl_YLldot = gamma_l * (cov_Hl_Ll - cov_Hlm1_Ll)
+	                    - cov_Hl_Llm1 + cov_Hlm1_Llm1,
+	     var_YLldot = gamma_l * (gamma_l * var_Ll - 2. * cov_Ll_Llm1)
+	                + var_Llm1,
+	     beta = cov_YHl_YLldot / var_YLldot;
 	Cout << "Moment " << i << ", QoI " << qoi+1 << ", lev " << lev
 	     << ": control variate beta = " << std::setw(9) << beta;
 	if (i == 1) // rho2_LH not stored for i > 1
@@ -1830,7 +1853,7 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_L_refined,
 	Cout << '\n';
 
 	// updated LF expectations following final sample increment:
-	refined_mu_Ll = sum_Lr_il[qoi] / N_refined;
+	refined_mu_Ll = sum_Lr_i[qoi] / N_refined;
 	// apply control for HF uncentered raw moment estimates:
 	H_raw_mom(i-1,qoi) = mu_Hl - beta * (mu_Ll - refined_mu_Ll);// *** TO DO
       }
