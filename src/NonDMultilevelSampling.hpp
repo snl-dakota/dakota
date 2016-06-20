@@ -189,17 +189,31 @@ private:
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 		 const RealVector& rho2_LH, size_t iter, size_t N_hf);
 
-  /// compute control variate parameter and estimate raw moments
+  /// compute control variate parameters for CVMC and estimate raw moments
   void cv_raw_moments(IntRealVectorMap& sum_L_shared,
 		      IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		      IntRealVectorMap& sum_LL,        IntRealVectorMap& sum_LH,
 		      const RealVector& rho2_LH,     //Real cost_ratio,
 		      size_t N_shared, size_t N_refined, RealMatrix& H_raw_mom);
-  /// compute control variate parameter and estimate raw moments
+  /// compute control variate parameters for MLCVMC and estimate raw moments
   void cv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
 		      IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
 		      const RealMatrix& rho2_LH,     //Real cost_ratio,
+		      size_t lev, size_t N_shared, size_t N_refined,
+		      RealMatrix& H_raw_mom);
+  /// compute control variate parameters for MLCVMC and estimate raw moments
+  void cv_raw_moments(IntRealMatrixMap& sum_L_shared,
+		      IntRealMatrixMap& sum_L_refined,
+		      IntRealMatrixMap& sum_H, IntRealMatrixMap& sum_Ll_Ll,
+		      IntRealMatrixMap& sum_Ll_Llm1,
+		      IntRealMatrixMap& sum_Llm1_Llm1,
+		      IntRealMatrixMap& sum_Hl_Ll,
+		      IntRealMatrixMap& sum_Hl_Llm1,
+		      IntRealMatrixMap& sum_Hlm1_Ll,
+		      IntRealMatrixMap& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
+		      RealMatrix& sum_Hl_Hlm1, RealMatrix& sum_Hlm1_Hlm1,
+		      const RealMatrix& rho2_LH, /*Real cost_ratio,*/
 		      size_t lev, size_t N_shared, size_t N_refined,
 		      RealMatrix& H_raw_mom);
 
