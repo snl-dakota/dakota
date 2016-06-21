@@ -192,6 +192,17 @@ private:
 		  RealMatrix& sum_LL, RealMatrix& sum_HH, RealMatrix& sum_LH,
 		  Real cost_ratio, size_t lev, RealMatrix& var_H,
 		  RealMatrix& rho2_LH, size_t N_shared);
+  /// compute the LF/HF evaluation ratio, averaged over the QoI
+  Real eval_ratio(RealMatrix& sum_Ll,          RealMatrix& sum_Llm1,
+		  RealMatrix& sum_Hl,          RealMatrix& sum_Hlm1,
+		  RealMatrix& sum_Ll_Ll,       RealMatrix& sum_Ll_Llm1,
+		  RealMatrix& sum_Llm1_Llm1,   RealMatrix& sum_Hl_Ll,
+		  RealMatrix& sum_Hl_Llm1,     RealMatrix& sum_Hlm1_Ll,
+		  RealMatrix& sum_Hlm1_Llm1,   RealMatrix& sum_Hl_Hl,
+		  RealMatrix& sum_Hl_Hlm1,     RealMatrix& sum_Hlm1_Hlm1,
+		  Real cost_ratio, size_t lev, RealMatrix& rho_dot2_LH,
+		  size_t N_shared);
+
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 		 const RealVector& rho2_LH, size_t iter, size_t N_hf);

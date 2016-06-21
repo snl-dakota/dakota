@@ -702,8 +702,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   RealMatrix //var_Hl(numFunctions, num_cv_lev, false),
              //covar_Hl_Hlm1(numFunctions, num_cv_lev, false),
              //var_Hlm1(numFunctions, num_cv_lev, false),
-             rho2_LH(numFunctions, num_cv_lev, false);
-  RealVector Lambda(num_cv_lev, false), avg_rho2_LH(num_cv_lev, false);
+             rho_dot2_LH(numFunctions, num_cv_lev, false);
+  RealVector Lambda(num_cv_lev, false), avg_rho_dot2_LH(num_cv_lev, false);
   
   // Initialize for pilot sample
   SizetArray&       N_lf =      NLev[lf_model_form];
@@ -782,14 +782,16 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	    write_data(Cout,sum_Hl[1]); write_data(Cout,sum_Hl[2]);
 	  }
 
-	  /*
 	  // compute the average evaluation ratio and Lambda factor
 	  avg_eval_ratio
-	    = eval_ratio(sum_Ll[1], sum_H[1], sum_LL[1], sum_HH,
-			 sum_LH[1], hf_lev_cost/lf_lev_cost, lev, var_H,
-			 rho2_LH, N_hf[lev]);
-	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
-	  Lambda[lev] = 1. - avg_rho2_LH[lev]
+	    = eval_ratio(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
+			 sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
+			 sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
+			 sum_Hlm1_Llm1[1], sum_Hl_Hl, sum_Hl_Hlm1,
+			 sum_Hlm1_Hlm1, hf_lev_cost/lf_lev_cost, lev,
+			 /*carry fwds: var_H,*/ rho_dot2_LH, N_hf[lev]);
+	  avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
+	  Lambda[lev] = 1. - avg_rho_dot2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  // now execute additional LF sample increment, if needed
 	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
@@ -801,7 +803,6 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	      write_data(Cout, sum_L_refined[2]);
 	    }
 	  }
-	  */
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  accumulate_ml_sums(sum_Hl, sum_Hl_Hl, lev);
@@ -814,21 +815,44 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
 	// compute estimator mean & variance from current sample accumulation:
 	agg_var_hf_l = 0.; size_t N_l = N_hf[lev];
-	Real *sum_H1_l = sum_Hl[1][lev], *sum_HH1_l = sum_Hl_Hl[lev],
+	Real *sum_Hl_1 = sum_Hl[1][lev], *sum_Hl_Hl_1 = sum_Hl_Hl[lev],
 	  bias_corr = 1./(N_l - 1);
-	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  Real mu_Y = sum_H1_l[qoi] / N_l;
-	  // Note: precision loss in variance is difficult to avoid without
-	  // storing full sample history; must accumulate Y^2 across iters
-	  // instead of (Y-mean)^2 since mean is updated on each iteration.
-	  agg_var_hf_l += (sum_HH1_l[qoi] - N_l * mu_Y * mu_Y) * bias_corr;
+	if (lev) {
+	  // concompute discrepancy variance
+	  Real *sum_Hlm1_1   = sum_Hlm1[1][lev],
+	    *sum_Hl_Hlm1_1   = sum_Hl_Hlm1[lev],
+	    *sum_Hlm1_Hlm1_1 = sum_Hlm1_Hlm1[lev];
+	  for (qoi=0; qoi<numFunctions; ++qoi) {
+	    Real mu_Hl = sum_Hl_1[qoi] / N_l, mu_Hlm1 = sum_Hlm1_1[qoi] / N_l,
+	      mu_Y   = mu_Hl - mu_Hlm1,
+	      var_Hl = (sum_Hl_Hl_1[qoi] - N_l * mu_Hl * mu_Hl) * bias_corr,
+	      cov_Hl_Hlm1
+	        = (sum_Hl_Hlm1_1[qoi] - N_l * mu_Hl * mu_Hlm1) * bias_corr,
+	      var_Hlm1
+	        = (sum_Hlm1_Hlm1_1[qoi] - N_l * mu_Hlm1 * mu_Hlm1) * bias_corr,
+	      var_Y  = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1;
+	    // Note: precision loss in variance is difficult to avoid without
+	    // storing full sample history; must accumulate Y^2 across iters
+	    // instead of (Y-mean)^2 since mean is updated on each iteration.
+	    agg_var_hf_l += var_Y;
+	  }
+	}
+	else {
+	  for (qoi=0; qoi<numFunctions; ++qoi) {
+	    Real mu_Hl = sum_Hl_1[qoi] / N_l,
+	        var_Hl = (sum_Hl_Hl_1[qoi] - N_l * mu_Hl * mu_Hl) * bias_corr;
+	    // Note: precision loss in variance is difficult to avoid without
+	    // storing full sample history; must accumulate Y^2 across iters
+	    // instead of (Y-mean)^2 since mean is updated on each iteration.
+	    agg_var_hf_l += var_Hl;
+	  }
 	}
       }
 
       // accumulate sum of sqrt's of estimator var * cost used in new_N_l
       sum_sqrt_var_cost += (lev < num_lf_lev) ?
 	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
-		  (1. - avg_rho2_LH[lev])) :
+		  (1. - avg_rho_dot2_LH[lev])) :
 	std::sqrt(agg_var_hf_l * hf_lev_cost);
       // mean sq error reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_hf_l / N_hf[lev];
@@ -849,7 +873,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     for (lev=0; lev<num_hf_lev; ++lev) {
       hf_lev_cost = (lev) ? hf_cost[lev] + hf_cost[lev-1] : hf_cost[lev];
       new_N_l = (lev < num_lf_lev) ? fact *
-	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
+	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf[lev] = (new_N_l > N_hf[lev]) ? new_N_l - N_hf[lev] : 0;
     }
@@ -858,14 +882,13 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	 << delta_N_hf << std::endl;
   }
 
-  // Iteration complete.  Now roll up raw moments from combining final
-  // CVMC and MLMC estimators.
+  // Iteration complete. Now roll up raw moments from CVMC and MLMC estimators.
   RealMatrix Y_mlmc_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_lf_lev; ++lev) {
     cv_raw_moments(sum_Ll, sum_Llm1, sum_L_refined, sum_Hl, sum_Hlm1, sum_Ll_Ll,
 		   sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
 		   sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-		   sum_Hlm1_Hlm1, rho2_LH, //hf_lev_cost/lf_lev_cost,
+		   sum_Hlm1_Hlm1, rho_dot2_LH, //hf_lev_cost/lf_lev_cost,
 		   lev, N_hf[lev], N_lf[lev], Y_cvmc_mom); // N_shared,N_refined
     Y_mlmc_mom += Y_cvmc_mom;
   }
@@ -1646,6 +1669,95 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 
 
 Real NonDMultilevelSampling::
+eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
+	   RealMatrix& sum_Hlm1, RealMatrix& sum_Ll_Ll, RealMatrix& sum_Ll_Llm1,
+	   RealMatrix& sum_Llm1_Llm1,   RealMatrix& sum_Hl_Ll,
+	   RealMatrix& sum_Hl_Llm1,     RealMatrix& sum_Hlm1_Ll,
+	   RealMatrix& sum_Hlm1_Llm1,   RealMatrix& sum_Hl_Hl,
+	   RealMatrix& sum_Hl_Hlm1,     RealMatrix& sum_Hlm1_Hlm1,
+	   Real cost_ratio, size_t lev, RealMatrix& rho_dot2_LH,
+	   size_t N_shared)
+{
+  // Update rho^2, avg_eval_ratio:
+  Real rho_dot_sq, avg_eval_ratio = 0., bias_corr = 1./(N_shared - 1), mu_Ll,
+    mu_Llm1, mu_Hl, mu_Hlm1, var_Ll, var_Llm1, var_Hl, var_Hlm1, cov_Hl_Ll,
+    cov_Hl_Llm1, cov_Hlm1_Ll, cov_Hlm1_Llm1, cov_Ll_Llm1, cov_Hl_Hlm1,
+    cov_YHl_Ll, cov_YHl_Llm1, gamma_l, cov_YHl_YLldot, cov_YHl_YLl,
+    var_YLldot, var_YLl, sigma_l, tau_l, rho2_LH;
+  size_t num_avg = 0;
+  const Real *sum_Ll_i = sum_Ll[lev],      *sum_Llm1_i    = sum_Llm1[lev],
+    *sum_Hl_i        = sum_Hl[lev],        *sum_Hlm1_i    = sum_Hlm1[lev],
+    *sum_Ll_Ll_i     = sum_Ll_Ll[lev],     *sum_Ll_Llm1_i = sum_Ll_Llm1[lev],
+    *sum_Llm1_Llm1_i = sum_Llm1_Llm1[lev], *sum_Hl_Ll_i   = sum_Hl_Ll[lev],
+    *sum_Hl_Llm1_i   = sum_Hl_Llm1[lev],   *sum_Hlm1_Ll_i = sum_Hlm1_Ll[lev],
+    *sum_Hlm1_Llm1_i = sum_Hlm1_Llm1[lev], *sum_Hl_Hl_i   = sum_Hl_Hl[lev],
+    *sum_Hl_Hlm1_i   = sum_Hl_Hlm1[lev], *sum_Hlm1_Hlm1_i = sum_Hlm1_Hlm1[lev];
+  Real *rho_dot2_LHi = rho_dot2_LH[lev];
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+
+    // means, variances, covariances for Q
+    mu_Ll   = sum_Ll_i[qoi]   / N_shared;
+    mu_Llm1 = sum_Llm1_i[qoi] / N_shared;
+    mu_Hl   = sum_Hl_i[qoi]   / N_shared;
+    mu_Hlm1 = sum_Hlm1_i[qoi] / N_shared;
+
+    var_Ll  = (sum_Ll_Ll_i[qoi] - N_shared * mu_Ll * mu_Ll) * bias_corr;
+    var_Llm1
+      = (sum_Llm1_Llm1_i[qoi] - N_shared * mu_Llm1 * mu_Llm1) * bias_corr;
+    var_Hl  = (sum_Hl_Hl_i[qoi] - N_shared * mu_Hl * mu_Hl) * bias_corr;
+    var_Hlm1
+      = (sum_Hlm1_Hlm1_i[qoi] - N_shared * mu_Hlm1 * mu_Hlm1) * bias_corr;
+
+    cov_Hl_Ll = (sum_Hl_Ll_i[qoi] - N_shared * mu_Hl * mu_Ll) * bias_corr;
+    cov_Hl_Llm1
+      = (sum_Hl_Llm1_i[qoi] - N_shared * mu_Hl * mu_Llm1) * bias_corr;
+    cov_Hlm1_Ll
+      = (sum_Hlm1_Ll_i[qoi] - N_shared * mu_Hlm1 * mu_Ll) * bias_corr;
+    cov_Hlm1_Llm1
+      = (sum_Hlm1_Llm1_i[qoi] - N_shared * mu_Hlm1 * mu_Llm1) * bias_corr;
+
+    cov_Ll_Llm1
+      = (sum_Ll_Llm1_i[qoi] - N_shared * mu_Ll * mu_Llm1) * bias_corr;
+    cov_Hl_Hlm1
+      = (sum_Hl_Hlm1_i[qoi] - N_shared * mu_Hl * mu_Hlm1) * bias_corr;
+
+    // quantities derived from Q moments
+    cov_YHl_Ll   = cov_Hl_Ll   - cov_Hlm1_Ll;
+    cov_YHl_Llm1 = cov_Hl_Llm1 - cov_Hlm1_Llm1;
+    gamma_l = (cov_YHl_Llm1 * cov_Ll_Llm1 - var_Llm1 * cov_YHl_Ll)
+            / (var_Ll * cov_YHl_Llm1 - cov_YHl_Ll * cov_Ll_Llm1);
+    cov_YHl_YLldot = gamma_l * (cov_Hl_Ll - cov_Hlm1_Ll) - cov_Hl_Llm1
+                   + cov_Hlm1_Llm1;
+    cov_YHl_YLl = cov_Hl_Ll - cov_Hlm1_Ll - cov_Hl_Llm1 + cov_Hlm1_Llm1;
+    var_YLldot = gamma_l * (gamma_l * var_Ll - 2. * cov_Ll_Llm1) + var_Llm1;
+    var_YLl = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1;
+    sigma_l = cov_YHl_YLldot / cov_YHl_YLl;
+    tau_l   = var_YLldot / var_YLl;
+    
+    // compute evaluation ratio which determines increment for LF samples
+    // > the sample increment optimizes the total computational budget and is
+    //   not treated as a worst case accuracy reqmt --> use the QoI average
+    // > refinement based only on QoI mean statistics
+    // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
+    // this does not seem to behave as well in limited numerical experience.
+    rho2_LH = cov_Hl_Ll / var_Ll * cov_Hl_Ll / var_Hl; // bias cancels
+    rho_dot_sq = rho_dot2_LHi[qoi] = rho2_LH * sigma_l * sigma_l / tau_l;
+    //if (rho_sq > Pecos::SMALL_NUMBER) {
+    //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
+    if (rho_dot_sq < 1.) { // protect against division by 0
+      avg_eval_ratio += std::sqrt(cost_ratio * rho_dot_sq / (1. - rho_dot_sq));
+      ++num_avg;
+    }
+  }
+  if (num_avg) avg_eval_ratio /= num_avg;
+  else // should not happen, but provide a reasonable upper bound
+    avg_eval_ratio = (Real)maxFunctionEvals / (Real)N_shared;
+
+  return avg_eval_ratio;
+}
+
+
+Real NonDMultilevelSampling::
 MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 	  const RealVector& rho2_LH, size_t iter, size_t N_hf)
 {
@@ -1844,6 +1956,7 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 	     var_YLldot = gamma_l * (gamma_l * var_Ll - 2. * cov_Ll_Llm1)
 	                + var_Llm1,
 	     beta = cov_YHl_YLldot / var_YLldot;
+
 	Cout << "Moment " << i << ", QoI " << qoi+1 << ", lev " << lev
 	     << ": control variate beta = " << std::setw(9) << beta;
 	if (i == 1) // rho2_LH not stored for i > 1
