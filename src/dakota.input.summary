@@ -2428,6 +2428,10 @@ KEYWORD model
 	( subspace
 	  actual_model_pointer STRING
 	  [ initial_samples INTEGER ]
+	  [ sample_type
+	    lhs
+	    | random
+	    ]
 	  [ truncation_method
 	    [ bing_li ]
 	    [ constantine ]

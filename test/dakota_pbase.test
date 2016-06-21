@@ -7217,6 +7217,44 @@ Partial Rank Correlation Matrix between input and output:
        ssv_3  2.99175e-01 
        ssv_4  3.78625e-02 
        ssv_5 -3.82971e-02 
+Test Number 23 succeeded
+<<<<< Function evaluation summary (ID_I): 0 total (0 new, 0 duplicate)
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  1.9187177147480114e+02  8.5762509681977875e+01 -1.5830837740002341e+00  1.0657118982155001e+01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  1.7485462892264366e+02  2.0888891402695862e+02  7.5300070579792305e+01  9.9628185329519056e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  6.15127e-04  1.00000e+00 
+       ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
+       ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+       ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+response_fn_1 -7.22248e-01  4.54548e-02  6.70430e-02  2.21982e-02  1.90881e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -7.40510e-01 
+       ssv_2  6.74865e-02 
+       ssv_3  8.63939e-02 
+       ssv_4  2.80135e-02 
+       ssv_5  2.91594e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.38422e-01 -1.84818e-02  5.27453e-02  9.80498e-03  4.22562e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.41492e-01 
+       ssv_2  6.18886e-03 
+       ssv_3  1.97003e-01 
+       ssv_4  2.45448e-02 
+       ssv_5  1.22672e-01 
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)

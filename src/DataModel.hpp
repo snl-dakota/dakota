@@ -294,6 +294,10 @@ public:
 
   /// initial samples to build the subspace model
   int initialSamples;
+
+  /// sampling method for building the subspace model
+  unsigned short subspaceSampleType;
+
   /// refinement samples to add in each batch
   IntVector refineSamples;
   /// maximum number of subspace build iterations

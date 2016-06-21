@@ -66,7 +66,8 @@ public:
   ActiveSubspaceModel(const Model& sub_model,
                       int random_seed, int initial_samples,
                       double conv_tol, size_t max_evals,
-                      unsigned short subspace_id_method);
+                      unsigned short subspace_id_method,
+                      unsigned short sample_type);
 
   /// destructor
   ~ActiveSubspaceModel();
@@ -128,7 +129,7 @@ protected:
   Model get_sub_model(ProblemDescDB& problem_db);
 
   /// initialize the native problem space Monte Carlo sampler
-  void init_fullspace_sampler();
+  void init_fullspace_sampler(unsigned short sample_type);
 
   /// validate the build controls and set defaults
   void validate_inputs();

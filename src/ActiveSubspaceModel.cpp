@@ -52,9 +52,9 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 
   validate_inputs();
 
-  // initialize the fullspace Monte Carlo derivative sampler; this
+  // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
-  init_fullspace_sampler();
+  init_fullspace_sampler(probDescDB.get_ushort("model.subspace.sample_type"));
 
   const IntVector& db_refine_samples = 
     problem_db.get_iv("model.refinement_samples"); 
@@ -106,7 +106,8 @@ ActiveSubspaceModel::
 ActiveSubspaceModel(const Model& sub_model,
                     int random_seed, int initial_samples,
                     double conv_tol, size_t max_evals,
-                    unsigned short subspace_id_method):
+                    unsigned short subspace_id_method,
+                    unsigned short sample_type):
   RecastModel(sub_model), randomSeed(random_seed),
   initialSamples(initial_samples), maxFunctionEvals(max_evals),
   subspaceIdBingLi(false),
@@ -133,7 +134,7 @@ ActiveSubspaceModel(const Model& sub_model,
 
   // initialize the fullspace Monte Carlo derivative sampler; this
   // will configure it to perform initialSamples
-  init_fullspace_sampler();
+  init_fullspace_sampler(sample_type);
 }
 
 
@@ -461,11 +462,12 @@ void ActiveSubspaceModel::update_var_labels()
 }
 
 
-void ActiveSubspaceModel::init_fullspace_sampler()
+void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
 {
-  // use Monte Carlo due to iterative growth process
-  unsigned short sample_type = SUBMETHOD_RANDOM;
   std::string rng; // use default random number generator
+
+  if (sample_type == SUBMETHOD_DEFAULT)
+    sample_type = SUBMETHOD_RANDOM; // default to Monte Carlo sampling
 
   // configure this sampler initially to work with initialSamples
   NonDLHSSampling* ndlhss =

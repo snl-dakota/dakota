@@ -3208,6 +3208,12 @@
 	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
 	    <param type='INTEGER' />
 	  </keyword>
+    <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
+			<oneOf>
+			  <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
+			  <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
+			</oneOf>
+    </keyword>
 	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
 	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
 	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
