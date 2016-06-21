@@ -96,6 +96,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     file_reader.cpp
     data_conversions.cpp
     reduced_basis.cpp
+    stat_utils.cpp
     wilks_sampling.cpp
     )
   dakota_add_unit_test(NAME teuchos_unit_tests

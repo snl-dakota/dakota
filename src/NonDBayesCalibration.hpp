@@ -65,6 +65,11 @@ public:
     const RealSymMatrix &hessian, const RealMatrix& prior_chol_fact,
     RealSymMatrix &covariance, short output_lev);
 
+  // compute information metrics
+  static Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples,
+      		size_t dim); 
+  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY);
+
 protected:
 
   //
@@ -252,8 +257,8 @@ protected:
   /// Compute information metrics
   void kl_post_prior(RealMatrix& acceptanceChain);
   void prior_sample_matrix(RealMatrix& prior_dist_samples);
-  Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples); 
-  void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
+  void mutual_info_buildX();
+  static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
      		RealVector& distances, int NX, int NY, int dim, IntVector& k, 
 		double eps);
   Real kl_est;	

@@ -765,6 +765,8 @@ void NonDBayesCalibration::compute_statistics()
   
   if(posteriorStatsKL)
     kl_post_prior(acceptanceChain);
+  if(posteriorStatsMutual)
+    mutual_info_buildX();
 }
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
@@ -1260,7 +1262,7 @@ void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
   // produce matrix of prior samples
   prior_sample_matrix(prior_dist_samples);
   // compute knn kl-div between prior and posterior
-  kl_est = knn_kl_div(knn_post_samples, prior_dist_samples);
+  kl_est = knn_kl_div(knn_post_samples, prior_dist_samples, numContinuousVars);
 }
 
 void NonDBayesCalibration::prior_sample_matrix(RealMatrix& prior_dist_samples)
@@ -1278,11 +1280,11 @@ void NonDBayesCalibration::prior_sample_matrix(RealMatrix& prior_dist_samples)
 }
 
 Real NonDBayesCalibration::knn_kl_div(RealMatrix& distX_samples,
-    			 	RealMatrix& distY_samples)
+    			 	RealMatrix& distY_samples, size_t dim)
 {
   size_t NX = distX_samples.numCols();
   size_t NY = distY_samples.numCols();
-  size_t dim = numContinuousVars; 
+  //size_t dim = numContinuousVars; 
   
   // k is recorded for each distance so that if it needs to be adapted
   // (if kNN dist = 0), we can calculate the correction term 
@@ -1340,6 +1342,181 @@ Real NonDBayesCalibration::knn_kl_div(RealMatrix& distX_samples,
   annDeallocPts( dataY );
 
   return Dkl_est;
+}
+
+void NonDBayesCalibration::mutual_info_buildX()
+{
+  /* Build matrix X, containing samples of the two distributions being
+   * considered in the mutual info calculation. Each column has the form
+   * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
+   */
+   
+  //std::ofstream test_stream("kam.txt");
+  int num_params = numContinuousVars + numHyperparams;
+  int num_samples = 1000;
+  boost::mt19937 rnumGenerator;
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(2*num_params, num_samples);
+  RealVector vec(num_params);
+  RealVector col_vec(2*num_params);
+  rnumGenerator.seed(randomSeed);
+  for (int i = 0; i < num_samples; ++i){
+    prior_sample(rnumGenerator, vec);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j] = vec[j];
+    }
+    prior_sample(rnumGenerator, vec);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j+1] = vec[j];
+    }
+    Teuchos::setCol(col_vec, i, Xmatrix);
+  }
+
+  // Test matrix
+  /*
+  int num_samples = acceptanceChain.numCols();
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(2*num_params, num_samples);
+  RealVector vec(num_params);
+  RealVector col_vec(2*num_params);
+  for (int i = 0; i < num_samples-1; ++i){
+    vec = Teuchos::getCol(Teuchos::View, acceptanceChain, i);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j] = vec[j]; //offset values by 1
+    }
+    vec = Teuchos::getCol(Teuchos::View, acceptanceChain, i+1);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j+num_params] = vec[j];
+    }
+    Teuchos::setCol(col_vec, i, Xmatrix);
+  }
+  // last column
+  vec = Teuchos::getCol(Teuchos::View, acceptanceChain, num_samples-1);
+  for (int j = 0; j < num_params; ++j){
+    col_vec[j] = vec[j]; //offset values by 1
+  }
+  vec = Teuchos::getCol(Teuchos::View, acceptanceChain, 0);
+  for (int j = 0; j < num_params; ++j){
+    col_vec[j+num_params] = vec[j];
+  }
+  Teuchos::setCol(col_vec, num_samples-1, Xmatrix);
+  */
+
+  //test_stream << "Xmatrix = " << Xmatrix << '\n';
+
+
+  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+
+}
+
+Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
+    int dimY)
+{
+  //std::ofstream test_stream("kam.txt");
+  //test_stream << "Xmatrix = " << Xmatrix << '\n';
+
+  int num_samples = Xmatrix.numCols();
+  int dim = dimX + dimY;
+
+  // Cast Xmatrix into ANN data structure
+  ANNpointArray dataXY;
+  dataXY = annAllocPts(num_samples, dim);
+  RealVector col(dim);
+  for (int i = 0; i < num_samples; i++){
+    col = Teuchos::getCol(Teuchos::View, Xmatrix, i);
+    for (int j = 0; j < dim; j++){
+      dataXY[i][j] = col[j];
+    }
+  }
+
+  // Normalize data
+  ANNpoint meanXY, stdXY;
+  meanXY = annAllocPt(dim); //means
+  for (int i = 0; i < num_samples; i++){
+    for(int j = 0; j < dim; j++){
+      meanXY[j] += dataXY[i][j];
+    }
+  }
+  for (int j = 0; j < dim; j++){
+    meanXY[j] = meanXY[j]/double(num_samples);
+  }
+  stdXY = annAllocPt(dim); //standard deviations
+  for (int i = 0; i < num_samples; i++){
+    for (int j = 0; j < dim; j++){
+      stdXY[j] += pow (dataXY[i][j] - meanXY[j], 2.0);
+    }
+  }
+  for (int j = 0; j < dim; j++){
+    stdXY[j] = sqrt( stdXY[j]/(double(num_samples)-1.0) );
+  }
+  for (int i = 0; i < num_samples; i++){
+    for (int j = 0; j < dim; j++){
+      dataXY[i][j] = ( dataXY[i][j] - meanXY[j] )/stdXY[j];
+    }
+  }
+
+  // Get knn-distances for Xmatrix
+  RealVector XYdistances(num_samples);
+  IntVector k_vec(num_samples);
+  int k = 6;
+  k_vec.putScalar(k);
+  double eps = 0.0;
+  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
+      	   k_vec, eps);
+  
+  // Build marginals
+  ANNpointArray dataX, dataY;
+  dataX = annAllocPts(num_samples, dimX);
+  dataY = annAllocPts(num_samples, dimY);
+  for(int i = 0; i < num_samples; i++){
+    for(int j = 0; j < dimX; j++){
+      dataX[i][j] = dataXY[i][j];
+    }
+    for(int j = 0; j < dimY; j++){
+      dataY[i][j] = dataXY[i][dimX+j];
+    }
+  }
+  ANNkd_tree* kdTreeX;
+  ANNkd_tree* kdTreeY;
+  kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
+  kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
+  double marg_sum = 0.0;
+  for(int i = 0; i < num_samples; i++){
+    int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
+				    NULL, eps);
+    int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
+				    NULL, eps);
+    double psiX = boost::math::digamma(n_x+1);
+    double psiY = boost::math::digamma(n_y+1);
+    marg_sum += psiX + psiY;
+    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //test_stream << "psiX = " << psiX << '\n';
+    //test_stream << "psiY = " << psiY << '\n';
+  }
+  double psik = boost::math::digamma(k);
+  double psiN = boost::math::digamma(num_samples);
+  double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
+  //test_stream << "psi_k = " << psik << '\n';
+  //test_stream << "marg_sum = " << marg_sum << '\n';
+  //test_stream << "psiN = " << psiN << '\n';
+  //test_stream << "MI_est = " << MI_est << '\n';
+  //Cout << "MI_est = " << MI_est << '\n';
+
+  // Dealloc memory
+  delete kdTreeX;
+  delete kdTreeY;
+  annDeallocPts(dataX);
+  annDeallocPts(dataY);
+
+
+  // Compare to dkl
+  /*
+  double kl_est = knn_kl_div(Xmatrix, Xmatrix);
+  test_stream << "KL = " << kl_est << '\n';
+  Cout << "KL = " << kl_est << '\n';
+  */
+  return MI_est;
+
 }
 
 void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
