@@ -25,6 +25,11 @@
 #include "Teuchos_SerialDenseHelpers.hpp"
 
 #include "LHSDriver.hpp"
+#include "boost/random/mersenne_twister.hpp"
+#include "boost/math/special_functions/digamma.hpp"
+#include "ANN/ANN.h"
+#include "ANN/ANNperf.h"
+#include "ANN/ANNx.h"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -450,8 +455,8 @@ void NonDBayesCalibration::initialize_model()
     if (emulatorType)      mcmcModel.build_approximation();
     break;
   }
-  Cout << "KL Divergence Flag " << posteriorStatsKL << '\n';
-  Cout << "Mutual Info Flag " << posteriorStatsMutual << '\n';
+  if(posteriorStatsMutual)
+    Cout << "Mutual Information estimation not yet implemented\n";
 }
 
 
@@ -757,6 +762,11 @@ void NonDBayesCalibration::compute_statistics()
   if (outputLevel >= NORMAL_OUTPUT) {
     compute_intervals(acceptanceChain, acceptedFnVals);
   }
+  
+  if(posteriorStatsKL)
+    kl_post_prior(acceptanceChain);
+  if(posteriorStatsMutual)
+    mutual_info_buildX();
 }
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
@@ -769,10 +779,10 @@ void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain,
   int j = 0;
   for (int i = burnin; i < num_samples; ++i){
     if (i % num_skip == 0){
-      const RealVector& param_vec = Teuchos::getCol(Teuchos::View, 
-	  			    acceptance_chain, i);
+      RealVector param_vec = Teuchos::getCol(Teuchos::View, 
+	  				acceptance_chain, i);
       Teuchos::setCol(param_vec, j, filtered_chain);
-      j++;
+      ++j;
     }
   }
 }
@@ -787,12 +797,12 @@ void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fn_vals,
   int j = 0;
   for (int i = burnin; i < num_samples; ++i){
     if (i % num_skip == 0){
-      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
-	  			  accepted_fn_vals, i);
+      RealVector col_vec = Teuchos::getCol(Teuchos::View, 
+	 	  			  accepted_fn_vals, i);
       Teuchos::setCol(col_vec, j, filtered_fn_vals);
       j++;
-    }
-  }
+     }
+   }
 }
 
 void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
@@ -807,11 +817,8 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
   int num_params = acceptance_chain.numRows();
   int num_samples = acceptance_chain.numCols();
   int num_filtered = int((num_samples-burnin)/num_skip);
-  //RealMatrix filtered_fn_vals;
   RealMatrix filtered_chain;
   filteredFnVals.shapeUninitialized(numFunctions, num_filtered);
-  filtered_chain.shapeUninitialized(acceptance_chain.numRows(), num_filtered);
-  filter_chain(acceptance_chain, filtered_chain);
   filter_fnvals(accepted_fn_vals, filteredFnVals);
   // Make accepted function values the rows instead of the columns
   RealMatrix filtered_fn_vals_transpose(filteredFnVals, Teuchos::TRANS);
@@ -1200,6 +1207,359 @@ void NonDBayesCalibration::print_results(std::ostream& s)
   RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
   print_intervals_screen(s, filteredFnVals_transpose, 
     			 predVals_transpose, num_filtered);
+
+  // Print posterior stats
+  if(posteriorStatsKL)
+    print_kl(s);
+}
+
+void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
+{
+ 
+  // sub-sample posterior chain
+  int num_params = numContinuousVars + numHyperparams;
+  int num_post_samples = acceptanceChain.numCols();
+  int burn_in_post = int(0.2*num_post_samples);
+  int burned_in_post = num_post_samples - burn_in_post;
+  RealMatrix knn_post_samples;
+  RealMatrix prior_dist_samples;
+  if (num_post_samples < 18750){ // Aiming for num_filtered = 5000 
+    int num_skip = 3;
+    int num_filtered = int(burned_in_post/num_skip);
+    int num_prior_samples = num_filtered*125;
+    knn_post_samples.shape(num_params, num_filtered);
+    prior_dist_samples.shape(num_params, num_prior_samples);
+    int j = 0;
+    int it_cntr = 0;
+    for (int i = burn_in_post+1; i < num_post_samples; ++i){
+      ++it_cntr;
+      if (it_cntr % num_skip == 0){
+	RealVector param_vec = Teuchos::getCol(Teuchos::View,
+	  			        acceptanceChain, i);
+	Teuchos::setCol(param_vec, j, knn_post_samples);
+	++j;
+      }
+    }
+  }
+  else{
+    int num_skip = int(burned_in_post/5000);
+    int num_filtered = int(burned_in_post/num_skip);
+    int num_prior_samples = num_filtered*125;
+    knn_post_samples.shapeUninitialized(num_params, num_filtered);
+    prior_dist_samples.shapeUninitialized(num_params, num_prior_samples);
+    int j = 0;
+    int it_cntr = 0;
+    for (int i = burn_in_post; i < num_post_samples; ++i){
+      if (it_cntr % num_skip == 0){
+	  RealVector param_vec = Teuchos::getCol(Teuchos::View,
+	    			        acceptanceChain, i);
+	  Teuchos::setCol(param_vec, j, knn_post_samples);
+	  j++;
+        }
+      }
+  }
+  
+  // produce matrix of prior samples
+  prior_sample_matrix(prior_dist_samples);
+  // compute knn kl-div between prior and posterior
+  kl_est = knn_kl_div(knn_post_samples, prior_dist_samples, numContinuousVars);
+}
+
+void NonDBayesCalibration::prior_sample_matrix(RealMatrix& prior_dist_samples)
+{
+  // Create matrix containing samples from the prior distribution
+  boost::mt19937 rnumGenerator;
+  int num_params = prior_dist_samples.numRows(); 
+  int num_samples = prior_dist_samples.numCols();
+  RealVector vec(num_params);
+  rnumGenerator.seed(randomSeed);
+  for(int i = 0; i < num_samples; ++i){
+    prior_sample(rnumGenerator, vec);
+    Teuchos::setCol(vec, i, prior_dist_samples);
+  }
+}
+
+Real NonDBayesCalibration::knn_kl_div(RealMatrix& distX_samples,
+    			 	RealMatrix& distY_samples, size_t dim)
+{
+  size_t NX = distX_samples.numCols();
+  size_t NY = distY_samples.numCols();
+  //size_t dim = numContinuousVars; 
+  
+  // k is recorded for each distance so that if it needs to be adapted
+  // (if kNN dist = 0), we can calculate the correction term 
+  IntVector k_vec_XY(NX);
+  k_vec_XY.putScalar(6); //k default set to 6
+  IntVector k_vec_XX(NX);
+  k_vec_XX.putScalar(7); //k default set to 6
+  			 //1st neighbor is self, so need k+1 for XtoX
+  double eps = 0.0; //default ann error
+   
+  // Copy distX samples into ANN data types
+  ANNpointArray dataX;
+  dataX = annAllocPts(NX, dim);
+  RealVector col(dim);
+  for (int i = 0; i < NX; i++){
+    col = Teuchos::getCol(Teuchos::View, distX_samples, i);
+    for (int j = 0; j < dim; j++){
+      dataX[i][j] = col[j];
+    }
+  } 
+  // Copy distY samples into ANN data types
+  ANNpointArray dataY;
+  dataY = annAllocPts(NY, dim);
+  for (int i = 0; i < NY; i++){
+    col = Teuchos::getCol(Teuchos::View, distY_samples, i);
+    for (int j = 0; j < dim; j++){
+      dataY[i][j] = col[j];
+    }
+  } 
+  
+  // calculate vector of kNN distances from dist1 to dist2
+  RealVector XtoYdistances(NX);
+  ann_dist(dataX, dataY, XtoYdistances, NX, NY, dim, k_vec_XY, eps);
+  // calculate vector of kNN distances from dist1 to itself
+  RealVector XtoXdistances(NX);
+  ann_dist(dataX, dataX, XtoXdistances, NX, NX, dim, k_vec_XX, eps);
+  
+  double log_sum = 0;
+  double digamma_sum = 0;
+  double rat;
+  for (int i = 0; i < NX; i++){
+    rat = XtoYdistances[i]/XtoXdistances[i];
+    log_sum += log(XtoYdistances[i]/XtoXdistances[i]);
+    if (k_vec_XY[i] != (k_vec_XX[i]-1)){ //XtoX: first NN is self
+      double psiX = boost::math::digamma(k_vec_XX[i]-1);
+      double psiY = boost::math::digamma(k_vec_XY[i]);
+      digamma_sum += psiX - psiY;
+    }
+  }
+  Real Dkl_est = 0.0;
+  Dkl_est = (double(dim)*log_sum + digamma_sum)/double(NX)
+          + log( double(NY)/(double(NX)-1) );
+
+  annDeallocPts( dataX );
+  annDeallocPts( dataY );
+
+  return Dkl_est;
+}
+
+void NonDBayesCalibration::mutual_info_buildX()
+{
+  /* Build matrix X, containing samples of the two distributions being
+   * considered in the mutual info calculation. Each column has the form
+   * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
+   */
+   
+  //std::ofstream test_stream("kam.txt");
+  int num_params = numContinuousVars + numHyperparams;
+  int num_samples = 1000;
+  boost::mt19937 rnumGenerator;
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(2*num_params, num_samples);
+  RealVector vec(num_params);
+  RealVector col_vec(2*num_params);
+  rnumGenerator.seed(randomSeed);
+  for (int i = 0; i < num_samples; ++i){
+    prior_sample(rnumGenerator, vec);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j] = vec[j];
+    }
+    prior_sample(rnumGenerator, vec);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j+1] = vec[j];
+    }
+    Teuchos::setCol(col_vec, i, Xmatrix);
+  }
+
+  // Test matrix
+  /*
+  int num_samples = acceptanceChain.numCols();
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(2*num_params, num_samples);
+  RealVector vec(num_params);
+  RealVector col_vec(2*num_params);
+  for (int i = 0; i < num_samples-1; ++i){
+    vec = Teuchos::getCol(Teuchos::View, acceptanceChain, i);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j] = vec[j]; //offset values by 1
+    }
+    vec = Teuchos::getCol(Teuchos::View, acceptanceChain, i+1);
+    for (int j = 0; j < num_params; ++j){
+      col_vec[j+num_params] = vec[j];
+    }
+    Teuchos::setCol(col_vec, i, Xmatrix);
+  }
+  // last column
+  vec = Teuchos::getCol(Teuchos::View, acceptanceChain, num_samples-1);
+  for (int j = 0; j < num_params; ++j){
+    col_vec[j] = vec[j]; //offset values by 1
+  }
+  vec = Teuchos::getCol(Teuchos::View, acceptanceChain, 0);
+  for (int j = 0; j < num_params; ++j){
+    col_vec[j+num_params] = vec[j];
+  }
+  Teuchos::setCol(col_vec, num_samples-1, Xmatrix);
+  */
+
+  //test_stream << "Xmatrix = " << Xmatrix << '\n';
+
+
+  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+
+}
+
+Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
+    int dimY)
+{
+  //std::ofstream test_stream("kam.txt");
+  //test_stream << "Xmatrix = " << Xmatrix << '\n';
+
+  int num_samples = Xmatrix.numCols();
+  int dim = dimX + dimY;
+
+  // Cast Xmatrix into ANN data structure
+  ANNpointArray dataXY;
+  dataXY = annAllocPts(num_samples, dim);
+  RealVector col(dim);
+  for (int i = 0; i < num_samples; i++){
+    col = Teuchos::getCol(Teuchos::View, Xmatrix, i);
+    for (int j = 0; j < dim; j++){
+      dataXY[i][j] = col[j];
+    }
+  }
+
+  // Normalize data
+  ANNpoint meanXY, stdXY;
+  meanXY = annAllocPt(dim); //means
+  for (int i = 0; i < num_samples; i++){
+    for(int j = 0; j < dim; j++){
+      meanXY[j] += dataXY[i][j];
+    }
+  }
+  for (int j = 0; j < dim; j++){
+    meanXY[j] = meanXY[j]/double(num_samples);
+  }
+  stdXY = annAllocPt(dim); //standard deviations
+  for (int i = 0; i < num_samples; i++){
+    for (int j = 0; j < dim; j++){
+      stdXY[j] += pow (dataXY[i][j] - meanXY[j], 2.0);
+    }
+  }
+  for (int j = 0; j < dim; j++){
+    stdXY[j] = sqrt( stdXY[j]/(double(num_samples)-1.0) );
+  }
+  for (int i = 0; i < num_samples; i++){
+    for (int j = 0; j < dim; j++){
+      dataXY[i][j] = ( dataXY[i][j] - meanXY[j] )/stdXY[j];
+    }
+  }
+
+  // Get knn-distances for Xmatrix
+  RealVector XYdistances(num_samples);
+  IntVector k_vec(num_samples);
+  int k = 6;
+  k_vec.putScalar(k);
+  double eps = 0.0;
+  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
+      	   k_vec, eps);
+  
+  // Build marginals
+  ANNpointArray dataX, dataY;
+  dataX = annAllocPts(num_samples, dimX);
+  dataY = annAllocPts(num_samples, dimY);
+  for(int i = 0; i < num_samples; i++){
+    for(int j = 0; j < dimX; j++){
+      dataX[i][j] = dataXY[i][j];
+    }
+    for(int j = 0; j < dimY; j++){
+      dataY[i][j] = dataXY[i][dimX+j];
+    }
+  }
+  ANNkd_tree* kdTreeX;
+  ANNkd_tree* kdTreeY;
+  kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
+  kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
+  double marg_sum = 0.0;
+  for(int i = 0; i < num_samples; i++){
+    int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
+				    NULL, eps);
+    int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
+				    NULL, eps);
+    double psiX = boost::math::digamma(n_x+1);
+    double psiY = boost::math::digamma(n_y+1);
+    marg_sum += psiX + psiY;
+    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //test_stream << "psiX = " << psiX << '\n';
+    //test_stream << "psiY = " << psiY << '\n';
+  }
+  double psik = boost::math::digamma(k);
+  double psiN = boost::math::digamma(num_samples);
+  double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
+  //test_stream << "psi_k = " << psik << '\n';
+  //test_stream << "marg_sum = " << marg_sum << '\n';
+  //test_stream << "psiN = " << psiN << '\n';
+  //test_stream << "MI_est = " << MI_est << '\n';
+  //Cout << "MI_est = " << MI_est << '\n';
+
+  // Dealloc memory
+  delete kdTreeX;
+  delete kdTreeY;
+  annDeallocPts(dataX);
+  annDeallocPts(dataY);
+
+
+  // Compare to dkl
+  /*
+  double kl_est = knn_kl_div(Xmatrix, Xmatrix);
+  test_stream << "KL = " << kl_est << '\n';
+  Cout << "KL = " << kl_est << '\n';
+  */
+  return MI_est;
+
+}
+
+void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
+     const ANNpointArray matrix2, RealVector& distances, int NX, int NY, 
+     int dim, IntVector& k_vec, double eps)
+{
+
+  ANNkd_tree* kdTree;
+  kdTree = new ANNkd_tree( matrix2, NY, dim );
+  for (unsigned int i = 0; i < NX; ++i){
+    int k_i = k_vec[i] ;
+    ANNdistArray knn_dist = new ANNdist[k_i+1];
+    ANNidxArray knn_ind = new ANNidx[k_i+1];
+    //calc min number of distances needed
+    kdTree->annkSearch(matrix1[ i ], k_i+1, knn_ind, knn_dist, eps);
+    double dist = knn_dist[k_i];
+    if (dist == 0.0){
+      ANNdistArray knn_dist_i = new ANNdist[NY];
+      ANNidxArray knn_ind_i = new ANNidx[NY];
+      //calc distances for whole array
+      kdTree->annkSearch(matrix1[ i ], NY, knn_ind_i, knn_dist_i, eps); 
+      for (unsigned int j = k_i+1; j < NY; ++j){
+	if (knn_dist_i[j] > 0.0){
+	  dist = knn_dist_i[j];
+	  k_vec[i] = j;
+	  break;
+	}
+      }
+      delete [] knn_ind_i;
+      delete [] knn_dist_i;
+    }
+    distances[i] = dist;
+    delete [] knn_ind;
+    delete [] knn_dist;
+  }
+  delete kdTree;
+  annClose();
+}
+
+void NonDBayesCalibration::print_kl(std::ostream& s)
+{
+  s << "Information gained from prior to posterior = " << kl_est;
+  s << '\n';
 }
 
 } // namespace Dakota

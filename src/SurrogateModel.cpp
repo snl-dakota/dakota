@@ -30,7 +30,7 @@ namespace Dakota {
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
-  responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
+  responseMode(AUTO_CORRECTED_SURROGATE), surrModelEvalCntr(0), approxBuilds(0)
 {
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
@@ -53,7 +53,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const ActiveSet& set, short output_level):
   Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
 	set, output_level),
-  responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
+  responseMode(AUTO_CORRECTED_SURROGATE), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
 

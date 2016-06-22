@@ -347,7 +347,7 @@ public:
   /// return the interface identifier
   virtual const String& interface_id() const;
   /// Return the value of the evaluation id counter for the Model
-  virtual int evaluation_id() const;
+  virtual int derived_evaluation_id() const;
   /// Indicates the usage of an evaluation cache by the Model
   virtual bool evaluation_cache() const;
 
@@ -414,6 +414,10 @@ public:
   /// Execute a nonblocking scheduling algorithm to collect all
   /// available results from a group of asynchronous evaluations.
   const IntResponseMap& synchronize_nowait();
+
+  /// return Model's (top-level) evaluation counter, not to be confused
+  /// with derived counter returned by derived_evaluation_id()
+  int evaluation_id() const;
 
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
@@ -1427,7 +1431,7 @@ private:
 
   /// history of vars populated in evaluate_nowait() and used in
   /// synchronize().
-  VariablesList varsList;
+  IntVariablesMap varsMap;
   /// if estimate_derivatives() is used, transfers ASVs from
   /// evaluate_nowait() to synchronize()
   std::list<ShortArray> asvList;
@@ -1468,6 +1472,9 @@ private:
   /// used to return a map of responses for asynchronous evaluations in final
   /// concatenated form.  The similar map in Interface contains raw responses.
   IntResponseMap responseMap;
+  /// caching of responses returned by derived_synchronize{,_nowait}()
+  /// but not matched within current rawEvalIdMap
+  IntResponseMap cachedResponseMap;
   /// used to cache the data returned from derived_synchronize_nowait() prior
   /// to sequential input into the graphics
   IntResponseMap graphicsRespMap;
@@ -1496,6 +1503,10 @@ private:
   /// number of objects sharing modelRep
   int referenceCount;
 };
+
+
+inline int Model::evaluation_id() const
+{ return (modelRep) ? modelRep->modelEvalCntr : modelEvalCntr; }
 
 
 inline size_t Model::tv() const

@@ -1498,8 +1498,8 @@ const IntResponseMap& NestedModel::derived_synchronize()
 	optInterfaceIdMap.erase(id_it);
 	++r_cit;
       }
-      else { // see also DakotaModel::rekey_synch()
-	++r_cit; // prior to invalidation from erase()
+      else { // see also Model::rekey_synch()
+	++r_cit; // prior to invalidation from erase within cache_unmatched
 	optionalInterface.cache_unmatched_response(oi_eval_id);
       }
     }

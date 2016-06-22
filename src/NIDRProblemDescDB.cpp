@@ -7155,7 +7155,9 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_FILE),
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
-        MP2s(randomFieldIdForm,RF_PCA_GP);
+        MP2s(randomFieldIdForm,RF_PCA_GP),
+	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
+	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM);
 
 static Real
 	MP_(annRange),

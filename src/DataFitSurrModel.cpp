@@ -36,7 +36,7 @@ namespace Dakota {
 
 
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), surrModelEvalCntr(0),
+  SurrogateModel(problem_db),
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
@@ -170,14 +170,14 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 actual_model.current_variables().shared_data(),
 		 actual_model.current_response().shared_data(), set,
 		 output_level),
-  daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
-  pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
-  exportSurrogate(false),
-  manageRecasting(false), exportPointsFile(export_approx_points_file),
-  exportFormat(export_approx_format), importPointsFile(import_build_points_file),
-  autoRefine(false), maxIterations(100), maxFuncEvals(1000),
-  convergenceTolerance(1e-4), softConvergenceLimit(0), 
-  refineCVMetric("root_mean_square"), refineCVFolds(10)
+  daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
+  pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
+  exportSurrogate(false), manageRecasting(false),
+  exportPointsFile(export_approx_points_file),
+  exportFormat(export_approx_format),
+  importPointsFile(import_build_points_file), autoRefine(false),
+  maxIterations(100), maxFuncEvals(1000), convergenceTolerance(1e-4),
+  softConvergenceLimit(0), refineCVMetric("root_mean_square"), refineCVFolds(10)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.

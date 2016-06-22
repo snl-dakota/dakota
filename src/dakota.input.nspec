@@ -2488,6 +2488,11 @@ KEYWORD model {N_mom3(start,0,stop)}
   ( subspace {N_mom(lit,modelType_subspace)}
     actual_model_pointer STRING {N_mom(str,actualModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
+    [ sample_type {0}
+      lhs {N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}
+     ]
     [ truncation_method {0}
       [ bing_li {N_mom(true,subspaceIdBingLi)} ]
       [ constantine {N_mom(true,subspaceIdConstantine)} ]

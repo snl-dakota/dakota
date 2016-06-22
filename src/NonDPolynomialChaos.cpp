@@ -1242,7 +1242,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and N_l
   // (hard coded for right now; TO DO: fit params)
-  Real gamma = 1., kappa = 1., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
+  Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
   // Initialize for pilot sample
   SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);

@@ -11,7 +11,7 @@ method,
         multilevel_sampling				
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
-	  convergence_tolerance = .1			#s0
+	  convergence_tolerance = .1			#s0,#p0,#p1
 #	  convergence_tolerance = .01			#s1
 #	  convergence_tolerance = .001
 #	  convergence_tolerance = .0001
@@ -27,7 +27,6 @@ model,
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
-	interface_pointer = 'LF_INT'
 	simulation
 	  solution_level_control = 'N_x'
 # linear in modes, linear in spatial coords:
@@ -38,7 +37,6 @@ model,
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
-	interface_pointer = 'HF_INT'
 	simulation
 	  solution_level_control = 'N_x'
 # linear in modes, linear in spatial coords:
@@ -73,13 +71,6 @@ variables,
 	    descriptors 'N_x' 'N_mod'
 
 interface,
-	id_interface = 'LF_INT'
-	direct
-	  analysis_driver = 'transient_diffusion_1d'
-	  deactivate evaluation_cache restart_file
-
-interface,
-	id_interface = 'HF_INT'
 	direct
 	  analysis_driver = 'transient_diffusion_1d'
 	  deactivate evaluation_cache restart_file

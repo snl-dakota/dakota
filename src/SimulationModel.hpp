@@ -76,9 +76,6 @@ protected:
   /// (invokes synch_nowait() on userDefinedInterface)
   const IntResponseMap& derived_synchronize_nowait();
 
-  /// migrate unmatched response from simResponseMap to cachedSimResponseMap
-  void cache_unmatched_response(int raw_id);
-
   /// SimulationModel only supports parallelism in userDefinedInterface,
   /// so this virtual function redefinition is simply a sanity check.
   void component_parallel_mode(short mode);
@@ -120,7 +117,7 @@ protected:
   /// return the userDefinedInterface identifier
   const String& interface_id() const;
   /// return the current evaluation id (simModelEvalCntr)
-  int evaluation_id() const;
+  int derived_evaluation_id() const;
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
   bool evaluation_cache() const;
@@ -178,9 +175,6 @@ private:
   /// map of simulation-based responses returned by derived_synchronize()
   /// and derived_synchronize_nowait()
   IntResponseMap simResponseMap;
-  /// caching of simulation-based responses returned by userDefinedInterface
-  /// but not matched within current simIdMap
-  IntResponseMap cachedSimResponseMap;
 };
 
 
@@ -213,6 +207,10 @@ inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
 {
   ++simModelEvalCntr;
   userDefinedInterface.map(currentVariables, set, currentResponse, true);
+  // Even though each evaluate on SimulationModel results in a corresponding
+  // Interface mapping, we utilize an id mapping to protect against the case
+  // where multiple Models use the same Interface instance, for which this
+  // Model instance will only match a subset of the Interface eval ids.
   simIdMap[userDefinedInterface.evaluation_id()] = simModelEvalCntr;
 }
 
@@ -226,13 +224,10 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   // Any responses from userDefinedInterface.synchronize() that are unmatched
   // in simIdMap are cached in Interface::cachedResponseMap
   rekey_synch(userDefinedInterface, true, simIdMap, simResponseMap);
-  // Now augment rekeyed interface evals with locally cached evals.  If
-  // these are not matched in a higher-level rekey process using by the
-  // calling context, then they are returned to cachedSimResponseMap
-  // using SimulationModel::cache_unmatched_response().
-  simResponseMap.insert(cachedSimResponseMap.begin(),
-			cachedSimResponseMap.end());
-  cachedSimResponseMap.clear();
+  // Caching for Models must also occur at the base class level
+  // (Model::cachedResponseMap) since deriv estimation-based rekeying is
+  // performed as this top level (and any lower level mappings are erased
+  // as records are rekeyed/promoted, making them unavailable for caching).
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
@@ -247,22 +242,9 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
 
   // See comments above regarding levels of rekeying / caching
   rekey_synch(userDefinedInterface, false, simIdMap, simResponseMap);
-  simResponseMap.insert(cachedSimResponseMap.begin(),
-			cachedSimResponseMap.end());
-  cachedSimResponseMap.clear();
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
-}
-
-
-inline void SimulationModel::cache_unmatched_response(int raw_id)
-{
-  IntRespMIter rr_it = simResponseMap.find(raw_id);
-  if (rr_it != simResponseMap.end()) {
-    cachedSimResponseMap.insert(*rr_it);
-    simResponseMap.erase(rr_it);
-  }
 }
 
 
@@ -357,7 +339,7 @@ inline const String& SimulationModel::interface_id() const
 { return userDefinedInterface.interface_id(); }
 
 
-inline int SimulationModel::evaluation_id() const
+inline int SimulationModel::derived_evaluation_id() const
 { return simModelEvalCntr; }
 
 

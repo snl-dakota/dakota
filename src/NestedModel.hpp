@@ -133,7 +133,7 @@ protected:
   /// return the optionalInterface identifier
   const String& interface_id() const;
   /// Return the current evaluation id for the NestedModel
-  int evaluation_id() const;
+  int derived_evaluation_id() const;
 
   /// set the evaluation counter reference points for the NestedModel
   /// (request forwarded to optionalInterface and subModel)
@@ -651,7 +651,7 @@ inline const String& NestedModel::interface_id() const
 /** return the top level nested evaluation count.  To get the lower level
     eval count, the subModel must be explicitly queried.  This is
     consistent with the eval counter definitions in surrogate models. */
-inline int NestedModel::evaluation_id() const
+inline int NestedModel::derived_evaluation_id() const
 { return nestedModelEvalCntr; }
 
 

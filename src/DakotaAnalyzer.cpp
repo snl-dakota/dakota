@@ -977,8 +977,8 @@ void Analyzer::vary_pattern(bool pattern_flag)
 
 void Analyzer::get_parameter_sets(Model& model)
 {
-  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets(1)"
-       << " function.\n       This analyzer does not support parameter sets."
+  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"
+       << "(1) function.\n       This analyzer does not support parameter sets."
        << std::endl;
   abort_handler(-1);
 }
@@ -986,8 +986,8 @@ void Analyzer::get_parameter_sets(Model& model)
 void Analyzer::get_parameter_sets(Model& model, const int num_samples, 
 				  RealMatrix& design_matrix)
 {
-  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets(3)"
-       << " function.\n       This analyzer does not support parameter sets."
+  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"
+       << "(3) function.\n       This analyzer does not support parameter sets."
        << std::endl;
   abort_handler(-1);
 }

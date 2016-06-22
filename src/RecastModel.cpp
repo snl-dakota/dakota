@@ -57,10 +57,11 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), varsMapIndices(vars_map_indices),
-  nonlinearVarsMapping(nonlinear_vars_mapping), variablesMapping(variables_map),
-  setMapping(set_map), primaryRespMapIndices(primary_resp_map_indices),
+  nonlinearVarsMapping(nonlinear_vars_mapping),
+  primaryRespMapIndices(primary_resp_map_indices),
   secondaryRespMapIndices(secondary_resp_map_indices),
-  nonlinearRespMapping(nonlinear_resp_mapping),
+  nonlinearRespMapping(nonlinear_resp_mapping), recastModelEvalCntr(0),
+  variablesMapping(variables_map), setMapping(set_map),
   primaryRespMapping(primary_resp_map),
   secondaryRespMapping(secondary_resp_map),// inverseMapFlag(false),
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
@@ -127,8 +128,8 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
 	sub_model.parallel_library()),
   subModel(sub_model), nonlinearVarsMapping(false), respMapping(false),
-  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
-  secondaryRespMapping(NULL),// inverseMapFlag(false),
+  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
+  primaryRespMapping(NULL), secondaryRespMapping(NULL),// inverseMapFlag(false),
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
   invSecRespMapping(NULL)
 {
@@ -147,9 +148,9 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 
 RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
   Model(BaseConstructor(), problem_db), subModel(sub_model),
-  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
-  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
-  invPriRespMapping(NULL), invSecRespMapping(NULL)
+  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
+  primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -162,9 +163,10 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, const Model& sub_model):
 RecastModel::RecastModel(const Model& sub_model):
   Model(LightWtBaseConstructor(), sub_model.problem_description_db(),
    	sub_model.parallel_library()),
-  subModel(sub_model), variablesMapping(NULL), setMapping(NULL),
-  primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
-  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
+  subModel(sub_model), recastModelEvalCntr(0), variablesMapping(NULL),
+  setMapping(NULL), primaryRespMapping(NULL), secondaryRespMapping(NULL),
+  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
+  invSecRespMapping(NULL)
 { 
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
@@ -348,6 +350,8 @@ void RecastModel::inverse_mappings(
     and output currentResponse all correspond to the recast inputs/outputs. */
 void RecastModel::derived_evaluate(const ActiveSet& set)
 {
+  ++recastModelEvalCntr;
+
   // transform from recast (Iterator) to sub-model (user) variables
   transform_variables(currentVariables, subModel.current_variables());
 
@@ -380,6 +384,8 @@ void RecastModel::derived_evaluate(const ActiveSet& set)
 
 void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
 {
+  ++recastModelEvalCntr;
+
   // transform from recast (Iterator) to sub-model (user) variables
   transform_variables(currentVariables, subModel.current_variables());
 
@@ -391,71 +397,76 @@ void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
   // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
   subModel.evaluate_nowait(sub_model_set);
+  // in almost all cases, use of the subModel eval ids is sufficient, but
+  // protect against the rare case where not all subModel evaluations being
+  // scheduled were spawned from the RecastModel (e.g., a HierarchicalModel
+  // that uses an ActiveSubspaceModel as LF and the original model as HF).
+  recastIdMap[subModel.evaluation_id()] = recastModelEvalCntr;
 
   // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
   if (respMapping) {
-    int eval_id = subModel.evaluation_id();
-    recastSetMap[eval_id]  = set;
-    recastVarsMap[eval_id] = currentVariables.copy();
+    recastSetMap[recastModelEvalCntr]  = set;
+    recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
     if (variablesMapping)
-      subModelVarsMap[eval_id] = subModel.current_variables().copy();
+      subModelVarsMap[recastModelEvalCntr]
+	= subModel.current_variables().copy();
   }
 }
 
 
 const IntResponseMap& RecastModel::derived_synchronize()
 {
-  const IntResponseMap& orig_resp_map = subModel.synchronize();
+  recastResponseMap.clear();
+
   if (respMapping) {
-    recastResponseMap.clear();
-    IntASMIter     rsm_it = recastSetMap.begin();
-    IntVarsMIter   rvm_it = recastVarsMap.begin();
-    IntVarsMIter  smvm_it = (variablesMapping) ? subModelVarsMap.begin()
-                                               : recastVarsMap.begin();
-    IntRespMCIter map_cit = orig_resp_map.begin();
-    for (; map_cit != orig_resp_map.end();
-	 ++map_cit, ++rsm_it, ++rvm_it, ++smvm_it) {
-      currentResponse.active_set(rsm_it->second);
-      transform_response(rvm_it->second, smvm_it->second, map_cit->second,
-			 currentResponse);
-      recastResponseMap[map_cit->first] = currentResponse.copy();
-    }
-    recastSetMap.clear();
-    recastVarsMap.clear();
-    if (variablesMapping)
-      subModelVarsMap.clear();
-    return recastResponseMap;
+    IntResponseMap resp_map_rekey;
+    rekey_synch(subModel, true, recastIdMap, resp_map_rekey);
+    transform_response_map(resp_map_rekey, recastResponseMap);
   }
   else
-    return orig_resp_map;
+    rekey_synch(subModel, true, recastIdMap, recastResponseMap);
+
+  return recastResponseMap;
 }
 
 
 const IntResponseMap& RecastModel::derived_synchronize_nowait()
 {
-  const IntResponseMap& orig_resp_map = subModel.synchronize_nowait();
+  recastResponseMap.clear();
+
   if (respMapping) {
-    recastResponseMap.clear();
-    for (IntRespMCIter map_cit = orig_resp_map.begin();
-	 map_cit != orig_resp_map.end(); ++map_cit) {
-      int eval_id = map_cit->first;
-      // IntResponseMap from subModel.synchronize_nowait() must be
-      // consistent with subModel.evaluation_id() used above
-      const Variables& sub_model_vars = (variablesMapping) ?
-	subModelVarsMap[eval_id] : recastVarsMap[eval_id];
-      currentResponse.active_set(recastSetMap[eval_id]);
-      transform_response(recastVarsMap[eval_id], sub_model_vars,
-			 map_cit->second, currentResponse);
-      recastResponseMap[eval_id] = currentResponse.copy();
-      recastSetMap.erase(eval_id);
-      recastVarsMap.erase(eval_id);
-      if (variablesMapping)
-	subModelVarsMap.erase(eval_id);
-    }
-    return recastResponseMap;
+    IntResponseMap resp_map_rekey;
+    rekey_synch(subModel, false, recastIdMap, resp_map_rekey);
+    transform_response_map(resp_map_rekey, recastResponseMap);
   }
   else
-    return orig_resp_map;
+    rekey_synch(subModel, false, recastIdMap, recastResponseMap);
+
+  return recastResponseMap;
+}
+
+
+void RecastModel::
+transform_response_map(const IntResponseMap& old_resp_map,
+		       IntResponseMap& new_resp_map)
+{
+  IntRespMCIter r_cit; IntASMIter s_it; IntVarsMIter v_it, sm_v_it;
+  for (r_cit=old_resp_map.begin(); r_cit!=old_resp_map.end(); ++r_cit) {
+    int native_id = r_cit->first;
+    s_it =  recastSetMap.find(native_id);
+    v_it = recastVarsMap.find(native_id);
+    if (variablesMapping) sm_v_it = subModelVarsMap.find(native_id);
+    else                  sm_v_it = v_it;
+
+    Response new_resp(currentResponse.copy()); // correct size, labels, etc.
+    new_resp.active_set(s_it->second);
+    transform_response(v_it->second, sm_v_it->second, r_cit->second, new_resp);
+    new_resp_map[native_id] = new_resp;
+
+    // cleanup
+    recastSetMap.erase(s_it);  recastVarsMap.erase(v_it);
+    if (variablesMapping) subModelVarsMap.erase(sm_v_it);
+  }
 }
 
 
