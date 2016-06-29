@@ -94,7 +94,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
     // possible, so we can better retrieve final results
     if (numUserPrimaryFns > 1 && 
 	(methodName != MOGA && methodName != SOGA))
-      localObjectiveRecast = true; 
+      localObjectiveRecast = true;
   }
   else {
     Cerr << "\nError: responses specification is incompatible with "

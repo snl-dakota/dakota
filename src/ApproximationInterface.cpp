@@ -648,7 +648,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
         if (challengePoints.empty())
           read_challenge_points(active_only);
         functionSurfaces[index].challenge_diagnostics(index, challengePoints,
-          getCol(Teuchos::View,challengeResponses,index));
+          Teuchos::getCol(Teuchos::View,challengeResponses,index));
       }
     }
   }
