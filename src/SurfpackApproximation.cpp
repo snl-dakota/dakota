@@ -861,7 +861,12 @@ RealArray SurfpackApproximation::cv_diagnostic(const StringArray& metric_types,
                                                unsigned num_folds) {
   CrossValidationFitness CV_fitness(num_folds);
   VecDbl cv_metrics;
-  CV_fitness.eval_metrics(cv_metrics, *model, *surfData, metric_types);
+  try {
+    CV_fitness.eval_metrics(cv_metrics, *model, *surfData, metric_types);
+  } catch(String cv_error) {
+    Cerr << "Error: Exception caught while computing CV score:\n" << cv_error << std::endl;
+    cv_metrics.resize(metric_types.size(),std::numeric_limits<Real>::quiet_NaN() );
+  }
   return cv_metrics;
 }
 
