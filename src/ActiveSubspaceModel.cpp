@@ -146,9 +146,8 @@ void ActiveSubspaceModel::validate_inputs()
 {
   bool error_flag = false;
 
-  // set default initialSamples, with lower bound equal to dimension of
-  // of full space
-  int min_initial_samples = numFullspaceVars;
+  // set default initialSamples equal to 2
+  int min_initial_samples = 2;
   if (initialSamples < min_initial_samples) {
     initialSamples = min_initial_samples;
     Cout << "\nWarning (subspace model): resetting samples to minimum "
@@ -702,16 +701,6 @@ compute_svd()
     abort_handler(-1);
   }
 
-  // TODO: Analyze whether we need this check and can have differing numbers
-  // of singular values returned
-  if(derivativeMatrix.numRows() != singular_values.length())
-  {
-    Cerr << "\nError (subspace model): Number of computed singular_values does "
-         << "not match the dimension of the space of gradient samples! Logic "
-         << "not currently supported!" << std::endl;
-    abort_handler(-1);
-  }
-
   int num_singular_values = singular_values.length();
 
   if (outputLevel >= NORMAL_OUTPUT) {
@@ -796,28 +785,40 @@ compute_svd()
     Cout << "\nSubspace Model: New subspace size is dimension = "
          << reducedRank << "." << std::endl;
   }
+
+  if (reducedRank >= (int) ceil(initialSamples/(2.0*log10(numFullspaceVars)))) {
+    Cout << "\nWarning (subspace model): Computed subspace may be inaccurate. "
+         << "Consider increasing the number of samples to satisfy: N > 2*k*log(m), "
+         << "where N is the number of samples, k is the subspace size, and m is "
+         << "the dimension of the original model." << std::endl;
+  }
 }
 
 double ActiveSubspaceModel::
 computeBingLiCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
+  int num_vals;
+  if (derivativeMatrix.numCols() < num_vars)
+    num_vals = derivativeMatrix.numCols();
+  else
+    num_vals = num_vars;
 
   // Stores Bing Li's criterion
-  std::vector<RealMatrix::scalarType> bing_li_criterion(num_vars, 0);
+  std::vector<RealMatrix::scalarType> bing_li_criterion(num_vals, 0);
 
   // Compute part 1 of criterion: relative energy in next eigenvalue in the
   // spectrum
 
   RealMatrix::scalarType eigen_sum = 0.0;
-  for(size_t i = 0; i < num_vars; ++i)
+  for(size_t i = 0; i < num_vals; ++i)
   {
     RealMatrix::scalarType eigen_val = singular_values[i] * singular_values[i];
     bing_li_criterion[i] = eigen_val;
     eigen_sum += eigen_val;
   }
 
-  for(size_t i = 0; i < num_vars; ++i)
+  for(size_t i = 0; i < num_vals; ++i)
     bing_li_criterion[i] /= eigen_sum;
 
   // Compute part 2 of criterion: bootstrapped determinant metric
@@ -828,7 +829,7 @@ computeBingLiCriterion(RealVector& singular_values)
 
   Teuchos::LAPACK<RealMatrix::ordinalType, RealMatrix::scalarType> lapack;
 
-  std::vector<RealMatrix::scalarType> bootstrapped_det(num_vars);
+  std::vector<RealMatrix::scalarType> bootstrapped_det(bing_li_criterion.size());
 
   BootstrapSampler<RealMatrix> bootstrap_sampler(derivativeMatrix,numFunctions);
 
@@ -844,7 +845,7 @@ computeBingLiCriterion(RealVector& singular_values)
                                  leftSingularVectors, bootstrapped_sample_copy,
                                  0.0);
 
-    for(size_t j = 1; j < num_vars; ++j)
+    for(size_t j = 1; j < bootstrapped_det.size(); ++j)
     {
       size_t num_sing_vec = j;
 
@@ -872,21 +873,21 @@ computeBingLiCriterion(RealVector& singular_values)
 
   RealMatrix::scalarType det_sum = 0.0;
   bootstrapped_det[0] = 0.0;
-  for (size_t i = 1; i < num_vars; ++i)
+  for (size_t i = 1; i < bootstrapped_det.size(); ++i)
   {
     bootstrapped_det[i] = 1.0 - bootstrapped_det[i] /
                           static_cast<RealMatrix::scalarType>(numReplicates);
     det_sum += bootstrapped_det[i];
   }
 
-  for (size_t i = 0; i < num_vars; ++i)
+  for (size_t i = 0; i < bootstrapped_det.size(); ++i)
   {
     bing_li_criterion[i] += bootstrapped_det[i] / det_sum;
   }
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "\nSubspace Model: Bing Li Criterion values are:\n[ ";
-    for (size_t i = 0; i < num_vars; ++i)
+    for (size_t i = 0; i < bing_li_criterion.size(); ++i)
     {
       Cout << bing_li_criterion[i] << " ";
     }
@@ -895,7 +896,7 @@ computeBingLiCriterion(RealVector& singular_values)
 
   // Cutoff is 1st minimum of the criterion
   int rank = 0;
-  for (size_t i = 1; i < num_vars; ++i)
+  for (size_t i = 1; i < bing_li_criterion.size(); ++i)
   {
     if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
@@ -915,9 +916,14 @@ double ActiveSubspaceModel::
 computeConstantineMetric(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
+  int num_vals;
+  if (derivativeMatrix.numCols() < num_vars)
+    num_vals = derivativeMatrix.numCols();
+  else
+    num_vals = num_vars;
 
   // Stores Constantine's metric
-  RealArray constantine_metric(num_vars-1, 0);
+  RealArray constantine_metric((num_vals < num_vars-1) ? num_vals : num_vars-1, 0);
 
   // Compute bootstrapped subspaces
   RealMatrix bootstrapped_sample(num_vars, derivativeMatrix.numCols());
@@ -938,7 +944,7 @@ computeConstantineMetric(RealVector& singular_values)
 
     svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
 
-    for(size_t j = 0; j < num_vars-1; ++j)
+    for(size_t j = 0; j < constantine_metric.size(); ++j)
     {
       size_t num_sing_vec = j+1;
 
@@ -965,7 +971,7 @@ computeConstantineMetric(RealVector& singular_values)
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "\nSubspace Model: Constantine metric values are:\n[ ";
-    for (size_t i = 0; i < num_vars-1; ++i)
+    for (size_t i = 0; i < constantine_metric.size(); ++i)
     {
       Cout << constantine_metric[i] << " ";
     }
@@ -975,7 +981,7 @@ computeConstantineMetric(RealVector& singular_values)
   // Cutoff is global minimum of metric
   int rank = 0;
   Real min_val = 0;
-  for (size_t i = 0; i < num_vars-1; ++i)
+  for (size_t i = 0; i < constantine_metric.size(); ++i)
   {
     if(constantine_metric[i] < min_val || i == 0)
     {
@@ -995,17 +1001,22 @@ double ActiveSubspaceModel::
 computeEnergyCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
+  int num_vals;
+  if (derivativeMatrix.numCols() < num_vars)
+    num_vals = derivativeMatrix.numCols();
+  else
+    num_vals = num_vars;
 
   Real total_energy = 0.0;
-  for (size_t i = 0; i < num_vars; ++i)
+  for (size_t i = 0; i < num_vals; ++i)
   {
     // eigenvalue = (singular_value)^2
     total_energy += std::pow(singular_values[i],2);
   }
 
-  RealVector energy_metric(num_vars);
+  RealVector energy_metric(num_vals);
   energy_metric[0] = std::pow(singular_values[0],2)/total_energy;
-  for (size_t i = 1; i < num_vars; ++i)
+  for (size_t i = 1; i < num_vals; ++i)
   {
     energy_metric[i] = std::pow(singular_values[i],2)/total_energy
                        + energy_metric[i-1];
@@ -1013,7 +1024,7 @@ computeEnergyCriterion(RealVector& singular_values)
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "\nSubspace Model: Energy criterion values are:\n[ ";
-    for (size_t i = 0; i < num_vars; ++i)
+    for (size_t i = 0; i < num_vals; ++i)
     {
       Cout << energy_metric[i] << " ";
     }
@@ -1021,7 +1032,7 @@ computeEnergyCriterion(RealVector& singular_values)
   }
 
   int rank = 0;
-  for (size_t i = 0; i < num_vars; ++i)
+  for (size_t i = 0; i < num_vals; ++i)
   {
     if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
     {

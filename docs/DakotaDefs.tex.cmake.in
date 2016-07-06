@@ -95,8 +95,7 @@ Dena M. Vigil, Timothy M. Wildey}\\
 % Fragments which together comprise abstracts
 
 \newcommand{\DakotaAbstractShared}{
-The Dakota (Design Analysis Kit for Optimization and Terascale
-Applications) toolkit provides a flexible and extensible interface
+The Dakota toolkit provides a flexible and extensible interface
 between simulation codes and iterative analysis methods. Dakota 
 contains algorithms for optimization with gradient and
 nongradient-based methods; uncertainty quantification with sampling,
