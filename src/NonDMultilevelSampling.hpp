@@ -184,14 +184,14 @@ private:
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
-		  const RealVector& sum_LL,       const RealVector& sum_HH,
-		  const RealVector& sum_LH,       Real cost_ratio,
-		  RealVector& var_H, RealVector& rho2_LH, size_t N_shared);
+		  const RealVector& sum_LL,	  const RealVector& sum_LH,
+		  const RealVector& sum_HH, Real cost_ratio, size_t N_shared,
+		  RealVector& var_H, RealVector& rho2_LH);
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H,
-		  RealMatrix& sum_LL, RealMatrix& sum_HH, RealMatrix& sum_LH,
-		  Real cost_ratio, size_t lev, RealMatrix& var_H,
-		  RealMatrix& rho2_LH, size_t N_shared);
+		  RealMatrix& sum_LL, RealMatrix& sum_LH, RealMatrix& sum_HH,
+		  Real cost_ratio, size_t lev, size_t N_shared,
+		  RealMatrix& var_H, RealMatrix& rho2_LH);
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(RealMatrix& sum_Ll,          RealMatrix& sum_Llm1,
 		  RealMatrix& sum_Hl,          RealMatrix& sum_Hlm1,
@@ -200,29 +200,29 @@ private:
 		  RealMatrix& sum_Hl_Llm1,     RealMatrix& sum_Hlm1_Ll,
 		  RealMatrix& sum_Hlm1_Llm1,   RealMatrix& sum_Hl_Hl,
 		  RealMatrix& sum_Hl_Hlm1,     RealMatrix& sum_Hlm1_Hlm1,
-		  Real cost_ratio, size_t lev, RealMatrix& rho_dot2_LH,
-		  size_t N_shared);
+		  Real cost_ratio, size_t lev, size_t N_shared,
+		  RealMatrix& var_YHl,         RealMatrix& rho_dot2_LH);
 
   /// compute ratio of MC and CVMC mean squared errors, averaged over the QoI
   Real MSE_ratio(Real avg_eval_ratio, const RealVector& var_H,
 		 const RealVector& rho2_LH, size_t iter, size_t N_hf);
 
   /// compute control variate parameters for CVMC and estimate raw moments
-  void cv_raw_moments(IntRealVectorMap& sum_L_shared,
-		      IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
-		      IntRealVectorMap& sum_LL,        IntRealVectorMap& sum_LH,
-		      const RealVector& rho2_LH,     //Real cost_ratio,
-		      size_t N_shared, size_t N_refined, RealMatrix& H_raw_mom);
-  /// compute control variate parameters for MLCVMC and estimate raw moments
-  void cv_raw_moments(IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
-		      IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
-		      const RealMatrix& rho2_LH,     //Real cost_ratio,
-		      size_t lev, size_t N_shared, size_t N_refined,
+  void cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
+		      IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
+		      size_t N_shared,  IntRealVectorMap& sum_L_refined,
+		      size_t N_refined, const RealVector& rho2_LH,
 		      RealMatrix& H_raw_mom);
-  /// compute control variate parameters for MLCVMC and estimate raw moments
+  /// apply control variate parameters for MLCVMC to estimate raw
+  /// moment contributions
+  void cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
+		      IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
+		      size_t N_shared, IntRealMatrixMap& sum_L_refined,
+		      size_t N_refined, const RealMatrix& rho2_LH, size_t lev,
+		      RealMatrix& H_raw_mom);
+  /// apply control variate parameters for MLCVMC to estimate raw
+  /// moment contributions
   void cv_raw_moments(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
-		      IntRealMatrixMap& sum_L_refined,
 		      IntRealMatrixMap& sum_Hl, IntRealMatrixMap& sum_Hlm1,
 		      IntRealMatrixMap& sum_Ll_Ll,
 		      IntRealMatrixMap& sum_Ll_Llm1,
@@ -230,16 +230,94 @@ private:
 		      IntRealMatrixMap& sum_Hl_Ll,
 		      IntRealMatrixMap& sum_Hl_Llm1,
 		      IntRealMatrixMap& sum_Hlm1_Ll,
-		      IntRealMatrixMap& sum_Hlm1_Llm1, RealMatrix& sum_Hl_Hl,
-		      RealMatrix& sum_Hl_Hlm1, RealMatrix& sum_Hlm1_Hlm1,
-		      const RealMatrix& rho2_LH, /*Real cost_ratio,*/
-		      size_t lev, size_t N_shared, size_t N_refined,
+		      IntRealMatrixMap& sum_Hlm1_Llm1,
+		      IntRealMatrixMap& sum_Hl_Hl,
+		      IntRealMatrixMap& sum_Hl_Hlm1,
+		      IntRealMatrixMap& sum_Hlm1_Hlm1, size_t N_shared,
+		      IntRealMatrixMap& sum_Ll_refined,
+		      IntRealMatrixMap& sum_Llm1_refined, size_t N_refined,
+		      const RealMatrix& rho_dot2_LH, size_t lev,
 		      RealMatrix& H_raw_mom);
 
-  /// compute average of a set of observations
-  Real average(const RealVector& vec) const;
+  /// compute scalar control variate parameters
+  void compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		       size_t N_shared, Real& beta);
+  /// compute scalar variance and correlation parameters for control variates
+  void compute_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
+		       Real sum_HH, size_t N_shared, Real& var_H,
+		       Real& rho2_LH);
+  /// compute scalar control variate parameters
+  void compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
+		       Real sum_Ll_Ll, Real sum_Ll_Llm1, Real sum_Llm1_Llm1,
+		       Real sum_Hl_Ll, Real sum_Hl_Llm1, Real sum_Hlm1_Ll,
+		       Real sum_Hlm1_Llm1, Real sum_Hl_Hl, Real sum_Hl_Hlm1,
+		       Real sum_Hlm1_Hlm1, size_t N_shared, Real& var_YH,
+		       Real& rho_dot2_LH, Real& beta_dot, Real& gamma);
+  /// compute vector control variate parameters
+  void compute_control(const RealVector& sum_L, const RealVector& sum_H,
+		       const RealVector& sum_LL, const RealVector& sum_LH,
+		       size_t N_shared, RealVector& beta);
+  /// compute vector variance and correlation parameters for control variates
+  void compute_control(const RealVector& sum_L, const RealVector& sum_H,
+		       const RealVector& sum_LL, const RealVector& sum_LH,
+		       const RealVector& sum_HH, size_t N_shared,
+		       RealVector& var_H, RealVector& rho2_LH);
+  /// compute matrix control variate parameters
+  void compute_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+		       const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		       size_t N_shared, size_t lev, RealVector& beta);
+  /// compute matrix control variate parameters
+  void compute_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
+		       const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
+		       const RealMatrix& sum_Ll_Ll,
+		       const RealMatrix& sum_Ll_Llm1,
+		       const RealMatrix& sum_Llm1_Llm1,
+		       const RealMatrix& sum_Hl_Ll,
+		       const RealMatrix& sum_Hl_Llm1,
+		       const RealMatrix& sum_Hlm1_Ll,
+		       const RealMatrix& sum_Hlm1_Llm1,
+		       const RealMatrix& sum_Hl_Hl,
+		       const RealMatrix& sum_Hl_Hlm1,
+		       const RealMatrix& sum_Hlm1_Hlm1, size_t N_shared,
+		       size_t lev, RealVector& beta_dot, RealVector& gamma);
+
+  /// apply scalar control variate parameter (beta) to approximate HF moment
+  void apply_control(Real sum_H, Real sum_L_shared, size_t N_shared,
+		     Real sum_L_refined, size_t N_refined, Real beta,
+		     Real& H_raw_mom);
+  /// apply scalar control variate parameter (beta) to approximate HF moment
+  void apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
+		     size_t N_shared,  Real sum_Ll_refined,
+		     Real sum_Llm1_refined, size_t N_refined, Real beta_dot,
+		     Real gamma, Real& H_raw_mom);
+  /// apply vector control variate parameter (beta) to approximate HF moment
+  void apply_control(const RealVector& sum_H, const RealVector& sum_L_shared,
+		     size_t N_shared,  const RealVector& sum_L_refined,
+		     size_t N_refined, const RealVector& beta,
+		     RealVector& H_raw_mom);
+  /// apply matrix control variate parameter (beta) to approximate HF moment
+  void apply_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
+		     size_t N_shared,  const RealMatrix& sum_L_refined,
+		     size_t N_refined, size_t lev, const RealVector& beta,
+		     RealVector& H_raw_mom);
+  /// apply matrix control variate parameter (beta) to approximate HF moment
+  void apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
+		     const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
+		     size_t N_shared,  const RealMatrix& sum_Ll_refined,
+		     const RealMatrix& sum_Llm1_refined, size_t N_refined,
+		     size_t lev, const RealVector& beta_dot,
+		     const RealVector& gamma, RealVector& H_raw_mom);
+  
+  /// sum up variances from sum_YY using means from sum_Y
+  Real aggregate_variances(const Real* sum_Y, const Real* sum_YY, size_t N_l);
+
+
+  /// compute sum of a set of observations
+  Real sum(const Real* vec, size_t vec_len) const;
   /// compute average of a set of observations
   Real average(const Real* vec, size_t vec_len) const;
+  /// compute average of a set of observations
+  Real average(const RealVector& vec) const;
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -265,41 +343,146 @@ private:
 };
 
 
-inline Real NonDMultilevelSampling::
-eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
-	   RealMatrix& sum_HH, RealMatrix& sum_LH, Real cost_ratio, size_t lev,
-	   RealMatrix& var_H, RealMatrix& rho2_LH, size_t N_shared)
+inline void NonDMultilevelSampling::
+compute_control(const RealVector& sum_L, const RealVector& sum_H,
+		const RealVector& sum_LL, const RealVector& sum_LH,
+		size_t N_shared, RealVector& beta)
 {
-  RealVector var_H_l(Teuchos::View,   var_H[lev], numFunctions),
-           rho2_LH_l(Teuchos::View, rho2_LH[lev], numFunctions);
-  int i_lev = (int)lev;
-  return eval_ratio(getCol(Teuchos::View, sum_L_shared, i_lev),
-		    getCol(Teuchos::View, sum_H,  i_lev),
-		    getCol(Teuchos::View, sum_LL, i_lev),
-		    getCol(Teuchos::View, sum_HH, i_lev),
-		    getCol(Teuchos::View, sum_LH, i_lev), cost_ratio,
-		    var_H_l, rho2_LH_l, N_shared);
+  for (size_t q=0; q<numFunctions; ++q)
+    compute_control(sum_L[q], sum_H[q], sum_LL[q], sum_LH[q], N_shared,
+		    beta[q]);
 }
 
 
-inline Real NonDMultilevelSampling::average(const RealVector& vec) const
+inline void NonDMultilevelSampling::
+compute_control(const RealVector& sum_L, const RealVector& sum_H,
+		const RealVector& sum_LL, const RealVector& sum_LH,
+		const RealVector& sum_HH, size_t N_shared,
+		RealVector& var_H, RealVector& rho2_LH)
 {
-  Real avg = 0.;
-  size_t i, vec_len = vec.length();
-  for (i=0; i<vec_len; ++i)
-    avg += vec[i];
-  return avg / vec_len;
+  for (size_t q=0; q<numFunctions; ++q)
+    compute_control(sum_L[q], sum_H[q], sum_LL[q], sum_LH[q], sum_HH[q],
+		    N_shared, var_H[q], rho2_LH[q]);
+}
+
+
+inline void NonDMultilevelSampling::
+compute_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+		const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		size_t N_shared, size_t lev, RealVector& beta)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
+		    sum_LH(qoi,lev), N_shared, beta[qoi]);
+}
+
+
+inline void NonDMultilevelSampling::
+compute_control(const RealMatrix& sum_Ll,        const RealMatrix& sum_Llm1,
+		const RealMatrix& sum_Hl,        const RealMatrix& sum_Hlm1,
+		const RealMatrix& sum_Ll_Ll,     const RealMatrix& sum_Ll_Llm1,
+		const RealMatrix& sum_Llm1_Llm1, const RealMatrix& sum_Hl_Ll,
+		const RealMatrix& sum_Hl_Llm1,   const RealMatrix& sum_Hlm1_Ll,
+		const RealMatrix& sum_Hlm1_Llm1, const RealMatrix& sum_Hl_Hl,
+		const RealMatrix& sum_Hl_Hlm1,
+		const RealMatrix& sum_Hlm1_Hlm1, size_t N_shared, size_t lev,
+		RealVector& beta_dot,            RealVector& gamma)
+{
+  Real var_YH, rho_dot2_LH; // not needed for this context
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
+		    sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev), sum_Ll_Llm1(qoi,lev),
+		    sum_Llm1_Llm1(qoi,lev), sum_Hl_Ll(qoi,lev),
+		    sum_Hl_Llm1(qoi,lev), sum_Hlm1_Ll(qoi,lev),
+		    sum_Hlm1_Llm1(qoi,lev), sum_Hl_Hl(qoi,lev),
+		    sum_Hl_Hlm1(qoi,lev), sum_Hlm1_Hlm1(qoi,lev),
+		    N_shared, var_YH, rho_dot2_LH, beta_dot[qoi], gamma[qoi]);
+}
+
+
+inline void NonDMultilevelSampling::
+apply_control(const RealVector& sum_H, const RealVector& sum_L_shared,
+	      size_t N_shared,  const RealVector& sum_L_refined,
+	      size_t N_refined, const RealVector& beta, RealVector& H_raw_mom)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    Cout << "   QoI " << qoi+1 << ": control variate beta = "
+	 << std::setw(9) << beta[qoi] << '\n';
+    apply_control(sum_H[qoi], sum_L_shared[qoi], N_shared, sum_L_refined[qoi],
+		  N_refined, beta[qoi], H_raw_mom[qoi]);
+  }
+  if (numFunctions > 1) Cout << '\n';
+}
+
+
+inline void NonDMultilevelSampling::
+apply_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
+	      size_t N_shared,  const RealMatrix& sum_L_refined,
+	      size_t N_refined, size_t lev, const RealVector& beta,
+	      RealVector& H_raw_mom)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    Cout << "   QoI " << qoi+1 << ": control variate beta = "
+	 << std::setw(9) << beta[qoi] << '\n';
+    apply_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared,
+		  sum_L_refined(qoi,lev), N_refined, beta[qoi],
+		  H_raw_mom[qoi]);
+  }
+  if (numFunctions > 1) Cout << '\n';
+}
+
+
+inline void NonDMultilevelSampling::
+apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
+	      const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
+	      size_t N_shared,  const RealMatrix& sum_Ll_refined,
+	      const RealMatrix& sum_Llm1_refined, size_t N_refined, size_t lev,
+	      const RealVector& beta_dot, const RealVector& gamma,
+	      RealVector& H_raw_mom)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    Cout << "   QoI " << qoi+1 << ": control variate beta_dot = "
+	 << std::setw(9) << beta_dot[qoi] << '\n';
+    apply_control(sum_Hl(qoi,lev), sum_Hlm1(qoi,lev), sum_Ll(qoi,lev),
+		  sum_Llm1(qoi,lev), N_shared, sum_Ll_refined(qoi,lev),
+		  sum_Llm1_refined(qoi,lev), N_refined, beta_dot[qoi],
+		  gamma[qoi], H_raw_mom[qoi]);
+  }
+  if (numFunctions > 1) Cout << '\n';
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_variances(const Real* sum_Y, const Real* sum_YY, size_t N_l)
+{
+  Real agg_var_l = 0., bias_corr = 1./(N_l - 1), mu_Y;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    mu_Y = sum_Y[qoi] / N_l;
+    // Note: precision loss in variance is difficult to avoid without
+    // storing full sample history; must accumulate Y^2 across iterations
+    // instead of (Y-mean)^2 since mean is updated on each iteration.
+    agg_var_l += (sum_YY[qoi] - N_l * mu_Y * mu_Y) * bias_corr;
+  }
+  return agg_var_l;
+}
+
+
+inline Real NonDMultilevelSampling::sum(const Real* vec, size_t vec_len) const
+{
+  Real sum = 0.;
+  for (size_t i=0; i<vec_len; ++i)
+    sum += vec[i];
+  return sum;
 }
 
 
 inline Real NonDMultilevelSampling::
 average(const Real* vec, size_t vec_len) const
-{
-  Real avg = 0.;
-  for (size_t i=0; i<vec_len; ++i)
-    avg += vec[i];
-  return avg / vec_len;
-}
+{ return sum(vec, vec_len) / vec_len; }
+
+
+inline Real NonDMultilevelSampling::average(const RealVector& vec) const
+{ return average(vec.values(), vec.length()); }
 
 } // namespace Dakota
 

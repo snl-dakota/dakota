@@ -115,7 +115,7 @@ template<typename Data>
 boost::random::mt19937 BootstrapSamplerBase<Data>::bootstrapRNG;
 
 
-/// Acutal boostrap sampler implementation for common data types
+/// Actual boostrap sampler implementation for common data types
 
 /** Template requires the given type to support an STL-like interface, including
     a size method and begin and end methods returning random access iterators */
