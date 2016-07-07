@@ -105,12 +105,14 @@ private:
 			    IntRealMatrixMap& sum_L_refined,
 			    IntRealMatrixMap& sum_H,
 			    IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
-			    size_t num_ml_lev, size_t num_cv_lev);
+			    IntRealMatrixMap& sum_HH, size_t num_ml_lev,
+			    size_t num_cv_lev);
   /// initialize the MLCV accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mlcv_sums(IntRealMatrixMap& sum_Ll,
 			    IntRealMatrixMap& sum_Llm1,
-			    IntRealMatrixMap& sum_L_refined,
+			    IntRealMatrixMap& sum_Ll_refined,
+			    IntRealMatrixMap& sum_Llm1_refined,
 			    IntRealMatrixMap& sum_Hl,
 			    IntRealMatrixMap& sum_Hlm1,
 			    IntRealMatrixMap& sum_Ll_Ll,
@@ -120,6 +122,9 @@ private:
 			    IntRealMatrixMap& sum_Hl_Llm1,
 			    IntRealMatrixMap& sum_Hlm1_Ll,
 			    IntRealMatrixMap& sum_Hlm1_Llm1,
+			    IntRealMatrixMap& sum_Hl_Hl,
+			    IntRealMatrixMap& sum_Hl_Hlm1,
+			    IntRealMatrixMap& sum_Hlm1_Hlm1,
 			    size_t num_ml_lev, size_t num_cv_lev);
 
   /// update accumulators for multilevel telescoping running sums
@@ -134,12 +139,16 @@ private:
   /// from set of low/high fidelity model evaluations within allResponses
   void accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 			  IntRealVectorMap& sum_L_refined,
-			  IntRealVectorMap& sum_H, IntRealVectorMap& sum_LL,
-			  RealVector& sum_HH, IntRealVectorMap& sum_LH);
+			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
+			  IntRealVectorMap& sum_LH, RealVector& sum_HH);
 
   /// update running QoI sums for one model (sum_map) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_map, size_t lev);
+  /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
+  /// using set of model evaluations within allResponses
+  void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql,
+			     IntRealMatrixMap& sum_Qlm1, size_t lev);
   /// update running discrepancy sums for one model (sum_map) using
   /// set of model evaluations within allResponses
   void accumulate_mlcv_Ysums(IntRealMatrixMap& sum_map, size_t lev);
@@ -151,7 +160,7 @@ private:
 			     IntRealMatrixMap& sum_L_shared,
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
-			     IntRealMatrixMap& sum_LH, RealMatrix& sum_HH,
+			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
 			     size_t lev);
   /// update running two-level discrepancy sums for two models (sum_L,
   /// sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
@@ -161,7 +170,7 @@ private:
 			     IntRealMatrixMap& sum_L_shared,
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
-			     IntRealMatrixMap& sum_LH, RealMatrix& sum_HH,
+			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
 			     size_t lev);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within {lf,hf}_resp_map
@@ -169,7 +178,8 @@ private:
 			     const IntResponseMap& hf_resp_map,
 			     IntRealMatrixMap& sum_Ll,
 			     IntRealMatrixMap& sum_Llm1,
-			     IntRealMatrixMap& sum_L_refined,
+			     IntRealMatrixMap& sum_Ll_refined,
+			     IntRealMatrixMap& sum_Llm1_refined,
 			     IntRealMatrixMap& sum_Hl,
 			     IntRealMatrixMap& sum_Hlm1,
 			     IntRealMatrixMap& sum_Ll_Ll,
@@ -179,8 +189,9 @@ private:
 			     IntRealMatrixMap& sum_Hl_Llm1,
 			     IntRealMatrixMap& sum_Hlm1_Ll,
 			     IntRealMatrixMap& sum_Hlm1_Llm1,
-			     RealMatrix& sum_Hl_Hl, RealMatrix& sum_Hl_Hlm1,
-			     RealMatrix& sum_Hlm1_Hlm1, size_t lev);
+			     IntRealMatrixMap& sum_Hl_Hl,
+			     IntRealMatrixMap& sum_Hl_Hlm1,
+			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
   Real eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
@@ -384,9 +395,9 @@ compute_control(const RealMatrix& sum_Ll,        const RealMatrix& sum_Llm1,
 		const RealMatrix& sum_Llm1_Llm1, const RealMatrix& sum_Hl_Ll,
 		const RealMatrix& sum_Hl_Llm1,   const RealMatrix& sum_Hlm1_Ll,
 		const RealMatrix& sum_Hlm1_Llm1, const RealMatrix& sum_Hl_Hl,
-		const RealMatrix& sum_Hl_Hlm1,
-		const RealMatrix& sum_Hlm1_Hlm1, size_t N_shared, size_t lev,
-		RealVector& beta_dot,            RealVector& gamma)
+		const RealMatrix& sum_Hl_Hlm1, const RealMatrix& sum_Hlm1_Hlm1,
+		size_t N_shared, size_t lev, RealVector& beta_dot,
+		RealVector& gamma)
 {
   Real var_YH, rho_dot2_LH; // not needed for this context
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
