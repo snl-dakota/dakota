@@ -786,7 +786,7 @@ compute_svd()
          << reducedRank << "." << std::endl;
   }
 
-  if (reducedRank >= (int) ceil(initialSamples/(2.0*log10(numFullspaceVars)))) {
+  if (reducedRank >= (int) std::ceil(initialSamples/(2.0*std::log10((double)numFullspaceVars)))) {
     Cout << "\nWarning (subspace model): Computed subspace may be inaccurate. "
          << "Consider increasing the number of samples to satisfy: N > 2*k*log(m), "
          << "where N is the number of samples, k is the subspace size, and m is "
