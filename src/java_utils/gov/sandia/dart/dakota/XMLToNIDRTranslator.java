@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Sandia Analysis Workbench Integration Framework (SAW)
+ * Copyright 2016 Sandia Corporation. Under the terms of Contract
+ * DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government
+ * retains certain rights in this software.
+ * 
+ * This software is distributed under the Eclipse Public License.
+ * For more information see the files copyright.txt and license.txt
+ * included with the software.
+ ******************************************************************************/
 package gov.sandia.dart.dakota;
 
 import java.io.FileReader;
@@ -185,6 +195,8 @@ public class XMLToNIDRTranslator {
 			printRequired(element);
 		else if (tag.equals("optional"))
 			printOptional(element);	
+		else if (tag.equals("group"))
+  		        printGroup(element);
 		else if (tag.equals("alias") || tag.equals("param"))
 			; // Covered elsewhere
 		else {
@@ -206,6 +218,14 @@ public class XMLToNIDRTranslator {
 			printElement(child);
 		}
 		out.unindentAndPrint(" )");
+	}
+
+        // For a labeled group, don't add context, just parse contents
+	private void printGroup(Element element) throws XPathException {
+	        // NIDR doesn't know about labeled groups; we just skip them
+		for (Element child: asElementList(element.getChildNodes())) {
+			printElement(child);
+		}
 	}
 
 	public static List<Element> asElementList(NodeList nodes) {
