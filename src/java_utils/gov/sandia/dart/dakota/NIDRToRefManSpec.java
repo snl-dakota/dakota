@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Sandia Analysis Workbench Integration Framework (SAW)
+ * Copyright 2016 Sandia Corporation. Under the terms of Contract
+ * DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government
+ * retains certain rights in this software.
+ * 
+ * This software is distributed under the Eclipse Public License.
+ * For more information see the files copyright.txt and license.txt
+ * included with the software.
+ ******************************************************************************/
 package gov.sandia.dart.dakota;
 
 import gov.sandia.dart.dakota.RefManInputSpec;

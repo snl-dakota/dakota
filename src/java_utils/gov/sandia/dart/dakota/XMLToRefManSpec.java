@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Sandia Analysis Workbench Integration Framework (SAW)
+ * Copyright 2016 Sandia Corporation. Under the terms of Contract
+ * DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government
+ * retains certain rights in this software.
+ * 
+ * This software is distributed under the Eclipse Public License.
+ * For more information see the files copyright.txt and license.txt
+ * included with the software.
+ ******************************************************************************/
 // briadam modification of XMLtoNIDRTranslator.java (ejfried)
 package gov.sandia.dart.dakota;
 
@@ -117,6 +127,13 @@ public class XMLToRefManSpec {
     		parseRequired(element, option_str, immediate_children);
     	else if (tag.equals("optional"))
     		parseOptional(element, option_str, immediate_children);	
+    	else if (tag.equals("group")) {
+                // for now we ignore labeled groups, don't add
+                // an additional context, and parse child nodes
+                for (Element child: asElementList(element.getChildNodes())) {
+		    parseElement(child, option_str, immediate_children);
+		}
+	}
     	else if (tag.equals("alias") || tag.equals("param"))
     		; // Covered elsewhere
     	else

@@ -27,9 +27,13 @@
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/math/special_functions/digamma.hpp"
+// BMA: May need to better manage DLL export / import from ANN in the future
+// #ifdef DLL_EXPORTS
+// #undef DLL_EXPORTS
+// #endif
 #include "ANN/ANN.h"
-#include "ANN/ANNperf.h"
-#include "ANN/ANNx.h"
+//#include "ANN/ANNperf.h"
+//#include "ANN/ANNx.h"
 
 static const char rcsId[]="@(#) $Id$";
 
