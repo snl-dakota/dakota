@@ -171,7 +171,7 @@ void NonDMultilevelSampling::core_run()
       // multiple model forms + multiple solutions levels --> perform MLMC on
       // HF model and bind 1:min(num_hf,num_lf) LF control variates starting
       // at coarsest level (TO DO: validate case of unequal levels)
-      if (true)
+      if (false)
 	multilevel_control_variate_mc_Ycorr(model_form, model_form+1);
       else
 	multilevel_control_variate_mc_Qcorr(model_form, model_form+1);
@@ -396,7 +396,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 
   // bypass refinement if maxIterations == 0 or convergenceTol already
   // satisfied by pilot sample
-  if (maxIterations != 0 && avg_mse_ratio > convergenceTol) {
+  if (maxIterations && avg_mse_ratio > convergenceTol) {
 
     // Assuming rho_AB, evaluation_ratio and var_H to be relatively invariant,
     // we seek a relative reduction in MSE using the convergence tol spec:
@@ -555,8 +555,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
-			   delta_N_lf[lev], N_lf[lev])) {
+	  if (max_iter && lf_increment(avg_eval_ratio,  N_hf[lev],
+				       delta_N_lf[lev], N_lf[lev])) {
 	    accumulate_mlcv_Ysums(sum_L_refined, lev); // all incl LF increment
 	    if (outputLevel == DEBUG_OUTPUT) {
 	      Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -783,8 +783,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio,  N_hf[lev],
-			   delta_N_lf[lev], N_lf[lev])) {
+	  if (max_iter && lf_increment(avg_eval_ratio,  N_hf[lev],
+				       delta_N_lf[lev], N_lf[lev])) {
 	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev);
 	    if (outputLevel == DEBUG_OUTPUT) {
 	      Cout << "Accumulated sums (L_refined[1,2]):\n";
