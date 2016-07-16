@@ -1900,6 +1900,12 @@ KEYWORD12 method
 	      ( freeform
 	      ]
 	    )
+	  |
+	  ( experimental_design
+	    initial_samples ALIAS samples INTEGER
+	    [ seed INTEGER > 0 ]
+	    [ low_fidelity_model_pointer STRING ]
+	    )
 	  [ standardized_space ]
 	  [ calibrate_error_multipliers
 	    one

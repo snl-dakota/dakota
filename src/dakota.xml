@@ -2382,6 +2382,18 @@
 		    </optional>
 		  </keyword>
 		</keyword>
+		<keyword  id="adaptive experimental design" name="experimental_design" code="{N_mdm(utype,subMethod_SUBMETHOD_EXPDESIGN_BAYES)}" label="experiment_design_bayes" help="" minOccurs="1" >
+		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='init samples' help='' default='method-dependent'>
+		    <alias name='samples' />
+		    <param type='INTEGER' />
+		  </keyword>
+		  <keyword  id='seed10' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
+		    <param type='INTEGER' constraint='> 0' />
+		   </keyword>
+                   <keyword  id="model_pointer5" name="low_fidelity_model_pointer" code="{N_mdm(str,lowFidModelPointer)}" label="model_pointer" help="" minOccurs="0" default="" >
+            <param type="STRING" in_taglist="model" />
+                   </keyword>
+                 </keyword> 
 	      </oneOf>
 	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
