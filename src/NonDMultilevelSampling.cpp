@@ -1834,7 +1834,6 @@ cv_raw_moments(IntRealVectorMap& sum_L_shared, IntRealVectorMap& sum_H,
     RealVector H_rm_col(Teuchos::View, H_raw_mom[i-1], numFunctions);
     apply_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
 		  N_refined, beta, H_rm_col);
-    if (numFunctions > 1) Cout << '\n';
   }
 }
 
@@ -1862,7 +1861,6 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
     RealVector H_rm_col(Teuchos::View, H_raw_mom[i-1], numFunctions);
     apply_control(sum_H[i], sum_L_shared[i], N_shared, sum_L_refined[i],
 		  N_refined, lev, beta, H_rm_col);
-    if (numFunctions > 1) Cout << '\n';
   }
   Cout << '\n'; // for loop over levels
 }
@@ -1905,7 +1903,6 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
       apply_control(sum_Hl[i], sum_Hlm1[i], sum_Ll[i], sum_Llm1[i], N_shared,
 		    sum_Ll_refined[i], sum_Llm1_refined[i], N_refined, lev,
 		    beta_dot, gamma, H_rm_col);
-      if (numFunctions > 1) Cout << '\n';
     }
     Cout << '\n'; // for loop over levels
   }
@@ -1981,14 +1978,14 @@ compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
   Real cov_YHl_Llm1 = cov_Hl_Llm1 - cov_Hlm1_Llm1;
   gamma = (cov_YHl_Llm1 * cov_Ll_Llm1 - var_Llm1 * cov_YHl_Ll)
         / (var_Ll * cov_YHl_Llm1 - cov_YHl_Ll * cov_Ll_Llm1);
-  // sigma, tau, beta:
+  // theta, tau, beta:
   Real cov_YHl_YLldot = gamma * (cov_Hl_Ll - cov_Hlm1_Ll)
                       - cov_Hl_Llm1 + cov_Hlm1_Llm1;
   Real cov_YHl_YLl = cov_Hl_Ll - cov_Hlm1_Ll - cov_Hl_Llm1 + cov_Hlm1_Llm1;
   Real var_YLldot  = gamma * (gamma * var_Ll - 2. * cov_Ll_Llm1) + var_Llm1;
-  Real var_YLl     = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1;
-  Real sigma       = cov_YHl_YLldot / cov_YHl_YLl;
-  Real tau         =     var_YLldot / var_YLl;
+  Real var_YHl = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1,
+       var_YLl = var_Ll - 2. * cov_Ll_Llm1 + var_Llm1,
+       theta   = cov_YHl_YLldot / cov_YHl_YLl, tau = var_YLldot / var_YLl;
   // carry forwards:
   var_YH   = var_Hl - 2. * cov_Hl_Hlm1 + var_Hlm1; // var(H_l - H_lm1)
   beta_dot = cov_YHl_YLldot / var_YLldot;
@@ -1999,8 +1996,16 @@ compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
   // > refinement based only on QoI mean statistics
   // Given use of 1/r in MSE_ratio, one approach would average 1/r, but
   // this does not seem to behave as well in limited numerical experience.
-  Real rho2_LH = cov_Hl_Ll / var_Ll * cov_Hl_Ll / var_Hl; // bias cancels
-  rho_dot2_LH  = rho2_LH * sigma * sigma / tau;
+  Real rho2_LH = cov_YHl_YLl / var_YHl * cov_YHl_YLl / var_YLl,
+       ratio   = theta * theta / tau;
+  // variance reduction test
+  //if (ratio < 1.) ...switch to Ycorr-based control...
+  rho_dot2_LH  = rho2_LH * ratio;
+  //rho_dot2_LH = cov_YHl_YLldot / var_YHl * cov_YHl_YLldot / var_YLldot;
+
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "var reduce ratio = " << ratio << " rho2_LH = "<< rho2_LH
+	 << " rho_dot2_LH = " << rho_dot2_LH << std::endl;
 }
 
 
