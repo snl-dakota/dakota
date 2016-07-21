@@ -64,9 +64,58 @@ void NonDExpDesignBayesCalibration::core_run()
   const IntResponseMap& all_responses = lhs_iterator.all_responses();
 
   ExperimentData exp_data(initSamples,all_responses);
- 
-  // now go into loop with QUESO, generate posterior on theta, and 
-  // calculate mutual information 
+  for (size_t i=0; i<initSamples; i++)
+    Cout << "Exp Data  i " << i << " value = " << exp_data.all_data(i);
+
+  Iterator queso_iterator;
+  NonDQUESOBayesCalibration* queso_rep;
+  
+  // need to initialize this from user input eventually
+  size_t num_candidates = 100, num_mcmc_samples=1000; 
+
+  bool stop_metric = false;
+  double max_MI = 0; 
+
+  while (!stop_metric) {
+    // need to determine if we construct QUESO every time we go through the loop or not
+    //queso_rep = new NonDQUESOBayesCalibration(prior, exp_data, options);
+    //queso_iterator.assign_rep(queso_rep,false);
+    //queso_iterator.run();
+
+    // after QUESO is run, get the posterior values of the samples
+    // currently, it looks like acceptedFnVals is a protected data member within NonDBayesCalibration
+    // We will need to expose this by adding a function such as post_sample() shown below
+    // RealMatrix posterior_theta = queso_iterator->post_sample();  
+     
+    // go through all the designs and pick the one with maximum mutual information
+    for (size_t i=0; i<num_candidates; i++) {
+      // Get the lowFidModelPtr that we initialized from the input file in the constructor,
+      // initialize the low fidelity model.  
+      // Declare a matrix to store the low fidelity responses
+      // RealMatrix responses_low;
+      for (size_t j=0; j<num_mcmc_samples; j++) {
+        // for each posterior sample, get the variable values, and run the model
+        // low_fid_model_vars = posterior_theta(j,:); 
+        // lowFidModel.evaluate();
+        // responses_low(j,:)  = lowFidModel.current_responses().function_values();
+       
+      }
+      // now concatenate posterior_theta and responses_low into Xmatrix
+      // calculate the mutual information with posterior_theta and responses_low matrices
+      // MI = queso_iterator.knn_mutual_info(Xmatrix, num_theta, num_responses);
+      
+      // Now track max MI:
+      // if ( MI > max_MI) { 
+      //   max_MI = MI; 
+      //   design_new = design_i;
+      //}
+    } // end for over the number of candidates
+
+    // evaluate hi fidelity iteratedModel at design_i;
+    // Add this data to the expData for the next iteteration of likelihood
+    // check stopping metric (may just start with doing this 5 times?
+    stop_metric = true;
+  } // end while loop
 
 }
 
