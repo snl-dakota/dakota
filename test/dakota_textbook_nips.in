@@ -1,5 +1,6 @@
 #@ s6: DakotaConfig=HAVE_NPSOL
 #@ s7: UserMan=textbook_nls_datafile
+#@ s10: DakotaConfig=HAVE_ACRO
 # DAKOTA INPUT FILE - dakota_textbook_nips.in
 ## Dakota Input File: textbook_nls_datafile.in		#s7
 

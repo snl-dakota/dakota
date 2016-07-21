@@ -1,3 +1,5 @@
+#@ s6: DakotaConfig=HAVE_ACRO
+#@ s15: DakotaConfig=HAVE_ACRO
 #@ s0: DakotaConfig=HAVE_DOT
 #@ s9: DakotaConfig=HAVE_DOT
 #@ s1: DakotaConfig=HAVE_DOT
