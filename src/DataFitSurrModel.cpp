@@ -1781,6 +1781,23 @@ import_points(unsigned short tabular_format, bool active_only)
 			       reuseFileVars, reuseFileResponses,
 			       tabular_format, verbose, active_only);
 
+  /////////////////////////////////////////////////////////////////////////
+  // TO DO: should import_points -> current cache/restart be managed in the
+  //        same way as a restart read -> current cache/restart?
+  if (false) {
+    VarsLIter v_it; RespLIter r_it; String interface_id;
+    if (!actualModel.is_null()) interface_id = actualModel.interface_id();
+    /// array of response sets read from the \c import_build_points_file
+    for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
+	 v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
+	 ++v_it, ++r_it) {
+      ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
+      parallelLib.write_restart(pr); // write imported data to current restart
+      // insert in evaluation cache as well?
+    }
+  }
+  /////////////////////////////////////////////////////////////////////////
+  
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << reuseFileVars.size()
 	 << " total points." << std::endl;
