@@ -92,6 +92,7 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
+       SUBMETHOD_EXPDESIGN_BAYES,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -250,6 +251,8 @@ public:
   /// string pointer to the model specification to be used by this method
   /// (from the \c model_pointer specification in \ref MethodIndControl)
   String modelPointer;
+  /// string to point to the low fidelity model for Bayesian experimental design
+  String lowFidModelPointer;
   /// method verbosity control: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   /// (from the \c output specification in \ref MethodIndControl)
   short methodOutput;

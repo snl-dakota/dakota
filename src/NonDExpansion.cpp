@@ -403,6 +403,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
     // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
     // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
+  //growth_rate = Pecos::SLOW_RESTRICTED_GROWTH; // sync with UQTk restricted
 
   short driver_mode = (false)//(methodName == STOCH_COLLOCATION) // TO DO
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;

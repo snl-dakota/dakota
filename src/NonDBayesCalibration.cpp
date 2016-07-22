@@ -888,6 +888,11 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   // Read std_dev and correl matrices if specified for experiments
   RealVectorArray std_deviations;
   RealSymMatrixArray correl_matrices;
+  //if (!expData.variance_active()) {
+  //  Cerr << "We require the specification of a scalar, diagonal, or matrix variance type for " 
+  //       << "calculating the prediction intervals. " << std::endl;
+  //  abort_handler(-1);
+  //}
   if (calibrationData && expData.variance_active()){
     expData.cov_std_deviation(std_deviations);
     expData.cov_as_correlation(correl_matrices);

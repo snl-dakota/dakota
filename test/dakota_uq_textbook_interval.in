@@ -1,6 +1,7 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=2
-
+#@ s1: DakotaConfig=HAVE_ACRO
+#@ s2: DakotaConfig=HAVE_ACRO
 # DAKOTA INPUT FILE - dakota_uq_cantilever_interval.in
 
 environment,    

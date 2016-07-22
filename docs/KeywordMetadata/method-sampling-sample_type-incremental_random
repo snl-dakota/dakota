@@ -37,6 +37,7 @@ following:
 \verbatim
 method
   sampling
+    seed = 1337
     sample_type incremental_random
     samples = 50
       refinement_samples = 10
@@ -47,7 +48,9 @@ running the second sample set night be:
 dakota -i input60.in -r dakota.50.rst
 \endverbatim
 where \c dakota.50.rst is the restart file containing the results of the
-previous study.
+previous study. A value for \c seed should be specified and must match
+in the initial and incremental studies to ensure that the generated samples
+are the same.
 
 Theory::
 Faq::

@@ -7,6 +7,8 @@
 #@ s7: UserMan=rosen_syscall
 #@ s8: UserMan=rosen_opt_nls
 #@ s9: UserMan=rosen_opt_scaled
+#@ s4: DakotaConfig=HAVE_ACRO
+#@ s5: DakotaConfig=HAVE_ACRO
 #@ [taxonomy:start]
 #@ s0-1: [analysis:SensitivityAnalysis]
 #@ s2: [analysis:Optimization]

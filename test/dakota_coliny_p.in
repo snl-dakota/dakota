@@ -1,5 +1,7 @@
 #@ s*: Label=FastTest
+#@ s*: DakotaConfig=HAVE_ACRO
 #@ p*: MPIProcs=2
+#@ p*: DakotaConfig=HAVE_ACRO
 
 # DAKOTA INPUT FILE - dakota_coliny_p.in
 

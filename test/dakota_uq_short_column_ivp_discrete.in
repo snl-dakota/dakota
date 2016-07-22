@@ -1,4 +1,8 @@
-
+#@ s1: DakotaConfig=HAVE_ACRO
+#@ s2: DakotaConfig=HAVE_ACRO
+#@ s3: DakotaConfig=HAVE_ACRO
+#@ s4: DakotaConfig=HAVE_ACRO
+#@ s5: DakotaConfig=HAVE_ACRO
 
 environment,
 	  method_pointer = 'EPISTEMIC'

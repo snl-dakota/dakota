@@ -107,6 +107,13 @@ void NomadOptimizer::core_run()
   // Create parameters
   NOMAD::Parameters p (out);
      
+  // If model is a surrogate, build it and tell NOMAD to make use of
+  // it.
+  if (iteratedModel.model_type() == "surrogate") {
+    iteratedModel.build_approximation();
+    p.set_HAS_SGTE(true);
+  }
+
   // Load Input Parameters
   numTotalVars = numContinuousVars + numDiscreteIntVars 
                + numDiscreteRealVars + numDiscreteStringVars;
@@ -383,7 +390,14 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   }
 
   // Compute the Response using Dakota Interface
-  _model.evaluate();
+  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE)) {
+    short orig_resp_mode = _model.surrogate_response_mode();
+    _model.surrogate_response_mode(BYPASS_SURROGATE);
+    _model.evaluate();
+    _model.surrogate_response_mode(orig_resp_mode);
+  }
+  else
+    _model.evaluate();
 
   // Obtain Model response
   const RealVector& ftn_vals = _model.current_response().function_values();

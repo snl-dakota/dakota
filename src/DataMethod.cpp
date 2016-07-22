@@ -164,7 +164,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
     << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
     << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethod << subMethodName << subModelPointer << subMethodPointer;
+    << subMethod << subMethodName << subModelPointer << subMethodPointer
+    << lowFidModelPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -305,7 +306,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
     >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
     >> linearEqTargets >> linearEqScaleTypes >> linearEqScales >> methodName
-    >> subMethod >> subMethodName >> subModelPointer >> subMethodPointer;
+    >> subMethod >> subMethodName >> subModelPointer >> subMethodPointer
+    >> lowFidModelPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -447,7 +449,8 @@ void DataMethodRep::write(std::ostream& s) const
     << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
     << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
     << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethod << subMethodName << subModelPointer << subMethodPointer;
+    << subMethod << subMethodName << subModelPointer << subMethodPointer 
+    << lowFidModelPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling

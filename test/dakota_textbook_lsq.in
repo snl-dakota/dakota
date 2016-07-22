@@ -1,3 +1,4 @@
+#@ s4: DakotaConfig=HAVE_ACRO
 # Test least squares transformations with annotated data file (freeform on some)
 #   0: nl2sol, freeform data
 #   1: nl2sol, annotated data
