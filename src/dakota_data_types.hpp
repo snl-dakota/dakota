@@ -66,6 +66,7 @@ typedef std::vector<UShortArray>    UShort2DArray;
 typedef std::vector<UShort2DArray>  UShort3DArray;
 typedef std::vector<size_t>         SizetArray;
 typedef std::vector<SizetArray>     Sizet2DArray;
+typedef std::vector<Sizet2DArray>   Sizet3DArray;
 typedef std::vector<String>         StringArray;
 typedef std::vector<StringArray>    String2DArray;
 

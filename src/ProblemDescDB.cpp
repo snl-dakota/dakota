@@ -2297,6 +2297,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"jega.postprocessor_type", P postProcessorType},
 	{"lipschitz", P lipschitzType},
 	{"log_file", P logFile},
+	{"low_fidelity_model_pointer", P lowFidModelPointer},
 	{"mesh_adaptive_search.display_format", P displayFormat},
 	{"mesh_adaptive_search.history_file", P historyFile},
 	{"model_pointer", P modelPointer},

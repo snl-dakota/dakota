@@ -88,6 +88,7 @@ public:
                  short output_level,
                  std::string scalarDataFilename = "");
  
+  ExperimentData(size_t num_experiments, const IntResponseMap& all_responses); 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor

@@ -1,4 +1,6 @@
 #@ s*: Label=FastTest
+#@ s0: DakotaConfig=HAVE_ACRO
+#@ s1: DakotaConfig=HAVE_ACRO
 # DAKOTA INPUT FILE - dakota_multiobj3.in
 
 # Unconstrained nongradient-based multiobjective optimization using

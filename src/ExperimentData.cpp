@@ -55,6 +55,19 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
   initialize(variance_types, srd);
 }
 
+ExperimentData::
+ExperimentData(size_t num_experiments, const IntResponseMap& all_responses):
+  calibrationDataFlag(false), 
+  numExperiments(num_experiments), numConfigVars(0),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0)
+{
+  IntRespMCIter resp_it = all_responses.begin();
+  IntRespMCIter resp_end = all_responses.end();
+ 
+  for (size_t i =0 ; resp_it != resp_end, i<num_experiments; ++resp_it,++i ) 
+     allExperiments.push_back(resp_it->second);
+}
+
 
 void ExperimentData::initialize(const StringArray& variance_types, 
 				const SharedResponseData& srd)
