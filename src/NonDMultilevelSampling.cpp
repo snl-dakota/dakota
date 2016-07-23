@@ -2169,12 +2169,20 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 void NonDMultilevelSampling::print_results(std::ostream& s)
 {
   if (statsFlag) {
-    size_t num_mf = NLev.size();
-    if (num_mf == 1) s << "<<<<< Final samples per level:\n" << NLev[0];
-    else {
-      s << "<<<<< Final samples per model form:\n";
-      for (size_t i=0; i<num_mf; ++i)
-	s << "      Model Form " << i+1 << ":\n" << NLev[i];
+    size_t i, j, num_mf = NLev.size(), width = write_precision+7;
+    if (num_mf == 1)  s << "<<<<< Final samples per level:\n";
+    else              s << "<<<<< Final samples per model form:\n";
+    for (i=0; i<num_mf; ++i) {
+      if (num_mf > 1)	s << "      Model Form " << i+1 << ":\n";
+      size_t num_lev = NLev[i].size();
+      for (j=0; j<num_lev; ++j) {
+	const SizetArray& N_ij = NLev[i][j];
+	s << "                     " << std::setw(width) << N_ij[0];
+	if (!homogeneous(N_ij)) // print all qoi counts
+	  for (size_t q=1; q<numFunctions; ++q)
+	    s << ' ' << N_ij[q];
+	s << '\n';
+      }
     }
     s << "<<<<< Equivalent number of high fidelity evaluations: "
       << equivHFEvals << "\n\nStatistics based on multilevel sample set:\n";

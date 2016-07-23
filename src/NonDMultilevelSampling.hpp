@@ -369,6 +369,9 @@ private:
   /// to a new target
   size_t one_sided_delta(Real current, Real target);
 
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
+
   //
   //- Heading: Data
   //
@@ -570,6 +573,16 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
 
 inline size_t NonDMultilevelSampling::one_sided_delta(Real current, Real target)
 { return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+
+
+inline bool NonDMultilevelSampling::homogeneous(const SizetArray& N_l) const
+{
+  size_t N0 = N_l[0], i, len = N_l.size();
+  for (i=1; i<len; ++i)
+    if (N_l[i] != N0)
+      return false;
+  return true;
+}
 
 } // namespace Dakota
 
