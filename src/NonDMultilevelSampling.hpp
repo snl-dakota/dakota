@@ -348,9 +348,13 @@ private:
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across QoI 
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy sums
   Real aggregate_mse(const Real* sum_Y, const Real* sum_YY,
 			   const SizetArray& N_l);
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy variances
+  Real aggregate_mse(const Real* var_Y, const SizetArray& N_l);
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -523,6 +527,16 @@ aggregate_mse(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
     var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
     agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
   }
+  return agg_mse;
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_mse(const Real* var_Y, const SizetArray& N_l)
+{
+  Real agg_mse = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
   return agg_mse;
 }
 

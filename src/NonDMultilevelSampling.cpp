@@ -548,7 +548,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	    write_data(Cout, sum_HH1);
 	  }
 	  raw_N_hf[lev] += numSamples;
-	  // aggregate variance across QoI for this level
+	  // aggregate Y variances across QoI for this level
 	  agg_var_hf_l
 	    = aggregate_variance(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -559,10 +559,11 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
 		  (1. - avg_rho2_LH[lev])) :
 	std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // mean sq error reference is MC applied to HF:
+      // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
-	estimator_var0
-	  += aggregate_mse(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
+	estimator_var0 += (lev < num_cv_lev) ?
+	  aggregate_mse(var_H[lev], N_hf[lev]) :
+	  aggregate_mse(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -771,7 +772,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  }
 	}
 	else { // no LF model for this level; accumulate only multilevel
-	       // discrepancy sums as in standard MLMC
+	       // discrepancy sums (Hl is Yl) as in standard MLMC
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
 	  accumulate_ml_sums(sum_Hl, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
 	  if (outputLevel == DEBUG_OUTPUT) {
@@ -780,7 +781,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	    write_data(Cout, sum_HH1);
 	  }
 	  raw_N_hf[lev] += numSamples;
-	  // aggregate variance across QoI for this level
+	  // aggregate Y variances across QoI for this level
 	  agg_var_hf_l
 	    = aggregate_variance(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -791,10 +792,11 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
 		  (1. - avg_rho_dot2_LH[lev])) :
 	std::sqrt(agg_var_hf_l * hf_lev_cost);
-      // mean sq error reference is MC applied to HF:
+      // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
-	estimator_var0 +=
-	  aggregate_mse(sum_Hl[1][lev],sum_Hl_Hl[1][lev], N_hf[lev]);
+	estimator_var0 += (lev < num_cv_lev) ?
+	  aggregate_mse(var_Yl[lev], N_hf[lev]) :
+	  aggregate_mse(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
