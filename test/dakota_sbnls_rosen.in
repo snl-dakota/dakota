@@ -2,6 +2,9 @@
 #@ s5: DakotaConfig=HAVE_NPSOL
 #@ s6: DakotaConfig=HAVE_NPSOL
 #@ s7: DakotaConfig=HAVE_DOT
+#@ s8: DakotaConfig=HAVE_NPSOL
+#@ s9: DakotaConfig=HAVE_DOT
+
 # DAKOTA INPUT FILE - dakota_sbnls_rosen.in
 
 # Surrogate-based nonlinear least squares to minimize Rosenbrock's function.
