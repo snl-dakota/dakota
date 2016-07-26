@@ -288,7 +288,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     for SurrogateData::anchor{Vars,Resp}, so is an unconstrained build. */
 void DataFitSurrModel::build_approximation()
 {
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+  Cout << "\n>>>>> Building " << surrogateType << " approximations1.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
   approxInterface.clear_current();
@@ -320,7 +320,7 @@ void DataFitSurrModel::build_approximation()
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed1.\n";
 }
 
 
@@ -387,7 +387,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 bool DataFitSurrModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+  Cout << "\n>>>>> Building " << surrogateType << " approximations2.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
   approxInterface.clear_current();
@@ -427,7 +427,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed2.\n";
 
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be

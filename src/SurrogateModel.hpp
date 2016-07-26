@@ -66,9 +66,6 @@ protected:
   /// return miPLIndex
   size_t mi_parallel_level_index() const;
 
-  /// return deltaCorr
-  DiscrepancyCorrection& discrepancy_correction();
-
   //
   //- Heading: Member functions
   //
@@ -179,11 +176,6 @@ protected:
   /// a rebuild is required.
   RealVector referenceIDRVars;
 
-  /// manages construction and application of correction functions that
-  /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
-  /// order to reproduce high fidelity data.
-  DiscrepancyCorrection deltaCorr;
-
 private:
 
   //
@@ -213,10 +205,6 @@ inline short SurrogateModel::surrogate_response_mode() const
 
 inline size_t SurrogateModel::mi_parallel_level_index() const
 { return miPLIndex; }
-
-
-inline DiscrepancyCorrection& SurrogateModel::discrepancy_correction()
-{ return deltaCorr; }
 
 
 inline void SurrogateModel::check_key(int key1, int key2) const
