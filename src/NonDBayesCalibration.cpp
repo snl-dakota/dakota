@@ -829,11 +829,6 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
   // Augment function values with experimental uncertainty for prediction ints
   size_t num_exp = expData.num_experiments();
   size_t num_concatenated = num_exp*num_filtered;
-  //RealMatrix predVals;
-  predVals.shapeUninitialized(numFunctions, num_concatenated);
-  compute_prediction_vals(filteredFnVals, predVals, 
-      			  num_filtered, num_exp, num_concatenated);
-  RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
 
   const StringArray& resp = mcmcModel.current_response().function_labels(); 
   size_t width = write_precision+7;
@@ -855,21 +850,29 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
                << '\n';
   }    
   interval_stream << "\n";
+  
   // Calculate +/- 2sigma prediction intervals
-  RealVector Pred_ave(numFunctions), Pred_stdevs(numFunctions),
-	     Pred_interval_minima(numFunctions), 
-	     Pred_interval_maxima(numFunctions);
-  compute_col_means(predVals_transpose, Pred_ave);
-  compute_col_stdevs(predVals_transpose, Pred_ave, Pred_stdevs);
-  interval_stream << "2 sigma Prediction Intervals\n";
-  for(size_t i=0; i<numFunctions; ++i){
-    Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
-    Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
-    interval_stream << std::setw(width) << resp[i] << " ";
-    interval_stream << Pred_interval_minima[i] << ", "<< Pred_interval_maxima[i] 
-	       << '\n';
+  predVals.shapeUninitialized(numFunctions, num_concatenated);
+  RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
+  if (expData.variance_active()) {
+    compute_prediction_vals(filteredFnVals, predVals, 
+    			    num_filtered, num_exp, num_concatenated);
+    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
+    RealVector Pred_ave(numFunctions), Pred_stdevs(numFunctions),
+	       Pred_interval_minima(numFunctions), 
+	       Pred_interval_maxima(numFunctions);
+    compute_col_means(predVals_transpose, Pred_ave);
+    compute_col_stdevs(predVals_transpose, Pred_ave, Pred_stdevs);
+    interval_stream << "2 sigma Prediction Intervals\n";
+    for(size_t i=0; i<numFunctions; ++i){
+      Pred_interval_minima[i] = Pred_ave[i] - 2*Pred_stdevs[i];
+      Pred_interval_maxima[i] = Pred_ave[i] + 2*Pred_stdevs[i];
+      interval_stream << std::setw(width) << resp[i] << " ";
+      interval_stream << Pred_interval_minima[i]<< ", "<<Pred_interval_maxima[i] 
+	         << '\n';
+    }
   }
-  interval_stream << "\n";
+    interval_stream << "\n";
   // Calculate intervals with sorting - print to screen and interval file
   size_t num_levels = 0;
   for(int i = 0; i < numFunctions; ++i){
@@ -888,15 +891,10 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   // Read std_dev and correl matrices if specified for experiments
   RealVectorArray std_deviations;
   RealSymMatrixArray correl_matrices;
-  //if (!expData.variance_active()) {
-  //  Cerr << "We require the specification of a scalar, diagonal, or matrix variance type for " 
-  //       << "calculating the prediction intervals. " << std::endl;
-  //  abort_handler(-1);
+  //if (calibrationData && expData.variance_active()){
+  expData.cov_std_deviation(std_deviations);
+  expData.cov_as_correlation(correl_matrices);
   //}
-  if (calibrationData && expData.variance_active()){
-    expData.cov_std_deviation(std_deviations);
-    expData.cov_as_correlation(correl_matrices);
-  }
   
   // Augment function values with experimental uncertainty for prediction ints
   // Generate normal errors using LHS
@@ -1101,30 +1099,32 @@ void NonDBayesCalibration::print_intervals_file
     }
   }
   // Prediction Intervals
-  for(int i = 0; i < numFunctions; ++i){
-    // Sort function values 
-    const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
-				 predVals_transpose, i);
-    std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
-    // Write intervals
-    size_t num_prob_levels = requestedProbLevels[i].length();
-    if (num_prob_levels > 0){
-      s << "Prediction Intervals for ";
-      s << resp[i] << '\n';
-      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
-      for (size_t j = 0; j < num_prob_levels; ++j){
-        alpha = requestedProbLevels[i][j];
-        //s << "alpha = " << alpha << '\n';
-        lower_index = floor(alpha/2*(num_concatenated));
-        upper_index = num_concatenated - lower_index;
-        s << std::setw(width) << ' ' << std::setw(width) 
-	  << col_vec1[lower_index] << ' ' << std::setw(width) 
-	  << alpha << '\n'
-	  << std::setw(width) << ' ' << std::setw(width) 
-	  << col_vec1[upper_index] << ' '<< std::setw(width) 
-	  << 1-alpha << '\n'
-	  << std::setw(width) << ' ' <<  "        -----             -----\n";
+  if (expData.variance_active()) {
+    for(int i = 0; i < numFunctions; ++i){
+      // Sort function values 
+      const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
+				   predVals_transpose, i);
+      std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
+      // Write intervals
+      size_t num_prob_levels = requestedProbLevels[i].length();
+      if (num_prob_levels > 0){
+        s << "Prediction Intervals for ";
+        s << resp[i] << '\n';
+        s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
+        s << std::setw(width) << ' ' << " ----------------- -----------------\n";
+        for (size_t j = 0; j < num_prob_levels; ++j){
+          alpha = requestedProbLevels[i][j];
+          //s << "alpha = " << alpha << '\n';
+          lower_index = floor(alpha/2*(num_concatenated));
+          upper_index = num_concatenated - lower_index;
+          s << std::setw(width) << ' ' << std::setw(width) 
+	    << col_vec1[lower_index] << ' ' << std::setw(width) 
+	    << alpha << '\n'
+	    << std::setw(width) << ' ' << std::setw(width) 
+	    << col_vec1[upper_index] << ' '<< std::setw(width) 
+	    << 1-alpha << '\n'
+	    << std::setw(width) << ' ' <<  "        -----             -----\n";
+        }
       }
     }
   }
@@ -1168,31 +1168,33 @@ void NonDBayesCalibration::print_intervals_screen
     }
   }
   // Prediction Intervals
-  size_t num_exp = expData.num_experiments();
-  size_t num_concatenated = num_exp*num_filtered;
-  for(int i = 0; i < numFunctions; ++i){
-    // Sort function values 
-    const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
-				 predVals_transpose, i);
-    std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
-    // Write intervals
-    size_t num_prob_levels = requestedProbLevels[i].length();
-    if (num_prob_levels > 0){
-      s << "Prediction Intervals for ";
-      s << resp[i] << '\n';
-      s << std::setw(width) << ' ' << " Response Level    Probability Level\n";
-      s << std::setw(width) << ' ' << " ----------------- -----------------\n";
-      for (size_t j = 0; j < num_prob_levels; ++j){
-        alpha = requestedProbLevels[i][j];
-        lower_index = floor(alpha/2*(num_concatenated));
-        upper_index = num_concatenated - lower_index;
-        s << std::setw(width) << ' ' << std::setw(width) 
-	  << col_vec1[lower_index] << ' ' << std::setw(width) 
-	  << alpha << '\n'
-	  << std::setw(width) << ' ' << std::setw(width) 
-	  << col_vec1[upper_index] << ' '<< std::setw(width) 
-	  << 1-alpha << '\n';
-	  //<< std::setw(width) << ' ' <<  "        -----             -----\n";
+  if (expData.variance_active() ) {
+    size_t num_exp = expData.num_experiments();
+    size_t num_concatenated = num_exp*num_filtered;
+    for(int i = 0; i < numFunctions; ++i){
+      // Sort function values 
+      const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
+				   predVals_transpose, i);
+      std::sort(col_vec1.values(), col_vec1.values() + num_concatenated);
+      // Write intervals
+      size_t num_prob_levels = requestedProbLevels[i].length();
+      if (num_prob_levels > 0){
+        s << "Prediction Intervals for ";
+        s << resp[i] << '\n';
+        s << std::setw(width) <<' '<< " Response Level    Probability Level\n";
+        s << std::setw(width) <<' '<< " ----------------- -----------------\n";
+        for (size_t j = 0; j < num_prob_levels; ++j){
+          alpha = requestedProbLevels[i][j];
+          lower_index = floor(alpha/2*(num_concatenated));
+          upper_index = num_concatenated - lower_index;
+          s << std::setw(width) << ' ' << std::setw(width) 
+	    << col_vec1[lower_index] << ' ' << std::setw(width) 
+	    << alpha << '\n'
+	    << std::setw(width) << ' ' << std::setw(width) 
+	    << col_vec1[upper_index] << ' '<< std::setw(width) 
+	    << 1-alpha << '\n';
+	    //<< std::setw(width) << ' ' <<  "        -----             -----\n";
+        }
       }
     }
   }
