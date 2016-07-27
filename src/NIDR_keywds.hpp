@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1892 distinct keywords (plus 250 aliases) **/
+/** 1893 distinct keywords (plus 250 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1486,13 +1486,14 @@ static KeyWord
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_LHS)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
 		},
-	kw_244[7] = {
+	kw_244[8] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,4,0,0,kw_32},
-		{"convergence_tolerance",10,0,5,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"max_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"pilot_samples",13,0,2,0,0,0.,0.,0,N_mdm(szarray,pilotSamples)},
-		{"sample_type",8,2,3,0,kw_243},
+		{"convergence_tolerance",10,0,6,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
+		{"fixed_seed",8,0,2,0,0,0.,0.,0,N_mdm(true,fixedSeedFlag)},
+		{"max_iterations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"pilot_samples",13,0,3,0,0,0.,0.,0,N_mdm(szarray,pilotSamples)},
+		{"sample_type",8,2,4,0,kw_243},
 		{"seed",0x19,0,1,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
 	kw_245[9] = {
@@ -2194,8 +2195,8 @@ static KeyWord
 		{"moga",8,17,4,1,kw_238,0.,0.,0,N_mdm(utype,methodName_MOGA)},
 		{"multi_start",8,4,4,1,kw_241,0.,0.,0,N_mdm(utype,methodName_MULTI_START)},
 		{"multidim_parameter_study",8,1,4,1,kw_242,0.,0.,0,N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)},
-		{"multilevel_mc",0,5,4,1,kw_244,0.,0.,1,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
-		{"multilevel_sampling",8,5,4,1,kw_244,0.,0.,0,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
+		{"multilevel_mc",0,6,4,1,kw_244,0.,0.,1,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
+		{"multilevel_sampling",8,6,4,1,kw_244,0.,0.,0,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
 		{"ncsu_direct",8,8,4,1,kw_245,0.,0.,0,N_mdm(utype,methodName_NCSU_DIRECT)},
 		{"nl2sol",8,14,4,1,kw_246,0.,0.,0,N_mdm(utype,methodName_NL2SOL)},
 		{"nlpql_sqp",8,13,4,1,kw_247,0.,0.,0,N_mdm(utype,methodName_NLPQL_SQP)},
