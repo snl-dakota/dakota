@@ -91,6 +91,7 @@ private:
                                    ///< with uncertain field diffusivity
   int transient_diffusion_1d(); ///< solve the 1d transient diffusion equation
                                 ///< with uncertain scalar diffusivity
+  int predator_prey(); /// solve a predator prey population dynamics model
 
   int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function
   int steel_column_perf(); ///< the steel_column_perf UQ/OUU test function
