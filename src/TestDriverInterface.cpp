@@ -1847,7 +1847,7 @@ int TestDriverInterface::transient_diffusion_1d()
   // ------------------------------------------------------------- //
 
   // Get the mesh resolution from the first discrete integer variable
-  size_t mesh_size_index = find_index(xDILabels, "mesh_size");
+  size_t mesh_size_index = find_index(xDILabels, "time_steps");
   int num_tsteps = ( mesh_size_index == _NPOS ) ? 101 : xDI[mesh_size_index];
 
   if (num_tsteps % 2!=1) {
