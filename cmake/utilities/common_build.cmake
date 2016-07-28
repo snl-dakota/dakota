@@ -260,7 +260,8 @@ if ( ${ConfigStatus} EQUAL 0 )
 	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
       # TODO: Propagate the exit code
       message("Submitting tests to batch system.")
-      execute_process(COMMAND dakota_sbatch.sh 
+      message("CTEST_BINARY_DIRECTORY: ${CTEST_BINARY_DIRECTORY}")
+      execute_process(COMMAND ${CTEST_BINARY_DIRECTORY}/dakota_sbatch.sh 
 	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
 	RESULT_VARIABLE CtestStatus)
     elseif (DAKOTA_TEST_MSUB)
@@ -276,7 +277,7 @@ if ( ${ConfigStatus} EQUAL 0 )
 	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
       # TODO: Propagate the exit code
       message("Submitting tests to batch system.")
-      execute_process(COMMAND dakota_msub.sh 
+      execute_process(COMMAND ${CTEST_BINARY_DIRECTORY}/dakota_msub.sh 
 	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
 	RESULT_VARIABLE CtestStatus)
     else()
