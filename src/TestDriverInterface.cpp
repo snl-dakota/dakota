@@ -905,7 +905,7 @@ int TestDriverInterface::modified_rosenbrock()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (numFns > 2) { // 1 fn -> opt, 2 fns -> least sq
+  if (numFns > 3) { // 1 fn -> opt, 2 fns -> least sq
     Cerr << "Error: Bad number of functions in modified rosenbrock direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
