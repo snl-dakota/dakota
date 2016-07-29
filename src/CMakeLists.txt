@@ -537,7 +537,8 @@ if(DAKOTA_F90)
 endif(DAKOTA_F90)
 
 if(HAVE_ACRO)
-  add_definitions("-DDAKOTA_COLINY")
+  add_definitions("-DHAVE_ACRO")
+  #add_definitions("-DDAKOTA_COLINY")
   add_definitions("-DDAKOTA_UTILIB")
 
   list(APPEND DAKOTA_INCDIRS ${Acro_BINARY_DIR}/packages

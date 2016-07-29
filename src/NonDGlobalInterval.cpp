@@ -24,7 +24,7 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
-#ifdef DAKOTA_COLINY
+#ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
 #endif
 #include "pecos_stat_util.hpp"
@@ -190,7 +190,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     else // EA controls from user spec
       { max_ea_iter = maxIterations; max_ea_eval = maxFunctionEvals; }
 
-#ifdef DAKOTA_COLINY
+#ifdef HAVE_ACRO
     // mixed EA (ignores GP variance)
     intervalOptimizer.assign_rep(new
       COLINOptimizer("coliny_ea", intervalOptModel, seedSpec, max_ea_iter,

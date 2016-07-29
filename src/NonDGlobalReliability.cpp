@@ -19,7 +19,7 @@
 //#include "DDACEDesignCompExp.hpp"
 //#include "FSUDesignCompExp.hpp"
 #include "NonDAdaptImpSampling.hpp"
-//#ifdef DAKOTA_COLINY
+//#ifdef HAVE_ACRO
 //#include "COLINOptimizer.hpp"
 //#endif
 #include "RecastModel.hpp"
@@ -290,7 +290,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 #ifdef HAVE_NCSU  
   mppOptimizer.assign_rep(new NCSUOptimizer(mppModel, max_iter, max_eval,
 					    min_box_size, vol_box_size), false);
-  //#ifdef DAKOTA_COLINY
+  //#ifdef HAVE_ACRO
   //int coliny_seed = 0; // system-generated, for now
   //mppOptimizer.assign_rep(new
   //  COLINOptimizer<coliny::DIRECT>(mppModel, coliny_seed), false);

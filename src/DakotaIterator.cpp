@@ -78,7 +78,7 @@
 #include "SNLLOptimizer.hpp"
 #include "SNLLLeastSq.hpp"
 #endif
-#ifdef DAKOTA_COLINY
+#ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
 #include "PEBBLMinimizer.hpp"
 #endif
@@ -442,7 +442,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case ASYNCH_PATTERN_SEARCH:
     return new APPSOptimizer(problem_db, model); break;
 #endif
-#ifdef DAKOTA_COLINY
+#ifdef HAVE_ACRO
   case COLINY_BETA: case COLINY_COBYLA:         case COLINY_DIRECT:
   case COLINY_EA:   case COLINY_PATTERN_SEARCH: case COLINY_SOLIS_WETS:
     return new COLINOptimizer(problem_db, model); break;
@@ -558,7 +558,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   else if (method_string == "asynch_pattern_search")
     return new APPSOptimizer(model);
 #endif
-#ifdef DAKOTA_COLINY
+#ifdef HAVE_ACRO
   else if (strbegins(method_string, "coliny_"))
     return new COLINOptimizer(method_string, model);
   else if (method_string == "branch_and_bound")
