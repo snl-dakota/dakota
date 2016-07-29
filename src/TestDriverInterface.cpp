@@ -1826,17 +1826,16 @@ int TestDriverInterface::transient_diffusion_1d()
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if ( ( numVars < 1 )  || ( numADIV > 1 ) ) {
-    Cerr << "Error: Bad variable types in predator_prey direct fn."
-	 << std::endl;
+  if ( numVars < 1 || numADIV > 1 || numADRV > 1 ) {
+    Cerr << "Error: Bad variable types in predator_prey direct fn."<< std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (numFns != 3) {
-    Cerr << "Error: Bad number of functions in predator_prey "
-	 << "direct fn." << std::endl;
+    Cerr << "Error: Bad number of functions in predator_prey direct fn."
+	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (hessFlag||gradFlag) {
+  if (hessFlag || gradFlag) {
     Cerr << "Error: Gradients and Hessians are not supported in " 
 	 << "predator_prey direct fn." << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -1847,20 +1846,19 @@ int TestDriverInterface::transient_diffusion_1d()
   // ------------------------------------------------------------- //
 
   // Get the mesh resolution from the first discrete integer variable
-  size_t mesh_size_index = find_index(xDILabels, "time_steps");
-  int num_tsteps = ( mesh_size_index == _NPOS ) ? 101 : xDI[mesh_size_index];
-
-  if (num_tsteps % 2!=1) {
-    Cerr << "Error: No. time steps must be odd" << std::endl;
+  size_t step_index = find_index(xDILabels, "time_steps");
+  int num_tsteps = ( step_index == _NPOS ) ? 101 : xDI[step_index];
+  if (num_tsteps % 2 != 1) {
+    Cerr << "Error: Number of time steps must be odd" << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
 
-  Real final_time = 10.;
+  size_t tf_index = find_index(xDRLabels, "final_time");
+  Real final_time = ( tf_index == _NPOS ) ? 10. : xDR[tf_index];
 
   RealVector init_conditions(3);
   init_conditions[0] = 0.7; init_conditions[1] = 0.5;
   init_conditions[2] = 0.2; // these could be made random variables
-  
 
   // ------------------------------------------------------------- //
   // Initialize and evaluate model 
@@ -1868,7 +1866,7 @@ int TestDriverInterface::transient_diffusion_1d()
 
   PredatorPreyModel model;
   model.set_initial_conditions( init_conditions );
-  model.set_time(final_time,final_time/((double)num_tsteps-1.));
+  model.set_time(final_time, final_time/((double)num_tsteps-1.));
   
   model.evaluate( xC, fnVals ); 
 
