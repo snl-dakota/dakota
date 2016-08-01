@@ -733,6 +733,17 @@ if(HAVE_NOMAD)
   list(APPEND EXPORT_TARGETS nomad)
 endif(HAVE_NOMAD)
 
+if(HAVE_NOWPAC)
+  add_definitions("-DHAVE_NOWPAC")
+  list(APPEND DAKOTA_INCDIRS 
+    ${NOWPAC_SOURCE_DIR}/include ${NOWPAC_SOURCE_DIR}/external/nlopt/include ${NOWPAC_SOURCE_DIR}/external/eigen/include/eigen3)
+  link_directories(${NOWPAC_BINARY_DIR}/lib ...) # cmake external package
+  set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
+  list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
+  list(APPEND EXPORT_TARGETS nowpac nlopt)
+  # package requires C++ flags "-std=c++11"
+endif(HAVE_NOWPAC)
+
 CheckPackage(NPSOL)
 if(HAVE_NPSOL)
   list(APPEND iterator_src SOLBase.cpp NPSOLOptimizer.cpp NLSSOLLeastSq.cpp)
