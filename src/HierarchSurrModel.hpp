@@ -21,7 +21,8 @@
 #include "DataModel.hpp"
 
 
-namespace Dakota {
+namespace Dakota
+{
 
 // define special values for componentParallelMode
 #define LF_MODEL 1
@@ -53,6 +54,8 @@ public:
   HierarchSurrModel(ProblemDescDB& problem_db); ///< constructor
   ~HierarchSurrModel();                         ///< destructor
 
+  DiscrepancyCorrection& discrepancy_correction();
+
 protected:
 
   //
@@ -72,7 +75,7 @@ protected:
   Model& surrogate_model();
   /// set the indices identifying the active low fidelity model
   void surrogate_model_indices(size_t lf_model_index,
-			       size_t lf_soln_lev_index = _NPOS);
+                               size_t lf_soln_lev_index = _NPOS);
   /// set the index pair identifying the active low fidelity model
   void surrogate_model_indices(const SizetSizetPair& lf_form_level);
   /// return the indices identifying the active low fidelity model
@@ -82,7 +85,7 @@ protected:
   Model& truth_model();
   /// set the indices identifying the active high fidelity model
   void truth_model_indices(size_t hf_model_index,
-			   size_t hf_soln_lev_index = _NPOS);
+                           size_t hf_soln_lev_index = _NPOS);
   /// set the index pair identifying the active high fidelity model
   void truth_model_indices(const SizetSizetPair& hf_form_level);
   /// return the indices identifying the active high fidelity model
@@ -94,7 +97,7 @@ protected:
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
   void primary_response_fn_weights(const RealVector& wts,
-				   bool recurse_flag = true);
+                                   bool recurse_flag = true);
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -117,17 +120,17 @@ protected:
 
   /// set up parallel operations for the array of ordered model fidelities
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+                                  bool recurse_flag = true);
   /// set up serial operations for the array of ordered model fidelities
   void derived_init_serial();
   /// set active parallel configuration within the current low and
   /// high fidelity models identified by {low,high}FidelityIndices
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+                                 bool recurse_flag = true);
   /// deallocate communicator partitions for the HierarchSurrModel
   /// (request forwarded to the the array of ordered model fidelities)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+                                  bool recurse_flag = true);
 
   /// Service the low and high fidelity model job requests received from the
   /// master; completes when termination message received from stop_servers().
@@ -137,7 +140,7 @@ protected:
   void stop_servers();
 
   /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into 
+  /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true);
 
   /// set the evaluation counter reference points for the HierarchSurrModel
@@ -149,7 +152,7 @@ protected:
   /// print the evaluation summary for the HierarchSurrModel
   /// (request forwarded to the low and high fidelity models)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+                                bool relative_count = true) const;
 
 private:
 
@@ -169,24 +172,24 @@ private:
   /// extract and rekey response maps using blocking or nonblocking
   /// synchronization on the LF and HF models
   void derived_synchronize_sequential(IntResponseMap& hf_resp_map_rekey,
-				      IntResponseMap& lf_resp_map_rekey,
-				      bool block);
+                                      IntResponseMap& lf_resp_map_rekey,
+                                      bool block);
   /// called from derived_synchronize() for case of distinct models/interfaces
   /// with competing LF/HF job queues
   void derived_synchronize_competing();
   /// combine the HF and LF response maps into a combined response map
   void derived_synchronize_combine(const IntResponseMap& hf_resp_map,
-				   IntResponseMap& lf_resp_map,
-				   IntResponseMap& combined_resp_map);
+                                   IntResponseMap& lf_resp_map,
+                                   IntResponseMap& combined_resp_map);
   /// combine the available components from HF and LF response maps
   /// into a combined response map
   void derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
-					  IntResponseMap& lf_resp_map,
-					  IntResponseMap& combined_resp_map);
+                                          IntResponseMap& lf_resp_map,
+                                          IntResponseMap& combined_resp_map);
 
   /// resize currentResponse based on responseMode
   void resize_response();
-  
+
   /// helper function used in the AUTO_CORRECTED_SURROGATE responseMode
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
@@ -194,6 +197,15 @@ private:
   //
   //- Heading: Data members
   //
+
+  /// manages construction and application of correction functions that
+  /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
+  /// order to reproduce high fidelity data.
+  std::map<std::pair<SizetSizetPair,SizetSizetPair>,DiscrepancyCorrection>
+  deltaCorr;
+
+  short corrOrder;
+  short corrType;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -213,7 +225,7 @@ private:
   /// employ the same interface instance, requiring modifications to evaluation
   /// scheduling processes
   bool sameInterfaceInstance;
-  
+
   /// the reference truth (high fidelity) response computed in
   /// build_approximation() and used for calculating corrections
   Response truthResponseRef;
@@ -234,12 +246,20 @@ inline void HierarchSurrModel::check_interface_instance()
   else
     sameInterfaceInstance
       = (orderedModels[lowFidelityIndices.first].interface_id() ==
-	 orderedModels[highFidelityIndices.first].interface_id());
+         orderedModels[highFidelityIndices.first].interface_id());
 }
 
 
 inline Model& HierarchSurrModel::surrogate_model()
-{ return orderedModels[lowFidelityIndices.first]; }
+{
+  return orderedModels[lowFidelityIndices.first];
+}
+
+
+inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
+{
+  return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+}
 
 
 inline void HierarchSurrModel::
@@ -253,6 +273,11 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
 
+  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  if (!delta_corr.initialized())
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
+                                 corrType, corrOrder);
+
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
   //deltaCorr.clear();
@@ -264,12 +289,17 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
 {
   lowFidelityIndices = lf_form_level;
   size_t lf_model_index = lf_form_level.first,
-      lf_soln_lev_index = lf_form_level.second;
+         lf_soln_lev_index = lf_form_level.second;
   sameModelInstance = (lf_model_index == highFidelityIndices.first);
   check_interface_instance();
 
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+
+  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  if (!delta_corr.initialized())
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
+                                 corrType, corrOrder);
 
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
@@ -278,11 +308,15 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
 
 
 inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
-{ return lowFidelityIndices; }
+{
+  return lowFidelityIndices;
+}
 
 
 inline Model& HierarchSurrModel::truth_model()
-{ return orderedModels[highFidelityIndices.first]; }
+{
+  return orderedModels[highFidelityIndices.first];
+}
 
 
 inline void HierarchSurrModel::
@@ -295,6 +329,11 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+
+  DiscrepancyCorrection& delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  if (!delta_corr.initialized())
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
+                                 corrType, corrOrder);
 }
 
 
@@ -303,17 +342,24 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
 {
   highFidelityIndices = hf_form_level;
   size_t hf_model_index = hf_form_level.first,
-      hf_soln_lev_index = hf_form_level.second;
+         hf_soln_lev_index = hf_form_level.second;
   sameModelInstance = (hf_model_index == lowFidelityIndices.first);
   check_interface_instance();
 
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+
+  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  if (!delta_corr.initialized())
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
+                                 corrType, corrOrder);
 }
 
 
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
-{ return highFidelityIndices; }
+{
+  return highFidelityIndices;
+}
 
 
 inline void HierarchSurrModel::
@@ -357,7 +403,9 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
 
 inline void HierarchSurrModel::
 surrogate_function_indices(const IntSet& surr_fn_indices)
-{ surrogateFnIndices = surr_fn_indices; }
+{
+  surrogateFnIndices = surr_fn_indices;
+}
 
 
 inline IntIntPair HierarchSurrModel::
@@ -376,7 +424,7 @@ estimate_partition_bounds(int max_eval_concurrency)
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
   }
   return min_max;
-  
+
   // list nodes are reset at the calling level after completion of recursion
 }
 
@@ -390,7 +438,9 @@ inline void HierarchSurrModel::derived_init_serial()
 
 
 inline void HierarchSurrModel::stop_servers()
-{ component_parallel_mode(0); }
+{
+  component_parallel_mode(0);
+}
 
 
 inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
@@ -428,12 +478,12 @@ inline void HierarchSurrModel::fine_grained_evaluation_counters()
 
 inline void HierarchSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
-			 bool relative_count) const
+                         bool relative_count) const
 {
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
     orderedModels[i].print_evaluation_summary(s, minimal_header,
-					      relative_count);
+        relative_count);
 }
 
 } // namespace Dakota

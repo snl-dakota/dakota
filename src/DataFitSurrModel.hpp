@@ -72,6 +72,8 @@ public:
   /// set pointsTotal and pointsManagement mode
   void total_points(int points);
 
+  DiscrepancyCorrection& discrepancy_correction();
+
 protected:
 
   //
@@ -318,6 +320,11 @@ private:
   //- Heading: Data members
   //
 
+  /// manages construction and application of correction functions that
+  /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
+  /// order to reproduce high fidelity data.
+  DiscrepancyCorrection deltaCorr;
+
   /// total points the user specified to construct the surrogate
   int pointsTotal;
   /// configuration for points management in build_global()
@@ -363,6 +370,10 @@ private:
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
 { finalize_export(); }
+
+
+inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
+{ return deltaCorr; }
 
 
 inline void DataFitSurrModel::total_points(int points)

@@ -288,7 +288,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     for SurrogateData::anchor{Vars,Resp}, so is an unconstrained build. */
 void DataFitSurrModel::build_approximation()
 {
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+  Cout << "\n>>>>> Building " << surrogateType << " approximations1.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
   approxInterface.clear_current();
@@ -320,7 +320,7 @@ void DataFitSurrModel::build_approximation()
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed1.\n";
 }
 
 
@@ -387,7 +387,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 bool DataFitSurrModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+  Cout << "\n>>>>> Building " << surrogateType << " approximations2.\n";
 
   // clear out previous anchor/data points, but preserve history (if multipoint)
   approxInterface.clear_current();
@@ -427,7 +427,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed2.\n";
 
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be
@@ -1781,23 +1781,25 @@ import_points(unsigned short tabular_format, bool active_only)
 			       reuseFileVars, reuseFileResponses,
 			       tabular_format, verbose, active_only);
 
-  /////////////////////////////////////////////////////////////////////////
-  // TO DO: should import_points -> current cache/restart be managed in the
-  //        same way as a restart read -> current cache/restart?
-  if (false) {
-    VarsLIter v_it; RespLIter r_it; String interface_id;
-    if (!actualModel.is_null()) interface_id = actualModel.interface_id();
-    /// array of response sets read from the \c import_build_points_file
-    for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
-	 v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
-	 ++v_it, ++r_it) {
-      ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
-      parallelLib.write_restart(pr); // write imported data to current restart
-      // insert in evaluation cache as well?
-    }
+  // For consistency with restart read, import_points (as well as post_input)
+  // should also promote imported data to current eval cache/restart file.
+  VarsLIter v_it; RespLIter r_it; String interface_id;
+  bool cache = true, restart = true; // default on (with empty id) if no Model
+  if (!actualModel.is_null()) {
+    interface_id = actualModel.interface_id();
+    cache        = actualModel.evaluation_cache();
+    //restart    = actualModel.restart_file(); // TO DO: add virtual fn
   }
-  /////////////////////////////////////////////////////////////////////////
-  
+  /// array of response sets read from the \c import_build_points_file
+  for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
+       v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
+       ++v_it, ++r_it) {
+    ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
+    if (restart) parallelLib.write_restart(pr);
+    if (cache)   data_pairs.insert(pr);
+  }
+  // TO DO: update Analyzer::read_variables_responses() to support post_input()
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Surrogate model retrieved " << reuseFileVars.size()
 	 << " total points." << std::endl;

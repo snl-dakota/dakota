@@ -393,7 +393,13 @@ and the Constrained Optimization BY Linear Approximations (COBYLA)
 while the latter handles nonlinear constraints.  \emph{One drawback of
   both simplex-based methods is that their current implementations do
   not allow them to take advantage of parallel computing resources via
-  Dakota's infrastructure.}
+  Dakota's infrastructure.  Additionally, we note that the
+  implementation of COBYLA is such that the best function value is not
+  always returned to Dakota for reporting.  The user is advised to
+  look through the Dakota output to confirm what the best function
+  value and corresponding parameter values are.  This behavior will
+  not be changed, as maintaining third-party source code (such as
+  COBYLA) is outside of the Dakota project scope.}
 
 A {\bf Greedy Search Heuristic} for nonlinear optimization problems is
 captured in the Solis-Wets (\texttt{coliny\_solis\_wets}) method.

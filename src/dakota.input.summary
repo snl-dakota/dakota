@@ -1210,6 +1210,7 @@ KEYWORD12 method
 	|
 	( multilevel_sampling ALIAS multilevel_mc
 	  [ seed INTEGER > 0 ]
+	  [ fixed_seed ]
 	  [ pilot_samples INTEGERLIST ]
 	  [ sample_type
 	    lhs

@@ -402,6 +402,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     aggregate_acceptance_chain(update_cntr);
     
     // retain best or accumulate unique samples from current MCMC chain
+    std::cout << "######" << adaptPosteriorRefine << std::endl;
+    std::cout << emulatorType << "," << PCE_EMULATOR << std::endl;
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
       filter_chain_by_conditioning(update_cntr, batch_size);
     else
@@ -732,13 +734,17 @@ filter_chain_by_conditioning(size_t update_cntr, unsigned short batch_size)
 {
   // filter chain -or- extract full chain and sort on likelihood values
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Filtering chain by matrix conditioning: extracting best "
-	 << batch_size << " from MCMC chain " << update_cntr << " containing "
-	 << inverseProb->chain().subSequenceSize() << " samples.\n";
+    Cout << "Accumulating samples from MCMC chain " << update_cntr
+	 << " containing " << inverseProb->chain().subSequenceSize()
+	 << " samples.\n";
 
   if (adaptPosteriorRefine) { // extract best MCMC samples from current batch
     accumulate_chain(update_cntr);
     if (update_cntr == chainCycles) {
+      if (outputLevel >= NORMAL_OUTPUT)
+          Cout << "Filtering chain by matrix conditioning: extracting best "
+	       << batch_size << " from aggregate MCMC chain containing "
+	       << uniqueSamples.size() << " samples.\n";
       NonDExpansion* nond_exp = (NonDExpansion*)stochExpIterator.iterator_rep();
       nond_exp->select_refinement_points(uniqueSamples, batch_size, allSamples);
     }

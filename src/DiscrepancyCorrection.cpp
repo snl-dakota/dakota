@@ -37,6 +37,8 @@ initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,
   correctionType = corr_type; correctionOrder = corr_order;
 
   initialize_corrections();
+
+  initializedFlag = true;
 }
 
 
@@ -49,6 +51,8 @@ initialize(const IntSet& surr_fn_indices, size_t num_fns, size_t num_vars,
   correctionType = corr_type; correctionOrder = corr_order;
 
   initialize_corrections();
+
+  initializedFlag = true;
 
   // in this case, surrModel is null and must be protected
 }

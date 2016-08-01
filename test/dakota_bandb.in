@@ -1,5 +1,6 @@
 #@ s*: Label=FastTest
 #@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_ACRO
 
 environment
   method_pointer = 'BandB'

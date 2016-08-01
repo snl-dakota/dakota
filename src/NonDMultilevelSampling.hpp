@@ -348,9 +348,13 @@ private:
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across QoI 
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy sums
   Real aggregate_mse(const Real* sum_Y, const Real* sum_YY,
 			   const SizetArray& N_l);
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy variances
+  Real aggregate_mse(const Real* var_Y, const SizetArray& N_l);
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -364,6 +368,9 @@ private:
   /// compute a one-sided sample increment to move current sampling level
   /// to a new target
   size_t one_sided_delta(Real current, Real target);
+
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
 
   //
   //- Heading: Data
@@ -527,6 +534,16 @@ aggregate_mse(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 }
 
 
+inline Real NonDMultilevelSampling::
+aggregate_mse(const Real* var_Y, const SizetArray& N_l)
+{
+  Real agg_mse = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
+  return agg_mse;
+}
+
+
 inline Real NonDMultilevelSampling::sum(const Real* vec, size_t vec_len) const
 {
   Real sum = 0.;
@@ -556,6 +573,16 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
 
 inline size_t NonDMultilevelSampling::one_sided_delta(Real current, Real target)
 { return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+
+
+inline bool NonDMultilevelSampling::homogeneous(const SizetArray& N_l) const
+{
+  size_t N0 = N_l[0], i, len = N_l.size();
+  for (i=1; i<len; ++i)
+    if (N_l[i] != N0)
+      return false;
+  return true;
+}
 
 } // namespace Dakota
 

@@ -840,9 +840,6 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   sampler.set_total_degree_basis_from_num_samples(numContinuousVars, new_size);
   RealMatrix candidate_samples_matrix;
   Pecos::convert( candidate_samples, candidate_samples_matrix );
-  //sampler.Sampler::enrich_samples((int)numContinuousVars, current_samples, 
-  //				  (int)batch_size, candidate_samples_matrix, 
-  //				  best_samples);
 
   // Remove any candidate samples already in the initial sample set
   RealMatrix unique_candidate_samples;
@@ -858,8 +855,6 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   Pecos::extract_submatrix_from_column_indices( unique_candidate_samples,
 						selected_candidate_indices,
 						best_samples );
-  
-  
   
   if (outputLevel >= DEBUG_OUTPUT) {
     // write samples to output

@@ -26,6 +26,7 @@
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "NonDLHSSampling.hpp"
 #include "spectral_diffusion.hpp"
+#include "predator_prey.hpp"
 
 namespace Dakota {
 
@@ -96,6 +97,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["damped_oscillator"]      = DAMPED_OSCILLATOR;
   driverTypeMap["steady_state_diffusion_1d"] = STEADY_STATE_DIFFUSION_1D;
   driverTypeMap["transient_diffusion_1d"] = TRANSIENT_DIFFUSION_1D;
+  driverTypeMap["predator_prey"]          = PREDATOR_PREY;
   driverTypeMap["aniso_quad_form"]        = ANISOTROPIC_QUADRATIC_FORM;
   driverTypeMap["bayes_linear"]           = BAYES_LINEAR;
 
@@ -163,7 +165,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
     case SALINAS:       case MODELCENTER:
     case GENZ: case DAMPED_OSCILLATOR:
     case STEADY_STATE_DIFFUSION_1D: case TRANSIENT_DIFFUSION_1D:
-    case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
+    case PREDATOR_PREY: case ANISOTROPIC_QUADRATIC_FORM: case BAYES_LINEAR:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -319,6 +321,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = steady_state_diffusion_1d(); break;
   case TRANSIENT_DIFFUSION_1D:
     fail_code = transient_diffusion_1d(); break;
+  case PREDATOR_PREY:
+    fail_code = predator_prey(); break;
   case ANISOTROPIC_QUADRATIC_FORM:
     fail_code = aniso_quad_form(); break;
   case BAYES_LINEAR: 
@@ -905,7 +909,7 @@ int TestDriverInterface::modified_rosenbrock()
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
-  if (numFns > 2) { // 1 fn -> opt, 2 fns -> least sq
+  if (numFns > 3) { // 1 fn -> opt, 2 fns -> least sq
     Cerr << "Error: Bad number of functions in modified rosenbrock direct fn."
 	 << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -1811,6 +1815,63 @@ int TestDriverInterface::transient_diffusion_1d()
   return 0;
 }
 
+ int TestDriverInterface::predator_prey()
+{
+  // ------------------------------------------------------------- //
+  // Pre-processing 
+  // ------------------------------------------------------------- //
+
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: predator_prey direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if ( numVars < 1 || numADIV > 1 || numADRV > 1 ) {
+    Cerr << "Error: Bad variable types in predator_prey direct fn."<< std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns != 3) {
+    Cerr << "Error: Bad number of functions in predator_prey direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (hessFlag || gradFlag) {
+    Cerr << "Error: Gradients and Hessians are not supported in " 
+	 << "predator_prey direct fn." << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  // ------------------------------------------------------------- //
+  // Read parameters from discrete state variables 
+  // ------------------------------------------------------------- //
+
+  // Get the mesh resolution from the first discrete integer variable
+  size_t step_index = find_index(xDILabels, "time_steps");
+  int num_tsteps = ( step_index == _NPOS ) ? 101 : xDI[step_index];
+  if (num_tsteps % 2 != 1) {
+    Cerr << "Error: Number of time steps must be odd" << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  size_t tf_index = find_index(xDRLabels, "final_time");
+  Real final_time = ( tf_index == _NPOS ) ? 10. : xDR[tf_index];
+
+  RealVector init_conditions(3);
+  init_conditions[0] = 0.7; init_conditions[1] = 0.5;
+  init_conditions[2] = 0.2; // these could be made random variables
+
+  // ------------------------------------------------------------- //
+  // Initialize and evaluate model 
+  // ------------------------------------------------------------- //
+
+  PredatorPreyModel model;
+  model.set_initial_conditions( init_conditions );
+  model.set_time(final_time, final_time/((double)num_tsteps-1.));
+  
+  model.evaluate( xC, fnVals ); 
+
+  return  0;
+}
 
 int TestDriverInterface::genz()
 {
