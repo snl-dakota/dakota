@@ -435,7 +435,7 @@ void OutputManager::read_write_restart(bool restart_requested,
       }
       // serialization functions no longer throw strings
 
-      read_pairs.insert(current_pair); 
+      read_pairs.insert(current_pair);
       ++cntr;
       Cout << "\n------------------------------------------\nRestart record "
 	   << std::setw(4) << cntr << "  (evaluation id " << std::setw(4)

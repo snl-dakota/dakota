@@ -53,13 +53,13 @@ NLPQLPOptimizer::NLPQLPOptimizer(Model& model): Optimizer(NLPQL_SQP, model)
 
 
 #ifdef HAVE_DYNLIB_FACTORIES
-NLPQLPOptimizer* new_NLPQLPOptimizer(ProblemDescDB& problem_db)
+NLPQLPOptimizer* new_NLPQLPOptimizer(ProblemDescDB& problem_db, Model& model)
 {
 #ifdef DAKOTA_DYNLIB
   not_available("NLPQLP");
   return 0;
 #else
-  return new NLPQLPOptimizer(problem_db);
+  return new NLPQLPOptimizer(problem_db, model);
 #endif // DAKOTA_DYNLIB
 }
 
