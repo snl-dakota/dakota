@@ -25,10 +25,6 @@ TEUCHOS_UNIT_TEST(stat_utils, kl_divergence)
 
   // Function being tested
   Real kl_est = NonDBayesCalibration::knn_kl_div(dist1, dist2, 1);
-  std::ofstream test_stream ("kam.txt");
-  //test_stream << "dist 1 = " << dist1 << '\n';
-  //test_stream << "dist 2 = " << dist2 << '\n';
-  //test_stream << "kl = " << kl_est << '\n';
 
   Real gold_kl = 0.024596;
   TEST_FLOATING_EQUALITY(kl_est, gold_kl, 1.e-5);
@@ -50,9 +46,6 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info)
 
   // Function being tested
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1); 
-  std::ofstream test_stream ("kam.txt");
-  //test_stream << "Xmatrix = " << Xmatrix << '\n';
-  //test_stream << "mi = " << mutualinfo_est << '\n';
 
   Real gold_mi = -0.309049;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
