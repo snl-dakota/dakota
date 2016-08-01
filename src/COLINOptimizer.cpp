@@ -1112,6 +1112,17 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   ps->clear();
 
+  if (solverType == COBYLA) {
+    Cout << "********************************************************" << endl;
+    Cout << "WARNING: The implementation of COBYLA is such that the"   << endl;
+    Cout << "best function value is not always returned to Dakota"     << endl;
+    Cout << "for reporting.  The user is advised to look through the"  << endl;
+    Cout << "Dakota output to confirm what the best function value"    << endl;
+    Cout << "and corresponding parameter values are."                  << endl;
+    Cout << "********************************************************" << endl;
+    Cout << endl;
+  }
+
   // New design relies on Optimizer to perform transformation from
   // iterated to user space as needed
   Optimizer::post_run(s);

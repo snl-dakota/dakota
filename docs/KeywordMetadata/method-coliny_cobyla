@@ -15,6 +15,13 @@ competitors is that it treats each constraint individually when
 calculating a change to the variables, instead of lumping the
 constraints together into a single penalty function.
 
+We note that the implementation of COBYLA is such that the best
+function value is not always returned to Dakota for reporting.  The
+user is advised to look through the Dakota output to confirm what the
+best function value and corresponding parameter values are.  This
+behavior will not be changed, as maintaining third-party source code
+(such as COBYLA) is outside of the Dakota project scope.
+
 <b> See the page \ref topic-package_scolib for important information
 regarding all SCOLIB methods </b>
 
