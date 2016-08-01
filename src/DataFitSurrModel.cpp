@@ -959,7 +959,7 @@ void DataFitSurrModel::build_global()
 	   prp_iter->interface_id() == actualModel.interface_id() &&
 	   ( anchor_vars.is_null() || 
 	     db_c_vars != anchor_vars.continuous_variables() ) &&
-	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
+	   inside(db_c_vars, db_di_vars, db_dr_vars) ) { // TO DO: x-space / u-space incompatibility for region case!!! (ok for common all case)
 	reuse_vars.push_back(db_vars);
 	reuse_responses[prp_iter->eval_id()] = prp_iter->response();
       }
@@ -1796,7 +1796,7 @@ import_points(unsigned short tabular_format, bool active_only)
        ++v_it, ++r_it) {
     ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
     if (restart) parallelLib.write_restart(pr);
-    if (cache)   data_pairs.insert(pr);
+    //if (cache) data_pairs.insert(pr); // TO DO: need unique eval id's for cache (not zero)
   }
   // TO DO: update Analyzer::read_variables_responses() to support post_input()
 
