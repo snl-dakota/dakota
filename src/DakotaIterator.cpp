@@ -61,6 +61,9 @@
 #ifdef HAVE_NOMAD
 #include "NomadOptimizer.hpp"
 #endif
+#ifdef HAVE_NOWPAC
+#include "NOWPACOptimizer.hpp"
+#endif
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #include "NLSSOLLeastSq.hpp"
@@ -459,6 +462,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MESH_ADAPTIVE_SEARCH:
     return new NomadOptimizer(problem_db, model); break;
 #endif
+#ifdef HAVE_NOWPAC
+  case NOWPAC: case SNOWPAC:
+    return new NOWPACOptimizer(problem_db, model); break;
+#endif
 #ifdef HAVE_NPSOL
   case NPSOL_SQP:   return new NPSOLOptimizer(problem_db, model);  break;
   case NLSSOL_SQP:  return new NLSSOLLeastSq(problem_db, model);   break;
@@ -575,6 +582,10 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 #ifdef HAVE_NOMAD
   else if (method_string == "mesh_adaptive_search")
     return new NomadOptimizer(model);
+#endif
+#ifdef HAVE_NOWPAC
+  else if (strends(method_string, "nowpac"))
+    return new NOWPACOptimizer(model);
 #endif
 #ifdef HAVE_NPSOL
   else if (method_string == "npsol_sqp")
@@ -785,6 +796,8 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case SOGA:                    return String("soga"); break;
   case DL_SOLVER:               return String("dl_solver"); break;
   case MESH_ADAPTIVE_SEARCH:    return String("mesh_adaptive_search"); break;
+  case NOWPAC:                  return String("nowpac"); break;
+  case SNOWPAC:                 return String("snowpac"); break;
   case NPSOL_SQP:               return String("npsol_sqp"); break;
   case NLSSOL_SQP:              return String("nlssol_sqp"); break;
   case NLPQL_SQP:               return String("nlpql_sqp"); break;
@@ -870,6 +883,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "soga")             return SOGA;
   else if (method_name == "dl_solver")        return DL_SOLVER;
   else if (method_name == "mesh_adaptive_search")  return MESH_ADAPTIVE_SEARCH;
+  else if (method_name == "nowpac")           return NOWPAC;
+  else if (method_name == "snowpac")          return SNOWPAC;
   else if (method_name == "npsol_sqp")        return NPSOL_SQP;
   else if (method_name == "nlssol_sqp")       return NLSSOL_SQP;
   else if (method_name == "nlpql_sqp")        return NLPQL_SQP;

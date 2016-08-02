@@ -405,7 +405,7 @@ lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids,
     default:
       while (prp_it0 != prp_it1) {
 	if (prp_it0->variables() == search_pr.variables() && // exact
-	    set_compare(*prp_it0, search_pr.active_set()))            // subset
+	    set_compare(*prp_it0, search_pr.active_set()))   // subset
 	  return prp_it0;
 	++prp_it0;
       }

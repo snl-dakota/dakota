@@ -4321,6 +4321,19 @@ bool Model::evaluation_cache() const
 }
 
 
+/** Only Models including ApplicationInterfaces interact with the restart 
+    file: surrogate, nested, and recast mappings are not stored in restart. 
+    Possible exceptions: DataFitSurrModel::import_points(),
+    NestedModel::optionalInterface. */
+bool Model::restart_file() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->restart_file();
+  else // letter lacking redefinition of virtual fn.
+    return false; // default
+}
+
+
 void Model::set_evaluation_reference()
 {
   if (modelRep) // envelope fwd to letter

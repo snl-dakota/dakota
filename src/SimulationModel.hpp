@@ -121,6 +121,9 @@ protected:
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
   bool evaluation_cache() const;
+  /// return flag indicated usage of a restart file by the SimulationModel
+  /// (request forwarded to userDefinedInterface)
+  bool restart_file() const;
 
   /// set the evaluation counter reference points for the SimulationModel
   /// (request forwarded to userDefinedInterface)
@@ -345,6 +348,10 @@ inline int SimulationModel::derived_evaluation_id() const
 
 inline bool SimulationModel::evaluation_cache() const
 { return userDefinedInterface.evaluation_cache(); }
+
+
+inline bool SimulationModel::restart_file() const
+{ return userDefinedInterface.restart_file(); }
 
 
 inline void SimulationModel::set_evaluation_reference()

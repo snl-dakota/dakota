@@ -923,8 +923,6 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   if (pointReuse == "all" || pointReuse == "region") {
 
-    VariablesArray reuse_vars; IntResponseMap reuse_responses;
-
     size_t num_c_vars, num_di_vars, num_dr_vars;
     if (actualModel.is_null()) {
       num_c_vars  = currentVariables.cv();
@@ -945,8 +943,7 @@ void DataFitSurrModel::build_global()
       = approxInterface.approximation_data(index).anchor_variables();
 
     // Process the PRPCache using default iterators (index 0 =
-    // ordered_non_unique).  We rely on data_pairs being in eval_id
-    // order so VariablesArray and IntResponseMap are correctly aligned.
+    // ordered_non_unique).
     for (PRPCacheCIter prp_iter = data_pairs.begin();
 	 prp_iter != data_pairs.end(); ++prp_iter) {
       const Variables&  db_vars    = prp_iter->variables();
@@ -959,18 +956,20 @@ void DataFitSurrModel::build_global()
 	   prp_iter->interface_id() == actualModel.interface_id() &&
 	   ( anchor_vars.is_null() || 
 	     db_c_vars != anchor_vars.continuous_variables() ) &&
-	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
-	reuse_vars.push_back(db_vars);
-	reuse_responses[prp_iter->eval_id()] = prp_iter->response();
+	   // TO DO: x-space / u-space incompatibility for inside()
+	   //        in region case!!! (ok for common all case)
+	   inside(db_c_vars, db_di_vars, db_dr_vars) &&
+	   // TO DO: avoids duplication with import below prior to consolidation
+	   prp_iter->eval_id() ) {
+
+	// update one point at a time since accumulation within an
+	// IntResponseMap requires unique id's
+	approxInterface.append_approximation(db_vars,
+	  std::make_pair(prp_iter->eval_id(), prp_iter->response()));
+	++reuse_points;
       }
     }
 
-    // append any reused DB data points (previous data cleared prior to
-    // build_global() call).  Note: all reuse sets have data persistence
-    // by nature of data_pairs or reuseFile{Vars,Responses}
-    reuse_points += reuse_vars.size();
-    approxInterface.append_approximation(reuse_vars, reuse_responses);
- 
     // Process the points_file
     // Reused file-read responses go backward, so insert them separately,
     // ordering variables and responses appropriately.  Negative eval IDs mean
@@ -1788,15 +1787,26 @@ import_points(unsigned short tabular_format, bool active_only)
   if (!actualModel.is_null()) {
     interface_id = actualModel.interface_id();
     cache        = actualModel.evaluation_cache();
-    //restart    = actualModel.restart_file(); // TO DO: add virtual fn
+    restart      = actualModel.restart_file();
   }
-  /// array of response sets read from the \c import_build_points_file
-  for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
-       v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
-       ++v_it, ++r_it) {
-    ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
-    if (restart) parallelLib.write_restart(pr);
-    if (cache)   data_pairs.insert(pr);
+  if (cache || restart) {
+    /* For negated sequence that continues from most negative id 
+    int cache_id = -1;
+    if (cache && !data_pairs.empty()) {
+      int first_id = data_pairs.front().evaluation_id();
+      if (first_id < 0) cache_id = first_id - 1;
+    }
+    */
+    /// process arrays of data from TabularIO::read_data_tabular() above
+    for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
+	 v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
+	 ++v_it, ++r_it) {
+      ParamResponsePair pr(*v_it, interface_id, *r_it);// shallow v,r copy, id=0
+      if (restart) parallelLib.write_restart(pr); // preserve eval id
+      if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
+      //if (cache) // for negated sequence
+      //  { pr.evaluation_id(cache_id); data_pairs.insert(pr); --cache_id; }
+    }
   }
   // TO DO: update Analyzer::read_variables_responses() to support post_input()
 

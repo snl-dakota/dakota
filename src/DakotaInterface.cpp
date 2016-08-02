@@ -1428,6 +1428,15 @@ bool Interface::evaluation_cache() const
 }
 
 
+bool Interface::restart_file() const
+{
+  if (interfaceRep)
+    return interfaceRep->restart_file();
+  else // letter lacking redefinition of virtual fn.
+    return false; // default
+}
+
+
 void Interface::file_cleanup() const
 {
   if (interfaceRep)

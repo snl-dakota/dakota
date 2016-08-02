@@ -744,7 +744,8 @@ void NonDBayesCalibration::compute_statistics()
   int num_samples = acceptanceChain.numCols();
   int num_filtered = int((num_samples-burnin)/num_skip);
   size_t num_exp = expData.num_experiments();
-  if (burnInSamples > 0 || subSamplingPeriod > 0)
+  
+  if (burnInSamples > 0 || num_skip > 1)
   {
     RealMatrix filtered_chain;
     filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
@@ -771,6 +772,7 @@ void NonDBayesCalibration::compute_statistics()
     kl_post_prior(acceptanceChain);
   if(posteriorStatsMutual)
     mutual_info_buildX();
+
 }
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
@@ -853,14 +855,13 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
   
   // Calculate +/- 2sigma prediction intervals
   predVals.shapeUninitialized(numFunctions, num_concatenated);
-  RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
   if (expData.variance_active()) {
     compute_prediction_vals(filteredFnVals, predVals, 
     			    num_filtered, num_exp, num_concatenated);
-    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
     RealVector Pred_ave(numFunctions), Pred_stdevs(numFunctions),
 	       Pred_interval_minima(numFunctions), 
 	       Pred_interval_maxima(numFunctions);
+    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
     compute_col_means(predVals_transpose, Pred_ave);
     compute_col_stdevs(predVals_transpose, Pred_ave, Pred_stdevs);
     interval_stream << "2 sigma Prediction Intervals\n";
@@ -880,7 +881,7 @@ void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
   }
   if (num_levels > 0){
     print_intervals_file(interval_stream, filtered_fn_vals_transpose, 
-      			   predVals_transpose, num_filtered, num_concatenated);
+      			   predVals, num_filtered, num_concatenated);
   }
 }
 
@@ -1063,7 +1064,7 @@ size_t num_exp)
 
 void NonDBayesCalibration::print_intervals_file
 (std::ostream& s, RealMatrix& filteredFnVals_transpose, 
- RealMatrix& predVals_transpose, int num_filtered, size_t num_concatenated)
+ RealMatrix& predVals, int num_filtered, size_t num_concatenated)
 {
   
   const StringArray& resp = mcmcModel.current_response().function_labels(); 
@@ -1100,6 +1101,7 @@ void NonDBayesCalibration::print_intervals_file
   }
   // Prediction Intervals
   if (expData.variance_active()) {
+    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
     for(int i = 0; i < numFunctions; ++i){
       // Sort function values 
       const RealVector& col_vec1 = Teuchos::getCol(Teuchos::View, 
@@ -1262,12 +1264,13 @@ void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
     int it_cntr = 0;
     for (int i = burn_in_post; i < num_post_samples; ++i){
       if (it_cntr % num_skip == 0){
+	  ++it_cntr;
 	  RealVector param_vec = Teuchos::getCol(Teuchos::View,
 	    			        acceptanceChain, i);
 	  Teuchos::setCol(param_vec, j, knn_post_samples);
 	  j++;
-        }
       }
+    }
   }
   
   // produce matrix of prior samples
@@ -1362,7 +1365,6 @@ void NonDBayesCalibration::mutual_info_buildX()
    * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
    */
    
-  //std::ofstream test_stream("kam.txt");
   int num_params = numContinuousVars + numHyperparams;
   int num_samples = 1000;
   boost::mt19937 rnumGenerator;
