@@ -1788,7 +1788,7 @@ import_points(unsigned short tabular_format, bool active_only)
   if (!actualModel.is_null()) {
     interface_id = actualModel.interface_id();
     cache        = actualModel.evaluation_cache();
-    //restart    = actualModel.restart_file(); // TO DO: add virtual fn
+    restart      = actualModel.restart_file();
   }
   /// array of response sets read from the \c import_build_points_file
   for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
@@ -1796,7 +1796,8 @@ import_points(unsigned short tabular_format, bool active_only)
        ++v_it, ++r_it) {
     ParamResponsePair pr(*v_it, interface_id, *r_it); // shallow copy
     if (restart) parallelLib.write_restart(pr);
-    //if (cache) data_pairs.insert(pr); // TO DO: need unique eval id's for cache (not zero)
+    // TO DO: cache requires unique eval id's (not zero)
+    //if (cache) data_pairs.insert(pr);
   }
   // TO DO: update Analyzer::read_variables_responses() to support post_input()
 

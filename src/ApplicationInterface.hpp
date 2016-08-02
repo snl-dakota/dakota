@@ -77,6 +77,8 @@ protected:
 
   /// return evalCacheFlag
   bool evaluation_cache() const;
+  /// return evalCacheFlag
+  bool restart_file() const;
 
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
@@ -570,6 +572,10 @@ inline short ApplicationInterface::interface_synchronization() const
 
 inline bool ApplicationInterface::evaluation_cache() const
 { return evalCacheFlag; }
+
+
+inline bool ApplicationInterface::restart_file() const
+{ return restartFileFlag; }
 
 
 inline void ApplicationInterface::
