@@ -19,6 +19,8 @@ Mohamed S.Ebeida
 Russell W. Hooper
 Kenneth T. Hu
 John D. Jakeman
+Kathryn Maupin
+Jason A. Monschke
 Ahmad Rushdi
 Laura P. Swiler
 Timothy M. Wildey		        P.O. Box 5800, Mail Stop 1318
@@ -163,7 +165,8 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
-6.3		   11/15/15 (refer to svn externals for TPL tags)
+6.4		   05/16/15 (refer to svn externals for TPL tags)
+6.3		   11/16/15 (refer to svn externals for TPL tags)
 6.2		   05/15/15 (refer to svn externals for TPL tags)
 6.1		   11/15/14 (refer to svn externals for TPL tags)
 6.0		   05/15/14 (refer to svn externals for TPL tags)
