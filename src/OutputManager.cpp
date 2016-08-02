@@ -430,7 +430,7 @@ void OutputManager::read_write_restart(bool restart_requested,
       }
       catch(const boost::archive::archive_exception& e) {
 	Cerr << "\nError reading restart file '" << read_restart_filename 
-	     << "' (boost::archive exception):\n      " << e.what() << std::endl;
+	     << "' (boost::archive exception):\n      " << e.what()<< std::endl;
 	abort_handler(IO_ERROR);
       }
       // serialization functions no longer throw strings
@@ -491,6 +491,7 @@ void OutputManager::read_write_restart(bool restart_requested,
     // don't use a const iterator as PRP does not have a const serialize fn
     PRPCacheIter it, it_end = read_pairs.end();
     for (it = read_pairs.begin(); it != it_end; ++it) {
+      // insert read records into new restart DB as is (no negation of id's)
       rst_writer->append_prp(*it);
 
       // Distinguish restart evals in memory by negating their eval ids;
@@ -507,7 +508,7 @@ void OutputManager::read_write_restart(bool restart_requested,
 	pair.eval_id(-restart_eval_id);
 	data_pairs.insert(pair);
       }
-      else
+      else // should not be negative (see rst append above), but can be zero
 	data_pairs.insert(*it);
     }
 
