@@ -64,6 +64,7 @@ enum { DEFAULT_METHOD=0,
        // SurrBased Minimizers:
        SURROGATE_BASED_LOCAL=(MINIMIZER_BIT | SURRBASED_BIT),
        SURROGATE_BASED_GLOBAL, EFFICIENT_GLOBAL,
+       MULTILEVEL_MULTIFIDELITY_OPT,
        // Gradient-based LeastSq Minimizers:
        NL2SOL=(MINIMIZER_BIT | LEASTSQ_BIT), NLSSOL_SQP, OPTPP_G_NEWTON,
        // Nongradient-based Optimizers / Minimizers:

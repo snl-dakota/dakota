@@ -28,6 +28,7 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
+#include "MLMFOptimizer.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -426,6 +427,8 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDLHSSampling(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return new NonDMultilevelSampling(problem_db, model); break;
+  case MULTILEVEL_MULTIFIDELITY_OPT:
+    return new MLMFOptimizer(problem_db, model);  break;
   case SURROGATE_BASED_LOCAL:
     return new SurrBasedLocalMinimizer(problem_db, model);  break;
   case SURROGATE_BASED_GLOBAL:
@@ -772,6 +775,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case RANDOM_SAMPLING:         return String("random_sampling"); break;
   case MULTILEVEL_SAMPLING:     return String("multilevel_sampling"); break;
   case LIST_SAMPLING:           return String("list_sampling"); break;
+  case MULTILEVEL_MULTIFIDELITY_OPT: return String("multilevel_multifidelity_opt"); break;
   case SURROGATE_BASED_LOCAL:   return String("surrogate_based_local"); break;
   case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
   case EFFICIENT_GLOBAL:        return String("efficient_global"); break;
@@ -858,6 +862,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
   else if (method_name == "multilevel_sampling")   return MULTILEVEL_SAMPLING;
   else if (method_name == "list_sampling")         return LIST_SAMPLING;
+  else if (method_name == "multilevel_multifidelity_opt") return MULTILEVEL_MULTIFIDELITY_OPT;
   else if (method_name == "surrogate_based_local") return SURROGATE_BASED_LOCAL;
   else if (method_name == "surrogate_based_global")
     return SURROGATE_BASED_GLOBAL;

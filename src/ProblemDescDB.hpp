@@ -79,6 +79,8 @@ class ProblemDescDB
   friend class CollabHybridMetaIterator;
   /// ConcurrentMetaIterator requires access to get_model()
   friend class ConcurrentMetaIterator;
+  /// MLMFOptimizer requires access to get_iterator()
+  friend class MLMFOptimizer;
   /// SurrBasedLocalMinimizer requires access to get_iterator()
   friend class SurrBasedLocalMinimizer;
   /// SurrBasedGlobalMinimizer requires access to get_iterator()

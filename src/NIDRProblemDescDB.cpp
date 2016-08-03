@@ -6981,6 +6981,7 @@ static Method_mp_utype
 	MP2s(methodName,MESH_ADAPTIVE_SEARCH),
 	MP2s(methodName,MOGA),
 	MP2s(methodName,MULTI_START),
+	MP2s(methodName,MULTILEVEL_MULTIFIDELITY_OPT),
 	MP2s(methodName,NCSU_DIRECT),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),

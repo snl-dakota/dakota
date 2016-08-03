@@ -144,6 +144,15 @@ KEYWORD12 method
 	  [ scaling ]
 	  )
 	|
+	( multilevel_multifidelity_opt
+	  method_pointer ALIAS approx_method_pointer STRING
+	  | method_name ALIAS approx_method_name STRING
+	  model_pointer ALIAS approx_model_pointer STRING
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
+	  [ constraint_tolerance REAL ]
+	  )
+	|
 	( surrogate_based_local
 	  method_pointer ALIAS approx_method_pointer STRING
 	  | method_name ALIAS approx_method_name STRING

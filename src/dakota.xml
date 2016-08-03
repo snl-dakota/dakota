@@ -453,6 +453,25 @@
              #	  [ num_samples_at_root INTEGER {N_mdm(int,branchBndNumSamplesRoot)} ]
              #	)
          -->
+        <keyword  id="multilevel_multifidelity_opt" name="multilevel_multifidelity_opt" code="{N_mdm(utype,methodName_MULTILEVEL_MULTIFIDELITY_OPT)}" label="multilevel_multifidelity_opt" help="" minOccurs="1">
+          <oneOf>
+            <keyword  id="method_pointer2" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer" help="MethodCommands.html#MethodMetaParetoSet"  >
+              <alias name="approx_method_pointer"/>
+              <param type="STRING" in_taglist="method" />
+            </keyword>
+            <keyword  id="method_name2" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of minimizer by name" help="MethodCommands.html#MethodMetaParetoSet"  >
+              <alias name="approx_method_name"/>
+              <param type="STRING" />
+            </keyword>
+          </oneOf>
+          <keyword  id="model_pointer2" name="model_pointer" code="{N_mdm(str,modelPointer)}" label="Identification of model by pointer" help="MethodCommands.html#MethodMetaParetoSet"  default="method use of last model parsed (or use of default model if none parsed)" >
+            <alias name="approx_model_pointer"/>
+            <param type="STRING" in_taglist="model" />
+          </keyword>
+          &default_max_iterations;
+          &default_convergence_tolerance;
+          &default_constraint_tolerance;
+        </keyword>
         <!-- # Note: SBL/SBG do not manage linear constraints; spec delegated to approx-method -->
         <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>

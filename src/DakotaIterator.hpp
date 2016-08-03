@@ -260,6 +260,11 @@ public:
   /// set the maximum evaluation concurrency supported by the iterator
   void maximum_evaluation_concurrency(int max_conc);
 
+  /// return the maximum iterations for this iterator
+  int maximum_iterations() const;
+  /// set the maximum iterations for this iterator
+  void maximum_iterations(int max_iter);
+
   /// set the method convergence tolerance (convergenceTol)
   void convergence_tolerance(Real conv_tol);
   /// return the method convergence tolerance (convergenceTol)
@@ -558,6 +563,14 @@ inline void Iterator::maximum_evaluation_concurrency(int max_conc)
   else             maxEvalConcurrency = max_conc;
 }
 
+inline int Iterator::maximum_iterations() const
+{ return (iteratorRep) ? iteratorRep->maxIterations : maxIterations; }
+
+inline void Iterator::maximum_iterations(int max_iter)
+{
+  if (iteratorRep) iteratorRep->maxIterations = max_iter;
+  else             maxIterations = max_iter;
+}
 
 inline void Iterator::convergence_tolerance(Real conv_tol)
 {

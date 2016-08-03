@@ -8588,6 +8588,16 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                      -7.2366524362e-01
 <<<<< Best data captured at function evaluation 1
+dakota_mlmf_opt.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (LO_I): 8394 total (5696 new, 2698 duplicate)
+<<<<< Function evaluation summary (HI_I): 5373 total (5373 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000003182e+00 x1
+                      1.0000006396e+00 x2
+<<<<< Best objective function  =
+                      1.0225278174e-13
+<<<<< Best data not found in evaluation cache
 dakota_mogatest.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)

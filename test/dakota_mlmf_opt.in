@@ -1,0 +1,62 @@
+#@ *: Label=Experimental
+# DAKOTA INPUT FILE - dakota_mlmf_opt.in
+# Contains regression tests for using the multilevel-multifidelity optimization
+# method
+
+environment,
+	method_pointer = 'MLMF'
+
+method,
+	id_method = 'MLMF'
+  multilevel_multifidelity_opt
+	model_pointer = 'HIERARCH'
+  max_iterations = 10000
+	approx_method_pointer = 'OPTIM'
+  convergence_tolerance = 1.e-7
+
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'HI'
+	npsol_sqp
+	  convergence_tolerance = 1.e-7
+	  output verbose
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LO' 'HI'
+	  correction additive first_order
+
+model,
+	id_model = 'LO'
+	single
+	  interface_pointer = 'LO_I'
+
+model,
+	id_model = 'HI'
+	single
+	  interface_pointer = 'HI_I'
+
+variables,
+	continuous_design = 2
+	  initial_point     = -12.2   15.0
+    lower_bounds      = -20.   -20.
+	  upper_bounds      =  20.    20.
+	  descriptors       = 'x1'   'x2'
+
+interface
+    id_interface = 'HI_I'
+	  direct
+   	  analysis_driver = 'rosenbrock'
+	    deactivate restart_file
+
+interface
+    id_interface = 'LO_I'
+	  direct
+   	  analysis_driver = 'lf_rosenbrock'
+	    deactivate restart_file
+
+responses,
+	objective_functions = 1
+	analytic_gradients
+  no_hessians
