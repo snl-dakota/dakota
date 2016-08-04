@@ -28,8 +28,9 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 
   componentParallelMode = CONFIG_PHASE;
 
-  // ************ This is likely wrong adapted basis model: ************ //
-  offlineEvalConcurrency = subModel.derivative_concurrency();
+  // TO DO: configure pilot PCE object (construct expansion at run time)
+
+  offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
 
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_init_communicators()
