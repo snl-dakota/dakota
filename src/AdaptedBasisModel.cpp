@@ -28,8 +28,9 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 
   componentParallelMode = CONFIG_PHASE;
 
-  // ************ This is likely wrong adapted basis model: ************ //
-  offlineEvalConcurrency = subModel.derivative_concurrency();
+  // TO DO: configure pilot PCE object (construct expansion at run time)
+
+  offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
 
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_init_communicators()
@@ -40,8 +41,6 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 
 Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 {
-  Model sub_model;
-
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.actual_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
@@ -51,17 +50,11 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 
   // Perform Nataf transform to standard normals:
   transformVars = true;
-  if (transformVars) {
-    transformModel.assign_rep(new ProbabilityTransformModel(actualModel), false);
-    sub_model = transformModel;
-  }
-  else {
-    sub_model = actualModel;
-  }
+  if (transformVars)
+    transformModel.assign_rep(new ProbabilityTransformModel(actualModel),false);
 
   problem_db.set_db_model_nodes(model_index); // restore
-
-  return sub_model;
+  return (transformVars) ? transformModel : actualModel;
 }
 
 
@@ -76,8 +69,8 @@ void AdaptedBasisModel::validate_inputs()
   // validate variables specification
   if (subModel.div() > 0 || subModel.dsv() > 0 || subModel.drv() > 0) {
     error_flag = true;
-    Cerr << "\nError (adapted basis model): only normal uncertain variables are "
-         << "supported;\n                        remove other variable "
+    Cerr << "\nError (adapted basis model): only normal uncertain variables "
+	 << "are supported;\n                        remove other variable "
          << "specifications.\n" << std::endl;
   }
 
@@ -89,7 +82,8 @@ void AdaptedBasisModel::validate_inputs()
 bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nAdapted Basis Model: Initializing adapted basis model." << std::endl;
+    Cout << "\nAdapted Basis Model: Initializing adapted basis model."
+	 << std::endl;
 
   // init-time setting of miPLIndex for use in component_parallel_mode()
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
@@ -121,14 +115,12 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   component_parallel_mode(CONFIG_PHASE);
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nAdapted Basis Model: Initialization of adapted basis model is complete."
-         << std::endl;
+    Cout << "\nAdapted Basis Model: Initialization of adapted basis model "
+	 << "is complete." << std::endl;
   
-  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
-      sub_model_resize) // Active SS is full rank but subModel resized
-    return true; // Size of variables has changed
-  else
-    return false;
+  // return whether size of variables has changed
+  return (reducedRank != numFullspaceVars || // Active SS is reduced rank
+	  sub_model_resize); // Active SS is full rank but subModel resized
 }
 
 
@@ -308,9 +300,9 @@ bool AdaptedBasisModel::mapping_initialized()
 void AdaptedBasisModel::update_var_labels()
 {
   StringMultiArray adapted_basis_var_labels(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    adapted_basis_var_labels[i] = "abv_" + boost::lexical_cast<std::string>(i+1);
-  }
+  for (int i = 0; i < reducedRank; i++)
+    adapted_basis_var_labels[i]
+      = "abv_" + boost::lexical_cast<std::string>(i+1);
 
   continuous_variable_labels(
     adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
@@ -362,33 +354,163 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 void AdaptedBasisModel::identify_subspace()
 {
-  Cout << "\nAdapted Basis Model: Building A matrix"
-       << std::endl;
-
-  // compute the A matrix & find reducedRank:
-  /*
-    add code here
-  */
+  ////////////////////////////////////////////////////
+  // Scope of AdaptedBasisModel:
+  // There is the computation and then the use of the \mu subspace.
+  // Current thinking is that AdaptedBasisModel does the former, but the latter
+  // occurs within NonD methods such as NonDPolynomialChaos.  Special behavior
+  // (e.g., coverting the PCE over subspace \mu to PCE over original \xi)
+  // can be optionally performed (e.g., in post_run()) and triggered from
+  // detection of the incoming model type)
+  ////////////////////////////////////////////////////
   
-  reducedRank = numFullspaceVars; // <-----------   Remove this
+  // Definitions: \xi is of dimension d, QoI are of dimension n,
+  //              final \mu is of dimension \nu
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  Cout << "\nAdapted Basis Model: Form pilot PCE"  << std::endl;
+
+  // *** SNL:
+  // For each QoI, we need to compute a pilot PCE:
+  //   Step 0: perform any necessary probability transforms --> Wiener chaos
+  //   Step 1: Compute a low order Hermite PCE: either linear or full quadratic
+
+  // ... other preliminaries --> config with sparse grid or CS, no levels ...
+  // (see NonDBayesCalibration ctor)
+
+  ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+  pcePilotExpansion.run(pl_iter);
+  const RealVectorArray& pce_coeffs
+    = pcePilotExpansion.iterated_model().approximation_coefficients();
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  Cout << "\nAdapted Basis Model: Building A matrix for each QoI"  << std::endl;
+
+  // For each QoI, we need to form the A_i rotation matrix:
+  //   \eta_i = A_i \xi for i-th QoI
+  //   \eta   = stacked \eta_i's
+
+  Teuchos::LAPACK<int, Real> la;
+
+  // composite set of A_i
+  RealMatrix A_q(numFunctions*numFullspaceVars, numFullspaceVars, false);
+  // Individual rotation matrix for each QoI
+  RealMatrix A_i(numFullspaceVars, numFullspaceVars, false);
+
+  // *** USC: 
+  // Step 1a. linear PCE: use the alpha_i's as first row in A and then apply
+  //          Gramm-Schmidt (BLAS/LAPACK?).
+  //          [Can neglect constant term/expansion mean]
+  size_t i, j, k, row_cntr = 0;
+  for (i=0; i<numFunctions; ++i) {
+    A_i.putScalar(0.);
+    for (j=0; j<numFullspaceVars; ++j)
+      A_i(0,j) = pce_coeffs[i][j+1]; // offset by 1 to neglect constant/mean
+    for (j=1; j<numFullspaceVars; ++j)
+      A_i(j,j) = 1.;
+    // Gramm-Schmidt for each rotation matrix:
+    //la.DGEQRF(A_i); ???
+    // Append A_i into A_q
+    for (j=0; j<numFullspaceVars; ++j, ++row_cntr)
+      for (k=0; k<numFullspaceVars; ++k)
+	A_q(row_cntr,k) = A_i(j,k);
+  }
+
+  // Step 1b: same as 1a expect permuted location of 1's determined from q_i's
+  //          (relative sensitivities)
+
+  // TO DO
+
+  // Step 1c: full quadratic PCE: solve LP for A from A' S A = D for S = matrix
+  //          of quadratic terms
+  //          A' S A = D is same as S A = A D  because A'A = I
+  //          --> A are eigenvectors and D are eigenvalues of S
+  //
+  //   See notes on how to form S (exploit symmetry of S from computed
+  //   PCE, use quadratic coefficients organized in matrix form).
+  //   [Neglect constant and linear terms for purposes of discovering A]
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  Cout << "\nAdapted Basis Model: Composing composite reduction"  << std::endl;
+
+  // Given A_i for i=1,..,numFunctions, we need to compute a composite eta:
+  // Refer to board notes / emerging article:
+
+  //   Stack A_i into a tall matrix A, we target KLE of \eta using eigenspectrum
+  //   of covariance A A', which has rank d (Mercer's theorem)
+
+  //   \eta = \Sum_{i=1}^d \sqrt{\lamba_i} \phi_i \mu_i
+  //     for eigenvalues lambda, eigenvectors \phi, and new std normal vars \mu
+
+  //   Form SVD of A in manner similar to active subspace for grad_f grad_f'
+  //     = J' J
+  //   (Eigenvectors of A A' are left singular vectors of A)
+
+  //      *** TO DO: adapt code from  ActiveSubspaceModel::compute_svd() which 
+  //          uses svd() helper from dakota_linear_algebra.hpp.
+  //          Apply truncation criterion
+
+  RealVector singular_values;
+  RealMatrix V_transpose; // right eigenvectors, not used
+  // we want left singular vectors but don't overwrite A, so make a deep copy
+  RealMatrix left_singular_vectors = A_q;
+  svd(left_singular_vectors, singular_values, V_transpose);
+
+  //   Truncate eigenvalues of covariance at some pre-selected level
+  //     --> dimension \nu reduced from dimension d
+
+  // Could use Teuchos::View, but partial traversal of full matrices
+  // works fine for computations to follow
+  //RealVector truncated_singular_values       = singular_values;
+  //RealMatrix truncated_left_singular_vectors = left_singular_vectors;
+
+  reducedRank = /*truncated_*/singular_values.length(); // TO DO
+
+  // Rewrite KLE as
+  //   \eta = \Phi \Lamba \mu   where   \eta = A \xi
+  // where \mu is \nu x 1 reduced vector after truncation
+
+  // \Phi \Lambda \mu = A \xi,  pre-multiply by A'
+  //    A' \Phi \Lambda \mu = (A' A) \xi
+  // where A' A = \Sum_{i=1}^n A_i' A_i = n I
+
+  // Dimension reduction map is then:
+  //   \xi (full dimension d) = 1/n A' \Phi \Lambda \mu (reduced dimension)
+
+  // Pre-compute 1/n A' \Phi \Lambda:
+  rotationMatrix.shapeUninitialized(numFullspaceVars, reducedRank);
+  for (i=0; i<numFullspaceVars; ++i) {
+    const Real* A_col = A_q[i]; // row of A'
+    for (j=0; j<reducedRank; ++j) {
+      const Real* U_col = /*truncated_*/left_singular_vectors[j];
+      Real sum_prod = 0.;
+      for (k=0; k<numFullspaceVars*numFunctions; ++k)
+	sum_prod += A_col[k] * U_col[k];
+      rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
+    }
+  }
+  rotationMatrix.scale(1./numFunctions);
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  /*
+  // TO DO: do we need to transpose or invert rotationMatrix to be consistent
+  //        with A definition used by ActiveSubspaceModel ???
 
   A = RealMatrix(reducedRank, numFullspaceVars);
-
-  // Set A = identity: <----- remove this
-  for (size_t i = 0; i < numFullspaceVars; i++) {
-    A(i,i) = 1.0;
-  }
+  */
 
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "\nAdapted Basis Model: Active basis is:\n";
-    write_data(Cout, A, true, true, true);
+    Cout << "\nAdapted Basis Model: rotation matrix is:\n";
+    write_data(Cout, rotationMatrix, true, true, true);
   }
-
-  Cout << "\n**************************************************************"
-       << "************\nAdapted Basis Model: Build Statistics"
+  Cout << "\n****************************************************************"
+       << "**********\nAdapted Basis Model: Build Statistics"
        << "\nsubspace size: " << reducedRank
-       << std::endl;
-  Cout << "****************************************************************"
+       << "\n****************************************************************"
        << "**********\n";
 }
 
@@ -554,7 +676,7 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "\nError (adapted basis model): Wrong correlation size." << std::endl;
+    Cerr << "\nError (adapted basis model): Wrong correlation size."<<std::endl;
     abort_handler(-1);
   }
 
@@ -562,39 +684,34 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   RealVector mu_y(reducedRank), sd_y(reducedRank);
 
   // mu_y = A^T * mu_x
-  int m = A.numRows();
-  int n = A.numCols();
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
-
+  int m = rotationMatrix.numRows(), n = rotationMatrix.numCols(),
+    incx = 1, incy = 1;
+  Real alpha = 1.0, beta = 0.0;
   // y <-- alpha*A*x + beta*y
   // mu_y <-- 1.0 * A^T * mu_x + 0.0 * mu_y
   Teuchos::BLAS<int, Real> teuchos_blas;
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, rotationMatrix.values(), m,
                     mu_x.values(), incx, beta, mu_y.values(), incy);
 
   // convert the correlations C_x to variance V_x
   // V_x <-- diag(sd_x) * C_x * diag(sd_x)
   // not using symmetric so we can multiply() below
-  RealMatrix V_x(A.numRows(), A.numRows(), false);
+  RealMatrix V_x(m, m, false);
   if (native_correl) {
-    for (int row=0; row<A.numRows(); ++row)
-      for (int col=0; col<A.numRows(); ++col)
+    for (int row=0; row<m; ++row)
+      for (int col=0; col<m; ++col)
         V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
   }
   else {
     V_x = 0.0;
-    for (int row=0; row<A.numRows(); ++row)
+    for (int row=0; row<m; ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
 
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: A = \n";
-    write_data(Cout, A, true, true, true);
+    write_data(Cout, rotationMatrix, true, true, true);
     Cout << "\nAdapted Basis Model: V_x =\n";
     write_data(Cout, V_x, true, true, true);
   }
@@ -604,10 +721,10 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
-                alpha, A, V_x, beta);
+                alpha, rotationMatrix, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
-               alpha, UTVx, A, beta);
+               alpha, UTVx, rotationMatrix, beta);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: V_y = \n";
@@ -664,28 +781,16 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;
 
-  const RealVector& y = recast_y_vars.continuous_variables();
-  // TODO: does this yield a view or a copy?
-  //RealVector x = sub_model_x_vars.continuous_variables();
-  RealVector x;
-  copy_data(sub_model_x_vars.continuous_variables(), x);
+  const RealVector& y =    recast_y_vars.continuous_variables();
+  RealVector&       x = sub_model_x_vars.continuous_variables_view();
 
   //  Calculate x = A*y + inA*inactiveVars via matvec
   //  directly into x cv in submodel
-  const RealMatrix& W1 = abmInstance->A;
-  int m = W1.numRows();
-  int n = W1.numCols();
-
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
-
+  const RealMatrix& W1 = abmInstance->rotationMatrix;
+  int m = W1.numRows(), n = W1.numCols(), incx = 1, incy = 1;
+  Real alpha = 1.0, beta = 0.0;
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
                     y.values(), incy, beta, x.values(), incx);
-
-  sub_model_x_vars.continuous_variables(x);
 
   if (abmInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: Subspace vars are\n";
@@ -739,7 +844,6 @@ response_mapping(const Variables& recast_y_vars,
   // Function values are the same for both recast and sub_model:
   recast_resp.function_values(sub_model_resp.function_values());
 
-
   // Gradients and Hessians must be transformed though:
   const RealMatrix& dg_dx = sub_model_resp.function_gradients();
   if(!dg_dx.empty()) {
@@ -747,16 +851,12 @@ response_mapping(const Variables& recast_y_vars,
 
     //  Performs the matrix-matrix operation:
     // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
-    const RealMatrix& W1 = abmInstance->A;
-    int m = W1.numCols();
-    int k = W1.numRows();
-    int n = dg_dx.numCols();
-
-    Real alpha = 1.0;
-    Real beta = 0.0;
-
+    const RealMatrix& W1 = abmInstance->rotationMatrix;
+    int m = W1.numCols(), k = W1.numRows(), n = dg_dx.numCols();
+    Real alpha = 1.0, beta = 0.0;
     teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
-                      W1.values(), k, dg_dx.values(), k, beta, dg_dy.values(), m);
+                      W1.values(), k, dg_dx.values(), k, beta,
+		      dg_dy.values(), m);
 
     recast_resp.function_gradients(dg_dy);
   }
@@ -768,12 +868,9 @@ response_mapping(const Variables& recast_y_vars,
     RealSymMatrixArray H_y_all(H_x_all.size());
     for (int i = 0; i < H_x_all.size(); i++) {
       // compute H_y = W1^T * H_x * W1
-      const RealMatrix& W1 = abmInstance->A;
-      int m = W1.numRows();
-      int n = W1.numCols();
-
+      const RealMatrix& W1 = abmInstance->rotationMatrix;
+      int m = W1.numRows(), n = W1.numCols();
       Real alpha = 1.0;
-
       RealSymMatrix H_y(n, false);
       Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha,
                                              H_x_all[i], W1, H_y);

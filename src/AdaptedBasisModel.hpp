@@ -153,6 +153,12 @@ protected:
   // Member data
   // ---
 
+  /// low-order (linear or quadratic) PCE generator for computing rotation
+  /// matrices A_i for each of the QoI; this is low-order and potentially
+  /// high-dimension whereas a client PCE could be high-order in the
+  /// reduced dimension
+  Iterator pcePilotExpansion;
+
   /// boolean flag to determine if variables should be transformed to u-space
   /// before active subspace initialization
   bool transformVars;
@@ -172,7 +178,7 @@ protected:
   unsigned int reducedRank;
 
   /// basis for the reduced subspace
-  RealMatrix A;
+  RealMatrix rotationMatrix;
 
   /// the truth model which provides evaluations for building the active subspace
   Model actualModel;
