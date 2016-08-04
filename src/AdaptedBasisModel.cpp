@@ -357,11 +357,13 @@ void AdaptedBasisModel::identify_subspace()
   // Scope of AdaptedBasisModel:
   // There is the computation and then the use of the \mu subspace.
   // Current thinking is that AdaptedBasisModel does the former, but the latter
-  // lives as an option inside NonDPolynomialChaos (triggered from detection
-  // of incoming model type)
+  // occurs within NonD methods such as NonDPolynomialChaos.  Special behavior
+  // (e.g., coverting the PCE over subspace \mu to PCE over original \xi)
+  // can be optionally performed (e.g., in post_run()) and triggered from
+  // detection of the incoming model type)
   ////////////////////////////////////////////////////
   
-  // Definitions: \xi is of dimension d, q is of dimension n,
+  // Definitions: \xi is of dimension d, QoI are of dimension n,
   //              final \mu is of dimension \nu
 
   //////////////////////////////////////////////////////////////////////////////
@@ -379,7 +381,7 @@ void AdaptedBasisModel::identify_subspace()
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   pcePilotExpansion.run(pl_iter);
   const RealVectorArray& pce_coeffs
-    = pcePilotExpansion.approximation_coefficients();
+    = pcePilotExpansion.iterated_model().approximation_coefficients();
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -453,18 +455,18 @@ void AdaptedBasisModel::identify_subspace()
   RealVector singular_values;
   RealMatrix V_transpose; // right eigenvectors, not used
   // we want left singular vectors but don't overwrite A, so make a deep copy
-  RealMatrix left_singular_vectors = A;
+  RealMatrix left_singular_vectors = A_q;
   svd(left_singular_vectors, singular_values, V_transpose);
 
   //   Truncate eigenvalues of covariance at some pre-selected level
   //     --> dimension \nu reduced from dimension d
 
-  // TO DO: could use Teuchos::View, but partial traversal of full matrices
+  // Could use Teuchos::View, but partial traversal of full matrices
   // works fine for computations to follow
   //RealVector truncated_singular_values       = singular_values;
   //RealMatrix truncated_left_singular_vectors = left_singular_vectors;
 
-  reducedRank = /*truncated_*/singular_values.length();
+  reducedRank = /*truncated_*/singular_values.length(); // TO DO
 
   // Rewrite KLE as
   //   \eta = \Phi \Lamba \mu   where   \eta = A \xi
@@ -483,12 +485,13 @@ void AdaptedBasisModel::identify_subspace()
     const Real* A_col = A_q[i]; // row of A'
     for (j=0; j<reducedRank; ++j) {
       const Real* U_col = /*truncated_*/left_singular_vectors[j];
-      result = 0.;
+      Real sum_prod = 0.;
       for (k=0; k<numFullspaceVars*numFunctions; ++k)
-	result += A_col[k] * U_col[k];
-      rotationMatrix(i,j) = result * /*truncated_*/singular_values[j] / n;
+	sum_prod += A_col[k] * U_col[k];
+      rotationMatrix(i,j) = sum_prod * /*truncated_*/singular_values[j];
     }
   }
+  rotationMatrix.scale(1./numFunctions);
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -672,7 +675,7 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
 
   bool native_correl = correl_x.empty() ? false : true;
   if (native_correl && correl_x.numRows() != numFullspaceVars) {
-    Cerr << "\nError (adapted basis model): Wrong correlation size." << std::endl;
+    Cerr << "\nError (adapted basis model): Wrong correlation size."<<std::endl;
     abort_handler(-1);
   }
 
@@ -680,39 +683,34 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   RealVector mu_y(reducedRank), sd_y(reducedRank);
 
   // mu_y = A^T * mu_x
-  int m = A.numRows();
-  int n = A.numCols();
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
-
+  int m = rotationMatrix.numRows(), n = rotationMatrix.numCols(),
+    incx = 1, incy = 1;
+  Real alpha = 1.0, beta = 0.0;
   // y <-- alpha*A*x + beta*y
   // mu_y <-- 1.0 * A^T * mu_x + 0.0 * mu_y
   Teuchos::BLAS<int, Real> teuchos_blas;
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, A.values(), m,
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, rotationMatrix.values(), m,
                     mu_x.values(), incx, beta, mu_y.values(), incy);
 
   // convert the correlations C_x to variance V_x
   // V_x <-- diag(sd_x) * C_x * diag(sd_x)
   // not using symmetric so we can multiply() below
-  RealMatrix V_x(A.numRows(), A.numRows(), false);
+  RealMatrix V_x(m, m, false);
   if (native_correl) {
-    for (int row=0; row<A.numRows(); ++row)
-      for (int col=0; col<A.numRows(); ++col)
+    for (int row=0; row<m; ++row)
+      for (int col=0; col<m; ++col)
         V_x(row, col) = sd_x(row)*correl_x(row,col)*sd_x(col);
   }
   else {
     V_x = 0.0;
-    for (int row=0; row<A.numRows(); ++row)
+    for (int row=0; row<m; ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
 
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: A = \n";
-    write_data(Cout, A, true, true, true);
+    write_data(Cout, rotationMatrix, true, true, true);
     Cout << "\nAdapted Basis Model: V_x =\n";
     write_data(Cout, V_x, true, true, true);
   }
@@ -722,10 +720,10 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   beta = 0.0;
   RealMatrix UTVx(n, m, false);
   UTVx.multiply(Teuchos::TRANS, Teuchos::NO_TRANS,
-                alpha, A, V_x, beta);
+                alpha, rotationMatrix, V_x, beta);
   RealMatrix V_y(reducedRank, reducedRank, false);
   V_y.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
-               alpha, UTVx, A, beta);
+               alpha, UTVx, rotationMatrix, beta);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: V_y = \n";
@@ -782,28 +780,16 @@ vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 {
   Teuchos::BLAS<int, Real> teuchos_blas;
 
-  const RealVector& y = recast_y_vars.continuous_variables();
-  // TODO: does this yield a view or a copy?
-  //RealVector x = sub_model_x_vars.continuous_variables();
-  RealVector x;
-  copy_data(sub_model_x_vars.continuous_variables(), x);
+  const RealVector& y =    recast_y_vars.continuous_variables();
+  RealVector&       x = sub_model_x_vars.continuous_variables_view();
 
   //  Calculate x = A*y + inA*inactiveVars via matvec
   //  directly into x cv in submodel
-  const RealMatrix& W1 = abmInstance->A;
-  int m = W1.numRows();
-  int n = W1.numCols();
-
-  Real alpha = 1.0;
-  Real beta = 0.0;
-
-  int incx = 1;
-  int incy = 1;
-
+  const RealMatrix& W1 = abmInstance->rotationMatrix;
+  int m = W1.numRows(), n = W1.numCols(), incx = 1, incy = 1;
+  Real alpha = 1.0, beta = 0.0;
   teuchos_blas.GEMV(Teuchos::NO_TRANS, m, n, alpha, W1.values(), m,
                     y.values(), incy, beta, x.values(), incx);
-
-  sub_model_x_vars.continuous_variables(x);
 
   if (abmInstance->outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: Subspace vars are\n";
@@ -857,7 +843,6 @@ response_mapping(const Variables& recast_y_vars,
   // Function values are the same for both recast and sub_model:
   recast_resp.function_values(sub_model_resp.function_values());
 
-
   // Gradients and Hessians must be transformed though:
   const RealMatrix& dg_dx = sub_model_resp.function_gradients();
   if(!dg_dx.empty()) {
@@ -865,16 +850,12 @@ response_mapping(const Variables& recast_y_vars,
 
     //  Performs the matrix-matrix operation:
     // dg_dy <- alpha*W1^T*dg_dx + beta*dg_dy
-    const RealMatrix& W1 = abmInstance->A;
-    int m = W1.numCols();
-    int k = W1.numRows();
-    int n = dg_dx.numCols();
-
-    Real alpha = 1.0;
-    Real beta = 0.0;
-
+    const RealMatrix& W1 = abmInstance->rotationMatrix;
+    int m = W1.numCols(), k = W1.numRows(), n = dg_dx.numCols();
+    Real alpha = 1.0, beta = 0.0;
     teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
-                      W1.values(), k, dg_dx.values(), k, beta, dg_dy.values(), m);
+                      W1.values(), k, dg_dx.values(), k, beta,
+		      dg_dy.values(), m);
 
     recast_resp.function_gradients(dg_dy);
   }
@@ -886,12 +867,9 @@ response_mapping(const Variables& recast_y_vars,
     RealSymMatrixArray H_y_all(H_x_all.size());
     for (int i = 0; i < H_x_all.size(); i++) {
       // compute H_y = W1^T * H_x * W1
-      const RealMatrix& W1 = abmInstance->A;
-      int m = W1.numRows();
-      int n = W1.numCols();
-
+      const RealMatrix& W1 = abmInstance->rotationMatrix;
+      int m = W1.numRows(), n = W1.numCols();
       Real alpha = 1.0;
-
       RealSymMatrix H_y(n, false);
       Teuchos::symMatTripleProduct<int,Real>(Teuchos::TRANS, alpha,
                                              H_x_all[i], W1, H_y);
