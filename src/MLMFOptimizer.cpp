@@ -27,9 +27,6 @@
 //#define DEBUG
 #define TRUTH_MODEL 2
 
-static const char rcsId[] =
-  "@(#) $Id: MLMFOptimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
-
 
 namespace Dakota
 {
