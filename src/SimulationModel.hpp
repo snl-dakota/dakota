@@ -120,10 +120,10 @@ protected:
   int derived_evaluation_id() const;
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
-  bool evaluation_cache() const;
+  bool evaluation_cache(bool recurse_flag = true) const;
   /// return flag indicated usage of a restart file by the SimulationModel
   /// (request forwarded to userDefinedInterface)
-  bool restart_file() const;
+  bool restart_file(bool recurse_flag = true) const;
 
   /// set the evaluation counter reference points for the SimulationModel
   /// (request forwarded to userDefinedInterface)
@@ -346,11 +346,11 @@ inline int SimulationModel::derived_evaluation_id() const
 { return simModelEvalCntr; }
 
 
-inline bool SimulationModel::evaluation_cache() const
+inline bool SimulationModel::evaluation_cache(bool recurse_flag) const
 { return userDefinedInterface.evaluation_cache(); }
 
 
-inline bool SimulationModel::restart_file() const
+inline bool SimulationModel::restart_file(bool recurse_flag) const
 { return userDefinedInterface.restart_file(); }
 
 

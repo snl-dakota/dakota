@@ -4312,10 +4312,10 @@ int Model::derived_evaluation_id() const
 /** Only Models including ApplicationInterfaces support an evaluation cache:
     surrogate, nested, and recast mappings are not stored in the cache. 
     Possible exceptions: HierarchSurrModel, NestedModel::optionalInterface. */
-bool Model::evaluation_cache() const
+bool Model::evaluation_cache(bool recurse_flag) const
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->evaluation_cache();
+    return modelRep->evaluation_cache(recurse_flag);
   else // letter lacking redefinition of virtual fn.
     return false; // default
 }
@@ -4325,10 +4325,10 @@ bool Model::evaluation_cache() const
     file: surrogate, nested, and recast mappings are not stored in restart. 
     Possible exceptions: DataFitSurrModel::import_points(),
     NestedModel::optionalInterface. */
-bool Model::restart_file() const
+bool Model::restart_file(bool recurse_flag) const
 {
   if (modelRep) // envelope fwd to letter
-    return modelRep->restart_file();
+    return modelRep->restart_file(recurse_flag);
   else // letter lacking redefinition of virtual fn.
     return false; // default
 }

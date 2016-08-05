@@ -319,6 +319,11 @@ protected:
 
   /// return the subModel interface identifier
   const String& interface_id() const;
+  /// if recurse_flag, return the subModel evaluation cache usage
+  bool evaluation_cache(bool recurse_flag = true) const;
+  /// if recurse_flag, return the subModel restart file usage
+  bool restart_file(bool recurse_flag = true) const;
+
   /// return the current evaluation id for the RecastModel
   int derived_evaluation_id() const;
   /// set the evaluation counter reference points for the RecastModel
@@ -736,6 +741,14 @@ inline void RecastModel::inactive_view(short view, bool recurse_flag)
 
 inline const String& RecastModel::interface_id() const
 { return subModel.interface_id(); }
+
+
+inline bool RecastModel::evaluation_cache(bool recurse_flag) const
+{ return (recurse_flag) ? subModel.evaluation_cache(recurse_flag) : false; }
+
+
+inline bool RecastModel::restart_file(bool recurse_flag) const
+{ return (recurse_flag) ? subModel.restart_file(recurse_flag) : false; }
 
 
 inline int RecastModel::derived_evaluation_id() const
