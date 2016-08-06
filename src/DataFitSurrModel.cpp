@@ -1737,42 +1737,46 @@ import_points(unsigned short tabular_format, bool active_only)
     (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Surrogate model retrieving points with " << num_vars 
-	 << " variables and " << numFns 
-	 << " response functions from file " << importPointsFile << '\n';
-  bool verbose = (outputLevel > NORMAL_OUTPUT);
-
+    Cout << "Surrogate model retrieving points with " << num_vars
+	 << " variables and " << numFns << " response functions from file "
+	 << importPointsFile << '\n';
   // Currently discards any interface id, so can't be used for input validation
+  PRPList import_prp_list;
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
   TabularIO::read_data_tabular(importPointsFile, 
 			       "DataFitSurrModel samples file", vars, resp,
-			       reuseFileVars, reuseFileResponses,
-			       tabular_format, verbose, active_only);
+			       import_prp_list, tabular_format, verbose,
+			       active_only);
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Surrogate model retrieved " << import_prp_list.size()
+	 << " total points." << std::endl;
 
   // For consistency with restart read, import_points (as well as post_input)
   // should also promote imported data to current eval cache/restart file.
-  VarsLIter v_it; RespLIter r_it; String am_interface_id;
+  PRPLIter prp_it; String am_iface_id;
   bool cache = true, restart = true; // default on (with empty id) if no Model
   if (!actualModel.is_null()) {
-    // TO DO: recurse? how to define the correct interface_id without
-    // capture from annotated read?
-    am_interface_id = actualModel.interface_id();
-
-    cache           = actualModel.evaluation_cache(); // recurse_flag = true
-    restart         = actualModel.restart_file();     // recurse_flag = true
+    am_iface_id = actualModel.interface_id(); // default (Note: no recurse!)
+    cache       = actualModel.evaluation_cache(); // recurse_flag = true
+    restart     = actualModel.restart_file();     // recurse_flag = true
   }
   if (cache || restart) {
-    /* For negated sequence that continues from most negative id 
-    int cache_id = -1;
-    if (cache && !data_pairs.empty()) {
-      int first_id = data_pairs.front().evaluation_id();
-      if (first_id < 0) cache_id = first_id - 1;
-    }
-    */
+    // For negated sequence that continues from most negative id 
+    //int cache_id = -1;
+    //if (cache && !data_pairs.empty()) {
+    //  int first_id = data_pairs.front().evaluation_id();
+    //  if (first_id < 0) cache_id = first_id - 1;
+    //}
+
     /// process arrays of data from TabularIO::read_data_tabular() above
-    for (v_it =reuseFileVars.begin(), r_it =reuseFileResponses.begin();
-	 v_it!=reuseFileVars.end() && r_it!=reuseFileResponses.end();
-	 ++v_it, ++r_it) {
-      ParamResponsePair pr(*v_it, am_interface_id, *r_it);// shallow copy, id=0
+    for (prp_it =import_prp_list.begin();
+	 prp_it!=import_prp_list.end(); ++prp_it) {
+      ParamResponsePair& pr = *prp_it;
+      //if (tabular_format & TABULAR_EVAL_ID == 0)  // not imported
+      pr.eval_id(0); // always override eval id to 0 for imported data
+      if (tabular_format & TABULAR_IFACE_ID == 0) // not imported: dangerous!
+	pr.interface_id(am_iface_id); // assign best guess / default
+
       if (restart) parallelLib.write_restart(pr); // preserve eval id
       if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
       //if (cache) // for negated sequence
@@ -1780,10 +1784,6 @@ import_points(unsigned short tabular_format, bool active_only)
     }
   }
   // TO DO: update Analyzer::read_variables_responses() to support post_input()
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "Surrogate model retrieved " << reuseFileVars.size()
-	 << " total points." << std::endl;
 }
 
 

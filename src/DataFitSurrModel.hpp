@@ -354,10 +354,6 @@ private:
   unsigned short exportFormat;
   /// output file stream for \c export_approx_points_file specification
   std::ofstream exportFileStream;
-  /// array of variables sets read from the \c import_build_points_file
-  VariablesList reuseFileVars;
-  /// array of response sets read from the \c import_build_points_file
-  ResponseList reuseFileResponses;
 
   /// manages the building and subsequent evaluation of the approximations
   /// (required for both global and local)

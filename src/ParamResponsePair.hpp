@@ -113,8 +113,10 @@ public:
   int eval_id() const;
   /// set the evaluation identifier
   void eval_id(int id);
-  /// return the interface identifier from the response object
+  /// return the interface identifier from evalInterfaceIds
   const String& interface_id() const;
+  /// set the interface identifier within evalInterfaceIds
+  void interface_id(const String& id);
   /// return the aggregate eval/interface identifier from the response object
   const IntStringPair& eval_interface_ids() const;
   /// return the parameters object
@@ -220,6 +222,10 @@ inline void ParamResponsePair::eval_id(int id)
 
 inline const String& ParamResponsePair::interface_id() const
 { return evalInterfaceIds.second; }
+
+
+inline void ParamResponsePair::interface_id(const String& id)
+{ evalInterfaceIds.second = id; }
 
 
 inline const IntStringPair& ParamResponsePair::eval_interface_ids() const

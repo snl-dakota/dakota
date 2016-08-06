@@ -665,7 +665,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "
 	 << filename << "..." << std::endl;
-  
+
   TabularIO::read_header_tabular(tabular_file, tabular_format); 
 
   Variables vars;  // temporary container to use for read in compact case
@@ -695,6 +695,9 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 	  abort_handler(-1);
 	}
       }
+      else
+	eval_id = cntr;
+
       // Previous rationale:
       // use negative ids for file import in this context, since repeated use
       // of 0 is not acceptable for the allResponses IntResponseMap below.  As
