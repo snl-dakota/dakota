@@ -98,7 +98,8 @@ public:
   void write_tabular(std::ostream& s, unsigned short tabular_format) const;
 
   /// write PRP labels in tabular format to an std::ostream
-  void write_tabular_labels(std::ostream& s, unsigned short tabular_format) const;
+  void write_tabular_labels(std::ostream& s,
+			    unsigned short tabular_format) const;
 
   /// read a ParamResponsePair object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);

@@ -1772,9 +1772,9 @@ import_points(unsigned short tabular_format, bool active_only)
     for (prp_it =import_prp_list.begin();
 	 prp_it!=import_prp_list.end(); ++prp_it) {
       ParamResponsePair& pr = *prp_it;
-      //if (tabular_format & TABULAR_EVAL_ID == 0)  // not imported
+      //if ( (tabular_format & TABULAR_EVAL_ID) == 0 )  // not imported
       pr.eval_id(0); // always override eval id to 0 for imported data
-      if (tabular_format & TABULAR_IFACE_ID == 0) // not imported: dangerous!
+      if ( (tabular_format & TABULAR_IFACE_ID) == 0 )// not imported: dangerous!
 	pr.interface_id(am_iface_id); // assign best guess / default
 
       if (restart) parallelLib.write_restart(pr); // preserve eval id
