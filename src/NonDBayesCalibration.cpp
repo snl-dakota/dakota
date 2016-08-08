@@ -51,6 +51,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
+  iterativeExpDesign(false),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -311,6 +312,19 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   else
     residualModel = mcmcModel;  // shallow copy
 
+  // get a reference to the high-fidelity data source model (this to
+  // change once we use a multi-fidelity model spec.
+  if (iterativeExpDesign) {
+    // TODO: convenience functions to manage this retrieval?
+    const String& hifi_model_pointer
+      = problem_db.get_string("method.nond.hifi_model_pointer");
+    size_t model_index = problem_db.get_db_model_node(); // for restoration
+    problem_db.set_db_model_nodes(hifi_model_pointer);
+    //check_submodel_compatibility(actualModel);
+    //    hifiModel = problem_db.get_model();
+    problem_db.set_db_model_nodes(model_index); // restore
+  }
+
   // -------------------------------------
   // Construct optimizer for MAP pre-solve
   // -------------------------------------
@@ -408,6 +422,19 @@ NonDBayesCalibration::~NonDBayesCalibration()
 { }
 
 
+void NonDBayesCalibration::core_run()
+{
+  nonDBayesInstance = this;
+
+  if (iterativeExpDesign)
+    // use meta-iteration in this class
+    calibrate_to_hifi();
+  else
+    // delegate to base class calibration
+    calibrate();
+}
+
+
 void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
   //iteratedModel.init_communicators(maxEvalConcurrency);
@@ -468,6 +495,12 @@ void NonDBayesCalibration::initialize_model()
   }
   if(posteriorStatsMutual)
     Cout << "Mutual Information estimation not yet implemented\n";
+}
+
+
+void NonDBayesCalibration::calibrate_to_hifi()
+{
+
 }
 
 

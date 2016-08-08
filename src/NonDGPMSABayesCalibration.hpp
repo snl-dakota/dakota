@@ -84,7 +84,7 @@ protected:
   /// generate a posterior distribution on parameters given a set of 
   /// simulation parameter/response data, a set of experimental data, and 
   /// additional variables to be specified here. 
-  void core_run();
+  void calibrate();
 
   // print the final statistics
   //void print_results(std::ostream& s);

@@ -76,6 +76,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void core_run();
+
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
@@ -85,11 +87,23 @@ protected:
   const Model& algorithm_space_model() const;
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// Perform Bayesian calibration (all derived classes must implement)
+  virtual void calibrate() = 0;
+
+
+  //
   //- Heading: Member functions
   //
 
   /// initialize emulator model and probability space transformations
   void initialize_model();
+
+  /// calibrate the model to a high-fidelity data source, using mutual
+  /// information-guided design of experiments
+  void calibrate_to_hifi();
 
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
@@ -158,6 +172,14 @@ protected:
   int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
+
+
+  /// whether to perform iterative design of experiments with
+  /// high-fidelity model
+  bool iterativeExpDesign;
+
+  /// a high-fidelity model data source (given by pointer in input)
+  Model hifiModel;
 
   /// the Cholesky factor of the prior covariance
   RealMatrix priorCovCholFactor;

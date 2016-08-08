@@ -156,10 +156,10 @@ NonDDREAMBayesCalibration::~NonDDREAMBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDDREAMBayesCalibration::core_run()
+void NonDDREAMBayesCalibration::calibrate()
 {
   // instantiate DREAM objects and execute
-  nonDBayesInstance = nonDDREAMInstance = this;
+  nonDDREAMInstance = this;
 
   // diagnostic information
   Cout << "INFO (DREAM): Standardized space " << standardizedSpace << '\n';

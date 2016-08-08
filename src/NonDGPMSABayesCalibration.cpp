@@ -101,7 +101,7 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 
 
 /** Perform the uncertainty quantification */
-void NonDGPMSABayesCalibration::core_run()
+void NonDGPMSABayesCalibration::calibrate()
 {
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
@@ -113,7 +113,7 @@ void NonDGPMSABayesCalibration::core_run()
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
-  nonDBayesInstance = nonDGPMSAInstance = this;
+  nonDGPMSAInstance = this;
   Cout << "\nNum Samples " << chainSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;

@@ -45,7 +45,7 @@ NonDExpDesignBayesCalibration::~NonDExpDesignBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDExpDesignBayesCalibration::core_run()
+void NonDExpDesignBayesCalibration::calibrate()
 {
   //NOTE:  Iterated Model is the high fidelity model which is considered the truth model
 
