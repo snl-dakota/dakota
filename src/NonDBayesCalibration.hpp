@@ -228,8 +228,7 @@ protected:
   RealMatrix predVals;
   /// cached filtered function values for printing
   RealMatrix filteredFnVals;
-  void compute_intervals(RealMatrix& acceptance_chain, 
-      			 RealMatrix& accepted_fn_vals);
+  void compute_intervals();
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,
       			       RealMatrix& PredVals, int num_filtered,
 			       size_t num_exp, size_t num_concatenated);

@@ -754,6 +754,9 @@ void NonDBayesCalibration::compute_statistics()
     filter_fnvals(acceptedFnVals, filteredFnVals);
     NonDSampling::compute_moments(filtered_chain, chainStats);
     NonDSampling::compute_moments(filteredFnVals, fnStats);
+    if (outputLevel >= NORMAL_OUTPUT) {
+      compute_intervals();
+    }
     // Print tabular file for filtered chain
     print_filtered_tabular(filtered_chain, filteredFnVals, predVals, 
       			   num_filtered, num_exp);
@@ -762,10 +765,11 @@ void NonDBayesCalibration::compute_statistics()
   {
     NonDSampling::compute_moments(acceptanceChain, chainStats);
     NonDSampling::compute_moments(acceptedFnVals, fnStats);
-  }
-  
-  if (outputLevel >= NORMAL_OUTPUT) {
-    compute_intervals(acceptanceChain, acceptedFnVals);
+    filteredFnVals.shapeUninitialized(numFunctions, num_filtered);
+    filteredFnVals = acceptedFnVals;
+    if (outputLevel >= NORMAL_OUTPUT) {
+      compute_intervals();
+    }
   }
   
   if(posteriorStatsKL)
@@ -811,24 +815,15 @@ void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fn_vals,
    }
 }
 
-void NonDBayesCalibration::compute_intervals(RealMatrix& acceptance_chain,
-					     RealMatrix& accepted_fn_vals)
+void NonDBayesCalibration::compute_intervals()
 {
   std::ofstream interval_stream("dakota_mcmc_CredPredIntervals.dat");
   std::ostream& screen_stream = Cout;
 
-  // Filter mcmc chain and corresponding function values
-  int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-  int burnin = (burnInSamples > 0) ? burnInSamples : 0;
-  int num_params = acceptance_chain.numRows();
-  int num_samples = acceptance_chain.numCols();
-  int num_filtered = int((num_samples-burnin)/num_skip);
-  RealMatrix filtered_chain;
-  filteredFnVals.shapeUninitialized(numFunctions, num_filtered);
-  filter_fnvals(accepted_fn_vals, filteredFnVals);
   // Make accepted function values the rows instead of the columns
   RealMatrix filtered_fn_vals_transpose(filteredFnVals, Teuchos::TRANS);
   // Augment function values with experimental uncertainty for prediction ints
+  int num_filtered = filteredFnVals.numCols();
   size_t num_exp = expData.num_experiments();
   size_t num_concatenated = num_exp*num_filtered;
 
@@ -1419,6 +1414,7 @@ void NonDBayesCalibration::mutual_info_buildX()
 
 
   Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+  Cout << "MI est = " << mutualinfo_est << '\n';
 
 }
 
