@@ -52,7 +52,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   size_t num_submodel_primary = sub_model.num_primary_fns();
   // the RecastModel will have one residual per experiment datum
   size_t num_recast_primary = expData.num_total_exppoints(),
-    num_secondary = sub_model.num_functions() - sub_model.num_primary_fns(),
+    num_secondary = sub_model.num_secondary_fns(),
     num_recast_fns = num_recast_primary + num_secondary;
 
   // ---
@@ -196,6 +196,34 @@ data_transform_response(const Variables& sub_model_vars,
   inverse_transform_variables(sub_model_vars, recast_vars);
   transform_response(recast_vars, sub_model_vars, sub_model_resp, residual_resp);
 }
+
+
+void DataTransformModel::data_resize()
+{
+  // Actions from ctor chain to check:
+  // RecastModel ctor
+  // nonlinear_resp_mapping
+  // update primary resp mapping
+  // update secondary resp mapping, nonlinear resp mapping
+
+  // RecastModel init_maps
+
+  // expand arrays
+  if (numHyperparams > 0 || obsErrorMultiplierMode > CALIBRATE_NONE) {
+    // TODO: We could support update without size change, or even with
+    // size change in the case of only one multiplier.  Or later could
+    // allow updates including the whole parameter domain change.
+    Cerr << "\nError (DataTransformModel): data updates not supported when "
+	 << "calibrating\nhyper-parameters.";
+    abort_handler(-1);
+  }
+
+  // there is no change in variables or derivatives for now
+  reshape_response(expData.num_total_exppoints(),
+		   subModel.num_secondary_fns());
+
+}
+
 
 
 /** Incorporate the hyper parameters into Variables, assuming they are at the 

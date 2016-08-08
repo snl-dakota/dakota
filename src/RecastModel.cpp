@@ -303,6 +303,17 @@ init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 
 
 void RecastModel::
+reshape_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns)
+{
+  numFns = num_recast_primary_fns + num_recast_secondary_fns;
+  bool grad_flag = !currentResponse.function_gradients().empty();
+  bool hess_flag = !currentResponse.function_hessians().empty();
+
+  currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
+}
+
+
+void RecastModel::
 init_constraints(size_t num_recast_secondary_fns,
 		 size_t recast_secondary_offset, bool reshape_vars)
 {

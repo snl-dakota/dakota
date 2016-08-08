@@ -57,6 +57,8 @@ public:
                                const Response& sub_model_resp,
                                Response& residual_resp);
 
+  /// The size of the ExperimentData changed; update the residualModel size
+  void data_resize();
 
 protected:
 

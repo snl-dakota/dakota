@@ -357,6 +357,12 @@ protected:
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
 		     short recast_resp_order, bool reshape_vars);
+
+  /// Reshape the RecastModel Response, assuming no change in variables
+  /// or derivative information
+  void reshape_response(size_t num_recast_primary_fns, 
+			size_t num_recast_secondary_fns);
+
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
