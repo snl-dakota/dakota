@@ -55,9 +55,6 @@ protected:
   //- Heading: Data
   //
 
-  /// 1 or numFunctions standard deviations
-  RealVector expStdDeviations;
-
   // TODO: Update from expData to scalarData and handle field data
 
   /// flag indicating whether there is calibration data present
