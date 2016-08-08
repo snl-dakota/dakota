@@ -85,10 +85,17 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     int pc_update_spec
       = probDescDB.get_int("method.nond.proposal_covariance_updates");
     if (pc_update_spec < 1) { // default partition: update every 100 samples
-      chainSamples  = 100;
+      // if the user specified less than 100 samples, use that,
+      // resulting in chainCycles = 1
+      chainSamples  = std::min(samples_spec, 100);
       chainCycles = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
     }
     else { // partition as specified
+      if (samples_spec < pc_update_spec) {
+	// hard error since the user explicitly gave both controls
+	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
+	abort_handler(-1);
+      }
       chainSamples  = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
       chainCycles = pc_update_spec;
     }
