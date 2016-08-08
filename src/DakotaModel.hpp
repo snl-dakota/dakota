@@ -953,6 +953,8 @@ public:
   size_t num_functions() const;
   /// return number of primary functions (total less nonlinear constraints)
   size_t num_primary_fns() const;
+  /// return number of secondary functions (number of nonlinear constraints)
+  size_t num_secondary_fns() const;
 
   /// return the gradient evaluation type (gradientType)
   const String& gradient_type() const;
@@ -3219,6 +3221,13 @@ inline size_t Model::num_primary_fns() const
 	  num_nonlinear_eq_constraints());
 }
 
+inline size_t Model::num_secondary_fns() const
+{
+  if (modelRep)
+    return modelRep->num_secondary_fns();
+
+  return (num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints());
+}
 
 inline const String& Model::gradient_type() const
 { return (modelRep) ? modelRep->gradientType : gradientType; }
