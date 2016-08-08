@@ -318,7 +318,7 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
     // Note: parameter values are in scaled space, if scaling is
     // active; residuals may be scaled by covariance
     for (size_t i=0; i<par_num;  ++i) LogLikeOutput << zp[i] << ' ' ;
-    for (size_t i=0; i<nonDDREAMInstance->numTotalCalibTerms; ++i)   
+    for (size_t i=0; i<residuals.length(); ++i)
       LogLikeOutput << residuals(i) << ' ' ;
     LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();

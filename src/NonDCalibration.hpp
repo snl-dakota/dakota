@@ -70,9 +70,6 @@ protected:
   /// Container for experimental data to which to calibrate model
   ExperimentData expData;
 
-  /// Total number of calibration terms, after replicates/interpolation
-  size_t numTotalCalibTerms;
-
 private:
 
   //

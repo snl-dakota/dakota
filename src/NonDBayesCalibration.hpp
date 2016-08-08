@@ -169,7 +169,8 @@ protected:
   /// preconditioning, could be activated for no-emulator cases with a
   /// specification option (not active by default).
   Iterator mapOptimizer;
-  /// RecastModel for solving for MAP using negative log posterior
+  /// RecastModel for solving for MAP: reduces residualModel to scalar
+  /// negative log posterior
   Model negLogPostModel;
 
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a

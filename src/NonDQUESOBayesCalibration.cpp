@@ -1424,7 +1424,8 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
   Real log_prior = log_prior_density(qv), log_post = it->first;
-  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
+  size_t num_total_calib_terms = residualModel.num_primary_fns();
+  Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
   RealVector hyper_params(numHyperparams);
   copy_gsl_partial(qv, numContinuousVars, hyper_params);
   Real half_log_det = 
@@ -1502,7 +1503,7 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
       nonDQUESOInstance->numContinuousVars + nonDQUESOInstance->numHyperparams; 
     for (size_t i=0; i<num_total_params; ++i) 
       LogLikeOutput << paramValues[i] << ' ' ;
-    for (size_t i=0; i<nonDQUESOInstance->numTotalCalibTerms; ++i)
+    for (size_t i=0; i<residuals.length(); ++i)
       LogLikeOutput << residuals[i] << ' ' ;
     LogLikeOutput << log_like << '\n';
     LogLikeOutput.close();

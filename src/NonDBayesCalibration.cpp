@@ -154,6 +154,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   short mcmc_deriv_order = 1;
 
+  // should be independent of data resizes
   construct_mcmc_model(mcmc_deriv_order);
 
   init_hyper_parameters();
@@ -174,6 +175,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   else
     residualModel = mcmcModel;  // shallow copy
 
+  // TODO: will need to be resized when data changes
   construct_map_optimizer(mcmc_deriv_order);
 
   int mcmc_concurrency = 1; // prior to concurrent chains
@@ -356,13 +358,14 @@ construct_map_optimizer(const short mcmc_deriv_order)
   if ( opt_alg_override == SUBMETHOD_SQP || opt_alg_override == SUBMETHOD_NIP ||
        ( emulatorType && opt_alg_override != SUBMETHOD_NONE ) ) {
 
+    size_t num_total_calib_terms = residualModel.num_primary_fns();
     Sizet2DArray vars_map_indices, primary_resp_map_indices(1),
       secondary_resp_map_indices;
-    primary_resp_map_indices[0].resize(numTotalCalibTerms);
-    for (size_t i=0; i<numTotalCalibTerms; ++i)
+    primary_resp_map_indices[0].resize(num_total_calib_terms);
+    for (size_t i=0; i<num_total_calib_terms; ++i)
       primary_resp_map_indices[0][i] = i;
     bool nonlinear_vars_map = false; BoolDequeArray nonlinear_resp_map(1);
-    nonlinear_resp_map[0] = BoolDeque(numTotalCalibTerms, true);
+    nonlinear_resp_map[0] = BoolDeque(num_total_calib_terms, true);
     SizetArray recast_vc_totals;  // empty: no change in size
     BitArray all_relax_di, all_relax_dr; // empty: no discrete relaxation
 
@@ -528,8 +531,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       log(L) = -1/2*Nr*log(2*pi) - 1/2*log(det(Cov)) - 1/2*r'(Cov^{-1})*r
 
-    The passed residual_resp must already be size-adjusted, differenced with any
-    data, if present, and scaled by covariance^{-1/2}. */
+    The passed residuals must already be size-adjusted, differenced
+    with any data, if present, and scaled by covariance^{-1/2}. */
 Real NonDBayesCalibration::
 log_likelihood(const RealVector& residuals, const RealVector& all_params)
 {
@@ -540,7 +543,8 @@ log_likelihood(const RealVector& residuals, const RealVector& all_params)
                               all_params.values() + numContinuousVars, 
                               numHyperparams);
 
-  Real half_nr_log2pi = numTotalCalibTerms * HALF_LOG_2PI;
+  size_t num_total_calib_terms = residuals.length();
+  Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
   Real half_log_det = 
     expData.half_log_cov_determinant(hyper_params, obsErrorMultiplierMode);
 
