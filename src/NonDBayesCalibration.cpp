@@ -74,6 +74,19 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
   exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
 {
+  // TODO: could avoid this copy entirely, but less clean
+  Model inbound_model = iteratedModel;
+  if (iterativeExpDesign) {
+    // TODO: instead of pulling the model out, change modes on the iteratedModel
+    if (iteratedModel.model_type() != "surrogate") {
+      Cerr << "\nError: Adaptive Bayesian experiment design requires " 
+	   << "hierarchical surrogate\n       model.";
+      abort_handler(PARSE_ERROR);
+    }
+    // the surrogate model is the low-fi model
+    inbound_model = iteratedModel.surrogate_model();
+  }
+
   // assign default proposalCovarType
   if (proposalCovarType.empty()) {
     if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
@@ -101,11 +114,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       chainCycles = pc_update_spec;
     }
   }
-  else
-    { chainSamples = samples_spec; chainCycles = 1; }
+  else { 
+    chainSamples = samples_spec; 
+    chainCycles = 1; 
+  }
 
-  if (randomSeed != 0)
-  {
+  if (randomSeed != 0) {
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
   }
   else {
@@ -138,11 +152,37 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  // --------------------------------------------------
-  // Construct mcmcModel (no emulation, GP, PCE, or SC)
-  // for use in likelihood evaluations
-  // --------------------------------------------------
   short mcmc_deriv_order = 1;
+
+  construct_mcmc_model(mcmc_deriv_order);
+
+  init_hyper_parameters();
+
+  // Now the underlying simulation model mcmcModel is setup; wrap it
+  // in a data transformation, making sure to allocate gradient/Hessian space
+  if (calibrationData) {
+    residualModel.assign_rep
+      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
+                              obsErrorMultiplierMode, mcmc_deriv_order), false);
+    // update bounds for hyper-parameters
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
+    for (size_t i=0; i<numHyperparams; ++i) {
+      residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
+      residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
+    }
+  }
+  else
+    residualModel = mcmcModel;  // shallow copy
+
+  construct_map_optimizer(mcmc_deriv_order);
+
+  int mcmc_concurrency = 1; // prior to concurrent chains
+  maxEvalConcurrency *= mcmc_concurrency;
+}
+
+
+void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
+{
   switch (emulatorType) {
 
   case PCE_EMULATOR: case SC_EMULATOR: {
@@ -255,6 +295,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
+}
+
+
+void NonDBayesCalibration::init_hyper_parameters()
+{
   // Initialize sizing for hyperparameters (observation error), not
   // currently part of a RecastModel
   size_t num_resp_groups = 
@@ -295,42 +340,17 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       (Pecos::InvGammaRandomVariable*)(invGammaDists[i].random_variable_rep());
     rv_rep->update(alpha, beta);
   }
+}
 
-  // Now the underlying simulation model mcmcModel is setup; wrap it
-  // in a data transformation, making sure to allocate gradient/Hessian space
-  if (calibrationData) {
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmc_deriv_order), false);
-    // update bounds for hyper-parameters
-    Real dbl_inf = std::numeric_limits<Real>::infinity();
-    for (size_t i=0; i<numHyperparams; ++i) {
-      residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
-      residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
-    }
-  }
-  else
-    residualModel = mcmcModel;  // shallow copy
 
-  // get a reference to the high-fidelity data source model (this to
-  // change once we use a multi-fidelity model spec.
-  if (iterativeExpDesign) {
-    // TODO: convenience functions to manage this retrieval?
-    const String& hifi_model_pointer
-      = problem_db.get_string("method.nond.hifi_model_pointer");
-    size_t model_index = problem_db.get_db_model_node(); // for restoration
-    problem_db.set_db_model_nodes(hifi_model_pointer);
-    //check_submodel_compatibility(actualModel);
-    //    hifiModel = problem_db.get_model();
-    problem_db.set_db_model_nodes(model_index); // restore
-  }
-
-  // -------------------------------------
-  // Construct optimizer for MAP pre-solve
-  // -------------------------------------
-  // Emulator:     on by default; can be overridden with "pre_solve none"
-  // No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
-  //              relies on mapOptimizer ctor to enforce min derivative support
+/** Construct optimizer for MAP pre-solve
+    Emulator:     on by default; can be overridden with "pre_solve none"
+    No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
+                 relies on mapOptimizer ctor to enforce min derivative support
+*/
+void NonDBayesCalibration::
+construct_map_optimizer(const short mcmc_deriv_order) 
+{
   unsigned short opt_alg_override
     = probDescDB.get_ushort("method.nond.pre_solve_method");
   if ( opt_alg_override == SUBMETHOD_SQP || opt_alg_override == SUBMETHOD_NIP ||
@@ -412,14 +432,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 #endif
     }
   }
-
-  int mcmc_concurrency = 1; // prior to concurrent chains
-  maxEvalConcurrency *= mcmc_concurrency;
 }
-
 
 NonDBayesCalibration::~NonDBayesCalibration()
 { }
+
+
+
 
 
 void NonDBayesCalibration::core_run()

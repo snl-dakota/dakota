@@ -98,6 +98,18 @@ protected:
   //- Heading: Member functions
   //
 
+
+  /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
+  /// inbound Model
+  void construct_mcmc_model(short& mcmc_deriv_order);
+
+  /// initialize the hyper-parameter priors
+  void init_hyper_parameters();
+
+  /// construct the negative log posterior RecastModel (wraps
+  /// residualModel) and corresponding MAP optimizer
+  void construct_map_optimizer(const short mcmc_deriv_order);
+
   /// initialize emulator model and probability space transformations
   void initialize_model();
 
