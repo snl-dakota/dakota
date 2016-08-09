@@ -135,7 +135,7 @@ DataMethodRep::DataMethodRep():
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  subSamplingPeriod(1), burnInSamples(0), 
+  burnInSamples(0), subSamplingPeriod(1), adaptExpDesign(false),
   posteriorStatsKL(false), posteriorStatsMutual(false),
   adaptPosteriorRefine(false), logitTransform(false),
   preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
@@ -273,7 +273,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
     << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance
@@ -416,7 +416,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
     >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
-    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
+    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod >> adaptExpDesign
     >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
     >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
@@ -559,7 +559,7 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
     << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << lipschitzType << dataDistType 
     << dataDistCovInputType << dataDistMeans << dataDistCovariance

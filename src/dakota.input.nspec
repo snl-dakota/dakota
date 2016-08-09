@@ -1856,12 +1856,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
          ]
        )
-      |
-      ( experimental_design {N_mdm(utype,subMethod_SUBMETHOD_EXPDESIGN_BAYES)}
+      [ experimental_design {N_mdm(true,adaptExpDesign)}
         initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ low_fidelity_model_pointer STRING {N_mdm(str,lowFidModelPointer)} ]
-       )
+       ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
       [ calibrate_error_multipliers {0}
         one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}

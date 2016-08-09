@@ -6771,6 +6771,7 @@ static StringArray
         MP_(miscOptions);
 
 static bool
+	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
 	MP_(constantPenalty),
@@ -7045,7 +7046,6 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_SEQUENTIAL),
 	MP2s(subMethod,SUBMETHOD_DREAM),
 	MP2s(subMethod,SUBMETHOD_WASABI),
-	MP2s(subMethod,SUBMETHOD_EXPDESIGN_BAYES),
 	MP2s(subMethod,SUBMETHOD_GPMSA),
 	MP2s(subMethod,SUBMETHOD_QUESO),
 	MP2s(subMethod,SUBMETHOD_NIP),

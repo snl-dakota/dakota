@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1893 distinct keywords (plus 250 aliases) **/
+/** 1891 distinct keywords (plus 250 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -382,11 +382,9 @@ static KeyWord
 		{"samples",1,0,1,1,0,0.,0.,-8,N_mdm(int,chainSamples)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
-	kw_63[4] = {
+	kw_63[2] = {
 		{"initial_samples",9,0,1,1,0,0.,0.,0,N_mdm(int,numSamples)},
-		{"low_fidelity_model_pointer",11,0,3,0,0,0.,0.,0,N_mdm(str,lowFidModelPointer)},
-		{"samples",1,0,1,1,0,0.,0.,-2,N_mdm(int,numSamples)},
-		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
+		{"samples",1,0,1,1,0,0.,0.,-1,N_mdm(int,numSamples)}
 		},
 	kw_64[3] = {
 		{"nip",8,0,1,1,0,0.,0.,0,N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)},
@@ -630,18 +628,18 @@ static KeyWord
 		},
 	kw_108[14] = {
 		{0,0,1,0,0,kw_27},
-		{"burn_in_samples",9,0,4,0,0,0.,0.,0,N_mdm(int,burnInSamples)},
-		{"calibrate_error_multipliers",8,5,3,0,kw_47},
-		{"convergence_tolerance",10,0,8,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
+		{"burn_in_samples",9,0,5,0,0,0.,0.,0,N_mdm(int,burnInSamples)},
+		{"calibrate_error_multipliers",8,5,4,0,kw_47},
+		{"convergence_tolerance",10,0,9,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
 		{"dream",8,10,1,1,kw_62,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_DREAM)},
-		{"experimental_design",8,4,1,1,kw_63,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_EXPDESIGN_BAYES)},
+		{"experimental_design",8,2,2,0,kw_63,0.,0.,0,N_mdm(true,adaptExpDesign)},
 		{"gpmsa",8,6,1,1,kw_73,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_GPMSA)},
-		{"max_iterations",0x29,0,9,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"posterior_stats",8,2,5,0,kw_74},
-		{"probability_levels",14,1,7,0,kw_75,0.,0.,0,N_mdm(resplevs01,probabilityLevels)},
+		{"max_iterations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"posterior_stats",8,2,6,0,kw_74},
+		{"probability_levels",14,1,8,0,kw_75,0.,0.,0,N_mdm(resplevs01,probabilityLevels)},
 		{"queso",8,6,1,1,kw_90,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_QUESO)},
-		{"standardized_space",8,0,2,0,0,0.,0.,0,N_mdm(true,standardizedSpace)},
-		{"sub_sampling_period",9,0,6,0,0,0.,0.,0,N_mdm(int,subSamplingPeriod)},
+		{"standardized_space",8,0,3,0,0,0.,0.,0,N_mdm(true,standardizedSpace)},
+		{"sub_sampling_period",9,0,7,0,0,0.,0.,0,N_mdm(int,subSamplingPeriod)},
 		{"wasabi",8,7,1,1,kw_107,0.,0.,0,N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
 		},
 	kw_109[1] = {

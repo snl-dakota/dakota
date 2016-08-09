@@ -51,7 +51,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  iterativeExpDesign(false),
+  adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
+  initHifiSamples (probDescDB.get_int("method.samples")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -76,15 +77,17 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 {
   // TODO: could avoid this copy entirely, but less clean
   Model inbound_model = iteratedModel;
-  if (iterativeExpDesign) {
-    // TODO: instead of pulling the model out, change modes on the iteratedModel
+  if (adaptExpDesign) {
+    // TODO: instead of pulling these models out, change modes on the
+    // iteratedModel
     if (iteratedModel.model_type() != "surrogate") {
       Cerr << "\nError: Adaptive Bayesian experiment design requires " 
 	   << "hierarchical surrogate\n       model.";
       abort_handler(PARSE_ERROR);
     }
-    // the surrogate model is the low-fi model
+    // the surrogate model is the low-fi model which should be calibrated
     inbound_model = iteratedModel.surrogate_model();
+    hifiModel = iteratedModel.truth_model();
   }
 
   // assign default proposalCovarType
@@ -448,7 +451,7 @@ void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  if (iterativeExpDesign)
+  if (adaptExpDesign)
     // use meta-iteration in this class
     calibrate_to_hifi();
   else
@@ -522,8 +525,109 @@ void NonDBayesCalibration::initialize_model()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
+  unsigned short sample_type = SUBMETHOD_LHS;
+  bool vary_pattern = true;
+  String rng("mt19937");
+
+  NonDLHSSampling* lhs_sampler_rep;
+  lhs_sampler_rep =
+    new NonDLHSSampling(hifiModel, sample_type, initHifiSamples, randomSeed,
+			rng, vary_pattern, ACTIVE_UNIFORM);
+  Iterator lhs_iterator;
+  lhs_iterator.assign_rep(lhs_sampler_rep, false);
+
+  lhs_iterator.run();
+  const IntResponseMap& all_responses = lhs_iterator.all_responses();
+
+  // BMA TODO: Once ExperimentData can be updated, post this into
+  // expData directly
+  ExperimentData exp_data(initHifiSamples, all_responses);
+  expData = exp_data;
+  if (outputLevel >= DEBUG_OUTPUT)
+    for (size_t i=0; i<initHifiSamples; i++)
+      Cout << "Exp Data  i " << i << " value = " << exp_data.all_data(i);
+
+  // need to initialize this from user input eventually
+  size_t num_candidates = 100, num_mcmc_samples = 1000;
+
+  bool stop_metric = false;
+  double max_MI = 0;
+
+  while (!stop_metric) {
+
+    // Run the underlying calibration solver (MCMC)
+    calibrate();
+
+    // after QUESO is run, get the posterior values of the samples
+    // currently, it looks like acceptedFnVals is a protected data member within NonDBayesCalibration
+    // We will need to expose this by adding a function such as post_sample() shown below
+    // RealMatrix posterior_theta = queso_iterator->post_sample();
+
+    // go through all the designs and pick the one with maximum mutual information
+    for (size_t i=0; i<num_candidates; i++) {
+      // Get the lowFidModelPtr that we initialized from the input file in the constructor,
+      // initialize the low fidelity model.
+      // Declare a matrix to store the low fidelity responses
+      /*
+      RealMatrix responses_low(num_responses, num_mcmc_samples);
+      RealVector col_vec(num_theta + num_responses);
+      RealVector low_fid_response(num_responses);
+      */
+      for (size_t j=0; j<num_mcmc_samples; j++) {
+        // for each posterior sample, get the variable values, and run the model
+        // low_fid_model_vars = posterior_theta(j,:);
+        // low_fid_model_vars = Teuchos::getCol(Teuchos::View,posterior_theta,j); 
+        // lowFidModel.evaluate();
+        // responses_low(j,:)  = lowFidModel.current_responses().function_values();
+	/*
+	low_fid_response = lowFidModel.current_responses().function_values();
+	Teuchos::setCol(low_fid_response, j, responses_low);
+	*/
+      }
+      // now concatenate posterior_theta and responses_low into Xmatrix
+      /*
+      for (size_t k = 0; k < num_theta; k++){
+        col_vec[k] = low_fid_model_vars[k];
+      }
+      for (k = 0; k < num_responses; k ++){
+        col_vec[num_theta+k] = low_fid_response[k];
+      }
+      Teuchos::setCol(col_vec, j, Xmatrix);
+      */
+      // calculate the mutual information with posterior_theta and responses_low matrices
+      // MI = queso_iterator.knn_mutual_info(Xmatrix, num_theta, num_responses);
+
+      // Now track max MI:
+      // if ( MI > max_MI) {
+      //   max_MI = MI;
+      //   design_new = design_i;
+      //}
+    } // end for over the number of candidates
+
+    // evaluate hi fidelity iteratedModel at design_i;
+    // Add this data to the expData for the next iteteration of likelihood
+    // check stopping metric (may just start with doing this 5 times?
+    stop_metric = true;
+  } // end while loop
 
 }
+
+
+void NonDBayesCalibration::
+extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+				   const RealMatrix &samples_for_posterior_eval,
+				   const RealVector &posterior_density,
+				   RealMatrix &posterior_data ) const 
+{
+}
+
+void NonDBayesCalibration::
+export_posterior_samples_to_file( const std::string filename,
+				  const RealMatrix &posterior_data ) const
+{
+}
+
+
 
 
 /** Calculate the log-likelihood, accounting for contributions from

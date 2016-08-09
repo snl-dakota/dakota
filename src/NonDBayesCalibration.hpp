@@ -114,8 +114,16 @@ protected:
   void initialize_model();
 
   /// calibrate the model to a high-fidelity data source, using mutual
-  /// information-guided design of experiments
+  /// information-guided design of experiments (adaptive experimental
+  /// design)
   void calibrate_to_hifi();
+
+  void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+					  const RealMatrix &samples_for_posterior_eval, 
+					  const RealVector &posterior_density, RealMatrix &posterior_data ) const;
+
+  void export_posterior_samples_to_file(const std::string filename,
+					const RealMatrix &posterior_data ) const;
 
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
@@ -186,13 +194,15 @@ protected:
   /// random seed for MCMC process
   int randomSeed;
 
+  // settings specific to adaptive DOE
 
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
-  bool iterativeExpDesign;
-
+  bool adaptExpDesign;
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;
+  /// initial high-fidelity model samples
+  int initHifiSamples;
 
   /// the Cholesky factor of the prior covariance
   RealMatrix priorCovCholFactor;
