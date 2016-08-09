@@ -99,12 +99,16 @@ void close_file(std::ifstream& data_stream, const std::string& input_filename,
 		const std::string& context_message) 
 {
   // TODO: try/catch
-  if (!data_stream.good()) {
+
+  // ifstream's have 4 states: good, eof, fail and bad.  Testing this state
+  // prior to close() is likely overkill in the current context...
+  if (data_stream.good() || data_stream.eof())
+    data_stream.close();
+  else {
     Cerr << "\nError (" << context_message << "): Could not close file " 
 	 << input_filename << " used for reading tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_stream.close();
 }
 
 
@@ -112,12 +116,16 @@ void close_file(std::ofstream& data_stream, const std::string& output_filename,
 		const std::string& context_message) 
 {
   // TODO: try/catch
-  if (!data_stream.good()) {
+
+  // ifstream's have 4 states: good, eof, fail and bad.  Testing this state
+  // prior to close() is likely overkill in the current context...
+  if (data_stream.good() || data_stream.eof())
+    data_stream.close();
+  else {
     Cerr << "\nError (" << context_message << "): Could not close file " 
 	 << output_filename << " used for writing tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_stream.close();
 }
 
 
