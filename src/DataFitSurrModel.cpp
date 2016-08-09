@@ -1740,7 +1740,7 @@ import_points(unsigned short tabular_format, bool active_only)
     Cout << "Surrogate model retrieving points with " << num_vars
 	 << " variables and " << numFns << " response functions from file "
 	 << importPointsFile << '\n';
-  // Currently discards any interface id, so can't be used for input validation
+  // Preserves eval and interface ids, if annotated format
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
   TabularIO::read_data_tabular(importPointsFile, 
@@ -1783,7 +1783,6 @@ import_points(unsigned short tabular_format, bool active_only)
       //  { pr.evaluation_id(cache_id); data_pairs.insert(pr); --cache_id; }
     }
   }
-  // TO DO: update Analyzer::read_variables_responses() to support post_input()
 }
 
 

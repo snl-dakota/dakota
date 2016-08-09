@@ -247,6 +247,8 @@ void write_data_tabular(const std::string& output_filename,
       write_data_tabular(output_stream, &output_indices[row][0], num_vars);
     output_stream << std::endl;
   }
+
+  close_file(output_stream, output_filename, context_message);
 }
 
 
@@ -353,6 +355,8 @@ void read_data_tabular(const std::string& input_filename,
 
   if (exists_extra_data(input_stream))
     print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -437,6 +441,8 @@ void read_data_tabular(const std::string& input_filename,
 
   copy_data(work_vars_va, vars_matrix);
   copy_data(work_resp_va, resp_matrix);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 /** Read possibly annotated data with unknown num_rows data into input_coeffs
@@ -520,6 +526,8 @@ void read_data_tabular(const std::string& input_filename,
     for (size_t row_ind = 0; row_ind < num_rows; ++row_ind)
       input_coeffs[fn_ind][row_ind] = coeffs_tmp[row_ind][fn_ind];
   }
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -569,6 +577,8 @@ void read_data_tabular(const std::string& input_filename,
     // advance so EOF can detect properly
     data_stream >> std::ws;
   }
+
+  close_file(data_stream, input_filename, context_message);
 }
 
 
@@ -611,6 +621,8 @@ void read_data_tabular(const std::string& input_filename,
 
   if (exists_extra_data(input_stream))
     print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -665,6 +677,8 @@ void read_data_tabular(const std::string& input_filename,
   // rm layout (record_len X num_records), since the natural place to store the
   // ith vector rva[i] is as rm[i], a Teuchos column vector.
   copy_data_transpose(rva, input_matrix);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -738,6 +752,8 @@ size_t read_data_tabular(const std::string& input_filename,
     dsva[i] = list_dsv_points[i];
   list_dsv_points.clear();
 
+  close_file(input_stream, input_filename, context_message);
+ 
   return num_evals;
 }
 

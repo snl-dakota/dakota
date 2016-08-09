@@ -419,7 +419,7 @@ void Analyzer::compute_vbd_stats(const int num_samples,
     for (k=0; k<numFunctions; ++k)
       for (i=0; i<num_vars+2; ++i)
 	for (j=0; j<num_samples; ++j)
-	  Cout << "Response " << k << " for replicate " << i << ", sample " << j 
+	  Cout << "Response " << k << " for replicate " << i << ", sample " << j
 	       << ": " << total_fn_vals[k][i][j] << '\n';
 #endif
 
@@ -656,15 +656,69 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     return;
   }
 
-  std::ifstream tabular_file;
-  TabularIO::open_file(tabular_file, filename, "post-run input");
   // pre/post only supports annotated; could detect
   unsigned short tabular_format = 
     parallelLib.program_options().post_run_input_format();
 
-  if (outputLevel > NORMAL_OUTPUT)
-    Cout << "\nAttempting to read " << num_evals << " samples from file "
-	 << filename << "..." << std::endl;
+  // TO DO: validate/accommodate incoming num_vars since it may be defined
+  // from a local sampling mode (see NonDSampling) that differs from active;
+  // support for active discrete also varies across the post-run Iterators.
+  bool active_only = true; // consistent with PStudyDACE use cases
+  Variables vars(iteratedModel.current_variables().copy());
+  Response  resp(iteratedModel.current_response().copy());
+
+  PRPList import_prp_list;
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
+  TabularIO::read_data_tabular(filename, "post-run input", vars, resp,
+			       import_prp_list, tabular_format, verbose,
+			       active_only);
+  size_t num_imported = import_prp_list.size();
+  if (num_imported < num_evals) {
+    Cerr << "Error: number of imported evaluations (" << num_imported
+	 << ") less than expected (" << num_evals << ")." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  else if (verbose) {
+    Cout << "\nRead " << num_imported << " samples from file " << filename;
+    if (num_imported > num_evals)
+      Cout << " of which " << num_evals << " will be used." << std::endl;
+    else Cout << std::endl;
+  }
+
+  if (compactMode) allSamples.shapeUninitialized(num_vars, num_evals);
+  else             allVariables.resize(num_evals);
+
+  size_t i; PRPLIter prp_it;
+  bool cache = iteratedModel.evaluation_cache(), // recurse_flag = true
+     restart = iteratedModel.restart_file();     // recurse_flag = true
+  extern PRPCache data_pairs;
+  for (i=0, prp_it=import_prp_list.begin(); i<num_evals; ++i, ++prp_it) {
+
+    ParamResponsePair& pr = *prp_it;
+
+    // insert imported data into evaluation cache (just for consistency) and
+    // restart (more likely to be useful).  Unlike DataFitSurrModel, we will
+    // preserve the incoming eval id in the post-input file import case.
+    if (restart) parallelLib.write_restart(pr); // preserve eval id
+    if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
+
+    // *** TO DO: from here on, need manageRecasting logic as in
+    // ***        DataFitSurrModel::build_global()
+
+    // update allVariables,allSamples
+    if (compactMode) variables_to_sample(vars, allSamples[i]);
+    else             allVariables[i] = pr.variables();
+    // update allResponses
+    allResponses[pr.eval_id()] = pr.response();
+
+    // mirror any post-processing in Analyzer::evaluate_parameter_sets()
+    if (numObjFns || numLSqTerms)
+      update_best(pr.variables(), i+1, pr.response());
+  }
+
+  /*
+  std::ifstream tabular_file;
+  TabularIO::open_file(tabular_file, filename, "post-run input");
 
   TabularIO::read_header_tabular(tabular_file, tabular_format); 
 
@@ -736,12 +790,14 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     else
       update_best(allVariables[i], i+1, allResponses[eval_id]);
   }
-
+  // Will output non-fatal warning if there is additional file content
+  // after the end of the import
   if (TabularIO::exists_extra_data(tabular_file))
     TabularIO::print_unexpected_data(Cout, filename, "post-run input",
 				     tabular_format);
-  
   tabular_file.close();
+  */
+
   if (outputLevel > QUIET_OUTPUT)
     Cout << "\nPost-run phase initialized: variables / responses read from "
 	 << "tabular\nfile " << filename << ".\n" << std::endl;
