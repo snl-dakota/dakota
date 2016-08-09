@@ -101,14 +101,14 @@ protected:
 
   /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
   /// inbound Model
-  void construct_mcmc_model(short& mcmc_deriv_order);
+  void construct_mcmc_model();
 
   /// initialize the hyper-parameter priors
   void init_hyper_parameters();
 
   /// construct the negative log posterior RecastModel (wraps
   /// residualModel) and corresponding MAP optimizer
-  void construct_map_optimizer(const short mcmc_deriv_order);
+  void construct_map_optimizer();
 
   /// initialize emulator model and probability space transformations
   void initialize_model();
@@ -193,6 +193,9 @@ protected:
   int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
+
+  /// order of derivatives used in MCMC process (bitwise like ASV)
+  short mcmcDerivOrder;
 
   // settings specific to adaptive DOE
 

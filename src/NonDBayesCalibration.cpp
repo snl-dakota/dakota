@@ -51,6 +51,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
+  mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   obsErrorMultiplierMode(
@@ -82,7 +83,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // iteratedModel
     if (iteratedModel.model_type() != "surrogate") {
       Cerr << "\nError: Adaptive Bayesian experiment design requires " 
-	   << "hierarchical surrogate\n       model.";
+	   << "hierarchical surrogate\n       model.\n";
       abort_handler(PARSE_ERROR);
     }
     // the surrogate model is the low-fi model which should be calibrated
@@ -155,10 +156,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  short mcmc_deriv_order = 1;
-
   // should be independent of data resizes
-  construct_mcmc_model(mcmc_deriv_order);
+  construct_mcmc_model();
 
   init_hyper_parameters();
 
@@ -167,7 +166,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (calibrationData) {
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmc_deriv_order), false);
+                              obsErrorMultiplierMode, mcmcDerivOrder), false);
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (size_t i=0; i<numHyperparams; ++i) {
@@ -179,14 +178,14 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     residualModel = mcmcModel;  // shallow copy
 
   // TODO: will need to be resized when data changes
-  construct_map_optimizer(mcmc_deriv_order);
+  construct_map_optimizer();
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
 }
 
 
-void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
+void NonDBayesCalibration::construct_mcmc_model()
 {
   switch (emulatorType) {
 
@@ -201,7 +200,7 @@ void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
       se_rep = new NonDStochCollocation(iteratedModel,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, derivs);
-      mcmc_deriv_order = 3; // Hessian computations not yet implemented for SC
+      mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
     else {
       if (!level_seq.empty()) // PCE with spectral projection via sparse grid
@@ -224,7 +223,7 @@ void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
 	  probDescDB.get_ushort("method.import_build_format"),
 	  probDescDB.get_bool("method.import_build_active_only"));
       }
-      mcmc_deriv_order = 7; // Hessian computations implemented for PCE
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
     stochExpIterator.assign_rep(se_rep);
     // no CDF or PDF level mappings
@@ -240,9 +239,9 @@ void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
   case GP_EMULATOR: case KRIGING_EMULATOR: {
     String sample_reuse; String approx_type;
     if (emulatorType == GP_EMULATOR)
-      { approx_type = "global_gaussian"; mcmc_deriv_order = 3; } // grad support
+      { approx_type = "global_gaussian"; mcmcDerivOrder = 3; } // grad support
     else
-      { approx_type = "global_kriging";  mcmc_deriv_order = 7; } // grad,Hess
+      { approx_type = "global_kriging";  mcmcDerivOrder = 7; } // grad,Hess
     UShortArray approx_order; // not used by GP/kriging
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
@@ -281,7 +280,7 @@ void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
       lhs_rep->initialize_random_variables(natafTransform); // shallow copy
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
-    gp_set.request_values(mcmc_deriv_order); // for misfit Hessian
+    gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
     mcmcModel.assign_rep(new DataFitSurrModel(lhs_iterator, lhs_model,
       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
       outputLevel, sample_reuse, import_pts_file,
@@ -295,8 +294,8 @@ void NonDBayesCalibration::construct_mcmc_model(short& mcmc_deriv_order)
     if (standardizedSpace) transform_model(iteratedModel, mcmcModel);//dist bnds
     else                   mcmcModel = iteratedModel; // shared rep
 
-    if (mcmcModel.gradient_type() != "none") mcmc_deriv_order |= 2;
-    if (mcmcModel.hessian_type()  != "none") mcmc_deriv_order |= 4;
+    if (mcmcModel.gradient_type() != "none") mcmcDerivOrder |= 2;
+    if (mcmcModel.hessian_type()  != "none") mcmcDerivOrder |= 4;
     break;
   }
 
@@ -353,8 +352,7 @@ void NonDBayesCalibration::init_hyper_parameters()
     No emulator: off by default; can be activated  with "pre_solve {sqp,nip}"
                  relies on mapOptimizer ctor to enforce min derivative support
 */
-void NonDBayesCalibration::
-construct_map_optimizer(const short mcmc_deriv_order) 
+void NonDBayesCalibration::construct_map_optimizer() 
 {
   unsigned short opt_alg_override
     = probDescDB.get_ushort("method.nond.pre_solve_method");
@@ -405,7 +403,7 @@ construct_map_optimizer(const short mcmc_deriv_order)
     void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&) = NULL;
     if (opt_alg_override == SUBMETHOD_NIP) {
       nlp_resp_order = 7; // size RecastModel response for full Newton Hessian
-      if (mcmc_deriv_order == 3) // map asrv for Gauss-Newton approx
+      if (mcmcDerivOrder == 3) // map asrv for Gauss-Newton approx
         set_recast = gnewton_set_recast;
     }
 
@@ -525,10 +523,20 @@ void NonDBayesCalibration::initialize_model()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
+  /* TODO:
+     - How do we handle cases where they also give data?  Append to it?
+     - Handling of hyperparameters
+     - Model needs to iterate configurations
+     - More efficient resizing/reconstruction
+     - Use hierarhical surrogate eval modes
+   */
+
+
   unsigned short sample_type = SUBMETHOD_LHS;
   bool vary_pattern = true;
   String rng("mt19937");
 
+  // TODO: construct the LHS sampler in ctor, but run it here
   NonDLHSSampling* lhs_sampler_rep;
   lhs_sampler_rep =
     new NonDLHSSampling(hifiModel, sample_type, initHifiSamples, randomSeed,
@@ -555,18 +563,32 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   while (!stop_metric) {
 
+    // If the experiment data changed, need to update a number of
+    // models that wrap it.  TODO: make this more lightweight instead
+    // of reconstructing
+
+    // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
+    residualModel.assign_rep
+      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
+                              obsErrorMultiplierMode, mcmcDerivOrder), false);
+    construct_map_optimizer();
+
     // Run the underlying calibration solver (MCMC)
     calibrate();
 
-    // after QUESO is run, get the posterior values of the samples
-    // currently, it looks like acceptedFnVals is a protected data member within NonDBayesCalibration
-    // We will need to expose this by adding a function such as post_sample() shown below
-    // RealMatrix posterior_theta = queso_iterator->post_sample();
+    // After QUESO is run, get the posterior values of the samples; go
+    // through all the designs and pick the one with maximum mutual
+    // information
 
-    // go through all the designs and pick the one with maximum mutual information
+    // BMA: You can now use acceptanceChain/acceptedFnVals, though
+    // need to be careful about what subset for this chain run (may
+    // need indices to track)
     for (size_t i=0; i<num_candidates; i++) {
-      // Get the lowFidModelPtr that we initialized from the input file in the constructor,
-      // initialize the low fidelity model.
+
+      // BMA: The low fidelity model can now be referred to as
+      // mcmcModel (it may be wrapped in a surrogate, but I think
+      // that's what we want if the user said "emulator")
+
       // Declare a matrix to store the low fidelity responses
       /*
       RealMatrix responses_low(num_responses, num_mcmc_samples);
@@ -577,8 +599,15 @@ void NonDBayesCalibration::calibrate_to_hifi()
         // for each posterior sample, get the variable values, and run the model
         // low_fid_model_vars = posterior_theta(j,:);
         // low_fid_model_vars = Teuchos::getCol(Teuchos::View,posterior_theta,j); 
-        // lowFidModel.evaluate();
-        // responses_low(j,:)  = lowFidModel.current_responses().function_values();
+
+	// BMA (pseudocode)
+	/* 
+	   mcmcModel.continuous_variables(low_fid_model_vars);
+	   // What about x?
+	   mcmcModel.state_variables(x);
+	   mcmcModel.evaluate();
+        */
+	//responses_low(j,:)  = lowFidModel.current_responses().function_values();
 	/*
 	low_fid_response = lowFidModel.current_responses().function_values();
 	Teuchos::setCol(low_fid_response, j, responses_low);
@@ -606,6 +635,14 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     // evaluate hi fidelity iteratedModel at design_i;
     // Add this data to the expData for the next iteteration of likelihood
+
+    // BMA (pseudocode)
+    /*
+      hifiModel.continuous_state(design_i)
+      hifiModel.evaluate();
+      expData.add_datapoint(hifiModel.current_response())
+    */
+
     // check stopping metric (may just start with doing this 5 times?
     stop_metric = true;
   } // end while loop
