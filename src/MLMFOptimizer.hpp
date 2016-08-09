@@ -79,8 +79,11 @@ private:
   //- Heading: Data members
   //
 
-  std::vector<Response> responseStar;
-  std::vector<Response> responseCenter;
+  std::vector<Response> responseStarUncorrected;
+  std::vector<Response> responseStarCorrected;
+
+  std::vector<Response> responseCenterUncorrected;
+  std::vector<Response> responseCenterCorrected;
 
   Variables varsCenter;          ///< variables at the trust region center
 

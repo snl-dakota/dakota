@@ -112,8 +112,10 @@ MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   size_t num_fide = iteratedModel.subordinate_models(false).size();
-  responseStar = std::vector<Response>(num_fide);
-  responseCenter = std::vector<Response>(num_fide);
+  responseStarUncorrected = std::vector<Response>(num_fide);
+  responseStarCorrected = std::vector<Response>(num_fide);
+  responseCenterUncorrected = std::vector<Response>(num_fide);
+  responseCenterCorrected = std::vector<Response>(num_fide);
 
 
   softConvLimit = 5;
@@ -226,24 +228,36 @@ void MLMFOptimizer::multifidelity_opt()
     Model& truth_model  = iteratedModel.truth_model();
     Model& approx_model = iteratedModel.surrogate_model();
 
-    responseCenter[hf_model_form] = truth_model.current_response().copy();
-    responseStar[hf_model_form] = responseCenter[hf_model_form].copy();
+    responseCenterUncorrected[hf_model_form] = truth_model.current_response().copy();
+    responseStarUncorrected[hf_model_form] = responseCenterUncorrected[hf_model_form].copy();
 
-    responseCenter[lf_model_form] = approx_model.current_response().copy();
-    responseStar[lf_model_form] = responseCenter[lf_model_form].copy();
+    responseCenterUncorrected[lf_model_form] = approx_model.current_response().copy();
+    responseStarUncorrected[lf_model_form] = responseCenterUncorrected[lf_model_form].copy();
+
+    responseCenterCorrected[hf_model_form] = truth_model.current_response().copy();
+    responseStarCorrected[hf_model_form] = responseCenterCorrected[hf_model_form].copy();
+
+    responseCenterCorrected[lf_model_form] = approx_model.current_response().copy();
+    responseStarCorrected[lf_model_form] = responseCenterCorrected[lf_model_form].copy();
 
     val_set = full_approx_set = full_truth_set
-                                = responseCenter[hf_model_form].active_set();
+                                = responseCenterCorrected[hf_model_form].active_set();
     int full_approx_val = 3, full_truth_val = 3;
     val_set.request_values(1);
     full_approx_set.request_values(full_approx_val);
     full_truth_set.request_values(full_truth_val);
 
-    responseStar[hf_model_form].active_set(val_set);
-    responseCenter[hf_model_form].active_set(full_truth_set);
+    responseStarUncorrected[hf_model_form].active_set(val_set);
+    responseCenterUncorrected[hf_model_form].active_set(full_truth_set);
 
-    responseStar[lf_model_form].active_set(val_set);
-    responseCenter[lf_model_form].active_set(full_truth_set);
+    responseStarUncorrected[lf_model_form].active_set(val_set);
+    responseCenterUncorrected[lf_model_form].active_set(full_truth_set);
+
+    responseStarCorrected[hf_model_form].active_set(val_set);
+    responseCenterCorrected[hf_model_form].active_set(full_truth_set);
+
+    responseStarCorrected[lf_model_form].active_set(val_set);
+    responseCenterCorrected[lf_model_form].active_set(full_truth_set);
 
     newCenterFlag[lf_model_form] = true;
   }
@@ -269,6 +283,7 @@ void MLMFOptimizer::multifidelity_opt()
         iteratedModel.surrogate_model_indices(lf_model_form);
         iteratedModel.truth_model_indices(hf_model_form);
 
+        // This only evaluates the high fidelity model:
         iteratedModel.build_approximation();
 
         find_center(lf_model_form, hf_model_form);
@@ -279,12 +294,34 @@ void MLMFOptimizer::multifidelity_opt()
           // ******************************************
 
           DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-          delta.compute(varsCenter, responseCenter[hf_model_form],
-                        responseCenter[lf_model_form]);
-          delta.apply(varsCenter, responseCenter[lf_model_form]);
+          delta.compute(varsCenter, responseCenterUncorrected[hf_model_form],
+                        responseCenterUncorrected[lf_model_form]);
         }
       }
     }
+
+
+    // Recompute corrected center responses:
+    for (size_t model_form = 0; model_form < num_fide - 1; model_form++) {
+      size_t lf_model_form = model_form;
+      size_t hf_model_form = model_form + 1;
+
+      // Compute responseCenterCorrected
+      Response response_center_corrected_temp = responseCenterUncorrected[lf_model_form].copy();
+      for (int ii = lf_model_form; ii < num_fide - 1; ii++) {
+        size_t lf_model_form_temp = ii;
+        size_t hf_model_form_temp = ii + 1;
+
+        iteratedModel.surrogate_model_indices(lf_model_form_temp);
+        iteratedModel.truth_model_indices(hf_model_form_temp);
+
+        DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+        delta.apply(varsCenter, response_center_corrected_temp);
+      }
+      responseCenterCorrected[lf_model_form].update(response_center_corrected_temp);
+    }
+    // highest fidelity model doesn't need correcting:
+    responseCenterCorrected[num_fide-1].update(responseCenterUncorrected[num_fide-1]);
 
 
 
@@ -295,6 +332,8 @@ void MLMFOptimizer::multifidelity_opt()
       // *******************************************************
       // Run iterator on approximation (with correction applied)
       // *******************************************************
+
+      // This part is hard-coded for only two models currently:
       size_t lf_model_form = 0; // Lowest
       size_t hf_model_form = 1; // Next to lowest
       iteratedModel.surrogate_model_indices(lf_model_form);
@@ -311,15 +350,15 @@ void MLMFOptimizer::multifidelity_opt()
       // Retrieve vars_star and responseStarApprox
       // *******************************************
       vars_star = approxSubProbMinimizer.variables_results();
-      responseStar[lf_model_form].update(approxSubProbMinimizer.response_results());
+      responseStarCorrected[lf_model_form].update(approxSubProbMinimizer.response_results());
 
       // ****************************
-      // Evaluate responseStarTruth
+      // Evaluate responseStar
       // ****************************
       Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
       
-      Model&    truth_model   = iteratedModel.truth_model();
-      Model&    approx_model  = iteratedModel.surrogate_model();
+      Model& truth_model = iteratedModel.truth_model();
+      Model& approx_model = iteratedModel.surrogate_model();
 
       iteratedModel.component_parallel_mode(TRUTH_MODEL);
       truth_model.active_variables(vars_star);
@@ -342,10 +381,8 @@ void MLMFOptimizer::multifidelity_opt()
       iteratedModel.surrogate_model_indices(lf_model_form);
       iteratedModel.truth_model_indices(hf_model_form);
 
-      responseStar[hf_model_form].update(truth_corrected_temp);
-
-
-      responseStar[hf_model_form].update(truth_model.current_response());
+      responseStarUncorrected[hf_model_form].update(truth_temp);
+      responseStarCorrected[hf_model_form].update(truth_corrected_temp);
 
       // compute the trust region ratio and update soft convergence counters
       tr_ratio_check();
@@ -355,7 +392,8 @@ void MLMFOptimizer::multifidelity_opt()
       if (newCenterFlag[lf_model_form]) {
         const RealVector& c_vars_star = vars_star.continuous_variables();
         varsCenter.continuous_variables(c_vars_star);
-        responseCenter[hf_model_form].update(truth_temp); // This is the uncorrected response
+        responseCenterUncorrected[hf_model_form].update(truth_temp);
+        responseCenterCorrected[hf_model_form].update(truth_corrected_temp);
       }
 
       if (!convergenceFlag) {
@@ -397,7 +435,7 @@ void MLMFOptimizer::multifidelity_opt()
   bestVariablesArray.front().continuous_variables(
     varsCenter.continuous_variables());
   bestResponseArray.front().function_values(
-    responseCenter[num_fide-1].function_values());
+    responseCenterCorrected[num_fide-1].function_values());
 
   // restore original Model data
   iteratedModel.continuous_variables(initial_pt);
@@ -493,10 +531,10 @@ void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
 {
   bool found = false;
 
-  Model&    truth_model   = iteratedModel.truth_model();
-  Model&    approx_model  = iteratedModel.surrogate_model();
+  Model& truth_model = iteratedModel.truth_model();
+  Model& approx_model = iteratedModel.surrogate_model();
 
-  responseCenter[hf_model_form].update(truth_model.current_response());
+  responseCenterUncorrected[hf_model_form].update(truth_model.current_response());
   found = true;
 
   if (!found) {
@@ -506,15 +544,15 @@ void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.continuous_variables(varsCenter.continuous_variables());
-    truth_model.evaluate(responseCenter[hf_model_form].active_set());
+    truth_model.evaluate(responseCenterUncorrected[hf_model_form].active_set());
 
-    responseCenter[hf_model_form].update(truth_model.current_response());
+    responseCenterUncorrected[hf_model_form].update(truth_model.current_response());
   }
 
 
-  size_t num_fide = responseCenter.size();        
-  if (hf_model_form == num_fide - 1) {
-    hard_convergence_check(responseCenter[hf_model_form], varsCenter.continuous_variables(), globalLowerBnds, globalUpperBnds);
+  size_t num_fide = responseCenterUncorrected.size();        
+  if (hf_model_form == num_fide - 1) { // I need to remove this if statement
+    hard_convergence_check(responseCenterUncorrected[hf_model_form], varsCenter.continuous_variables(), globalLowerBnds, globalUpperBnds);
   }
 
   if (!convergenceFlag) {
@@ -522,20 +560,20 @@ void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
 
     // search for fn vals, grads, and Hessians separately since they may
     // be different fn evaluations
-    ActiveSet search_set = responseCenter[lf_model_form].active_set(); // copy
+    ActiveSet search_set = responseCenterUncorrected[lf_model_form].active_set(); // copy
     search_set.request_values(1);
     const Variables& search_vars = iteratedModel.current_variables();
     const String& search_id = iteratedModel.surrogate_model().interface_id();
     PRPCacheHIter cache_it
       = lookup_by_val(data_pairs, search_id, search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
-      responseCenter[lf_model_form].function_values(
+      responseCenterUncorrected[lf_model_form].function_values(
         cache_it->response().function_values());
       search_set.request_values(2);
       cache_it
         = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
-        responseCenter[lf_model_form].function_gradients(
+        responseCenterUncorrected[lf_model_form].function_gradients(
           cache_it->response().function_gradients());
         found = true;
       }
@@ -544,8 +582,8 @@ void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
     if (!found) {
       Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
       iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-      iteratedModel.evaluate(responseCenter[lf_model_form].active_set());
-      responseCenter[lf_model_form].update(iteratedModel.current_response());
+      iteratedModel.evaluate(responseCenterUncorrected[lf_model_form].active_set());
+      responseCenterUncorrected[lf_model_form].update(iteratedModel.current_response());
     }
   }
 }
@@ -598,14 +636,15 @@ hard_convergence_check(const Response& response_truth,
 void MLMFOptimizer::
 tr_ratio_check()
 {
+  // This is hard-coded for only two models:
   size_t lf_model_form = 0; // Lowest
   size_t hf_model_form = 1; // Next to lowest
 
   const RealVector& fns_center_truth
-    = responseCenter[hf_model_form].function_values();
-  const RealVector& fns_star_truth = responseStar[hf_model_form].function_values();
-  const RealVector& fns_center_approx = responseCenter[lf_model_form].function_values();
-  const RealVector& fns_star_approx = responseStar[lf_model_form].function_values();
+    = responseCenterCorrected[hf_model_form].function_values();
+  const RealVector& fns_star_truth = responseStarCorrected[hf_model_form].function_values();
+  const RealVector& fns_center_approx = responseCenterCorrected[lf_model_form].function_values();
+  const RealVector& fns_star_approx = responseStarCorrected[lf_model_form].function_values();
 
   // ---------------------------------------------------
   // Compute trust region ratio based on merit fn values
