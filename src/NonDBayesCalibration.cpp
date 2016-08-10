@@ -76,8 +76,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
   exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
 {
-  // TODO: could avoid this copy entirely, but less clean
-  Model inbound_model = iteratedModel;
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
     // iteratedModel
@@ -86,8 +84,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	   << "hierarchical surrogate\n       model.\n";
       abort_handler(PARSE_ERROR);
     }
-    // the surrogate model is the low-fi model which should be calibrated
-    inbound_model = iteratedModel.surrogate_model();
     hifiModel = iteratedModel.truth_model();
   }
 
@@ -187,6 +183,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
 void NonDBayesCalibration::construct_mcmc_model()
 {
+  // for adaptive experiment design, the surrogate model is the low-fi
+  // model which should be calibrated
+  // TODO: could avoid this lightweight copy entirely, but less clean
+  Model inbound_model = 
+    adaptExpDesign ? iteratedModel.surrogate_model() : iteratedModel;
+
   switch (emulatorType) {
 
   case PCE_EMULATOR: case SC_EMULATOR: {
@@ -197,14 +199,14 @@ void NonDBayesCalibration::construct_mcmc_model()
     bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
     NonDExpansion* se_rep;
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
-      se_rep = new NonDStochCollocation(iteratedModel,
+      se_rep = new NonDStochCollocation(inbound_model,
 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	false, derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
     else {
       if (!level_seq.empty()) // PCE with spectral projection via sparse grid
-	se_rep = new NonDPolynomialChaos(iteratedModel,
+	se_rep = new NonDPolynomialChaos(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
 	  false, false);
       else { 
@@ -213,7 +215,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  = probDescDB.get_usa("method.nond.expansion_order");
 	short exp_coeffs_approach = (exp_order_seq.empty()) ?
 	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
-	se_rep = new NonDPolynomialChaos(iteratedModel,
+	se_rep = new NonDPolynomialChaos(inbound_model,
 	  exp_coeffs_approach, exp_order_seq, dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
@@ -246,8 +248,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
       // derivatives for emulator construction (not emulator evaluation)
-      if (iteratedModel.gradient_type() != "none") data_order |= 2;
-      if (iteratedModel.hessian_type()  != "none") data_order |= 4;
+      if (inbound_model.gradient_type() != "none") data_order |= 2;
+      if (inbound_model.hessian_type()  != "none") data_order |= 4;
     }
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     int samples = probDescDB.get_int("method.build_samples");
@@ -264,9 +266,9 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      transform_model(iteratedModel, lhs_model, truncate_bnds);//, 3.);
+      transform_model(inbound_model, lhs_model, truncate_bnds);//, 3.);
     else
-      lhs_model = iteratedModel; // shared rep
+      lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
     NonDLHSSampling* lhs_rep = new
@@ -291,8 +293,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   case NO_EMULATOR:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    if (standardizedSpace) transform_model(iteratedModel, mcmcModel);//dist bnds
-    else                   mcmcModel = iteratedModel; // shared rep
+    if (standardizedSpace) transform_model(inbound_model, mcmcModel);//dist bnds
+    else                   mcmcModel = inbound_model; // shared rep
 
     if (mcmcModel.gradient_type() != "none") mcmcDerivOrder |= 2;
     if (mcmcModel.hessian_type()  != "none") mcmcDerivOrder |= 4;
@@ -589,6 +591,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // mcmcModel (it may be wrapped in a surrogate, but I think
       // that's what we want if the user said "emulator")
 
+      // Set the experimental configuration on the low-fi model:
+      // mcmcModel.inactive_continuous_variables(candidate_exp_config[i]);
+
       // Declare a matrix to store the low fidelity responses
       RealMatrix responses_low(numFunctions, num_mcmc_samples);
       // KAM: check num_theta = numContinuousVars
@@ -604,8 +609,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	// BMA (pseudocode)
 	/* 
 	   mcmcModel.continuous_variables(low_fid_model_vars);
-	   // What about x?
-	   mcmcModel.state_variables(x);
 	   mcmcModel.evaluate();
 	*/
 	low_fid_response = mcmcModel.current_response().function_values();
@@ -639,7 +642,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     // BMA (pseudocode)
     /*
-      hifiModel.continuous_state(design_i)
+      hifiModel.inactive_continuous_variables(candidate_best)
       hifiModel.evaluate();
       expData.add_datapoint(hifiModel.current_response())
     */
