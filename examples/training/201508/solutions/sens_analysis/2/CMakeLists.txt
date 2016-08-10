@@ -7,4 +7,4 @@ set(aux_files "cantilever cantilever.template driver.sh"
 set(extra_files)
 set(extra_files " ")
 
-add_training_test(dakota_cantilever_lhs.in ${aux_files} ${extra_files} TRUE)
+add_training_test(dakota_cantilever_sampling.in ${aux_files} ${extra_files} TRUE)
