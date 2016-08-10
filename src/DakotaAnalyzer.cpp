@@ -660,6 +660,10 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   unsigned short tabular_format = 
     parallelLib.program_options().post_run_input_format();
 
+  // Define modelList and recastFlags to support any recastings within
+  // a model recursion
+  bool map_to_iter_space = iteratedModel.manage_data_recastings();
+
   // TO DO: validate/accommodate incoming num_vars since it may be defined
   // from a local sampling mode (see NonDSampling) that differs from active;
   // support for active discrete also varies across the post-run Iterators.
@@ -692,111 +696,34 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   bool cache = iteratedModel.evaluation_cache(), // recurse_flag = true
      restart = iteratedModel.restart_file();     // recurse_flag = true
   extern PRPCache data_pairs;
+  Variables iter_vars; Response iter_resp;
   for (i=0, prp_it=import_prp_list.begin(); i<num_evals; ++i, ++prp_it) {
 
     ParamResponsePair& pr = *prp_it;
 
-    // insert imported data into evaluation cache (just for consistency) and
-    // restart (more likely to be useful).  Unlike DataFitSurrModel, we will
-    // preserve the incoming eval id in the post-input file import case.
+    // insert imported user-space data into evaluation cache (for consistency)
+    // and restart (more likely to be useful).  Unlike DataFitSurrModel, we
+    // will preserve the incoming eval id in the post-input file import case.
     if (restart) parallelLib.write_restart(pr); // preserve eval id
     if (cache)   data_pairs.insert(pr); // duplicate ids OK for PRPCache
 
-    // *** TO DO: from here on, need manageRecasting logic as in
-    // ***        DataFitSurrModel::build_global()
+    // manage any model recastings to promote from user-space to iterator-space
+    if (map_to_iter_space)
+      iteratedModel.user_space_to_iterator_space(pr.variables(), pr.response(),
+						 iter_vars, iter_resp);
+    else
+      { iter_vars = pr.variables(); iter_resp = pr.response(); }
 
     // update allVariables,allSamples
-    if (compactMode) variables_to_sample(pr.variables(), allSamples[i]);
-    else             allVariables[i] = pr.variables();
+    if (compactMode) variables_to_sample(iter_vars, allSamples[i]);
+    else             allVariables[i] = iter_vars;
     // update allResponses
-    allResponses[pr.eval_id()] = pr.response();
+    allResponses[pr.eval_id()] = iter_resp;
 
     // mirror any post-processing in Analyzer::evaluate_parameter_sets()
     if (numObjFns || numLSqTerms)
-      update_best(pr.variables(), i+1, pr.response());
+      update_best(iter_vars, i+1, iter_resp);
   }
-
-  /*
-  std::ifstream tabular_file;
-  TabularIO::open_file(tabular_file, filename, "post-run input");
-
-  TabularIO::read_header_tabular(tabular_file, tabular_format); 
-
-  Variables vars;  // temporary container to use for read in compact case
-  if (compactMode) {
-    vars = iteratedModel.current_variables().copy();
-    allSamples.shapeUninitialized(num_vars, num_evals);
-  }
-  else 
-    allVariables.resize(num_evals);
-  allResponses.clear();
-
-  // now read variables and responses (minimal error checking for now)
-  int eval_id, cntr; size_t i;
-  for (i=0, cntr=1; i<num_evals; ++i, ++cntr) {
-
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "   reading sample " << (i + 1) << std::endl;
-
-    try {
-      tabular_file >> std::ws;
-      if (tabular_format & TABULAR_EVAL_ID) {
-	eval_id = TabularIO::read_leading_columns(tabular_file, tabular_format);
-	if (eval_id != cntr) {
-	  Cerr << "\nError in post-run input: unexpected eval_id from leading "
-	       << "column in file." << std::endl;
-	  tabular_file.close();
-	  abort_handler(-1);
-	}
-      }
-      else
-	eval_id = cntr;
-
-      // Previous rationale:
-      // use negative ids for file import in this context, since repeated use
-      // of 0 is not acceptable for the allResponses IntResponseMap below.  As
-      // a result, this differs from the logic for approximation data import.
-      //      eval_id = -cntr;
-      // Currently:
-      // Until we review uses of post-run in conjunction with restart
-      // and possibly change how the array of Variables and Responses
-      // are stored, we use positive ids so order of the Variables and
-      // Response lists are consistent for statistics calculation.
-      if (compactMode) {
-	// read a Variables object; copy it into the i-th column in allSamples
-	vars.read_tabular(tabular_file);
-	variables_to_sample(vars, allSamples[i]);
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << vars;
-      }
-      else {
-	allVariables[i] = iteratedModel.current_variables().copy();
-	allVariables[i].read_tabular(tabular_file);
-      }
-      allResponses[eval_id] = iteratedModel.current_response().copy();
-      allResponses[eval_id].read_tabular(tabular_file);
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << allResponses[eval_id];
-    }
-    catch (const std::ios_base::failure& failorbad_except) {
-      Cerr << "\nError: insufficient data in post-run input file;\n       "
-	   << "expected " << num_evals << " samples, read " << i << '\n'
-	   << std::endl;
-      tabular_file.close();
-      abort_handler(-1);
-    }
-    if (compactMode)
-      update_best(allSamples[i], i+1, allResponses[eval_id]);
-    else
-      update_best(allVariables[i], i+1, allResponses[eval_id]);
-  }
-  // Will output non-fatal warning if there is additional file content
-  // after the end of the import
-  if (TabularIO::exists_extra_data(tabular_file))
-    TabularIO::print_unexpected_data(Cout, filename, "post-run input",
-				     tabular_format);
-  tabular_file.close();
-  */
 
   if (outputLevel > QUIET_OUTPUT)
     Cout << "\nPost-run phase initialized: variables / responses read from "

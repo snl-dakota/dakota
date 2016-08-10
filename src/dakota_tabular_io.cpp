@@ -57,7 +57,7 @@ void print_unexpected_data(std::ostream& s, const String& filename,
 			   unsigned short tabular_format)
 {
   s << "\nWarning (" << context_message << "): found unexpected extra data in "
-    << format_name(tabular_format) << "\nfile " << filename << "." << std::endl; 
+    << format_name(tabular_format) << "\nfile " << filename << "." << std::endl;
 }
 
 
@@ -94,6 +94,13 @@ void open_file(std::ofstream& data_stream, const std::string& output_filename,
   data_stream.exceptions(std::fstream::failbit | std::fstream::badbit);
 }
 
+
+//
+//- Utilities for closing tabular files
+//
+// Note: an fstream destructor can manage the different states and close the
+// stream properly.  However, for the case of a class-member stream, we should
+// close it such that any subsequent re-opening works properly.
 
 void close_file(std::ifstream& data_stream, const std::string& input_filename, 
 		const std::string& context_message) 
@@ -264,7 +271,6 @@ void write_data_tabular(const std::string& output_filename,
 //- Utilities for tabular read
 //
 
-
 /** Discard header row from tabular file; alternate could read into a
     string array.  Requires header to be delimited by a newline. */
 void read_header_tabular(std::istream& input_stream,
@@ -362,7 +368,7 @@ void read_data_tabular(const std::string& input_filename,
   }
 
   if (exists_extra_data(input_stream))
-    print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+    print_unexpected_data(Cout, input_filename, context_message,tabular_format);
 
   close_file(input_stream, input_filename, context_message);
 }
@@ -377,7 +383,8 @@ void read_data_tabular(const std::string& input_filename,
 {
   // Disallow string variables for now - RWH
   if( (active_only && vars.dsv()>0) || (!active_only && vars.adsv()>0) ) {
-    Cerr << "\nError (" << context_message << "): String variables are not currently supported.\n";
+    Cerr << "\nError (" << context_message
+	 << "): String variables are not currently supported.\n";
     abort_handler(-1);
   }
 
@@ -407,15 +414,21 @@ void read_data_tabular(const std::string& input_filename,
       vars.read_tabular(input_stream, active_only);
 
       // Extract the variables
-      const RealVector& c_vars  = active_only ? vars.continuous_variables()    : vars.all_continuous_variables();
-      const IntVector&  di_vars = active_only ? vars.discrete_int_variables()  : vars.all_discrete_int_variables();
-      const RealVector& dr_vars = active_only ? vars.discrete_real_variables() : vars.all_discrete_real_variables();
+      const RealVector& c_vars  = active_only ? vars.continuous_variables()
+	: vars.all_continuous_variables();
+      const IntVector&  di_vars = active_only ? vars.discrete_int_variables()
+	: vars.all_discrete_int_variables();
+      const RealVector& dr_vars = active_only ? vars.discrete_real_variables()
+	: vars.all_discrete_real_variables();
       copy_data_partial(c_vars, work_vars_vec, 0);
       merge_data_partial(di_vars, work_vars_vec, c_vars.length());
-      copy_data_partial(dr_vars, work_vars_vec, c_vars.length()+di_vars.length());
-      //varsMatrix(row,:) = [vars.continuous_variables(), vars.discrete_int_variables(), vars.discrete_real_variables() ]
+      copy_data_partial(dr_vars, work_vars_vec,
+			c_vars.length()+di_vars.length());
+      //varsMatrix(row,:) = [vars.continuous_variables(),
+      //  vars.discrete_int_variables(), vars.discrete_real_variables() ]
       work_vars_va.push_back(work_vars_vec);
-      //std::cout << "Working Variables vector contents: \n" << work_vars_vec << std::endl;
+      //Cout << "Working Variables vector contents: \n" << work_vars_vec
+      //     << std::endl;
 
       // read the raw function data
       for (size_t fi = 0; fi < num_fns; ++fi) {
@@ -424,7 +437,8 @@ void read_data_tabular(const std::string& input_filename,
           work_resp_vec(fi) = read_value;
       }
       work_resp_va.push_back(work_resp_vec);
-      //std::cout << "Working Response vector contents: \n" << work_resp_vec << std::endl;
+      //Cout << "Working Response vector contents: \n" << work_resp_vec
+      //     << std::endl;
 
       input_stream >> std::ws;
     }
@@ -437,8 +451,9 @@ void read_data_tabular(const std::string& input_filename,
   }
   catch (const TabularDataTruncated& tdtrunc) {
     // this will be thrown if Variables was truncated
-    Cerr << "\nError (" << context_message << "): could not read variables from "
-	 << "file " << input_filename << ";\n  " << tdtrunc.what() << std::endl;
+    Cerr << "\nError (" << context_message
+	 << "): could not read variables from file " << input_filename
+	 << ";\n  " << tdtrunc.what() << std::endl;
     abort_handler(-1);
   }
   catch(...) {
