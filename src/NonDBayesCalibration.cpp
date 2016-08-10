@@ -559,7 +559,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   size_t num_candidates = 100, num_mcmc_samples = 1000;
 
   bool stop_metric = false;
-  double max_MI = 0;
+  double max_MI;
 
   while (!stop_metric) {
 
@@ -590,15 +590,16 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // that's what we want if the user said "emulator")
 
       // Declare a matrix to store the low fidelity responses
-      /*
-      RealMatrix responses_low(num_responses, num_mcmc_samples);
-      RealVector col_vec(num_theta + num_responses);
-      RealVector low_fid_response(num_responses);
-      */
-      for (size_t j=0; j<num_mcmc_samples; j++) {
+      RealMatrix responses_low(numFunctions, num_mcmc_samples);
+      // KAM: check num_theta = numContinuousVars
+      RealVector low_fid_response(numFunctions);
+      RealVector low_fid_model_vars(numContinuousVars);
+      RealVector col_vec(numContinuousVars + numFunctions);
+      RealMatrix Xmatrix(numContinuousVars + numFunctions, num_mcmc_samples);
+      for (int j=0; j<num_mcmc_samples; j++) {
         // for each posterior sample, get the variable values, and run the model
-        // low_fid_model_vars = posterior_theta(j,:);
-        // low_fid_model_vars = Teuchos::getCol(Teuchos::View,posterior_theta,j); 
+	// KAM: Double check whether acceptanceChain is overwritten or appended
+        low_fid_model_vars = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
 
 	// BMA (pseudocode)
 	/* 
@@ -606,35 +607,35 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	   // What about x?
 	   mcmcModel.state_variables(x);
 	   mcmcModel.evaluate();
-        */
-	//responses_low(j,:)  = lowFidModel.current_responses().function_values();
-	/*
-	low_fid_response = lowFidModel.current_responses().function_values();
-	Teuchos::setCol(low_fid_response, j, responses_low);
 	*/
+	low_fid_response = mcmcModel.current_response().function_values();
+	Teuchos::setCol(low_fid_response, j, responses_low);
+        // now concatenate posterior_theta and responses_low into Xmatrix
+        for (size_t k = 0; k < numContinuousVars; k++){
+          col_vec[k] = low_fid_model_vars[k];
+        }
+        for (size_t k = 0; k < numFunctions; k ++){
+          col_vec[numContinuousVars+k] = low_fid_response[k];
+        }
+        Teuchos::setCol(col_vec, j, Xmatrix);
       }
-      // now concatenate posterior_theta and responses_low into Xmatrix
-      /*
-      for (size_t k = 0; k < num_theta; k++){
-        col_vec[k] = low_fid_model_vars[k];
-      }
-      for (k = 0; k < num_responses; k ++){
-        col_vec[num_theta+k] = low_fid_response[k];
-      }
-      Teuchos::setCol(col_vec, j, Xmatrix);
-      */
       // calculate the mutual information with posterior_theta and responses_low matrices
-      // MI = queso_iterator.knn_mutual_info(Xmatrix, num_theta, num_responses);
+      Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
 
       // Now track max MI:
-      // if ( MI > max_MI) {
-      //   max_MI = MI;
-      //   design_new = design_i;
-      //}
+      if (i == 0)
+	max_MI = MI;
+      else {
+        if ( MI > max_MI) {
+          max_MI = MI;
+          // design_new = design_i;
+        }
+      }
     } // end for over the number of candidates
 
     // evaluate hi fidelity iteratedModel at design_i;
     // Add this data to the expData for the next iteteration of likelihood
+    // print design_i and corresponding hi-fi response to data file?
 
     // BMA (pseudocode)
     /*
