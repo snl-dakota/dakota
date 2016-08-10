@@ -6,7 +6,7 @@ method
   polynomial_chaos
     expansion_order 7
     collocation_points 0
-    import_build_points_file 'cantilever_lhs_tabular.dat'
+    import_build_points_file 'cantilever_sampling_tabular.dat'
     orthogonal_matching_pursuit
       cross_validation 
     variance_based_decomp
