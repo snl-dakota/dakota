@@ -706,7 +706,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     // ***        DataFitSurrModel::build_global()
 
     // update allVariables,allSamples
-    if (compactMode) variables_to_sample(vars, allSamples[i]);
+    if (compactMode) variables_to_sample(pr.variables(), allSamples[i]);
     else             allVariables[i] = pr.variables();
     // update allResponses
     allResponses[pr.eval_id()] = pr.response();

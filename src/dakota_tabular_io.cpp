@@ -117,7 +117,7 @@ void close_file(std::ofstream& data_stream, const std::string& output_filename,
 {
   // TODO: try/catch
 
-  // ifstream's have 4 states: good, eof, fail and bad.  Testing this state
+  // ofstream's have 4 states: good, eof, fail and bad.  Testing this state
   // prior to close() is likely overkill in the current context...
   if (data_stream.good() || data_stream.eof())
     data_stream.close();
