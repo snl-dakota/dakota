@@ -92,15 +92,32 @@ void NonDExpDesignBayesCalibration::core_run()
       // Get the lowFidModelPtr that we initialized from the input file in the constructor,
       // initialize the low fidelity model.  
       // Declare a matrix to store the low fidelity responses
-      // RealMatrix responses_low;
+      /*
+      RealMatrix responses_low(num_responses, num_mcmc_samples);
+      RealVector col_vec(num_theta + num_responses);
+      RealVector low_fid_response(num_responses);
+      */
       for (size_t j=0; j<num_mcmc_samples; j++) {
         // for each posterior sample, get the variable values, and run the model
         // low_fid_model_vars = posterior_theta(j,:); 
+        // low_fid_model_vars = Teuchos::getCol(Teuchos::View,posterior_theta,j); 
         // lowFidModel.evaluate();
         // responses_low(j,:)  = lowFidModel.current_responses().function_values();
-       
+	/*
+	low_fid_response = lowFidModel.current_responses().function_values();
+	Teuchos::setCol(low_fid_response, j, responses_low);
+	*/
       }
       // now concatenate posterior_theta and responses_low into Xmatrix
+      /*
+      for (size_t k = 0; k < num_theta; k++){
+        col_vec[k] = low_fid_model_vars[k];
+      }
+      for (k = 0; k < num_responses; k ++){
+        col_vec[num_theta+k] = low_fid_response[k];
+      }
+      Teuchos::setCol(col_vec, j, Xmatrix);
+      */
       // calculate the mutual information with posterior_theta and responses_low matrices
       // MI = queso_iterator.knn_mutual_info(Xmatrix, num_theta, num_responses);
       
