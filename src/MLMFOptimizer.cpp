@@ -329,10 +329,9 @@ void MLMFOptimizer::multifidelity_opt()
 
 
     if (!convergenceFlag) {
-      // *******************************************************
-      // Run iterator on approximation (with correction applied)
-      // *******************************************************
-
+      // *********************************
+      // Optimize at (fully corrected) lowest fidelity only:
+      // *********************************
       // This part is hard-coded for only two models currently:
       size_t lf_model_form = 0; // Lowest
       size_t hf_model_form = 1; // Next to lowest
@@ -346,14 +345,13 @@ void MLMFOptimizer::multifidelity_opt()
       Cout << "\n<<<<< Approximate optimization cycle completed.\n";
       sbIterNum++; // full iteration performed: increment the counter
 
-      // *******************************************
-      // Retrieve vars_star and responseStarApprox
-      // *******************************************
+      // Retrieve vars_star and responseStarCorrected[lf_model_form]
       vars_star = approxSubProbMinimizer.variables_results();
       responseStarCorrected[lf_model_form].update(approxSubProbMinimizer.response_results());
 
+
       // ****************************
-      // Evaluate responseStar
+      // Validate candidate point
       // ****************************
       Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
       
