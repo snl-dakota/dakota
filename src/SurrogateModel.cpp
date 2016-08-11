@@ -31,7 +31,6 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
-  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
   // assign default responseMode based on correction specification;
@@ -56,10 +55,10 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 SurrogateModel::
 SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const SharedVariablesData& svd, const SharedResponseData& srd,
-	       const ActiveSet& set, short output_level):
+	       const ActiveSet& set, short corr_type, short output_level):
   Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
 	set, output_level),
-  surrModelEvalCntr(0), approxBuilds(0)
+  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
 

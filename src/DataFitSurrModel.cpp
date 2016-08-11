@@ -140,7 +140,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   // initialize the DiscrepancyCorrection instance
   if (corrType)
-    deltaCorr.initialize(*this, surrogateFnIndices, corrType, corrOrder);
+    deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+      problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
     problem_db.get_ushort("model.surrogate.import_build_format"),
@@ -166,8 +167,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().shared_data(), set,
-		 output_level),
+		 actual_model.current_response().shared_data(),
+		 set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   exportSurrogate(false), exportPointsFile(export_approx_points_file),

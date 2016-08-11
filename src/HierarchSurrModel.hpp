@@ -208,6 +208,8 @@ private:
   /// order to reproduce high fidelity data.
   std::map<std::pair<SizetSizetPair,SizetSizetPair>,DiscrepancyCorrection>
     deltaCorr;
+  /// order of correction: 0, 1, or 2
+  short corrOrder;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -228,9 +230,9 @@ private:
   /// scheduling processes
   bool sameInterfaceInstance;
 
-  /// the reference truth (high fidelity) response computed in
+  /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
-  Response truthResponseRef;
+  std::map<SizetSizetPair,Response> truthResponseRef;
   /// map of truth (high-fidelity) responses retrieved in
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending

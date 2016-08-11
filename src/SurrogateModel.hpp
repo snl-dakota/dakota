@@ -46,7 +46,7 @@ protected:
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		 const SharedVariablesData& svd, const SharedResponseData& srd,
-		 const ActiveSet& set, short output_level);
+		 const ActiveSet& set, short corr_type, short output_level);
   /// destructor
   ~SurrogateModel();
 
@@ -114,8 +114,6 @@ protected:
 
   /// type of correction: additive, multiplicative, or combined
   short corrType;
-  /// order of correction: 0, 1, or 2
-  short corrOrder;
 
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids
