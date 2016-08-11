@@ -296,8 +296,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_pts_file,
-    importBuildFormat,
+    outputLevel, pt_reuse, import_pts_file, importBuildFormat,
     importBuildActiveOnly,
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
@@ -306,10 +305,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(
-    importBuildPointsFile,
-    importBuildFormat,
-    importBuildActiveOnly);
+  construct_expansion_sampler(importBuildPointsFile, importBuildFormat,
+			      importBuildActiveOnly);
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -639,10 +636,8 @@ bool NonDPolynomialChaos::resize()
   // -------------------------------------
   // (Re)Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(
-    importBuildPointsFile,
-    importBuildFormat,
-    importBuildActiveOnly);
+  construct_expansion_sampler(importBuildPointsFile, importBuildFormat,
+			      importBuildActiveOnly);
 
   return true; // Always need to re-initialize communicators
 }
@@ -874,9 +869,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
     Dakota::write_data(export_file_stream, best_samples,
 		       brackets, row_rtn, final_rtn);
     export_file_stream.close();
-
   }
-  
 }
 
 

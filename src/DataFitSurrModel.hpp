@@ -287,8 +287,6 @@ private:
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
   void finalize_export();
-  /// initialize manageRecasting and recastFlags for data import/export
-  void manage_data_recastings();
   /// initialize file stream for exporting surrogate evaluations
   void export_point(int eval_id, const Variables& vars, const Response& resp);
 
@@ -341,11 +339,6 @@ private:
   /// type of point reuse for approximation builds: \c all, \c region
   /// (default if points file), or \c none (default if no points file)
   String pointReuse;
-  /// flag indicating need to manage data recastings when importing
-  /// build data or exporting approximate evaluations
-  bool manageRecasting;
-  /// a key indicating which models within a model recursion involve recasting
-  BoolDeque recastFlags;
   /// file name from \c import_build_points_file specification
   String importPointsFile;
   /// file name from \c export_approx_points_file specification

@@ -3179,7 +3179,7 @@
                 <param type="STRING" in_taglist="model" />
 		</keyword>
 	      -->
-              <keyword  id="correction1" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrH" minOccurs="1" default="no surrogate correction" >
+              <keyword  id="correction1" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrH" minOccurs="0" default="no surrogate correction" >
                 <oneOf label="correction order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />
                   <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="first_order" help=""  />
@@ -3255,7 +3255,7 @@
 	      </keyword>
 	    </keyword>
 	  </keyword>
-      <keyword  id='dimension' name='dimension' code='{N_mom(int,dimension)}' minOccurs='0'>
+      <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
         <param type='INTEGER' />
       </keyword>
       <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
@@ -3290,7 +3290,7 @@
 	      <keyword id="principal_components" name="principal_components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
 	    </oneOf>
 	  </keyword>
-	  <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,dimension)}" label="expansion_bases" help="" minOccurs="0" >
+	  <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,subspaceDimension)}" label="expansion_bases" help="" minOccurs="0" >
 	    <param type='INTEGER' />
 	  </keyword>
 	  <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
