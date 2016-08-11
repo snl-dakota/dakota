@@ -18,6 +18,7 @@
 #define DATA_FIT_SURR_MODEL_H
 
 #include "dakota_data_types.hpp"
+#include "SurrogateData.hpp"
 #include "SurrogateModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
@@ -236,6 +237,10 @@ protected:
 
   /// return the approxInterface identifier
   const String& interface_id() const;
+  /// if recurse_flag, return the actualModel evaluation cache usage
+  bool evaluation_cache(bool recurse_flag = true) const;
+  /// if recurse_flag, return the actualModel restart file usage
+  bool restart_file(bool recurse_flag = true) const;
 
   /// set the evaluation counter reference points for the DataFitSurrModel
   /// (request forwarded to approxInterface and actualModel)
@@ -311,10 +316,13 @@ private:
   /// update current variables/labels/bounds/targets with data from actualModel
   void update_from_actual_model();
 
+  /// test for exact equality in values between vars and sdv
+  bool vars_exact_compare(const Variables& vars,
+			  const Pecos::SurrogateDataVars& sdv) const;
   /// test if c_vars and d_vars are within [c_l_bnds,c_u_bnds] and
   /// [d_l_bnds,d_u_bnds]
   bool inside(const RealVector& c_vars, const IntVector& di_vars,
-	      const RealVector& dr_vars);
+	      const RealVector& dr_vars) const;
 
   //
   //- Heading: Data members
@@ -346,10 +354,6 @@ private:
   unsigned short exportFormat;
   /// output file stream for \c export_approx_points_file specification
   std::ofstream exportFileStream;
-  /// array of variables sets read from the \c import_build_points_file
-  VariablesList reuseFileVars;
-  /// array of response sets read from the \c import_build_points_file
-  ResponseList reuseFileResponses;
 
   /// manages the building and subsequent evaluation of the approximations
   /// (required for both global and local)
@@ -378,6 +382,24 @@ inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 
 inline void DataFitSurrModel::total_points(int points)
 { pointsTotal = points; if (points > 0) pointsManagement = TOTAL_POINTS; }
+
+
+inline bool DataFitSurrModel::
+vars_exact_compare(const Variables& vars,
+		   const Pecos::SurrogateDataVars& sdv) const
+{
+  // Similar to id_vars_exact_compare() in PRPMultiIndex.hpp
+
+  if (vars.is_null() || sdv.is_null())
+    return false;
+  // discrete strings not currently included in SurrogateDataVars
+  else if (vars.continuous_variables()    != sdv.continuous_variables() ||
+	   vars.discrete_int_variables()  != sdv.discrete_int_variables() ||
+	   vars.discrete_real_variables() != sdv.discrete_real_variables())
+    return false;
+
+  return true;
+}
 
 
 inline Iterator& DataFitSurrModel::subordinate_iterator()
@@ -595,6 +617,20 @@ inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 
 inline const String& DataFitSurrModel::interface_id() const
 { return approxInterface.interface_id(); }
+
+
+inline bool DataFitSurrModel::evaluation_cache(bool recurse_flag) const
+{
+  return (recurse_flag && !actualModel.is_null()) ?
+    actualModel.evaluation_cache(recurse_flag) : false;
+}
+
+
+inline bool DataFitSurrModel::restart_file(bool recurse_flag) const
+{
+  return (recurse_flag && !actualModel.is_null()) ?
+    actualModel.restart_file(recurse_flag) : false;
+}
 
 
 inline void DataFitSurrModel::set_evaluation_reference()

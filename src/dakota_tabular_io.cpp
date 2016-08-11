@@ -8,8 +8,9 @@
 
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
-#include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#include "DakotaResponse.hpp"
+#include "ParamResponsePair.hpp"
 
 namespace Dakota {
 
@@ -267,22 +268,35 @@ void read_header_tabular(std::istream& input_stream,
 }
 
 
-/**  for now we discard the interface data; later will return for validation */
-size_t read_leading_columns(std::istream& input_stream,
-			    unsigned short tabular_format)
+/** reads eval and interface ids */
+void read_leading_columns(std::istream& input_stream,
+			  unsigned short tabular_format,
+			  int& eval_id, String& iface_id)
 {
-  size_t row_label = _NPOS;
   if (tabular_format & TABULAR_EVAL_ID)
-    input_stream >> row_label;
+    input_stream >> eval_id;
+  else
+    eval_id = 0;
+
   if (tabular_format & TABULAR_IFACE_ID) {
-    String iface_id;
     input_stream >> iface_id;
     // (Dakota 6.1 used EMPTY for missing ID)
     if (iface_id == "NO_ID" || iface_id == "EMPTY")
       iface_id.clear();
   }
-  // else no-op
-  return row_label;
+  else
+    iface_id.clear();
+}
+
+
+/** discards the interface data, which should be used for validation */
+int read_leading_columns(std::istream& input_stream,
+			    unsigned short tabular_format)
+{
+  int     eval_id; // returned
+  String iface_id; // discarded
+  read_leading_columns(input_stream, tabular_format, eval_id, iface_id);
+  return eval_id;
 }
 
 
@@ -511,12 +525,12 @@ void read_data_tabular(const std::string& input_filename,
 
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       Variables vars, Response resp,
-		       VariablesList& input_vars, ResponseList& input_resp,
-		       unsigned short tabular_format,
-		       bool verbose, bool active_only)
+		       Variables vars, Response resp, PRPList& input_prp,
+		       unsigned short tabular_format, bool verbose,
+		       bool active_only)
 {
   std::ifstream data_stream;
+  int eval_id; String iface_id;
   open_file(data_stream, input_filename, context_message);
 
   read_header_tabular(data_stream, tabular_format);
@@ -525,16 +539,16 @@ void read_data_tabular(const std::string& input_filename,
   data_stream >> std::ws;
   while (data_stream.good() && !data_stream.eof()) {
     try {
-      // discard the leading columns 
-      read_leading_columns(data_stream, tabular_format);
+      // read the leading columns 
+      read_leading_columns(data_stream, tabular_format, eval_id, iface_id);
       vars.read_tabular(data_stream, active_only);
       resp.read_tabular(data_stream);
     }
     catch (const TabularDataTruncated& tdtrunc) {
       // this will be thrown if either Variables or Response was truncated
-      Cerr << "\nError (" << context_message << "): could not read variables or "
-	   << "responses from file " << input_filename << ";\n  " 
-	   << tdtrunc.what() << std::endl;
+      Cerr << "\nError (" << context_message
+	   << "): could not read variables or responses from file "
+	   << input_filename << ";\n  "  << tdtrunc.what() << std::endl;
       abort_handler(-1);
     }
     catch(...) {
@@ -542,15 +556,19 @@ void read_data_tabular(const std::string& input_filename,
 	   << input_filename << " (unknown error).";
       abort_handler(-1);
     }
-    if (verbose)
-      Cout << "Variables and responses read:\n" << vars << resp;
-    input_vars.push_back(vars.copy());       // deep copy
-    input_resp.push_back(resp.copy());  // deep copy
+    if (verbose) {
+      Cout << "Variables read:\n" << vars;
+      if (!iface_id.empty())
+	Cout << "\nInterface identifier = " << iface_id << '\n';
+      Cout << "\nResponse read:\n" << resp;
+    }
+
+    // append deep copy of vars,resp as PRP
+    input_prp.push_back(ParamResponsePair(vars, iface_id, resp, eval_id));
 
     // advance so EOF can detect properly
     data_stream >> std::ws;
   }
-
 }
 
 

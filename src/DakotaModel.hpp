@@ -350,9 +350,9 @@ public:
   virtual int derived_evaluation_id() const;
 
   /// Indicates the usage of an evaluation cache by the Model
-  virtual bool evaluation_cache() const;
+  virtual bool evaluation_cache(bool recurse_flag = true) const;
   /// Indicates the usage of a restart file by the Model
-  virtual bool restart_file() const;
+  virtual bool restart_file(bool recurse_flag = true) const;
 
   /// Set the reference points for the evaluation counters within the Model
   virtual void set_evaluation_reference();

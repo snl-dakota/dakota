@@ -342,7 +342,7 @@ void NonDGPMSABayesCalibration::core_run()
     // approxImportActiveOnly
     TabularIO::
       read_data_tabular(approxImportFile, "GPMSA input points", the_data,
-			num_simulations, (numUncertainVars+numFunctions),
+			num_simulations, numUncertainVars+numFunctions,
 			approxImportFormat, verbose); 
     RealVector temp_resp(numFunctions);
     for (i = 0; i < num_simulations; ++i) {
