@@ -55,6 +55,7 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
   driverTypeMap["lf_rosenbrock"]          = LF_ROSENBROCK;
+  driverTypeMap["extra_lf_rosenbrock"]    = EXTRA_LF_ROSENBROCK;
   driverTypeMap["mf_rosenbrock"]          = MF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
   driverTypeMap["modified_rosenbrock"]    = MODIFIED_ROSENBROCK;
@@ -145,8 +146,8 @@ TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
-    case ROSENBROCK:   case LF_ROSENBROCK:   case MF_ROSENBROCK:
-    case MODIFIED_ROSENBROCK:
+    case ROSENBROCK:   case LF_ROSENBROCK:    case EXTRA_LF_ROSENBROCK:
+    case MF_ROSENBROCK:    case MODIFIED_ROSENBROCK:
     case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
     case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
@@ -239,6 +240,8 @@ int TestDriverInterface::derived_map_ac(const String& ac_name)
     fail_code = extended_rosenbrock(); break;
   case LF_ROSENBROCK:
     fail_code = lf_rosenbrock(); break;
+  case EXTRA_LF_ROSENBROCK:
+    fail_code = extra_lf_rosenbrock(); break;
   case MF_ROSENBROCK:
     fail_code = mf_rosenbrock(); break;
   case LF_POLY_PROD:
@@ -1228,6 +1231,60 @@ int TestDriverInterface::lf_rosenbrock()
 	else if ( (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x2) ||
 		  (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x1) )
 	  fnHessians[0](i,j) = -400.*x1;
+	else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
+	  fnHessians[0](i,j) =  200.;
+
+  return 0; // no failure
+}
+
+// extra low fidelity rosenbrock
+int TestDriverInterface::extra_lf_rosenbrock()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: extra_lf_rosenbrock direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
+    Cerr << "Error: Bad number of variables in lf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+  if (numFns > 1) {
+    Cerr << "Error: Bad number of functions in extra_lf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(INTERFACE_ERROR);
+  }
+
+  Real a = 0.92;
+  Real b = -1.0;
+  Real c = 1.1;
+  Real d = 1.1;
+
+  Real x1 = xCM[VAR_x1],     x2 = xCM[VAR_x2],
+       f1 = x2 - a*x1*x1 + b, f2 = c - d*x1;
+
+  // **** f:
+  if (directFnASV[0] & 1)
+    fnVals[0] = 100.*f1*f1+f2*f2;
+
+  // **** df/dx:
+  if (directFnASV[0] & 2)
+    for (size_t i=0; i<numDerivVars; ++i)
+      switch (varTypeDVV[i]) {
+      case VAR_x1: fnGrads[0][i] = -400.*a*f1*x1 - 2.*d*f2; break;
+      case VAR_x2: fnGrads[0][i] =  200.*f1;            break;
+      }
+
+  // **** d^2f/dx^2:
+  if (directFnASV[0] & 4)
+    for (size_t i=0; i<numDerivVars; ++i)
+      for (size_t j=0; j<=i; ++j)
+	if (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x1)
+	  fnHessians[0](i,j) = -400.*a*f1 + 400.*a*a*x1*x1 + 2.*d*d;
+	else if ( (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x2) ||
+		  (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x1) )
+	  fnHessians[0](i,j) = -400.*a*x1;
 	else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
 	  fnHessians[0](i,j) =  200.;
 

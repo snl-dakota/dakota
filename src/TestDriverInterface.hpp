@@ -69,6 +69,7 @@ private:
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
   int extended_rosenbrock();    ///< n-dimensional Rosenbrock (Nocedal/Wright)
   int lf_rosenbrock(); ///< a low fidelity version of the Rosenbrock function
+  int extra_lf_rosenbrock(); ///< an extra low fidelity version of the Rosenbrock function
   int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
                        ///< multifidelity or model form studies
 
