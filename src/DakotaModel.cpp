@@ -2575,8 +2575,7 @@ iterator_space_to_user_space(const Variables& iter_vars,
     // modelList assigned in manage_data_recastings() -> subordinate_models()
     // (don't want to incur this overhead for every import/export)
     ModelLIter ml_it; size_t i;
-    for (ml_it =modelList.begin(), i=modelList.size()-1;
-	 ml_it!=modelList.end(); ++ml_it, --i)
+    for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i)
       if (recastFlags[i]) {
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_it->current_variables(); // shallow copy
