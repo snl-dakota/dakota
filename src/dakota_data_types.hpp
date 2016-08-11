@@ -27,6 +27,7 @@ class ActiveSet;
 class ParamResponsePair;
 class ParallelLevel;
 class ParallelConfiguration;
+class DiscrepancyCorrection;
 
 
 // -----------------------------------
@@ -117,6 +118,7 @@ typedef std::list<Iterator>            IteratorList;
 
 typedef std::pair<int, int>            IntIntPair;
 typedef std::pair<size_t, size_t>      SizetSizetPair;
+typedef std::pair<SizetSizetPair, SizetSizetPair> SizetSizet2DPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
 typedef std::pair<int, String>         IntStringPair;
@@ -153,6 +155,7 @@ typedef std::vector<IntIntPairRealMap> IntIntPairRealMapArray;
 typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;
 //typedef std::multimap<Real, ParamResponsePair> RealPRPMultiMap;
+typedef std::map<SizetSizet2DPair, DiscrepancyCorrection> DiscrepCorrMap;
 
 // ---------
 // Iterators
