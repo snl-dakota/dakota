@@ -208,10 +208,6 @@ private:
   /// order to reproduce high fidelity data.
   std::map<std::pair<SizetSizetPair,SizetSizetPair>,DiscrepancyCorrection>
     deltaCorr;
-  /// order of correction: 0, 1, or 2
-  short corrOrder;
-  /// type of correction: additive, multiplicative, or combined
-  short corrType;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -388,7 +384,8 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 
 inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
-  responseMode = mode;
+  SurrogateModel::surrogate_response_mode(mode); // shared portions
+
   // if necessary, resize the response for entering/exiting an aggregated mode.
   // Since parallel job scheduling only involves either the LF or HF model at
   // any given time, this call does not need to be matched on serve_run() procs.

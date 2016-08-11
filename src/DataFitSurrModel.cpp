@@ -139,10 +139,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     cache, am_interface_id, fn_labels), false);
 
   // initialize the DiscrepancyCorrection instance
-  short corr_type = problem_db.get_short("model.surrogate.correction_type");
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
-      problem_db.get_short("model.surrogate.correction_order"));
+  if (corrType)
+    deltaCorr.initialize(*this, surrogateFnIndices, corrType, corrOrder);
 
   import_points(
     problem_db.get_ushort("model.surrogate.import_build_format"),

@@ -454,7 +454,8 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 
 inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
-  responseMode = mode;
+  SurrogateModel::surrogate_response_mode(mode); // shared portions
+
   if (mode == BYPASS_SURROGATE) // recurse in this case
     actualModel.surrogate_response_mode(mode);
 }
