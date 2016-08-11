@@ -22,7 +22,10 @@ namespace Dakota
 {
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), truthResponseRef(currentResponse.copy())
+  SurrogateModel(problem_db),
+  corrType(problem_db.get_short("model.surrogate.correction_type")),
+  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
+  truthResponseRef(currentResponse.copy())
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
@@ -65,20 +68,14 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   }
   check_interface_instance();
 
-  corrOrder = problem_db.get_short("model.surrogate.correction_order");
-
   // Correction is required in the hierarchical case (since without correction,
   // all HF model evaluations are wasted).  Omission of a correction type
   // should be prevented by the input specification.
-  corrType = problem_db.get_short("model.surrogate.correction_type");
-  if (!corrType) {
-    Cerr << "Error: correction is required with model hierarchies."<< std::endl;
-    abort_handler(-1);
-  } else // initialize the DiscrepancyCorrection using lowest fidelity model;
+  if (corrType)
+    // initialize the DiscrepancyCorrection using lowest fidelity model;
     // this LF model gets updated at run time
-    deltaCorr[std::make_pair(lowFidelityIndices,
-                             highFidelityIndices)].initialize(orderedModels[0], surrogateFnIndices,
-                                 corrType, corrOrder);
+    deltaCorr[std::make_pair(lowFidelityIndices, highFidelityIndices)].
+      initialize(orderedModels[0], surrogateFnIndices, corrType, corrOrder);
 }
 
 

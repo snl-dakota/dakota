@@ -2273,7 +2273,7 @@ static KeyWord
 		},
 	kw_348[5] = {
 		{"build_source",8,3,1,0,kw_346},
-		{"expansion_bases",9,0,3,0,0,0.,0.,0,N_mom(int,dimension)},
+		{"expansion_bases",9,0,3,0,0,0.,0.,0,N_mom(int,subspaceDimension)},
 		{"expansion_form",8,2,2,0,kw_347},
 		{"propagation_model_pointer",11,0,5,1,0,0.,0.,0,N_mom(str,propagationModelPointer)},
 		{"truncation_tolerance",10,0,4,0,0,0.,0.,0,N_mom(Real,truncationTolerance)}
@@ -2304,7 +2304,7 @@ static KeyWord
 		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,actualModelPointer)},
 		{"bootstrap_samples",9,0,6,0,0,0.,0.,0,N_mom(int,numReplicates)},
 		{"build_surrogate",8,1,7,0,kw_351,0.,0.,0,N_mom(true,subspaceBuildSurrogate)},
-		{"dimension",9,0,5,0,0,0.,0.,0,N_mom(int,dimension)},
+		{"dimension",9,0,5,0,0,0.,0.,0,N_mom(int,subspaceDimension)},
 		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
 		{"sample_type",8,2,3,0,kw_352},
 		{"truncation_method",8,3,4,0,kw_354}
@@ -2541,7 +2541,7 @@ static KeyWord
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
 	kw_396[3] = {
-		{"correction",8,6,2,2,kw_395},
+		{"correction",8,6,2,0,kw_395},
 		{"model_fidelity_sequence",7,0,1,1,0,0.,0.,1,N_mom(strL,orderedModelPointers)},
 		{"ordered_model_fidelities",15,0,1,1,0,0.,0.,0,N_mom(strL,orderedModelPointers)}
 		},

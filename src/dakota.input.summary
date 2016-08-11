@@ -2403,14 +2403,14 @@ KEYWORD model
 	  |
 	  ( hierarchical
 	    ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST
-	    ( correction
+	    [ correction
 	      zeroth_order
 	      | first_order
 	      | second_order
 	      additive
 	      | multiplicative
 	      | combined
-	      )
+	      ]
 	    )
 	  )
 	|

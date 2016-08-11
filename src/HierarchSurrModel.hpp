@@ -54,6 +54,11 @@ public:
   HierarchSurrModel(ProblemDescDB& problem_db); ///< constructor
   ~HierarchSurrModel();                         ///< destructor
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// return the active DiscrepancyCorrection instance
   DiscrepancyCorrection& discrepancy_correction();
 
 protected:
@@ -202,9 +207,10 @@ private:
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
   std::map<std::pair<SizetSizetPair,SizetSizetPair>,DiscrepancyCorrection>
-  deltaCorr;
-
+    deltaCorr;
+  /// order of correction: 0, 1, or 2
   short corrOrder;
+  /// type of correction: additive, multiplicative, or combined
   short corrType;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
@@ -251,15 +257,11 @@ inline void HierarchSurrModel::check_interface_instance()
 
 
 inline Model& HierarchSurrModel::surrogate_model()
-{
-  return orderedModels[lowFidelityIndices.first];
-}
+{ return orderedModels[lowFidelityIndices.first]; }
 
 
 inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
-{
-  return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
-}
+{ return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
 
 
 inline void HierarchSurrModel::
@@ -273,10 +275,11 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
 
-  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  DiscrepancyCorrection& delta_corr
+    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
-                                 corrType, corrOrder);
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+			  surrogateFnIndices, corrType, corrOrder);
 
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
@@ -296,10 +299,11 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
 
-  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  DiscrepancyCorrection& delta_corr
+    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
-                                 corrType, corrOrder);
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+			  surrogateFnIndices, corrType, corrOrder);
 
   // TO DO:
   //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
@@ -308,15 +312,11 @@ surrogate_model_indices(const SizetSizetPair& lf_form_level)
 
 
 inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
-{
-  return lowFidelityIndices;
-}
+{ return lowFidelityIndices; }
 
 
 inline Model& HierarchSurrModel::truth_model()
-{
-  return orderedModels[highFidelityIndices.first];
-}
+{ return orderedModels[highFidelityIndices.first]; }
 
 
 inline void HierarchSurrModel::
@@ -330,10 +330,11 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 
-  DiscrepancyCorrection& delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  DiscrepancyCorrection& delta_corr
+    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
-                                 corrType, corrOrder);
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+			  surrogateFnIndices, corrType, corrOrder);
 }
 
 
@@ -349,17 +350,16 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 
-  DiscrepancyCorrection&delta_corr = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  DiscrepancyCorrection& delta_corr
+    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first], surrogateFnIndices,
-                                 corrType, corrOrder);
+    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+			  surrogateFnIndices, corrType, corrOrder);
 }
 
 
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
-{
-  return highFidelityIndices;
-}
+{ return highFidelityIndices; }
 
 
 inline void HierarchSurrModel::

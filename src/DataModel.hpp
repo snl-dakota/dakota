@@ -318,7 +318,7 @@ public:
   bool subspaceBuildSurrogate;
 
   /// Size of subspace
-  int dimension;
+  int subspaceDimension;
 
   /// Number of bootstrap samples for subspace identification
   int numReplicates;
