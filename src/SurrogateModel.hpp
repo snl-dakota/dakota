@@ -66,9 +66,6 @@ protected:
   /// return miPLIndex
   size_t mi_parallel_level_index() const;
 
-  /// shared portion of {Hierarch,DataFit}SurrModel overrides
-  void surrogate_response_mode(short mode);
-
   //
   //- Heading: Member functions
   //
@@ -211,21 +208,6 @@ inline short SurrogateModel::surrogate_response_mode() const
 
 inline size_t SurrogateModel::mi_parallel_level_index() const
 { return miPLIndex; }
-
-
-inline void SurrogateModel::surrogate_response_mode(short mode)
-{
-  responseMode = mode;
-
-  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
-		      mode == MODEL_DISCREPANCY ) ) {
-    Cerr << "Error: activation of mode ";
-    if (mode == AUTO_CORRECTED_SURROGATE) Cout << "AUTO_CORRECTED_SURROGATE";
-    else                                  Cout << "MODEL_DISCREPANCY";
-    Cout << " requires specification of a correction type." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
 
 
 inline void SurrogateModel::check_key(int key1, int key2) const

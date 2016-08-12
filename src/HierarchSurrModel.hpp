@@ -86,6 +86,9 @@ protected:
   /// return the indices identifying the active low fidelity model
   const SizetSizetPair& surrogate_model_indices() const;
 
+  /// return pair of active low fidelity and high fidelity model indices
+  SizetSizet2DPair get_indices();
+
   /// return the active high fidelity model
   Model& truth_model();
   /// set the indices identifying the active high fidelity model
@@ -206,10 +209,11 @@ private:
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
   /// order to reproduce high fidelity data.
-  std::map<std::pair<SizetSizetPair,SizetSizetPair>,DiscrepancyCorrection>
-    deltaCorr;
+  DiscrepCorrMap deltaCorr;
   /// order of correction: 0, 1, or 2
   short corrOrder;
+
+  std::vector<SizetSizet2DPair> corrSequence;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
   /// arbitrary type and supports recursions.
@@ -316,6 +320,9 @@ inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
 inline Model& HierarchSurrModel::truth_model()
 { return orderedModels[highFidelityIndices.first]; }
 
+inline SizetSizet2DPair HierarchSurrModel::get_indices()
+{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
+
 
 inline void HierarchSurrModel::
 truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
@@ -329,9 +336,9 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 
   DiscrepancyCorrection& delta_corr
-    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+    = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+    delta_corr.initialize(surrogate_model(),
 			  surrogateFnIndices, corrType, corrOrder);
 }
 
@@ -349,9 +356,9 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 
   DiscrepancyCorrection& delta_corr
-    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+    = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
+    delta_corr.initialize(surrogate_model(),
 			  surrogateFnIndices, corrType, corrOrder);
 }
 
@@ -386,7 +393,16 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 
 inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
-  SurrogateModel::surrogate_response_mode(mode); // shared portions
+  responseMode = mode;
+
+  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
+		      mode == MODEL_DISCREPANCY ) ) {
+    Cerr << "Error: activation of mode ";
+    if (mode == AUTO_CORRECTED_SURROGATE) Cout << "AUTO_CORRECTED_SURROGATE";
+    else                                  Cout << "MODEL_DISCREPANCY";
+    Cout << " requires specification of a correction type." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 
   // if necessary, resize the response for entering/exiting an aggregated mode.
   // Since parallel job scheduling only involves either the LF or HF model at
