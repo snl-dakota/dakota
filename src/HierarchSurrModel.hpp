@@ -213,8 +213,6 @@ private:
   /// order of correction: 0, 1, or 2
   short corrOrder;
 
-  std::vector<SizetSizet2DPair> corrSequence;
-
   /// vector to specify a sequence of discrepancy corrections to apply in
   /// AUTO_CORRECTED_SURROGATE mode
   std::vector<SizetSizet2DPair> corrSequence;
