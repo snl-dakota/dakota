@@ -180,6 +180,8 @@ protected:
   /// RecastModel for solving for MAP: reduces residualModel to scalar
   /// negative log posterior
   Model negLogPostModel;
+  /// user setting of the MAP optimization algorithm type
+  unsigned short mapOptAlgOverride;
 
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
