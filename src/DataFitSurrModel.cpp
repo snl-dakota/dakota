@@ -1310,15 +1310,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 
     // post-process
     switch (responseMode) {
-    case AUTO_CORRECTED_SURROGATE:
-      if (deltaCorr.active()) {
-	bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-	//if (!deltaCorr.computed())
-	//  deltaCorr.compute(currentVariables, centerResponse, approx_response,
-	//                    quiet_flag);
-	deltaCorr.apply(currentVariables, approx_response, quiet_flag);
-      }
+    case AUTO_CORRECTED_SURROGATE: {
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+      //if (!deltaCorr.computed())
+      //  deltaCorr.compute(currentVariables, centerResponse, approx_response,
+      //                    quiet_flag);
+      deltaCorr.apply(currentVariables, approx_response, quiet_flag);
       break;
+    }
     }
   }
 
@@ -1662,7 +1661,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
   IntRespMIter r_it;
-  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
+  if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
     // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
