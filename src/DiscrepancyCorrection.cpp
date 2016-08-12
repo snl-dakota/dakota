@@ -444,7 +444,7 @@ check_scaling(const RealVector& truth_fns, const RealVector& approx_fns)
 void DiscrepancyCorrection::
 apply(const Variables& vars, Response& approx_response, bool quiet_flag)
 {
-  if (!correctionComputed)
+  if (!correctionType || !correctionComputed)
     return;
 
   // update approx_response with the alpha/beta/combined corrected data

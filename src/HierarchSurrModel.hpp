@@ -212,8 +212,8 @@ private:
   DiscrepCorrMap deltaCorr;
   /// order of correction: 0, 1, or 2
   short corrOrder;
-  /// type of correction: additive, multiplicative, or combined
-  short corrType;
+
+  std::vector<SizetSizet2DPair> corrSequence;
 
   /// vector to specify a sequence of discrepancy corrections to apply in
   /// AUTO_CORRECTED_SURROGATE mode
@@ -398,6 +398,19 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
+
+  // Trap the combinatoin of no user correction specification with either
+  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
+  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
+  if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
+		      mode == MODEL_DISCREPANCY ) ) {
+    Cerr << "Error: activation of mode ";
+    if (mode == AUTO_CORRECTED_SURROGATE) Cout << "AUTO_CORRECTED_SURROGATE";
+    else                                  Cout << "MODEL_DISCREPANCY";
+    Cout << " requires specification of a correction type." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   // if necessary, resize the response for entering/exiting an aggregated mode.
   // Since parallel job scheduling only involves either the LF or HF model at
   // any given time, this call does not need to be matched on serve_run() procs.

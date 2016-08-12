@@ -73,8 +73,6 @@ public:
   void apply(const Variables& vars, Response& approx_response,
 	     bool quiet_flag = false);
 
-  /// indicates an active correction via non-empty correctionType
-  bool active() const;
   /// return correctionType
   short correction_type() const;
   /// return correctionOrder
@@ -215,7 +213,8 @@ private:
 
 
 inline DiscrepancyCorrection::DiscrepancyCorrection():
-  correctionType(NO_CORRECTION), initializedFlag(false)
+  correctionType(NO_CORRECTION), initializedFlag(false),
+  correctionOrder(0), dataOrder(1), correctionComputed(false)
 { }
 
 
@@ -227,10 +226,6 @@ DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
 
 inline DiscrepancyCorrection::~DiscrepancyCorrection()
 { }
-
-
-inline bool DiscrepancyCorrection::active() const
-{ return (correctionType != NO_CORRECTION); }
 
 
 inline short DiscrepancyCorrection::correction_type() const

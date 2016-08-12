@@ -46,7 +46,7 @@ protected:
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		 const SharedVariablesData& svd, const SharedResponseData& srd,
-		 const ActiveSet& set, short output_level);
+		 const ActiveSet& set, short corr_type, short output_level);
   /// destructor
   ~SurrogateModel();
 
@@ -108,6 +108,9 @@ protected:
   /** SurrBasedLocalMinimizer toggles this mode since compute_correction()
       does not back out old corrections. */
   short responseMode;
+
+  /// type of correction: additive, multiplicative, or combined
+  short corrType;
 
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids

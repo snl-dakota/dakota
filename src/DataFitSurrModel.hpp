@@ -455,6 +455,17 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
+
+  // Compared to HierarchSurrModel, we don't need to be as strict in validating
+  // AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is an
+  // admissible option in the case of global data fits.  However,
+  // MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
+  if ( !corrType && mode == MODEL_DISCREPANCY ) {
+    Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
+	 << "specification of a correction type." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   if (mode == BYPASS_SURROGATE) // recurse in this case
     actualModel.surrogate_response_mode(mode);
 }

@@ -139,10 +139,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     cache, am_interface_id, fn_labels), false);
 
   // initialize the DiscrepancyCorrection instance
-  short corr_type = problem_db.get_short("model.surrogate.correction_type");
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
-      problem_db.get_short("model.surrogate.correction_order"));
+  deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+    problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
     problem_db.get_ushort("model.surrogate.import_build_format"),
@@ -168,8 +166,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().shared_data(), set,
-		 output_level),
+		 actual_model.current_response().shared_data(),
+		 set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
   exportSurrogate(false), exportPointsFile(export_approx_points_file),
@@ -218,8 +216,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   //}
 
   // initialize the DiscrepancyCorrection instance
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
+  deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
   // to define derivative settings, we use incoming ASV to define requests
   // and surrogate type to determine analytic derivative support.
@@ -1311,15 +1308,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 
     // post-process
     switch (responseMode) {
-    case AUTO_CORRECTED_SURROGATE:
-      if (deltaCorr.active()) {
-	bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-	//if (!deltaCorr.computed())
-	//  deltaCorr.compute(currentVariables, centerResponse, approx_response,
-	//                    quiet_flag);
-	deltaCorr.apply(currentVariables, approx_response, quiet_flag);
-      }
+    case AUTO_CORRECTED_SURROGATE: {
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+      //if (!deltaCorr.computed())
+      //  deltaCorr.compute(currentVariables, centerResponse, approx_response,
+      //                    quiet_flag);
+      deltaCorr.apply(currentVariables, approx_response, quiet_flag);
       break;
+    }
     }
   }
 
@@ -1663,7 +1659,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
   IntRespMIter r_it;
-  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
+  if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
     // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
