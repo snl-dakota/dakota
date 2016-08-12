@@ -139,9 +139,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     cache, am_interface_id, fn_labels), false);
 
   // initialize the DiscrepancyCorrection instance
-  if (corrType)
-    deltaCorr.initialize(*this, surrogateFnIndices, corrType,
-      problem_db.get_short("model.surrogate.correction_order"));
+  deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+    problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
     problem_db.get_ushort("model.surrogate.import_build_format"),
@@ -217,8 +216,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   //}
 
   // initialize the DiscrepancyCorrection instance
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
+  deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
   // to define derivative settings, we use incoming ASV to define requests
   // and surrogate type to determine analytic derivative support.

@@ -395,6 +395,9 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
 
+  // Trap the combinatoin of no user correction specification with either
+  // AUTO_CORRECTED_SURROGATE (NO_CORRECTION defeats the point for HSModel) or
+  // MODEL_DISCREPANCY (which formulation for computing discrepancy?) modes.
   if ( !corrType && ( mode == AUTO_CORRECTED_SURROGATE ||
 		      mode == MODEL_DISCREPANCY ) ) {
     Cerr << "Error: activation of mode ";
