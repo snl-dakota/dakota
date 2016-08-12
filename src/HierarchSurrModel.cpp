@@ -530,9 +530,47 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
                                    truthResponseRef[highFidelityIndices],
                                    lo_fi_response, quiet_flag);
 
-      if (corrSequence.empty())
+      if (correctionMode == SINGLE_CORRECTION)
         deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
-      else {
+      else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
+        size_t num_models = orderedModels.size();
+        for (size_t ii = lf_model_form; ii < num_models - 1; ii++) {
+          SizetSizetPair lf_index_temp;
+          SizetSizetPair hf_index_temp;
+
+          lf_index_temp.first  = ii;
+          lf_index_temp.second = lowFidelityIndices.second;
+
+          hf_index_temp.first  = ii+1;
+          hf_index_temp.second = highFidelityIndices.second;
+
+          SizetSizet2DPair correction_index =
+            std::make_pair(lf_index_temp,hf_index_temp);
+
+          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+        }
+      }
+      else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
+        size_t num_levels = 
+        for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+          SizetSizetPair lf_index_temp;
+          SizetSizetPair hf_index_temp;
+
+          lf_index_temp.first  = lowFidelityIndices.first;
+          lf_index_temp.second = ii;
+
+          hf_index_temp.first  = lowFidelityIndices.first;
+          hf_index_temp.second = ii+1;
+
+          SizetSizet2DPair correction_index =
+            std::make_pair(lf_index_temp,hf_index_temp);
+
+          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+        }
+      }
+      else if (correctionMode == SEQUENCE_CORRECTION) {
         // Apply sequence of discrepancy corrections
         // TODO: Check to make sure they've been initialized.
 
