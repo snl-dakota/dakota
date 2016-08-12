@@ -215,6 +215,8 @@ private:
   /// type of correction: additive, multiplicative, or combined
   short corrType;
 
+  /// vector to specify a sequence of discrepancy corrections to apply in
+  /// AUTO_CORRECTED_SURROGATE mode
   std::vector<SizetSizet2DPair> corrSequence;
 
   /// Ordered sequence (low to high) of model fidelities.  Models are of
