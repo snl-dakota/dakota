@@ -529,7 +529,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (max_iter && lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
 	    accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
 	      Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -760,7 +760,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (max_iter && lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
 	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,
 				  lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
@@ -1759,16 +1759,20 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
   if (numSamples) {
     Cout << "CVMC LF sample increment = " << numSamples << std::endl;
 
-    // mode for hierarchical surrogate model can be uncorrected surrogate
-    // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
-    // --> set at calling level
-    //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    if (maxIterations) { // only preclude explicit spec of 0 (default is -1)
+      // mode for hierarchical surrogate model can be uncorrected surrogate
+      // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
+      // --> set at calling level
+      //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
-    // generate new MC parameter sets
-    get_parameter_sets(iteratedModel);// pull dist params from any model
-    // compute allResponses from allVariables using hierarchical model
-    evaluate_parameter_sets(iteratedModel, true, false);
-    return true;
+      // generate new MC parameter sets
+      get_parameter_sets(iteratedModel);// pull dist params from any model
+      // compute allResponses from allVariables using hierarchical model
+      evaluate_parameter_sets(iteratedModel, true, false);
+      return true;
+    }
+    else
+      return false;
   }
   else
     return false;
@@ -1787,6 +1791,9 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
     Real& rho_sq = rho2_LH[qoi];
     compute_control(sum_L_shared[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
 		    sum_HH[qoi], N_shared[qoi], var_H[qoi], rho_sq);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Eval_ratio(): rho_sq = " << rho_sq << std::endl;
 
     // compute evaluation ratio which determines increment for LF samples
     // > the sample increment optimizes the total computational budget and is
@@ -1821,6 +1828,9 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
     compute_control(sum_L_shared(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
 		    sum_LH(qoi,lev), sum_HH(qoi,lev), N_shared[qoi],
 		    var_H(qoi,lev), rho_sq);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Eval_ratio(): rho_sq = " << rho_sq << std::endl;
 
     if (rho_sq < 1.) { // protect against division by 0
       avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
@@ -1860,6 +1870,9 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 		      sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
 		      sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl(qoi,lev),
 		      rho_dot_sq, beta_dot, gamma);
+
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Eval_ratio(): rho_dot_sq = " << rho_dot_sq << std::endl;
 
       if (rho_dot_sq < 1.) { // protect against division by 0
 	avg_eval_ratio += std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
