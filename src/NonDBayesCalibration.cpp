@@ -559,7 +559,19 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   // need to initialize this from user input eventually
   size_t num_candidates = 100, num_mcmc_samples = 1000;
-
+  //RealMatrix design_matrix;
+  NonDLHSSampling* lhs_sampler_rep2;
+  lhs_sampler_rep2 =
+    new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed,
+			rng, vary_pattern, ACTIVE_UNIFORM);
+  Iterator lhs_iterator2;
+  lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+  lhs_iterator2.pre_run();
+  const RealMatrix design_matrix = lhs_iterator2.all_samples();
+ 
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Design Matrix   " << design_matrix << '\n';
+ 
   bool stop_metric = false;
   double max_MI;
 
