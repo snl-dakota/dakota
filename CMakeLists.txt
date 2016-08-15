@@ -180,7 +180,7 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
   # When building InternalWeb, don't want DOT in the binaries
   # Be aggressive and remove from source tree
   execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
-    ${Dakota_SOURCE_DIR}/packages/DOT/)
+    ${Dakota_SOURCE_DIR}/local/packages/DOT/)
 endif()
 
 if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
@@ -192,9 +192,9 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
   # Be aggressive and remove from source tree
   execute_process(
     COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/packages/NLPQL"
+      "${Dakota_SOURCE_DIR}/local/packages/NLPQL"
     COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/packages/NPSOL"
+      "${Dakota_SOURCE_DIR}/local/packages/NPSOL"
     )
 endif()
 
