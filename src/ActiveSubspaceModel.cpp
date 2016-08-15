@@ -124,18 +124,14 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  //check_submodel_compatibility(actualModel);
-
-  actualModel = problem_db.get_model();
-
   transformVars = true;
 
   if (transformVars) {
-    transformModel.assign_rep(new ProbabilityTransformModel(actualModel), false);
-    sub_model = transformModel;
+    sub_model.assign_rep(new ProbabilityTransformModel(problem_db.get_model()),
+                                                       false);
   }
   else {
-    sub_model = actualModel;
+    sub_model = problem_db.get_model();
   }
 
   problem_db.set_db_model_nodes(model_index); // restore

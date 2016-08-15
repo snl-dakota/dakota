@@ -310,13 +310,6 @@ protected:
   /// Truncation tolerance for eigenvalue energy subspace identification
   Real truncationTolerance;
 
-  /// the truth model which provides evaluations for building the active subspace
-  Model actualModel;
-
-  /// the result of performing a Nataf transformation to u-space from the truth
-  /// model
-  Model transformModel;
-
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
 
