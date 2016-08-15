@@ -2451,6 +2451,10 @@ KEYWORD model
 	  [ build_surrogate
 	    [ refinement_samples INTEGERLIST ]
 	    ]
+	  [ normalization
+	    value
+	    | gradient
+	    ]
 	  )
 	|
 	( random_field

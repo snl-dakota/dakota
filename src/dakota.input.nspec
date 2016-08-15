@@ -2512,6 +2512,11 @@ KEYWORD model {N_mom3(start,0,stop)}
     [ build_surrogate {N_mom(true,subspaceBuildSurrogate)}
       [ refinement_samples INTEGERLIST {N_mom(ivec,refineSamples)} ]
      ]
+    [ normalization {0}
+      value {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}
+      |
+      gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}
+     ]
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

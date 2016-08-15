@@ -268,6 +268,9 @@ protected:
   /// boolean flag to determine if mapping has been fully initialized
   bool subspaceInitialized;
 
+  /// Normalization to use in the case of multiple QoI's
+  unsigned short subspaceNormalization;
+
 
   // Data for numerical representation
 

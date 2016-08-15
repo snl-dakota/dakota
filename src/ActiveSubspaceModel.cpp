@@ -37,7 +37,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
+  subspaceNormalization(probDescDB.get_ushort("model.subspace.normalization"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -87,7 +88,8 @@ ActiveSubspaceModel(const Model& sub_model,
   totalSamples(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0)
+  buildSurrogate(false), refinementSamples(0),
+  subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -285,10 +287,26 @@ populate_matrices(unsigned int diff_samples)
   // Compute gradient scaling factors if more than 1 response function
   if(numFunctions > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
-      const RealVector& resp_vector = resp_it->second.function_values();
-      for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
-          static_cast<Real>(diff_samples);
+      if (subspaceNormalization == SUBSPACE_NORM_VALUE) {
+        const RealVector& resp_vector = resp_it->second.function_values();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
+            static_cast<Real>(diff_samples);
+        }
+      }
+      else if (subspaceNormalization == SUBSPACE_NORM_DEFAULT || 
+               subspaceNormalization == SUBSPACE_NORM_GRAD) {
+        const RealMatrix& resp_matrix = resp_it->second.function_gradients();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          RealVector grad(numFullspaceVars);
+          for (size_t ii = 0; ii < numFullspaceVars; ++ii)
+            grad[ii] = resp_matrix(ii,fn_ind);
+
+          Real norm_grad = std::sqrt(grad.dot(grad));
+          
+          gradientScaleFactors[fn_ind] += norm_grad /
+            static_cast<Real>(diff_samples);
+        }
       }
     }
   }
