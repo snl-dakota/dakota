@@ -350,9 +350,9 @@ public:
   virtual int derived_evaluation_id() const;
 
   /// Indicates the usage of an evaluation cache by the Model
-  virtual bool evaluation_cache() const;
+  virtual bool evaluation_cache(bool recurse_flag = true) const;
   /// Indicates the usage of a restart file by the Model
-  virtual bool restart_file() const;
+  virtual bool restart_file(bool recurse_flag = true) const;
 
   /// Set the reference points for the evaluation counters within the Model
   virtual void set_evaluation_reference();
@@ -450,6 +450,22 @@ public:
 
   /// estimate messageLengths for a model
   void estimate_message_lengths();
+
+  /// initialize modelList and recastFlags for data import/export
+  bool manage_data_recastings();
+  /// return true if recastFlags is defined
+  bool recastings() const;
+
+  /// employ the model recursion to transform from bottom level
+  /// user-space data to top level iterator-space data
+  void user_space_to_iterator_space(const Variables& user_vars,
+				    const Response&  user_resp,
+				    Variables& iter_vars, Response& iter_resp);
+  /// employ the model recursion to transform from top level
+  /// iterator-space data to bottom level user-space data
+  void iterator_space_to_user_space(const Variables& iter_vars,
+				    const Response&  iter_resp,
+				    Variables& user_vars, Response& user_resp);
 
   //
   //- Heading: Set and Inquire functions
@@ -1289,9 +1305,6 @@ protected:
   /// output verbosity level: {SILENT,QUIET,NORMAL,VERBOSE,DEBUG}_OUTPUT
   short outputLevel;
 
-  /// used to collect sub-models for subordinate_models()
-  ModelList modelList;
-
   /// array of IntSet's, each containing the set of allowable integer
   /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
@@ -1501,6 +1514,11 @@ private:
   // discrete real variables
   //BitArray discreteRealSets;
 
+  /// used to collect sub-models for subordinate_models()
+  ModelList modelList;
+  /// a key indicating which models within a model recursion involve recasting
+  BoolDeque recastFlags;
+
   /// pointer to the letter (initialized only for the envelope)
   Model* modelRep;
   /// number of objects sharing modelRep
@@ -1510,6 +1528,10 @@ private:
 
 inline int Model::evaluation_id() const
 { return (modelRep) ? modelRep->modelEvalCntr : modelEvalCntr; }
+
+
+inline bool Model::recastings() const
+{ return (modelRep) ? !modelRep->recastFlags.empty() : !recastFlags.empty(); }
 
 
 inline size_t Model::tv() const

@@ -78,12 +78,15 @@ public:
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
+
   bool finalize_mapping();
+
   bool mapping_initialized();
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
   void stop_init_mapping(ParLevLIter pl_iter);
+
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter);
@@ -105,8 +108,11 @@ protected:
                                   bool recurse_flag);
 
   void derived_evaluate(const ActiveSet& set);
+
   void derived_evaluate_nowait(const ActiveSet& set);
+
   const IntResponseMap& derived_synchronize();
+
   const IntResponseMap& derived_synchronize_nowait();
 
   /// update component parallel mode for supporting parallelism in
@@ -139,29 +145,23 @@ protected:
   // Subspace identification functions: rank-revealing build phase
   // ---
 
-  // Iteratively sample the fullspace model until subspace identified
-  // that meets user-specified criteria
-  void identify_subspace();
-
-  /// generate fullspace samples, append to matrix, and factor,
-  /// returning whether tolerance met
-  void expand_basis();
-
-  /// determine the number of full space samples for next iteration,
-  /// based on batchSize, limiting by remaining function evaluation
-  /// budget
-  unsigned int calculate_fullspace_samples();
+  /// sample the model's gradient, computed the SVD, and form the active subspace
+  /// rotation matrix.
+  void build_subspace();
 
   /// sample the derivative at diff_samples points and leave temporary
   /// in dace_iterator
   void generate_fullspace_samples(unsigned int diff_samples);
 
-  /// append the fullspaceSampler samples to the derivative and vars matrices
-  void append_sample_matrices(unsigned int diff_samples);
+  /// populate the derivative and vars matrices with fullspaceSampler samples
+  void populate_matrices(unsigned int diff_samples);
 
   /// factor the derivative matrix and analyze singular values,
   /// assessing convergence and rank, returning whether tolerance met
   void compute_svd();
+
+  /// use the truncation methods to identify the size of an active subspace
+  void identify_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
   double computeBingLiCriterion(RealVector& singular_values);
@@ -228,6 +228,7 @@ protected:
   /// seed controlling all samplers
   int randomSeed;
 
+
   // Build phase controls
 
   /// initial number of samples at which to query the truth model
@@ -264,11 +265,12 @@ protected:
   /// total construction samples evaluated so far
   unsigned int totalSamples;
 
-  /// total evaluations of model (accounting for UQ phase)
-  unsigned int totalEvals;
-
   /// boolean flag to determine if mapping has been fully initialized
   bool subspaceInitialized;
+
+  /// Normalization to use in the case of multiple QoI's
+  unsigned short subspaceNormalization;
+
 
   // Data for numerical representation
 
@@ -293,6 +295,9 @@ protected:
 
   /// matrix of the left singular vectors of derivativeMatrix
   RealMatrix leftSingularVectors;
+  
+  /// singular values of derivativeMatrix
+  RealVector singularValues;
 
   /// matrix of fullspace variable points samples
   /// size numContinuousVars * (numSamples)

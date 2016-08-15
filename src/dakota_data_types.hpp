@@ -27,6 +27,7 @@ class ActiveSet;
 class ParamResponsePair;
 class ParallelLevel;
 class ParallelConfiguration;
+class DiscrepancyCorrection;
 
 
 // -----------------------------------
@@ -109,6 +110,7 @@ typedef std::list<String>              StringList;
 typedef std::list<Variables>           VariablesList;
 typedef std::list<Interface>           InterfaceList;
 typedef std::list<Response>            ResponseList;
+typedef std::list<ParamResponsePair>   PRPList;
 typedef std::list<Model>               ModelList;
 typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelLevel>         ParLevList;
@@ -116,6 +118,7 @@ typedef std::list<Iterator>            IteratorList;
 
 typedef std::pair<int, int>            IntIntPair;
 typedef std::pair<size_t, size_t>      SizetSizetPair;
+typedef std::pair<SizetSizetPair, SizetSizetPair> SizetSizet2DPair;
 typedef std::pair<size_t, int>         SizetIntPair;
 typedef std::pair<int, size_t>         IntSizetPair;
 typedef std::pair<int, String>         IntStringPair;
@@ -152,6 +155,7 @@ typedef std::vector<IntIntPairRealMap> IntIntPairRealMapArray;
 typedef std::vector<RealRealPairRealMap> RealRealPairRealMapArray;
 typedef std::multimap<RealRealPair, ParamResponsePair> RealPairPRPMultiMap;
 //typedef std::multimap<Real, ParamResponsePair> RealPRPMultiMap;
+typedef std::map<SizetSizet2DPair, DiscrepancyCorrection> DiscrepCorrMap;
 
 // ---------
 // Iterators
@@ -169,6 +173,7 @@ typedef StringList::const_iterator                 StringLCIter;
 typedef VariablesList::iterator                    VarsLIter;
 typedef InterfaceList::iterator                    InterfLIter;
 typedef ResponseList::iterator                     RespLIter;
+typedef PRPList::iterator                          PRPLIter;
 typedef ModelList::iterator                        ModelLIter;
 typedef ModelList::reverse_iterator                ModelLRevIter;
 typedef IteratorList::iterator                     IterLIter;

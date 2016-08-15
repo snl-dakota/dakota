@@ -155,9 +155,12 @@ void read_header_tabular(std::istream& input_stream,
 			 unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
-size_t read_leading_columns(std::istream& input_stream,
-			    unsigned short tabular_format);
-
+int read_leading_columns(std::istream& input_stream,
+			 unsigned short tabular_format);
+/// read leading columns [ int eval_id [ String iface_id ] ]
+void read_leading_columns(std::istream& input_stream,
+			  unsigned short tabular_format,
+			  int& eval_id, String& iface_id);
 
 // TODO: The following need review, rework, and consolidation
 
@@ -198,8 +201,7 @@ void read_data_tabular(const std::string& input_filename,
 /// into lists of Variables and Responses until out of data
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       Variables vars, Response resp,
-		       VariablesList& input_vars, ResponseList& input_resp,
+		       Variables vars, Response resp, PRPList& input_prp,
 		       unsigned short tabular_format,
 		       bool verbose=false, bool active_only=false);
 

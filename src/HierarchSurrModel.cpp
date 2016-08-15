@@ -22,8 +22,11 @@ namespace Dakota
 {
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), truthResponseRef(currentResponse.copy())
+  SurrogateModel(problem_db),
+  corrOrder(problem_db.get_short("model.surrogate.correction_order"))
 {
+  Response initial_response = currentResponse.copy();
+
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
   // initialize ignoreBounds even though it's irrelevant for pass through
@@ -65,20 +68,19 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   }
   check_interface_instance();
 
-  corrOrder = problem_db.get_short("model.surrogate.correction_order");
-
   // Correction is required in the hierarchical case (since without correction,
   // all HF model evaluations are wasted).  Omission of a correction type
   // should be prevented by the input specification.
-  corrType = problem_db.get_short("model.surrogate.correction_type");
-  if (!corrType) {
-    Cerr << "Error: correction is required with model hierarchies."<< std::endl;
-    abort_handler(-1);
-  } else // initialize the DiscrepancyCorrection using lowest fidelity model;
+  if (corrType) {
+    std::pair<SizetSizetPair,SizetSizetPair>
+      indices(lowFidelityIndices, highFidelityIndices);
+    // initialize the DiscrepancyCorrection using lowest fidelity model;
     // this LF model gets updated at run time
-    deltaCorr[std::make_pair(lowFidelityIndices,
-                             highFidelityIndices)].initialize(orderedModels[0], surrogateFnIndices,
-                                 corrType, corrOrder);
+    deltaCorr[indices].initialize(surrogate_model(), surrogateFnIndices,
+				  corrType, corrOrder);
+  }
+
+  truthResponseRef[highFidelityIndices] = initial_response;
 }
 
 
@@ -326,19 +328,27 @@ void HierarchSurrModel::build_approximation()
   copy_data(hf_vars.inactive_discrete_real_variables(),   referenceIDRVars);
 
   // compute the response for the high fidelity model
-  ShortArray total_asv(numFns, deltaCorr[std::make_pair(lowFidelityIndices,
-                                         highFidelityIndices)].data_order()), hf_asv, lf_asv;
+  ShortArray total_asv, hf_asv, lf_asv;
+  DiscrepCorrMap::iterator dc_iter = deltaCorr.find(get_indices());
+  if (dc_iter!=deltaCorr.end() && dc_iter->second.initialized())
+    total_asv.assign(numFns, dc_iter->second.data_order());
+  else
+    total_asv.assign(numFns, 1); // default: values only if no deriv correction
   asv_mapping(total_asv, hf_asv, lf_asv, true);
-  ActiveSet hf_set = truthResponseRef.active_set(); // copy
+
+  if ( truthResponseRef.find(highFidelityIndices) == truthResponseRef.end() )
+    truthResponseRef[highFidelityIndices] = currentResponse.copy();
+
+  ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
   if (sameModelInstance)
     hf_model.solution_level_index(highFidelityIndices.second);
   hf_model.evaluate(hf_set);
-  truthResponseRef.update(hf_model.current_response());
+  truthResponseRef[highFidelityIndices].update(hf_model.current_response());
 
   // could compute the correction to LF model here, but rely on an
   // external call for consistency with DataFitSurr and to facilitate SBO logic.
-  //deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)].compute(..., truthResponseRef, lo_fi_response);
+  //deltaCorr[indices].compute(..., truthResponseRef, lo_fi_response);
 
   Cout << "\n<<<<< Hierarchical approximation build completed.\n";
   approxBuilds++;
@@ -455,7 +465,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
       hf_model.evaluate(hi_fi_set);
       if (mixed_eval)
         hi_fi_response = (sameModelInstance) ? // deep copy or shared rep
-                         hf_model.current_response().copy() : hf_model.current_response();
+	  hf_model.current_response().copy() : hf_model.current_response();
       else {
         currentResponse.active_set(hi_fi_set);
         currentResponse.update(hf_model.current_response());
@@ -514,14 +524,23 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
       // LF resp should not be corrected directly (see derived_synchronize())
       lo_fi_response = lf_model.current_response().copy();
       bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-      if (!deltaCorr[std::make_pair(lowFidelityIndices,
-                                    highFidelityIndices)].computed())
-        deltaCorr[std::make_pair(lowFidelityIndices,
-                                 highFidelityIndices)].compute(currentVariables, truthResponseRef,
-                                     lo_fi_response,
-                                     quiet_flag);
-      deltaCorr[std::make_pair(lowFidelityIndices,
-                               highFidelityIndices)].apply(currentVariables, lo_fi_response, quiet_flag);
+      SizetSizet2DPair indices = get_indices();
+      if (!deltaCorr[indices].computed())
+        deltaCorr[indices].compute(currentVariables,
+                                   truthResponseRef[highFidelityIndices],
+                                   lo_fi_response, quiet_flag);
+
+      if (corrSequence.empty())
+        deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
+      else {
+        // Apply sequence of discrepancy corrections
+        // TODO: Check to make sure they've been initialized.
+
+        for (size_t ii = 0; ii < corrSequence.size(); ++ii)
+          deltaCorr[corrSequence[ii]].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+      }
+
       if (!mixed_eval) {
         currentResponse.active_set(lo_fi_set);
         currentResponse.update(lo_fi_response);
@@ -544,13 +563,13 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
   // ------------------------------
   switch (responseMode) {
   case MODEL_DISCREPANCY: {
-    // don't update surrogate data within deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]'s Approximations; just
-    // update currentResponse (managed as surrogate data at a higher level)
+    // don't update surrogate data within deltaCorr[indices]'s Approximations;
+    // just update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     currentResponse.active_set(set);
-    deltaCorr[std::make_pair(lowFidelityIndices,
-                             highFidelityIndices)].compute(hi_fi_response, lf_model.current_response(),
-                                 currentResponse, quiet_flag);
+    deltaCorr[get_indices()].compute(hi_fi_response,
+				     lf_model.current_response(),
+				     currentResponse, quiet_flag);
     break;
   }
   case AGGREGATED_MODELS:
@@ -698,16 +717,23 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     // correct LF response prior to caching
     if (responseMode == AUTO_CORRECTED_SURROGATE) {
       bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-      if (!deltaCorr[std::make_pair(lowFidelityIndices,
-                                    highFidelityIndices)].computed())
-        deltaCorr[std::make_pair(lowFidelityIndices,
-                                 highFidelityIndices)].compute(currentVariables, truthResponseRef,
-                                     lo_fi_response,
-                                     quiet_flag);
+      SizetSizet2DPair indices = get_indices();
+      if (!deltaCorr[indices].computed())
+        deltaCorr[indices].compute(currentVariables,
+                                   truthResponseRef[highFidelityIndices],
+                                   lo_fi_response, quiet_flag);
       // correct synch cases now (asynch cases get corrected in
       // derived_synchronize_aggregate*)
-      deltaCorr[std::make_pair(lowFidelityIndices,
-                               highFidelityIndices)].apply(currentVariables, lo_fi_response, quiet_flag);
+
+      if (corrSequence.empty())
+        deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
+      else {
+        // Apply sequence of discrepancy corrections
+        // TODO: Check to make sure they've been initialized.
+        for (size_t ii = 0; ii < corrSequence.size(); ++ii)
+          deltaCorr[corrSequence[ii]].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+      }
     }
     // cache corrected LF response for retrieval during synchronization
     cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
@@ -834,15 +860,16 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
   IntRespMCIter hf_cit = hf_resp_map.begin(), lf_cit = lf_resp_map.begin();
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   switch (responseMode) {
-  case MODEL_DISCREPANCY:
+  case MODEL_DISCREPANCY: {
+    SizetSizet2DPair indices = get_indices();
     for (; hf_cit != hf_resp_map.end() &&
          lf_cit != lf_resp_map.end(); ++hf_cit, ++lf_cit) {
       check_key(hf_cit->first, lf_cit->first);
-      deltaCorr[std::make_pair(lowFidelityIndices,
-                               highFidelityIndices)].compute(hf_cit->second, lf_cit->second,
-                                   combined_resp_map[hf_cit->first], quiet_flag);
+      deltaCorr[indices].compute(hf_cit->second, lf_cit->second,
+				 combined_resp_map[hf_cit->first], quiet_flag);
     }
     break;
+  }
   case AGGREGATED_MODELS:
     for (; hf_cit != hf_resp_map.end() &&
          lf_cit != lf_resp_map.end(); ++hf_cit, ++lf_cit) {
@@ -903,13 +930,13 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
 
   // Early return options avoid some overhead:
-  if (lf_resp_map.empty() && surrIdMap.empty()) { // none completed, none pending
+  if (lf_resp_map.empty() && surrIdMap.empty()) {// none completed, none pending
     combined_resp_map = hf_resp_map;  // can't swap w/ const
     return;
   }
   if (responseMode == AUTO_CORRECTED_SURROGATE)
     compute_apply_delta(lf_resp_map);
-  if (hf_resp_map.empty() && truthIdMap.empty()) { // none completed, none pending
+  if (hf_resp_map.empty() && truthIdMap.empty()) {//none completed, none pending
     std::swap(combined_resp_map, lf_resp_map);
     return;
   }
@@ -927,6 +954,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   IntRespMIter  lf_it  = lf_resp_map.begin();
   Response empty_resp;
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  SizetSizet2DPair indices = get_indices();
   while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
     int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX : hf_cit->first;
     int lf_eval_id = (lf_it  == lf_resp_map.end()) ? INT_MAX : lf_it->first;
@@ -968,11 +996,11 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
     } else { // both LF and HF available
       bool cache_for_pending_corr = false;
       switch (responseMode) {
-      case MODEL_DISCREPANCY:
-        deltaCorr[std::make_pair(lowFidelityIndices,
-                                 highFidelityIndices)].compute(hf_cit->second, lf_it->second,
-                                     surrResponseMap[hf_eval_id], quiet_flag);
+      case MODEL_DISCREPANCY: {
+        deltaCorr[indices].compute(hf_cit->second, lf_it->second,
+				   surrResponseMap[hf_eval_id], quiet_flag);
         break;
+      }
       case AGGREGATED_MODELS:
         aggregate_response(hf_cit->second, lf_it->second,
                            surrResponseMap[hf_eval_id]);
@@ -995,9 +1023,9 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
   // correction and may be the target of application of a correction.
 
   // First, test if a correction is previously available or can now be computed
-  bool corr_comp = deltaCorr[std::make_pair(lowFidelityIndices,
-                             highFidelityIndices)].computed(), cache_for_pending_corr = false,
-                                                               quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  SizetSizet2DPair indices = get_indices();
+  bool corr_comp = deltaCorr[indices].computed(),
+    cache_for_pending_corr = false, quiet_flag = (outputLevel < NORMAL_OUTPUT);
   if (!corr_comp) {
     // compute a correction corresponding to the first entry in rawVarsMap
     IntVarsMCIter v_corr_cit = rawVarsMap.begin();
@@ -1005,9 +1033,9 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
       // if corresponding LF response is complete, compute the delta
       IntRespMCIter lf_corr_cit = lf_resp_map.find(v_corr_cit->first);
       if (lf_corr_cit != lf_resp_map.end()) {
-        deltaCorr[std::make_pair(lowFidelityIndices,
-                                 highFidelityIndices)].compute(v_corr_cit->second, truthResponseRef,
-                                     lf_corr_cit->second, quiet_flag);
+        deltaCorr[indices].compute(v_corr_cit->second,
+                                   truthResponseRef[highFidelityIndices],
+                                   lf_corr_cit->second, quiet_flag);
         corr_comp = true;
       }
     }
@@ -1017,16 +1045,22 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
   // components necessary for correction are still pending (returning
   // corrected evals with the first available LF response would lead to
   // nondeterministic results).
-  IntVarsMIter v_it;
-  IntRespMIter lf_it;
-  int lf_eval_id;
+  IntVarsMIter v_it; IntRespMIter lf_it; int lf_eval_id;
   for (lf_it=lf_resp_map.begin(); lf_it!=lf_resp_map.end(); ++lf_it) {
     lf_eval_id = lf_it->first;
     v_it = rawVarsMap.find(lf_eval_id);
     if (v_it != rawVarsMap.end()) {
       if (corr_comp) { // apply the correction to the LF response
-        deltaCorr[std::make_pair(lowFidelityIndices,
-                                 highFidelityIndices)].apply(v_it->second, lf_it->second, quiet_flag);
+        if (corrSequence.empty())
+          deltaCorr[indices].apply(v_it->second, lf_it->second, quiet_flag);
+        else {
+          // Apply sequence of discrepancy corrections
+          // TODO: Check to make sure they've been initialized.
+
+          for (size_t ii = 0; ii < corrSequence.size(); ++ii)
+            deltaCorr[corrSequence[ii]].apply(v_it->second, lf_it->second,
+                                              quiet_flag);
+        }
         rawVarsMap.erase(v_it);
       } else // no new corrections can be applied -> cache uncorrected
         cachedApproxRespMap.insert(*lf_it);

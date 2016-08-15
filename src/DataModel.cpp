@@ -37,14 +37,15 @@ DataModelRep::DataModelRep():
   crossValidateFlag(false), numFolds(0), percentFold(0.0), pressFlag(false),
   importChallengeFormat(TABULAR_ANNOTATED), importChallengeActive(false),
   subMethodServers(0), subMethodProcs(0), // 0 defaults to detect user spec
-  subMethodScheduling(DEFAULT_SCHEDULING),
-  initialSamples(0), maxIterations(100), convergenceTolerance(1.0e-4),
-  softConvergenceLimit(0), subspaceIdBingLi(false), subspaceIdConstantine(false),
+  subMethodScheduling(DEFAULT_SCHEDULING), initialSamples(0),
+  maxIterations(100), convergenceTolerance(1.0e-4), softConvergenceLimit(0),
+  subspaceIdBingLi(false), subspaceIdConstantine(false),
   subspaceIdEnergy(false), subspaceBuildSurrogate(false),
-  subspaceSampleType(SUBMETHOD_DEFAULT), referenceCount(1),
-  dimension(0), numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
+  subspaceSampleType(SUBMETHOD_DEFAULT), subspaceDimension(0),
+  subspaceNormalization(SUBSPACE_NORM_DEFAULT),
+  numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
-  truncationTolerance(1.0e-6), analyticCovIdForm(NOCOVAR)
+  truncationTolerance(1.0e-6), analyticCovIdForm(NOCOVAR), referenceCount(1)
 { }
 
 
@@ -76,12 +77,11 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << softConvergenceLimit << subspaceIdBingLi 
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
-    << dimension << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds << propagationModelPointer
-    << truncationTolerance << rfDataFileName << randomFieldIdForm
-    << analyticCovIdForm << subspaceSampleType;
+    << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
+    << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << propagationModelPointer << truncationTolerance << rfDataFileName
+    << randomFieldIdForm << analyticCovIdForm << subspaceSampleType;
 }
-
 
 
 void DataModelRep::read(MPIUnpackBuffer& s)
@@ -112,10 +112,10 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> initialSamples >> refineSamples >> maxIterations 
     >> convergenceTolerance >> softConvergenceLimit >> subspaceIdBingLi 
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
-    >> dimension >> numReplicates >> autoRefine >> maxFunctionEvals
-    >> refineCVMetric >> refineCVFolds >> propagationModelPointer
-    >> truncationTolerance >> rfDataFileName >> randomFieldIdForm
-    >> analyticCovIdForm >> subspaceSampleType;
+    >> subspaceDimension >> subspaceNormalization >> numReplicates >> autoRefine
+    >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
+    >> propagationModelPointer >> truncationTolerance >> rfDataFileName
+    >> randomFieldIdForm >> analyticCovIdForm >> subspaceSampleType;
 }
 
 
@@ -147,10 +147,10 @@ void DataModelRep::write(std::ostream& s) const
     << initialSamples << refineSamples << maxIterations 
     << convergenceTolerance << subspaceIdBingLi << subspaceIdConstantine
     << subspaceIdEnergy << subspaceBuildSurrogate
-    << dimension << numReplicates << autoRefine << maxFunctionEvals
-    << refineCVMetric << refineCVFolds << propagationModelPointer
-    << truncationTolerance << rfDataFileName << randomFieldIdForm 
-    << analyticCovIdForm << subspaceSampleType;
+    << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
+    << maxFunctionEvals << refineCVMetric << refineCVFolds
+    << propagationModelPointer << truncationTolerance << rfDataFileName
+    << randomFieldIdForm << analyticCovIdForm << subspaceSampleType;
 }
 
 

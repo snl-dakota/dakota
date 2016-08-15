@@ -883,8 +883,9 @@ void ApproximationInterface::read_challenge_points(bool active_only)
   RealArray pts_array;
   RealMatrix pts_matrix;
   TabularIO::read_data_tabular(challengeFile, "surrogate model challenge data",
-			       actualModelVars.copy(), num_fns, challengePoints, 
-                               challengeResponses, challengeFormat, challengeActiveOnly);
+			       actualModelVars.copy(), num_fns, challengePoints,
+                               challengeResponses, challengeFormat,
+			       challengeActiveOnly);
 }
 
 } // namespace Dakota

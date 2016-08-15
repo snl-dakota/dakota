@@ -7158,6 +7158,8 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_VALUE),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_GRAD),
 	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
 	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM);
 
@@ -7246,11 +7248,11 @@ static int
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
-        MP_(dimension),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),
         MP_(subMethodProcs),
-        MP_(subMethodServers);
+        MP_(subMethodServers),
+        MP_(subspaceDimension);
 
 #undef MP2s
 #undef MP2

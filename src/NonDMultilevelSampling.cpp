@@ -529,7 +529,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (max_iter && lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
 	    accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
 	      Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -760,7 +760,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (max_iter && lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  // *** TO DO: for imported data/seed progression reasons, consider
+	  //     reordering LF increments to follow HF levels (decouple seed
+	  //     progression to have LF increments follow pilot rst duplicates)
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
 	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,
 				  lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
@@ -1757,18 +1760,26 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 
   numSamples = one_sided_delta(average(N_lf), average(N_hf) * avg_eval_ratio);
   if (numSamples) {
-    Cout << "CVMC LF sample increment = " << numSamples << std::endl;
+    Cout << "CVMC LF sample increment = " << numSamples;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
+	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
+    Cout << std::endl;
 
-    // mode for hierarchical surrogate model can be uncorrected surrogate
-    // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
-    // --> set at calling level
-    //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    if (maxIterations) { // only preclude explicit spec of 0 (default is -1)
+      // mode for hierarchical surrogate model can be uncorrected surrogate
+      // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
+      // --> set at calling level
+      //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
-    // generate new MC parameter sets
-    get_parameter_sets(iteratedModel);// pull dist params from any model
-    // compute allResponses from allVariables using hierarchical model
-    evaluate_parameter_sets(iteratedModel, true, false);
-    return true;
+      // generate new MC parameter sets
+      get_parameter_sets(iteratedModel);// pull dist params from any model
+      // compute allResponses from allVariables using hierarchical model
+      evaluate_parameter_sets(iteratedModel, true, false);
+      return true;
+    }
+    else
+      return false;
   }
   else
     return false;
@@ -1781,7 +1792,7 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 	   const RealVector& sum_HH, Real cost_ratio,
 	   const SizetArray& N_shared, RealVector& var_H, RealVector& rho2_LH)
 {
-  Real beta, avg_eval_ratio = 0.; size_t num_avg = 0;
+  Real beta, eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH[qoi];
@@ -1797,7 +1808,12 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
     //if (rho_sq > Pecos::SMALL_NUMBER) {
     //  avg_inv_eval_ratio += std::sqrt((1. - rho_sq)/(cost_ratio * rho_sq));
     if (rho_sq < 1.) { // protect against division by 0
-      avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
+	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratio
+	     << std::endl;
+      avg_eval_ratio += eval_ratio;
       ++num_avg;
     }
   }
@@ -1814,7 +1830,7 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 	   RealMatrix& sum_LH, RealMatrix& sum_HH, Real cost_ratio, size_t lev,
 	   const SizetArray& N_shared, RealMatrix& var_H, RealMatrix& rho2_LH)
 {
-  Real beta, avg_eval_ratio = 0.; size_t num_avg = 0;
+  Real beta, eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH(qoi,lev);
@@ -1823,7 +1839,12 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 		    var_H(qoi,lev), rho_sq);
 
     if (rho_sq < 1.) { // protect against division by 0
-      avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      eval_ratio = std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
+	     << " rho_sq = " << rho_sq << " eval_ratio = " << eval_ratio
+	     << std::endl;
+      avg_eval_ratio += eval_ratio;
       ++num_avg;
     }
   }
@@ -1849,7 +1870,8 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
     return eval_ratio(sum_Ll, sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl,
 		      cost_ratio, lev, N_shared, var_YHl, rho_dot2_LH);
   else {
-    Real beta_dot, gamma, avg_eval_ratio = 0.; size_t qoi, num_avg = 0;
+    Real beta_dot, gamma, eval_ratio, avg_eval_ratio = 0.;
+    size_t qoi, num_avg = 0;
     for (qoi=0; qoi<numFunctions; ++qoi) {
       Real& rho_dot_sq = rho_dot2_LH(qoi,lev);
       compute_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
@@ -1862,7 +1884,12 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 		      rho_dot_sq, beta_dot, gamma);
 
       if (rho_dot_sq < 1.) { // protect against division by 0
-	avg_eval_ratio += std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
+	eval_ratio = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
+	       << " rho_dot_sq = " << rho_dot_sq << " eval_ratio = "
+	       << eval_ratio << std::endl;
+	avg_eval_ratio += eval_ratio;
 	++num_avg;
       }
     }
@@ -2097,8 +2124,8 @@ compute_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl, Real sum_Hlm1,
   //rho_dot2_LH = cov_YHl_YLldot / var_YHl * cov_YHl_YLldot / var_YLldot;
 
   if (outputLevel == DEBUG_OUTPUT)
-    Cout << "var reduce ratio = " << ratio << " rho2_LH = "<< rho2_LH
-	 << " rho_dot2_LH = " << rho_dot2_LH << std::endl;
+    Cout << "compute_control(): var reduce ratio = " << ratio << " rho2_LH = "
+	 << rho2_LH << " rho_dot2_LH = " << rho_dot2_LH << std::endl;
 }
 
 

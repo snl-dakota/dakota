@@ -33,11 +33,12 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
   numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  totalSamples(0), totalEvals(0), subspaceInitialized(false),
+  totalSamples(0), subspaceInitialized(false),
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
+  subspaceNormalization(probDescDB.get_ushort("model.subspace.normalization"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -68,6 +69,52 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 }
 
 
+/** An ActiveSubspaceModel will be built over all functions, without
+    differentiating primary vs. secondary constraints.  However the
+    associated RecastModel has to differentiate. Currently identifies
+    subspace for continuous variables only, but carries other active
+    variables along for the ride. */
+ActiveSubspaceModel::
+ActiveSubspaceModel(const Model& sub_model,
+                    int random_seed, int initial_samples,
+                    double conv_tol, size_t max_evals,
+                    unsigned short subspace_id_method,
+                    unsigned short sample_type):
+  RecastModel(sub_model), randomSeed(random_seed),
+  initialSamples(initial_samples), maxFunctionEvals(max_evals),
+  subspaceIdBingLi(false),
+  subspaceIdConstantine(true), subspaceIdEnergy(false), numReplicates(100),
+  numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
+  totalSamples(0),
+  subspaceInitialized(false), reducedRank(0),
+  gradientScaleFactors(RealArray(numFunctions, 1.0)),
+  buildSurrogate(false), refinementSamples(0),
+  subspaceNormalization(SUBSPACE_NORM_DEFAULT)
+{
+  asmInstance = this;
+  modelType = "subspace";
+
+  // Set seed of bootstrap sampler:
+  BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
+
+  componentParallelMode = CONFIG_PHASE;
+  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
+  onlineEvalConcurrency = 1; // Will be overwritten with correct value in
+                             // derived_init_communicators()
+
+  // We can't even initialize the RecastModel sizes until after the
+  // build has completed.  Can only construct the fullspace sampler.
+
+  // initialize the fullspace Monte Carlo derivative sampler; this
+  // will configure it to perform initialSamples
+  init_fullspace_sampler(sample_type);
+}
+
+
+ActiveSubspaceModel::~ActiveSubspaceModel()
+{  /* empty dtor */  }
+
+
 Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 {
   Model sub_model;
@@ -95,51 +142,6 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 
   return sub_model;
 }
-
-
-/** An ActiveSubspaceModel will be built over all functions, without
-    differentiating primary vs. secondary constraints.  However the
-    associated RecastModel has to differentiate. Currently identifies
-    subspace for continuous variables only, but carries other active
-    variables along for the ride. */
-ActiveSubspaceModel::
-ActiveSubspaceModel(const Model& sub_model,
-                    int random_seed, int initial_samples,
-                    double conv_tol, size_t max_evals,
-                    unsigned short subspace_id_method,
-                    unsigned short sample_type):
-  RecastModel(sub_model), randomSeed(random_seed),
-  initialSamples(initial_samples), maxFunctionEvals(max_evals),
-  subspaceIdBingLi(false),
-  subspaceIdConstantine(true), subspaceIdEnergy(false), numReplicates(100),
-  numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
-  totalSamples(0), totalEvals(0),
-  subspaceInitialized(false), reducedRank(0),
-  gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0)
-{
-  asmInstance = this;
-  modelType = "subspace";
-
-  // Set seed of bootstrap sampler:
-  BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
-
-  componentParallelMode = CONFIG_PHASE;
-  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
-  onlineEvalConcurrency = 1; // Will be overwritten with correct value in
-                             // derived_init_communicators()
-
-  // We can't even initialize the RecastModel sizes until after the
-  // build has completed.  Can only construct the fullspace sampler.
-
-  // initialize the fullspace Monte Carlo derivative sampler; this
-  // will configure it to perform initialSamples
-  init_fullspace_sampler(sample_type);
-}
-
-
-ActiveSubspaceModel::~ActiveSubspaceModel()
-{  /* empty dtor */  }
 
 
 void ActiveSubspaceModel::validate_inputs()
@@ -184,361 +186,30 @@ void ActiveSubspaceModel::validate_inputs()
 }
 
 
-
-/** May eventually take on init_comms and related operations.  Also
-    may want ide of build/update like DataFitSurrModel, eventually. */
-bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
-
-  // init-time setting of miPLIndex for use in component_parallel_mode()
-  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
-
-  // Set mode OFFLINE_PHASE
-  component_parallel_mode(OFFLINE_PHASE);
-
-  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
-
-  // TODO: create modes to switch between active, inactive, and complete
-  //       subspaces
-
-  // runtime operation to identify the subspace model (if not later
-  // returning to update the subspace)
-  identify_subspace();
-
-  // complete initialization of the base RecastModel
-  initialize_recast();
-
-  // TODO: generalize to other distribution types
-  // convert the normal distributions to the reduced space and set in the
-  // reduced model
-  uncertain_vars_to_subspace();
-
-  // update with subspace constraints
-  update_linear_constraints();
-
-  // set new subspace variable labels
-  update_var_labels();
-
-  if (buildSurrogate)
-    build_surrogate();
-
-  subspaceInitialized = true;
-
-  // Perform numerical derivatives in subspace:
-  supportsEstimDerivs = true;
-
-  // Kill servers and return ranks [1,n-1] to serve_init_mapping()
-  component_parallel_mode(CONFIG_PHASE);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Initialization of active subspace is complete."
-         << std::endl;
-  
-  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
-      sub_model_resize) // Active SS is full rank but subModel resized
-    return true; // Size of variables has changed
-  else
-    return false;
-}
-
-
-bool ActiveSubspaceModel::finalize_mapping()
-{
-  // TODO: return to full space
-  return false; // This will become true when TODO is implemented.
-}
-
-
-void ActiveSubspaceModel::component_parallel_mode(short mode)
-{
-  // stop_servers() if they are active, componentParallelMode = 0 indicates
-  // they are inactive
-  if (componentParallelMode != mode &&
-      componentParallelMode != CONFIG_PHASE) {
-    ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
-    size_t index = subModel.mi_parallel_level_index();
-    if (pc_it->mi_parallel_level_defined(index) &&
-        pc_it->mi_parallel_level(index).server_communicator_size() > 1) {
-      subModel.stop_servers();
-    }
-  }
-
-  // activate new serve mode (matches ActiveSubspaceModel::serve_run(pl_iter)).
-  if (componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
-    ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
-    if (mi_pl.server_communicator_size() > 1) {
-      if (mode == OFFLINE_PHASE) {
-        // This block tells Model::serve_init_mapping() to go into 
-        // ActiveSubspaceModel::serve_run() to build the subspace
-        short mapping_code = SERVE_RUN;
-        parallelLib.bcast(mapping_code, *pl_iter);
-        parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
-      }
-
-      // bcast mode to ActiveSubspaceModel::serve_run()
-      parallelLib.bcast(mode, mi_pl);
-
-      if (mode == OFFLINE_PHASE)
-        subModel.set_communicators(pl_iter, offlineEvalConcurrency);
-      else if (mode == ONLINE_PHASE)
-        set_communicators(pl_iter, onlineEvalConcurrency);
-    }
-  }
-
-  componentParallelMode = mode;
-}
-
-
-void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter,
-                                    int max_eval_concurrency)
-{
-  do {
-    parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == OFFLINE_PHASE) {
-      subModel.serve_run(pl_iter, offlineEvalConcurrency);
-    }
-    else if (componentParallelMode == ONLINE_PHASE) {
-      set_communicators(pl_iter, onlineEvalConcurrency, false);
-      subModel.serve_run(pl_iter, onlineEvalConcurrency);
-    }
-  } while (componentParallelMode != CONFIG_PHASE);
-}
-
-
-void ActiveSubspaceModel::stop_servers()
-{
-  component_parallel_mode(CONFIG_PHASE);
-}
-
-
-void ActiveSubspaceModel::stop_init_mapping(ParLevLIter pl_iter)
-{
-  short term_code = 0;
-  parallelLib.bcast(term_code, *pl_iter);
-}
-
-
-int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
-{
-  short mapping_code = 0;
-  int max_eval_concurrency = 1;
-  int last_eval_concurrency = 0;
-  do {
-    parallelLib.bcast(mapping_code, *pl_iter);
-    switch (mapping_code) {
-      case FREE_COMMS:
-        parallelLib.bcast(max_eval_concurrency, *pl_iter);
-        if (max_eval_concurrency)
-          free_communicators(pl_iter, max_eval_concurrency);
-        break;
-      case INIT_COMMS:
-        last_eval_concurrency = serve_init_communicators(pl_iter);
-        break;
-      case SERVE_RUN:
-        parallelLib.bcast(max_eval_concurrency, *pl_iter);
-        if (max_eval_concurrency)
-          serve_run(pl_iter, max_eval_concurrency);
-        break;
-      case ESTIMATE_MESSAGE_LENGTHS:
-        estimate_message_lengths();
-        break;
-      default:
-        // no-op
-        break;
-    }
-  } while (mapping_code);
-  
-  return last_eval_concurrency; // Will be 0 unless serve_init_communicators()
-                                // is called
-}
-
-
-void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (subspace model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  if (buildSurrogate) {
-    ++recastModelEvalCntr;
-
-    surrogateModel.active_variables(currentVariables);
-    surrogateModel.evaluate(set);
-
-    currentResponse.active_set(set);
-    currentResponse.update(surrogateModel.current_response());
-  }
-  else
-    RecastModel::derived_evaluate(set);
-}
-
-
-void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (subspace model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-
-  if (buildSurrogate) {
-    ++recastModelEvalCntr;
-
-    surrogateModel.active_variables(currentVariables);
-    surrogateModel.evaluate_nowait(set);
-    
-    // store map from surrogateModel eval id to ActiveSubspaceModel id
-    surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
-  }
-  else
-    RecastModel::derived_evaluate_nowait(set);
-}
-
-
-const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (subspace model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  if (buildSurrogate) {
-    surrResponseMap.clear();
-    rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
-    return surrResponseMap;
-  }
-  else
-    return RecastModel::derived_synchronize();
-}
-
-
-const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (subspace model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  if (buildSurrogate) {
-    surrResponseMap.clear();
-    rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
-    return surrResponseMap;
-  }
-  else
-    return RecastModel::derived_synchronize_nowait();
-}
-
-
-bool ActiveSubspaceModel::mapping_initialized()
-{ return subspaceInitialized; }
-
-
-void ActiveSubspaceModel::update_var_labels()
-{
-  StringMultiArray subspace_var_labels(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++) {
-    subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
-  }
-
-  continuous_variable_labels(
-    subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
-}
-
-
-void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
-{
-  std::string rng; // use default random number generator
-
-  if (sample_type == SUBMETHOD_DEFAULT)
-    sample_type = SUBMETHOD_RANDOM; // default to Monte Carlo sampling
-
-  // configure this sampler initially to work with initialSamples
-  NonDLHSSampling* ndlhss =
-    new NonDLHSSampling(subModel, sample_type, initialSamples, randomSeed,
-                        rng, true);
-
-  fullspaceSampler.assign_rep(ndlhss, false);
-
-  // TODO: review whether this is needed
-  fullspaceSampler.sub_iterator_flag(true);
-}
-
-
-/**  This specialization is because the model is used in multiple
-     contexts in this iterator, depending on build phase.  Note that
-     this overrides the default behavior at Iterator which recurses
-     into any submodels. */
-void ActiveSubspaceModel::
-derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                           bool recurse_flag)
-{
-  // The inbound subModel concurrency accounts for any finite differences
-
-  onlineEvalConcurrency = max_eval_concurrency;
-
-  if (recurse_flag) {
-    if (!mapping_initialized())
-      fullspaceSampler.init_communicators(pl_iter);
-
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
-  }
-}
-
-
-void ActiveSubspaceModel::
-derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                          bool recurse_flag)
-{
-  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
-
-  if (recurse_flag) {
-    if (!mapping_initialized())
-      fullspaceSampler.set_communicators(pl_iter);
-
-    subModel.set_communicators(pl_iter, max_eval_concurrency);
-
-    // RecastModels do not utilize default set_ie_asynchronous_mode() as
-    // they do not define the ie_parallel_level
-    asynchEvalFlag = subModel.asynch_flag();
-    evaluationCapacity = subModel.evaluation_capacity();
-  }
-}
-
-
-void ActiveSubspaceModel::
-derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                           bool recurse_flag)
-{
-  if (recurse_flag) {
-    fullspaceSampler.free_communicators(pl_iter);
-
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
-  }
-}
-
-
-void ActiveSubspaceModel::identify_subspace()
+void ActiveSubspaceModel::build_subspace()
 {
   Cout << "\nSubspace Model: Performing sampling to build reduced space"
        << std::endl;
 
-  expand_basis();
+  // determine number of points to add
+  totalSamples += initialSamples;
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Adding " << initialSamples << " full-space samples."
+         << std::endl;
+
+  // evaluate samples with fullspaceSampler
+  generate_fullspace_samples(initialSamples);
+
+  // populate the derivative and vars matrices with fullspaceSampler samples
+  populate_matrices(initialSamples);
+
+  // factor the derivative matrix using singular value decomposition
+  compute_svd();
+
+  // use the SVD results and the truncation methods to determine the size of the
+  // active subspace
+  identify_subspace();
 
   // update the activeBasis
   // the reduced basis is dimension N x r and stored in the first r
@@ -568,35 +239,6 @@ void ActiveSubspaceModel::identify_subspace()
 
 
 void ActiveSubspaceModel::
-expand_basis()
-{
-  // determine number of points to add
-  unsigned int diff_samples = calculate_fullspace_samples();
-  totalSamples += diff_samples;
-  totalEvals += diff_samples;
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Adding " << diff_samples << " full-space samples."
-         << std::endl;
-
-  // evaluate samples with fullspaceSampler
-  generate_fullspace_samples(diff_samples);
-
-  // add the generated points to the matrices
-  append_sample_matrices(diff_samples);
-
-  // factor the derivative matrix and estimate the information content
-  compute_svd();
-}
-
-
-unsigned int ActiveSubspaceModel::calculate_fullspace_samples()
-{
-  return initialSamples;
-}
-
-
-void ActiveSubspaceModel::
 generate_fullspace_samples(unsigned int diff_samples)
 {
   // Rank-revealing phase requires derivatives (for now)
@@ -620,7 +262,7 @@ generate_fullspace_samples(unsigned int diff_samples)
 
 
 void ActiveSubspaceModel::
-append_sample_matrices(unsigned int diff_samples)
+populate_matrices(unsigned int diff_samples)
 {
   // extract into a matrix
   // all_samples vs. all_variables
@@ -645,10 +287,26 @@ append_sample_matrices(unsigned int diff_samples)
   // Compute gradient scaling factors if more than 1 response function
   if(numFunctions > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
-      const RealVector& resp_vector = resp_it->second.function_values();
-      for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
-          static_cast<Real>(diff_samples);
+      if (subspaceNormalization == SUBSPACE_NORM_VALUE) {
+        const RealVector& resp_vector = resp_it->second.function_values();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
+            static_cast<Real>(diff_samples);
+        }
+      }
+      else if (subspaceNormalization == SUBSPACE_NORM_DEFAULT || 
+               subspaceNormalization == SUBSPACE_NORM_GRAD) {
+        const RealMatrix& resp_matrix = resp_it->second.function_gradients();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          RealVector grad(numFullspaceVars);
+          for (size_t ii = 0; ii < numFullspaceVars; ++ii)
+            grad[ii] = resp_matrix(ii,fn_ind);
+
+          Real norm_grad = std::sqrt(grad.dot(grad));
+          
+          gradientScaleFactors[fn_ind] += norm_grad /
+            static_cast<Real>(diff_samples);
+        }
       }
     }
   }
@@ -688,33 +346,37 @@ compute_svd()
   // Want eigenvalues of derivMatrix*derivMatrix^T, so perform SVD of
   // derivMatrix and square them
 
-  RealVector singular_values;
   RealMatrix V_transpose;
   leftSingularVectors = derivativeMatrix;
-  svd(leftSingularVectors, singular_values, V_transpose);
+  svd(leftSingularVectors, singularValues, V_transpose);
 
   // TODO: Analyze whether we need to worry about this
-  if(singular_values.length() == 0)
+  if(singularValues.length() == 0)
   {
     Cerr << "\nError (subspace model): No computed singular values available!"
          << std::endl;
     abort_handler(-1);
   }
 
-  int num_singular_values = singular_values.length();
+  int num_singular_values = singularValues.length();
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "\nSubspace Model: Singular values are:\n[ ";
     for (unsigned int i=0; i<num_singular_values; ++i)
-      Cout << singular_values[i] << " ";
+      Cout << singularValues[i] << " ";
     Cout << "]" << std::endl;
   }
+}
 
-  double bing_li_rank = computeBingLiCriterion(singular_values);
-  double constantine_rank = computeConstantineMetric(singular_values);
-  double energy_rank = computeEnergyCriterion(singular_values);
 
-  if (reducedRank > 0 && reducedRank <= singular_values.length()) {
+void ActiveSubspaceModel::
+identify_subspace()
+{
+  double bing_li_rank = computeBingLiCriterion(singularValues);
+  double constantine_rank = computeConstantineMetric(singularValues);
+  double energy_rank = computeEnergyCriterion(singularValues);
+
+  if (reducedRank > 0 && reducedRank <= singularValues.length()) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "\nSubspace Model: Subspace size has been specified as dimension = "
            << reducedRank << "." << std::endl;
@@ -764,12 +426,12 @@ compute_svd()
   // derivative matrix:
   double inf_norm = derivativeMatrix.normInf();
   double mach_svtol = inf_norm * std::numeric_limits<Real>::epsilon();
-  if (singular_values[reducedRank-1] < mach_svtol) {
+  if (singularValues[reducedRank-1] < mach_svtol) {
     Cout << "\nWarning (subspace model): Computed subspace size is greater than"
          << " numerical rank. Changing subspace size to numerical rank."
          << std::endl;
     for (unsigned int i=0; i<reducedRank; ++i) {
-      if (singular_values[i] < mach_svtol) {
+      if (singularValues[i] < mach_svtol) {
         reducedRank = i;
         break;
       }
@@ -1047,6 +709,355 @@ computeEnergyCriterion(RealVector& singular_values)
          << std::endl;
 
   return rank;
+}
+
+
+
+/** May eventually take on init_comms and related operations.  Also
+    may want ide of build/update like DataFitSurrModel, eventually. */
+bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
+
+  // init-time setting of miPLIndex for use in component_parallel_mode()
+  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
+
+  // Set mode OFFLINE_PHASE
+  component_parallel_mode(OFFLINE_PHASE);
+
+  bool sub_model_resize = subModel.initialize_mapping(pl_iter);
+
+  // TODO: create modes to switch between active, inactive, and complete
+  //       subspaces
+
+  // runtime operation to identify the subspace model (if not later
+  // returning to update the subspace)
+  build_subspace();
+
+  // complete initialization of the base RecastModel
+  initialize_recast();
+
+  // TODO: generalize to other distribution types
+  // convert the normal distributions to the reduced space and set in the
+  // reduced model
+  uncertain_vars_to_subspace();
+
+  // update with subspace constraints
+  update_linear_constraints();
+
+  // set new subspace variable labels
+  update_var_labels();
+
+  if (buildSurrogate)
+    build_surrogate();
+
+  subspaceInitialized = true;
+
+  // Perform numerical derivatives in subspace:
+  supportsEstimDerivs = true;
+
+  // Kill servers and return ranks [1,n-1] to serve_init_mapping()
+  component_parallel_mode(CONFIG_PHASE);
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Initialization of active subspace is complete."
+         << std::endl;
+  
+  if (reducedRank != numFullspaceVars || // Active SS is reduced rank
+      sub_model_resize) // Active SS is full rank but subModel resized
+    return true; // Size of variables has changed
+  else
+    return false;
+}
+
+
+bool ActiveSubspaceModel::finalize_mapping()
+{
+  // TODO: return to full space
+  return false; // This will become true when TODO is implemented.
+}
+
+
+void ActiveSubspaceModel::component_parallel_mode(short mode)
+{
+  // stop_servers() if they are active, componentParallelMode = 0 indicates
+  // they are inactive
+  if (componentParallelMode != mode &&
+      componentParallelMode != CONFIG_PHASE) {
+    ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
+    size_t index = subModel.mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(index) &&
+        pc_it->mi_parallel_level(index).server_communicator_size() > 1) {
+      subModel.stop_servers();
+    }
+  }
+
+  // activate new serve mode (matches ActiveSubspaceModel::serve_run(pl_iter)).
+  if (componentParallelMode != mode &&
+      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
+    ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
+    const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
+    if (mi_pl.server_communicator_size() > 1) {
+      if (mode == OFFLINE_PHASE) {
+        // This block tells Model::serve_init_mapping() to go into 
+        // ActiveSubspaceModel::serve_run() to build the subspace
+        short mapping_code = SERVE_RUN;
+        parallelLib.bcast(mapping_code, *pl_iter);
+        parallelLib.bcast(offlineEvalConcurrency, *pl_iter);
+      }
+
+      // bcast mode to ActiveSubspaceModel::serve_run()
+      parallelLib.bcast(mode, mi_pl);
+
+      if (mode == OFFLINE_PHASE)
+        subModel.set_communicators(pl_iter, offlineEvalConcurrency);
+      else if (mode == ONLINE_PHASE)
+        set_communicators(pl_iter, onlineEvalConcurrency);
+    }
+  }
+
+  componentParallelMode = mode;
+}
+
+
+void ActiveSubspaceModel::serve_run(ParLevLIter pl_iter,
+                                    int max_eval_concurrency)
+{
+  do {
+    parallelLib.bcast(componentParallelMode, *pl_iter);
+    if (componentParallelMode == OFFLINE_PHASE) {
+      subModel.serve_run(pl_iter, offlineEvalConcurrency);
+    }
+    else if (componentParallelMode == ONLINE_PHASE) {
+      set_communicators(pl_iter, onlineEvalConcurrency, false);
+      subModel.serve_run(pl_iter, onlineEvalConcurrency);
+    }
+  } while (componentParallelMode != CONFIG_PHASE);
+}
+
+
+void ActiveSubspaceModel::stop_servers()
+{
+  component_parallel_mode(CONFIG_PHASE);
+}
+
+
+void ActiveSubspaceModel::stop_init_mapping(ParLevLIter pl_iter)
+{
+  short term_code = 0;
+  parallelLib.bcast(term_code, *pl_iter);
+}
+
+
+int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
+{
+  short mapping_code = 0;
+  int max_eval_concurrency = 1;
+  int last_eval_concurrency = 0;
+  do {
+    parallelLib.bcast(mapping_code, *pl_iter);
+    switch (mapping_code) {
+      case FREE_COMMS:
+        parallelLib.bcast(max_eval_concurrency, *pl_iter);
+        if (max_eval_concurrency)
+          free_communicators(pl_iter, max_eval_concurrency);
+        break;
+      case INIT_COMMS:
+        last_eval_concurrency = serve_init_communicators(pl_iter);
+        break;
+      case SERVE_RUN:
+        parallelLib.bcast(max_eval_concurrency, *pl_iter);
+        if (max_eval_concurrency)
+          serve_run(pl_iter, max_eval_concurrency);
+        break;
+      case ESTIMATE_MESSAGE_LENGTHS:
+        estimate_message_lengths();
+        break;
+      default:
+        // no-op
+        break;
+    }
+  } while (mapping_code);
+  
+  return last_eval_concurrency; // Will be 0 unless serve_init_communicators()
+                                // is called
+}
+
+
+void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (subspace model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  if (buildSurrogate) {
+    ++recastModelEvalCntr;
+
+    surrogateModel.active_variables(currentVariables);
+    surrogateModel.evaluate(set);
+
+    currentResponse.active_set(set);
+    currentResponse.update(surrogateModel.current_response());
+  }
+  else
+    RecastModel::derived_evaluate(set);
+}
+
+
+void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (subspace model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+
+  if (buildSurrogate) {
+    ++recastModelEvalCntr;
+
+    surrogateModel.active_variables(currentVariables);
+    surrogateModel.evaluate_nowait(set);
+    
+    // store map from surrogateModel eval id to ActiveSubspaceModel id
+    surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
+  }
+  else
+    RecastModel::derived_evaluate_nowait(set);
+}
+
+
+const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (subspace model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  if (buildSurrogate) {
+    surrResponseMap.clear();
+    rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
+    return surrResponseMap;
+  }
+  else
+    return RecastModel::derived_synchronize();
+}
+
+
+const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (subspace model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  
+  if (buildSurrogate) {
+    surrResponseMap.clear();
+    rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
+    return surrResponseMap;
+  }
+  else
+    return RecastModel::derived_synchronize_nowait();
+}
+
+
+bool ActiveSubspaceModel::mapping_initialized()
+{ return subspaceInitialized; }
+
+
+void ActiveSubspaceModel::update_var_labels()
+{
+  StringMultiArray subspace_var_labels(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++) {
+    subspace_var_labels[i] = "ssv_" + boost::lexical_cast<std::string>(i+1);
+  }
+
+  continuous_variable_labels(
+    subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
+}
+
+
+/**  This specialization is because the model is used in multiple
+     contexts in this iterator, depending on build phase.  Note that
+     this overrides the default behavior at Iterator which recurses
+     into any submodels. */
+void ActiveSubspaceModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
+{
+  // The inbound subModel concurrency accounts for any finite differences
+
+  onlineEvalConcurrency = max_eval_concurrency;
+
+  if (recurse_flag) {
+    if (!mapping_initialized())
+      fullspaceSampler.init_communicators(pl_iter);
+
+    subModel.init_communicators(pl_iter, max_eval_concurrency);
+  }
+}
+
+
+void ActiveSubspaceModel::
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                          bool recurse_flag)
+{
+  miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
+
+  if (recurse_flag) {
+    if (!mapping_initialized())
+      fullspaceSampler.set_communicators(pl_iter);
+
+    subModel.set_communicators(pl_iter, max_eval_concurrency);
+
+    // RecastModels do not utilize default set_ie_asynchronous_mode() as
+    // they do not define the ie_parallel_level
+    asynchEvalFlag = subModel.asynch_flag();
+    evaluationCapacity = subModel.evaluation_capacity();
+  }
+}
+
+
+void ActiveSubspaceModel::
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
+{
+  if (recurse_flag) {
+    fullspaceSampler.free_communicators(pl_iter);
+
+    subModel.free_communicators(pl_iter, max_eval_concurrency);
+  }
+}
+
+
+void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
+{
+  std::string rng; // use default random number generator
+
+  if (sample_type == SUBMETHOD_DEFAULT)
+    sample_type = SUBMETHOD_RANDOM; // default to Monte Carlo sampling
+
+  // configure this sampler initially to work with initialSamples
+  NonDLHSSampling* ndlhss =
+    new NonDLHSSampling(subModel, sample_type, initialSamples, randomSeed,
+                        rng, true);
+
+  fullspaceSampler.assign_rep(ndlhss, false);
+
+  // TODO: review whether this is needed
+  fullspaceSampler.sub_iterator_flag(true);
 }
 
 

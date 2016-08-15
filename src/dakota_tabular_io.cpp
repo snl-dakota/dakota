@@ -8,8 +8,9 @@
 
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
-#include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#include "DakotaResponse.hpp"
+#include "ParamResponsePair.hpp"
 
 namespace Dakota {
 
@@ -56,7 +57,7 @@ void print_unexpected_data(std::ostream& s, const String& filename,
 			   unsigned short tabular_format)
 {
   s << "\nWarning (" << context_message << "): found unexpected extra data in "
-    << format_name(tabular_format) << "\nfile " << filename << "." << std::endl; 
+    << format_name(tabular_format) << "\nfile " << filename << "." << std::endl;
 }
 
 
@@ -94,16 +95,27 @@ void open_file(std::ofstream& data_stream, const std::string& output_filename,
 }
 
 
+//
+//- Utilities for closing tabular files
+//
+// Note: an fstream destructor can manage the different states and close the
+// stream properly.  However, for the case of a class-member stream, we should
+// close it such that any subsequent re-opening works properly.
+
 void close_file(std::ifstream& data_stream, const std::string& input_filename, 
 		const std::string& context_message) 
 {
   // TODO: try/catch
-  if (!data_stream.good()) {
+
+  // ifstream's have 4 states: good, eof, fail and bad.  Testing this state
+  // prior to close() is likely overkill in the current context...
+  if (data_stream.good() || data_stream.eof())
+    data_stream.close();
+  else {
     Cerr << "\nError (" << context_message << "): Could not close file " 
 	 << input_filename << " used for reading tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_stream.close();
 }
 
 
@@ -111,12 +123,16 @@ void close_file(std::ofstream& data_stream, const std::string& output_filename,
 		const std::string& context_message) 
 {
   // TODO: try/catch
-  if (!data_stream.good()) {
+
+  // ofstream's have 4 states: good, eof, fail and bad.  Testing this state
+  // prior to close() is likely overkill in the current context...
+  if (data_stream.good() || data_stream.eof())
+    data_stream.close();
+  else {
     Cerr << "\nError (" << context_message << "): Could not close file " 
 	 << output_filename << " used for writing tabular data." << std::endl;
     abort_handler(-1);
   }
-  data_stream.close();
 }
 
 
@@ -246,13 +262,14 @@ void write_data_tabular(const std::string& output_filename,
       write_data_tabular(output_stream, &output_indices[row][0], num_vars);
     output_stream << std::endl;
   }
+
+  close_file(output_stream, output_filename, context_message);
 }
 
 
 //
 //- Utilities for tabular read
 //
-
 
 /** Discard header row from tabular file; alternate could read into a
     string array.  Requires header to be delimited by a newline. */
@@ -267,22 +284,35 @@ void read_header_tabular(std::istream& input_stream,
 }
 
 
-/**  for now we discard the interface data; later will return for validation */
-size_t read_leading_columns(std::istream& input_stream,
-			    unsigned short tabular_format)
+/** reads eval and interface ids */
+void read_leading_columns(std::istream& input_stream,
+			  unsigned short tabular_format,
+			  int& eval_id, String& iface_id)
 {
-  size_t row_label = _NPOS;
   if (tabular_format & TABULAR_EVAL_ID)
-    input_stream >> row_label;
+    input_stream >> eval_id;
+  else
+    eval_id = 0;
+
   if (tabular_format & TABULAR_IFACE_ID) {
-    String iface_id;
     input_stream >> iface_id;
     // (Dakota 6.1 used EMPTY for missing ID)
     if (iface_id == "NO_ID" || iface_id == "EMPTY")
       iface_id.clear();
   }
-  // else no-op
-  return row_label;
+  else
+    iface_id.clear();
+}
+
+
+/** discards the interface data, which should be used for validation */
+int read_leading_columns(std::istream& input_stream,
+			    unsigned short tabular_format)
+{
+  int     eval_id; // returned
+  String iface_id; // discarded
+  read_leading_columns(input_stream, tabular_format, eval_id, iface_id);
+  return eval_id;
 }
 
 
@@ -338,7 +368,9 @@ void read_data_tabular(const std::string& input_filename,
   }
 
   if (exists_extra_data(input_stream))
-    print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+    print_unexpected_data(Cout, input_filename, context_message,tabular_format);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -351,7 +383,8 @@ void read_data_tabular(const std::string& input_filename,
 {
   // Disallow string variables for now - RWH
   if( (active_only && vars.dsv()>0) || (!active_only && vars.adsv()>0) ) {
-    Cerr << "\nError (" << context_message << "): String variables are not currently supported.\n";
+    Cerr << "\nError (" << context_message
+	 << "): String variables are not currently supported.\n";
     abort_handler(-1);
   }
 
@@ -381,15 +414,21 @@ void read_data_tabular(const std::string& input_filename,
       vars.read_tabular(input_stream, active_only);
 
       // Extract the variables
-      const RealVector& c_vars  = active_only ? vars.continuous_variables()    : vars.all_continuous_variables();
-      const IntVector&  di_vars = active_only ? vars.discrete_int_variables()  : vars.all_discrete_int_variables();
-      const RealVector& dr_vars = active_only ? vars.discrete_real_variables() : vars.all_discrete_real_variables();
+      const RealVector& c_vars  = active_only ? vars.continuous_variables()
+	: vars.all_continuous_variables();
+      const IntVector&  di_vars = active_only ? vars.discrete_int_variables()
+	: vars.all_discrete_int_variables();
+      const RealVector& dr_vars = active_only ? vars.discrete_real_variables()
+	: vars.all_discrete_real_variables();
       copy_data_partial(c_vars, work_vars_vec, 0);
       merge_data_partial(di_vars, work_vars_vec, c_vars.length());
-      copy_data_partial(dr_vars, work_vars_vec, c_vars.length()+di_vars.length());
-      //varsMatrix(row,:) = [vars.continuous_variables(), vars.discrete_int_variables(), vars.discrete_real_variables() ]
+      copy_data_partial(dr_vars, work_vars_vec,
+			c_vars.length()+di_vars.length());
+      //varsMatrix(row,:) = [vars.continuous_variables(),
+      //  vars.discrete_int_variables(), vars.discrete_real_variables() ]
       work_vars_va.push_back(work_vars_vec);
-      //std::cout << "Working Variables vector contents: \n" << work_vars_vec << std::endl;
+      //Cout << "Working Variables vector contents: \n" << work_vars_vec
+      //     << std::endl;
 
       // read the raw function data
       for (size_t fi = 0; fi < num_fns; ++fi) {
@@ -398,7 +437,8 @@ void read_data_tabular(const std::string& input_filename,
           work_resp_vec(fi) = read_value;
       }
       work_resp_va.push_back(work_resp_vec);
-      //std::cout << "Working Response vector contents: \n" << work_resp_vec << std::endl;
+      //Cout << "Working Response vector contents: \n" << work_resp_vec
+      //     << std::endl;
 
       input_stream >> std::ws;
     }
@@ -411,8 +451,9 @@ void read_data_tabular(const std::string& input_filename,
   }
   catch (const TabularDataTruncated& tdtrunc) {
     // this will be thrown if Variables was truncated
-    Cerr << "\nError (" << context_message << "): could not read variables from "
-	 << "file " << input_filename << ";\n  " << tdtrunc.what() << std::endl;
+    Cerr << "\nError (" << context_message
+	 << "): could not read variables from file " << input_filename
+	 << ";\n  " << tdtrunc.what() << std::endl;
     abort_handler(-1);
   }
   catch(...) {
@@ -423,6 +464,8 @@ void read_data_tabular(const std::string& input_filename,
 
   copy_data(work_vars_va, vars_matrix);
   copy_data(work_resp_va, resp_matrix);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 /** Read possibly annotated data with unknown num_rows data into input_coeffs
@@ -506,17 +549,19 @@ void read_data_tabular(const std::string& input_filename,
     for (size_t row_ind = 0; row_ind < num_rows; ++row_ind)
       input_coeffs[fn_ind][row_ind] = coeffs_tmp[row_ind][fn_ind];
   }
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
 void read_data_tabular(const std::string& input_filename, 
 		       const std::string& context_message,
-		       Variables vars, Response resp,
-		       VariablesList& input_vars, ResponseList& input_resp,
-		       unsigned short tabular_format,
-		       bool verbose, bool active_only)
+		       Variables vars, Response resp, PRPList& input_prp,
+		       unsigned short tabular_format, bool verbose,
+		       bool active_only)
 {
   std::ifstream data_stream;
+  int eval_id; String iface_id;
   open_file(data_stream, input_filename, context_message);
 
   read_header_tabular(data_stream, tabular_format);
@@ -525,16 +570,16 @@ void read_data_tabular(const std::string& input_filename,
   data_stream >> std::ws;
   while (data_stream.good() && !data_stream.eof()) {
     try {
-      // discard the leading columns 
-      read_leading_columns(data_stream, tabular_format);
+      // read the leading columns 
+      read_leading_columns(data_stream, tabular_format, eval_id, iface_id);
       vars.read_tabular(data_stream, active_only);
       resp.read_tabular(data_stream);
     }
     catch (const TabularDataTruncated& tdtrunc) {
       // this will be thrown if either Variables or Response was truncated
-      Cerr << "\nError (" << context_message << "): could not read variables or "
-	   << "responses from file " << input_filename << ";\n  " 
-	   << tdtrunc.what() << std::endl;
+      Cerr << "\nError (" << context_message
+	   << "): could not read variables or responses from file "
+	   << input_filename << ";\n  "  << tdtrunc.what() << std::endl;
       abort_handler(-1);
     }
     catch(...) {
@@ -542,15 +587,21 @@ void read_data_tabular(const std::string& input_filename,
 	   << input_filename << " (unknown error).";
       abort_handler(-1);
     }
-    if (verbose)
-      Cout << "Variables and responses read:\n" << vars << resp;
-    input_vars.push_back(vars.copy());       // deep copy
-    input_resp.push_back(resp.copy());  // deep copy
+    if (verbose) {
+      Cout << "Variables read:\n" << vars;
+      if (!iface_id.empty())
+	Cout << "\nInterface identifier = " << iface_id << '\n';
+      Cout << "\nResponse read:\n" << resp;
+    }
+
+    // append deep copy of vars,resp as PRP
+    input_prp.push_back(ParamResponsePair(vars, iface_id, resp, eval_id));
 
     // advance so EOF can detect properly
     data_stream >> std::ws;
   }
 
+  close_file(data_stream, input_filename, context_message);
 }
 
 
@@ -593,6 +644,8 @@ void read_data_tabular(const std::string& input_filename,
 
   if (exists_extra_data(input_stream))
     print_unexpected_data(Cout, input_filename, context_message, tabular_format);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -647,6 +700,8 @@ void read_data_tabular(const std::string& input_filename,
   // rm layout (record_len X num_records), since the natural place to store the
   // ith vector rva[i] is as rm[i], a Teuchos column vector.
   copy_data_transpose(rva, input_matrix);
+
+  close_file(input_stream, input_filename, context_message);
 }
 
 
@@ -720,6 +775,8 @@ size_t read_data_tabular(const std::string& input_filename,
     dsva[i] = list_dsv_points[i];
   list_dsv_points.clear();
 
+  close_file(input_stream, input_filename, context_message);
+ 
   return num_evals;
 }
 
