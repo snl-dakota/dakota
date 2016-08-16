@@ -37,7 +37,8 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate"))
+  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
+  subspaceNormalization(probDescDB.get_ushort("model.subspace.normalization"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -87,7 +88,8 @@ ActiveSubspaceModel(const Model& sub_model,
   totalSamples(0),
   subspaceInitialized(false), reducedRank(0),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  buildSurrogate(false), refinementSamples(0)
+  buildSurrogate(false), refinementSamples(0),
+  subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
   asmInstance = this;
   modelType = "subspace";
@@ -122,18 +124,14 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  //check_submodel_compatibility(actualModel);
-
-  actualModel = problem_db.get_model();
-
   transformVars = true;
 
   if (transformVars) {
-    transformModel.assign_rep(new ProbabilityTransformModel(actualModel), false);
-    sub_model = transformModel;
+    sub_model.assign_rep(new ProbabilityTransformModel(problem_db.get_model()),
+                                                       false);
   }
   else {
-    sub_model = actualModel;
+    sub_model = problem_db.get_model();
   }
 
   problem_db.set_db_model_nodes(model_index); // restore
@@ -285,10 +283,26 @@ populate_matrices(unsigned int diff_samples)
   // Compute gradient scaling factors if more than 1 response function
   if(numFunctions > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
-      const RealVector& resp_vector = resp_it->second.function_values();
-      for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
-        gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
-          static_cast<Real>(diff_samples);
+      if (subspaceNormalization == SUBSPACE_NORM_VALUE) {
+        const RealVector& resp_vector = resp_it->second.function_values();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
+            static_cast<Real>(diff_samples);
+        }
+      }
+      else if (subspaceNormalization == SUBSPACE_NORM_DEFAULT || 
+               subspaceNormalization == SUBSPACE_NORM_GRAD) {
+        const RealMatrix& resp_matrix = resp_it->second.function_gradients();
+        for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
+          RealVector grad(numFullspaceVars);
+          for (size_t ii = 0; ii < numFullspaceVars; ++ii)
+            grad[ii] = resp_matrix(ii,fn_ind);
+
+          Real norm_grad = std::sqrt(grad.dot(grad));
+          
+          gradientScaleFactors[fn_ind] += norm_grad /
+            static_cast<Real>(diff_samples);
+        }
       }
     }
   }
@@ -643,6 +657,60 @@ computeConstantineMetric(RealVector& singular_values)
 
 double ActiveSubspaceModel::
 computeEnergyCriterion(RealVector& singular_values)
+{
+  int num_vars = derivativeMatrix.numRows();
+  int num_vals;
+  if (derivativeMatrix.numCols() < num_vars)
+    num_vals = derivativeMatrix.numCols();
+  else
+    num_vals = num_vars;
+
+  Real total_energy = 0.0;
+  for (size_t i = 0; i < num_vals; ++i)
+  {
+    // eigenvalue = (singular_value)^2
+    total_energy += std::pow(singular_values[i],2);
+  }
+
+  RealVector energy_metric(num_vals);
+  energy_metric[0] = std::pow(singular_values[0],2)/total_energy;
+  for (size_t i = 1; i < num_vals; ++i)
+  {
+    energy_metric[i] = std::pow(singular_values[i],2)/total_energy
+                       + energy_metric[i-1];
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Energy criterion values are:\n[ ";
+    for (size_t i = 0; i < num_vals; ++i)
+    {
+      Cout << energy_metric[i] << " ";
+    }
+    Cout << "]" << std::endl;
+  }
+
+  int rank = 0;
+  for (size_t i = 0; i < num_vals; ++i)
+  {
+    if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
+    {
+      rank = i+1;
+      break;
+    }
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Eigenvalue energy metric subspace size estimate = "
+         << rank << ". (truncation_tolerance = " << truncationTolerance << ")"
+         << std::endl;
+
+  return rank;
+}
+
+
+
+double ActiveSubspaceModel::
+computeSurrogateMetric(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
   int num_vals;

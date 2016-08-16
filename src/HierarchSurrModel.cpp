@@ -23,7 +23,8 @@ namespace Dakota
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
-  corrOrder(problem_db.get_short("model.surrogate.correction_order"))
+  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
+  correctionMode(SINGLE_CORRECTION)
 {
   Response initial_response = currentResponse.copy();
 
@@ -530,11 +531,12 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
                                    truthResponseRef[highFidelityIndices],
                                    lo_fi_response, quiet_flag);
 
-      if (correctionMode == SINGLE_CORRECTION)
+      if (correctionMode == SINGLE_CORRECTION || 
+          correctionMode == DEFAULT_CORRECTION)
         deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
       else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
         size_t num_models = orderedModels.size();
-        for (size_t ii = lf_model_form; ii < num_models - 1; ii++) {
+        for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
           SizetSizetPair lf_index_temp;
           SizetSizetPair hf_index_temp;
 
@@ -552,7 +554,7 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
         }
       }
       else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
-        size_t num_levels = 
+        size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
         for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
           SizetSizetPair lf_index_temp;
           SizetSizetPair hf_index_temp;
@@ -763,11 +765,51 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       // correct synch cases now (asynch cases get corrected in
       // derived_synchronize_aggregate*)
 
-      if (corrSequence.empty())
+      if (correctionMode == SINGLE_CORRECTION || 
+          correctionMode == DEFAULT_CORRECTION)
         deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
-      else {
+      else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
+        size_t num_models = orderedModels.size();
+        for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
+          SizetSizetPair lf_index_temp;
+          SizetSizetPair hf_index_temp;
+
+          lf_index_temp.first  = ii;
+          lf_index_temp.second = lowFidelityIndices.second;
+
+          hf_index_temp.first  = ii+1;
+          hf_index_temp.second = highFidelityIndices.second;
+
+          SizetSizet2DPair correction_index =
+            std::make_pair(lf_index_temp,hf_index_temp);
+
+          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+        }
+      }
+      else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
+        size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
+        for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+          SizetSizetPair lf_index_temp;
+          SizetSizetPair hf_index_temp;
+
+          lf_index_temp.first  = lowFidelityIndices.first;
+          lf_index_temp.second = ii;
+
+          hf_index_temp.first  = lowFidelityIndices.first;
+          hf_index_temp.second = ii+1;
+
+          SizetSizet2DPair correction_index =
+            std::make_pair(lf_index_temp,hf_index_temp);
+
+          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
+                                            quiet_flag);
+        }
+      }
+      else if (correctionMode == SEQUENCE_CORRECTION) {
         // Apply sequence of discrepancy corrections
         // TODO: Check to make sure they've been initialized.
+
         for (size_t ii = 0; ii < corrSequence.size(); ++ii)
           deltaCorr[corrSequence[ii]].apply(currentVariables, lo_fi_response,
                                             quiet_flag);
@@ -1089,9 +1131,48 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
     v_it = rawVarsMap.find(lf_eval_id);
     if (v_it != rawVarsMap.end()) {
       if (corr_comp) { // apply the correction to the LF response
-        if (corrSequence.empty())
+        if (correctionMode == SINGLE_CORRECTION || 
+            correctionMode == DEFAULT_CORRECTION)
           deltaCorr[indices].apply(v_it->second, lf_it->second, quiet_flag);
-        else {
+        else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
+          size_t num_models = orderedModels.size();
+          for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
+            SizetSizetPair lf_index_temp;
+            SizetSizetPair hf_index_temp;
+
+            lf_index_temp.first  = ii;
+            lf_index_temp.second = lowFidelityIndices.second;
+
+            hf_index_temp.first  = ii+1;
+            hf_index_temp.second = highFidelityIndices.second;
+
+            SizetSizet2DPair correction_index =
+              std::make_pair(lf_index_temp,hf_index_temp);
+
+            deltaCorr[correction_index].apply(v_it->second, lf_it->second,
+                                              quiet_flag);
+          }
+        }
+        else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
+          size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
+          for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+            SizetSizetPair lf_index_temp;
+            SizetSizetPair hf_index_temp;
+
+            lf_index_temp.first  = lowFidelityIndices.first;
+            lf_index_temp.second = ii;
+
+            hf_index_temp.first  = lowFidelityIndices.first;
+            hf_index_temp.second = ii+1;
+
+            SizetSizet2DPair correction_index =
+              std::make_pair(lf_index_temp,hf_index_temp);
+
+            deltaCorr[correction_index].apply(v_it->second, lf_it->second,
+                                              quiet_flag);
+          }
+        }
+        else if (correctionMode == SEQUENCE_CORRECTION) {
           // Apply sequence of discrepancy corrections
           // TODO: Check to make sure they've been initialized.
 

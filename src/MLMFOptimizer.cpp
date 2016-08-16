@@ -338,6 +338,9 @@ void MLMFOptimizer::multifidelity_opt()
       iteratedModel.surrogate_model_indices(lf_model_form);
       iteratedModel.truth_model_indices(hf_model_form);
 
+      ((HierarchSurrModel*)(iteratedModel.model_rep()))->
+        correction_mode(FULL_MODEL_FORM_CORRECTION);
+
       Cout << "\n>>>>> Starting approximate optimization cycle.\n";
       iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);

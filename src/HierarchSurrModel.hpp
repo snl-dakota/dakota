@@ -28,6 +28,9 @@ namespace Dakota
 #define LF_MODEL 1
 #define HF_MODEL 2
 
+enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
+       FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
+
 
 /// Derived model class within the surrogate model branch for managing
 /// hierarchical surrogates (models of varying fidelity).
@@ -60,6 +63,10 @@ public:
 
   /// return the active DiscrepancyCorrection instance
   DiscrepancyCorrection& discrepancy_correction();
+
+  const unsigned short correction_mode() const;
+
+  void correction_mode(unsigned short corr_mode);
 
 protected:
 
@@ -212,6 +219,8 @@ private:
   DiscrepCorrMap deltaCorr;
   /// order of correction: 0, 1, or 2
   short corrOrder;
+
+  unsigned short correctionMode;
 
   /// vector to specify a sequence of discrepancy corrections to apply in
   /// AUTO_CORRECTED_SURROGATE mode
@@ -368,6 +377,11 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
 { return highFidelityIndices; }
 
+inline const unsigned short HierarchSurrModel::correction_mode() const
+{ return correctionMode; }
+
+inline void HierarchSurrModel::correction_mode(unsigned short corr_mode)
+{ correctionMode = corr_mode; }
 
 inline void HierarchSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)

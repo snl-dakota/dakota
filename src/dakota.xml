@@ -3266,6 +3266,12 @@
           <param type="INTEGERLIST" />
         </keyword>
       </keyword>
+      <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
+        <oneOf> 
+          <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
+          <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
+        </oneOf> 
+      </keyword>
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
 	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">

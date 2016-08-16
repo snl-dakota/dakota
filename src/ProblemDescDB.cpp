@@ -2791,6 +2791,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       // must be sorted by string (key)  
 	{"rf.analytic_covariance", P analyticCovIdForm},
 	{"rf.expansion_form", P randomFieldIdForm},
+	{"subspace.normalization", P subspaceNormalization},
 	{"subspace.sample_type", P subspaceSampleType},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},

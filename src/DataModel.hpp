@@ -39,6 +39,9 @@ enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
 /// define types of analytic covariance functions
 enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 
+/// define special values for active subspace normalizations
+enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_VALUE, SUBSPACE_NORM_GRAD }; 
+
 /// Body class for model specification data.
 
 /** The DataModelRep class is used to contain the data from a model
@@ -319,6 +322,10 @@ public:
 
   /// Size of subspace
   int subspaceDimension;
+
+  /// Normalization to use when forming a subspace with multiple response
+  /// functions
+  unsigned short subspaceNormalization;
 
   /// Number of bootstrap samples for subspace identification
   int numReplicates;
