@@ -3221,12 +3221,12 @@
 	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
 	    <param type='INTEGER' />
 	  </keyword>
-    <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
-			<oneOf>
-			  <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
-			  <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
-			</oneOf>
-    </keyword>
+	  <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
+	    <oneOf>
+	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
+	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
+	    </oneOf>
+	  </keyword>
 	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
 	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
 	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
@@ -3236,23 +3236,23 @@
 	      </keyword>
 	    </keyword>
 	  </keyword>
-      <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
-        <param type='INTEGER' />
-      </keyword>
-      <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
-        <param type='INTEGER' />
-      </keyword>
-      <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-        <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" > 
-          <param type="INTEGERLIST" />
-        </keyword>
-      </keyword>
-      <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
-        <oneOf> 
-          <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
-          <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
-        </oneOf> 
-      </keyword>
+	  <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
+            <param type='INTEGER' />
+	  </keyword>
+	  <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
+            <param type='INTEGER' />
+	  </keyword>
+	  <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" > 
+              <param type="INTEGERLIST" />
+            </keyword>
+	  </keyword>
+	  <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
+            <oneOf> 
+              <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
+              <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
+            </oneOf> 
+	  </keyword>
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
 	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">
