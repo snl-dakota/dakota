@@ -77,7 +77,7 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
 
-  // Return transformed model subordinate to NoDExpansion::uSpaceModel:
+  // Return transformed model subordinate to NonDExpansion::uSpaceModel:
   return u_space_model.subordinate_model();
 }
 
