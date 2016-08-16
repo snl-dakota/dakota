@@ -50,14 +50,14 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     // configure pilot PCE object (instantiate now; build expansion at run time)
   NonDPolynomialChaos* pce_rep;
   RealVector dim_pref;
-  if (true) { // L1 sparse grid --> Linear terms (quadratic main effects ignored)
+  if (true) {// L1 sparse grid --> Linear terms (quadratic main effects ignored)
     //const UShortArray& level_seq
     //  = probDescDB.get_usa("method.nond.sparse_grid_level");
     UShortArray level_seq(1, 1);
     pce_rep = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
       level_seq, dim_pref, EXTENDED_U, false, false);
   }
-  else { // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
+  else {// regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
     //const UShortArray& exp_order_seq
     //  = probDescDB.get_usa("method.nond.expansion_order");
     UShortArray exp_order_seq(1, 1); SizetArray colloc_pts_seq;
@@ -65,18 +65,16 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
     int seed = 12347;
     pce_rep = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
-      exp_order_seq, dim_pref,
-      colloc_pts_seq, 1.,  // collocation_points,collocation_ratio
-      seed, EXTENDED_U,
-      false, false, false, // piecewise_basis, deriv_usage, cross_validation
-      import_file, import_fmt, false); // import file, format, active_only
+      exp_order_seq, dim_pref, colloc_pts_seq, 1., // collocation_{points,ratio}
+      seed, EXTENDED_U, false, false, false, // piecewise, derivs, cross_valid
+      import_file, import_fmt, false);       // import file, format, active_only
   }
   pcePilotExpansion.assign_rep(pce_rep);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  // Consider option where PCE surrogate is used for all subsequent computations:
   Model u_space_model(pcePilotExpansion.algorithm_space_model());
+  // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
 
   // Return transformed model subordinate to NoDExpansion::uSpaceModel:
@@ -121,17 +119,12 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 
   // runtime operation to identify the adapted basis model
   identify_subspace();
-
   // complete initialization of the base RecastModel
   initialize_recast();
-
   // convert the normal distributions to the reduced space and set in the
   // reduced model
   uncertain_vars_to_subspace();
-
-  // set new subspace variable labels
-  update_var_labels();
-
+  // adapted basis calculation now complete
   adaptedBasisInitialized = true;
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
@@ -211,19 +204,6 @@ void AdaptedBasisModel::serve_run(ParLevLIter pl_iter,
 }
 
 
-void AdaptedBasisModel::stop_servers()
-{
-  component_parallel_mode(CONFIG_PHASE);
-}
-
-
-void AdaptedBasisModel::stop_init_mapping(ParLevLIter pl_iter)
-{
-  short term_code = 0;
-  parallelLib.bcast(term_code, *pl_iter);
-}
-
-
 int AdaptedBasisModel::serve_init_mapping(ParLevLIter pl_iter)
 {
   short mapping_code = 0;
@@ -259,90 +239,10 @@ int AdaptedBasisModel::serve_init_mapping(ParLevLIter pl_iter)
 }
 
 
-void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
+void AdaptedBasisModel::stop_init_mapping(ParLevLIter pl_iter)
 {
-  if (!mapping_initialized()) {
-    Cerr << "\nError (adapted basis model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  RecastModel::derived_evaluate(set);
-}
-
-
-void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (adapted basis model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-
-  RecastModel::derived_evaluate_nowait(set);
-}
-
-
-const IntResponseMap& AdaptedBasisModel::derived_synchronize()
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (adapted basis model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  return RecastModel::derived_synchronize();
-}
-
-
-const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
-{
-  if (!mapping_initialized()) {
-    Cerr << "\nError (adapted basis model): model has not been initialized."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  component_parallel_mode(ONLINE_PHASE);
-  
-  return RecastModel::derived_synchronize_nowait();
-}
-
-
-bool AdaptedBasisModel::mapping_initialized()
-{ return adaptedBasisInitialized; }
-
-
-void AdaptedBasisModel::update_var_labels()
-{
-  StringMultiArray adapted_basis_var_labels(boost::extents[reducedRank]);
-  for (int i = 0; i < reducedRank; i++)
-    adapted_basis_var_labels[i]
-      = "abv_" + boost::lexical_cast<std::string>(i+1);
-
-  continuous_variable_labels(
-    adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
-}
-
-
-/**  This specialization is because the model is used in multiple contexts
-     depending on build phase. */
-void AdaptedBasisModel::
-derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                           bool recurse_flag)
-{
-  // The inbound subModel concurrency accounts for any finite differences
-
-  onlineEvalConcurrency = max_eval_concurrency;
-
-  if (recurse_flag)
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
+  short term_code = 0;
+  parallelLib.bcast(term_code, *pl_iter);
 }
 
 
@@ -360,15 +260,6 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     asynchEvalFlag = subModel.asynch_flag();
     evaluationCapacity = subModel.evaluation_capacity();
   }
-}
-
-
-void AdaptedBasisModel::
-derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                           bool recurse_flag)
-{
-  if (recurse_flag)
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
 }
 
 
@@ -526,9 +417,8 @@ void AdaptedBasisModel::identify_subspace()
   }
   Cout << "\n****************************************************************"
        << "**********\nAdapted Basis Model: Build Statistics"
-       << "\nsubspace size: " << reducedRank
-       << "\n****************************************************************"
-       << "**********\n";
+       << "\nsubspace size: " << reducedRank << "\n**************************"
+       << "************************************************\n";
 }
 
 
@@ -609,6 +499,7 @@ void AdaptedBasisModel::initialize_recast()
               set_mapping, primary_resp_map_indices, secondary_resp_map_indices,
               nonlinear_resp_mapping, response_mapping, NULL);
 }
+
 
 /// Create a variables components totals array with the reduced space
 /// size for continuous variables
@@ -783,15 +674,21 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
 
   // Set currentVariables to means of active variables:
   continuous_variables(mu_y);
+
+  // update variable labels for adapted basis
+  StringMultiArray adapted_basis_var_labels(boost::extents[reducedRank]);
+  for (int i = 0; i < reducedRank; i++)
+    adapted_basis_var_labels[i]
+      = "abv_" + boost::lexical_cast<std::string>(i+1);
+  continuous_variable_labels(
+    adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 
 
 
-/**
-  Perform the variables mapping from recast reduced dimension
-  variables y to original model x variables via linear transformation.
-  Maps only continuous variables.
-*/
+/** Perform the variables mapping from recast reduced dimension
+    variables y to original model x variables via linear
+    transformation.  Maps only continuous variables. */
 void AdaptedBasisModel::
 vars_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
 {
@@ -896,7 +793,6 @@ response_mapping(const Variables& recast_y_vars,
     recast_resp.function_hessians(H_y_all);
   }
 }
-
 
 }  // namespace Dakota
 

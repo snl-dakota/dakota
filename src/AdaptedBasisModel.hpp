@@ -56,7 +56,6 @@ public:
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter);
 
-
 protected:
 
   //
@@ -124,10 +123,6 @@ protected:
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace();
 
-  /// update variable labels
-  void update_var_labels();
-
-
   // ---
   // Callback functions that perform data transform during the Recast operations
   // ---
@@ -188,6 +183,90 @@ protected:
   /// Concurrency to use when building subspace.
   int offlineEvalConcurrency;
 };
+
+
+inline void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (adapted basis model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  RecastModel::derived_evaluate(set);
+}
+
+
+inline void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (adapted basis model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  RecastModel::derived_evaluate_nowait(set);
+}
+
+
+inline const IntResponseMap& AdaptedBasisModel::derived_synchronize()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (adapted basis model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  return RecastModel::derived_synchronize();
+}
+
+
+inline const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
+{
+  if (!mapping_initialized()) {
+    Cerr << "\nError (adapted basis model): model has not been initialized."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  component_parallel_mode(ONLINE_PHASE);
+  return RecastModel::derived_synchronize_nowait();
+}
+
+
+inline bool AdaptedBasisModel::mapping_initialized()
+{ return adaptedBasisInitialized; }
+
+
+/**  This specialization is because the model is used in multiple contexts
+     depending on build phase. */
+inline void AdaptedBasisModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
+{
+  // The inbound subModel concurrency accounts for any finite differences
+
+  onlineEvalConcurrency = max_eval_concurrency;
+
+  if (recurse_flag)
+    subModel.init_communicators(pl_iter, max_eval_concurrency);
+}
+
+
+inline void AdaptedBasisModel::
+derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                           bool recurse_flag)
+{
+  if (recurse_flag)
+    subModel.free_communicators(pl_iter, max_eval_concurrency);
+}
+
+
+inline void AdaptedBasisModel::stop_servers()
+{ component_parallel_mode(CONFIG_PHASE); }
 
 } // namespace Dakota
 
