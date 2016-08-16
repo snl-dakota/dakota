@@ -709,60 +709,6 @@ computeEnergyCriterion(RealVector& singular_values)
 
 
 
-double ActiveSubspaceModel::
-computeSurrogateMetric(RealVector& singular_values)
-{
-  int num_vars = derivativeMatrix.numRows();
-  int num_vals;
-  if (derivativeMatrix.numCols() < num_vars)
-    num_vals = derivativeMatrix.numCols();
-  else
-    num_vals = num_vars;
-
-  Real total_energy = 0.0;
-  for (size_t i = 0; i < num_vals; ++i)
-  {
-    // eigenvalue = (singular_value)^2
-    total_energy += std::pow(singular_values[i],2);
-  }
-
-  RealVector energy_metric(num_vals);
-  energy_metric[0] = std::pow(singular_values[0],2)/total_energy;
-  for (size_t i = 1; i < num_vals; ++i)
-  {
-    energy_metric[i] = std::pow(singular_values[i],2)/total_energy
-                       + energy_metric[i-1];
-  }
-
-  if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << "\nSubspace Model: Energy criterion values are:\n[ ";
-    for (size_t i = 0; i < num_vals; ++i)
-    {
-      Cout << energy_metric[i] << " ";
-    }
-    Cout << "]" << std::endl;
-  }
-
-  int rank = 0;
-  for (size_t i = 0; i < num_vals; ++i)
-  {
-    if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
-    {
-      rank = i+1;
-      break;
-    }
-  }
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Eigenvalue energy metric subspace size estimate = "
-         << rank << ". (truncation_tolerance = " << truncationTolerance << ")"
-         << std::endl;
-
-  return rank;
-}
-
-
-
 /** May eventually take on init_comms and related operations.  Also
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
