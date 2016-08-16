@@ -87,8 +87,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     if (pc_update_spec < 1) { // default partition: update every 100 samples
       // if the user specified less than 100 samples, use that,
       // resulting in chainCycles = 1
-      chainSamples  = std::min(samples_spec, 100);
-      chainCycles = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
+      chainSamples = std::min(samples_spec, 100);
+      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
     }
     else { // partition as specified
       if (samples_spec < pc_update_spec) {
@@ -96,17 +96,15 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
 	abort_handler(-1);
       }
-      chainSamples  = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
-      chainCycles = pc_update_spec;
+      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
+      chainCycles  = pc_update_spec;
     }
   }
   else
     { chainSamples = samples_spec; chainCycles = 1; }
 
   if (randomSeed != 0)
-  {
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
-  }
   else {
     // Use NonD convenience function for system seed
     randomSeed = generate_system_seed();

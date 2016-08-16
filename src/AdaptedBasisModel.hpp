@@ -159,13 +159,8 @@ protected:
   /// reduced dimension
   Iterator pcePilotExpansion;
 
-  /// boolean flag to determine if variables should be transformed to u-space
-  /// before active subspace initialization
-  bool transformVars;
-
   /// Number of fullspace active continuous variables
   size_t numFullspaceVars;
-
   /// Total number of response functions
   size_t numFunctions;
 
@@ -176,20 +171,8 @@ protected:
 
   /// current approximation of system rank
   unsigned int reducedRank;
-
   /// basis for the reduced subspace
   RealMatrix rotationMatrix;
-
-  /// the truth model which provides evaluations for building the active subspace
-  Model actualModel;
-
-  /// the result of performing a Nataf transformation to u-space from the truth
-  /// model
-  Model transformModel;
-
-  /// model containing a surrogate built over the active subspace
-  Model surrogateModel;
-
 
   // Helper members
 
@@ -204,7 +187,6 @@ protected:
   int onlineEvalConcurrency;
   /// Concurrency to use when building subspace.
   int offlineEvalConcurrency;
-
 };
 
 } // namespace Dakota

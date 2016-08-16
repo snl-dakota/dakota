@@ -11,11 +11,13 @@
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "DataFitSurrModel.hpp"
+#include "NonDPolynomialChaos.hpp"
 
 namespace Dakota {
 
 /// initialization of static needed by RecastModel
 AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
+
 
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
@@ -25,13 +27,10 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
 {
   abmInstance = this;
   modelType = "adapted_basis";
-
+  supportsEstimDerivs = true;  // perform numerical derivatives in subspace
   componentParallelMode = CONFIG_PHASE;
-
-  // TO DO: configure pilot PCE object (construct expansion at run time)
-
+    
   offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
-
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_init_communicators()
 
@@ -46,20 +45,47 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  actualModel = problem_db.get_model();
+  Model actual_model(problem_db.get_model());
 
-  // Perform Nataf transform to standard normals:
-  transformVars = true;
-  if (transformVars)
-    transformModel.assign_rep(new ProbabilityTransformModel(actualModel),false);
+    // configure pilot PCE object (instantiate now; build expansion at run time)
+  NonDPolynomialChaos* pce_rep;
+  RealVector dim_pref;
+  if (true) { // L1 sparse grid --> Linear terms (quadratic main effects ignored)
+    //const UShortArray& level_seq
+    //  = probDescDB.get_usa("method.nond.sparse_grid_level");
+    UShortArray level_seq(1, 1);
+    pce_rep = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
+      level_seq, dim_pref, EXTENDED_U, false, false);
+  }
+  else { // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
+    //const UShortArray& exp_order_seq
+    //  = probDescDB.get_usa("method.nond.expansion_order");
+    UShortArray exp_order_seq(1, 1); SizetArray colloc_pts_seq;
+    short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
+    String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
+    int seed = 12347;
+    pce_rep = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
+      exp_order_seq, dim_pref,
+      colloc_pts_seq, 1.,  // collocation_points,collocation_ratio
+      seed, EXTENDED_U,
+      false, false, false, // piecewise_basis, deriv_usage, cross_validation
+      import_file, import_fmt, false); // import file, format, active_only
+  }
+  pcePilotExpansion.assign_rep(pce_rep);
 
   problem_db.set_db_model_nodes(model_index); // restore
-  return (transformVars) ? transformModel : actualModel;
+
+  // Consider option where PCE surrogate is used for all subsequent computations:
+  Model u_space_model(pcePilotExpansion.algorithm_space_model());
+  //return u_space_model;
+
+  // Return transformed model subordinate to NoDExpansion::uSpaceModel:
+  return u_space_model.subordinate_model();
 }
 
 
 AdaptedBasisModel::~AdaptedBasisModel()
-{  /* empty dtor */  }
+{ /* empty dtor */ }
 
 
 void AdaptedBasisModel::validate_inputs()
@@ -107,9 +133,6 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
   update_var_labels();
 
   adaptedBasisInitialized = true;
-
-  // Perform numerical derivatives in subspace:
-  supportsEstimDerivs = true;
 
   // Kill servers and return ranks [1,n-1] to serve_init_mapping()
   component_parallel_mode(CONFIG_PHASE);
@@ -178,9 +201,8 @@ void AdaptedBasisModel::serve_run(ParLevLIter pl_iter,
 {
   do {
     parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == OFFLINE_PHASE) {
+    if (componentParallelMode == OFFLINE_PHASE)
       subModel.serve_run(pl_iter, offlineEvalConcurrency);
-    }
     else if (componentParallelMode == ONLINE_PHASE) {
       set_communicators(pl_iter, onlineEvalConcurrency, false);
       subModel.serve_run(pl_iter, onlineEvalConcurrency);
@@ -309,10 +331,8 @@ void AdaptedBasisModel::update_var_labels()
 }
 
 
-/**  This specialization is because the model is used in multiple
-     contexts in this iterator, depending on build phase.  Note that
-     this overrides the default behavior at Iterator which recurses
-     into any submodels. */
+/**  This specialization is because the model is used in multiple contexts
+     depending on build phase. */
 void AdaptedBasisModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
@@ -375,9 +395,6 @@ void AdaptedBasisModel::identify_subspace()
   // For each QoI, we need to compute a pilot PCE:
   //   Step 0: perform any necessary probability transforms --> Wiener chaos
   //   Step 1: Compute a low order Hermite PCE: either linear or full quadratic
-
-  // ... other preliminaries --> config with sparse grid or CS, no levels ...
-  // (see NonDBayesCalibration ctor)
 
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   pcePilotExpansion.run(pl_iter);
@@ -707,7 +724,6 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     for (int row=0; row<m; ++row)
       V_x(row, row) = sd_x(row)*sd_x(row);
   }
-
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nAdapted Basis Model: A = \n";
