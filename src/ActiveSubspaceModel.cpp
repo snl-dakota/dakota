@@ -28,17 +28,17 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   randomSeed(24620),
   initialSamples(problem_db.get_int("model.initial_samples")),
   maxFunctionEvals(std::numeric_limits<int>::max()),
-  subspaceIdBingLi(probDescDB.get_bool("model.subspace.truncation_method.bing_li")),
-  subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
-  subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
-  numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
+  subspaceIdBingLi(probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
+  subspaceIdConstantine(probDescDB.get_bool("model.active_subspace.truncation_method.constantine")),
+  subspaceIdEnergy(probDescDB.get_bool("model.active_subspace.truncation_method.energy")),
+  numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   totalSamples(0), subspaceInitialized(false),
-  reducedRank(problem_db.get_int("model.subspace.dimension")),
+  reducedRank(problem_db.get_int("model.active_subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
-  subspaceNormalization(probDescDB.get_ushort("model.subspace.normalization"))
+  truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
+  buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
+  subspaceNormalization(probDescDB.get_ushort("model.active_subspace.normalization"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -55,7 +55,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
-  init_fullspace_sampler(probDescDB.get_ushort("model.subspace.sample_type"));
+  init_fullspace_sampler(probDescDB.get_ushort("model.active_subspace.sample_type"));
 
   const IntVector& db_refine_samples = 
     problem_db.get_iv("model.refinement_samples"); 

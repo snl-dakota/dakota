@@ -2432,7 +2432,7 @@ KEYWORD model
 	    )
 	  )
 	|
-	( subspace
+	( active_subspace ALIAS subspace
 	  actual_model_pointer STRING
 	  [ initial_samples INTEGER ]
 	  [ sample_type
@@ -2455,6 +2455,15 @@ KEYWORD model
 	    value
 	    | gradient
 	    ]
+	  )
+	|
+	( adapted_basis
+	  actual_model_pointer STRING
+	  sparse_grid_level INTEGER
+	  |
+	  ( expansion_order INTEGER
+	    collocation_ratio REAL
+	    )
 	  )
 	|
 	( random_field

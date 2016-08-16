@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef ACTIVE_SUBSPACE_MODEL_H
-#define ACTIVE_SUBSPACE_MODEL_H
+#ifndef ADAPTED_BASIS_MODEL_H
+#define ADAPTED_BASIS_MODEL_H
 
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"

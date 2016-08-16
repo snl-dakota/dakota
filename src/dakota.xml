@@ -3214,7 +3214,8 @@
             </keyword>
           </keyword>
         </keyword>
-	<keyword  id="subspace" name="subspace" code="{N_mom(lit,modelType_subspace)}" label="subspace" help="" minOccurs="1" >
+	<keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="active_subspace" help="" minOccurs="1" >
+          <alias name="subspace"/>
 	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
@@ -3253,6 +3254,23 @@
               <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
             </oneOf> 
 	  </keyword>
+	</keyword>
+	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="adapted_basis" help="" minOccurs="1" >
+	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+	    <param type="STRING" in_taglist="model" />
+	  </keyword>
+	  <oneOf>
+	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="adapted basis sparse grid level" >
+	      <param type="INTEGER" />
+	    </keyword>
+	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="adapted basis expansion order" >
+	      <param type="INTEGER" />
+	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="adapted basis collocation ratio" >
+		<param type="REAL" />
+	      </keyword>
+	    </keyword>
+	  </oneOf>
+	  <!-- TO DO: adaptation specification for testing higher-order and interaction terms for adapted basis. -->
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
 	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">

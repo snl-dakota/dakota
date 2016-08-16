@@ -21,6 +21,7 @@
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
+#include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
@@ -380,8 +381,10 @@ Model* Model::get_model(ProblemDescDB& problem_db)
     else
       return new DataFitSurrModel(problem_db);  // local/multipt/global approx
   }
-  else if ( model_type == "subspace" )
+  else if ( model_type == "active_subspace" )
     return new ActiveSubspaceModel(problem_db);
+  else if ( model_type == "adapted_basis" )
+    return new AdaptedBasisModel(problem_db);
   else if ( model_type == "random_field" )
     return new RandomFieldModel(problem_db);
   else {

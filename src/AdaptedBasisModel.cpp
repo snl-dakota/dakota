@@ -23,7 +23,7 @@ AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   adaptedBasisInitialized(false),
-  reducedRank(problem_db.get_int("model.subspace.dimension"))
+  reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
   abmInstance = this;
   modelType = "adapted_basis";

@@ -73,7 +73,7 @@ method,
 #   variance_based_decomp                   #s20,#p19
 
 model                             
-  subspace
+  active_subspace
     id_model = 'SUBSPACE'
     actual_model_pointer = 'FULLSPACE'
     initial_samples  100 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14,#p15,#p16,#p17,#s19,#p18,#s20,#p19,#s21,#s22,#p20,#s23,#p21,#s26,#s27,#s28,#p24,#p25,#p26

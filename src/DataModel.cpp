@@ -45,7 +45,9 @@ DataModelRep::DataModelRep():
   subspaceNormalization(SUBSPACE_NORM_DEFAULT),
   numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
-  truncationTolerance(1.0e-6), analyticCovIdForm(NOCOVAR), referenceCount(1)
+  adaptedBasisSparseGridLev(1), adaptedBasisExpOrder(1),
+  adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
+  analyticCovIdForm(NOCOVAR), referenceCount(1)
 { }
 
 
@@ -79,8 +81,10 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << subspaceIdConstantine << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
     << maxFunctionEvals << refineCVMetric << refineCVFolds
-    << propagationModelPointer << truncationTolerance << rfDataFileName
-    << randomFieldIdForm << analyticCovIdForm << subspaceSampleType;
+    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
+    << rfDataFileName << randomFieldIdForm << analyticCovIdForm
+    << subspaceSampleType;
 }
 
 
@@ -114,8 +118,10 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> subspaceIdConstantine >> subspaceIdEnergy >> subspaceBuildSurrogate
     >> subspaceDimension >> subspaceNormalization >> numReplicates >> autoRefine
     >> maxFunctionEvals >> refineCVMetric >> refineCVFolds
-    >> propagationModelPointer >> truncationTolerance >> rfDataFileName
-    >> randomFieldIdForm >> analyticCovIdForm >> subspaceSampleType;
+    >> adaptedBasisSparseGridLev >> adaptedBasisExpOrder
+    >> adaptedBasisCollocRatio >> propagationModelPointer >> truncationTolerance
+    >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
+    >> subspaceSampleType;
 }
 
 
@@ -149,8 +155,10 @@ void DataModelRep::write(std::ostream& s) const
     << subspaceIdEnergy << subspaceBuildSurrogate
     << subspaceDimension << subspaceNormalization << numReplicates << autoRefine
     << maxFunctionEvals << refineCVMetric << refineCVFolds
-    << propagationModelPointer << truncationTolerance << rfDataFileName
-    << randomFieldIdForm << analyticCovIdForm << subspaceSampleType;
+    << adaptedBasisSparseGridLev << adaptedBasisExpOrder
+    << adaptedBasisCollocRatio << propagationModelPointer << truncationTolerance
+    << rfDataFileName << randomFieldIdForm << analyticCovIdForm
+    << subspaceSampleType;
 }
 
 

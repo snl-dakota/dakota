@@ -340,7 +340,17 @@ public:
   int softConvergenceLimit;
   /// number of cross-validation folds in guided refinement
   int refineCVFolds;
-  
+
+  /// sparse grid level for low-order PCE used to compute rotation
+  /// matrix within adapted basis approach to dimension reduction
+  unsigned short adaptedBasisSparseGridLev;
+  /// expansion order for low-order PCE used to compute rotation
+  /// matrix within adapted basis approach to dimension reduction
+  unsigned short adaptedBasisExpOrder;
+  /// collocation ratio for low-order PCE used to compute rotation
+  /// matrix within adapted basis approach to dimension reduction
+  Real adaptedBasisCollocRatio;
+
   // random field models
 
   /// Contains which type of random field model 

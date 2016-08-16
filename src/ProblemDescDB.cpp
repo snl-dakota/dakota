@@ -2496,8 +2496,9 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	
       // must be sorted by string (key)
+      {"active_subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
+      {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
       {"convergence_tolerance", P convergenceTolerance},
-      {"subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"surrogate.discont_grad_thresh", P discontGradThresh},
       {"surrogate.discont_jump_thresh", P discontJumpThresh},
       {"surrogate.neural_network_range", P annRange},
@@ -2589,6 +2590,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataModelRep::
     static KW<int, DataModelRep> Idmo[] = {	
       // must be sorted by string (key)
+        {"active_subspace.bootstrap_samples", P numReplicates},
+        {"active_subspace.dimension", P subspaceDimension},
 	{"initial_samples", P initialSamples},
 	{"max_function_evals", P maxFunctionEvals},
 	{"max_iterations", P maxIterations},
@@ -2596,8 +2599,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nested.processors_per_iterator", P subMethodProcs},
         {"rf.expansion_bases", P subspaceDimension},
         {"soft_convergence_limit", P softConvergenceLimit},
-        {"subspace.bootstrap_samples", P numReplicates},
-        {"subspace.dimension", P subspaceDimension},
         {"surrogate.decomp_support_layers", P decompSupportLayers},
         {"surrogate.folds", P numFolds},
         {"surrogate.points_total", P pointsTotal},
@@ -2789,10 +2790,12 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataModelRep::
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)  
+	{"active_subspace.normalization", P subspaceNormalization},
+	{"active_subspace.sample_type", P subspaceSampleType},
+	{"adapted_basis.expansion_order", P adaptedBasisExpOrder},
+	{"adapted_basis.sparse_grid_level", P adaptedBasisSparseGridLev},
 	{"rf.analytic_covariance", P analyticCovIdForm},
 	{"rf.expansion_form", P randomFieldIdForm},
-	{"subspace.normalization", P subspaceNormalization},
-	{"subspace.sample_type", P subspaceSampleType},
 	{"surrogate.challenge_points_file_format", P importChallengeFormat},
 	{"surrogate.export_approx_format", P exportApproxFormat},
 	{"surrogate.import_build_format", P importBuildFormat},
@@ -3051,11 +3054,11 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
+	{"active_subspace.build_surrogate", P subspaceBuildSurrogate},
+	{"active_subspace.truncation_method.bing_li", P subspaceIdBingLi},
+	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
+	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
 	{"hierarchical_tags", P hierarchicalTags},
-	{"subspace.build_surrogate", P subspaceBuildSurrogate},
-	{"subspace.truncation_method.bing_li", P subspaceIdBingLi},
-	{"subspace.truncation_method.constantine", P subspaceIdConstantine},
-	{"subspace.truncation_method.energy", P subspaceIdEnergy},
 	{"surrogate.auto_refine", P autoRefine},
 	{"surrogate.challenge_points_file_active", P importChallengeActive},
 	{"surrogate.cross_validate", P crossValidateFlag},

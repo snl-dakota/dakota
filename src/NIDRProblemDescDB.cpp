@@ -7088,10 +7088,11 @@ static Model_mp_lit
 	MP2(approxPointReuse,region),
 	MP2(marsInterpolation,linear),
 	MP2(marsInterpolation,cubic),
+	MP2(modelType,active_subspace),
+	MP2(modelType,adapted_basis),
 	MP2(modelType,nested),
 	MP2(modelType,random_field),
 	MP2(modelType,simulation),
-	MP2(modelType,subspace),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,global_gaussian),
@@ -7164,7 +7165,8 @@ static Model_mp_utype
 	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM);
 
 static Real
-	MP_(annRange),
+        MP_(adaptedBasisCollocRatio),
+        MP_(annRange),
 	MP_(convergenceTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
@@ -7226,6 +7228,10 @@ static bool
   MP_(subspaceIdConstantine),
   MP_(subspaceIdEnergy),
   MP_(subspaceBuildSurrogate);
+
+static unsigned short
+	MP_(adaptedBasisSparseGridLev),
+	MP_(adaptedBasisExpOrder);
 
 static short
 	MP_(annNodes),

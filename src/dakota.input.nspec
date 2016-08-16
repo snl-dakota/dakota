@@ -2492,7 +2492,7 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
    )
   |
-  ( subspace {N_mom(lit,modelType_subspace)}
+  ( active_subspace ALIAS subspace {N_mom(lit,modelType_active_subspace)}
     actual_model_pointer STRING {N_mom(str,actualModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
     [ sample_type {0}
@@ -2517,6 +2517,15 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}
      ]
+   )
+  |
+  ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
+    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    sparse_grid_level INTEGER {N_mom(int,adaptedBasisSparseGridLev)}
+    |
+    ( expansion_order INTEGER {N_mom(int,adaptedBasisExpOrder)}
+      collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+     )
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}
