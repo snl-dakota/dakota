@@ -45,7 +45,7 @@ DataModelRep::DataModelRep():
   subspaceNormalization(SUBSPACE_NORM_DEFAULT),
   numReplicates(100), autoRefine(false), maxFunctionEvals(1000),
   refineCVMetric("root_mean_squared"), refineCVFolds(10),
-  adaptedBasisSparseGridLev(1), adaptedBasisExpOrder(1),
+  adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
   analyticCovIdForm(NOCOVAR), referenceCount(1)
 { }

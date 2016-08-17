@@ -42,6 +42,13 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 {
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.actual_model_pointer");
+  unsigned short ssg_level
+    = problem_db.get_ushort("model.adapted_basis.sparse_grid_level");
+  unsigned short exp_order
+    = problem_db.get_ushort("model.adapted_basis.expansion_order");
+  Real colloc_ratio
+    = problem_db.get_real("model.adapted_basis.collocation_ratio");
+
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
@@ -50,24 +57,27 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     // configure pilot PCE object (instantiate now; build expansion at run time)
   NonDPolynomialChaos* pce_rep;
   RealVector dim_pref;
-  if (true) {// L1 sparse grid --> Linear terms (quadratic main effects ignored)
-    //const UShortArray& level_seq
-    //  = probDescDB.get_usa("method.nond.sparse_grid_level");
-    UShortArray level_seq(1, 1);
+  if (ssg_level) {
+    // L1 isotropic sparse grid --> Linear exp (quadratic main effects ignored)
+    // L2 isotropic sparse grid --> Quadratic expansion
+    UShortArray level_seq(1, ssg_level);
     pce_rep = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
       level_seq, dim_pref, EXTENDED_U, false, false);
   }
-  else {// regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-    //const UShortArray& exp_order_seq
-    //  = probDescDB.get_usa("method.nond.expansion_order");
-    UShortArray exp_order_seq(1, 1); SizetArray colloc_pts_seq;
+  else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
+    UShortArray exp_order_seq(1, exp_order); SizetArray colloc_pts_seq;
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
     String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
     int seed = 12347;
     pce_rep = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
-      exp_order_seq, dim_pref, colloc_pts_seq, 1., // collocation_{points,ratio}
+      exp_order_seq, dim_pref, colloc_pts_seq, colloc_ratio,
       seed, EXTENDED_U, false, false, false, // piecewise, derivs, cross_valid
       import_file, import_fmt, false);       // import file, format, active_only
+  }
+  else {
+    Cerr << "Error: insufficient PCE build specification in AdaptedBasisModel."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
   }
   pcePilotExpansion.assign_rep(pce_rep);
 
