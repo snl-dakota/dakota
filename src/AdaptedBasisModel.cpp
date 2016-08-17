@@ -263,6 +263,9 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
+    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+      pcePilotExpansion.set_communicators(pl_iter);
+
     subModel.set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as

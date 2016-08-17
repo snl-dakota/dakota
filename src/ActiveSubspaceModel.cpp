@@ -883,7 +883,7 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -907,7 +907,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -931,7 +931,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -951,7 +951,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -967,10 +967,6 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
   else
     return RecastModel::derived_synchronize_nowait();
 }
-
-
-bool ActiveSubspaceModel::mapping_initialized()
-{ return subspaceInitialized; }
 
 
 void ActiveSubspaceModel::update_var_labels()
@@ -998,7 +994,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   onlineEvalConcurrency = max_eval_concurrency;
 
   if (recurse_flag) {
-    if (!mapping_initialized())
+    if (!subspaceInitialized)
       fullspaceSampler.init_communicators(pl_iter);
 
     subModel.init_communicators(pl_iter, max_eval_concurrency);
@@ -1013,7 +1009,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    if (!mapping_initialized())
+    if (!subspaceInitialized)
       fullspaceSampler.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);

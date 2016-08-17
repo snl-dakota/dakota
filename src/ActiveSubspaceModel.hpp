@@ -343,6 +343,10 @@ protected:
   IntIntMap surrIdMap;
 };
 
+
+inline bool ActiveSubspaceModel::mapping_initialized()
+{ return subspaceInitialized; }
+
 } // namespace Dakota
 
 #endif

@@ -187,7 +187,7 @@ protected:
 
 inline void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!adaptedBasisInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -200,7 +200,7 @@ inline void AdaptedBasisModel::derived_evaluate(const ActiveSet& set)
 
 inline void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!adaptedBasisInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -213,7 +213,7 @@ inline void AdaptedBasisModel::derived_evaluate_nowait(const ActiveSet& set)
 
 inline const IntResponseMap& AdaptedBasisModel::derived_synchronize()
 {
-  if (!mapping_initialized()) {
+  if (!adaptedBasisInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -226,7 +226,7 @@ inline const IntResponseMap& AdaptedBasisModel::derived_synchronize()
 
 inline const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
 {
-  if (!mapping_initialized()) {
+  if (!adaptedBasisInitialized) {
     Cerr << "\nError (adapted basis model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -251,8 +251,11 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   onlineEvalConcurrency = max_eval_concurrency;
 
-  if (recurse_flag)
+  if (recurse_flag) {
+    //if (!adaptedBasisInitialized) // see ActiveSubspaceModel
+      pcePilotExpansion.init_communicators(pl_iter);
     subModel.init_communicators(pl_iter, max_eval_concurrency);
+  }
 }
 
 
@@ -260,8 +263,10 @@ inline void AdaptedBasisModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
-  if (recurse_flag)
+  if (recurse_flag) {
+    pcePilotExpansion.free_communicators(pl_iter);
     subModel.free_communicators(pl_iter, max_eval_concurrency);
+  }
 }
 
 
