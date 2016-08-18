@@ -210,7 +210,17 @@ void write_data_tabular(std::ostream& tabular_ostream,
 {
   write_leading_columns(tabular_ostream, counter, iface_id, tabular_format);
   vars.write_tabular(tabular_ostream);
-  response.write_tabular(tabular_ostream);
+  response.write_tabular(tabular_ostream); // includes EOL
+}
+
+
+void write_data_tabular(std::ostream& tabular_ostream, 
+			const Variables& vars, const String& iface_id, 
+			size_t counter, unsigned short tabular_format)
+{
+  write_leading_columns(tabular_ostream, counter, iface_id, tabular_format);
+  vars.write_tabular(tabular_ostream); // no EOL
+  tabular_ostream << '\n';
 }
 
 

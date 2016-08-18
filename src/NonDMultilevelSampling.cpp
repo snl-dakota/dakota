@@ -14,11 +14,14 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
+
+//#define REORDER_LF_INCREMENTS
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -31,7 +34,8 @@ namespace Dakota {
 NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+  exportSampleSets(false)
 {
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
@@ -241,6 +245,9 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
+	// export separate output files for each data set:
+	if (exportSampleSets)
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -350,7 +357,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // Initialize for pilot sample (shared sample count discarding any excess)
   numSamples = std::min(delta_N_l[lf_form_level.first],
 			delta_N_l[hf_form_level.first]);
-  shared_increment(iter);
+  shared_increment(iter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 		     sum_HH, N_lf, N_hf);
   raw_N_lf += numSamples; raw_N_hf += numSamples;
@@ -378,7 +385,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     numSamples = (size_t)std::floor(incr + .5); // round
 
     if (numSamples) { // small incr did not round up
-      shared_increment(++iter);
+      shared_increment(++iter, 0);
       accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
 			 sum_HH, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
@@ -394,7 +401,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // Compute LF increment based on the evaluation ratio
   // --------------------------------------------------
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  if (lf_increment(avg_eval_ratio, N_lf, N_hf)) {
+  if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++iter, 0)) { // level 0
     accumulate_cv_sums(sum_L_refined, N_lf);
     raw_N_lf += numSamples;
   }
@@ -480,6 +487,9 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
+	// export separate output files for each data set:
+	if (exportSampleSets)
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -529,7 +539,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
 	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
 	    accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
 	      Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -642,6 +652,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
+#ifdef REORDER_LF_INCREMENTS
+  RealVector avg_eval_ratios(num_cv_lev);
+  exportSampleSets = true; // prior to adding an input spec option
+#endif
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
     lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
@@ -705,6 +719,9 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
+	// export separate output files for each data set:
+	if (exportSampleSets)
+	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -748,22 +765,23 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio
-	    = eval_ratio(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
-			 sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
-			 sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
-			 sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
-			 sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
-			 N_hf[lev], var_Yl, rho_dot2_LH);
+	  avg_eval_ratio =
+#ifdef REORDER_LF_INCREMENTS
+	    avg_eval_ratios[lev] =
+#endif
+	    eval_ratio(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
+		       sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
+		       sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
+		       sum_Hlm1_Llm1[1], sum_Hl_Hl[1], sum_Hl_Hlm1[1],
+		       sum_Hlm1_Hlm1[1], hf_lev_cost/lf_lev_cost, lev,
+		       N_hf[lev], var_Yl, rho_dot2_LH);
 	  avg_rho_dot2_LH[lev] = average(rho_dot2_LH[lev], numFunctions);
 	  Lambda[lev] = 1. - avg_rho_dot2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
+#ifndef REORDER_LF_INCREMENTS
 	  // now execute additional LF sample increment, if needed
-	  // *** TO DO: for imported data/seed progression reasons, consider
-	  //     reordering LF increments to follow HF levels (decouple seed
-	  //     progression to have LF increments follow pilot rst duplicates)
-	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev])) {
+	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
 	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,
 				  lev, N_lf[lev]);
 	    if (outputLevel == DEBUG_OUTPUT) {
@@ -773,6 +791,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	    }
 	    raw_N_lf[lev] += numSamples;
 	  }
+#endif
 	}
 	else { // no LF model for this level; accumulate only multilevel
 	       // discrepancy sums (Hl is Yl) as in standard MLMC
@@ -811,6 +830,24 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
+
+#ifdef REORDER_LF_INCREMENTS
+    // for imported data/seed progression reasons, reorder LF increments to
+    // follow HF levels (decouple seed progression to have LF increments
+    // follow pilot rst duplicates)
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      // now execute additional LF sample increment, if needed
+      if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev], iter, lev)) {
+	accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
+	raw_N_lf[lev] += numSamples;
+	if (outputLevel == DEBUG_OUTPUT) {
+	  Cout << "Accumulated sums (L_refined[1,2]):\n";
+	  write_data(Cout, sum_Ll_refined[1]);
+	  write_data(Cout, sum_Ll_refined[2]);
+	}
+      }
+    }
+#endif
 
     // update targets based on variance estimates
     Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
@@ -1730,7 +1767,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 }
 
 
-void NonDMultilevelSampling::shared_increment(size_t iter)
+void NonDMultilevelSampling::shared_increment(size_t iter, size_t lev)
 {
   if (iter == _NPOS)  Cout << "\nCVMC sample increments: ";
   else if (iter == 0) Cout << "\nCVMC pilot sample: ";
@@ -1741,6 +1778,9 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
 
   // generate new MC parameter sets
   get_parameter_sets(iteratedModel);// pull dist params from any model
+  // export separate output files for each data set:
+  if (exportSampleSets) // for HF+LF models, use the HF interface id
+    export_all_samples("cv_", iteratedModel.truth_model(), iter, lev);
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
 }
@@ -1748,7 +1788,7 @@ void NonDMultilevelSampling::shared_increment(size_t iter)
 
 bool NonDMultilevelSampling::
 lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-	     const SizetArray& N_hf)
+	     const SizetArray& N_hf, size_t iter, size_t lev)
 {
   // ----------------------------------------------
   // Compute Final LF increment for control variate
@@ -1766,14 +1806,18 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
     Cout << std::endl;
 
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);// pull dist params from any model
+    // export separate output files for each data set:
+    if (exportSampleSets)
+      export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
+
     if (maxIterations) { // only preclude explicit spec of 0 (default is -1)
       // mode for hierarchical surrogate model can be uncorrected surrogate
       // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
       // --> set at calling level
       //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
-      // generate new MC parameter sets
-      get_parameter_sets(iteratedModel);// pull dist params from any model
       // compute allResponses from allVariables using hierarchical model
       evaluate_parameter_sets(iteratedModel, true, false);
       return true;
@@ -1886,9 +1930,9 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
       if (rho_dot_sq < 1.) { // protect against division by 0
 	eval_ratio = std::sqrt(cost_ratio * rho_dot_sq / (1.-rho_dot_sq));
 	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = " << cost_ratio
-	       << " rho_dot_sq = " << rho_dot_sq << " eval_ratio = "
-	       << eval_ratio << std::endl;
+	  Cout << "eval_ratio() QoI " << qoi+1 << ": cost_ratio = "
+	       << cost_ratio << " rho_dot_sq = " << rho_dot_sq
+	       << " eval_ratio = " << eval_ratio << std::endl;
 	avg_eval_ratio += eval_ratio;
 	++num_avg;
       }
@@ -2180,6 +2224,41 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
     std_mom(2,qoi) = cm3 / (cm2 * stdev);    // skewness
     std_mom(3,qoi) = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
   }
+}
+
+
+void NonDMultilevelSampling::
+export_all_samples(String root_prepend, const Model& model, size_t iter,
+		   size_t lev)
+{
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += boost::lexical_cast<std::string>(iter)     +  "_l"
+                   +  boost::lexical_cast<std::string>(lev)      +  '_'
+                   +  boost::lexical_cast<std::string>(num_samp) + ".dat";
+  Variables vars(model.current_variables().copy());
+
+  unsigned short format = TABULAR_ANNOTATED;
+  String context_message("NonDMultilevelSampling::export_all_samples");
+  StringArray no_resp_labels; String cntr_label("sample_id");
+
+  // Rather than hard override, rely on output_precision user spec
+  //int save_wp = write_precision;
+  //write_precision = 16; // override
+  std::ofstream tabular_stream;
+  TabularIO::open_file(tabular_stream, tabular_filename, context_message);
+  TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
+				  cntr_label, format);
+  for (i=0; i<num_samp; ++i) {
+    sample_to_variables(allSamples[i], vars); // NonDSampling version
+    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1, format);
+  }
+
+  TabularIO::close_file(tabular_stream, tabular_filename, context_message);
+  //write_precision = save_wp; // restore
 }
 
 
