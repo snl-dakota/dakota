@@ -21,7 +21,7 @@
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 
-//#define REORDER_LF_INCREMENTS
+#define REORDER_LF_INCREMENTS
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -245,9 +245,12 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
-	// export separate output files for each data set:
+
+	// export separate output files for each data set.  surrogate_model()
+	// has the correct model_form index for all levels.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -487,9 +490,15 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
-	// export separate output files for each data set:
+
+	// export separate output files for each data set.  Note that
+	// surrogate_model() is indexed with hf_model_form at this stage for
+	// all levels.  The exported discretization level (e.g., state variable
+	// value) can't capture a level discrepancy for lev>0 and will reflect
+	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -719,9 +728,15 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
 	// generate new MC parameter sets
 	get_parameter_sets(iteratedModel);// pull dist params from any model
-	// export separate output files for each data set:
+
+	// export separate output files for each data set.  Note that
+	// surrogate_model() is indexed with hf_model_form at this stage for
+	// all levels.  The exported discretization level (e.g., state variable
+	// value) can't capture a level discrepancy for lev>0 and will reflect
+	// the most recent evaluation state.
 	if (exportSampleSets)
-	  export_all_samples("ml_", iteratedModel.truth_model(), iter, lev);
+	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+
 	// compute allResponses from allVariables using hierarchical model
 	evaluate_parameter_sets(iteratedModel, true, false);
 
@@ -837,7 +852,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     // follow pilot rst duplicates)
     for (lev=0; lev<num_cv_lev; ++lev) {
       // now execute additional LF sample increment, if needed
-      if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev], iter, lev)) {
+      if (delta_N_hf[lev] &&
+	  lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev], iter, lev)) {
 	accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
 	raw_N_lf[lev] += numSamples;
 	if (outputLevel == DEBUG_OUTPUT) {
@@ -1778,9 +1794,11 @@ void NonDMultilevelSampling::shared_increment(size_t iter, size_t lev)
 
   // generate new MC parameter sets
   get_parameter_sets(iteratedModel);// pull dist params from any model
+
   // export separate output files for each data set:
-  if (exportSampleSets) // for HF+LF models, use the HF interface id
+  if (exportSampleSets) // for HF+LF models, use the HF tags
     export_all_samples("cv_", iteratedModel.truth_model(), iter, lev);
+
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel, true, false);
 }
