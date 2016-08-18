@@ -94,6 +94,10 @@ protected:
   /// subset that is approximated
   IntSet surrogateFnIndices;
 
+  /// indicates that discrepancy correction instance has been
+  /// initialized following construction
+  bool initializedFlag;
+
   /// approximation correction approach to be used: NO_CORRECTION,
   /// ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION, or COMBINED_CORRECTION.
   short correctionType;
@@ -169,8 +173,6 @@ private:
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
 
-  bool initializedFlag;
-
   /// data that is shared among all correction Approximations
   SharedApproxData sharedData;
   /// array of additive corrections; surrogate models of a model
@@ -213,7 +215,7 @@ private:
 
 
 inline DiscrepancyCorrection::DiscrepancyCorrection():
-  correctionType(NO_CORRECTION), initializedFlag(false),
+  initializedFlag(false), correctionType(NO_CORRECTION), 
   correctionOrder(0), dataOrder(1), correctionComputed(false)
 { }
 
