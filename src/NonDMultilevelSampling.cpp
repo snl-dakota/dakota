@@ -21,7 +21,7 @@
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 
-#define REORDER_LF_INCREMENTS
+//#define REORDER_LF_INCREMENTS
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -795,7 +795,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
 #ifndef REORDER_LF_INCREMENTS
-	  // now execute additional LF sample increment, if needed
+	  // now execute additional LF sample increment, if needed.  This is
+	  // the default operation ordering, with simplest bookkeeping/flow.
 	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
 	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,
 				  lev, N_lf[lev]);
@@ -851,6 +852,15 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     // follow HF levels (decouple seed progression to have LF increments
     // follow pilot rst duplicates)
     for (lev=0; lev<num_cv_lev; ++lev) {
+      if (lev) {
+	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);   // both resp
+	iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
+	iteratedModel.truth_model_indices(lf_model_form,     lev);
+      }
+      else {
+	iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);//surr resp
+	iteratedModel.surrogate_model_indices(lf_model_form, 0);
+      }
       // now execute additional LF sample increment, if needed
       if (delta_N_hf[lev] &&
 	  lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev], iter, lev)) {
