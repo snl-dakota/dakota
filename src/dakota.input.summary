@@ -1216,6 +1216,17 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
+	  [ export_sample_sequence
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ distribution
