@@ -81,6 +81,14 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
+
+  // define level mappings even if none (sizing of finalStatistics deferred
+  // until mappings are known)
+  RealVectorArray empty_rva; // empty
+  ((NonD*)pcePilotExpRepPtr)->
+    requested_levels(empty_rva, empty_rva, empty_rva, empty_rva,
+		     RELIABILITIES, COMPONENT, true, false);
+
   // since this construction precedes the construction of AdaptedBasisModel
   // member data, pcePilotExpansion would get overwritten by its (default)
   // initialization.  Therefore, we initialize pcePilotExpRepPtr above and then
