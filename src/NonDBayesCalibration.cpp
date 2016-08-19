@@ -67,11 +67,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.proposal_covariance_input_type")),
   burnInSamples(probDescDB.get_int("method.burn_in_samples")),
   posteriorStatsKL(probDescDB.get_bool("method.posterior_stats.kl_divergence")),
-  posteriorStatsMutual(probDescDB.get_bool("method.posterior_stats.mutual_info")),
+  posteriorStatsMutual(
+    probDescDB.get_bool("method.posterior_stats.mutual_info")),
   subSamplingPeriod(probDescDB.get_int("method.sub_sampling_period")),
   exportMCMCFilename(
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
-  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_mcmc_format"))
+  exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format"))
 {
   // assign default proposalCovarType
   if (proposalCovarType.empty()) {

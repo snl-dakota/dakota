@@ -21,8 +21,8 @@ AdaptedBasisModel* AdaptedBasisModel::abmInstance(NULL);
 
 AdaptedBasisModel::AdaptedBasisModel(ProblemDescDB& problem_db):
   RecastModel(problem_db, get_sub_model(problem_db)),
-  numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
-  adaptedBasisInitialized(false),
+  pcePilotExpansion(pcePilotExpRepPtr, false), numFullspaceVars(subModel.cv()),
+  numFunctions(subModel.num_functions()), adaptedBasisInitialized(false),
   reducedRank(numFullspaceVars)//problem_db.get_int("model.subspace.dimension")
 {
   abmInstance = this;
@@ -55,39 +55,45 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   Model actual_model(problem_db.get_model());
 
     // configure pilot PCE object (instantiate now; build expansion at run time)
-  NonDPolynomialChaos* pce_rep;
   RealVector dim_pref;
   if (ssg_level) {
     // L1 isotropic sparse grid --> Linear exp (quadratic main effects ignored)
     // L2 isotropic sparse grid --> Quadratic expansion
     UShortArray level_seq(1, ssg_level);
-    pce_rep = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
-      level_seq, dim_pref, EXTENDED_U, false, false);
+    pcePilotExpRepPtr
+      = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
+				level_seq, dim_pref, EXTENDED_U, false, false);
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
     UShortArray exp_order_seq(1, exp_order); SizetArray colloc_pts_seq;
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
     String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
     int seed = 12347;
-    pce_rep = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
-      exp_order_seq, dim_pref, colloc_pts_seq, colloc_ratio,
-      seed, EXTENDED_U, false, false, false, // piecewise, derivs, cross_valid
-      import_file, import_fmt, false);       // import file, format, active_only
+    pcePilotExpRepPtr
+      = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
+				exp_order_seq, dim_pref, colloc_pts_seq,
+				colloc_ratio, seed, EXTENDED_U,
+				false, false, false,// piecewise,derivs,crossval
+				import_file, import_fmt, false); // active_only
   }
   else {
     Cerr << "Error: insufficient PCE build specification in AdaptedBasisModel."
 	 << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  pcePilotExpansion.assign_rep(pce_rep);
+  // since this construction precedes the construction of AdaptedBasisModel
+  // member data, pcePilotExpansion would get overwritten by its (default)
+  // initialization.  Therefore, we initialize pcePilotExpRepPtr above and then
+  // assign it into pcePilotExpansion in the AdaptedBasisModel initializer list.
+  //pcePilotExpansion.assign_rep(pce_rep);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  Model u_space_model(pcePilotExpansion.algorithm_space_model());
+  Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
 
-  // Return transformed model subordinate to NonDExpansion::uSpaceModel:
+  // Return transformed model subordinate to the DataFitSurrModel:
   return u_space_model.subordinate_model();
 }
 

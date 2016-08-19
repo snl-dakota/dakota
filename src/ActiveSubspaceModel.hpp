@@ -164,14 +164,14 @@ protected:
   void identify_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
-  double computeBingLiCriterion(RealVector& singular_values);
+  unsigned int computeBingLiCriterion(RealVector& singular_values);
 
   /// compute Constantine's metric to identify the active subspace
-  double computeConstantineMetric(RealVector& singular_values);
+  unsigned int computeConstantineMetric(RealVector& singular_values);
 
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
-  double computeEnergyCriterion(RealVector& singular_values);
+  unsigned int computeEnergyCriterion(RealVector& singular_values);
 
   /// Build surrogate over active subspace
   void build_surrogate();

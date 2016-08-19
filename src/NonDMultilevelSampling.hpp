@@ -82,10 +82,10 @@ private:
 
   /// perform a shared increment of LF and HF samples for purposes of
   /// computing/updating the evaluation ratio and the MSE ratio
-  void shared_increment(size_t iter);
+  void shared_increment(size_t iter, size_t lev);
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
-		    const SizetArray& N_hf);
+		    const SizetArray& N_hf, size_t iter, size_t lev);
 
   /// distribute pilotSamples input across model forms or levels
   void load_pilot_sample(SizetArray& delta_N_l);
@@ -339,7 +339,11 @@ private:
 		     const SizetArray& N_refined, size_t lev,
 		     const RealVector& beta_dot, const RealVector& gamma,
 		     RealVector& H_raw_mom);
-  
+
+  /// export allSamples to tagged tabular file
+  void export_all_samples(String root_prepend, const Model& model,
+			  size_t iter, size_t lev);
+
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
   void convert_moments(const RealMatrix& raw_moments,
@@ -389,6 +393,12 @@ private:
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
+
+  /// if defined, export each of the sample increments in ML, CV, MLCV
+  /// using tagged tabular files
+  bool exportSampleSets;
+  /// format for exporting sample increments using tagged tabular files
+  unsigned short exportSamplesFormat;
 };
 
 

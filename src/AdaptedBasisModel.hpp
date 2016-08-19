@@ -148,6 +148,9 @@ protected:
   // Member data
   // ---
 
+  /// PCE representation pointer that is initialized in get_sub_model() and
+  /// then assigned into pcePilotExpansion in the constructor initializer list
+  Iterator* pcePilotExpRepPtr;
   /// low-order (linear or quadratic) PCE generator for computing rotation
   /// matrices A_i for each of the QoI; this is low-order and potentially
   /// high-dimension whereas a client PCE could be high-order in the

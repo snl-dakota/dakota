@@ -368,9 +368,9 @@ compute_svd()
 void ActiveSubspaceModel::
 identify_subspace()
 {
-  double bing_li_rank = computeBingLiCriterion(singularValues);
-  double constantine_rank = computeConstantineMetric(singularValues);
-  double energy_rank = computeEnergyCriterion(singularValues);
+  unsigned int bing_li_rank = computeBingLiCriterion(singularValues);
+  unsigned int constantine_rank = computeConstantineMetric(singularValues);
+  unsigned int energy_rank = computeEnergyCriterion(singularValues);
 
   if (reducedRank > 0 && reducedRank <= singularValues.length()) {
     if (outputLevel >= NORMAL_OUTPUT)
@@ -452,7 +452,7 @@ identify_subspace()
   }
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeBingLiCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -553,8 +553,8 @@ computeBingLiCriterion(RealVector& singular_values)
   }
 
   // Cutoff is 1st minimum of the criterion
-  int rank = 0;
-  for (size_t i = 1; i < bing_li_criterion.size(); ++i)
+  unsigned int rank = 0;
+  for (unsigned int i = 1; i < bing_li_criterion.size(); ++i)
   {
     if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
@@ -570,7 +570,7 @@ computeBingLiCriterion(RealVector& singular_values)
   return rank;
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeConstantineMetric(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -637,9 +637,9 @@ computeConstantineMetric(RealVector& singular_values)
   }
 
   // Cutoff is global minimum of metric
-  int rank = 0;
+  unsigned int rank = 0;
   Real min_val = 0;
-  for (size_t i = 0; i < constantine_metric.size(); ++i)
+  for (unsigned int i = 0; i < constantine_metric.size(); ++i)
   {
     if(constantine_metric[i] < min_val || i == 0)
     {
@@ -655,7 +655,7 @@ computeConstantineMetric(RealVector& singular_values)
   return rank;
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeEnergyCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -689,8 +689,8 @@ computeEnergyCriterion(RealVector& singular_values)
     Cout << "]" << std::endl;
   }
 
-  int rank = 0;
-  for (size_t i = 0; i < num_vals; ++i)
+  unsigned int rank = 0;
+  for (unsigned int i = 0; i < num_vals; ++i)
   {
     if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
     {
