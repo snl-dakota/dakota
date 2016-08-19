@@ -316,8 +316,8 @@ void AdaptedBasisModel::identify_subspace()
 
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   pcePilotExpansion.run(pl_iter);
-  const RealVectorArray& pce_coeffs
-    = pcePilotExpansion.iterated_model().approximation_coefficients();
+  Model pce_model(pcePilotExpansion.algorithm_space_model());
+  const RealVectorArray& pce_coeffs = pce_model.approximation_coefficients();
 
   //////////////////////////////////////////////////////////////////////////////
 
