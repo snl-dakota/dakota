@@ -1089,8 +1089,11 @@ public:
 
   /// the file name from the \c export_mcmc_points_file specification
   String exportMCMCPtsFile;
-  /// tabular format for the MCMC chain export file
-  unsigned short exportMCMCFormat;
+  /// flag for exporting the sequence of sample increments within
+  /// multilevel sampling from the \c export_sample_sequence specification
+  bool exportSampleSeqFlag;
+  /// tabular format for the MCMC chain and MLMC sample sequence exports
+  unsigned short exportSamplesFormat;
 
 private:
 

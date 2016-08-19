@@ -35,7 +35,9 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
-  exportSampleSets(false)
+  exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
+  exportSamplesFormat(
+    probDescDB.get_ushort("method.nond.export_samples_format"))
 {
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
@@ -663,7 +665,6 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     lf_lev_cost, hf_lev_cost;
 #ifdef REORDER_LF_INCREMENTS
   RealVector avg_eval_ratios(num_cv_lev);
-  exportSampleSets = true; // prior to adding an input spec option
 #endif
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
@@ -2269,7 +2270,6 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
                    +  boost::lexical_cast<std::string>(num_samp) + ".dat";
   Variables vars(model.current_variables().copy());
 
-  unsigned short format = TABULAR_ANNOTATED;
   String context_message("NonDMultilevelSampling::export_all_samples");
   StringArray no_resp_labels; String cntr_label("sample_id");
 
@@ -2279,10 +2279,11 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   std::ofstream tabular_stream;
   TabularIO::open_file(tabular_stream, tabular_filename, context_message);
   TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
-				  cntr_label, format);
+				  cntr_label, exportSamplesFormat);
   for (i=0; i<num_samp; ++i) {
     sample_to_variables(allSamples[i], vars); // NonDSampling version
-    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1, format);
+    TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,
+				  exportSamplesFormat);
   }
 
   TabularIO::close_file(tabular_stream, tabular_filename, context_message);

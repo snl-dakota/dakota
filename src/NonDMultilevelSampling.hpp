@@ -397,6 +397,8 @@ private:
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
   bool exportSampleSets;
+  /// format for exporting sample increments using tagged tabular files
+  unsigned short exportSamplesFormat;
 };
 
 
