@@ -21,6 +21,7 @@
 #include "DataFitSurrModel.hpp"
 #include "HierarchSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
+#include "AdaptedBasisModel.hpp"
 #include "RandomFieldModel.hpp"
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
@@ -380,8 +381,10 @@ Model* Model::get_model(ProblemDescDB& problem_db)
     else
       return new DataFitSurrModel(problem_db);  // local/multipt/global approx
   }
-  else if ( model_type == "subspace" )
+  else if ( model_type == "active_subspace" )
     return new ActiveSubspaceModel(problem_db);
+  else if ( model_type == "adapted_basis" )
+    return new AdaptedBasisModel(problem_db);
   else if ( model_type == "random_field" )
     return new RandomFieldModel(problem_db);
   else {
@@ -535,7 +538,8 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
   const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :
     ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
       all_continuous_upper_bounds() );
-  SizetMultiArrayConstView cv_ids = (active_derivs) ? continuous_variable_ids() :
+  SizetMultiArrayConstView cv_ids = (active_derivs) ?
+    continuous_variable_ids() :
     ( (inactive_derivs) ? inactive_continuous_variable_ids() : 
       all_continuous_variable_ids() );
   UShortMultiArrayConstView cv_types = (active_derivs) ? 
@@ -2487,6 +2491,110 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
   }
 
   return use_est_deriv;
+}
+
+
+/** Constructor helper to manage model recastings for data import/export. */
+bool Model::manage_data_recastings()
+{
+  if (modelRep) // should not occur: protected fn only used by the letter
+    return modelRep->manage_data_recastings(); // fwd to letter
+  else { // letter lacking redefinition of virtual fn.
+    // Test for any recasting or nesting within actualModel: we assume that
+    // user data import is post-nesting, but pre-recast.
+    // (1) data is imported at the user-space level but then must be applied
+    //     within the transformed space.  Transform imported data at run time
+    //     in order to capture latest initialize() calls to RecastModels.
+    // (2) stop the recursion if a nested model is encountered: we will apply
+    //     any recastings that occur following the last nesting. 
+    // (3) Additional surrogates in this recursion hierarchy are ignored.
+    ModelList& sub_models = subordinate_models(); // populates/returns modelList
+    ModelLIter ml_it; size_t i, num_models = sub_models.size();
+    bool manage_recasting = false;
+    recastFlags.assign(num_models, false);
+    // detect recasting needs top down
+    for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
+      if (ml_it->model_type()      == "recast")
+	manage_recasting = recastFlags[i] = true;
+      else if (ml_it->model_type() == "nested")
+	break;
+
+    if (!manage_recasting) recastFlags.clear();
+    return manage_recasting;
+  }
+}
+
+
+void Model::
+user_space_to_iterator_space(const Variables& user_vars,
+			     const Response&  user_resp,
+			     Variables& iter_vars, Response& iter_resp)
+{
+  if (modelRep) // fwd to letter
+    return modelRep->user_space_to_iterator_space(user_vars, user_resp,
+						  iter_vars, iter_resp);
+  else { // letter lacking redefinition of virtual fn.
+
+    iter_vars = user_vars; iter_resp = user_resp; // shallow copies
+
+    // apply recastings bottom up (e.g., for data import)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    // (don't want to incur this overhead for every import/export)
+    ModelLRevIter ml_rit; size_t i;
+    for (ml_rit =modelList.rbegin(), i=modelList.size()-1;
+	 ml_rit!=modelList.rend(); ++ml_rit, --i)
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables recast_vars = ml_rit->current_variables(); // shallow copy
+	Response  recast_resp = ml_rit->current_response();  // shallow copy
+	// to propagate vars bottom up, inverse of std transform is reqd
+	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
+	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
+	//recast_model_rep->
+	//  inverse_transform_set(iter_vars, iter_set, recast_set);
+	// to propagate response bottom up, std transform is used
+	recast_model_rep->
+	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
+	// reassign rep pointers (no actual data copying)
+	iter_vars = recast_vars; iter_resp = recast_resp;// iter_set=recast_set;
+      }
+  }
+}
+
+
+void Model::
+iterator_space_to_user_space(const Variables& iter_vars,
+			     const Response&  iter_resp,
+			     Variables& user_vars, Response& user_resp)
+{
+  if (modelRep) // fwd to letter
+    return modelRep->iterator_space_to_user_space(iter_vars, iter_resp,
+						  user_vars, user_resp);
+  else { // letter lacking redefinition of virtual fn.
+
+    user_vars = iter_vars; user_resp = iter_resp; // shallow copies
+
+    // apply recastings top down (e.g., for data export)
+    // modelList assigned in manage_data_recastings() -> subordinate_models()
+    // (don't want to incur this overhead for every import/export)
+    ModelLIter ml_it; size_t i;
+    for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i)
+      if (recastFlags[i]) {
+	// utilize RecastModel::current{Variables,Response} to xform data
+	Variables recast_vars = ml_it->current_variables(); // shallow copy
+	Response  recast_resp = ml_it->current_response();  // shallow copy
+	// to propagate vars top down, forward transform is reqd
+	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
+	recast_model_rep->transform_variables(user_vars, recast_vars);
+	//recast_model_rep->transform_set(user_vars, user_set, recast_set);
+	// to propagate response top down, inverse transform is used.  Note:
+	// derivatives are not currently exported --> a no-op for Nataf.
+	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
+						     user_resp, recast_resp);
+	// reassign rep pointers (no actual data copying)
+	user_vars = recast_vars; user_resp = recast_resp;// user_set=recast_set;
+      }
+  }
 }
 
 

@@ -73,8 +73,6 @@ public:
   void apply(const Variables& vars, Response& approx_response,
 	     bool quiet_flag = false);
 
-  /// indicates an active correction via non-empty correctionType
-  bool active() const;
   /// return correctionType
   short correction_type() const;
   /// return correctionOrder
@@ -95,6 +93,10 @@ protected:
   /// for mixed response sets, this array specifies the response function
   /// subset that is approximated
   IntSet surrogateFnIndices;
+
+  /// indicates that discrepancy correction instance has been
+  /// initialized following construction
+  bool initializedFlag;
 
   /// approximation correction approach to be used: NO_CORRECTION,
   /// ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION, or COMBINED_CORRECTION.
@@ -171,8 +173,6 @@ private:
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
 
-  bool initializedFlag;
-
   /// data that is shared among all correction Approximations
   SharedApproxData sharedData;
   /// array of additive corrections; surrogate models of a model
@@ -215,7 +215,8 @@ private:
 
 
 inline DiscrepancyCorrection::DiscrepancyCorrection():
-  correctionType(NO_CORRECTION), initializedFlag(false)
+  initializedFlag(false), correctionType(NO_CORRECTION), 
+  correctionOrder(0), dataOrder(1), correctionComputed(false)
 { }
 
 
@@ -227,10 +228,6 @@ DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
 
 inline DiscrepancyCorrection::~DiscrepancyCorrection()
 { }
-
-
-inline bool DiscrepancyCorrection::active() const
-{ return (correctionType != NO_CORRECTION); }
 
 
 inline short DiscrepancyCorrection::correction_type() const

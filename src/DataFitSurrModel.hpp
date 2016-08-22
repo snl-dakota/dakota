@@ -287,8 +287,6 @@ private:
   void initialize_export();
   /// finalize file stream for exporting surrogate evaluations
   void finalize_export();
-  /// initialize manageRecasting and recastFlags for data import/export
-  void manage_data_recastings();
   /// initialize file stream for exporting surrogate evaluations
   void export_point(int eval_id, const Variables& vars, const Response& resp);
 
@@ -341,11 +339,6 @@ private:
   /// type of point reuse for approximation builds: \c all, \c region
   /// (default if points file), or \c none (default if no points file)
   String pointReuse;
-  /// flag indicating need to manage data recastings when importing
-  /// build data or exporting approximate evaluations
-  bool manageRecasting;
-  /// a key indicating which models within a model recursion involve recasting
-  BoolDeque recastFlags;
   /// file name from \c import_build_points_file specification
   String importPointsFile;
   /// file name from \c export_approx_points_file specification
@@ -462,6 +455,17 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
   responseMode = mode;
+
+  // Compared to HierarchSurrModel, we don't need to be as strict in validating
+  // AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is an
+  // admissible option in the case of global data fits.  However,
+  // MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
+  if ( !corrType && mode == MODEL_DISCREPANCY ) {
+    Cerr << "Error: activation of mode MODEL_DISCREPANCY requires "
+	 << "specification of a correction type." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   if (mode == BYPASS_SURROGATE) // recurse in this case
     actualModel.surrogate_response_mode(mode);
 }

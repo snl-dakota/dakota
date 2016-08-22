@@ -1815,7 +1815,7 @@ int TestDriverInterface::transient_diffusion_1d()
   return 0;
 }
 
- int TestDriverInterface::predator_prey()
+int TestDriverInterface::predator_prey()
 {
   // ------------------------------------------------------------- //
   // Pre-processing 

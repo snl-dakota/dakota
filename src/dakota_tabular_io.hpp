@@ -124,9 +124,15 @@ void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
 			   const String& iface_id, 
 			   unsigned short tabular_format);
 
-/// Output a row of tabular data from variables and response object
-/// used by graphics to append to tabular file during iteration.  All
-/// active/inactive variables written in input spec order.
+/// Output a row of tabular data from a variables object.  All active/inactive
+/// variables written in input spec order.  Conditionally include interface ID.
+/// Primary uses: output of sampling sets.
+void write_data_tabular(std::ostream& tabular_ostream, 
+			const Variables& vars, const String& iface, 
+			size_t counter, unsigned short tabular_format);
+
+/// Output a row of tabular data from variables and response objects.
+/// All active/inactive variables written in input spec order.
 /// Conditionally include interface ID.  Primary uses: environment
 /// tabular data, pre-run output, surrogate approx evals.
 void write_data_tabular(std::ostream& tabular_ostream, 

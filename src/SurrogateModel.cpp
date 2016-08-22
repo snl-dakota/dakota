@@ -30,8 +30,13 @@ namespace Dakota {
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
-  responseMode(AUTO_CORRECTED_SURROGATE), surrModelEvalCntr(0), approxBuilds(0)
+  corrType(problem_db.get_short("model.surrogate.correction_type")),
+  surrModelEvalCntr(0), approxBuilds(0)
 {
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
     for (int i=0; i<numFns; ++i)
@@ -50,12 +55,16 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 SurrogateModel::
 SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const SharedVariablesData& svd, const SharedResponseData& srd,
-	       const ActiveSet& set, short output_level):
+	       const ActiveSet& set, short corr_type, short output_level):
   Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
 	set, output_level),
-  responseMode(AUTO_CORRECTED_SURROGATE), surrModelEvalCntr(0), approxBuilds(0)
+  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
 {
   modelType = "surrogate";
+
+  // assign default responseMode based on correction specification;
+  // NO_CORRECTION (0) is default
+  responseMode = (corrType) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
 
   // set up surrogateFnIndices to use default (all fns are approximated)
   for (int i=0; i<numFns; ++i)

@@ -40,7 +40,6 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
-  manageRecasting(false),
   exportSurrogate(problem_db.get_bool("model.surrogate.export_surrogate")),
   importPointsFile(
     problem_db.get_string("model.surrogate.import_build_points_file")),
@@ -140,10 +139,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     cache, am_interface_id, fn_labels), false);
 
   // initialize the DiscrepancyCorrection instance
-  short corr_type = problem_db.get_short("model.surrogate.correction_type");
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
-      problem_db.get_short("model.surrogate.correction_order"));
+  deltaCorr.initialize(*this, surrogateFnIndices, corrType,
+    problem_db.get_short("model.surrogate.correction_order"));
 
   import_points(
     problem_db.get_ushort("model.surrogate.import_build_format"),
@@ -169,12 +166,11 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   SurrogateModel(actual_model.problem_description_db(),
 		 actual_model.parallel_library(),
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().shared_data(), set,
-		 output_level),
+		 actual_model.current_response().shared_data(),
+		 set, corr_type, output_level),
   daceIterator(dace_iterator), actualModel(actual_model), pointsTotal(0),
   pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
-  exportSurrogate(false), manageRecasting(false),
-  exportPointsFile(export_approx_points_file),
+  exportSurrogate(false), exportPointsFile(export_approx_points_file),
   exportFormat(export_approx_format),
   importPointsFile(import_build_points_file), autoRefine(false),
   maxIterations(100), maxFuncEvals(1000), convergenceTolerance(1e-4),
@@ -220,8 +216,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   //}
 
   // initialize the DiscrepancyCorrection instance
-  if (corr_type)
-    deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
+  deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
   // to define derivative settings, we use incoming ASV to define requests
   // and surrogate type to determine analytic derivative support.
@@ -952,32 +947,18 @@ void DataFitSurrModel::build_global()
     String am_interface_id;
     if (!actualModel.is_null()) am_interface_id = actualModel.interface_id();
     ModelLRevIter ml_rit; PRPCacheCIter prp_iter;
+    Variables db_vars; Response db_resp;
+    bool map_to_iter_space = recastings();
     for (prp_iter=data_pairs.begin(); prp_iter!=data_pairs.end(); ++prp_iter) {
-      Variables db_vars(prp_iter->variables()); // shallow copy
-      Response  db_resp(prp_iter->response());  // shallow copy
       // apply any recastings below this level: we perform these recastings at
       // run time (instead of once in import_points()) to support any updates
       // to the transformations (e.g., distribution parameter updates).
-      if (manageRecasting) { // apply recastings bottom up
-	// modelList previously assigned in manage_data_recastings(),
-	// so we avoid re-incurring the overhead of subordinate_models()
-	for (ml_rit =modelList.rbegin(), i=modelList.size()-1;
-	     ml_rit!=modelList.rend(); ++ml_rit, --i)
-	  if (recastFlags[i]) {
-	    // utilize RecastModel::current{Variables,Response} to xform data
-	    Variables recast_vars = ml_rit->current_variables();//shallow copy
-	    Response  recast_resp = ml_rit->current_response(); //shallow copy
-	    // to propagate vars bottom up, inverse of std transform is reqd
-	    RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
-	    recast_model_rep->inverse_transform_variables(db_vars, recast_vars);
-	    //recast_model_rep->inverse_transform_set(vars, set, recast_set);
-	    // to propagate response bottom up, std transform is used
-	    recast_model_rep->
-	      transform_response(recast_vars, db_vars, db_resp, recast_resp);
-	    // reassign rep pointers (no actual data copying)
-	    db_vars = recast_vars; db_resp = recast_resp;// change rep pointers
-	  }
-      }
+      if (map_to_iter_space)
+	user_space_to_iterator_space(prp_iter->variables(),
+				     prp_iter->response(), db_vars, db_resp);
+      else
+	{ db_vars = prp_iter->variables(); db_resp = prp_iter->response(); }
+
       // Note: for NonD uses with u-space models, the global_bounds boolean
       // in NonD::transform_model() needs to be set in order to allow test
       // of transformed bounds in "region" reuse case.  For "all" reuse case
@@ -998,8 +979,8 @@ void DataFitSurrModel::build_global()
 	++reuse_points;
 
 	if (outputLevel >= DEBUG_OUTPUT) {
-	  if (manageRecasting) Cout << "Transformed ";
-	  else                 Cout << "Untransformed ";
+	  if (map_to_iter_space) Cout << "Transformed ";
+	  else                   Cout << "Untransformed ";
 	  Cout << "data for DB eval " << prp_iter->eval_id() << ":\n"
 	       << db_vars << db_resp;
 	}
@@ -1327,15 +1308,14 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
 
     // post-process
     switch (responseMode) {
-    case AUTO_CORRECTED_SURROGATE:
-      if (deltaCorr.active()) {
-	bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-	//if (!deltaCorr.computed())
-	//  deltaCorr.compute(currentVariables, centerResponse, approx_response,
-	//                    quiet_flag);
-	deltaCorr.apply(currentVariables, approx_response, quiet_flag);
-      }
+    case AUTO_CORRECTED_SURROGATE: {
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+      //if (!deltaCorr.computed())
+      //  deltaCorr.compute(currentVariables, centerResponse, approx_response,
+      //                    quiet_flag);
+      deltaCorr.apply(currentVariables, approx_response, quiet_flag);
       break;
+    }
     }
   }
 
@@ -1679,7 +1659,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
   IntRespMIter r_it;
-  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
+  if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
     // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
@@ -1740,7 +1720,7 @@ import_points(unsigned short tabular_format, bool active_only)
     Cout << "Surrogate model retrieving points with " << num_vars
 	 << " variables and " << numFns << " response functions from file "
 	 << importPointsFile << '\n';
-  // Currently discards any interface id, so can't be used for input validation
+  // Preserves eval and interface ids, if annotated format
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
   TabularIO::read_data_tabular(importPointsFile, 
@@ -1783,7 +1763,6 @@ import_points(unsigned short tabular_format, bool active_only)
       //  { pr.evaluation_id(cache_id); data_pairs.insert(pr); --cache_id; }
     }
   }
-  // TO DO: update Analyzer::read_variables_responses() to support post_input()
 }
 
 
@@ -1808,31 +1787,6 @@ void DataFitSurrModel::finalize_export()
 }
 
 
-/** Constructor helper to manage model recastings for data import/export. */
-void DataFitSurrModel::manage_data_recastings()
-{
-  // Test for any recasting or nesting within actualModel: we assume that
-  // user data import is post-nesting, but pre-recast.
-  // (1) data is imported at the user-space level but then must be applied
-  //     within the transformed space.  Transform imported data at run time
-  //     in order to capture latest initialize() calls to RecastModels.
-  // (2) stop the recursion if a nested model is encountered: we will apply
-  //     any recastings that occur following the last nesting. 
-  // (3) Additional surrogates in this recursion hierarchy are ignored.
-  ModelList& sub_models = subordinate_models(); // populates/returns modelList
-  ModelLIter ml_it; size_t i, num_models = sub_models.size();
-  manageRecasting = false; recastFlags.assign(num_models, false);
-  // detect recasting needs top down
-  for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
-    if (ml_it->model_type()      == "recast")
-      manageRecasting = recastFlags[i] = true;
-    else if (ml_it->model_type() == "nested")
-      break;
-
-  if (!manageRecasting) recastFlags.clear();
-}
-
-
 /** Constructor helper to export approximation-based evaluations to a
     file. Exports all variables, so it's clear at what values of
     inactive it was built at */
@@ -1842,30 +1796,9 @@ export_point(int eval_id, const Variables& vars, const Response& resp)
   if (exportPointsFile.empty())
     return;
 
-  if (manageRecasting) {
-    // create vars envelope & resp handle to manage the instances to be exported
-    Variables export_vars(vars); Response export_resp(resp); // shallow copies
-    VarsLIter v_it; RespLIter r_it; ModelLRevIter ml_rit; size_t i;
-    // modelList previously assigned in manage_data_recastings(),
-    // so we avoid re-incurring the overhead of subordinate_models()
-    for (ml_rit =modelList.rbegin(), i=modelList.size()-1;
-	 ml_rit!=modelList.rend(); ++ml_rit, --i)
-      if (recastFlags[i]) {
-	// utilize RecastModel::current{Variables,Response} to xform data
-	Variables user_vars = ml_rit->current_variables();//shallow copy
-	Response  user_resp = ml_rit->current_response(); //shallow copy
-	// to propagate vars top down, forward transform is reqd
-	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
-	recast_model_rep->transform_variables(export_vars, user_vars);
-	//recast_model_rep->transform_set(export_vars, export_set, user_set);
-	// to propagate response top down, inverse transform is used.  Note:
-	// derivatives are not currently exported --> a no-op for Nataf.
-	recast_model_rep->inverse_transform_response(user_vars, export_vars,
-						     export_resp, user_resp);
-	// reassign rep pointers (no actual data copying)
-	export_vars = user_vars; export_resp = user_resp;
-      }
-
+  if (recastings()) {
+    Variables export_vars; Response export_resp;
+    iterator_space_to_user_space(vars, resp, export_vars, export_resp);
     TabularIO::write_data_tabular(exportFileStream, export_vars, interface_id(),
 				  export_resp, eval_id, exportFormat);
   }

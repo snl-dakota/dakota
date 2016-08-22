@@ -164,14 +164,14 @@ protected:
   void identify_subspace();
 
   /// compute Bing Li's criterion to identify the active subspace
-  double computeBingLiCriterion(RealVector& singular_values);
+  unsigned int computeBingLiCriterion(RealVector& singular_values);
 
   /// compute Constantine's metric to identify the active subspace
-  double computeConstantineMetric(RealVector& singular_values);
+  unsigned int computeConstantineMetric(RealVector& singular_values);
 
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
-  double computeEnergyCriterion(RealVector& singular_values);
+  unsigned int computeEnergyCriterion(RealVector& singular_values);
 
   /// Build surrogate over active subspace
   void build_surrogate();
@@ -268,6 +268,9 @@ protected:
   /// boolean flag to determine if mapping has been fully initialized
   bool subspaceInitialized;
 
+  /// Normalization to use in the case of multiple QoI's
+  unsigned short subspaceNormalization;
+
 
   // Data for numerical representation
 
@@ -307,13 +310,6 @@ protected:
   /// Truncation tolerance for eigenvalue energy subspace identification
   Real truncationTolerance;
 
-  /// the truth model which provides evaluations for building the active subspace
-  Model actualModel;
-
-  /// the result of performing a Nataf transformation to u-space from the truth
-  /// model
-  Model transformModel;
-
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
 
@@ -346,6 +342,10 @@ protected:
   /// map from surrogateModel evaluation ids to RecastModel ids
   IntIntMap surrIdMap;
 };
+
+
+inline bool ActiveSubspaceModel::mapping_initialized()
+{ return subspaceInitialized; }
 
 } // namespace Dakota
 

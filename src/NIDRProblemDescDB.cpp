@@ -6780,6 +6780,7 @@ static bool
 	MP_(dOptimal),
         MP_(evaluatePosteriorDensity),
 	MP_(expansionFlag),
+	MP_(exportSampleSeqFlag),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
@@ -6940,11 +6941,11 @@ static Method_mp_utype
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
         MP2s(exportApproxFormat,TABULAR_IFACE_ID),
         MP2s(exportApproxFormat,TABULAR_ANNOTATED),
-        MP2s(exportMCMCFormat,TABULAR_NONE),
-        MP2s(exportMCMCFormat,TABULAR_HEADER),
-        MP2s(exportMCMCFormat,TABULAR_EVAL_ID),
-        MP2s(exportMCMCFormat,TABULAR_IFACE_ID),
-        MP2s(exportMCMCFormat,TABULAR_ANNOTATED),
+        MP2s(exportSamplesFormat,TABULAR_NONE),
+        MP2s(exportSamplesFormat,TABULAR_HEADER),
+        MP2s(exportSamplesFormat,TABULAR_EVAL_ID),
+        MP2s(exportSamplesFormat,TABULAR_IFACE_ID),
+        MP2s(exportSamplesFormat,TABULAR_ANNOTATED),
         MP2s(importApproxFormat,TABULAR_NONE),
         MP2s(importApproxFormat,TABULAR_HEADER),
         MP2s(importApproxFormat,TABULAR_EVAL_ID),
@@ -7088,10 +7089,11 @@ static Model_mp_lit
 	MP2(approxPointReuse,region),
 	MP2(marsInterpolation,linear),
 	MP2(marsInterpolation,cubic),
+	MP2(modelType,active_subspace),
+	MP2(modelType,adapted_basis),
 	MP2(modelType,nested),
 	MP2(modelType,random_field),
 	MP2(modelType,simulation),
-	MP2(modelType,subspace),
 	MP2(modelType,surrogate),
 	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,global_gaussian),
@@ -7158,11 +7160,14 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_VALUE),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_GRAD),
 	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
 	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM);
 
 static Real
-	MP_(annRange),
+        MP_(adaptedBasisCollocRatio),
+        MP_(annRange),
 	MP_(convergenceTolerance),
         MP_(discontGradThresh),
         MP_(discontJumpThresh),
@@ -7225,6 +7230,10 @@ static bool
   MP_(subspaceIdEnergy),
   MP_(subspaceBuildSurrogate);
 
+static unsigned short
+	MP_(adaptedBasisSparseGridLev),
+	MP_(adaptedBasisExpOrder);
+
 static short
 	MP_(annNodes),
 	MP_(annRandomWeight),
@@ -7246,11 +7255,11 @@ static int
         MP_(numFolds),
         MP_(numReplicates),
         MP_(pointsTotal),
-        MP_(dimension),
         MP_(refineCVFolds),
         MP_(softConvergenceLimit),
         MP_(subMethodProcs),
-        MP_(subMethodServers);
+        MP_(subMethodServers),
+        MP_(subspaceDimension);
 
 #undef MP2s
 #undef MP2

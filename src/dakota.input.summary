@@ -1216,6 +1216,17 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
+	  [ export_sample_sequence
+	    [ annotated
+	    |
+	    ( custom_annotated
+	      [ header ]
+	      [ eval_id ]
+	      [ interface_id ]
+	      ]
+	    |
+	    ( freeform
+	    ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ distribution
@@ -2400,14 +2411,14 @@ KEYWORD model
 	  |
 	  ( hierarchical
 	    ordered_model_fidelities ALIAS model_fidelity_sequence STRINGLIST
-	    ( correction
+	    [ correction
 	      zeroth_order
 	      | first_order
 	      | second_order
 	      additive
 	      | multiplicative
 	      | combined
-	      )
+	      ]
 	    )
 	  )
 	|
@@ -2429,7 +2440,7 @@ KEYWORD model
 	    )
 	  )
 	|
-	( subspace
+	( active_subspace ALIAS subspace
 	  actual_model_pointer STRING
 	  [ initial_samples INTEGER ]
 	  [ sample_type
@@ -2448,6 +2459,19 @@ KEYWORD model
 	  [ build_surrogate
 	    [ refinement_samples INTEGERLIST ]
 	    ]
+	  [ normalization
+	    value
+	    | gradient
+	    ]
+	  )
+	|
+	( adapted_basis
+	  actual_model_pointer STRING
+	  sparse_grid_level INTEGER
+	  |
+	  ( expansion_order INTEGER
+	    collocation_ratio REAL
+	    )
 	  )
 	|
 	( random_field

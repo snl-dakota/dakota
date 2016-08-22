@@ -48,6 +48,8 @@ public:
 
   /// default constructor
   Iterator();
+  /// alternate envelope constructor that assigns a representation pointer
+  Iterator(Iterator* iterator_rep, bool ref_count_incr = true);
   /// standard envelope constructor, which constructs its own model(s)
   Iterator(ProblemDescDB& problem_db);
   /// alternate envelope constructor which uses the ProblemDescDB but
