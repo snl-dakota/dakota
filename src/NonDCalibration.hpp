@@ -64,8 +64,6 @@ protected:
   size_t numExperiments;
   /// number of columns in data file which are state variables
   size_t numExpConfigVars;
-  /// how many sigmas to read from the data file (1 or numFunctions)
-  StringArray varianceTypesRead;
 
   /// Container for experimental data to which to calibrate model
   ExperimentData expData;

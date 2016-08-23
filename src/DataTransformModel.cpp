@@ -49,6 +49,20 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 {
   dtModelInstance = this;
 
+  // register state variables as inactive vars if config vars are present
+  // BMA TODO: correctly manage the view if relaxed, also review recursion
+  if (!expData.config_vars().empty()) {
+    subModel.inactive_view(MIXED_STATE);
+    int num_csv = subModel.inactive_continuous_variables().length();
+    size_t num_config_vars = expData.config_vars()[0].length();
+    if (num_csv != num_config_vars) {
+      Cerr << "\nError: (DataTransformModel) Number of continuous state "
+	   << "variables = " << num_csv << " must match\n       number of "
+	   << "configuration variables = " << num_config_vars << "\n";
+      abort_handler(-1);
+    }
+  }
+
   size_t num_submodel_primary = sub_model.num_primary_fns();
   // the RecastModel will have one residual per experiment datum
   size_t num_recast_primary = expData.num_total_exppoints(),
@@ -329,6 +343,73 @@ gen_primary_resp_map(const SharedResponseData& srd,
       sim_ind_offset += sim_field_lens[fg_ind];
     }
   }
+}
+
+
+/** For now we do the simple forwarding of evaluate to the base class */
+void DataTransformModel::derived_evaluate(const ActiveSet& set)
+{
+  /// TODO: need member to query whether config vars are active
+  bool config_vars = (!expData.config_vars().empty());
+  if (config_vars) {
+    // evaluate the model (blocking for now) and compute the expanded
+    // set of residuals
+    ++recastModelEvalCntr;
+
+    // transform from recast (Iterator) to sub-model (user) variables
+    // these are the same for all configurations
+    transform_variables(currentVariables, subModel.current_variables());
+
+    // the incoming set is for the recast problem, which must be converted
+    // back to the underlying response set for evaluation by the subModel.
+    ActiveSet sub_model_set;
+    transform_set(currentVariables, set, sub_model_set);
+
+    size_t num_exp = expData.num_experiments();
+    for (size_t i=0; i<num_exp; ++i) {
+
+      // augment the active variables with the configuration variables
+      subModel.inactive_continuous_variables(expData.config_vars()[i]);
+
+      // evaluate the subModel in the original fn set definition.
+      // Doing this here eliminates the need for eval tracking logic
+      // within the separate eval fns.
+      subModel.evaluate(sub_model_set);
+
+      // recast the subModel response ("user space") into the currentResponse
+      // ("iterator space")
+
+      // populate one experiment's residuals
+      // BMA TODO: rest of data_differnce_core transformations
+      expData.form_residuals(subModel.current_response(), i, currentResponse);
+
+    }
+    currentResponse.active_set(set);
+
+    Cout << "Calibration data transformation; residuals:\n";
+    write_data(Cout, currentResponse.function_values(),
+	       currentResponse.function_labels());
+    Cout << std::endl;
+    Cout << "Calibration data transformation; full response:\n"
+	 << currentResponse << std::endl;
+  }
+  else
+    RecastModel::derived_evaluate(set);
+}
+
+
+/** For now we do the simple forwarding of evaluate to the base class */
+void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
+{
+  bool config_vars = (!expData.config_vars().empty());
+  if (config_vars) {
+    // evaluate the model (blocking for now) and compute the expanded
+    // set of residuals
+    Cerr << "\nError: DataTransformModel doesn't implment derived_evaluate_nowait() for config vars\n";
+    abort_handler(-1);
+  }
+  else
+    RecastModel::derived_evaluate_nowait(set);
 }
 
 

@@ -31,7 +31,6 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
   numExperiments(probDescDB.get_sizet("responses.num_experiments")),
   numExpConfigVars(probDescDB.get_sizet("responses.num_config_vars")),
-  varianceTypesRead(probDescDB.get_sa("responses.variance_type")),
   expData(problem_db, iteratedModel.current_response().shared_data(), 
 	  outputLevel),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),

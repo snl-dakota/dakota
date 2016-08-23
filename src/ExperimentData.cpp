@@ -632,11 +632,12 @@ num_fields() const
   return  simulationSRD.num_field_response_groups();
 }
 
-const RealVector& ExperimentData::
-config_vars(size_t experiment)
+
+const std::vector<RealVector>& ExperimentData::config_vars() const
 {
-  return(allConfigVars[experiment]);
+  return allConfigVars;
 }
+
 
 void ExperimentData::per_exp_length(IntVector& per_length) const
 {
@@ -872,6 +873,26 @@ form_residuals(const Response& sim_resp, Response& residual_resp) const
 		    residual_resp );
     residual_resp_offset += num_fns_exp;
   }
+}
+
+
+void ExperimentData::
+form_residuals(const Response& sim_resp, const size_t curr_exp,
+	       Response& residual_resp) const
+{
+  // BMA: perhaps a better name would be per_exp_asv?
+  // BMA TODO: Make this call robust to zero and single experiment cases
+  ShortArray total_asv = determine_active_request(residual_resp);
+
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+  size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < curr_exp; ++exp_ind){
+    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
+    residual_resp_offset += num_fns_exp;
+  }
+  form_residuals(sim_resp, curr_exp, total_asv, residual_resp_offset,
+		 residual_resp);
 }
 
 

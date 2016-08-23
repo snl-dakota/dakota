@@ -80,6 +80,11 @@ protected:
 			    Sizet2DArray& primary_resp_map_indices,
 			    BoolDequeArray& nonlinear_resp_map) const;
   
+  /// specialization of evaluate that iterates over configuration variables
+  void derived_evaluate(const ActiveSet& set);
+  /// specialization of evaluate that iterates over configuration variables
+  void derived_evaluate_nowait(const ActiveSet& set);
+
   // ---
   // Callback functions that perform data transform during the Recast operations
   // ---
