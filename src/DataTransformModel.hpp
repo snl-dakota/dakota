@@ -109,13 +109,11 @@ protected:
 				       const Response& submodel_response, 
 				       Response& recast_response);
 
-  /// Core of data difference, which doesn't perform any output
-  /// (silent version may not be needed if we manage verbosity more
-  /// carefully)
-  void data_difference_core(const Variables& submodel_vars, 
-   			    const Variables& recast_vars,
-   			    const Response& submodel_response, 
-   			    Response& recast_response);
+  /// scale the populated residual response by any covariance
+  /// information, including hyper-parameter multipliers
+  void scale_response(const Variables& submodel_vars, 
+		      const Variables& recast_vars,
+		      Response& recast_response);
 
   // NOTE: Shouldn't need non-default active set or secondary response
   // recast; default based on indices should suffice.

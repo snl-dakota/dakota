@@ -350,20 +350,29 @@ gen_primary_resp_map(const SharedResponseData& srd,
 void DataTransformModel::derived_evaluate(const ActiveSet& set)
 {
   /// TODO: need member to query whether config vars are active
-  bool config_vars = (!expData.config_vars().empty());
-  if (config_vars) {
+  if (expData.config_vars().empty()) 
+    RecastModel::derived_evaluate(set);
+  else {
     // evaluate the model (blocking for now) and compute the expanded
     // set of residuals
     ++recastModelEvalCntr;
 
     // transform from recast (Iterator) to sub-model (user) variables
-    // these are the same for all configurations
+    // BMA: these are the same for all configurations
     transform_variables(currentVariables, subModel.current_variables());
 
     // the incoming set is for the recast problem, which must be converted
     // back to the underlying response set for evaluation by the subModel.
     ActiveSet sub_model_set;
     transform_set(currentVariables, set, sub_model_set);
+    // update currentResponse early as it's used in form_residuals
+    currentResponse.active_set(set);
+
+    if (outputLevel >= VERBOSE_OUTPUT) {
+      Cout << "\n------------------------------------";
+      Cout << "\nEvaluating model for each experiment";
+      Cout << "\n------------------------------------" << std::endl;
+    }
 
     size_t num_exp = expData.num_experiments();
     for (size_t i=0; i<num_exp; ++i) {
@@ -384,32 +393,51 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
       expData.form_residuals(subModel.current_response(), i, currentResponse);
 
     }
-    currentResponse.active_set(set);
+    // scale by covariance, including hyper-parameter multipliers
+    scale_response(subModel.current_variables(), currentVariables, 
+		   currentResponse);
 
-    Cout << "Calibration data transformation; residuals:\n";
-    write_data(Cout, currentResponse.function_values(),
-	       currentResponse.function_labels());
-    Cout << std::endl;
-    Cout << "Calibration data transformation; full response:\n"
-	 << currentResponse << std::endl;
+    if (outputLevel >= VERBOSE_OUTPUT) {
+      Cout << "\n-----------------------------------------------------------";
+      Cout << "\nPost-processing Function Evaluation: Data Transformation";
+      Cout << "\n-----------------------------------------------------------" 
+	   << std::endl;
+    }
+
+    if (outputLevel >= VERBOSE_OUTPUT && 
+	subordinate_model().num_primary_fns() > 0) {
+      Cout << "Calibration data transformation; residuals:\n";
+      write_data(Cout, currentResponse.function_values(),
+		 currentResponse.function_labels());
+      Cout << std::endl;
+    }
+    if (outputLevel >= DEBUG_OUTPUT && 
+	subordinate_model().num_primary_fns() > 0) {
+      Cout << "Calibration data transformation; full response:\n"
+	   << currentResponse << std::endl;
+    }
+
+    // BMA TODO:
+    // We know that DataTransformModel didn't register a secondary
+    // transformation, but what if the submodel constraints differ per
+    // configuration?  Need to aggregate/expand the constraints!
+    //RecastModel::transform_secondary_response();
+
   }
-  else
-    RecastModel::derived_evaluate(set);
 }
 
 
 /** For now we do the simple forwarding of evaluate to the base class */
 void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  bool config_vars = (!expData.config_vars().empty());
-  if (config_vars) {
+  if (expData.config_vars().empty())
+    RecastModel::derived_evaluate_nowait(set);
+  else {
     // evaluate the model (blocking for now) and compute the expanded
     // set of residuals
     Cerr << "\nError: DataTransformModel doesn't implment derived_evaluate_nowait() for config vars\n";
     abort_handler(-1);
   }
-  else
-    RecastModel::derived_evaluate_nowait(set);
 }
 
 
@@ -477,8 +505,14 @@ primary_resp_differencer(const Variables& submodel_vars,
 	 << std::endl;
   }
 
-  dtModelInstance->data_difference_core(submodel_vars, recast_vars, 
-					submodel_response, recast_response);
+  // form residuals (and gradients/Hessians) from the simulation
+  // response this call has to be careful not to resize gradients and
+  // Hessians in a way that tramples hyper-parameters: only update
+  // submodel cv entries, leaving objects sized
+  dtModelInstance->expData.form_residuals(submodel_response, recast_response);
+
+  // scale by covariance, including hyper-parameter multipliers
+  dtModelInstance->scale_response(submodel_vars, recast_vars, recast_response);
 
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
@@ -495,21 +529,12 @@ primary_resp_differencer(const Variables& submodel_vars,
 
 }
 
-// BMA TODO: decide how much output to have and where...
 
-/** quiet version of function used in recovery of function values */
 void DataTransformModel::
-data_difference_core(const Variables& submodel_vars, 
-                     const Variables& recast_vars,
-                     const Response& submodel_response, 
-                     Response& recast_response)
+scale_response(const Variables& submodel_vars, 
+	       const Variables& recast_vars,
+	       Response& recast_response)
 {
-  // form residuals (and gradients/Hessians) from the simulation
-  // response this call has to be careful not to resize gradients and
-  // Hessians in a way that tramples hyper-parameters: only update
-  // submodel cv entries, leaving objects sized
-  expData.form_residuals(submodel_response, recast_response);
-
   // scale by (error covariance)^{-1/2}
   if (expData.variance_active())
     expData.scale_residuals(recast_response);

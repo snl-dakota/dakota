@@ -269,7 +269,7 @@ void ExperimentData::load_data(const std::string& context_message)
     TabularIO::read_header_tabular(scalar_data_stream, scalarDataFormat);
   }
 
-  if (!scalar_data_file) { 
+  if (!scalar_data_file && numConfigVars > 0) { 
     // read all experiment config vars from new field data format files at once
     // TODO: have the user give a name for this file, since should be
     // the same for all responses.  Read from foo.<exp_num>.config. 
@@ -336,13 +336,14 @@ void ExperimentData::load_data(const std::string& context_message)
 
   // verify that the two experiments have different data
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Experiment data summary:";
-    if (numConfigVars > 0)
-      Cout << "Values of experiment configuration variables:\n" 
-	   << allConfigVars << "\n";
+    Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      Cout << "\n  Data values, experiment " << i << "\n";
-      allExperiments[i].write(Cout);
+      if (numConfigVars > 0)
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
+	     << allConfigVars[i];
+      Cout << "  Experiment " << i+1 << " data values:"<< "\n";
+      write_data(Cout, allExperiments[i].function_values());
+      Cout << '\n';
     }
   }
 
