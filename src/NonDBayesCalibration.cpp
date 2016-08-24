@@ -547,11 +547,14 @@ void NonDBayesCalibration::calibrate_to_hifi()
   lhs_iterator.assign_rep(lhs_sampler_rep, false);
 
   lhs_iterator.run();
+  const RealMatrix& all_samples = lhs_iterator.all_samples();
   const IntResponseMap& all_responses = lhs_iterator.all_responses();
 
   // BMA TODO: Once ExperimentData can be updated, post this into
   // expData directly
-  ExperimentData exp_data(initHifiSamples, all_responses);
+  ExperimentData exp_data(initHifiSamples, 
+                          mcmcModel.current_response().shared_data(), 
+                          all_samples, all_responses);
   expData = exp_data;
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)

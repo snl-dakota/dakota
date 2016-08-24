@@ -56,11 +56,24 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 }
 
 ExperimentData::
-ExperimentData(size_t num_experiments, const IntResponseMap& all_responses):
+ExperimentData(size_t num_experiments, const SharedResponseData& srd,
+               const RealMatrix& configVars, 
+               const IntResponseMap& all_responses):
   calibrationDataFlag(false), 
-  numExperiments(num_experiments), numConfigVars(0),
+  numExperiments(num_experiments),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0)
 {
+  
+  simulationSRD = srd.copy();
+  allConfigVars.resize(numExperiments);
+  for (size_t i=0; i<numExperiments; ++i) {
+    allConfigVars[i]= Teuchos::getCol(Teuchos::View,
+      const_cast<RealMatrix&>(configVars), (int)i);
+    Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+  }
+  numConfigVars = allConfigVars[0].length();
+  Cout << "Number of config vars " << numConfigVars << '\n';
+
   IntRespMCIter resp_it = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
  
@@ -195,6 +208,19 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
   if (scalar_data_file && varianceTypes.size() > 0 && 
       varianceTypes[0] == SCALAR_SIGMA)
     scalarSigmaPerRow = num_scalar;
+
+}
+
+void ExperimentData::add_data(const RealVector& one_configVars, const Response& one_response)
+{
+  numExperiments = numExperiments + 1; 
+  Cout << "numExperiments in add_data " << numExperiments << '\n';
+  allConfigVars.resize(numExperiments);
+  allExperiments.resize(numExperiments);
+  
+  int last_exp = numExperiments - 1;
+  allConfigVars[last_exp]=one_configVars;
+  allExperiments[last_exp]=one_response;
 
 }
 

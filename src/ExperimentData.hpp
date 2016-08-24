@@ -88,7 +88,9 @@ public:
                  short output_level,
                  std::string scalarDataFilename = "");
  
-  ExperimentData(size_t num_experiments, const IntResponseMap& all_responses); 
+  ExperimentData(size_t num_experiments, const SharedResponseData& srd,
+                 const RealMatrix& configVars, 
+                 const IntResponseMap& all_responses); 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
@@ -100,6 +102,8 @@ public:
  
   /// Load experiments from data files (simple scalar or field)
   void load_data(const std::string& context_message);
+  /// Add one data point to the experimental data set
+  void add_data(const RealVector& one_configVars, const Response& one_response);
 
   /// retrieve the number of experiments
   size_t num_experiments() const
