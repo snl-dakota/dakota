@@ -193,4 +193,21 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   }
 }
 
+void remove_column(RealMatrix& matrix, int index)
+{
+  int num_cols = matrix.numCols();
+  RealMatrix matrix_new(matrix.numRows(), num_cols-1);
+  for (int i = 0; i<num_cols; ++i){
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    if (i < index){
+      Teuchos::setCol(col_vec, i, matrix_new);
+    }
+    if (i > index){
+      Teuchos::setCol(col_vec, i-1, matrix_new);
+    }
+  }
+  matrix.reshape(matrix.numRows(), num_cols-1);
+  matrix = matrix_new;
+}
+
 } // namespace Dakota

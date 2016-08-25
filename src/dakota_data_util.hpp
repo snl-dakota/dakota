@@ -20,6 +20,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
+#include "Teuchos_SerialDenseHelpers.hpp"
 
 
 // --------------
@@ -167,7 +168,12 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 		   const IntVector&  curr_iv,  const IntVector&  prev_iv,
 		   const RealVector& curr_rv2, const RealVector& prev_rv2);
+// ---------------------
+// Misc matrix utilities 
+// ---------------------
 
+/// Removes column from matrix
+void remove_column(RealMatrix& matrix, int index);
 
 // -----
 // Utility functions for manipulating or searching strings
