@@ -34,6 +34,7 @@
 #include "ANN/ANN.h"
 //#include "ANN/ANNperf.h"
 //#include "ANN/ANNx.h"
+#include "dakota_data_util.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -577,6 +578,11 @@ void NonDBayesCalibration::calibrate_to_hifi()
  
   bool stop_metric = false;
   double max_MI;
+  double prev_MI;
+  double MIdiff;
+  double MIrel;
+  int max_hifi = 5;
+  int num_hifi = 0;
 
   while (!stop_metric) {
 
@@ -590,8 +596,17 @@ void NonDBayesCalibration::calibrate_to_hifi()
                               obsErrorMultiplierMode, mcmcDerivOrder), false);
     construct_map_optimizer();
 
+    Cout << "hifi = " << hifiModel.current_variables() << '\n';
+    Cout << "lofi = " << mcmcModel.current_variables() << '\n';
+    Cout << "hifi cont = " << hifiModel.current_variables().continuous_variables_view() << '\n';
+    Cout << "lofi cont = " << mcmcModel.current_variables().continuous_variables_view() << '\n';
+    Cout << "hifi inactive = " << hifiModel.inactive_continuous_variables() << '\n';
+    Cout << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
+    Cout << "num params = " << numContinuousVars << '\n';
+
     // Run the underlying calibration solver (MCMC)
     calibrate();
+    
 
     // After QUESO is run, get the posterior values of the samples; go
     // through all the designs and pick the one with maximum mutual
@@ -609,45 +624,76 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // Set the experimental configuration on the low-fi model:
       // mcmcModel.inactive_continuous_variables(candidate_exp_config[i]);
 
+      // Filter posterior, aim for 5000 samples
+      int burn_in_post = int(0.2*num_mcmc_samples);
+      int burned_in_post = num_mcmc_samples - burn_in_post;
+      int ind = 0;
+      int it_cntr = 0;
+      int num_skip;
+      int num_filtered;
+      if (num_mcmc_samples < 18750){
+	num_skip = 3;
+	num_filtered = int(burned_in_post/num_skip);
+      }
+      else{
+	num_skip = int(burned_in_post/5000);
+	num_filtered = int(burned_in_post/num_skip);
+      }
+
       // Declare a matrix to store the low fidelity responses
-      RealMatrix responses_low(numFunctions, num_mcmc_samples);
       // KAM: check num_theta = numContinuousVars
-      RealVector low_fid_response(numFunctions);
-      RealVector low_fid_model_vars(numContinuousVars);
+      //      and numFunctions corresponds to lofi model
+      RealMatrix lofi_resp_mat(numFunctions, num_mcmc_samples);
+      RealVector lofi_resp_vec(numFunctions);
+      RealVector lofi_params(numContinuousVars);
       RealVector col_vec(numContinuousVars + numFunctions);
       RealMatrix Xmatrix(numContinuousVars + numFunctions, num_mcmc_samples);
-      for (int j=0; j<num_mcmc_samples; j++) {
-        // for each posterior sample, get the variable values, and run the model
-	// KAM: Double check whether acceptanceChain is overwritten or appended
-        low_fid_model_vars = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
+      //for (int j=0; j<num_mcmc_samples; j++) {
+      for (int j=burn_in_post; j<num_mcmc_samples; j++) {
+	++it_cntr;
+	if (it_cntr % num_skip == 0){
+          // for each posterior sample, get the param values, and run the model
+	  // KAM: Double check whether acceptanceChain is overwritten or appended
+          lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
 
-	// BMA (pseudocode)
-	/* 
-	   mcmcModel.continuous_variables(low_fid_model_vars);
-	   mcmcModel.evaluate();
-	*/
-	low_fid_response = mcmcModel.current_response().function_values();
-	Teuchos::setCol(low_fid_response, j, responses_low);
-        // now concatenate posterior_theta and responses_low into Xmatrix
-        for (size_t k = 0; k < numContinuousVars; k++){
-          col_vec[k] = low_fid_model_vars[k];
+	  // BMA (pseudocode)
+	  /* 
+	     mcmcModel.continuous_variables(low_fid_model_vars);
+	     mcmcModel.evaluate();
+	  */
+	  lofi_resp_vec = mcmcModel.current_response().function_values();
+	  Teuchos::setCol(lofi_resp_vec, ind, lofi_resp_mat);
+          // now concatenate posterior_theta and lofi_resp_mat into Xmatrix
+          for (size_t k = 0; k < numContinuousVars; k++){
+            col_vec[k] = lofi_params[k];
+	    // KAM: is it a safe assumption that the params being calibrated
+	    // will be first?
+          }
+          for (size_t k = 0; k < numFunctions; k ++){
+            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+          }
+          Teuchos::setCol(col_vec, ind, Xmatrix);
+	  ind++;
         }
-        for (size_t k = 0; k < numFunctions; k ++){
-          col_vec[numContinuousVars+k] = low_fid_response[k];
-        }
-        Teuchos::setCol(col_vec, j, Xmatrix);
       }
-      // calculate the mutual information with posterior_theta and responses_low matrices
+      // calculate the mutual information b/w post theta and lofi responses
       Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
 
       // Now track max MI:
-      if (i == 0)
+      if (i == 0){
 	max_MI = MI;
+	prev_MI = MI;
+      }
       else {
         if ( MI > max_MI) {
           max_MI = MI;
           // design_new = design_i;
         }
+	MIdiff = std::abs(prev_MI - MI);
+	MIrel = MIdiff/prev_MI;
+	if (MIrel < 0.05)
+	  stop_metric = true;
+	prev_MI = MI;
       }
     } // end for over the number of candidates
 
@@ -660,9 +706,12 @@ void NonDBayesCalibration::calibrate_to_hifi()
       hifiModel.inactive_continuous_variables(candidate_best)
       hifiModel.evaluate();
       expData.add_datapoint(hifiModel.current_response())
+      num_hifi++;
     */
 
     // check stopping metric (may just start with doing this 5 times?
+    //if(num_hifi == maxHifiRuns)
+    //  stop_metric = true;
     stop_metric = true;
   } // end while loop
 
