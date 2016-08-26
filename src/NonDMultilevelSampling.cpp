@@ -21,6 +21,11 @@
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 
+// Option to have all CV lf_increment() calls follow all ML level evals:
+// > Provides separation of pilot sample from refinements (simplifying offline
+//   execution and data importing, but also clarifying
+// > Could potentially have parallel scheduling benefits by grouping Model
+//   eval sets that can be scheduled together
 //#define REORDER_LF_INCREMENTS
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
@@ -577,9 +582,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 
       // accumulate sum of sqrt's of estimator var * cost used in N_target
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
-	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
-		  (1. - avg_rho2_LH[lev])) :
-	std::sqrt(agg_var_hf_l * hf_lev_cost);
+	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho2_LH[lev]))
+	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
       // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
@@ -828,9 +832,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
       // accumulate sum of sqrt's of estimator var * cost used in N_target
       sum_sqrt_var_cost += (lev < num_cv_lev) ?
-	std::sqrt(agg_var_hf_l * hf_lev_cost * Lambda[lev] /
-		  (1. - avg_rho_dot2_LH[lev])) :
-	std::sqrt(agg_var_hf_l * hf_lev_cost);
+	std::sqrt(agg_var_hf_l * hf_lev_cost / (1. - avg_rho_dot2_LH[lev]))
+	  * Lambda[lev] : std::sqrt(agg_var_hf_l * hf_lev_cost);
       // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
@@ -852,15 +855,13 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     // for imported data/seed progression reasons, reorder LF increments to
     // follow HF levels (decouple seed progression to have LF increments
     // follow pilot rst duplicates)
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); //surr resp
+    iteratedModel.surrogate_model_indices(lf_model_form, 0);
     for (lev=0; lev<num_cv_lev; ++lev) {
       if (lev) {
 	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);   // both resp
 	iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	iteratedModel.truth_model_indices(lf_model_form,     lev);
-      }
-      else {
-	iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);//surr resp
-	iteratedModel.surrogate_model_indices(lf_model_form, 0);
       }
       // now execute additional LF sample increment, if needed
       if (delta_N_hf[lev] &&
