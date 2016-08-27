@@ -26,8 +26,6 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
   correctionMode(SINGLE_CORRECTION)
 {
-  Response initial_response = currentResponse.copy();
-
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
   // initialize ignoreBounds even though it's irrelevant for pass through
@@ -57,31 +55,22 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   problem_db.set_db_model_nodes(model_index); // restore
 
   // default index values, to be overridden at run time
-  lowFidelityIndices.first  = 0;
-  lowFidelityIndices.second = 0;
+  lowFidelityIndices.first  = lowFidelityIndices.second = 0;
   highFidelityIndices.first = num_models - 1;
-  if (num_models == 1) {
-    sameModelInstance = true;
-    highFidelityIndices.second = 1;
-  } else {
-    sameModelInstance = false;
-    highFidelityIndices.second = 0;
-  }
+  if (num_models == 1)
+    { sameModelInstance = true;  highFidelityIndices.second = 1; }
+  else
+    { sameModelInstance = false; highFidelityIndices.second = 0; }
   check_interface_instance();
 
-  // Correction is required in the hierarchical case (since without correction,
-  // all HF model evaluations are wasted).  Omission of a correction type
-  // should be prevented by the input specification.
-  if (corrType) {
-    std::pair<SizetSizetPair,SizetSizetPair>
-      indices(lowFidelityIndices, highFidelityIndices);
-    // initialize the DiscrepancyCorrection using lowest fidelity model;
-    // this LF model gets updated at run time
-    deltaCorr[indices].initialize(surrogate_model(), surrogateFnIndices,
-				  corrType, corrOrder);
-  }
+  // Correction is required in HierarchSurrModel for some responseModes.
+  // Enforcement of a correction type for these modes occurs in
+  // surrogate_response_mode(short).
+  if (corrType) // initialize DiscrepancyCorrection using initial LF indices
+    deltaCorr[get_indices()].initialize(surrogate_model(), surrogateFnIndices,
+					corrType, corrOrder);
 
-  truthResponseRef[highFidelityIndices] = initial_response;
+  //truthResponseRef[highFidelityIndices] = currentResponse.copy();
 }
 
 
@@ -531,54 +520,39 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
                                    truthResponseRef[highFidelityIndices],
                                    lo_fi_response, quiet_flag);
 
-      if (correctionMode == SINGLE_CORRECTION || 
-          correctionMode == DEFAULT_CORRECTION)
+      switch (correctionMode) {
+      case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
         deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
-      else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
-        size_t num_models = orderedModels.size();
-        for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
-          SizetSizetPair lf_index_temp;
-          SizetSizetPair hf_index_temp;
-
-          lf_index_temp.first  = ii;
-          lf_index_temp.second = lowFidelityIndices.second;
-
-          hf_index_temp.first  = ii+1;
-          hf_index_temp.second = highFidelityIndices.second;
-
-          SizetSizet2DPair correction_index =
-            std::make_pair(lf_index_temp,hf_index_temp);
-
-          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
-                                            quiet_flag);
+	break;
+      case FULL_MODEL_FORM_CORRECTION: {
+        size_t ii, num_models = orderedModels.size();
+	SizetSizet2DPair corr_index(lowFidelityIndices,highFidelityIndices);
+        for (ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
+	  corr_index.first.first = ii; corr_index.second.first = ii+1;
+          deltaCorr[corr_index].apply(currentVariables, lo_fi_response,
+				      quiet_flag);
         }
+	break;
       }
-      else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
-        size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
-        for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
-          SizetSizetPair lf_index_temp;
-          SizetSizetPair hf_index_temp;
-
-          lf_index_temp.first  = lowFidelityIndices.first;
-          lf_index_temp.second = ii;
-
-          hf_index_temp.first  = lowFidelityIndices.first;
-          hf_index_temp.second = ii+1;
-
-          SizetSizet2DPair correction_index =
-            std::make_pair(lf_index_temp,hf_index_temp);
-
-          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
-                                            quiet_flag);
+      case FULL_SOLUTION_LEVEL_CORRECTION: {
+        size_t ii, num_levels =
+	  orderedModels[lowFidelityIndices.first].solution_levels();
+	SizetSizet2DPair corr_index(lowFidelityIndices,lowFidelityIndices);
+        for (ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+          corr_index.first.second = ii; corr_index.second.second = ii+1;
+          deltaCorr[corr_index].apply(currentVariables, lo_fi_response,
+				      quiet_flag);
         }
+	break;
       }
-      else if (correctionMode == SEQUENCE_CORRECTION) {
+      case SEQUENCE_CORRECTION:
         // Apply sequence of discrepancy corrections
         // TODO: Check to make sure they've been initialized.
 
         for (size_t ii = 0; ii < corrSequence.size(); ++ii)
           deltaCorr[corrSequence[ii]].apply(currentVariables, lo_fi_response,
                                             quiet_flag);
+	break;
       }
 
       if (!mixed_eval) {
@@ -765,54 +739,39 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       // correct synch cases now (asynch cases get corrected in
       // derived_synchronize_aggregate*)
 
-      if (correctionMode == SINGLE_CORRECTION || 
-          correctionMode == DEFAULT_CORRECTION)
+      switch (correctionMode) {
+      case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
         deltaCorr[indices].apply(currentVariables, lo_fi_response, quiet_flag);
-      else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
-        size_t num_models = orderedModels.size();
-        for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
-          SizetSizetPair lf_index_temp;
-          SizetSizetPair hf_index_temp;
-
-          lf_index_temp.first  = ii;
-          lf_index_temp.second = lowFidelityIndices.second;
-
-          hf_index_temp.first  = ii+1;
-          hf_index_temp.second = highFidelityIndices.second;
-
-          SizetSizet2DPair correction_index =
-            std::make_pair(lf_index_temp,hf_index_temp);
-
-          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
-                                            quiet_flag);
+	break;
+      case FULL_MODEL_FORM_CORRECTION: {
+        size_t ii, num_models = orderedModels.size();
+	SizetSizet2DPair corr_index(lowFidelityIndices,highFidelityIndices);
+        for (ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
+	  corr_index.first.first = ii; corr_index.second.first = ii+1;
+          deltaCorr[corr_index].apply(currentVariables, lo_fi_response,
+				      quiet_flag);
         }
+	break;
       }
-      else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
-        size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
-        for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
-          SizetSizetPair lf_index_temp;
-          SizetSizetPair hf_index_temp;
-
-          lf_index_temp.first  = lowFidelityIndices.first;
-          lf_index_temp.second = ii;
-
-          hf_index_temp.first  = lowFidelityIndices.first;
-          hf_index_temp.second = ii+1;
-
-          SizetSizet2DPair correction_index =
-            std::make_pair(lf_index_temp,hf_index_temp);
-
-          deltaCorr[correction_index].apply(currentVariables, lo_fi_response,
-                                            quiet_flag);
+      case FULL_SOLUTION_LEVEL_CORRECTION: {
+        size_t ii, num_levels =
+	  orderedModels[lowFidelityIndices.first].solution_levels();
+	SizetSizet2DPair corr_index(lowFidelityIndices,lowFidelityIndices);
+        for (ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+          corr_index.first.second = ii; corr_index.second.second = ii+1;
+          deltaCorr[corr_index].apply(currentVariables, lo_fi_response,
+				      quiet_flag);
         }
+	break;
       }
-      else if (correctionMode == SEQUENCE_CORRECTION) {
+      case SEQUENCE_CORRECTION:
         // Apply sequence of discrepancy corrections
         // TODO: Check to make sure they've been initialized.
 
         for (size_t ii = 0; ii < corrSequence.size(); ++ii)
           deltaCorr[corrSequence[ii]].apply(currentVariables, lo_fi_response,
                                             quiet_flag);
+	break;
       }
     }
     // cache corrected LF response for retrieval during synchronization
@@ -1131,57 +1090,41 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
     v_it = rawVarsMap.find(lf_eval_id);
     if (v_it != rawVarsMap.end()) {
       if (corr_comp) { // apply the correction to the LF response
-        if (correctionMode == SINGLE_CORRECTION || 
-            correctionMode == DEFAULT_CORRECTION)
+	switch (correctionMode) {
+	case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
           deltaCorr[indices].apply(v_it->second, lf_it->second, quiet_flag);
-        else if (correctionMode == FULL_MODEL_FORM_CORRECTION) {
-          size_t num_models = orderedModels.size();
-          for (size_t ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
-            SizetSizetPair lf_index_temp;
-            SizetSizetPair hf_index_temp;
-
-            lf_index_temp.first  = ii;
-            lf_index_temp.second = lowFidelityIndices.second;
-
-            hf_index_temp.first  = ii+1;
-            hf_index_temp.second = highFidelityIndices.second;
-
-            SizetSizet2DPair correction_index =
-              std::make_pair(lf_index_temp,hf_index_temp);
-
-            deltaCorr[correction_index].apply(v_it->second, lf_it->second,
-                                              quiet_flag);
+	  break;
+        case FULL_MODEL_FORM_CORRECTION: {
+          size_t ii, num_models = orderedModels.size();
+	  SizetSizet2DPair corr_index(lowFidelityIndices,highFidelityIndices);
+          for (ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
+	    corr_index.first.first = ii; corr_index.second.first = ii+1;
+            deltaCorr[corr_index].apply(v_it->second,lf_it->second,quiet_flag);
           }
+	  break;
         }
-        else if (correctionMode == FULL_SOLUTION_LEVEL_CORRECTION) {
-          size_t num_levels = orderedModels[lowFidelityIndices.first].solution_levels();
-          for (size_t ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
-            SizetSizetPair lf_index_temp;
-            SizetSizetPair hf_index_temp;
-
-            lf_index_temp.first  = lowFidelityIndices.first;
-            lf_index_temp.second = ii;
-
-            hf_index_temp.first  = lowFidelityIndices.first;
-            hf_index_temp.second = ii+1;
-
-            SizetSizet2DPair correction_index =
-              std::make_pair(lf_index_temp,hf_index_temp);
-
-            deltaCorr[correction_index].apply(v_it->second, lf_it->second,
-                                              quiet_flag);
+        case FULL_SOLUTION_LEVEL_CORRECTION: {
+          size_t ii, num_levels
+	    = orderedModels[lowFidelityIndices.first].solution_levels();
+	  SizetSizet2DPair corr_index(lowFidelityIndices,lowFidelityIndices);
+	  for (ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
+	    corr_index.first.second = ii; corr_index.second.second = ii+1;
+            deltaCorr[corr_index].apply(v_it->second,lf_it->second,quiet_flag);
           }
+	  break;
         }
-        else if (correctionMode == SEQUENCE_CORRECTION) {
+        case SEQUENCE_CORRECTION:
           // Apply sequence of discrepancy corrections
           // TODO: Check to make sure they've been initialized.
 
           for (size_t ii = 0; ii < corrSequence.size(); ++ii)
             deltaCorr[corrSequence[ii]].apply(v_it->second, lf_it->second,
                                               quiet_flag);
+	  break;
         }
         rawVarsMap.erase(v_it);
-      } else // no new corrections can be applied -> cache uncorrected
+      }
+      else // no new corrections can be applied -> cache uncorrected
         cachedApproxRespMap.insert(*lf_it);
     }
     // else correction already applied
@@ -1200,7 +1143,7 @@ void HierarchSurrModel::resize_response()
   switch (responseMode) {
   case AGGREGATED_MODELS:
     num_curr_fns = surrogate_model().num_functions()
-                   +     truth_model().num_functions();
+                 +     truth_model().num_functions();
     break;
   case BYPASS_SURROGATE:
     num_curr_fns = truth_model().num_functions();
