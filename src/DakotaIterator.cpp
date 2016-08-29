@@ -232,6 +232,27 @@ Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
 }
 
 
+/** This constructor assigns a representation pointer and optionally
+    increments its reference count.  It behaves the same as a default
+    construction followed by assign_rep(). */
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
+  // same as default ctor above
+  probDescDB(dummy_db), parallelLib(dummy_lib),
+  resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
+  // bypass some logic in assign_rep():
+  iteratorRep(iterator_rep), referenceCount(1)
+{
+  // relevant portion of assign_rep():
+  if (iteratorRep && ref_count_incr)
+    ++iteratorRep->referenceCount;
+
+#ifdef REFCOUNT_DEBUG
+  Cout << "Iterator::Iterator() called to build empty envelope "
+       << "base class object." << std::endl;
+#endif
+}
+
+
 /** Envelope constructor only needs to extract enough data to properly
     execute get_iterator(), since letter holds the actual base class
     data.  This version is used for top-level ProblemDescDB-driven
@@ -732,7 +753,7 @@ void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
     iteratorRep = iterator_rep;
     // Increment new
     if (iteratorRep && ref_count_incr) // Check for NULL & honor ref_count_incr
-      iteratorRep->referenceCount++;
+      ++iteratorRep->referenceCount;
   }
 
 #ifdef REFCOUNT_DEBUG

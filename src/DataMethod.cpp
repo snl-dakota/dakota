@@ -148,10 +148,10 @@ DataMethodRep::DataMethodRep():
   // Verification
   refinementRate(2.),
   // Point import/export files
-  importBuildFormat(TABULAR_ANNOTATED),  importBuildActive(false),
-  importApproxFormat(TABULAR_ANNOTATED), importApproxActive(false),
-  exportApproxFormat(TABULAR_ANNOTATED), exportMCMCFormat(TABULAR_ANNOTATED),
-  referenceCount(1)
+  importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
+  importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
+  exportApproxFormat(TABULAR_ANNOTATED),  exportSampleSeqFlag(false),
+  exportSamplesFormat(TABULAR_ANNOTATED), referenceCount(1)
 { }
 
 
@@ -293,7 +293,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
-    << exportMCMCFormat;
+    << exportSampleSeqFlag << exportSamplesFormat;
 }
 
 
@@ -436,7 +436,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
-    >> exportMCMCFormat;
+    >> exportSampleSeqFlag >> exportSamplesFormat;
 }
 
 
@@ -579,7 +579,7 @@ void DataMethodRep::write(std::ostream& s) const
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
-    << exportMCMCFormat;
+    << exportSampleSeqFlag << exportSamplesFormat;
 }
 
 

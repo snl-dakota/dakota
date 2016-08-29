@@ -28,17 +28,17 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   randomSeed(24620),
   initialSamples(problem_db.get_int("model.initial_samples")),
   maxFunctionEvals(std::numeric_limits<int>::max()),
-  subspaceIdBingLi(probDescDB.get_bool("model.subspace.truncation_method.bing_li")),
-  subspaceIdConstantine(probDescDB.get_bool("model.subspace.truncation_method.constantine")),
-  subspaceIdEnergy(probDescDB.get_bool("model.subspace.truncation_method.energy")),
-  numReplicates(problem_db.get_int("model.subspace.bootstrap_samples")),
+  subspaceIdBingLi(probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
+  subspaceIdConstantine(probDescDB.get_bool("model.active_subspace.truncation_method.constantine")),
+  subspaceIdEnergy(probDescDB.get_bool("model.active_subspace.truncation_method.energy")),
+  numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   totalSamples(0), subspaceInitialized(false),
-  reducedRank(problem_db.get_int("model.subspace.dimension")),
+  reducedRank(problem_db.get_int("model.active_subspace.dimension")),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
-  truncationTolerance(probDescDB.get_real("model.subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.subspace.build_surrogate")),
-  subspaceNormalization(probDescDB.get_ushort("model.subspace.normalization"))
+  truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
+  buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
+  subspaceNormalization(probDescDB.get_ushort("model.active_subspace.normalization"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -55,7 +55,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
-  init_fullspace_sampler(probDescDB.get_ushort("model.subspace.sample_type"));
+  init_fullspace_sampler(probDescDB.get_ushort("model.active_subspace.sample_type"));
 
   const IntVector& db_refine_samples = 
     problem_db.get_iv("model.refinement_samples"); 
@@ -368,9 +368,9 @@ compute_svd()
 void ActiveSubspaceModel::
 identify_subspace()
 {
-  double bing_li_rank = computeBingLiCriterion(singularValues);
-  double constantine_rank = computeConstantineMetric(singularValues);
-  double energy_rank = computeEnergyCriterion(singularValues);
+  unsigned int bing_li_rank = computeBingLiCriterion(singularValues);
+  unsigned int constantine_rank = computeConstantineMetric(singularValues);
+  unsigned int energy_rank = computeEnergyCriterion(singularValues);
 
   if (reducedRank > 0 && reducedRank <= singularValues.length()) {
     if (outputLevel >= NORMAL_OUTPUT)
@@ -452,7 +452,7 @@ identify_subspace()
   }
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeBingLiCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -553,8 +553,8 @@ computeBingLiCriterion(RealVector& singular_values)
   }
 
   // Cutoff is 1st minimum of the criterion
-  int rank = 0;
-  for (size_t i = 1; i < bing_li_criterion.size(); ++i)
+  unsigned int rank = 0;
+  for (unsigned int i = 1; i < bing_li_criterion.size(); ++i)
   {
     if(bing_li_criterion[i-1] < bing_li_criterion[i])
     {
@@ -570,7 +570,7 @@ computeBingLiCriterion(RealVector& singular_values)
   return rank;
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeConstantineMetric(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -637,9 +637,9 @@ computeConstantineMetric(RealVector& singular_values)
   }
 
   // Cutoff is global minimum of metric
-  int rank = 0;
+  unsigned int rank = 0;
   Real min_val = 0;
-  for (size_t i = 0; i < constantine_metric.size(); ++i)
+  for (unsigned int i = 0; i < constantine_metric.size(); ++i)
   {
     if(constantine_metric[i] < min_val || i == 0)
     {
@@ -655,7 +655,7 @@ computeConstantineMetric(RealVector& singular_values)
   return rank;
 }
 
-double ActiveSubspaceModel::
+unsigned int ActiveSubspaceModel::
 computeEnergyCriterion(RealVector& singular_values)
 {
   int num_vars = derivativeMatrix.numRows();
@@ -689,8 +689,8 @@ computeEnergyCriterion(RealVector& singular_values)
     Cout << "]" << std::endl;
   }
 
-  int rank = 0;
-  for (size_t i = 0; i < num_vals; ++i)
+  unsigned int rank = 0;
+  for (unsigned int i = 0; i < num_vals; ++i)
   {
     if(std::abs(1.0 - energy_metric[i]) < truncationTolerance)
     {
@@ -883,7 +883,7 @@ int ActiveSubspaceModel::serve_init_mapping(ParLevLIter pl_iter)
 
 void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -907,7 +907,7 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
 
 void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -931,7 +931,7 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -951,7 +951,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
 const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 {
-  if (!mapping_initialized()) {
+  if (!subspaceInitialized) {
     Cerr << "\nError (subspace model): model has not been initialized."
          << std::endl;
     abort_handler(-1);
@@ -967,10 +967,6 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
   else
     return RecastModel::derived_synchronize_nowait();
 }
-
-
-bool ActiveSubspaceModel::mapping_initialized()
-{ return subspaceInitialized; }
 
 
 void ActiveSubspaceModel::update_var_labels()
@@ -998,7 +994,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   onlineEvalConcurrency = max_eval_concurrency;
 
   if (recurse_flag) {
-    if (!mapping_initialized())
+    if (!subspaceInitialized)
       fullspaceSampler.init_communicators(pl_iter);
 
     subModel.init_communicators(pl_iter, max_eval_concurrency);
@@ -1013,7 +1009,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    if (!mapping_initialized())
+    if (!subspaceInitialized)
       fullspaceSampler.set_communicators(pl_iter);
 
     subModel.set_communicators(pl_iter, max_eval_concurrency);

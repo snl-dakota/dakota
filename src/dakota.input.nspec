@@ -1158,6 +1158,21 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
          ]
+        [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+          [ 
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+           ]
+         ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
        )
@@ -1583,17 +1598,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ logit_transform {N_mdm(true,logitTransform)} ]
           [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
             [ 
-              annotated {N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}
+              annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
               |
               ( 
-                ( custom_annotated {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)} ]
+                ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
                  )
                )
               |
-              freeform {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
+              freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
              ]
            ]
          )
@@ -1852,17 +1867,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
           [ 
-            annotated {N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
             |
             ( 
-              ( custom_annotated {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)} ]
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
                )
              )
             |
-            freeform {N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
            ]
          ]
        )
@@ -2502,7 +2517,7 @@ KEYWORD model {N_mom3(start,0,stop)}
      )
    )
   |
-  ( subspace {N_mom(lit,modelType_subspace)}
+  ( active_subspace ALIAS subspace {N_mom(lit,modelType_active_subspace)}
     actual_model_pointer STRING {N_mom(str,actualModelPointer)}
     [ initial_samples INTEGER {N_mom(int,initialSamples)} ]
     [ sample_type {0}
@@ -2527,6 +2542,15 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}
      ]
+   )
+  |
+  ( adapted_basis {N_mom(lit,modelType_adapted_basis)}
+    actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+    sparse_grid_level INTEGER {N_mom(int,adaptedBasisSparseGridLev)}
+    |
+    ( expansion_order INTEGER {N_mom(int,adaptedBasisExpOrder)}
+      collocation_ratio REAL {N_mom(Real,adaptedBasisCollocRatio)}
+     )
    )
   |
   ( random_field {N_mom(lit,modelType_random_field)}

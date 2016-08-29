@@ -1,5 +1,6 @@
 #!/bin/sh
 # Clone SRN repos
+# Need to convert this to work on Windows - RWH
 if [ -d local ]; then
   cd local
   git fetch origin

@@ -1689,6 +1689,21 @@
 		      <keyword  id="random4" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
 		    </oneOf>
 		  </keyword>
+		  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence" help="" minOccurs="0" >
+		    <optional>
+		      <oneOf label="tabular format" >
+			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			<required>
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  </keyword>
+			</required>
+			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
 		  &default_max_iterations;
 		  &default_convergence_tolerance;
 		</keyword>
@@ -2124,16 +2139,16 @@
 			<param type="OUTPUT_FILE" />
 			<optional>
 			  <oneOf label="tabular format" >
-			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 			    <required>
-			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
 			      </keyword>
 			    </required>
-			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 			  </oneOf>
 			</optional>
 		      </keyword>
@@ -2388,16 +2403,16 @@
 		    <param type="OUTPUT_FILE" />
 		    <optional>
 		      <oneOf label="tabular format" >
-			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 			<!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 			<required>
-			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportMCMCFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
 			  </keyword>
 			</required>
-			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportMCMCFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 		      </oneOf>
 		    </optional>
 		  </keyword>
@@ -3233,19 +3248,20 @@
             </keyword>
           </keyword>
         </keyword>
-	<keyword  id="subspace" name="subspace" code="{N_mom(lit,modelType_subspace)}" label="subspace" help="" minOccurs="1" >
+	<keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="active_subspace" help="" minOccurs="1" >
+          <alias name="subspace"/>
 	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
 	    <param type='INTEGER' />
 	  </keyword>
-    <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
-			<oneOf>
-			  <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
-			  <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
-			</oneOf>
-    </keyword>
+	  <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
+	    <oneOf>
+	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
+	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
+	    </oneOf>
+	  </keyword>
 	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
 	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
 	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
@@ -3255,23 +3271,40 @@
 	      </keyword>
 	    </keyword>
 	  </keyword>
-      <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
-        <param type='INTEGER' />
-      </keyword>
-      <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
-        <param type='INTEGER' />
-      </keyword>
-      <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-        <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" > 
-          <param type="INTEGERLIST" />
-        </keyword>
-      </keyword>
-      <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
-        <oneOf> 
-          <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
-          <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
-        </oneOf> 
-      </keyword>
+	  <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
+            <param type='INTEGER' />
+	  </keyword>
+	  <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
+            <param type='INTEGER' />
+	  </keyword>
+	  <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" > 
+              <param type="INTEGERLIST" />
+            </keyword>
+	  </keyword>
+	  <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
+            <oneOf> 
+              <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
+              <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
+            </oneOf> 
+	  </keyword>
+	</keyword>
+	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="adapted_basis" help="" minOccurs="1" >
+	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+	    <param type="STRING" in_taglist="model" />
+	  </keyword>
+	  <oneOf>
+	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="adapted basis sparse grid level" >
+	      <param type="INTEGER" />
+	    </keyword>
+	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="adapted basis expansion order" >
+	      <param type="INTEGER" />
+	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="adapted basis collocation ratio" >
+		<param type="REAL" />
+	      </keyword>
+	    </keyword>
+	  </oneOf>
+	  <!-- TO DO: adaptation specification for testing higher-order and interaction terms for adapted basis. -->
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
 	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">

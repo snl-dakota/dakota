@@ -393,7 +393,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
 void ApproximationInterface::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  size_t i, index, num_pts = resp_map.size();
+  size_t i, num_pts = resp_map.size();
   if (samples.numCols() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
 	 << "ApproximationInterface::update_approximation()." << std::endl;
@@ -402,7 +402,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
   // replace SurrogateData::{vars,resp}Data
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[index].clear_data();
+    functionSurfaces[*a_it].clear_data();
   if (actualModelCache) {
     PRPCacheCIter p_it; size_t num_cv = samples.numRows();
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
@@ -441,7 +441,7 @@ void ApproximationInterface::
 update_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  size_t i, index, num_pts = resp_map.size();
+  size_t i, num_pts = resp_map.size();
   if (vars_array.size() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
 	 << "ApproximationInterface::update_approximation()." << std::endl;
@@ -449,7 +449,7 @@ update_approximation(const VariablesArray& vars_array,
   }
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
-    functionSurfaces[index].clear_data();
+    functionSurfaces[*a_it].clear_data();
   if (actualModelCache) {
     PRPCacheCIter p_it;
     for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
@@ -527,7 +527,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 void ApproximationInterface::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  size_t i, index, num_pts = resp_map.size();
+  size_t i, num_pts = resp_map.size();
   if (samples.numCols() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
 	 << "ApproximationInterface::append_approximation()." << std::endl;
@@ -575,7 +575,7 @@ void ApproximationInterface::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  size_t i, index, num_pts = resp_map.size();
+  size_t i, num_pts = resp_map.size();
   if (vars_array.size() != num_pts) {
     Cerr << "Error: mismatch in variable and response set lengths in "
 	 << "ApproximationInterface::append_approximation()." << std::endl;
