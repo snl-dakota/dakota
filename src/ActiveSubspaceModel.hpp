@@ -173,6 +173,14 @@ protected:
   /// other truncation methods.
   unsigned int computeEnergyCriterion(RealVector& singular_values);
 
+  /// Use cross validation of a moving least squares surrogate to identify the
+  /// size of an active subspace that meets an error tolerance
+  unsigned int computeCrossValidationMetric();
+
+  /// Build moving least squares surrogate over candidate active subspace
+  double build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
+                            RealMatrix test_x, IntResponseMap test_y);
+
   /// Build surrogate over active subspace
   void build_surrogate();
 
@@ -312,6 +320,10 @@ protected:
 
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
+
+  /// model containing a surrogate built over the active subspace used in
+  /// cross validation to identify the subspace size
+  Model cvSurrogateModel;
 
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;

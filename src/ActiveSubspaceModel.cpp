@@ -371,6 +371,7 @@ identify_subspace()
   unsigned int bing_li_rank = computeBingLiCriterion(singularValues);
   unsigned int constantine_rank = computeConstantineMetric(singularValues);
   unsigned int energy_rank = computeEnergyCriterion(singularValues);
+  unsigned int cv_rank = computeCrossValidationMetric();
 
   if (reducedRank > 0 && reducedRank <= singularValues.length()) {
     if (outputLevel >= NORMAL_OUTPUT)
@@ -707,6 +708,192 @@ computeEnergyCriterion(RealVector& singular_values)
   return rank;
 }
 
+
+unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
+{
+  // Compute max_rank, that is the maximum dimension that we have enough samples
+  // to build a surrogate for
+
+  int num_folds = 10;
+
+  Model asm_model;
+  asm_model.assign_rep(asmInstance, false);
+
+  String sample_reuse = "", approx_type = "global_moving_least_squares";
+  ActiveSet surr_set = current_response().active_set(); // copy
+
+  int poly_degree = 2; // quadratic bases
+  UShortArray approx_order(reducedRank, poly_degree);
+  short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
+  Iterator dace_iterator;
+
+  cvSurrogateModel.assign_rep(new DataFitSurrModel(dace_iterator, asm_model,
+    surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, sample_reuse), false);
+
+  const RealMatrix& all_x = fullspaceSampler.all_samples();
+  const IntResponseMap& all_y = fullspaceSampler.all_responses();
+  int n = all_x.numCols();
+
+  int num_samples_req = 1;
+  int max_rank = 1;
+  while (n >= num_samples_req && max_rank < numFullspaceVars) {
+    num_samples_req = 1;
+    for (int ii = max_rank + poly_degree; ii > max_rank; ii--) {
+      num_samples_req *= ii; // Numerator
+    }
+    for (int ii = poly_degree; ii > 0; ii--) {
+      num_samples_req /= ii; // Denomenator
+    }
+
+    if (n < num_samples_req) {
+      max_rank--; // Too big by one
+      break;
+    }
+    else
+      max_rank++; // Increment for next loop iteration
+  }
+
+  // Loop over all feasible subspace sizes
+  RealVector cv_error(max_rank);
+  for (unsigned int ii = 1; ii <= max_rank; ii++) {
+    // Randomly partion sample matrix into k folds
+
+    std::vector<int> random_index_vec;
+    // set sequential index values:
+    for (int ind = 0; ind < n; ++ind)
+      random_index_vec.push_back(ind);
+    // shuffle these indices:
+    std::random_shuffle(random_index_vec.begin(), random_index_vec.end());
+
+    // Compute the size of each fold:
+    std::vector<int> fold_size(num_folds, n / num_folds);
+    for (int jj = 0; jj < n % num_folds; jj++)
+      fold_size[jj]++;
+
+    // Loop over k folds holding one fold out at a time as a test set and using the
+    // rest to build the surrogate
+    for (int jj = 0; jj < num_folds; jj++) {
+      // Get kth fold and put into test sets, put the rest into training sets:
+
+      int fold_start_ind = 0;
+      for (int kk = 0; kk < jj; kk++)
+        fold_start_ind += fold_size[kk];
+
+      RealMatrix training_x(all_x.numRows(), n - fold_size[jj]);
+      RealMatrix test_x(all_x.numRows(), fold_size[jj]);
+
+      IntResponseMap training_y;
+      IntResponseMap test_y;
+
+      IntRespMCIter resp_it = all_y.begin();
+      IntRespMCIter resp_end = all_y.end();
+
+      // Fill test_x, test_y, training_x, and training_y
+      int training_count = 0;
+      int test_count = 0;
+      for (int kk = 0; kk < all_x.numCols(); kk++) {
+        if (fold_start_ind <= random_index_vec[kk] &&
+            (fold_start_ind + fold_size[jj]) > random_index_vec[kk]) {
+          test_y[test_count] = resp_it->second;
+          for (int mm = 0; mm < all_x.numRows(); mm++)
+              test_x(mm, test_count) = all_x(mm, random_index_vec[kk]);
+          
+          test_count++;
+        }
+        else {
+          training_y[training_count] = resp_it->second;
+          for (int mm = 0; mm < all_x.numRows(); mm++)
+            training_x(mm, training_count) = all_x(mm, random_index_vec[kk]);
+
+          training_count++;
+        }
+
+        resp_it++;
+      }
+
+      cv_error[ii-1] += build_cv_surrogate(training_x, training_y, test_x, test_y)/num_folds;
+    }
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Cross validation metric values are:\n[ ";
+    for (size_t i = 0; i < max_rank; ++i)
+    {
+      Cout << cv_error[i] << " ";
+    }
+    Cout << "]" << std::endl;
+  }
+
+  unsigned int rank = 0;
+  for (unsigned int i = 0; i < max_rank; ++i)
+  {
+    if(cv_error[i] < truncationTolerance)
+    {
+      rank = i+1;
+      break;
+    }
+  }
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Cross validation metric subspace size estimate = "
+         << rank << ". (truncation_tolerance = " << truncationTolerance << ")"
+         << std::endl;
+
+  return rank;
+}
+
+// Build global moving least squares surrogate model to use in cross validation
+// to estimate active subspace size
+double ActiveSubspaceModel::
+build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
+                   RealMatrix test_x, IntResponseMap test_y)
+{
+  Cout << "training x size = " << training_x.numCols() << " training y size = " << training_y.size() << std::endl;
+  Cout << "test x size = " << test_x.numCols() << " test y size = " << test_y.size() << std::endl;
+
+  cvSurrogateModel.update_approximation(training_x, training_y, true);
+
+  int num_test_points = test_x.numCols();
+
+  // evaluate surrogate at test points:
+  IntResponseMap test_y_surr;
+  ActiveSet surr_set = current_response().active_set(); // copy
+  for (int ii = 0; ii < num_test_points; ii++) {
+    cvSurrogateModel.continuous_variables(Teuchos::getCol(Teuchos::Copy, test_x, ii));
+    cvSurrogateModel.evaluate(surr_set);
+
+    test_y_surr[ii] = cvSurrogateModel.current_response();
+  }
+
+  // compute L2 norm of error between test_prediction and actual response:
+  IntRespMCIter resp_it = test_y.begin();
+  IntRespMCIter resp_end = test_y.end();
+  IntRespMCIter resp_surr_it = test_y_surr.begin();
+  IntRespMCIter resp_surr_end = test_y_surr.end();
+  RealVector error_norm(numFunctions);
+  RealVector func_mean(numFunctions);
+  for (; resp_it != resp_end && resp_surr_it != resp_surr_end; resp_it++, resp_surr_it++) {
+    const RealVector& resp_vector = resp_it->second.function_values();
+    const RealVector& resp_surr_vector = resp_surr_it->second.function_values();
+
+    for (size_t ii = 0; ii < numFunctions; ii++) {
+      error_norm[ii] += std::pow(resp_vector[ii] - resp_surr_vector[ii],2);
+
+      func_mean[ii] += resp_vector[ii]/test_y.size();
+    }
+  }
+
+  double max_error_norm = 0;
+  for (size_t ii = 0; ii < numFunctions; ii++) {
+    double scaled_error = std::sqrt(error_norm[ii]/func_mean[ii]);
+    
+    if (scaled_error > max_error_norm)
+      max_error_norm = scaled_error;
+  }
+
+  return max_error_norm;
+}
 
 
 /** May eventually take on init_comms and related operations.  Also
