@@ -315,11 +315,11 @@ void NonDBayesCalibration::init_hyper_parameters()
   if (obsErrorMultiplierMode == CALIBRATE_ONE)
     numHyperparams = 1;
   else if (obsErrorMultiplierMode == CALIBRATE_PER_EXPER)
-    numHyperparams = numExperiments;
+    numHyperparams = expData.num_experiments();
   else if (obsErrorMultiplierMode == CALIBRATE_PER_RESP)
     numHyperparams = num_resp_groups;
   else if (obsErrorMultiplierMode == CALIBRATE_BOTH)
-    numHyperparams = numExperiments * num_resp_groups;
+    numHyperparams = expData.num_experiments() * num_resp_groups;
 
   // Setup priors distributions on hyper-parameters
   if ( (invGammaAlphas.length()  > 1 &&
@@ -593,7 +593,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmcDerivOrder), false);
+			      obsErrorMultiplierMode, mcmcDerivOrder), false);
+
     construct_map_optimizer();
 
     Cout << "hifi = " << hifiModel.current_variables() << '\n';
@@ -622,7 +623,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // that's what we want if the user said "emulator")
 
       // Set the experimental configuration on the low-fi model:
-      // mcmcModel.inactive_continuous_variables(candidate_exp_config[i]);
+      // Model::inactive_variables(candidate_exp_config[i], residualModel)
 
       // Filter posterior, aim for 5000 samples
       int burn_in_post = int(0.2*num_mcmc_samples);
@@ -701,9 +702,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // Add this data to the expData for the next iteteration of likelihood
     // print design_i and corresponding hi-fi response to data file?
 
-    // BMA (pseudocode)
+    // BMA (pseudocode); TODO add multiple points up to concurrency
     /*
-      hifiModel.inactive_continuous_variables(candidate_best)
+      Model::active_variables(candidate_best, hifiModel)
       hifiModel.evaluate();
       expData.add_datapoint(hifiModel.current_response())
       num_hifi++;

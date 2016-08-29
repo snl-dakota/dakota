@@ -1070,6 +1070,15 @@ public:
   /// that are not mapped to the top Model level
   Model* model_rep() const;
 
+  /// set the specified configuration to the Model's inactive vars,
+  /// converting from real to integer or through index to string value
+  /// as needed
+  static void active_variables(const RealVector& config_vars, Model& model);
+  /// set the specified configuration to the Model's inactive vars,
+  /// converting from real to integer or through index to string value
+  /// as needed
+  static void inactive_variables(const RealVector& config_vars, Model& model);
+
 protected:
 
   //

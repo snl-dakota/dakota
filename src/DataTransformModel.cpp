@@ -53,12 +53,13 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // BMA TODO: correctly manage the view if relaxed, also review recursion
   if (!expData.config_vars().empty()) {
     subModel.inactive_view(MIXED_STATE);
-    int num_csv = subModel.inactive_continuous_variables().length();
+    int num_state_vars =
+      subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
     size_t num_config_vars = expData.config_vars()[0].length();
-    if (num_csv != num_config_vars) {
+    if (num_state_vars != num_config_vars) {
       Cerr << "\nError: (DataTransformModel) Number of continuous state "
-	   << "variables = " << num_csv << " must match\n       number of "
-	   << "configuration variables = " << num_config_vars << "\n";
+	   << "variables = " << num_state_vars << " must match\n       number "
+	   << "of configuration variables = " << num_config_vars << "\n";
       abort_handler(-1);
     }
   }
@@ -378,7 +379,7 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
     for (size_t i=0; i<num_exp; ++i) {
 
       // augment the active variables with the configuration variables
-      subModel.inactive_continuous_variables(expData.config_vars()[i]);
+      Model::inactive_variables(expData.config_vars()[i], subModel);
 
       // evaluate the subModel in the original fn set definition.
       // Doing this here eliminates the need for eval tracking logic
