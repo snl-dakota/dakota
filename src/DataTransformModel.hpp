@@ -89,6 +89,32 @@ protected:
   /// specialization of evaluate that iterates over configuration variables
   void derived_evaluate_nowait(const ActiveSet& set);
 
+  /// synchronize all evaluations (all residuals for all experiment
+  /// configurations)
+  const IntResponseMap& derived_synchronize();
+
+  /// return any evaluations for which all experiment configurations
+  /// have completed
+  const IntResponseMap& derived_synchronize_nowait();
+
+  // Synchronize the subModel and filter the IntResponseMap in-place,
+  // caching any that we didn't schedule.
+  const IntResponseMap& filter_submodel_responses();
+
+  /// cache the subModel responses into a per-RecastModel eval ID map
+  void cache_submodel_responses(const IntResponseMap& sm_resp_map,
+                                bool deep_copy);
+
+  /// collect any (or force all) completed subModel evals and populate
+  /// recastResponseMap with residuals for those that are fully completed
+  void collect_residuals(bool collect_all);
+
+  /// transform a set of per-configuration subModel Responses to a
+  /// single evaluation's residuals
+  void transform_response_map(const IntResponseMap& submodel_resp,
+			      const Variables& recast_vars,
+			      Response& residual_resp) ;
+
   // ---
   // Callback functions that perform data transform during the Recast operations
   // ---
@@ -139,6 +165,8 @@ protected:
                            size_t submodel_size, size_t recast_size, 
                            T& recast_array) const;
 
+  void print_residual_response(const Response& resid_resp);
+
   /// Reference to the experiment data used to construct this Model
   const ExperimentData& expData;
 
@@ -150,6 +178,10 @@ protected:
 
   /// Calibration mode for the hyper-parameters
   unsigned short obsErrorMultiplierMode;
+
+  // BMA TODO: fix this terrible typedef
+  typedef std::map<int, IntResponseMap> IntIntResponseMapMap;
+  IntIntResponseMapMap cachedResp;
 
 };
 
