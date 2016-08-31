@@ -2521,6 +2521,19 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ energy {N_mom(true,subspaceIdEnergy)}
         [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
        ]
+      [ cross_validation {N_mom(true,subspaceIdCV)}
+        [ 
+          minimum {N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}
+          |
+          relative {N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}
+          |
+          decrease {N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}
+         ]
+        [ relative_tolerance REAL {N_mom(Real,relTolerance)} ]
+        [ decrease_tolerance REAL {N_mom(Real,decreaseTolerance)} ]
+        [ max_rank INTEGER {N_mom(int,subspaceCVMaxRank)} ]
+        [ exhaustive {N_mom(false,subspaceCVIncremental)} ]
+       ]
      ]
     [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
     [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]

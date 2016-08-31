@@ -31,6 +31,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   subspaceIdBingLi(probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
   subspaceIdConstantine(probDescDB.get_bool("model.active_subspace.truncation_method.constantine")),
   subspaceIdEnergy(probDescDB.get_bool("model.active_subspace.truncation_method.energy")),
+  subspaceIdCV(probDescDB.get_bool("model.active_subspace.truncation_method.cv")),
   numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
   numFullspaceVars(subModel.cv()), numFunctions(subModel.num_functions()),
   totalSamples(0), subspaceInitialized(false),
@@ -38,7 +39,9 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
-  subspaceNormalization(probDescDB.get_ushort("model.active_subspace.normalization"))
+  subspaceNormalization(probDescDB.get_ushort("model.active_subspace.normalization")),
+  cvIncremental(probDescDB.get_bool("model.active_subspace.cv.incremental")), cvIdMethod(probDescDB.get_ushort("model.active_subspace.cv.id_method")), cvRelTolerance(probDescDB.get_real("model.active_subspace.cv.relative_tolerance")),
+  cvDecreaseTolerance(probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")), cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
   asmInstance = this;
   modelType = "subspace";
@@ -75,39 +78,59 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     subspace for continuous variables only, but carries other active
     variables along for the ride. */
 ActiveSubspaceModel::
-ActiveSubspaceModel(const Model& sub_model,
-                    int random_seed, int initial_samples,
-                    double conv_tol, size_t max_evals,
-                    unsigned short subspace_id_method,
-                    unsigned short sample_type):
-  RecastModel(sub_model), randomSeed(random_seed),
-  initialSamples(initial_samples), maxFunctionEvals(max_evals),
-  subspaceIdBingLi(false),
-  subspaceIdConstantine(true), subspaceIdEnergy(false), numReplicates(100),
+ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+                    const RealMatrix &rotation_matrix,
+                    short output_level) :
+  RecastModel(sub_model),
   numFullspaceVars(sub_model.cv()), numFunctions(sub_model.num_functions()),
-  totalSamples(0),
-  subspaceInitialized(false), reducedRank(0),
+  subspaceInitialized(false), reducedRank(dimension),
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   buildSurrogate(false), refinementSamples(0),
   subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
-  asmInstance = this;
   modelType = "subspace";
 
-  // Set seed of bootstrap sampler:
-  BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
+  outputLevel = output_level;
 
   componentParallelMode = CONFIG_PHASE;
   offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
   onlineEvalConcurrency = 1; // Will be overwritten with correct value in
                              // derived_init_communicators()
 
-  // We can't even initialize the RecastModel sizes until after the
-  // build has completed.  Can only construct the fullspace sampler.
+  RealMatrix reduced_basis_W1(Teuchos::View, rotation_matrix,
+                              numFullspaceVars, reducedRank);
+  activeBasis = reduced_basis_W1;
 
-  // initialize the fullspace Monte Carlo derivative sampler; this
-  // will configure it to perform initialSamples
-  init_fullspace_sampler(sample_type);
+  RealMatrix reduced_basis_W2(Teuchos::View, rotation_matrix,
+                              numFullspaceVars,numFullspaceVars - reducedRank,
+                              0, reducedRank);
+
+  inactiveBasis = reduced_basis_W2;
+
+  // complete initialization of the base RecastModel
+  initialize_recast();
+
+  // convert the normal distributions to the reduced space and set in the
+  // reduced model
+  uncertain_vars_to_subspace();
+
+  // update with subspace constraints
+  update_linear_constraints();
+
+  // set new subspace variable labels
+  update_var_labels();
+
+  if (buildSurrogate)
+    build_surrogate();
+
+  subspaceInitialized = true;
+
+  // Perform numerical derivatives in subspace:
+  supportsEstimDerivs = true;
+
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Initialization of active subspace is complete."
+         << std::endl;
 }
 
 
@@ -219,6 +242,7 @@ void ActiveSubspaceModel::build_subspace()
                               0, reducedRank);
 
   inactiveBasis = reduced_basis_W2;
+
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\nSubspace Model: Active basis is:\n";
     write_data(Cout, activeBasis, true, true, true);
@@ -371,7 +395,10 @@ identify_subspace()
   unsigned int bing_li_rank = computeBingLiCriterion(singularValues);
   unsigned int constantine_rank = computeConstantineMetric(singularValues);
   unsigned int energy_rank = computeEnergyCriterion(singularValues);
-  unsigned int cv_rank = computeCrossValidationMetric();
+
+  unsigned int cv_rank = 0;
+  if (subspaceIdCV)
+    cv_rank = computeCrossValidationMetric();
 
   if (reducedRank > 0 && reducedRank <= singularValues.length()) {
     if (outputLevel >= NORMAL_OUTPUT)
@@ -402,15 +429,24 @@ identify_subspace()
 
     if (subspaceIdEnergy) {
       if (outputLevel >= NORMAL_OUTPUT)
-        Cout << "\nSubspace Model: Constantine truncation method is active."
+        Cout << "\nSubspace Model: Eigenvalue energy truncation method is active."
              << std::endl;
       
       if (reducedRank < energy_rank)
         reducedRank = energy_rank;
     }
 
+    if (subspaceIdCV) {
+      if (outputLevel >= NORMAL_OUTPUT)
+        Cout << "\nSubspace Model: Cross validation truncation method is active."
+             << std::endl;
+      
+      if (reducedRank < cv_rank)
+        reducedRank = cv_rank;
+    }
+
     // Default case:
-    if (!(subspaceIdBingLi || subspaceIdConstantine || subspaceIdEnergy)) {
+    if (!(subspaceIdBingLi || subspaceIdConstantine || subspaceIdEnergy || subspaceIdCV)) {
       if (outputLevel >= NORMAL_OUTPUT)
         Cout << "\nSubspace Model: Determining subspace size with Constantine "
              << "metric." << std::endl;
@@ -714,30 +750,21 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
   // Compute max_rank, that is the maximum dimension that we have enough samples
   // to build a surrogate for
 
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nSubspace Model: Beginning cross validation subspace id "
+         << "method.\n" << std::endl;
+
   int num_folds = 10;
 
-  Model asm_model;
-  asm_model.assign_rep(asmInstance, false);
-
-  String sample_reuse = "", approx_type = "global_moving_least_squares";
-  ActiveSet surr_set = current_response().active_set(); // copy
-
   int poly_degree = 2; // quadratic bases
-  UShortArray approx_order(reducedRank, poly_degree);
-  short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
-  Iterator dace_iterator;
-
-  cvSurrogateModel.assign_rep(new DataFitSurrModel(dace_iterator, asm_model,
-    surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, sample_reuse), false);
 
   const RealMatrix& all_x = fullspaceSampler.all_samples();
   const IntResponseMap& all_y = fullspaceSampler.all_responses();
-  int n = all_x.numCols();
+  int n_samps = all_x.numCols();
 
   int num_samples_req = 1;
   int max_rank = 1;
-  while (n >= num_samples_req && max_rank < numFullspaceVars) {
+  while (n_samps >= num_samples_req && max_rank < numFullspaceVars) {
     num_samples_req = 1;
     for (int ii = max_rank + poly_degree; ii > max_rank; ii--) {
       num_samples_req *= ii; // Numerator
@@ -746,7 +773,7 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
       num_samples_req /= ii; // Denomenator
     }
 
-    if (n < num_samples_req) {
+    if (n_samps < num_samples_req) {
       max_rank--; // Too big by one
       break;
     }
@@ -754,9 +781,58 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
       max_rank++; // Increment for next loop iteration
   }
 
+  if (cvMaxRank >= 0 && max_rank > cvMaxRank)
+    max_rank = cvMaxRank;
+
   // Loop over all feasible subspace sizes
-  RealVector cv_error(max_rank);
+  std::vector<Real> cv_error;
+  bool found_acceptable_subspace = false;
+  bool rel_tol_met = false, decrease_tol_met = false;
   for (unsigned int ii = 1; ii <= max_rank; ii++) {
+    if (found_acceptable_subspace && cvIncremental)
+      break;
+
+    // Add element to the list of metrics:
+    cv_error.push_back(0.0);
+
+    // Create a local active subspace model using the light-weight constructor:
+    Model asm_model_tmp;
+    asm_model_tmp.assign_rep(new ActiveSubspaceModel(subModel, ii,
+                                                     leftSingularVectors,
+                                                     SILENT_OUTPUT));
+
+    String sample_reuse = "", approx_type = "global_moving_least_squares";
+    ActiveSet surr_set = current_response().active_set(); // copy
+
+    UShortArray approx_order(reducedRank, poly_degree);
+    short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
+    Iterator dace_iterator;
+
+    Model cv_surr_model;
+    cv_surr_model.assign_rep(new DataFitSurrModel(dace_iterator, asm_model_tmp,
+      surr_set, approx_type, approx_order, corr_type, corr_order, data_order,
+      SILENT_OUTPUT, sample_reuse), false);
+
+
+    Teuchos::BLAS<int, Real> teuchos_blas;
+
+    //  Project fullspace samples onto active directions
+    //  Calculate x_active = W1^T*x
+    Real alpha = 1.0;
+    Real beta = 0.0;
+
+    RealMatrix all_x_active(ii, all_x.numCols());
+
+    RealMatrix W1(Teuchos::Copy, leftSingularVectors,
+                            numFullspaceVars, ii);
+    int m = W1.numCols();
+    int k = W1.numRows();
+    int n = all_x.numCols();
+
+    teuchos_blas.GEMM(Teuchos::TRANS, Teuchos::NO_TRANS, m, n, k, alpha,
+                      W1.values(), k, all_x.values(), k, beta,
+                      all_x_active.values(), m);
+
     // Randomly partion sample matrix into k folds
 
     std::vector<int> random_index_vec;
@@ -780,8 +856,8 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
       for (int kk = 0; kk < jj; kk++)
         fold_start_ind += fold_size[kk];
 
-      RealMatrix training_x(all_x.numRows(), n - fold_size[jj]);
-      RealMatrix test_x(all_x.numRows(), fold_size[jj]);
+      RealMatrix training_x(all_x_active.numRows(), n - fold_size[jj]);
+      RealMatrix test_x(all_x_active.numRows(), fold_size[jj]);
 
       IntResponseMap training_y;
       IntResponseMap test_y;
@@ -792,19 +868,19 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
       // Fill test_x, test_y, training_x, and training_y
       int training_count = 0;
       int test_count = 0;
-      for (int kk = 0; kk < all_x.numCols(); kk++) {
+      for (int kk = 0; kk < all_x_active.numCols(); kk++) {
         if (fold_start_ind <= random_index_vec[kk] &&
             (fold_start_ind + fold_size[jj]) > random_index_vec[kk]) {
           test_y[test_count] = resp_it->second;
-          for (int mm = 0; mm < all_x.numRows(); mm++)
-              test_x(mm, test_count) = all_x(mm, random_index_vec[kk]);
+          for (int mm = 0; mm < all_x_active.numRows(); mm++)
+            test_x(mm, test_count) = all_x_active(mm, kk);
           
           test_count++;
         }
         else {
           training_y[training_count] = resp_it->second;
-          for (int mm = 0; mm < all_x.numRows(); mm++)
-            training_x(mm, training_count) = all_x(mm, random_index_vec[kk]);
+          for (int mm = 0; mm < all_x_active.numRows(); mm++)
+            training_x(mm, training_count) = all_x_active(mm, kk);
 
           training_count++;
         }
@@ -812,47 +888,149 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
         resp_it++;
       }
 
-      cv_error[ii-1] += build_cv_surrogate(training_x, training_y, test_x, test_y)/num_folds;
+      cv_error[ii-1] += build_cv_surrogate(cv_surr_model, training_x, training_y, test_x, test_y)/num_folds;
+    }
+
+    if (cvIdMethod == RELATIVE_TOLERANCE) {
+      tolerance_met_index(cv_error, cvRelTolerance, rel_tol_met);
+      if (rel_tol_met)
+        found_acceptable_subspace = true;
+    }
+
+    if (cvIdMethod == DECREASE_TOLERANCE) {
+      tolerance_met_index(negative_diff(cv_error), cvDecreaseTolerance, decrease_tol_met);
+      if (decrease_tol_met)
+        found_acceptable_subspace = true;
     }
   }
 
+  return determine_rank_cv(cv_error);
+}
+
+unsigned int ActiveSubspaceModel::
+determine_rank_cv(const std::vector<Real> &cv_error)
+{
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << "\nSubspace Model: Cross validation metric values are:\n[ ";
-    for (size_t i = 0; i < max_rank; ++i)
+    for (size_t i = 0; i < cv_error.size(); ++i)
     {
       Cout << cv_error[i] << " ";
     }
     Cout << "]" << std::endl;
   }
 
+  bool rel_tol_met = false, decrease_tol_met = false;
+
+  unsigned int rank_min_metric = min_index(cv_error) + 1;
+  unsigned int rank_rel_tol = tolerance_met_index(cv_error, cvRelTolerance, rel_tol_met) + 1;
+  unsigned int rank_decrease_tol = tolerance_met_index(negative_diff(cv_error), cvDecreaseTolerance, decrease_tol_met) + 1;
+
   unsigned int rank = 0;
-  for (unsigned int i = 0; i < max_rank; ++i)
-  {
-    if(cv_error[i] < truncationTolerance)
-    {
-      rank = i+1;
+  bool fallback = false;
+  switch (cvIdMethod) {
+    case MINIMUM_METRIC:
+      rank = rank_min_metric;
       break;
-    }
+    case RELATIVE_TOLERANCE: case CV_ID_DEFAULT:
+      if (rel_tol_met)
+        rank = rank_rel_tol;
+      else {
+        rank = rank_min_metric;
+        fallback = true;
+      }
+      break;
+    case DECREASE_TOLERANCE:
+      if (decrease_tol_met)
+        rank = rank_decrease_tol;
+      else {
+        rank = rank_min_metric;
+        fallback = true;
+      }
+      break;
   }
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\nSubspace Model: Cross validation metric subspace size estimate = "
-         << rank << ". (truncation_tolerance = " << truncationTolerance << ")"
-         << std::endl;
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << "\nSubspace Model: Cross validation metric: minimum metric subspace size estimate = "
+         << rank_min_metric << ".";
+    if (cvIdMethod == MINIMUM_METRIC)
+      Cout << " (active)";
+    else if (fallback)
+      Cout << " (active as a fallback)";
+    else
+      Cout << " (inactive)";
+    Cout << std::endl;
+
+    Cout << "\nSubspace Model: Cross validation metric: relative tolerance subspace size estimate = "
+         << rank_rel_tol << ".";
+    if (cvIdMethod == RELATIVE_TOLERANCE || cvIdMethod == CV_ID_DEFAULT)
+      Cout << " (active, ";
+    else
+      Cout << " (inactive, ";
+    Cout << "tolerance = " << cvRelTolerance << ")" << std::endl;
+
+    Cout << "\nSubspace Model: Cross validation metric: decrease tolerance subspace size estimate = "
+         << rank_decrease_tol << ".";
+    if (cvIdMethod == DECREASE_TOLERANCE)
+      Cout << " (active, ";
+    else
+      Cout << " (inactive, ";
+    Cout << "tolerance = " << cvDecreaseTolerance << ")" << std::endl;
+  }
 
   return rank;
 }
 
-// Build global moving least squares surrogate model to use in cross validation
-// to estimate active subspace size
-double ActiveSubspaceModel::
-build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
+unsigned int ActiveSubspaceModel::
+min_index(const std::vector<Real> &cv_error)
+{
+  if (cv_error.empty()) // Return full rank since this shouldn't be empty
+    return numFullspaceVars-1;
+
+  Real min_val = cv_error[0];
+  unsigned int min_ind = 0;
+  for (unsigned int ii = 1; ii < cv_error.size(); ii++) {
+    if (cv_error[ii] < min_val) {
+      min_val = cv_error[ii];
+      min_ind = ii;
+    }
+  }
+
+  return min_ind;
+}
+
+unsigned int ActiveSubspaceModel::
+tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance, bool &tol_met)
+{
+  tol_met = false;
+  for (unsigned int ii = 0; ii < cv_error.size(); ii++) {
+    if (cv_error[ii] < tolerance) {
+      tol_met = true;
+      return ii;
+    }
+  }
+
+  // Return full rank since tolerance is not met
+  return numFullspaceVars-1;
+}
+
+std::vector<Real> ActiveSubspaceModel::
+negative_diff(const std::vector<Real> &cv_error)
+{
+  std::vector<Real> neg_diff(cv_error.size()-1);
+  for (unsigned int ii = 0; ii < neg_diff.size(); ii++) {
+    neg_diff[ii] = cv_error[ii] - cv_error[ii+1];
+  }
+
+  return neg_diff;
+}
+
+/// Build global moving least squares surrogate model to use in cross validation
+/// to estimate active subspace size
+Real ActiveSubspaceModel::
+build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x, IntResponseMap training_y,
                    RealMatrix test_x, IntResponseMap test_y)
 {
-  Cout << "training x size = " << training_x.numCols() << " training y size = " << training_y.size() << std::endl;
-  Cout << "test x size = " << test_x.numCols() << " test y size = " << test_y.size() << std::endl;
-
-  cvSurrogateModel.update_approximation(training_x, training_y, true);
+  cv_surr_model.update_approximation(training_x, training_y, true);
 
   int num_test_points = test_x.numCols();
 
@@ -860,10 +1038,11 @@ build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
   IntResponseMap test_y_surr;
   ActiveSet surr_set = current_response().active_set(); // copy
   for (int ii = 0; ii < num_test_points; ii++) {
-    cvSurrogateModel.continuous_variables(Teuchos::getCol(Teuchos::Copy, test_x, ii));
-    cvSurrogateModel.evaluate(surr_set);
+    cv_surr_model.continuous_variables(Teuchos::getCol(Teuchos::Copy, test_x, ii));
 
-    test_y_surr[ii] = cvSurrogateModel.current_response();
+    cv_surr_model.evaluate(surr_set);
+
+    test_y_surr[ii] = cv_surr_model.current_response().copy();
   }
 
   // compute L2 norm of error between test_prediction and actual response:
@@ -872,24 +1051,35 @@ build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
   IntRespMCIter resp_surr_it = test_y_surr.begin();
   IntRespMCIter resp_surr_end = test_y_surr.end();
   RealVector error_norm(numFunctions);
-  RealVector func_mean(numFunctions);
+  RealVector mean(numFunctions);
   for (; resp_it != resp_end && resp_surr_it != resp_surr_end; resp_it++, resp_surr_it++) {
     const RealVector& resp_vector = resp_it->second.function_values();
     const RealVector& resp_surr_vector = resp_surr_it->second.function_values();
 
     for (size_t ii = 0; ii < numFunctions; ii++) {
-      error_norm[ii] += std::pow(resp_vector[ii] - resp_surr_vector[ii],2);
-
-      func_mean[ii] += resp_vector[ii]/test_y.size();
+      error_norm[ii] += std::pow(resp_vector[ii] - resp_surr_vector[ii], 2);
+      mean[ii] += resp_vector[ii] / test_y.size();
     }
   }
 
-  double max_error_norm = 0;
+
+  resp_it = test_y.begin();
+  resp_end = test_y.end();
+  RealVector stdev(numFunctions);
+  for (; resp_it != resp_end; resp_it++) {
+    const RealVector& resp_vector = resp_it->second.function_values();
+    for (size_t ii = 0; ii < numFunctions; ii++)
+      stdev[ii] += std::pow(resp_vector[ii] - mean[ii], 2) / test_y.size();
+  }
+  for (size_t ii = 0; ii < numFunctions; ii++)
+    stdev[ii] = std::sqrt(stdev[ii]);
+
+  Real max_error_norm = 0;
   for (size_t ii = 0; ii < numFunctions; ii++) {
-    double scaled_error = std::sqrt(error_norm[ii]/func_mean[ii]);
+    Real norm_rms_error = std::sqrt(error_norm[ii] / test_y.size()) / stdev[ii];
     
-    if (scaled_error > max_error_norm)
-      max_error_norm = scaled_error;
+    if (norm_rms_error > max_error_norm)
+      max_error_norm = norm_rms_error;
   }
 
   return max_error_norm;

@@ -2456,6 +2456,15 @@ KEYWORD model
 	    [ energy
 	      [ truncation_tolerance REAL ]
 	      ]
+	    [ cross_validation
+	      [ minimum
+	      | relative
+	      | decrease ]
+	      [ relative_tolerance REAL ]
+	      [ decrease_tolerance REAL ]
+	      [ max_rank INTEGER ]
+	      [ exhaustive ]
+	      ]
 	    ]
 	  [ dimension INTEGER ]
 	  [ bootstrap_samples INTEGER ]

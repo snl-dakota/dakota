@@ -330,6 +330,25 @@ public:
   /// Number of bootstrap samples for subspace identification
   int numReplicates;
 
+  /// Flag to use cross validation to identify active subspace dimension
+  bool subspaceIdCV;
+
+  /// relative tolerance used by cross validation subspace dimension id method
+  Real relTolerance;
+
+  /// decrease tolerance used by cross validation subspace dimension id method
+  Real decreaseTolerance;
+
+  /// maximum rank considered by cross validation subspace dimension id method
+  int subspaceCVMaxRank;
+
+  /// flag to use incremental dimension estimation in the cross validation metric
+  bool subspaceCVIncremental;
+
+  /// Contains which cutoff method to use in the cross validation metric
+  unsigned short subspaceIdCVMethod;
+
+
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;
   /// maximum evals in refinement

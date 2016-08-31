@@ -3230,7 +3230,7 @@
           </keyword>
         </keyword>
 	<keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="active_subspace" help="" minOccurs="1" >
-          <alias name="subspace"/>
+    <alias name="subspace"/>
 	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
@@ -3250,6 +3250,25 @@
 	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
 	        <param type="REAL" />
 	      </keyword>
+	    </keyword>
+	    <keyword id="cross_validation" name="cross_validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
+        <optional>
+          <oneOf>
+            <keyword id="minimum" name="minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
+            <keyword id="relative" name="relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
+            <keyword id="decrease" name="decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
+          </oneOf>
+        </optional>
+        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="relative_tolerance" help="" minOccurs="0" >
+          <param type="REAL" />
+        </keyword>
+        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="decrease_tolerance" help="" minOccurs="0" >
+          <param type="REAL" />
+        </keyword>
+        <keyword  id='max_rank' name='max_rank' code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0'>
+          <param type='INTEGER' />
+	      </keyword>
+	      <keyword id="exhaustive" name="exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
 	    </keyword>
 	  </keyword>
 	  <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>

@@ -63,11 +63,8 @@ public:
   ActiveSubspaceModel(ProblemDescDB& problem_db);
 
   /// lightweight constructor
-  ActiveSubspaceModel(const Model& sub_model,
-                      int random_seed, int initial_samples,
-                      double conv_tol, size_t max_evals,
-                      unsigned short subspace_id_method,
-                      unsigned short sample_type);
+  ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+                      const RealMatrix &rotation_matrix, short output_level);
 
   /// destructor
   ~ActiveSubspaceModel();
@@ -178,8 +175,20 @@ protected:
   unsigned int computeCrossValidationMetric();
 
   /// Build moving least squares surrogate over candidate active subspace
-  double build_cv_surrogate(RealMatrix training_x, IntResponseMap training_y,
+  Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x, IntResponseMap training_y,
                             RealMatrix test_x, IntResponseMap test_y);
+
+
+  // Helper functions for the cross validation metric:
+
+  unsigned int determine_rank_cv(const std::vector<Real> &cv_error);
+
+  unsigned int min_index(const std::vector<Real> &cv_error);
+
+  unsigned int tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance, bool &tol_met);
+
+  std::vector<Real> negative_diff(const std::vector<Real> &cv_error);
+
 
   /// Build surrogate over active subspace
   void build_surrogate();
@@ -257,6 +266,10 @@ protected:
   /// active subspace dimension
   bool subspaceIdEnergy;
 
+  /// Boolean flag signaling use of cross validationto identify active
+  /// subspace dimension
+  bool subspaceIdCV;
+
   /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
 
@@ -318,12 +331,19 @@ protected:
   /// Truncation tolerance for eigenvalue energy subspace identification
   Real truncationTolerance;
 
+  bool cvIncremental;
+
+  short cvIdMethod;
+
+  Real cvRelTolerance;
+
+  Real cvDecreaseTolerance;
+
+  /// maximum subspace size to consider using cross validation
+  unsigned int cvMaxRank;
+
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
-
-  /// model containing a surrogate built over the active subspace used in
-  /// cross validation to identify the subspace size
-  Model cvSurrogateModel;
 
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;
