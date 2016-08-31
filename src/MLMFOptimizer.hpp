@@ -66,7 +66,7 @@ private:
   void multifidelity_opt();
 
   Variables MFOpt(size_t fidelity, const Variables &variables);
-  void tr_bounds(std::vector<RealVector>& tr_lower_bnds, std::vector<RealVector>& tr_upper_bnds);
+  void tr_bounds(RealVectorArray& tr_lower_bnds, RealVectorArray& tr_upper_bnds);
   void find_center(size_t lf_model_form, size_t hf_model_form);
   void hard_convergence_check(const Response& response_truth,
                          const RealVector& c_vars,

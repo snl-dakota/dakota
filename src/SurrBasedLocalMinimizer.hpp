@@ -62,10 +62,10 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// compute current trust region bounds
-  bool tr_bounds(const RealVector& global_lower_bnds,
-		 const RealVector& global_upper_bnds,
-		 RealVector& tr_lower_bnds, RealVector& tr_upper_bnds);
+  /// update the trust region bounds, strictly contained within global bounds
+  bool update_tr_bounds(const RealVector& global_lower_bnds,
+			const RealVector& global_upper_bnds,
+			RealVector& tr_lower_bnds, RealVector& tr_upper_bnds);
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
   void find_center_truth(const Iterator& dace_iterator, Model& truth_model);

@@ -65,7 +65,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   penaltyIterOffset(-200), convergenceFlag(0), softConvCount(0),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type")),
-  multiLayerBypassFlag(false),
+  newCenterFlag(true), multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
 {
   // Verify that iteratedModel is a surrogate model so that
@@ -357,12 +357,41 @@ SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
 
 
 /** Trust region-based strategy to perform surrogate-based optimization
-    in subregions (trust regions) of the parameter space.  The minimizer
-    operates on approximations in lieu of the more expensive simulation-based
-    response functions.  The size of the trust region is varied according to
-    the goodness of the agreement between the approximations and the true
-    response functions. */
+    in subregions (trust regions) of the parameter space.  The minimizer 
+    operates on approximations in lieu of the more expensive 
+    simulation-based response functions.  The size of the trust region 
+    is adapted according to the agreement between the approximations and 
+    the true response functions. */
 void SurrBasedLocalMinimizer::core_run()
+{
+  // TO DO: consider *SurrModel::initialize_mapping() --> initial surr build
+  // would simplify detection of auto build and remove some checks in evaluate()
+  // --> longer term, lower priority: defer for now
+
+  while (!convergenceFlag) {
+
+    // Compute trust region bounds.  If the trust region extends outside
+    // the global bounds, then truncate to the global bounds.
+    update_tr_bounds(global_lower_bnds, global_upper_bnds,
+		      tr_lower_bnds,     tr_upper_bnds);
+
+    // Build new approximations and compute corrections for use within
+    // approxSubProbMinimizer.run() (unless previous build can be reused)
+    // > Build the approximation
+    // > Evaluate/retrieve responseCenterTruth
+    // > Perform hard convergence check
+    if (globalApproxFlag || newCenterFlag) build();
+    else Cout << "\n>>>>> Reusing previous approximation.\n";
+
+    if (!convergenceFlag) {
+      minimize(); // run approxSubProbMinimizer and update responseStarApprox
+      verify();   // evaluate responseStarTruth and update trust region
+    }
+  }
+}
+
+
+void SurrBasedLocalMinimizer::pre_run()
 {
   // static pointer to SurrBasedLocalMinimizer instance
   sblmInstance = this;
@@ -429,263 +458,13 @@ void SurrBasedLocalMinimizer::core_run()
   responseStarTruth.second.active_set(val_set);
   responseCenterApprox.active_set(full_approx_set);
   responseCenterTruth.second.active_set(full_truth_set);
-
-  newCenterFlag = true;
-  while ( !convergenceFlag ) {
-
-    // Compute trust region bounds.  If the trust region extends outside
-    // the global bounds, then truncate to the global bounds.
-    bool tr_truncation = tr_bounds(global_lower_bnds, global_upper_bnds,
-				   tr_lower_bnds,     tr_upper_bnds);
-
-    // a flag for global approximations defining the availability of the
-    // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
-    // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
-    daceCenterPtFlag = (dace_center_eval_flag && !tr_truncation);
-
-    // Set the trust region center and bounds
-    iteratedModel.continuous_variables(varsCenter.continuous_variables());
-    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
-    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
-    if (recastSubProb) { // update recast model
-      approxSubProbModel.continuous_variables(
-	varsCenter.continuous_variables());
-      approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
-      approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
-    }
-
-    // Build new approximations in parallel and compute corrections for use
-    // within approxSubProbMinimizer.run() (unless previous data can be reused).
-    // -->> global approx rebuild always needed (new center or new bounds).
-    // -->> local/multipt/hierarchical approx rebuild needed only if new center.
-    if (globalApproxFlag || newCenterFlag) {
-
-      // ***************************************
-      // Build the approximation
-      // Evaluate/retrieve responseCenterTruth
-      // Perform hard convergence check
-      // ***************************************
-      bool embed_correction = false;
-      if (globalApproxFlag) { // global with old or new center
-
-	// Retrieve responseCenterTruth if possible, evaluate it if not
-	find_center_truth(dace_iterator, truth_model);
-
-	// Assess hard convergence prior to global surrogate construction
-	if (newCenterFlag)
-	  hard_convergence_check(responseCenterTruth.second,
-				 varsCenter.continuous_variables(),
-				 global_lower_bnds, global_upper_bnds);
-
-	// Perform the sampling and the surface fitting
-	if (!convergenceFlag)
-	  // embed_correction is true if surrogate supports anchor constraints
-	  embed_correction = iteratedModel.build_approximation(varsCenter,
-	    responseCenterTruth); // TO DO: problem with CCD/BB duplication!
-
-	/*
-	if ( !multiLayerBypassFlag && !daceCenterPtFlag )
-	  // Can augment the global approximation with new center point data
-	  iteratedModel.update_approximation(varsCenter, responseCenterTruth,
-	    true);
-	*/
-      }
-      else { // local/multipt/hierarchical with new center
-
-	// Evaluate the truth model at the center of the trust region.
-	// Local needs values/grads & may need Hessians depending on order of
-	// series, multipoint needs values/grads, hierarchical needs values &
-	// may need grads/Hessians depending on order of correction.
-	iteratedModel.build_approximation();
-
-	// Retrieve responseCenterTruth if possible, evaluate it if not
-	find_center_truth(dace_iterator, truth_model);
-
-	// Assess hard convergence following build/retrieve
-	hard_convergence_check(responseCenterTruth.second,
-			       varsCenter.continuous_variables(),
-			       global_lower_bnds, global_upper_bnds);
-
-	if ( localApproxFlag || (multiptApproxFlag && !approxHessianFlag) )
-	  embed_correction = true;
-      }
-
-      // Update graphics for iteration 0 (initial guess).
-      if (sbIterNum == 0)
-	output_mgr.add_datapoint(iteratedModel.current_variables(),
-				 iteratedModel.interface_id(),
-				 responseCenterTruth.second);
-
-      if (!convergenceFlag) {
-	// **************************************
-	// Evaluate/retrieve responseCenterApprox
-	// **************************************
-	find_center_approx();
-	  
-	// ******************************************
-	// Compute additive/multiplicative correction
-	// ******************************************
-	if (correctionType && !embed_correction) {
-	  // -->> local and up to 1st-order multipt do not need correction
-	  // -->> hierarchical needs compute_correction if new center
-	  // -->> global needs compute_correction if new center or new bounds
-	  DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-	  delta.compute(varsCenter, responseCenterTruth.second,
-			responseCenterApprox);
-	  delta.apply(varsCenter, responseCenterApprox);
-	}
-      }
-    } // end of "if (globalApproxFlag || newCenterFlag)" block
-    else
-      Cout << "\n>>>>> Reusing previous approximation.\n";
-
-    // If hard convergence not achieved in truth values, perform approximate
-    // optimization followed by additional (soft) convergence checks.
-    if (!convergenceFlag) {
-
-      // *******************************************************
-      // Run iterator on approximation (with correction applied)
-      // *******************************************************
-      Cout << "\n>>>>> Starting approximate optimization cycle.\n";
-      iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
-      if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
-      	relax_constraints(tr_lower_bnds, tr_upper_bnds);
-      ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-      approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
-      Cout << "\n<<<<< Approximate optimization cycle completed.\n";
-      sbIterNum++; // full iteration performed: increment the counter
-
-      // *******************************************
-      // Retrieve vars_star and responseStarApprox
-      // *******************************************
-      vars_star = approxSubProbMinimizer.variables_results();
-      if (recastSubProb) { // Can't back out eval from recast data, can't assume
-	// last iteratedModel eval was the final solution, and can't use a DB
-	// search for data fits.  Therefore, reevaluate (and rely on duplicate
-	// detection for multifidelity surrogates).
-	Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
-	     << "recasting.\n";
-        iteratedModel.active_variables(vars_star);
-	// leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-	iteratedModel.evaluate(val_set);
-	responseStarApprox.update(iteratedModel.current_response());
-      }
-      else // Note: fn values only
-	responseStarApprox.update(approxSubProbMinimizer.response_results());
-      // ****************************
-      // Evaluate responseStarTruth
-      // ****************************
-      Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
-      // since we're bypassing iteratedModel, iteratedModel.serve()
-      // must be in the correct server mode.
-      iteratedModel.component_parallel_mode(TRUTH_MODEL);
-      truth_model.active_variables(vars_star);
-      // In all cases (including gradient mode), we only need the truth fn
-      // values to validate the predicted optimum.  For gradient mode, we will
-      // compute the gradients below if the predicted optimum is accepted.
-      if (multiLayerBypassFlag) {
-	short mode = truth_model.surrogate_response_mode();
-	truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-	truth_model.evaluate(val_set);
-	truth_model.surrogate_response_mode(mode); // restore
-      }
-      else
-	truth_model.evaluate(val_set);
-      responseStarTruth.first = truth_model.evaluation_id();
-      responseStarTruth.second.update(truth_model.current_response());
-
-      // compute the trust region ratio and update soft convergence counters
-      const RealVector& c_vars_star = vars_star.continuous_variables();
-      tr_ratio_check(c_vars_star, tr_lower_bnds, tr_upper_bnds);
-
-      // If the candidate optimum (vars_star) is accepted, then update the
-      // center variables and response data.
-      if (newCenterFlag) {
-	varsCenter.continuous_variables(c_vars_star);
-	responseCenterTruth.first = responseStarTruth.first;
-	responseCenterTruth.second.update(responseStarTruth.second);
-	// update responseCenterApprox in the hierarchical case only if the
-	// old correction can be backed out.  Currently relying on a DB search
-	// to recover uncorrected low fidelity fn values.
-	//if (hierarchApproxFlag)
-	//  responseCenterApprox.update(responseStarApprox);
-      }
-
-      // record the iteration results (irregardless of new center)
-      iteratedModel.continuous_variables(varsCenter.continuous_variables());
-      output_mgr.add_datapoint(iteratedModel.current_variables(),
-			       iteratedModel.interface_id(),
-			       responseCenterTruth.second);
-
-      // If the soft convergence criterion is satisfied for a user-specified
-      // number of iterations (softConvLimit), then SBLM is deemed converged.
-      // Note: this assessment is independent of step acceptance, and "soft
-      // convergence" can occur even when a very small improving step is made.
-      // This part of the algorithm is critical, since it is more common to
-      // utilize soft convergence in real-world engineering applications
-      // where accurate gradients are unavailable.
-      if (!convergenceFlag) {
-	if (softConvCount >= softConvLimit)
-	  convergenceFlag = 3; // soft convergence
-	// terminate SBLM if trustRegionFactor is less than its minimum value
-	else if (trustRegionFactor < minTrustRegionFactor)
-	  convergenceFlag = 1;
-	// terminate SBLM if the maximum number of iterations has been reached
-	else if (sbIterNum >= maxIterations)
-	  convergenceFlag = 2;
-      }
-
-    } // end of approx opt cycle
-
-  } // end of outer while() loop
-
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceFlag == 1 )
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceFlag == 2 )
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceFlag == 3 )  
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceFlag == 4 )
-    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-	 << "<= Convergence Tolerance\n";
-  else {
-    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
-
-  bestVariablesArray.front().continuous_variables(
-    varsCenter.continuous_variables());
-  bestResponseArray.front().function_values(
-    responseCenterTruth.second.function_values());
-
-  // restore original Model data
-  iteratedModel.continuous_variables(initial_pt);
-  iteratedModel.continuous_lower_bounds(global_lower_bnds);
-  iteratedModel.continuous_upper_bounds(global_upper_bnds);
-  if (recastSubProb) {
-    approxSubProbModel.continuous_variables(initial_pt);
-    approxSubProbModel.continuous_lower_bounds(global_lower_bnds);
-    approxSubProbModel.continuous_upper_bounds(global_upper_bnds);
-  }
-  if (trConstraintRelax > NO_RELAX) {
-    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
-      origNonlinIneqLowerBnds);
-    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
-      origNonlinIneqUpperBnds);
-    approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
-  }
 }
 
 
 void SurrBasedLocalMinimizer::reset()
 {
   convergenceFlag = softConvCount = sbIterNum = 0;
+  newCenterFlag = true;
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;
@@ -702,10 +481,10 @@ void SurrBasedLocalMinimizer::reset()
 }
 
 
-bool SurrBasedLocalMinimizer::
-tr_bounds(const RealVector& global_lower_bnds,
-	  const RealVector& global_upper_bnds,
-	  RealVector& tr_lower_bnds, RealVector& tr_upper_bnds)
+void SurrBasedLocalMinimizer::
+update_tr_bounds(const RealVector& global_lower_bnds,
+		 const RealVector& global_upper_bnds,
+		 RealVector& tr_lower_bnds, RealVector& tr_upper_bnds)
 {
   // Compute the trust region bounds
   size_t i;
@@ -744,6 +523,24 @@ tr_bounds(const RealVector& global_lower_bnds,
   if (c_vars_truncation)
     varsCenter.continuous_variables(c_vars_center);
 
+  // a flag for global approximations defining the availability of the
+  // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
+  // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
+  daceCenterPtFlag
+    = (dace_center_eval_flag && !tr_lower_truncation && !tr_upper_truncation);
+
+  // Set the trust region center and bounds for approxSubProbOptimizer
+  approxSubProbModel.continuous_variables(varsCenter.continuous_variables());
+  approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
+  approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
+  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
+  //if (recastSubProb)
+  //  iteratedModel.continuous_variables(varsCenter.continuous_variables());
+  if (globalApproxFlag) { // propagate build bounds to DFSModel
+    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
+    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
+  }
+
   // Output the trust region bounds
   Cout << "\n**************************************************************"
        << "************\nBegin SBLM Iteration Number " << sbIterNum+1
@@ -767,8 +564,250 @@ tr_bounds(const RealVector& global_lower_bnds,
 	 << std::setw(write_precision+9) << tr_upper_bnds[i] << '\n';
   Cout << "****************************************************************"
        << "**********\n";
+}
 
-  return (tr_lower_truncation || tr_upper_truncation);
+
+void SurrBasedLocalMinimizer::build()
+{
+  bool embed_correction = (globalApproxFlag) ?
+    build_global() : // global rebuild: new center or new TR bounds
+    build_local();   // local/multipt/hierarch: rebuild if new center
+
+  // Update graphics for iteration 0 (initial guess).
+  if (sbIterNum == 0)
+    output_mgr.add_datapoint(varsCenter, truth_model.interface_id(),
+			     responseCenterTruth.second);
+
+  if (!convergenceFlag)
+    compute_center_correction(embed_correction);
+}
+
+
+bool SurrBasedLocalMinimizer::build_global()
+{
+  // global with old or new center
+
+  // Retrieve responseCenterTruth if possible, evaluate it if not
+  find_center_truth(dace_iterator, truth_model);
+
+  // Assess hard convergence prior to global surrogate construction
+  if (newCenterFlag)
+    hard_convergence_check(responseCenterTruth.second,
+			   varsCenter.continuous_variables(),
+			   global_lower_bnds, global_upper_bnds);
+
+  // Perform the sampling and the surface fitting
+  if (!convergenceFlag)
+    // embed_correction is true if surrogate supports anchor constraints
+    embed_correction
+      = iteratedModel.build_approximation(varsCenter, responseCenterTruth);
+    // TO DO: problem with CCD/BB duplication!
+
+  /*
+  if ( !multiLayerBypassFlag && !daceCenterPtFlag )
+    // Can augment the global approximation with new center point data
+    iteratedModel.update_approximation(varsCenter, responseCenterTruth, true);
+  */
+
+  return embed_correction;
+}
+
+
+bool SurrBasedLocalMinimizer::build_local()
+{
+  // local/multipt/hierarchical with new center
+
+  // Evaluate the truth model at the center of the trust region.
+  // Local needs values/grads & may need Hessians depending on order of
+  // series, multipoint needs values/grads, hierarchical needs values &
+  // may need grads/Hessians depending on order of correction.
+  iteratedModel.build_approximation();
+
+  // Retrieve responseCenterTruth if possible, evaluate it if not
+  find_center_truth(dace_iterator, truth_model);
+
+  // Assess hard convergence following build/retrieve
+  hard_convergence_check(responseCenterTruth.second,
+			 varsCenter.continuous_variables(),
+			 global_lower_bnds, global_upper_bnds);
+
+  // embedded correction:
+  return ( localApproxFlag || (multiptApproxFlag && !approxHessianFlag) );
+}
+
+
+void SurrBasedLocalMinimizer::compute_center_correction()
+{
+  // **************************************
+  // Evaluate/retrieve responseCenterApprox
+  // **************************************
+  find_center_approx();
+	  
+  // ******************************************
+  // Compute additive/multiplicative correction
+  // ******************************************
+  if (correctionType && !embed_correction) {
+    // -->> local and up to 1st-order multipt do not need correction
+    // -->> hierarchical needs compute_correction if new center
+    // -->> global needs compute_correction if new center or new bounds
+    DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+    delta.compute(varsCenter, responseCenterTruth.second,
+		  responseCenterApprox);
+    delta.apply(varsCenter, responseCenterApprox);
+  }
+}
+
+
+void SurrBasedLocalMinimizer::minimize()
+{
+  //if (convergenceFlag) return;
+
+  // If hard convergence not achieved in truth values, perform approximate
+  // optimization followed by additional (soft) convergence checks.
+
+  // *******************************************************
+  // Run iterator on approximation (with correction applied)
+  // *******************************************************
+  Cout << "\n>>>>> Starting approximate optimization cycle.\n";
+  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
+    relax_constraints(tr_lower_bnds, tr_upper_bnds);
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
+  Cout << "\n<<<<< Approximate optimization cycle completed.\n";
+  sbIterNum++; // full iteration performed: increment the counter
+
+  // *******************************************
+  // Retrieve vars_star and responseStarApprox
+  // *******************************************
+  vars_star = approxSubProbMinimizer.variables_results();
+  if (recastSubProb) { // Can't back out eval from recast data, can't assume
+    // last iteratedModel eval was the final solution, and can't use a DB
+    // search for data fits.  Therefore, reevaluate (and rely on duplicate
+    // detection for multifidelity surrogates).
+    Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
+	 << "recasting.\n";
+    iteratedModel.active_variables(vars_star);
+    // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
+    iteratedModel.evaluate(val_set);
+    responseStarApprox.update(iteratedModel.current_response());
+  }
+  else // Note: fn values only
+    responseStarApprox.update(approxSubProbMinimizer.response_results());
+}
+
+
+void SurrBasedLocalMinimizer::verify()
+{
+  //if (convergenceFlag) return;
+
+  // ****************************
+  // Evaluate responseStarTruth
+  // ****************************
+  Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
+  // since we're bypassing iteratedModel, iteratedModel.serve()
+  // must be in the correct server mode.
+  iteratedModel.component_parallel_mode(TRUTH_MODEL);
+  truth_model.active_variables(vars_star);
+  // In all cases (including gradient mode), we only need the truth fn
+  // values to validate the predicted optimum.  For gradient mode, we will
+  // compute the gradients below if the predicted optimum is accepted.
+  if (multiLayerBypassFlag) {
+    short mode = truth_model.surrogate_response_mode();
+    truth_model.surrogate_response_mode(BYPASS_SURROGATE);
+    truth_model.evaluate(val_set);
+    truth_model.surrogate_response_mode(mode); // restore
+  }
+  else
+    truth_model.evaluate(val_set);
+  responseStarTruth.first = truth_model.evaluation_id();
+  responseStarTruth.second.update(truth_model.current_response());
+
+  // compute the trust region ratio and update soft convergence counters
+  const RealVector& c_vars_star = vars_star.continuous_variables();
+  tr_ratio_check(c_vars_star, tr_lower_bnds, tr_upper_bnds);
+
+  // If the candidate optimum (vars_star) is accepted, then update the
+  // center variables and response data.
+  if (newCenterFlag) {
+    varsCenter.continuous_variables(c_vars_star);
+    responseCenterTruth.first = responseStarTruth.first;
+    responseCenterTruth.second.update(responseStarTruth.second);
+    // update responseCenterApprox in the hierarchical case only if the
+    // old correction can be backed out.  Currently relying on a DB search
+    // to recover uncorrected low fidelity fn values.
+    //if (hierarchApproxFlag)
+    //  responseCenterApprox.update(responseStarApprox);
+  }
+
+  // record the iteration results (irregardless of new center)
+  iteratedModel.continuous_variables(varsCenter.continuous_variables());
+  output_mgr.add_datapoint(varsCenter, truth_model.interface_id(),
+			   responseCenterTruth.second);
+
+  // If the soft convergence criterion is satisfied for a user-specified
+  // number of iterations (softConvLimit), then SBLM is deemed converged.
+  // Note: this assessment is independent of step acceptance, and "soft
+  // convergence" can occur even when a very small improving step is made.
+  // This part of the algorithm is critical, since it is more common to
+  // utilize soft convergence in real-world engineering applications
+  // where accurate gradients are unavailable.
+  if (!convergenceFlag) {
+    if (softConvCount >= softConvLimit)
+      convergenceFlag = 3; // soft convergence
+    // terminate SBLM if trustRegionFactor is less than its minimum value
+    else if (trustRegionFactor < minTrustRegionFactor)
+      convergenceFlag = 1;
+    // terminate SBLM if the maximum number of iterations has been reached
+    else if (sbIterNum >= maxIterations)
+      convergenceFlag = 2;
+  }
+}
+
+
+void SurrBasedLocalMinimizer::post_run()
+{
+  // SBLM is complete: write out the convergence condition and final results
+  // from the center point of the last trust region.
+  Cout << "\nSurrogate-Based Optimization Complete - ";
+  if ( convergenceFlag == 1 )
+    Cout << "Minimum Trust Region Bounds Reached\n";
+  else if ( convergenceFlag == 2 )
+    Cout << "Exceeded Maximum Number of Iterations\n";
+  else if ( convergenceFlag == 3 )  
+    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
+	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
+  else if ( convergenceFlag == 4 )
+    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
+	 << "<= Convergence Tolerance\n";
+  else {
+    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
+
+  bestVariablesArray.front().continuous_variables(
+    varsCenter.continuous_variables());
+  bestResponseArray.front().function_values(
+    responseCenterTruth.second.function_values());
+
+  // restore original/global bounds
+  //approxSubProbModel.continuous_variables(initial_pt);
+  //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
+  approxSubProbModel.continuous_lower_bounds(global_lower_bnds);
+  approxSubProbModel.continuous_upper_bounds(global_upper_bnds);
+  if (globalApproxFlag) { // propagate to DFSModel
+    iteratedModel.continuous_lower_bounds(global_lower_bnds);
+    iteratedModel.continuous_upper_bounds(global_upper_bnds);
+  }
+  if (trConstraintRelax > NO_RELAX) {
+    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+      origNonlinIneqLowerBnds);
+    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+      origNonlinIneqUpperBnds);
+    approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
+  }
 }
 
 
