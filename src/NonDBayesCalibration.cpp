@@ -88,6 +88,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       abort_handler(PARSE_ERROR);
     }
     hifiModel = iteratedModel.truth_model();
+    hifiModel.init_serial();
   }
 
   // assign default proposalCovarType
