@@ -319,14 +319,15 @@ populate_matrices(unsigned int diff_samples)
   // Compute gradient scaling factors if more than 1 response function
   if(numFunctions > 1) {
     for ( ; resp_it != resp_end ; ++resp_it, ++diff_sample_ind) {
-      if (subspaceNormalization == SUBSPACE_NORM_VALUE) {
+      if (subspaceNormalization == SUBSPACE_NORM_MEAN_VALUE) {
         const RealVector& resp_vector = resp_it->second.function_values();
         for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
           gradientScaleFactors[fn_ind] += resp_vector(fn_ind) /
                                           static_cast<Real>(diff_samples);
         }
-      } else if (subspaceNormalization == SUBSPACE_NORM_DEFAULT ||
-                 subspaceNormalization == SUBSPACE_NORM_GRAD) {
+      } // The SUBSPACE_NORM_MEAN_GRAD and SUBSPACE_NORM_DEFAULT cases will be
+        // handled later
+      else if (subspaceNormalization == SUBSPACE_NORM_MEAN_GRAD) {
         const RealMatrix& resp_matrix = resp_it->second.function_gradients();
         for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
           RealVector grad(numFullspaceVars);
@@ -355,8 +356,19 @@ populate_matrices(unsigned int diff_samples)
     for (unsigned int fn_ind = 0; fn_ind < numFunctions; ++fn_ind) {
       unsigned int col_ind = sample_ind * numFunctions + fn_ind;
       for (unsigned int var_ind = 0; var_ind < numFullspaceVars; ++var_ind) {
-        derivativeMatrix(var_ind, col_ind) = resp_matrix(var_ind, fn_ind) /
-                                             gradientScaleFactors[fn_ind];
+        Real scale = 1.0;
+        if (numFunctions > 1 &&
+            (subspaceNormalization == SUBSPACE_NORM_DEFAULT ||
+             subspaceNormalization == SUBSPACE_NORM_LOCAL_GRAD)) {
+          RealVector grad(numFullspaceVars);
+          for (size_t ii = 0; ii < numFullspaceVars; ++ii)
+            grad[ii] = resp_matrix(ii,fn_ind);
+
+          scale = 1.0 / std::sqrt(grad.dot(grad));
+        }
+
+        derivativeMatrix(var_ind, col_ind) = 
+          scale * resp_matrix(var_ind, fn_ind) / gradientScaleFactors[fn_ind];
       }
     }
     for (unsigned int var_ind = 0; var_ind < numFullspaceVars; ++var_ind) {

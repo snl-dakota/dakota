@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1916 distinct keywords (plus 251 aliases) **/
+/** 1917 distinct keywords (plus 251 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2252,9 +2252,10 @@ static KeyWord
 	kw_343[1] = {
 		{"refinement_samples",13,0,1,0,0,0.,0.,0,N_mom(ivec,refineSamples)}
 		},
-	kw_344[2] = {
-		{"gradient",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)},
-		{"value",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}
+	kw_344[3] = {
+		{"local_gradient",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)},
+		{"mean_gradient",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)},
+		{"mean_value",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}
 		},
 	kw_345[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)},
@@ -2284,7 +2285,7 @@ static KeyWord
 		{"build_surrogate",8,1,7,0,kw_343,0.,0.,0,N_mom(true,subspaceBuildSurrogate)},
 		{"dimension",9,0,5,0,0,0.,0.,0,N_mom(int,subspaceDimension)},
 		{"initial_samples",9,0,2,0,0,0.,0.,0,N_mom(int,initialSamples)},
-		{"normalization",8,2,8,0,kw_344},
+		{"normalization",8,3,8,0,kw_344},
 		{"sample_type",8,2,3,0,kw_345},
 		{"truncation_method",8,4,4,0,kw_348}
 		},

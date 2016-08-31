@@ -2541,9 +2541,11 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ refinement_samples INTEGERLIST {N_mom(ivec,refineSamples)} ]
      ]
     [ normalization {0}
-      value {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}
+      mean_value {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}
       |
-      gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}
+      mean_gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}
+      |
+      local_gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}
      ]
    )
   |

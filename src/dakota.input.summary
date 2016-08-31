@@ -2472,8 +2472,9 @@ KEYWORD model
 	    [ refinement_samples INTEGERLIST ]
 	    ]
 	  [ normalization
-	    value
-	    | gradient
+	    mean_value
+	    | mean_gradient
+	    | local_gradient
 	    ]
 	  )
 	|

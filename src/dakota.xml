@@ -3283,10 +3283,11 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
-            <oneOf> 
-              <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
-              <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
-            </oneOf> 
+      <oneOf> 
+        <keyword id="mean_value" name="mean_value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
+        <keyword id="mean_gradient" name="mean_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
+        <keyword id="local_gradient" name="local_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
+      </oneOf> 
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="adapted_basis" help="" minOccurs="1" >

@@ -40,7 +40,8 @@ enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
 enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 
 /// define special values for active subspace normalizations
-enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_VALUE, SUBSPACE_NORM_GRAD }; 
+enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
+       SUBSPACE_NORM_MEAN_GRAD, SUBSPACE_NORM_LOCAL_GRAD }; 
 
 /// Body class for model specification data.
 
