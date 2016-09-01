@@ -66,7 +66,8 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type")),
   newCenterFlag(true), multiLayerBypassFlag(false),
-  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
+  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage")),
+  trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars)
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -372,8 +373,7 @@ void SurrBasedLocalMinimizer::core_run()
 
     // Compute trust region bounds.  If the trust region extends outside
     // the global bounds, then truncate to the global bounds.
-    update_tr_bounds(global_lower_bnds, global_upper_bnds,
-		      tr_lower_bnds,     tr_upper_bnds);
+    update_trust_region();
 
     // Build new approximations and compute corrections for use within
     // approxSubProbMinimizer.run() (unless previous build can be reused)
@@ -409,7 +409,7 @@ void SurrBasedLocalMinimizer::pre_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  bool dace_center_eval_flag = false;
+  daceCenterEvalFlag = false;
   if (globalApproxFlag && !dace_iterator.is_null()) {
     // With correction approaches, the responses specification must provide
     // support for evaluating derivative info.  However, this data is usually
@@ -426,38 +426,35 @@ void SurrBasedLocalMinimizer::pre_run()
     unsigned short sampling_type = dace_iterator.sampling_scheme();
     if (sampling_type == SUBMETHOD_BOX_BEHNKEN ||
 	sampling_type == SUBMETHOD_CENTRAL_COMPOSITE)
-      dace_center_eval_flag = true;
+      daceCenterEvalFlag = true;
   }
 
   // Create arrays for variables and variable bounds
-  Variables vars_star;
   varsCenter = iteratedModel.current_variables().copy();
   // need copies of initial point and initial global bounds, since iteratedModel
   // continuous vars will be reset to the TR center and iteratedModel bounds
   // will be reset to the TR bounds
-  RealVector initial_pt, global_lower_bnds, global_upper_bnds;
+  RealVector initial_pt;
   copy_data(varsCenter.continuous_variables(), initial_pt);
-  copy_data(iteratedModel.continuous_lower_bounds(), global_lower_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), global_upper_bnds);
-  RealVector tr_lower_bnds(numContinuousVars), tr_upper_bnds(numContinuousVars);
+  copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
+  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
 
   // Create commonly-used ActiveSets
-  ActiveSet val_set, full_approx_set, full_truth_set;
-  val_set = full_approx_set = full_truth_set
+  valSet = fullApproxSet = fullTruthSet
     = responseCenterTruth.second.active_set();
   int full_approx_val = 1, full_truth_val = 1;
   if (approxGradientFlag) full_approx_val += 2;
   if (approxHessianFlag)  full_approx_val += 4;
   if (truthGradientFlag)  full_truth_val  += 2;
   if (truthHessianFlag)   full_truth_val  += 4;
-  val_set.request_values(1);
-  full_approx_set.request_values(full_approx_val);
-  full_truth_set.request_values(full_truth_val);
+  valSet.request_values(1);
+  fullApproxSet.request_values(full_approx_val);
+  fullTruthSet.request_values(full_truth_val);
   // Set ActiveSets within the response copies
-  responseStarApprox.active_set(val_set);
-  responseStarTruth.second.active_set(val_set);
-  responseCenterApprox.active_set(full_approx_set);
-  responseCenterTruth.second.active_set(full_truth_set);
+  responseStarApprox.active_set(valSet);
+  responseStarTruth.second.active_set(valSet);
+  responseCenterApprox.active_set(fullApproxSet);
+  responseCenterTruth.second.active_set(fullTruthSet);
 }
 
 
@@ -482,9 +479,7 @@ void SurrBasedLocalMinimizer::reset()
 
 
 void SurrBasedLocalMinimizer::
-update_tr_bounds(const RealVector& global_lower_bnds,
-		 const RealVector& global_upper_bnds,
-		 RealVector& tr_lower_bnds, RealVector& tr_upper_bnds)
+update_trust_region()
 {
   // Compute the trust region bounds
   size_t i;
@@ -494,29 +489,29 @@ update_tr_bounds(const RealVector& global_lower_bnds,
   copy_data(varsCenter.continuous_variables(), c_vars_center);
   for (i=0; i<numContinuousVars; i++) {
     // verify that varsCenter is within global bounds
-    if ( c_vars_center[i] > global_upper_bnds[i] ) {
-      c_vars_center[i] = global_upper_bnds[i];
+    if ( c_vars_center[i] > globalUpperBnds[i] ) {
+      c_vars_center[i] = globalUpperBnds[i];
       c_vars_truncation = true;
     }
-    if ( c_vars_center[i] < global_lower_bnds[i] ) {
-      c_vars_center[i] = global_lower_bnds[i];
+    if ( c_vars_center[i] < globalLowerBnds[i] ) {
+      c_vars_center[i] = globalLowerBnds[i];
       c_vars_truncation = true;
     }
     // scalar tr_offset was previously trustRegionOffset[i]
     Real tr_offset = trustRegionFactor/2. * 
-      ( global_upper_bnds[i] - global_lower_bnds[i] );
+      ( globalUpperBnds[i] - globalLowerBnds[i] );
     Real up_bound = c_vars_center[i] + tr_offset;
     Real lo_bound = c_vars_center[i] - tr_offset;
-    if ( up_bound <= global_upper_bnds[i] )
-      tr_upper_bnds[i] = up_bound;
+    if ( up_bound <= globalUpperBnds[i] )
+      trUpperBnds[i] = up_bound;
     else {
-      tr_upper_bnds[i] = global_upper_bnds[i];
+      trUpperBnds[i] = globalUpperBnds[i];
       tr_upper_truncation = true;
     }
-    if ( lo_bound >= global_lower_bnds[i] )
-      tr_lower_bnds[i] = lo_bound;
+    if ( lo_bound >= globalLowerBnds[i] )
+      trLowerBnds[i] = lo_bound;
     else {
-      tr_lower_bnds[i] = global_lower_bnds[i];
+      trLowerBnds[i] = globalLowerBnds[i];
       tr_lower_truncation = true;
     }
   }
@@ -527,18 +522,18 @@ update_tr_bounds(const RealVector& global_lower_bnds,
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
   // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
   daceCenterPtFlag
-    = (dace_center_eval_flag && !tr_lower_truncation && !tr_upper_truncation);
+    = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
   approxSubProbModel.continuous_variables(varsCenter.continuous_variables());
-  approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
-  approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
+  approxSubProbModel.continuous_lower_bounds(trLowerBnds);
+  approxSubProbModel.continuous_upper_bounds(trUpperBnds);
   // TO DO: will propagate in recast evaluate() but are there direct evaluates?
   //if (recastSubProb)
   //  iteratedModel.continuous_variables(varsCenter.continuous_variables());
   if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
-    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
+    iteratedModel.continuous_lower_bounds(trLowerBnds);
+    iteratedModel.continuous_upper_bounds(trUpperBnds);
   }
 
   // Output the trust region bounds
@@ -560,8 +555,8 @@ update_tr_bounds(const RealVector& global_lower_bnds,
   for (i=0; i<numContinuousVars; i++)
     Cout << std::setw(16) << c_vars_labels[i] << ':'
 	 << std::setw(write_precision+9)
-	 << tr_lower_bnds[i] << std::setw(write_precision+9) << c_vars_center[i]
-	 << std::setw(write_precision+9) << tr_upper_bnds[i] << '\n';
+	 << trLowerBnds[i] << std::setw(write_precision+9) << c_vars_center[i]
+	 << std::setw(write_precision+9) << trUpperBnds[i] << '\n';
   Cout << "****************************************************************"
        << "**********\n";
 }
@@ -572,6 +567,9 @@ void SurrBasedLocalMinimizer::build()
   bool embed_correction = (globalApproxFlag) ?
     build_global() : // global rebuild: new center or new TR bounds
     build_local();   // local/multipt/hierarch: rebuild if new center
+
+  OutputManager& output_mgr = parallelLib.output_manager();
+  Model& truth_model  = iteratedModel.truth_model();
 
   // Update graphics for iteration 0 (initial guess).
   if (sbIterNum == 0)
@@ -586,6 +584,8 @@ void SurrBasedLocalMinimizer::build()
 bool SurrBasedLocalMinimizer::build_global()
 {
   // global with old or new center
+  Model& truth_model  = iteratedModel.truth_model();
+  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
 
   // Retrieve responseCenterTruth if possible, evaluate it if not
   find_center_truth(dace_iterator, truth_model);
@@ -594,7 +594,9 @@ bool SurrBasedLocalMinimizer::build_global()
   if (newCenterFlag)
     hard_convergence_check(responseCenterTruth.second,
 			   varsCenter.continuous_variables(),
-			   global_lower_bnds, global_upper_bnds);
+			   globalLowerBnds, globalUpperBnds);
+
+  bool embed_correction = false;
 
   // Perform the sampling and the surface fitting
   if (!convergenceFlag)
@@ -623,20 +625,23 @@ bool SurrBasedLocalMinimizer::build_local()
   // may need grads/Hessians depending on order of correction.
   iteratedModel.build_approximation();
 
+  Model& truth_model  = iteratedModel.truth_model();
+  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
+
   // Retrieve responseCenterTruth if possible, evaluate it if not
   find_center_truth(dace_iterator, truth_model);
 
   // Assess hard convergence following build/retrieve
   hard_convergence_check(responseCenterTruth.second,
 			 varsCenter.continuous_variables(),
-			 global_lower_bnds, global_upper_bnds);
+			 globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
   return ( localApproxFlag || (multiptApproxFlag && !approxHessianFlag) );
 }
 
 
-void SurrBasedLocalMinimizer::compute_center_correction()
+void SurrBasedLocalMinimizer::compute_center_correction(bool embed_correction)
 {
   // **************************************
   // Evaluate/retrieve responseCenterApprox
@@ -671,25 +676,25 @@ void SurrBasedLocalMinimizer::minimize()
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
-    relax_constraints(tr_lower_bnds, tr_upper_bnds);
+    relax_constraints(trLowerBnds, trUpperBnds);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
   Cout << "\n<<<<< Approximate optimization cycle completed.\n";
   sbIterNum++; // full iteration performed: increment the counter
 
   // *******************************************
-  // Retrieve vars_star and responseStarApprox
+  // Retrieve varsStar and responseStarApprox
   // *******************************************
-  vars_star = approxSubProbMinimizer.variables_results();
+  varsStar = approxSubProbMinimizer.variables_results();
   if (recastSubProb) { // Can't back out eval from recast data, can't assume
     // last iteratedModel eval was the final solution, and can't use a DB
     // search for data fits.  Therefore, reevaluate (and rely on duplicate
     // detection for multifidelity surrogates).
     Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
 	 << "recasting.\n";
-    iteratedModel.active_variables(vars_star);
+    iteratedModel.active_variables(varsStar);
     // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-    iteratedModel.evaluate(val_set);
+    iteratedModel.evaluate(valSet);
     responseStarApprox.update(iteratedModel.current_response());
   }
   else // Note: fn values only
@@ -708,29 +713,30 @@ void SurrBasedLocalMinimizer::verify()
   // since we're bypassing iteratedModel, iteratedModel.serve()
   // must be in the correct server mode.
   iteratedModel.component_parallel_mode(TRUTH_MODEL);
-  truth_model.active_variables(vars_star);
+  Model& truth_model  = iteratedModel.truth_model();
+  truth_model.active_variables(varsStar);
   // In all cases (including gradient mode), we only need the truth fn
   // values to validate the predicted optimum.  For gradient mode, we will
   // compute the gradients below if the predicted optimum is accepted.
   if (multiLayerBypassFlag) {
     short mode = truth_model.surrogate_response_mode();
     truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-    truth_model.evaluate(val_set);
+    truth_model.evaluate(valSet);
     truth_model.surrogate_response_mode(mode); // restore
   }
   else
-    truth_model.evaluate(val_set);
+    truth_model.evaluate(valSet);
   responseStarTruth.first = truth_model.evaluation_id();
   responseStarTruth.second.update(truth_model.current_response());
 
   // compute the trust region ratio and update soft convergence counters
-  const RealVector& c_vars_star = vars_star.continuous_variables();
-  tr_ratio_check(c_vars_star, tr_lower_bnds, tr_upper_bnds);
+  const RealVector& c_varsStar = varsStar.continuous_variables();
+  tr_ratio_check(c_varsStar, trLowerBnds, trUpperBnds);
 
-  // If the candidate optimum (vars_star) is accepted, then update the
+  // If the candidate optimum (varsStar) is accepted, then update the
   // center variables and response data.
   if (newCenterFlag) {
-    varsCenter.continuous_variables(c_vars_star);
+    varsCenter.continuous_variables(c_varsStar);
     responseCenterTruth.first = responseStarTruth.first;
     responseCenterTruth.second.update(responseStarTruth.second);
     // update responseCenterApprox in the hierarchical case only if the
@@ -742,6 +748,7 @@ void SurrBasedLocalMinimizer::verify()
 
   // record the iteration results (irregardless of new center)
   iteratedModel.continuous_variables(varsCenter.continuous_variables());
+  OutputManager& output_mgr = parallelLib.output_manager();
   output_mgr.add_datapoint(varsCenter, truth_model.interface_id(),
 			   responseCenterTruth.second);
 
@@ -795,11 +802,11 @@ void SurrBasedLocalMinimizer::post_run()
   // restore original/global bounds
   //approxSubProbModel.continuous_variables(initial_pt);
   //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
-  approxSubProbModel.continuous_lower_bounds(global_lower_bnds);
-  approxSubProbModel.continuous_upper_bounds(global_upper_bnds);
+  approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
+  approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
   if (globalApproxFlag) { // propagate to DFSModel
-    iteratedModel.continuous_lower_bounds(global_lower_bnds);
-    iteratedModel.continuous_upper_bounds(global_upper_bnds);
+    iteratedModel.continuous_lower_bounds(globalLowerBnds);
+    iteratedModel.continuous_upper_bounds(globalUpperBnds);
   }
   if (trConstraintRelax > NO_RELAX) {
     approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
@@ -1072,9 +1079,9 @@ hard_convergence_check(const Response& response_truth,
     convergence rate has decreased to a point where the process should
     be terminated (diminishing returns). */
 void SurrBasedLocalMinimizer::
-tr_ratio_check(const RealVector& c_vars_star,
-	       const RealVector& tr_lower_bnds,
-	       const RealVector& tr_upper_bnds)
+tr_ratio_check(const RealVector& c_varsStar,
+	       const RealVector& trLowerBnds,
+	       const RealVector& trUpperBnds)
 {
   const RealVector& fns_center_truth
     = responseCenterTruth.second.function_values();
@@ -1125,7 +1132,7 @@ tr_ratio_check(const RealVector& c_vars_star,
     //    origNonlinIneqUpperBnds, origNonlinEqTargets);
     //  if (merit_dace_truth < merit_fn_star_truth) {
     //    Cerr << "Warning: \n";
-    //    vars_star = ...;
+    //    varsStar = ...;
     //    merit_fn_star_truth = merit_dace_truth;
     //    trustRegionFactor *= ...;
     //  }
@@ -1239,8 +1246,8 @@ tr_ratio_check(const RealVector& c_vars_star,
       bool boundary_pt_flag = false;
       if (globalApproxFlag)
 	for (size_t i=0; i<numContinuousVars; i++)
-	  if ( c_vars_star[i] > tr_upper_bnds[i] - constraintTol ||
-	       c_vars_star[i] < tr_lower_bnds[i] + constraintTol )
+	  if ( c_varsStar[i] > trUpperBnds[i] - constraintTol ||
+	       c_varsStar[i] < trLowerBnds[i] + constraintTol )
 	    boundary_pt_flag = true;
 
       if (globalApproxFlag && !boundary_pt_flag)

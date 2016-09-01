@@ -17,7 +17,7 @@
 #ifndef MLMF_LOCAL_MINIMIZER_H
 #define MLMF_LOCAL_MINIMIZER_H
 
-#include "SurrBasedMinimizer.hpp"
+#include "SurrBasedLocalMinimizer.hpp"
 #include "HierarchSurrModel.hpp"
 #include "DakotaModel.hpp"
 
@@ -30,7 +30,7 @@ namespace Dakota
 /** This minimizer uses SurrogateModel(s) to perform minimization leveraging
     multiple model forms and discretization levels. */
 
-class MLMFOptimizer: public SurrBasedMinimizer
+class MLMFOptimizer: public SurrBasedLocalMinimizer
 {
 public:
 
@@ -86,9 +86,6 @@ private:
   std::vector<Response> responseCenterCorrected;
 
   Variables varsCenter;          ///< variables at the trust region center
-
-  RealVector globalLowerBnds;
-  RealVector globalUpperBnds;
 
   /// code indicating satisfaction of hard or soft convergence conditions
   short convergenceFlag;

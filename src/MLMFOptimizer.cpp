@@ -37,7 +37,7 @@ MLMFOptimizer* MLMFOptimizer::mlmfInstance(NULL);
 
 MLMFOptimizer::
 MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedMinimizer(problem_db, model), 
+  SurrBasedLocalMinimizer(problem_db, model), 
   convergenceFlag(false),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {

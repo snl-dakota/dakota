@@ -49,23 +49,36 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
+
   /// Performs local surrogate-based minimization by minimizing local,
   /// global, or hierarchical surrogates over a series of trust regions.
   void core_run();
 
+  void post_run();
+
+
   /// reset convergence controls in case of multiple SBLM executions
   void reset();
 
-private:
+  //
+  //- Heading: Virtual functions
+  //
+
+  /// update the trust region bounds, strictly contained within global bounds
+  virtual void update_trust_region();
+
+  virtual void verify();
+  virtual void minimize();
+  virtual void build();
+
+  bool build_global();
+  bool build_local();
+  void compute_center_correction(bool embed_correction);
 
   //
   //- Heading: Convenience member functions
   //
-
-  /// update the trust region bounds, strictly contained within global bounds
-  bool update_tr_bounds(const RealVector& global_lower_bnds,
-			const RealVector& global_upper_bnds,
-			RealVector& tr_lower_bnds, RealVector& tr_upper_bnds);
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
   void find_center_truth(const Iterator& dace_iterator, Model& truth_model);
@@ -222,6 +235,28 @@ private:
   Real tau;
   /// constraint relaxation parameter backoff parameter (multiplier)
   Real alpha;
+
+  /// Trust region lower bounds
+  RealVector trLowerBnds;
+
+  /// Trust region Upper bounds
+  RealVector trUpperBnds;
+
+  /// Global lower bounds
+  RealVector globalLowerBnds;
+
+  /// Global Upper bounds
+  RealVector globalUpperBnds;
+
+  bool daceCenterEvalFlag;
+
+  ActiveSet valSet;
+
+  ActiveSet fullApproxSet;
+
+  ActiveSet fullTruthSet;
+
+  Variables varsStar;
 
   /// pointer to SBLM instance used in static member functions
   static SurrBasedLocalMinimizer* sblmInstance;
