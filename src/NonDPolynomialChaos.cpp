@@ -435,7 +435,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   }
   else { // expansion_order-based
 
-    // resolve expansionBasisType, exp_terms, numSamplesOnModel
+    // resolve expansionBasisType and (aniso) exp_order
     expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
       Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
     unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
@@ -443,6 +443,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
       dimPrefSpec, numContinuousVars, exp_order);
 
+    // resolve exp_terms from (aniso) exp_order
     size_t exp_terms;
     switch (expansionBasisType) {
     case Pecos::TOTAL_ORDER_BASIS: case Pecos::ADAPTED_BASIS_GENERALIZED:
@@ -453,22 +454,30 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
       exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
       break;
     }
-    numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 
-    // Construct u_space_sampler
-    if (tensorRegression) { // tensor sub-sampling
-      UShortArray dim_quad_order(numContinuousVars);
-      // define nominal quadrature order as exp_order + 1
-      // (m > p avoids most of the 0's in the Psi measurement matrix)
-      for (size_t i=0; i<numContinuousVars; ++i)
-	dim_quad_order[i] = exp_order[i] + 1;
-      construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
-			   dimPrefSpec);
-    }
-    else {
-      String rng("mt19937");
-      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+    // resolve numSamplesOnModel
+    if (collocPtsSeqSpec.empty())
+      numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+    else
+      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+	collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+
+    if (numSamplesOnModel) {
+      // Construct u_space_sampler
+      if (tensorRegression) { // tensor sub-sampling
+	UShortArray dim_quad_order(numContinuousVars);
+	// define nominal quadrature order as exp_order + 1
+	// (m > p avoids most of the 0's in the Psi measurement matrix)
+	for (size_t i=0; i<numContinuousVars; ++i)
+	  dim_quad_order[i] = exp_order[i] + 1;
+	construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+			     dimPrefSpec);
+      }
+      else {
+	String rng("mt19937");
+	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+      }
     }
   }
 
