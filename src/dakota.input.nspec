@@ -1549,6 +1549,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
               |
               ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                |
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1569,7 +1571,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                )
               |
-              ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                   [ 
@@ -1709,6 +1712,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
             |
             ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              |
               collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1729,7 +1734,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -1819,6 +1825,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
             |
             ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              |
               collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1839,7 +1847,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -2531,6 +2540,19 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ energy {N_mom(true,subspaceIdEnergy)}
         [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
        ]
+      [ cross_validation {N_mom(true,subspaceIdCV)}
+        [ 
+          minimum {N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}
+          |
+          relative {N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}
+          |
+          decrease {N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}
+         ]
+        [ relative_tolerance REAL {N_mom(Real,relTolerance)} ]
+        [ decrease_tolerance REAL {N_mom(Real,decreaseTolerance)} ]
+        [ max_rank INTEGER {N_mom(int,subspaceCVMaxRank)} ]
+        [ exhaustive {N_mom(false,subspaceCVIncremental)} ]
+       ]
      ]
     [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
     [ bootstrap_samples INTEGER {N_mom(int,numReplicates)} ]
@@ -2538,9 +2560,11 @@ KEYWORD model {N_mom3(start,0,stop)}
       [ refinement_samples INTEGERLIST {N_mom(ivec,refineSamples)} ]
      ]
     [ normalization {0}
-      value {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}
+      mean_value {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}
       |
-      gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}
+      mean_gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}
+      |
+      local_gradient {N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}
      ]
    )
   |

@@ -12,7 +12,8 @@
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
 
-namespace Dakota {
+namespace Dakota
+{
 
 // define special values for componentParallelMode
 #define CONFIG_PHASE 0
@@ -63,11 +64,8 @@ public:
   ActiveSubspaceModel(ProblemDescDB& problem_db);
 
   /// lightweight constructor
-  ActiveSubspaceModel(const Model& sub_model,
-                      int random_seed, int initial_samples,
-                      double conv_tol, size_t max_evals,
-                      unsigned short subspace_id_method,
-                      unsigned short sample_type);
+  ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+                      const RealMatrix &rotation_matrix, short output_level);
 
   /// destructor
   ~ActiveSubspaceModel();
@@ -145,8 +143,8 @@ protected:
   // Subspace identification functions: rank-revealing build phase
   // ---
 
-  /// sample the model's gradient, computed the SVD, and form the active subspace
-  /// rotation matrix.
+  /// sample the model's gradient, computed the SVD, and form the active
+  /// subspace rotation matrix.
   void build_subspace();
 
   /// sample the derivative at diff_samples points and leave temporary
@@ -172,6 +170,28 @@ protected:
   /// Compute active subspace size based on eigenvalue energy. Compatible with
   /// other truncation methods.
   unsigned int computeEnergyCriterion(RealVector& singular_values);
+
+  /// Use cross validation of a moving least squares surrogate to identify the
+  /// size of an active subspace that meets an error tolerance
+  unsigned int computeCrossValidationMetric();
+
+  /// Build moving least squares surrogate over candidate active subspace
+  Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
+                          IntResponseMap training_y,
+                          RealMatrix test_x, IntResponseMap test_y);
+
+
+  // Helper functions for the cross validation metric:
+
+  unsigned int determine_rank_cv(const std::vector<Real> &cv_error);
+
+  unsigned int min_index(const std::vector<Real> &cv_error);
+
+  unsigned int tolerance_met_index(const std::vector<Real> &cv_error,
+                                   Real tolerance, bool &tol_met);
+
+  std::vector<Real> negative_diff(const std::vector<Real> &cv_error);
+
 
   /// Build surrogate over active subspace
   void build_surrogate();
@@ -249,6 +269,10 @@ protected:
   /// active subspace dimension
   bool subspaceIdEnergy;
 
+  /// Boolean flag signaling use of cross validationto identify active
+  /// subspace dimension
+  bool subspaceIdCV;
+
   /// Number of bootstrap samples for subspace identification
   size_t numReplicates;
 
@@ -287,7 +311,7 @@ protected:
   RealVector inactiveVars;
 
   /// matrix of derivative data with numFunctions columns per fullspace sample;
-  /// each column contains the gradient of one function at one sample point, 
+  /// each column contains the gradient of one function at one sample point,
   /// so total matrix size is numContinuousVars * (numFunctions * numSamples)
   /// [ D1 | D2 | ... | Dnum_samples]
   /// [ dy1/dx(k=1) | dy2/dx(k=1) | ... | dyM/dx(k=1) | k=2 | ... | k=n_s ]
@@ -295,7 +319,7 @@ protected:
 
   /// matrix of the left singular vectors of derivativeMatrix
   RealMatrix leftSingularVectors;
-  
+
   /// singular values of derivativeMatrix
   RealVector singularValues;
 
@@ -309,6 +333,17 @@ protected:
 
   /// Truncation tolerance for eigenvalue energy subspace identification
   Real truncationTolerance;
+
+  bool cvIncremental;
+
+  short cvIdMethod;
+
+  Real cvRelTolerance;
+
+  Real cvDecreaseTolerance;
+
+  /// maximum subspace size to consider using cross validation
+  unsigned int cvMaxRank;
 
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
@@ -345,7 +380,9 @@ protected:
 
 
 inline bool ActiveSubspaceModel::mapping_initialized()
-{ return subspaceInitialized; }
+{
+  return subspaceInitialized;
+}
 
 } // namespace Dakota
 

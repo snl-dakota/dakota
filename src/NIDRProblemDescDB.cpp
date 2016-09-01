@@ -7161,10 +7161,14 @@ static Model_mp_utype
         MP2s(modelExportFormat,ALGEBRAIC_CONSOLE),
         MP2s(randomFieldIdForm,RF_KARHUNEN_LOEVE),
         MP2s(randomFieldIdForm,RF_PCA_GP),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_VALUE),
-	      MP2s(subspaceNormalization,SUBSPACE_NORM_GRAD),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_VALUE),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_MEAN_GRAD),
+	      MP2s(subspaceNormalization,SUBSPACE_NORM_LOCAL_GRAD),
 	      MP2s(subspaceSampleType,SUBMETHOD_LHS),
-	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM);
+	      MP2s(subspaceSampleType,SUBMETHOD_RANDOM),
+	      MP2s(subspaceIdCVMethod,MINIMUM_METRIC),
+	      MP2s(subspaceIdCVMethod,RELATIVE_TOLERANCE),
+	      MP2s(subspaceIdCVMethod,DECREASE_TOLERANCE);
 
 static Real
         MP_(adaptedBasisCollocRatio),
@@ -7174,7 +7178,9 @@ static Real
         MP_(discontJumpThresh),
 	MP_(krigingNugget),
 	MP_(percentFold),
-	MP_(truncationTolerance);
+	MP_(truncationTolerance),
+	MP_(relTolerance),
+	MP_(decreaseTolerance);
 
 static RealVector
 	MP_(krigingCorrelations),
@@ -7229,7 +7235,9 @@ static bool
   MP_(subspaceIdBingLi),
   MP_(subspaceIdConstantine),
   MP_(subspaceIdEnergy),
-  MP_(subspaceBuildSurrogate);
+  MP_(subspaceBuildSurrogate),
+  MP_(subspaceIdCV),
+  MP_(subspaceCVIncremental);
 
 static unsigned short
 	MP_(adaptedBasisSparseGridLev),
@@ -7260,7 +7268,8 @@ static int
         MP_(softConvergenceLimit),
         MP_(subMethodProcs),
         MP_(subMethodServers),
-        MP_(subspaceDimension);
+        MP_(subspaceDimension),
+        MP_(subspaceCVMaxRank);
 
 #undef MP2s
 #undef MP2

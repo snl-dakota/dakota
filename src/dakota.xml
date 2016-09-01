@@ -2101,9 +2101,14 @@
 			      </keyword>
 			      <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 				<param type="INTEGERLIST" />
-				<keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				  <param type="REAL" />
-				</keyword>
+				<oneOf>
+				  <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				    <param type="INTEGERLIST" />
+				  </keyword>
+				  <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				    <param type="REAL" />
+				  </keyword>
+				</oneOf>
 				<keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 				</keyword>
 				<keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2113,8 +2118,10 @@
 				  <keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 				</keyword>
 			      </keyword>
-			      <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="INTEGERLIST" />
+			      <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				<keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				  <param type="INTEGERLIST" />
+				</keyword>
 				<keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 				</keyword>
 				<keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2250,9 +2257,14 @@
 			  </keyword>
 			  <keyword  id="expansion_order_sequence2" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			    <param type="INTEGERLIST" />
-			    <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			      <param type="REAL" />
-			    </keyword>
+			    <oneOf>
+			      <keyword  id="collocation_points_sequence4" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="INTEGERLIST" />
+			      </keyword>
+			      <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="REAL" />
+			      </keyword>
+			    </oneOf>
 			    <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file11" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2262,8 +2274,10 @@
 			      <keyword  id="active_only13" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 			    </keyword>
 			  </keyword>
-			  <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-			    <param type="INTEGERLIST" />
+			  <keyword  id="orthogonal_least_interpolation2" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			    <keyword  id="collocation_points_sequence5" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+			      <param type="INTEGERLIST" />
+			    </keyword>
 			    <keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file12" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2366,9 +2380,14 @@
 			  </keyword>
 			  <keyword  id="expansion_order_sequence3" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			    <param type="INTEGERLIST" />
-			    <keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			      <param type="REAL" />
-			    </keyword>
+			    <oneOf>
+			      <keyword  id="collocation_points_sequence6" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="INTEGERLIST" />
+			      </keyword>
+			      <keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="REAL" />
+			      </keyword>
+			    </oneOf>
 			    <keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file14" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2378,8 +2397,10 @@
 			      <keyword  id="active_only16" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 			    </keyword>
 			  </keyword>
-			  <keyword  id="collocation_points_sequence4" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-			    <param type="INTEGERLIST" />
+			  <keyword  id="orthogonal_least_interpolation3" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			    <keyword  id="collocation_points_sequence7" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+			      <param type="INTEGERLIST" />
+			    </keyword>
 			    <keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file15" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -3249,7 +3270,7 @@
           </keyword>
         </keyword>
 	<keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="active_subspace" help="" minOccurs="1" >
-          <alias name="subspace"/>
+    <alias name="subspace"/>
 	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
@@ -3270,6 +3291,25 @@
 	        <param type="REAL" />
 	      </keyword>
 	    </keyword>
+	    <keyword id="cross_validation" name="cross_validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
+        <optional>
+          <oneOf>
+            <keyword id="minimum" name="minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
+            <keyword id="relative" name="relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
+            <keyword id="decrease" name="decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
+          </oneOf>
+        </optional>
+        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="relative_tolerance" help="" minOccurs="0" >
+          <param type="REAL" />
+        </keyword>
+        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="decrease_tolerance" help="" minOccurs="0" >
+          <param type="REAL" />
+        </keyword>
+        <keyword  id='max_rank' name='max_rank' code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0'>
+          <param type='INTEGER' />
+	      </keyword>
+	      <keyword id="exhaustive" name="exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
+	    </keyword>
 	  </keyword>
 	  <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
             <param type='INTEGER' />
@@ -3283,10 +3323,11 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
-            <oneOf> 
-              <keyword id="value" name="value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_VALUE)}" /> 
-              <keyword id="gradient" name="gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_GRAD)}" /> 
-            </oneOf> 
+      <oneOf> 
+        <keyword id="mean_value" name="mean_value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
+        <keyword id="mean_gradient" name="mean_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
+        <keyword id="local_gradient" name="local_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
+      </oneOf> 
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="adapted_basis" help="" minOccurs="1" >

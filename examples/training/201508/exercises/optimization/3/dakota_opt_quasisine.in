@@ -1,9 +1,9 @@
 environment
-  top_method_pointer = 'NLP'
+  top_method_pointer = 'top'
   tabular_data
 
 method
-  id_method = 'NLP'
+  id_method = 'top'
 
 variables
   continuous_design = 2

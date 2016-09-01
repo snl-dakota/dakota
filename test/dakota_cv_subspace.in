@@ -1,0 +1,62 @@
+#@ *: Label=Experimental
+#@ p0: MPIProcs=3
+#@ p1: MPIProcs=2
+#@ p2: MPIProcs=2
+#@ p3: MPIProcs=2
+#@ p4: MPIProcs=2
+#@ p5: MPIProcs=2
+#@ p6: MPIProcs=2
+# DAKOTA INPUT FILE - dakota_cv_subspace.in
+# Contains regression tests for using cross validation inside active subspace
+# model
+
+environment
+  output_precision = 16
+  method_pointer = 'ID_METHOD'
+
+method
+  id_method = 'ID_METHOD'
+  model_pointer = 'SUBSPACE'
+  sampling
+    seed = 24620
+    samples = 20
+    sample_type lhs
+  output debug
+
+model
+  id_model = 'SUBSPACE'
+  subspace
+    actual_model_pointer = 'FULLSPACE'
+    initial_samples 50
+    truncation_method
+      cross_validation
+#        minimum           #s1,#p1
+#        relative          #s2,#s6,#p2,#p6
+#        decrease          #s3,#p3
+#        max_rank 5        #s4,#s6,#p4,#p6
+#        exhaustive        #s5,#s6,#p5,#p6
+
+model
+  single
+  id_model = 'FULLSPACE'
+    variables_pointer = 'ID_V'
+    interface_pointer = 'ID_I'
+    responses_pointer = 'ID_R'
+
+variables
+  id_variables = 'ID_V'
+  normal_uncertain = 20
+    means = 20*0.5
+    std_deviations = 20*0.2
+
+interface
+  id_interface = 'ID_I'
+  direct
+    analysis_driver = 'aniso_quad_form'
+    analysis_components = 'seed:61043' 'eigenvals: 302.56 134.2 53.9 5.8 2.1 1e-1 5e-2 1e-3 4e-5 5e-6 1e-8'
+
+responses
+  id_responses = 'ID_R'
+  num_response_functions = 1
+  analytic_gradients
+  no_hessians

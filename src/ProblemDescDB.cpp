@@ -2496,6 +2496,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
     #define P &DataModelRep::
     static KW<Real, DataModelRep> Rdmo[] = {	
       // must be sorted by string (key)
+      {"active_subspace.cv.decrease_tolerance", P decreaseTolerance},
+      {"active_subspace.cv.relative_tolerance", P relTolerance},
       {"active_subspace.truncation_method.energy.truncation_tolerance", P truncationTolerance},
       {"adapted_basis.collocation_ratio", P adaptedBasisCollocRatio},
       {"convergence_tolerance", P convergenceTolerance},
@@ -2591,6 +2593,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     static KW<int, DataModelRep> Idmo[] = {	
       // must be sorted by string (key)
         {"active_subspace.bootstrap_samples", P numReplicates},
+        {"active_subspace.cv.max_rank", P subspaceCVMaxRank},
         {"active_subspace.dimension", P subspaceDimension},
 	{"initial_samples", P initialSamples},
 	{"max_function_evals", P maxFunctionEvals},
@@ -2790,6 +2793,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     #define P &DataModelRep::
     static KW<unsigned short, DataModelRep> UShdmo[] = { 
       // must be sorted by string (key)  
+	{"active_subspace.cv.id_method", P subspaceIdCVMethod},
 	{"active_subspace.normalization", P subspaceNormalization},
 	{"active_subspace.sample_type", P subspaceSampleType},
 	{"adapted_basis.expansion_order", P adaptedBasisExpOrder},
@@ -3056,8 +3060,10 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     static KW<bool, DataModelRep> Bdmo[] = {	
       // must be sorted by string (key)
 	{"active_subspace.build_surrogate", P subspaceBuildSurrogate},
+	{"active_subspace.cv.incremental", P subspaceCVIncremental},
 	{"active_subspace.truncation_method.bing_li", P subspaceIdBingLi},
 	{"active_subspace.truncation_method.constantine", P subspaceIdConstantine},
+	{"active_subspace.truncation_method.cv", P subspaceIdCV},
 	{"active_subspace.truncation_method.energy", P subspaceIdEnergy},
 	{"hierarchical_tags", P hierarchicalTags},
 	{"surrogate.auto_refine", P autoRefine},
