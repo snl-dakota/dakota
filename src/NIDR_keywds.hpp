@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1917 distinct keywords (plus 251 aliases) **/
+/** 1923 distinct keywords (plus 251 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -323,10 +323,12 @@ static KeyWord
 		{"custom_annotated",8,3,1,0,kw_51,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
-	kw_53[3] = {
-		{"import_build_points_file",11,4,2,0,kw_52,0.,0.,0,N_mdm(str,importBuildPtsFile)},
-		{"import_points_file",3,4,2,0,kw_52,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
-		{"posterior_adaptive",8,0,1,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
+	kw_53[5] = {
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"import_build_points_file",11,4,3,0,kw_52,0.,0.,0,N_mdm(str,importBuildPtsFile)},
+		{"import_points_file",3,4,3,0,kw_52,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
+		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_54[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)},
@@ -340,14 +342,14 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
 	kw_56[4] = {
-		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"import_build_points_file",11,4,3,0,kw_55,0.,0.,0,N_mdm(str,importBuildPtsFile)},
 		{"import_points_file",3,4,3,0,kw_55,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_57[3] = {
-		{"collocation_points_sequence",13,3,1,1,kw_53,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order_sequence",13,4,1,1,kw_56,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"expansion_order_sequence",13,5,1,1,kw_53,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"orthogonal_least_interpolation",8,4,1,1,kw_56,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_58[1] = {
@@ -481,10 +483,12 @@ static KeyWord
 		{"custom_annotated",8,3,1,0,kw_79,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
-	kw_81[3] = {
-		{"import_build_points_file",11,4,2,0,kw_80,0.,0.,0,N_mdm(str,importBuildPtsFile)},
-		{"import_points_file",3,4,2,0,kw_80,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
-		{"posterior_adaptive",8,0,1,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
+	kw_81[5] = {
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"import_build_points_file",11,4,3,0,kw_80,0.,0.,0,N_mdm(str,importBuildPtsFile)},
+		{"import_points_file",3,4,3,0,kw_80,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
+		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_82[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)},
@@ -498,14 +502,14 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
 	kw_84[4] = {
-		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"import_build_points_file",11,4,3,0,kw_83,0.,0.,0,N_mdm(str,importBuildPtsFile)},
 		{"import_points_file",3,4,3,0,kw_83,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_85[3] = {
-		{"collocation_points_sequence",13,3,1,1,kw_81,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order_sequence",13,4,1,1,kw_84,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"expansion_order_sequence",13,5,1,1,kw_81,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"orthogonal_least_interpolation",8,4,1,1,kw_84,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_86[1] = {
@@ -579,10 +583,12 @@ static KeyWord
 		{"custom_annotated",8,3,1,0,kw_97,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
-	kw_99[3] = {
-		{"import_build_points_file",11,4,2,0,kw_98,0.,0.,0,N_mdm(str,importBuildPtsFile)},
-		{"import_points_file",3,4,2,0,kw_98,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
-		{"posterior_adaptive",8,0,1,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
+	kw_99[5] = {
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
+		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"import_build_points_file",11,4,3,0,kw_98,0.,0.,0,N_mdm(str,importBuildPtsFile)},
+		{"import_points_file",3,4,3,0,kw_98,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
+		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_100[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)},
@@ -596,14 +602,14 @@ static KeyWord
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(utype,importBuildFormat_TABULAR_NONE)}
 		},
 	kw_102[4] = {
-		{"collocation_ratio",10,0,1,1,0,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points_sequence",13,0,1,1,0,0.,0.,0,N_mdm(szarray,collocationPoints)},
 		{"import_build_points_file",11,4,3,0,kw_101,0.,0.,0,N_mdm(str,importBuildPtsFile)},
 		{"import_points_file",3,4,3,0,kw_101,0.,0.,-1,N_mdm(str,importBuildPtsFile)},
 		{"posterior_adaptive",8,0,2,0,0,0.,0.,0,N_mdm(true,adaptPosteriorRefine)}
 		},
 	kw_103[3] = {
-		{"collocation_points_sequence",13,3,1,1,kw_99,0.,0.,0,N_mdm(szarray,collocationPoints)},
-		{"expansion_order_sequence",13,4,1,1,kw_102,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"expansion_order_sequence",13,5,1,1,kw_99,0.,0.,0,N_mdm(usharray,expansionOrder)},
+		{"orthogonal_least_interpolation",8,4,1,1,kw_102,0.,0.,0,N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)},
 		{"sparse_grid_level_sequence",13,0,1,1,0,0.,0.,0,N_mdm(usharray,sparseGridLevel)}
 		},
 	kw_104[1] = {

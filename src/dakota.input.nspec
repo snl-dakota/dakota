@@ -1539,6 +1539,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
               |
               ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+                |
                 collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1559,7 +1561,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                  ]
                )
               |
-              ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
                 [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
                 [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                   [ 
@@ -1699,6 +1702,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
             |
             ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              |
               collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1719,7 +1724,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -1809,6 +1815,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
             |
             ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              |
               collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
@@ -1829,7 +1837,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
