@@ -56,9 +56,6 @@ MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  bestVariablesArray.push_back(
-    iteratedModel.truth_model().current_variables().copy());
-
   // Instantiate the approximate sub-problem minimizer
   const String& approx_method_ptr
     = probDescDB.get_string("method.sub_method_pointer");
@@ -116,7 +113,6 @@ MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
   responseStarCorrected = std::vector<Response>(num_fide);
   responseCenterUncorrected = std::vector<Response>(num_fide);
   responseCenterCorrected = std::vector<Response>(num_fide);
-
 
   softConvLimit = 5;
   trustRegionFactor = RealVector(num_fide);
