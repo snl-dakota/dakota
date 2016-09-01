@@ -55,7 +55,7 @@ protected:
   /// global, or hierarchical surrogates over a series of trust regions.
   void core_run();
 
-  void post_run();
+  void post_run(std::ostream& s);
 
 
   /// reset convergence controls in case of multiple SBLM executions

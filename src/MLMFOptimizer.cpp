@@ -37,9 +37,7 @@ MLMFOptimizer* MLMFOptimizer::mlmfInstance(NULL);
 
 MLMFOptimizer::
 MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedLocalMinimizer(problem_db, model), 
-  convergenceFlag(false),
-  correctionType(probDescDB.get_short("model.surrogate.correction_type"))
+  SurrBasedLocalMinimizer(problem_db, model)
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -407,37 +405,6 @@ void MLMFOptimizer::multifidelity_opt()
     } // end of approx opt cycle
 
   } // end of outer while() loop
-
-
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceFlag == 1 )
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceFlag == 2 )
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceFlag == 3 )
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-         << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceFlag == 4 )
-    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-         << "<= Convergence Tolerance\n";
-  else {
-    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
-         << std::endl;
-    abort_handler(-1);
-  }
-  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
-
-  bestVariablesArray.front().continuous_variables(
-    varsCenter.continuous_variables());
-  bestResponseArray.front().function_values(
-    responseCenterCorrected[num_fide-1].function_values());
-
-  // restore original Model data
-  iteratedModel.continuous_variables(initial_pt);
-  iteratedModel.continuous_lower_bounds(globalLowerBnds);
-  iteratedModel.continuous_upper_bounds(globalUpperBnds);
 }
 
 

@@ -87,8 +87,6 @@ private:
 
   Variables varsCenter;          ///< variables at the trust region center
 
-  /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceFlag;
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
   unsigned short softConvCount;
@@ -114,10 +112,6 @@ private:
   Real gammaContract;
   /// trust region expansion factor
   Real gammaExpand;
-
-  /// flags the use of surrogate correction techniques at the center
-  /// of each trust region
-  short correctionType;
 
   /// pointer to MLMF instance used in static member functions
   static MLMFOptimizer* mlmfInstance;

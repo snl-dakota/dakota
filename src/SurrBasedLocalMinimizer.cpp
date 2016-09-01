@@ -357,40 +357,6 @@ SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
 { }
 
 
-/** Trust region-based strategy to perform surrogate-based optimization
-    in subregions (trust regions) of the parameter space.  The minimizer 
-    operates on approximations in lieu of the more expensive 
-    simulation-based response functions.  The size of the trust region 
-    is adapted according to the agreement between the approximations and 
-    the true response functions. */
-void SurrBasedLocalMinimizer::core_run()
-{
-  // TO DO: consider *SurrModel::initialize_mapping() --> initial surr build
-  // would simplify detection of auto build and remove some checks in evaluate()
-  // --> longer term, lower priority: defer for now
-
-  while (!convergenceFlag) {
-
-    // Compute trust region bounds.  If the trust region extends outside
-    // the global bounds, then truncate to the global bounds.
-    update_trust_region();
-
-    // Build new approximations and compute corrections for use within
-    // approxSubProbMinimizer.run() (unless previous build can be reused)
-    // > Build the approximation
-    // > Evaluate/retrieve responseCenterTruth
-    // > Perform hard convergence check
-    if (globalApproxFlag || newCenterFlag) build();
-    else Cout << "\n>>>>> Reusing previous approximation.\n";
-
-    if (!convergenceFlag) {
-      minimize(); // run approxSubProbMinimizer and update responseStarApprox
-      verify();   // evaluate responseStarTruth and update trust region
-    }
-  }
-}
-
-
 void SurrBasedLocalMinimizer::pre_run()
 {
   // static pointer to SurrBasedLocalMinimizer instance
@@ -455,6 +421,88 @@ void SurrBasedLocalMinimizer::pre_run()
   responseStarTruth.second.active_set(valSet);
   responseCenterApprox.active_set(fullApproxSet);
   responseCenterTruth.second.active_set(fullTruthSet);
+}
+
+
+/** Trust region-based strategy to perform surrogate-based optimization
+    in subregions (trust regions) of the parameter space.  The minimizer 
+    operates on approximations in lieu of the more expensive 
+    simulation-based response functions.  The size of the trust region 
+    is adapted according to the agreement between the approximations and 
+    the true response functions. */
+void SurrBasedLocalMinimizer::core_run()
+{
+  // TO DO: consider *SurrModel::initialize_mapping() --> initial surr build
+  // would simplify detection of auto build and remove some checks in evaluate()
+  // --> longer term, lower priority: defer for now
+
+  while (!convergenceFlag) {
+
+    // Compute trust region bounds.  If the trust region extends outside
+    // the global bounds, then truncate to the global bounds.
+    update_trust_region();
+
+    // Build new approximations and compute corrections for use within
+    // approxSubProbMinimizer.run() (unless previous build can be reused)
+    // > Build the approximation
+    // > Evaluate/retrieve responseCenterTruth
+    // > Perform hard convergence check
+    if (globalApproxFlag || newCenterFlag) build();
+    else Cout << "\n>>>>> Reusing previous approximation.\n";
+
+    if (!convergenceFlag) {
+      minimize(); // run approxSubProbMinimizer and update responseStarApprox
+      verify();   // evaluate responseStarTruth and update trust region
+    }
+  }
+}
+
+
+void SurrBasedLocalMinimizer::post_run(std::ostream& s)
+{
+  // SBLM is complete: write out the convergence condition and final results
+  // from the center point of the last trust region.
+  Cout << "\nSurrogate-Based Optimization Complete - ";
+  if ( convergenceFlag == 1 )
+    Cout << "Minimum Trust Region Bounds Reached\n";
+  else if ( convergenceFlag == 2 )
+    Cout << "Exceeded Maximum Number of Iterations\n";
+  else if ( convergenceFlag == 3 )  
+    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
+	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
+  else if ( convergenceFlag == 4 )
+    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
+	 << "<= Convergence Tolerance\n";
+  else {
+    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
+
+  bestVariablesArray.front().continuous_variables(
+    varsCenter.continuous_variables());
+  bestResponseArray.front().function_values(
+    responseCenterTruth.second.function_values());
+
+  // restore original/global bounds
+  //approxSubProbModel.continuous_variables(initial_pt);
+  //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
+  approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
+  approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
+  if (globalApproxFlag) { // propagate to DFSModel
+    iteratedModel.continuous_lower_bounds(globalLowerBnds);
+    iteratedModel.continuous_upper_bounds(globalUpperBnds);
+  }
+  if (trConstraintRelax > NO_RELAX) {
+    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+      origNonlinIneqLowerBnds);
+    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+      origNonlinIneqUpperBnds);
+    approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
+  }
+
+  Minimizer::post_run(s);
 }
 
 
@@ -768,52 +816,6 @@ void SurrBasedLocalMinimizer::verify()
     // terminate SBLM if the maximum number of iterations has been reached
     else if (sbIterNum >= maxIterations)
       convergenceFlag = 2;
-  }
-}
-
-
-void SurrBasedLocalMinimizer::post_run()
-{
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceFlag == 1 )
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceFlag == 2 )
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceFlag == 3 )  
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceFlag == 4 )
-    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-	 << "<= Convergence Tolerance\n";
-  else {
-    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
-
-  bestVariablesArray.front().continuous_variables(
-    varsCenter.continuous_variables());
-  bestResponseArray.front().function_values(
-    responseCenterTruth.second.function_values());
-
-  // restore original/global bounds
-  //approxSubProbModel.continuous_variables(initial_pt);
-  //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
-  approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
-  approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
-  if (globalApproxFlag) { // propagate to DFSModel
-    iteratedModel.continuous_lower_bounds(globalLowerBnds);
-    iteratedModel.continuous_upper_bounds(globalUpperBnds);
-  }
-  if (trConstraintRelax > NO_RELAX) {
-    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
-      origNonlinIneqLowerBnds);
-    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
-      origNonlinIneqUpperBnds);
-    approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
   }
 }
 
