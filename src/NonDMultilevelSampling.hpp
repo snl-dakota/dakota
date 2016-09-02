@@ -394,6 +394,12 @@ private:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 
+  /// if defined, complete the final CV refinement when terminating MLCV based
+  /// on maxIterations (the total number of refinements beyond the pilot sample
+  /// will be one more for CV than for ML).  This approach is consistent with
+  /// normal termination based on l1_norm(delta_N_hf) = 0.
+  bool finalCVRefinement;
+
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
   bool exportSampleSets;

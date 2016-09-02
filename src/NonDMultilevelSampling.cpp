@@ -33,6 +33,7 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+  finalCVRefinement(true),
   exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     probDescDB.get_ushort("method.nond.export_samples_format"))
@@ -1838,12 +1839,19 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     if (exportSampleSets)
       export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
 
-    // iter 0 is defined as the pilot sample, with the iteration counter
-    // incremented for a CV increment followed by an ML increment.  Convergence,
-    // however, is defined when the ML
-    // increment is zero, resulting in an additional CV iteration at the end.
+    // Iteration 0 is defined as the pilot sample, and each subsequent iter
+    // can be defined as a CV increment followed by an ML increment.  In this
+    // case, terminating based on max_iterations results in a final ML increment
+    // without a corresponding CV refinement; thus the number of ML and CV
+    // refinements is consistent although the final sample profile is not
+    // self-consistent -- to override this and finish with a final CV increment
+    // corresponding to the final ML increment, the finalCVRefinement flag can
+    // be set.  Note: termination based on delta_N_hf=0 has a final ML increment
+    // of zero and corresponding final CV increment of zero.  Therefore, this
+    // iteration completes on the previous CV increment and is more consistent
+    // with finalCVRefinement=true.
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-    if (iter < max_iter) {
+    if (iter < max_iter || finalCVRefinement) {
       // mode for hierarchical surrogate model can be uncorrected surrogate
       // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
       // --> set at calling level
