@@ -122,7 +122,7 @@ void Analyzer::update_from_model(const Model& model)
       err_flag = true;
     }
     if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
-      Cerr << "\nWarning: discrete design variables ignored by "
+      Cerr << "\nWarning: active discrete variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
   // Check for response functions

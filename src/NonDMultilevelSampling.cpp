@@ -21,13 +21,6 @@
 #include "ProblemDescDB.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 
-// Option to have all CV lf_increment() calls follow all ML level evals:
-// > Provides separation of pilot sample from refinements (simplifying offline
-//   execution and data importing, but also clarifying
-// > Could potentially have parallel scheduling benefits by grouping Model
-//   eval sets that can be scheduled together
-//#define REORDER_LF_INCREMENTS
-
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 
@@ -667,12 +660,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
-#ifdef REORDER_LF_INCREMENTS
-  RealVector avg_eval_ratios(num_cv_lev);
-#endif
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
-    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
+    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev),
+    avg_eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
   IntRealMatrixMap sum_Ll, sum_Llm1,
@@ -785,10 +776,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio =
-#ifdef REORDER_LF_INCREMENTS
-	    avg_eval_ratios[lev] =
-#endif
+	  avg_eval_ratio = avg_eval_ratios[lev] =
 	    eval_ratio(sum_Ll[1], sum_Llm1[1], sum_Hl[1], sum_Hlm1[1],
 		       sum_Ll_Ll[1], sum_Ll_Llm1[1], sum_Llm1_Llm1[1],
 		       sum_Hl_Ll[1], sum_Hl_Llm1[1], sum_Hlm1_Ll[1],
@@ -799,20 +787,6 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  Lambda[lev] = 1. - avg_rho_dot2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_Yl[lev], numFunctions);
-#ifndef REORDER_LF_INCREMENTS
-	  // now execute additional LF sample increment, if needed.  This is
-	  // the default operation ordering, with simplest bookkeeping/flow.
-	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
-	    accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,
-				  lev, N_lf[lev]);
-	    if (outputLevel == DEBUG_OUTPUT) {
-	      Cout << "Accumulated sums (L_refined[1,2]):\n";
-	      write_data(Cout, sum_Ll_refined[1]);
-	      write_data(Cout, sum_Ll_refined[2]);
-	    }
-	    raw_N_lf[lev] += numSamples;
-	  }
-#endif
 	}
 	else { // no LF model for this level; accumulate only multilevel
 	       // discrepancy sums (Hl is Yl) as in standard MLMC
@@ -851,31 +825,37 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
-#ifdef REORDER_LF_INCREMENTS
-    // for imported data/seed progression reasons, reorder LF increments to
-    // follow HF levels (decouple seed progression to have LF increments
-    // follow pilot rst duplicates)
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); //surr resp
-    iteratedModel.surrogate_model_indices(lf_model_form, 0);
+    // All CV lf_increment() calls now follow all ML level evals:
+    // > Provides separation of pilot sample from refinements (simplifying
+    //   offline execution with data importing w/o undesirable seed progression)
+    // > Improves application of max_iterations control in general: user
+    //   specification results in consistent count for ML and CV refinements
+    // > Incurs a bit more overhead: avg_eval_ratios array, mode resetting
+    // > Could potentially have parallel scheduling benefits by grouping
+    //   similar Model eval sets for aggregated scheduling
     for (lev=0; lev<num_cv_lev; ++lev) {
-      if (lev) {
-	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);   // both resp
-	iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
-	iteratedModel.truth_model_indices(lf_model_form,     lev);
-      }
-      // now execute additional LF sample increment, if needed
-      if (delta_N_hf[lev] &&
-	  lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev], iter, lev)) {
-	accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, N_lf[lev]);
-	raw_N_lf[lev] += numSamples;
-	if (outputLevel == DEBUG_OUTPUT) {
-	  Cout << "Accumulated sums (L_refined[1,2]):\n";
-	  write_data(Cout, sum_Ll_refined[1]);
-	  write_data(Cout, sum_Ll_refined[2]);
+      if (delta_N_hf[lev]) {
+	if (lev) {
+	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
+	  iteratedModel.truth_model_indices(lf_model_form,     lev);
+	}
+	else {
+	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	}
+	// now execute additional LF sample increment, if needed
+	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
+	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,lev,N_lf[lev]);
+	  raw_N_lf[lev] += numSamples;
+	  if (outputLevel == DEBUG_OUTPUT) {
+	    Cout << "Accumulated sums (L_refined[1,2]):\n";
+	    write_data(Cout, sum_Ll_refined[1]);
+	    write_data(Cout, sum_Ll_refined[2]);
+	  }
 	}
       }
     }
-#endif
 
     // update targets based on variance estimates
     Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
@@ -1830,7 +1810,7 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 
   numSamples = one_sided_delta(average(N_lf), average(N_hf) * avg_eval_ratio);
   if (numSamples) {
-    Cout << "CVMC LF sample increment = " << numSamples;
+    Cout << "\nCVMC LF sample increment = " << numSamples;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
 	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
@@ -1842,7 +1822,12 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     if (exportSampleSets)
       export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
 
-    if (maxIterations) { // only preclude explicit spec of 0 (default is -1)
+    // iter 0 is defined as the pilot sample, with the iteration counter
+    // incremented for a CV increment followed by an ML increment.  Convergence,
+    // however, is defined when the ML
+    // increment is zero, resulting in an additional CV iteration at the end.
+    size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+    if (iter < max_iter) {
       // mode for hierarchical surrogate model can be uncorrected surrogate
       // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
       // --> set at calling level

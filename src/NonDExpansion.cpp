@@ -207,10 +207,13 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 {
   bool err_flag = false;
 
+  // Note: prefer warning in Analyzer (active discrete ignored), but
+  // RandomVariable type mapping must be defined...
+  //
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
-    Cerr << "\nError: discrete random variables are not currently supported in "
-	 << "NonDExpansion." << std::endl;
+    Cerr << "\nError: active discrete variables are not currently supported "
+	 << "in NonDExpansion." << std::endl;
     err_flag = true;
   }
 
