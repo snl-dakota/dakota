@@ -440,7 +440,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
-    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
+    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev),
+    avg_eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -539,24 +540,14 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio
-	    = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-			 sum_HH[1], hf_lev_cost/lf_lev_cost, lev, N_hf[lev],
-			 var_H, rho2_LH);
+	  avg_eval_ratio = avg_eval_ratios[lev] =
+	    eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
+		       sum_HH[1], hf_lev_cost/lf_lev_cost, lev, N_hf[lev],
+		       var_H, rho2_LH);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
 	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
-	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
-	    accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
-	    if (outputLevel == DEBUG_OUTPUT) {
-	      Cout << "Accumulated sums (L_refined[1,2]):\n";
-	      write_data(Cout, sum_L_refined[1]);
-	      write_data(Cout, sum_L_refined[2]);
-	    }
-	    raw_N_lf[lev] += numSamples;
-	  }
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  RealMatrix& sum_HH1 = sum_HH[1];
@@ -592,6 +583,31 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+    }
+
+    // All CV lf_increment() calls now follow all ML level evals:
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      if (delta_N_hf[lev]) {
+	if (lev) {
+	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
+	  iteratedModel.truth_model_indices(lf_model_form,     lev);
+	}
+	else {
+	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	}
+	// now execute additional LF sample increment, if needed
+	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
+	  accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
+	  raw_N_lf[lev] += numSamples;
+	  if (outputLevel == DEBUG_OUTPUT) {
+	    Cout << "Accumulated sums (L_refined[1,2]):\n";
+	    write_data(Cout, sum_L_refined[1]);
+	    write_data(Cout, sum_L_refined[2]);
+	  }
+	}
+      }
     }
 
     // update targets based on variance estimates
