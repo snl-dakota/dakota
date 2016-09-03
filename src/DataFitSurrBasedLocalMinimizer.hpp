@@ -51,14 +51,8 @@ protected:
 
   void pre_run();
 
-  /// Performs local surrogate-based minimization by minimizing local,
-  /// global, or hierarchical surrogates over a series of trust regions.
-  void core_run();
-
   void post_run(std::ostream& s);
 
-
-  /// reset convergence controls in case of multiple SBLM executions
   void reset();
 
   //
@@ -66,11 +60,11 @@ protected:
   //
 
   /// update the trust region bounds, strictly contained within global bounds
-  virtual void update_trust_region();
+  void update_trust_region();
 
-  virtual void verify();
-  virtual void minimize();
-  virtual void build();
+  void verify();
+  void minimize();
+  void build();
 
   bool build_global();
   bool build_local();
@@ -134,27 +128,6 @@ protected:
   //- Heading: Data members
   //
 
-  // the +/- offsets for each of the variables in the current trust region
-  //RealVector trustRegionOffset;
-  /// original user specification for trustRegionFactor
-  Real origTrustRegionFactor;
-  /// the trust region factor is used to compute the total size of the trust
-  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
-  /// actual size of the trust region will be 10% of the global bounds (upper
-  /// bound - lower bound for each design variable).
-  Real trustRegionFactor;
-  /// a soft convergence control: stop SBLM when the trust region
-  /// factor is reduced below the value of minTrustRegionFactor
-  Real minTrustRegionFactor;
-  /// trust region ratio min value: contract tr if ratio below this value
-  Real trRatioContractValue;
-  /// trust region ratio sufficient value: expand tr if ratio above this value
-  Real trRatioExpandValue;
-  /// trust region contraction factor
-  Real gammaContract;
-  /// trust region expansion factor
-  Real gammaExpand;
-
   /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
   /// or AUGMENTED_LAGRANGIAN_OBJ
   short approxSubProbObj;
@@ -180,26 +153,6 @@ protected:
   /// for adaptive_penalty merit functions
   int penaltyIterOffset;
 
-  /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceFlag;
-  /// number of consecutive candidate point rejections.  If the
-  /// count reaches softConvLimit, stop SBLM.
-  unsigned short softConvCount;
-  /// the limit on consecutive candidate point rejections.  If
-  /// exceeded by softConvCount, stop SBLM.
-  unsigned short softConvLimit;
-
-  /// flags the use/availability of truth gradients within the SBLM process
-  bool truthGradientFlag;
-  /// flags the use/availability of surrogate gradients within the SBLM process
-  bool approxGradientFlag;
-  /// flags the use/availability of truth Hessians within the SBLM process
-  bool truthHessianFlag;
-  /// flags the use/availability of surrogate Hessians within the SBLM process
-  bool approxHessianFlag;
-  /// flags the use of surrogate correction techniques at the center
-  /// of each trust region
-  short correctionType;
   /// flags the use of a global data fit surrogate (rsm, ann, mars, kriging)
   bool globalApproxFlag;
   /// flags the use of a multipoint data fit surrogate (TANA)
@@ -208,9 +161,6 @@ protected:
   bool localApproxFlag;
   /// flags the use of a model hierarchy/multifidelity surrogate 
   bool hierarchApproxFlag;
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  bool newCenterFlag;
   /// flags the availability of the center point in the DACE
   /// evaluations for global approximations (CCD, Box-Behnken)
   bool daceCenterPtFlag;
@@ -236,36 +186,10 @@ protected:
   /// constraint relaxation parameter backoff parameter (multiplier)
   Real alpha;
 
-  /// Trust region lower bounds
-  RealVector trLowerBnds;
-  /// Trust region Upper bounds
-  RealVector trUpperBnds;
-
-  /// Global lower bounds
-  RealVector globalLowerBnds;
-  /// Global Upper bounds
-  RealVector globalUpperBnds;
-
   bool daceCenterEvalFlag;
-
-  ActiveSet valSet;
-
-  ActiveSet fullApproxSet;
-
-  ActiveSet fullTruthSet;
-
-  Variables varsStar;
 
   /// pointer to SBLM instance used in static member functions
   static DataFitSurrBasedLocalMinimizer* sblmInstance;
-
-  Variables varsCenter;          ///< variables at the trust region center
-
-  Response responseCenterApprox; ///< approx response at trust region center
-  Response responseStarApprox;   ///< approx response at SBLM cycle minimum
-
-  IntResponsePair responseCenterTruth;///< truth response at trust region center
-  IntResponsePair responseStarTruth;  ///< truth response at SBLM cycle minimum
 };
 
 } // namespace Dakota

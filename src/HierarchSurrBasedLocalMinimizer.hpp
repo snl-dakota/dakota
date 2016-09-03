@@ -87,12 +87,6 @@ private:
 
   Variables varsCenter;          ///< variables at the trust region center
 
-  /// number of consecutive candidate point rejections.  If the
-  /// count reaches softConvLimit, stop SBLM.
-  unsigned short softConvCount;
-  /// the limit on consecutive candidate point rejections.  If
-  /// exceeded by softConvCount, stop SBLM.
-  unsigned short softConvLimit;
   /// the trust region factor is used to compute the total size of the trust
   /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
   /// actual size of the trust region will be 10% of the global bounds (upper
@@ -104,14 +98,6 @@ private:
   /// flags the acceptance of a candidate point and the existence of
   /// a new trust region center
   std::vector<bool> newCenterFlag;
-  /// trust region ratio min value: contract tr if ratio below this value
-  Real trRatioContractValue;
-  /// trust region ratio sufficient value: expand tr if ratio above this value
-  Real trRatioExpandValue;
-  /// trust region contraction factor
-  Real gammaContract;
-  /// trust region expansion factor
-  Real gammaExpand;
 
   /// pointer to MLMF instance used in static member functions
   static HierarchSurrBasedLocalMinimizer* mlmfInstance;
