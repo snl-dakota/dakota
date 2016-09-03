@@ -28,7 +28,6 @@
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevelSampling.hpp"
-#include "MLMFOptimizer.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -37,7 +36,8 @@
 #include "NonDLHSSingleInterval.hpp"
 #include "NonDPOFDarts.hpp"
 #include "NonDRKDDarts.hpp"
-#include "SurrBasedLocalMinimizer.hpp"
+#include "DataFitSurrBasedLocalMinimizer.hpp"
+#include "HierarchSurrBasedLocalMinimizer.hpp"
 #include "SurrBasedGlobalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
 #include "NonlinearCGOptimizer.hpp"
@@ -448,10 +448,13 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDLHSSampling(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return new NonDMultilevelSampling(problem_db, model); break;
-  case MULTILEVEL_MULTIFIDELITY_OPT:
-    return new MLMFOptimizer(problem_db, model);  break;
+  //case MULTILEVEL_MULTIFIDELITY_OPT:
+  //  return new HierarchSurrBasedLocalMinimizer(problem_db, model);  break;
   case SURROGATE_BASED_LOCAL:
-    return new SurrBasedLocalMinimizer(problem_db, model);  break;
+    if (type == "") // TO DO
+      return new HierarchSurrBasedLocalMinimizer(problem_db, model);
+    else
+    return new DataFitSurrBasedLocalMinimizer(problem_db, model);  break;
   case SURROGATE_BASED_GLOBAL:
     return new SurrBasedGlobalMinimizer(problem_db, model); break;
   case EFFICIENT_GLOBAL: return new EffGlobalMinimizer(problem_db, model);break;
@@ -568,8 +571,9 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   // These instantiations will NOT recurse on the Iterator(model)
   // constructor due to the use of BaseConstructor.
 
-  //if (method_string == "surrogate_based_local")
-  //  return new SurrBasedLocalMinimizer(model);
+  //if (method_string == "surrogate_based_local") {
+  //  return (true) ? new DataFitSurrBasedLocalMinimizer(model) :
+  //                  new HierarchSurrBasedLocalMinimizer(model);
   //else if (method_string == "surrogate_based_global")
   //  return new SurrBasedGlobalMinimizer(model);
   //else if (method_string == "efficient_global")
