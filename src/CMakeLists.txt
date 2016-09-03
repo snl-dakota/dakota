@@ -537,7 +537,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
     NonlinearCGOptimizer.cpp 
-    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp MLMFOptimizer.cpp
+    SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp
+    HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
     EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp

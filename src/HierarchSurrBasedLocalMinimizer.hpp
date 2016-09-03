@@ -6,16 +6,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       MLMFOptimizer
+//- Class:       HierarchSurrBasedLocalMinimizer
 //- Description: A local optimization algorithm that uses multiple model forms
 //-              and discretization levels to accelerate convergence of a high-
 //-              fidelity, finely-resolved model.
 //- Owner:       Mike Eldred
 //- Checked by:
-//- Version: $Id: MLMFOptimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
+//- Version: $Id: HierarchSurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
-#ifndef MLMF_LOCAL_MINIMIZER_H
-#define MLMF_LOCAL_MINIMIZER_H
+#ifndef HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
+#define HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
 
 #include "SurrBasedLocalMinimizer.hpp"
 #include "HierarchSurrModel.hpp"
@@ -30,7 +30,7 @@ namespace Dakota
 /** This minimizer uses SurrogateModel(s) to perform minimization leveraging
     multiple model forms and discretization levels. */
 
-class MLMFOptimizer: public SurrBasedLocalMinimizer
+class HierarchSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
 {
 public:
 
@@ -39,9 +39,9 @@ public:
   //
 
   /// constructor
-  MLMFOptimizer(ProblemDescDB& problem_db, Model& model);
+  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~MLMFOptimizer();
+  ~HierarchSurrBasedLocalMinimizer();
 
 protected:
 
@@ -114,7 +114,7 @@ private:
   Real gammaExpand;
 
   /// pointer to MLMF instance used in static member functions
-  static MLMFOptimizer* mlmfInstance;
+  static HierarchSurrBasedLocalMinimizer* mlmfInstance;
 };
 
 } // namespace Dakota

@@ -6,17 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       SurrBasedLocalMinimizer
+//- Class:       DataFitSurrBasedLocalMinimizer
 //- Description: A local surrogate-based algorithm which successively invokes
 //-              a minimizer on an approximate model within a trust region.
 //- Owner:       Mike Eldred
 //- Checked by:
-//- Version: $Id: SurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
+//- Version: $Id: DataFitSurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
-#ifndef SURR_BASED_LOCAL_MINIMIZER_H
-#define SURR_BASED_LOCAL_MINIMIZER_H
+#ifndef DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
+#define DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
 
-#include "SurrBasedMinimizer.hpp"
+#include "SurrBasedLocalMinimizer.hpp"
 #include "DakotaModel.hpp"
 
 namespace Dakota {
@@ -30,7 +30,7 @@ namespace Dakota {
     convergence through the use of a sequence of trust regions and the
     application of surrogate corrections at the trust region centers. */
 
-class SurrBasedLocalMinimizer: public SurrBasedMinimizer
+class DataFitSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
 {
 public:
 
@@ -39,9 +39,9 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~SurrBasedLocalMinimizer();
+  ~DataFitSurrBasedLocalMinimizer();
 
 protected:
 
@@ -257,7 +257,7 @@ protected:
   Variables varsStar;
 
   /// pointer to SBLM instance used in static member functions
-  static SurrBasedLocalMinimizer* sblmInstance;
+  static DataFitSurrBasedLocalMinimizer* sblmInstance;
 
   Variables varsCenter;          ///< variables at the trust region center
 

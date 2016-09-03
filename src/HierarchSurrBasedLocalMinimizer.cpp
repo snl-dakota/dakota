@@ -6,14 +6,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       MLMFOptimizer
-//- Description: Implementation code for the MLMFOptimizer class
+//- Class:       HierarchSurrBasedLocalMinimizer
+//- Description: Implementation code for the HierarchSurrBasedLocalMinimizer class
 //- Owner:       Mike Eldred, Sandia National Laboratories
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
-#include "MLMFOptimizer.hpp"
+#include "HierarchSurrBasedLocalMinimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
@@ -33,23 +33,23 @@ namespace Dakota
 extern PRPCache data_pairs; // global container
 
 // initialization of statics
-MLMFOptimizer* MLMFOptimizer::mlmfInstance(NULL);
+HierarchSurrBasedLocalMinimizer* HierarchSurrBasedLocalMinimizer::mlmfInstance(NULL);
 
-MLMFOptimizer::
-MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
+HierarchSurrBasedLocalMinimizer::
+HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model)
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
   if (iteratedModel.model_type() != "surrogate") {
-    Cerr << "Error: MLMFOptimizer::iteratedModel must be a "
+    Cerr << "Error: HierarchSurrBasedLocalMinimizer::iteratedModel must be a "
          << "surrogate model." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // check iteratedModel for model form hierarchy and/or discretization levels;
   if (iteratedModel.surrogate_type() != "hierarchical") {
-    Cerr << "Error: MLMFOptimizer requires a hierarchical "
+    Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -131,14 +131,14 @@ MLMFOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-MLMFOptimizer::~MLMFOptimizer()
+HierarchSurrBasedLocalMinimizer::~HierarchSurrBasedLocalMinimizer()
 { }
 
 
 /** Core of the multilevel-multifidelity optimization algorithm. */
-void MLMFOptimizer::core_run()
+void HierarchSurrBasedLocalMinimizer::core_run()
 {
-  // static pointer to MLMFOptimizer instance
+  // static pointer to HierarchSurrBasedLocalMinimizer instance
   mlmfInstance = this;
   // reset convergence controls in case of multiple executions
   if (convergenceFlag)
@@ -169,19 +169,19 @@ void MLMFOptimizer::core_run()
 }
 
 
-void MLMFOptimizer::reset()
+void HierarchSurrBasedLocalMinimizer::reset()
 {
   convergenceFlag = false;
 }
 
-void MLMFOptimizer::multilevel_multifidelity_opt()
+void HierarchSurrBasedLocalMinimizer::multilevel_multifidelity_opt()
 {
-  Cerr << "MLMFOptimizer::multilevel_multifidelity_opt() has not yet "
+  Cerr << "HierarchSurrBasedLocalMinimizer::multilevel_multifidelity_opt() has not yet "
        << "been implemented." << std::endl;
   abort_handler(-1);
 }
 
-void MLMFOptimizer::multifidelity_opt()
+void HierarchSurrBasedLocalMinimizer::multifidelity_opt()
 {
   // reset convergence controls in case of multiple executions
   if (convergenceFlag)
@@ -408,15 +408,15 @@ void MLMFOptimizer::multifidelity_opt()
 }
 
 
-void MLMFOptimizer::multigrid_opt()
+void HierarchSurrBasedLocalMinimizer::multigrid_opt()
 {
-  Cerr << "MLMFOptimizer::multigrid_opt() has not yet "
+  Cerr << "HierarchSurrBasedLocalMinimizer::multigrid_opt() has not yet "
        << "been implemented." << std::endl;
   abort_handler(-1);
 }
 
 
-void MLMFOptimizer::
+void HierarchSurrBasedLocalMinimizer::
 tr_bounds(std::vector<RealVector>& tr_lower_bnds, std::vector<RealVector>& tr_upper_bnds)
 {
   // Compute the trust region bounds
@@ -491,7 +491,8 @@ tr_bounds(std::vector<RealVector>& tr_lower_bnds, std::vector<RealVector>& tr_up
 }
 
 
-void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
+void HierarchSurrBasedLocalMinimizer::
+find_center(size_t lf_model_form, size_t hf_model_form)
 {
   bool found = false;
 
@@ -558,7 +559,7 @@ void MLMFOptimizer::find_center(size_t lf_model_form, size_t hf_model_form)
     active bound constraints (removing any gradient component directed
     into an active bound), and signals convergence if the 2-norm of
     this projected gradient is less than convergenceTol. */
-void MLMFOptimizer::
+void HierarchSurrBasedLocalMinimizer::
 hard_convergence_check(const Response& response_truth,
                        const RealVector& c_vars,
                        const RealVector& lower_bnds,
@@ -597,8 +598,7 @@ hard_convergence_check(const Response& response_truth,
     failures, min trust region size, etc.) to assess whether the
     convergence rate has decreased to a point where the process should
     be terminated (diminishing returns). */
-void MLMFOptimizer::
-tr_ratio_check()
+void HierarchSurrBasedLocalMinimizer::tr_ratio_check()
 {
   // This is hard-coded for only two models:
   size_t lf_model_form = 0; // Lowest
