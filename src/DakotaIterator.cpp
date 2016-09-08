@@ -453,9 +453,11 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case HIERARCH_SURROGATE_BASED_LOCAL:
     return new HierarchSurrBasedLocalMinimizer(problem_db, model);  break;
   case SURROGATE_BASED_LOCAL:
-    return (model.surrogate_type() == "hierarchical") ?
-      new HierarchSurrBasedLocalMinimizer(problem_db, model) :
-      new DataFitSurrBasedLocalMinimizer(problem_db, model); break;
+    if (model.surrogate_type() == "hierarchical")
+      return new HierarchSurrBasedLocalMinimizer(problem_db, model);
+    else
+      return new DataFitSurrBasedLocalMinimizer(problem_db, model);
+    break;
   case SURROGATE_BASED_GLOBAL:
     return new SurrBasedGlobalMinimizer(problem_db, model); break;
   case EFFICIENT_GLOBAL: return new EffGlobalMinimizer(problem_db, model);break;
