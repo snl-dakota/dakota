@@ -448,13 +448,14 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDLHSSampling(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     return new NonDMultilevelSampling(problem_db, model); break;
-  //case MULTILEVEL_MULTIFIDELITY_OPT:
-  //  return new HierarchSurrBasedLocalMinimizer(problem_db, model);  break;
-  case SURROGATE_BASED_LOCAL:
-    if (type == "") // TO DO
-      return new HierarchSurrBasedLocalMinimizer(problem_db, model);
-    else
+  case DATA_FIT_SURROGATE_BASED_LOCAL:
     return new DataFitSurrBasedLocalMinimizer(problem_db, model);  break;
+  case HIERARCH_SURROGATE_BASED_LOCAL:
+    return new HierarchSurrBasedLocalMinimizer(problem_db, model);  break;
+  case SURROGATE_BASED_LOCAL:
+    return (model.surrogate_type() == "hierarchical") ?
+      new HierarchSurrBasedLocalMinimizer(problem_db, model) :
+      new DataFitSurrBasedLocalMinimizer(problem_db, model); break;
   case SURROGATE_BASED_GLOBAL:
     return new SurrBasedGlobalMinimizer(problem_db, model); break;
   case EFFICIENT_GLOBAL: return new EffGlobalMinimizer(problem_db, model);break;
@@ -571,9 +572,14 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
   // These instantiations will NOT recurse on the Iterator(model)
   // constructor due to the use of BaseConstructor.
 
-  //if (method_string == "surrogate_based_local") {
-  //  return (true) ? new DataFitSurrBasedLocalMinimizer(model) :
-  //                  new HierarchSurrBasedLocalMinimizer(model);
+  //if (method_string == "data_fit_surrogate_based_local") {
+  //  return new DataFitSurrBasedLocalMinimizer(model);
+  //else if (method_string == "hierarch_surrogate_based_local") {
+  //  return new HierarchSurrBasedLocalMinimizer(model);
+  //else if (method_string == "surrogate_based_local") {
+  //  return (model.surrogate_type() == "hierarchical) ?
+  //    new HierarchSurrBasedLocalMinimizer(model) :
+  //    new DataFitSurrBasedLocalMinimizer(model);
   //else if (method_string == "surrogate_based_global")
   //  return new SurrBasedGlobalMinimizer(model);
   //else if (method_string == "efficient_global")
@@ -800,8 +806,11 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case RANDOM_SAMPLING:         return String("random_sampling"); break;
   case MULTILEVEL_SAMPLING:     return String("multilevel_sampling"); break;
   case LIST_SAMPLING:           return String("list_sampling"); break;
-  case MULTILEVEL_MULTIFIDELITY_OPT: return String("multilevel_multifidelity_opt"); break;
   case SURROGATE_BASED_LOCAL:   return String("surrogate_based_local"); break;
+  case DATA_FIT_SURROGATE_BASED_LOCAL:
+    return String("data_fit_surrogate_based_local"); break;
+  case HIERARCH_SURROGATE_BASED_LOCAL:
+    return String("hierarch_surrogate_based_local"); break;
   case SURROGATE_BASED_GLOBAL:  return String("surrogate_based_global"); break;
   case EFFICIENT_GLOBAL:        return String("efficient_global"); break;
   case NONLINEAR_CG:            return String("nonlinear_cg"); break;
@@ -887,8 +896,11 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "random_sampling")       return RANDOM_SAMPLING;
   else if (method_name == "multilevel_sampling")   return MULTILEVEL_SAMPLING;
   else if (method_name == "list_sampling")         return LIST_SAMPLING;
-  else if (method_name == "multilevel_multifidelity_opt") return MULTILEVEL_MULTIFIDELITY_OPT;
   else if (method_name == "surrogate_based_local") return SURROGATE_BASED_LOCAL;
+  else if (method_name == "data_fit_surrogate_based_local")
+    return DATA_FIT_SURROGATE_BASED_LOCAL;
+  else if (method_name == "hierarch_surrogate_based_local")
+    return HIERARCH_SURROGATE_BASED_LOCAL;
   else if (method_name == "surrogate_based_global")
     return SURROGATE_BASED_GLOBAL;
   else if (method_name == "efficient_global") return EFFICIENT_GLOBAL;

@@ -116,35 +116,14 @@ protected:
   /// of each trust region
   short correctionType;
 
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  bool newCenterFlag;
-
-  /// Trust region lower bounds
-  RealVector trLowerBnds;
-  /// Trust region Upper bounds
-  RealVector trUpperBnds;
-
   /// Global lower bounds
   RealVector globalLowerBnds;
   /// Global Upper bounds
   RealVector globalUpperBnds;
 
   ActiveSet valSet;
-
   ActiveSet fullApproxSet;
-
   ActiveSet fullTruthSet;
-
-  Variables varsStar;
-
-  Variables varsCenter;          ///< variables at the trust region center
-
-  Response responseCenterApprox; ///< approx response at trust region center
-  Response responseStarApprox;   ///< approx response at SBLM cycle minimum
-
-  IntResponsePair responseCenterTruth;///< truth response at trust region center
-  IntResponsePair responseStarTruth;  ///< truth response at SBLM cycle minimum
 };
 
 } // namespace Dakota

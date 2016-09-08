@@ -2224,7 +2224,7 @@ static KeyWord
 		{"multi_start",8,4,4,1,kw_241,0.,0.,0,N_mdm(utype,methodName_MULTI_START)},
 		{"multidim_parameter_study",8,1,4,1,kw_242,0.,0.,0,N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)},
 		{"multilevel_mc",0,7,4,1,kw_246,0.,0.,2,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
-		{"multilevel_multifidelity_opt",8,9,4,1,kw_247,0.,0.,0,N_mdm(utype,methodName_MULTILEVEL_MULTIFIDELITY_OPT)},
+		{"multilevel_multifidelity_opt",8,9,4,1,kw_247,0.,0.,0,N_mdm(utype,methodName_HIERARCH_SURROGATE_BASED_LOCAL)},
 		{"multilevel_sampling",8,7,4,1,kw_246,0.,0.,0,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
 		{"ncsu_direct",8,8,4,1,kw_248,0.,0.,0,N_mdm(utype,methodName_NCSU_DIRECT)},
 		{"nl2sol",8,14,4,1,kw_249,0.,0.,0,N_mdm(utype,methodName_NL2SOL)},
@@ -2264,7 +2264,7 @@ static KeyWord
 		{"stanford",8,2,4,1,kw_334},
 		{"stoch_collocation",8,26,4,1,kw_312,0.,0.,0,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"surrogate_based_global",8,8,4,1,kw_335,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)},
-		{"surrogate_based_local",8,16,4,1,kw_341,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)},
+		{"surrogate_based_local",8,16,4,1,kw_341,0.,0.,0,N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)},
 		{"vector_parameter_study",8,3,4,1,kw_342,0.,0.,0,N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}
 		},
 	kw_344[1] = {

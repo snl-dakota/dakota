@@ -128,6 +128,24 @@ protected:
   //- Heading: Data members
   //
 
+  /// flags the acceptance of a candidate point and the existence of
+  /// a new trust region center
+  bool newCenterFlag;
+
+  /// Trust region lower bounds
+  RealVector trLowerBnds;
+  /// Trust region Upper bounds
+  RealVector trUpperBnds;
+
+  Variables varsStar;   ///< variables at the new solution iterate
+  Variables varsCenter; ///< variables at the trust region center
+
+  Response responseCenterApprox; ///< approx response at the trust region center
+  Response responseStarApprox;  ///< approx response at the new solution iterate
+
+  IntResponsePair responseCenterTruth;///< truth response at trust region center
+  IntResponsePair responseStarTruth; ///< truth response at new solution iterate
+
   /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
   /// or AUGMENTED_LAGRANGIAN_OBJ
   short approxSubProbObj;
