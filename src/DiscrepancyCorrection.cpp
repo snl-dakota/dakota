@@ -25,7 +25,8 @@ static const char rcsId[]="@(#) $Id: DiscrepancyCorrection.cpp 7024 2010-10-16 0
 
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
+
+extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
 initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,

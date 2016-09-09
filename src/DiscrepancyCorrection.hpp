@@ -216,7 +216,8 @@ private:
 
 inline DiscrepancyCorrection::DiscrepancyCorrection():
   initializedFlag(false), correctionType(NO_CORRECTION), 
-  correctionOrder(0), dataOrder(1), correctionComputed(false)
+  correctionOrder(0), dataOrder(1), correctionComputed(false),
+  computeAdditive(false), computeMultiplicative(false)
 { }
 
 
