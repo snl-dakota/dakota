@@ -523,15 +523,23 @@ apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 inline Real NonDMultilevelSampling::
 aggregate_variance(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 {
-  Real agg_var_l = 0., mu_Y; size_t Nlq;
+  Real agg_var_l = 0., mu_Y, var_Y; size_t Nlq;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "[ ";
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     Nlq  = N_l[qoi];
     mu_Y = sum_Y[qoi] / Nlq;
     // Note: precision loss in variance is difficult to avoid without
     // storing full sample history; must accumulate Y^2 across iterations
     // instead of (Y-mean)^2 since mean is updated on each iteration.
-    agg_var_l += (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+    var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+    agg_var_l += var_Y;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << var_Y << ' ';
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "]\n";
+
   return agg_var_l;
 }
 

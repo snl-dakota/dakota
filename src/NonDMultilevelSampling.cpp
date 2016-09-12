@@ -268,6 +268,8 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 	raw_N_l[lev] += numSamples;
 
 	// compute estimator variance from current sample accumulation:
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "variance of Y[" << lev << "]: ";
 	agg_var_l = aggregate_variance(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
       }
 
@@ -560,6 +562,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  }
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
 	    = aggregate_variance(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -816,6 +820,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  }
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
 	    = aggregate_variance(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -1900,6 +1906,9 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
       ++num_avg;
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "variance of HF Q:\n" << var_H;
+
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
     avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -1931,6 +1940,11 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
       ++num_avg;
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "variance of HF Q[" << lev << "]:\n";
+    write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_H);
+  }
+
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
     avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -1976,6 +1990,11 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 	++num_avg;
       }
     }
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "variance of HF Y[" << lev << "]:\n";
+      write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_YHl);
+    }
+
     if (num_avg) avg_eval_ratio /= num_avg;
     else // should not happen, but provide a reasonable upper bound
       avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -2262,6 +2281,15 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
     std_mom(1,qoi) = stdev;                  // std deviation
     std_mom(2,qoi) = cm3 / (cm2 * stdev);    // skewness
     std_mom(3,qoi) = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout <<  "raw mom 1 = " << raw_mom(qoi,0) << " cent mom 1 = " << m1
+	   << " std mom 1 = " << std_mom(0,qoi) << '\n'
+	   <<  "raw mom 2 = " << raw_mom(qoi,1) << " cent mom 2 = " << cm2
+	   << " std mom 2 = " << std_mom(1,qoi) << '\n'
+	   <<  "raw mom 3 = " << raw_mom(qoi,2) << " cent mom 3 = " << cm3
+	   << " std mom 3 = " << std_mom(2,qoi) << '\n'
+	   <<  "raw mom 4 = " << raw_mom(qoi,3) << " cent mom 4 = " << cm4
+	   << " std mom 4 = " << std_mom(3,qoi) << "\n\n";
   }
 }
 
