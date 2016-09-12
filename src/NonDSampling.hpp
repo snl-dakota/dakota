@@ -101,8 +101,19 @@ public:
 			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
-  /// Static for now so I can test without instantiating a NonDSampling object - RWH
+  /// Static so I can test without instantiating a NonDSampling object - RWH
   static int compute_wilks_sample_size(unsigned short order, Real alpha, Real beta, bool twosided = false);
+
+  /// Helper function - calculates the Wilks residual 
+  static Real compute_wilks_residual(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided);
+
+  /// calculates the alpha paramter given number of samples using the Wilks formula
+  /// Static so I can test without instantiating a NonDSampling object - RWH
+  static Real compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided = false);
+
+  /// calculates the beta paramter given number of samples using the Wilks formula
+  /// Static so I can test without instantiating a NonDSampling object - RWH
+  static Real compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided = false);
 
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until

@@ -1218,6 +1218,96 @@ int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha,
 }
 
 
+Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided)
+{
+  Real rorder = (Real) order;
+
+  if( !twosided && (order==1) )
+    return std::log(1.0-beta)/std::log(alpha) - (Real) nsamples;
+
+  if( twosided )
+    return  boost::math::ibeta<Real>((Real)nsamples-2.0*rorder+1.0, 2.0*rorder, alpha) - (1.0-beta);
+  else
+    return boost::math::ibeta<Real>(rorder, (Real)nsamples-rorder+1.0, 1-alpha) - beta;
+}
+
+
+Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided)
+{
+  Real rorder = (Real) order;
+
+  Real alpha_l = 0.001; // initial lower bound
+  Real alpha_u = 0.999; // initial upper bound
+  Real resid_l = compute_wilks_residual(order, nsamples, alpha_l, beta, twosided);
+  Real resid_u = compute_wilks_residual(order, nsamples, alpha_u, beta, twosided);
+  if( resid_l*resid_u > 0 )
+    throw std::runtime_error("Cannot obtain valid bounds for wilks alpha bisection.");
+
+  //Cout << "\nalpha = " << alpha << ", resid = " << resid << std::endl;
+  Real tol = 1.e-10;
+  //Real eps = 1.e-8;
+  Real alpha = alpha_l;
+  Real resid = resid_l;
+
+  while( std::fabs(resid) > tol )
+  {
+    // Newton approach is too fragile - RWH
+    //Real resid_plus  = compute_wilks_residual(order, nsamples, alpha+eps, beta, twosided);
+    //Real resid_minus = compute_wilks_residual(order, nsamples, alpha-eps, beta, twosided);
+    //alpha -= resid/( (resid_plus-resid_minus)/(2.0*eps) );
+    alpha = 0.5*(alpha_l+alpha_u);
+    resid = compute_wilks_residual(order, nsamples, alpha, beta, twosided);
+    if( resid*resid_u > 0 ) {
+      alpha_u = alpha;
+      resid_u = resid;
+    }
+    else {
+      alpha_l = alpha;
+      resid_l = resid;
+    }
+    //Cout << "alpha = " << alpha << ", resid = " << resid << std::endl;
+  }
+  //Cout << "Converged: alpha = " << alpha << ", resid = " << resid << std::endl;
+
+  return alpha;
+}
+
+
+Real NonDSampling::compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided)
+{
+  Real rorder = (Real) order;
+
+  Real beta_l = 0.001; // initial lower bound
+  Real beta_u = 0.999; // initial upper bound
+  Real resid_l = compute_wilks_residual(order, nsamples, alpha, beta_l, twosided);
+  Real resid_u = compute_wilks_residual(order, nsamples, alpha, beta_u, twosided);
+  if( resid_l*resid_u > 0 )
+    throw std::runtime_error("Cannot obtain valid bounds for wilks beta bisection.");
+
+  Real tol = 1.e-10;
+  Real beta = beta_l;
+  Real resid = resid_l;
+
+  while( std::fabs(resid) > tol )
+  {
+    beta = 0.5*(beta_l+beta_u);
+    resid = compute_wilks_residual(order, nsamples, alpha, beta, twosided);
+    if( resid*resid_u > 0 ) {
+      beta_u = beta;
+      resid_u = resid;
+    }
+    else {
+      beta_l = beta;
+      resid_l = resid;
+    }
+    //Cout << "beta = " << beta << ", resid = " << resid << std::endl;
+  }
+  //Cout << "Converged: beta = " << beta << ", resid = " << resid << std::endl;
+
+  return beta;
+}
+
+
 /** Computes CDF/CCDF based on sample binning.  A PDF is inferred from a
     CDF/CCDF within compute_densities() after level computation. */
 void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
