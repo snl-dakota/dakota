@@ -26,6 +26,8 @@
 
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
+#include "boost/random.hpp"
+#include "boost/generator_iterator.hpp"
 #include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
 // #ifdef DLL_EXPORTS
@@ -88,6 +90,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       abort_handler(PARSE_ERROR);
     }
     hifiModel = iteratedModel.truth_model();
+    hifiModel.init_serial();
   }
 
   // assign default proposalCovarType
@@ -562,27 +565,40 @@ void NonDBayesCalibration::calibrate_to_hifi()
       Cout << "Exp Data  i " << i << " value = " << exp_data.all_data(i);
 
   // need to initialize this from user input eventually
-  size_t num_candidates = 100, num_mcmc_samples = 1000;
-  //RealMatrix design_matrix;
+  size_t num_candidates = 12; //, num_mcmc_samples = 1000;
+  //size_t num_candidates = 9; //, num_mcmc_samples = 1000;
+  RealMatrix design_matrix;
   NonDLHSSampling* lhs_sampler_rep2;
+  int randomSeed1 = 6543;
+  //int randomSeed1 = generate_system_seed();
   lhs_sampler_rep2 =
-    new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed,
+    new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed1,
 			rng, vary_pattern, ACTIVE_UNIFORM);
   Iterator lhs_iterator2;
   lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
   lhs_iterator2.pre_run();
-  const RealMatrix design_matrix = lhs_iterator2.all_samples();
+  //const RealMatrix design_matrix = lhs_iterator2.all_samples();
+  design_matrix = lhs_iterator2.all_samples();
  
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Design Matrix   " << design_matrix << '\n';
+  for (size_t i=0; i < num_candidates; i++){
+    const RealVector& col = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
+    hifiModel.continuous_variables(col);
+    hifiModel.evaluate();
+  }
  
   bool stop_metric = false;
+  size_t optimal_ind;
+  //RealVector optimal_config;
   double max_MI;
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = 5;
+  int max_hifi = 12;
   int num_hifi = 0;
+
+  std::ofstream kamstream("kam.txt");
 
   while (!stop_metric) {
 
@@ -604,19 +620,50 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "hifi inactive = " << hifiModel.inactive_continuous_variables() << '\n';
     Cout << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
     Cout << "num params = " << numContinuousVars << '\n';
+    Cout << "num hyper params = " << numHyperparams << '\n';
 
     // Run the underlying calibration solver (MCMC)
     calibrate();
-    
 
     // After QUESO is run, get the posterior values of the samples; go
     // through all the designs and pick the one with maximum mutual
     // information
 
+      // Filter posterior, aim for 5000 samples
+    int num_mcmc_samples = acceptanceChain.numCols();
+    int burn_in_post = int(0.2*num_mcmc_samples);
+    int burned_in_post = num_mcmc_samples - burn_in_post;
+    int num_skip;
+    int num_filtered;
+    int ind = 0;
+    int it_cntr = 0;
+    if (num_mcmc_samples < 18750){
+      num_skip = 3;
+    }
+    else{
+      num_skip = int(burned_in_post/5000);
+    }
+    num_filtered = int(burned_in_post/num_skip);
+    RealVector lofi_params(numContinuousVars);
+    RealMatrix mi_chain(acceptanceChain.numRows(), num_filtered);
+    for (int j=burn_in_post; j<num_mcmc_samples; j++) {
+      ++it_cntr;
+      if (it_cntr % num_skip == 0){
+        lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
+        Teuchos::setCol(lofi_params, ind, mi_chain);
+        ind++;
+      }
+    }
+
     // BMA: You can now use acceptanceChain/acceptedFnVals, though
     // need to be careful about what subset for this chain run (may
     // need indices to track)
     for (size_t i=0; i<num_candidates; i++) {
+
+      RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
+      mcmcModel.inactive_continuous_variables(xi_i);
+      kamstream << "design " << i << '\n';
+      kamstream << "xi_i = " << xi_i << '\n';
 
       // BMA: The low fidelity model can now be referred to as
       // mcmcModel (it may be wrapped in a surrogate, but I think
@@ -625,95 +672,115 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // Set the experimental configuration on the low-fi model:
       // Model::inactive_variables(candidate_exp_config[i], residualModel)
 
-      // Filter posterior, aim for 5000 samples
-      int burn_in_post = int(0.2*num_mcmc_samples);
-      int burned_in_post = num_mcmc_samples - burn_in_post;
-      int ind = 0;
-      int it_cntr = 0;
-      int num_skip;
-      int num_filtered;
-      if (num_mcmc_samples < 18750){
-	num_skip = 3;
-	num_filtered = int(burned_in_post/num_skip);
-      }
-      else{
-	num_skip = int(burned_in_post/5000);
-	num_filtered = int(burned_in_post/num_skip);
-      }
-
       // Declare a matrix to store the low fidelity responses
       // KAM: check num_theta = numContinuousVars
       //      and numFunctions corresponds to lofi model
-      RealMatrix lofi_resp_mat(numFunctions, num_mcmc_samples);
+      RealMatrix lofi_resp_mat(numFunctions, num_filtered);
       RealVector lofi_resp_vec(numFunctions);
-      RealVector lofi_params(numContinuousVars);
       RealVector col_vec(numContinuousVars + numFunctions);
-      RealMatrix Xmatrix(numContinuousVars + numFunctions, num_mcmc_samples);
-      //for (int j=0; j<num_mcmc_samples; j++) {
-      for (int j=burn_in_post; j<num_mcmc_samples; j++) {
-	++it_cntr;
-	if (it_cntr % num_skip == 0){
-          // for each posterior sample, get the param values, and run the model
-	  // KAM: Double check whether acceptanceChain is overwritten or appended
-          lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
+      RealMatrix Xmatrix(numContinuousVars + numFunctions, num_filtered);
+      for (int j=0; j<num_filtered; j++) {
+        // for each posterior sample, get the param values, and run the model
+	// KAM: Double check whether acceptanceChain is overwritten or appended
+        lofi_params = Teuchos::getCol(Teuchos::View, mi_chain, j);
+    	mcmcModel.continuous_variables(lofi_params);
+    	mcmcModel.evaluate();
 
-	  // BMA (pseudocode)
-	  /* 
-	     mcmcModel.continuous_variables(low_fid_model_vars);
-	     mcmcModel.evaluate();
-	  */
-	  lofi_resp_vec = mcmcModel.current_response().function_values();
-	  Teuchos::setCol(lofi_resp_vec, ind, lofi_resp_mat);
-          // now concatenate posterior_theta and lofi_resp_mat into Xmatrix
-          for (size_t k = 0; k < numContinuousVars; k++){
-            col_vec[k] = lofi_params[k];
-	    // KAM: is it a safe assumption that the params being calibrated
-	    // will be first?
-          }
-          for (size_t k = 0; k < numFunctions; k ++){
-            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
-          }
-          Teuchos::setCol(col_vec, ind, Xmatrix);
-	  ind++;
+	lofi_resp_vec = mcmcModel.current_response().function_values();
+ 	Teuchos::setCol(lofi_resp_vec, j, lofi_resp_mat);
+        // now concatenate posterior_theta and lofi_resp_mat into Xmatrix
+        for (size_t k = 0; k < numContinuousVars; k++){
+          col_vec[k] = lofi_params[k];
         }
+        for (size_t k = 0; k < numFunctions; k ++){
+          col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+        }
+        Teuchos::setCol(col_vec, j, Xmatrix);
       }
+      //kamstream << "lofi = " << mcmcModel.current_variables() << '\n';
+      //kamstream << "lofi cont = " << mcmcModel.current_variables().continuous_variables_view() << '\n';
+      //kamstream << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
       // calculate the mutual information b/w post theta and lofi responses
       Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
+      //Real MI = knn_mutual_info(Xmatrix, 3, 1);
+      kamstream << "Xmatrix = " << Xmatrix << '\n';
+      kamstream << "MI = " << MI << '\n';
 
       // Now track max MI:
       if (i == 0){
 	max_MI = MI;
-	prev_MI = MI;
+	optimal_ind = i;
       }
       else {
         if ( MI > max_MI) {
           max_MI = MI;
-          // design_new = design_i;
+	  optimal_ind = i;
         }
-	MIdiff = std::abs(prev_MI - MI);
-	MIrel = MIdiff/prev_MI;
-	if (MIrel < 0.05)
-	  stop_metric = true;
-	prev_MI = MI;
       }
     } // end for over the number of candidates
 
-    // evaluate hi fidelity iteratedModel at design_i;
-    // Add this data to the expData for the next iteteration of likelihood
-    // print design_i and corresponding hi-fi response to data file?
-
-    // BMA (pseudocode); TODO add multiple points up to concurrency
-    /*
-      Model::active_variables(candidate_best, hifiModel)
-      hifiModel.evaluate();
-      expData.add_datapoint(hifiModel.current_response())
-      num_hifi++;
-    */
-
-    // check stopping metric (may just start with doing this 5 times?
-    //if(num_hifi == maxHifiRuns)
-    //  stop_metric = true;
-    stop_metric = true;
+    // EVALUATE STOPPING CRITERIA
+    // check relative MI change
+    if (num_hifi == 0){
+      prev_MI = max_MI;
+    }
+    else {
+      MIdiff = prev_MI - max_MI;
+      MIrel = fabs(MIdiff/prev_MI);
+      if (MIrel < 0.05)
+      {
+        stop_metric = true;
+        Cout << "Experimental Design Stop Criteria met: "
+	     << "relative MI is sufficiently small " << '\n';
+      }
+      else
+        prev_MI = max_MI;
+    }
+    // check remaining number of candidates
+    if (num_candidates == 0)
+    {
+      stop_metric = true;
+      Cout << "Experimental Design Stop Criteria met: "
+	   << "design candidates have been exhausted " << '\n';
+    }
+    // check number of hifi evaluations
+    if (num_hifi == max_hifi) 
+    {
+      stop_metric = true;
+      Cout << "Experimental Design Stop Criteria met: "
+	   << "maximum number of hifi evaluations has been reached " << '\n';
+    }
+    else{
+      // evaluate hi fidelity iteratedModel at optimal_config;
+      // Add this data to the expData for the next iteteration of likelihood
+      // print design_i and corresponding hi-fi response to data file?
+      // BMA (pseudocode); TODO add multiple points up to concurrency
+      /*
+        Model::active_variables(candidate_best, hifiModel)
+        hifiModel.evaluate();
+        expData.add_datapoint(hifiModel.current_response())
+        num_hifi++;
+      */
+    
+        RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, int(optimal_ind));
+        kamstream << "optimal config = " << optimal_config << '\n';
+        hifiModel.continuous_variables(optimal_config);
+        hifiModel.evaluate();
+        expData.add_data(optimal_config, hifiModel.current_response().copy());
+        num_hifi++;
+        // update list of candidates
+        remove_column(design_matrix, optimal_ind);
+        --num_candidates;
+    
+    }
+    kamstream << "hifi = " << hifiModel.current_variables() << '\n';
+    kamstream << "new data point = " << hifiModel.current_response() << '\n';
+    kamstream << "optimal design = " << optimal_ind << '\n';
+    //kamstream << "max_MI = " << max_MI << '\n';
+    Cout << '\n' << "max MI = " << max_MI << '\n';
+    Cout << "optimal design = " << optimal_ind << '\n';
+    Cout << "Exp Data value = " << hifiModel.current_response() << '\n';
+    //stop_metric = true;
   } // end while loop
 
 }
@@ -1694,8 +1761,9 @@ void NonDBayesCalibration::mutual_info_buildX()
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     int dimY)
 {
-  //std::ofstream test_stream("kam.txt");
+  std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
+  //Cout << "Xmatrix = " << Xmatrix << '\n';
 
   int num_samples = Xmatrix.numCols();
   int dim = dimX + dimY;
@@ -1711,6 +1779,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     }
   }
 
+  /*
   // Normalize data
   ANNpoint meanXY, stdXY;
   meanXY = annAllocPt(dim); //means
@@ -1736,60 +1805,83 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
       dataXY[i][j] = ( dataXY[i][j] - meanXY[j] )/stdXY[j];
     }
   }
+  */
 
   // Get knn-distances for Xmatrix
   RealVector XYdistances(num_samples);
   IntVector k_vec(num_samples);
   int k = 6;
-  k_vec.putScalar(k);
+  k_vec.putScalar(k); // for self distances, need k+1
   double eps = 0.0;
   ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
       	   k_vec, eps);
+  //Cout << "distances = " << XYdistances << '\n';
+  //Cout << "k_vec = " << k_vec << '\n';
   
   // Build marginals
   ANNpointArray dataX, dataY;
   dataX = annAllocPts(num_samples, dimX);
   dataY = annAllocPts(num_samples, dimY);
+  RealMatrix chainX(dimX, num_samples);
+  RealMatrix chainY(dimY, num_samples);
   for(int i = 0; i < num_samples; i++){
+    col = Teuchos::getCol(Teuchos::View, Xmatrix, i);
+    //Cout << "col = " << col << '\n';
     for(int j = 0; j < dimX; j++){
-      dataX[i][j] = dataXY[i][j];
+      //dataX[i][j] = dataXY[i][j];
+      //Cout << "col " << j << " = " << col[j] << '\n';
+      chainX[i][j] = col[j];
+      dataX[i][j] = col[j];
     }
     for(int j = 0; j < dimY; j++){
-      dataY[i][j] = dataXY[i][dimX+j];
+      //dataY[i][j] = dataXY[i][dimX+j];
+      chainY[i][j] = col[dimX+j];
+      dataY[i][j] = col[dimX+j];
     }
   }
+  //Cout << "chainX = " << chainX;
   ANNkd_tree* kdTreeX;
   ANNkd_tree* kdTreeY;
   kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
   kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
+
   double marg_sum = 0.0;
   for(int i = 0; i < num_samples; i++){
     int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
 				    NULL, eps);
     int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
 				    NULL, eps);
-    double psiX = boost::math::digamma(n_x+1);
-    double psiY = boost::math::digamma(n_y+1);
+    double psiX = boost::math::digamma(n_x);
+    double psiY = boost::math::digamma(n_y);
+    //double psiX = boost::math::digamma(n_x+1);
+    //double psiY = boost::math::digamma(n_y+1);
     marg_sum += psiX + psiY;
-    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
-    //test_stream << "psiX = " << psiX << '\n';
-    //test_stream << "psiY = " << psiY << '\n';
+    test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    test_stream << "psiX = " << psiX << '\n';
+    test_stream << "psiY = " << psiY << '\n';
+    //Cout << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //Cout << "psiX = " << psiX << '\n';
+    //Cout << "psiY = " << psiY << '\n';
   }
   double psik = boost::math::digamma(k);
   double psiN = boost::math::digamma(num_samples);
   double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
-  //test_stream << "psi_k = " << psik << '\n';
+  test_stream << "psi_k = " << psik << '\n';
   //test_stream << "marg_sum = " << marg_sum << '\n';
-  //test_stream << "psiN = " << psiN << '\n';
-  //test_stream << "MI_est = " << MI_est << '\n';
+  test_stream << "psiN = " << psiN << '\n';
+  test_stream << "MI_est = " << MI_est << '\n';
+  //Cout << "psi_k = " << psik << '\n';
+  //Cout << "marg_sum = " << marg_sum << '\n';
+  //Cout << "marg_ave = " << marg_sum/double(num_samples) << '\n';
+  //Cout << "psiN = " << psiN << '\n';
   //Cout << "MI_est = " << MI_est << '\n';
 
   // Dealloc memory
-  delete kdTreeX;
-  delete kdTreeY;
+  //delete kdTreeX;
+  //delete kdTreeY;
   annDeallocPts(dataX);
   annDeallocPts(dataY);
-
+  annDeallocPts(dataXY);
 
   // Compare to dkl
   /*
@@ -1803,11 +1895,11 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
 
 void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
      const ANNpointArray matrix2, RealVector& distances, int NX, int NY, 
-     int dim, IntVector& k_vec, double eps)
+     int dim2, IntVector& k_vec, double eps)
 {
 
   ANNkd_tree* kdTree;
-  kdTree = new ANNkd_tree( matrix2, NY, dim );
+  kdTree = new ANNkd_tree( matrix2, NY, dim2 );
   for (unsigned int i = 0; i < NX; ++i){
     int k_i = k_vec[i] ;
     ANNdistArray knn_dist = new ANNdist[k_i+1];
