@@ -308,7 +308,7 @@ protected:
   void prior_sample_matrix(RealMatrix& prior_dist_samples);
   void mutual_info_buildX();
   static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
-     		RealVector& distances, int NX, int NY, int dim, IntVector& k, 
+     		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		
