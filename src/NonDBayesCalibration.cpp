@@ -318,11 +318,11 @@ void NonDBayesCalibration::init_hyper_parameters()
   if (obsErrorMultiplierMode == CALIBRATE_ONE)
     numHyperparams = 1;
   else if (obsErrorMultiplierMode == CALIBRATE_PER_EXPER)
-    numHyperparams = numExperiments;
+    numHyperparams = expData.num_experiments();
   else if (obsErrorMultiplierMode == CALIBRATE_PER_RESP)
     numHyperparams = num_resp_groups;
   else if (obsErrorMultiplierMode == CALIBRATE_BOTH)
-    numHyperparams = numExperiments * num_resp_groups;
+    numHyperparams = expData.num_experiments() * num_resp_groups;
 
   // Setup priors distributions on hyper-parameters
   if ( (invGammaAlphas.length()  > 1 &&
@@ -609,7 +609,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-                              obsErrorMultiplierMode, mcmcDerivOrder), false);
+			      obsErrorMultiplierMode, mcmcDerivOrder), false);
+
     construct_map_optimizer();
 
     Cout << "hifi = " << hifiModel.current_variables() << '\n';
@@ -660,7 +661,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     for (size_t i=0; i<num_candidates; i++) {
 
       RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
-      mcmcModel.inactive_continuous_variables(xi_i);
+      Model::inactive_variables(xi_i, mcmcModel);
       kamstream << "design " << i << '\n';
       kamstream << "xi_i = " << xi_i << '\n';
 
@@ -669,7 +670,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // that's what we want if the user said "emulator")
 
       // Set the experimental configuration on the low-fi model:
-      // mcmcModel.inactive_continuous_variables(candidate_exp_config[i]);
+      // Model::inactive_variables(candidate_exp_config[i], residualModel)
 
       // Declare a matrix to store the low fidelity responses
       // KAM: check num_theta = numContinuousVars
@@ -717,7 +718,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
     } // end for over the number of candidates
-    
+
     // EVALUATE STOPPING CRITERIA
     // check relative MI change
     if (num_hifi == 0){
@@ -753,10 +754,18 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // evaluate hi fidelity iteratedModel at optimal_config;
       // Add this data to the expData for the next iteteration of likelihood
       // print design_i and corresponding hi-fi response to data file?
-      // BMA (pseudocode)
+      // BMA (pseudocode); TODO add multiple points up to concurrency
+      /*
+        Model::active_variables(candidate_best, hifiModel)
+        hifiModel.evaluate();
+        expData.add_datapoint(hifiModel.current_response())
+        num_hifi++;
+      */
+    
         RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, int(optimal_ind));
         kamstream << "optimal config = " << optimal_config << '\n';
-        hifiModel.continuous_variables(optimal_config);
+        //hifiModel.continuous_variables(optimal_config);
+	Model::active_variables(optimal_config, hifiModel);
         hifiModel.evaluate();
         expData.add_data(optimal_config, hifiModel.current_response().copy());
         num_hifi++;

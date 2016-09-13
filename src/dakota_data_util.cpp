@@ -13,7 +13,7 @@
 //- Version: $Id: dakota_data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #include "dakota_data_util.hpp"
-
+#include <boost/math/special_functions/round.hpp>
 
 namespace Dakota {
 
@@ -209,5 +209,16 @@ void remove_column(RealMatrix& matrix, int index)
   matrix.reshape(matrix.numRows(), num_cols-1);
   matrix = matrix_new;
 }
+
+
+void iround(const RealVector& input_vec, IntVector& rounded_vec)
+{
+  int len = input_vec.length();
+  if (rounded_vec.length() != len)
+    rounded_vec.resize(len);
+  for (int i=0; i<len; ++i)
+    rounded_vec[i] = boost::math::iround(input_vec[i]);
+}
+
 
 } // namespace Dakota
