@@ -661,7 +661,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     for (size_t i=0; i<num_candidates; i++) {
 
       RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
-      mcmcModel.inactive_continuous_variables(xi_i);
+      Model::inactive_variables(xi_i, mcmcModel);
       kamstream << "design " << i << '\n';
       kamstream << "xi_i = " << xi_i << '\n';
 
@@ -764,7 +764,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
         RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, int(optimal_ind));
         kamstream << "optimal config = " << optimal_config << '\n';
-        hifiModel.continuous_variables(optimal_config);
+        //hifiModel.continuous_variables(optimal_config);
+	Model::active_variables(optimal_config, hifiModel);
         hifiModel.evaluate();
         expData.add_data(optimal_config, hifiModel.current_response().copy());
         num_hifi++;
