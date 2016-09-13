@@ -146,16 +146,18 @@ protected:
   IntResponsePair responseCenterTruth;///< truth response at trust region center
   IntResponsePair responseStarTruth; ///< truth response at new solution iterate
 
+  /// the trust region factor is used to compute the total size of the trust
+  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
+  /// actual size of the trust region will be 10% of the global bounds (upper
+  /// bound - lower bound for each design variable).
+  Real trustRegionFactor;
+
   /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
   /// or AUGMENTED_LAGRANGIAN_OBJ
   short approxSubProbObj;
   /// type of approximate subproblem constraints: NO_CON, LINEARIZED_CON, or
   /// ORIGINAL_CON
   short approxSubProbCon;
-  /// the approximate sub-problem formulation solved on each approximate
-  /// minimization cycle: may be a shallow copy of iteratedModel, or may
-  /// involve a RecastModel recursion applied to iteratedModel
-  Model approxSubProbModel;
   /// flag to indicate when approxSubProbModel involves a RecastModel recursion
   bool recastSubProb;
   /// type of trust region constraint relaxation for infeasible starting

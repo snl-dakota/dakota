@@ -45,6 +45,9 @@ public:
 
 protected:
 
+
+  void initialize_sub_minimizer();
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -64,25 +67,25 @@ protected:
   //
 
   /// update the trust region bounds, strictly contained within global bounds
-  virtual void update_trust_region();
+  virtual void update_trust_region() = 0;
 
-  virtual void verify();
-  virtual void minimize();
-  virtual void build();
+  virtual void verify() = 0;
+  virtual void minimize() = 0;
+  virtual void build() = 0;
 
   //
   //- Heading: Data members
   //
 
+  /// the approximate sub-problem formulation solved on each approximate
+  /// minimization cycle: may be a shallow copy of iteratedModel, or may
+  /// involve a RecastModel recursion applied to iteratedModel
+  Model approxSubProbModel;
+
   // the +/- offsets for each of the variables in the current trust region
   //RealVector trustRegionOffset;
   /// original user specification for trustRegionFactor
   Real origTrustRegionFactor;
-  /// the trust region factor is used to compute the total size of the trust
-  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
-  /// actual size of the trust region will be 10% of the global bounds (upper
-  /// bound - lower bound for each design variable).
-  Real trustRegionFactor;
   /// a soft convergence control: stop SBLM when the trust region
   /// factor is reduced below the value of minTrustRegionFactor
   Real minTrustRegionFactor;

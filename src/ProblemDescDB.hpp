@@ -81,9 +81,7 @@ class ProblemDescDB
   /// ConcurrentMetaIterator requires access to get_model()
   friend class ConcurrentMetaIterator;
   /// HierarchSurrBasedLocalMinimizer requires access to get_iterator()
-  friend class HierarchSurrBasedLocalMinimizer;
-  /// SurrBasedLocalMinimizer requires access to get_iterator()
-  friend class DataFitSurrBasedLocalMinimizer;
+  friend class SurrBasedLocalMinimizer;
   /// SurrBasedGlobalMinimizer requires access to get_iterator()
   friend class SurrBasedGlobalMinimizer;
   /// PEBBLMinimizer requires access to get_iterator()

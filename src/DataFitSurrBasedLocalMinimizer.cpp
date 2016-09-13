@@ -42,7 +42,8 @@ DataFitSurrBasedLocalMinimizer* DataFitSurrBasedLocalMinimizer::sblmInstance(NUL
 
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedLocalMinimizer(problem_db, model), 
+  SurrBasedLocalMinimizer(problem_db, model),
+  trustRegionFactor(origTrustRegionFactor),
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
@@ -52,8 +53,21 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   //meritFnType(AUGMENTED_LAGRANGIAN_MERIT), acceptLogic(FILTER),
   penaltyIterOffset(-200), multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage")),
-  trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars)
+  trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars),
+  newCenterFlag(true)
 {
+  Model& truth_model  = iteratedModel.truth_model();
+  Model& approx_model = iteratedModel.surrogate_model();
+  // Initialize response results objects (approx/truth and center/star).  These
+  // must be deep copies to avoid representation sharing: initialize with copy()
+  // and then use update() within the main loop.
+  responseCenterApprox       = approx_model.current_response().copy();
+  responseStarApprox         = responseCenterApprox.copy();
+  responseCenterTruth.first  = truth_model.evaluation_id();
+  responseCenterTruth.second = truth_model.current_response().copy();
+  responseStarTruth.first    = responseCenterTruth.first;
+  responseStarTruth.second   = responseCenterTruth.second.copy();
+
   // If the "direct surrogate" formulation is used, then approxSubProbMinimizer
   // is interfaced w/ iteratedModel directly. Otherwise, RecastModel indirection
   // is required to allow recasting of the approximate subproblem.
@@ -137,57 +151,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Instantiate the approximate sub-problem minimizer
-  const String& approx_method_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
-  const String& approx_method_name
-    = probDescDB.get_string("method.sub_method_name");
-  if (!approx_method_ptr.empty()) {
-    // Approach 1: method spec support for approxSubProbMinimizer
-    const String& model_ptr = probDescDB.get_string("method.model_pointer");
-    // NOTE: set_db_list_nodes is not used for instantiating a Model for the
-    // approxSubProbMinimizer.  Rather, the iteratedModel passed into the SBLM
-    // iterator, or a recasting of it, is used.  Thus, the SBLM model_pointer
-    // is relevant and any sub-method model_pointer spec is ignored.  
-    size_t method_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_method_node(approx_method_ptr); // set method only
-    approxSubProbMinimizer = probDescDB.get_iterator(approxSubProbModel);
-    // suppress DB ctor default and don't output summary info
-    approxSubProbMinimizer.summary_output(false);
-    // verify approx method's modelPointer is empty or consistent
-    const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
-    if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
-      Cerr << "Warning: SBLM approx_method_pointer specification includes an\n"
-	   << "         inconsistent model_pointer that will be ignored."
-	   << std::endl;
-    // setting SBLM constraintTol is tricky since the DAKOTA default of 0. is a
-    // dummy -> NPSOL, DOT, and CONMIN use their internal defaults in this case.
-    // It would be preferable to support tolerance rtn in NPSOL/DOT/CONMIN & use
-    // constraintTol = approxSubProbMinimizer.constraint_tolerance();
-    if (constraintTol <= 0.) { // not specified in SBLM method spec
-      Real aspm_constr_tol = probDescDB.get_real("method.constraint_tolerance");
-      if (aspm_constr_tol > 0.) // sub-method has spec: enforce SBLM consistency
-	constraintTol = aspm_constr_tol;
-      else { // neither has spec: assign default and enforce consistency
-	constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-	Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
-	aspm->constraint_tolerance(constraintTol);
-      }
-    }
-    else { // SBLM method spec takes precedence over approxSubProbMinimizer spec
-      Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
-      aspm->constraint_tolerance(constraintTol);
-    }
-    probDescDB.set_db_method_node(method_index); // restore method only
-  }
-  else if (!approx_method_name.empty()) {
-    // Approach 2: instantiate on-the-fly w/o method spec support
-    approxSubProbMinimizer
-      = probDescDB.get_iterator(approx_method_name, approxSubProbModel);
-    if (constraintTol <= 0.) // not specified in SBLM method spec
-      constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-    Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
-    aspm->constraint_tolerance(constraintTol);
-  }
+  initialize_sub_minimizer();
 
   // If (and only if) the user has requested a surrogate bypass, test sub-models
   // to verify that there there is an additional approx layer to bypass.  The
@@ -202,9 +166,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
       if (ml_iter->model_type() == "surrogate")
 	multiLayerBypassFlag = true;
   }
-
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
 
   // Initialize method/interface dependent settings
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
@@ -317,6 +278,33 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
 
+  // Create arrays for variables and variable bounds
+  varsCenter = iteratedModel.current_variables().copy();
+  // need copies of initial point and initial global bounds, since iteratedModel
+  // continuous vars will be reset to the TR center and iteratedModel bounds
+  // will be reset to the TR bounds
+  RealVector initial_pt;
+  copy_data(varsCenter.continuous_variables(), initial_pt);
+  copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
+  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
+
+  // Create commonly-used ActiveSets
+  valSet = fullApproxSet = fullTruthSet
+    = responseCenterTruth.second.active_set();
+  int full_approx_val = 1, full_truth_val = 1;
+  if (approxGradientFlag) full_approx_val += 2;
+  if (approxHessianFlag)  full_approx_val += 4;
+  if (truthGradientFlag)  full_truth_val  += 2;
+  if (truthHessianFlag)   full_truth_val  += 4;
+  valSet.request_values(1);
+  fullApproxSet.request_values(full_approx_val);
+  fullTruthSet.request_values(full_truth_val);
+  // Set ActiveSets within the response copies
+  responseStarApprox.active_set(valSet);
+  responseStarTruth.second.active_set(valSet);
+  responseCenterApprox.active_set(fullApproxSet);
+  responseCenterTruth.second.active_set(fullTruthSet);
+
   // static pointer to DataFitSurrBasedLocalMinimizer instance
   sblmInstance = this;
   // reset convergence controls in case of multiple executions
@@ -373,6 +361,11 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
     approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
   }
 
+  bestVariablesArray.front().continuous_variables(
+    varsCenter.continuous_variables());
+  bestResponseArray.front().function_values(
+    responseCenterTruth.second.function_values());
+
   SurrBasedLocalMinimizer::post_run(s);
 }
 
@@ -380,6 +373,10 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
 void DataFitSurrBasedLocalMinimizer::reset()
 {
   SurrBasedLocalMinimizer::reset();
+
+  trustRegionFactor = origTrustRegionFactor;
+
+  newCenterFlag = true;
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;
@@ -480,6 +477,11 @@ update_trust_region()
 
 void DataFitSurrBasedLocalMinimizer::build()
 {
+  if (!(globalApproxFlag || newCenterFlag)) {
+    Cout << "\n>>>>> Reusing previous approximation.\n";
+    return;
+  }
+
   bool embed_correction = (globalApproxFlag) ?
     build_global() : // global rebuild: new center or new TR bounds
     build_local();   // local/multipt/hierarch: rebuild if new center
@@ -623,7 +625,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   //if (convergenceFlag) return;
 
   // ****************************
-  // Evaluate responseStarTruth
+  // Evaluate responseStarTruth 
   // ****************************
   Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
   // since we're bypassing iteratedModel, iteratedModel.serve()

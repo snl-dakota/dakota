@@ -24,6 +24,48 @@
 namespace Dakota
 {
 
+class HierarchSurrBasedLocalMinimizerHelper
+{
+public:
+  /// constructor
+  HierarchSurrBasedLocalMinimizerHelper();
+  /// destructor
+  ~HierarchSurrBasedLocalMinimizerHelper();
+
+  const Response& response_star(bool return_corrected) const;
+
+  const Response& response_center(bool return_corrected) const;
+
+  void response_star_corrected(const Response& resp);
+  void response_star_uncorrected(const Response& resp);
+  void response_center_corrected(const Response& resp);
+  void response_center_uncorrected(const Response& resp);
+
+  Real trust_region_factor();
+  void trust_region_factor(Real val);
+
+  bool new_center();
+  void new_center(bool val);
+
+  const Variables& vars_center() const;
+  void vars_center(const Variables& val);
+
+private:
+  Response responseStarUncorrected;
+  Response responseStarCorrected;
+
+  Response responseCenterUncorrected;
+  Response responseCenterCorrected;
+
+  Variables varsCenter;          ///< variables at the trust region centers
+  
+  Real trustRegionFactor;
+
+  /// flags the acceptance of a candidate point and the existence of
+  /// a new trust region center
+  bool newCenterFlag;
+};
+
 
 /// Class for multilevel-multifidelity optimization algorithm
 
@@ -49,11 +91,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  /// Performs local multilevel-multifidelity minimization
-  void core_run();
+  void pre_run();
 
   /// reset convergence controls in case of multiple MLMF executions
   void reset();
+
+  /// update the trust region bounds, strictly contained within global bounds
+  void update_trust_region();
+
+  void verify();
+  void minimize();
+  void build();
 
 private:
 
@@ -61,13 +109,8 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void multilevel_multifidelity_opt();
-  void multigrid_opt();
-  void multifidelity_opt();
-
-  Variables MFOpt(size_t fidelity, const Variables &variables);
-  void tr_bounds(RealVectorArray& tr_lower_bnds, RealVectorArray& tr_upper_bnds);
   void find_center(size_t lf_model_form, size_t hf_model_form);
+
   void hard_convergence_check(const Response& response_truth,
                          const RealVector& c_vars,
                          const RealVector& lower_bnds,
@@ -79,25 +122,10 @@ private:
   //- Heading: Data members
   //
 
-  std::vector<Response> responseStarUncorrected;
-  std::vector<Response> responseStarCorrected;
+  size_t numFid;
+  SizetArray numLev;
 
-  std::vector<Response> responseCenterUncorrected;
-  std::vector<Response> responseCenterCorrected;
-
-  Variables varsCenter;          ///< variables at the trust region center
-
-  /// the trust region factor is used to compute the total size of the trust
-  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
-  /// actual size of the trust region will be 10% of the global bounds (upper
-  /// bound - lower bound for each design variable).
-  RealVector trustRegionFactor;
-  /// a soft convergence control: stop SBLM when the trust region
-  /// factor is reduced below the value of minTrustRegionFactor
-  Real minTrustRegionFactor;
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  std::vector<bool> newCenterFlag;
+  std::vector<HierarchSurrBasedLocalMinimizerHelper> trustRegions;
 
   /// pointer to MLMF instance used in static member functions
   static HierarchSurrBasedLocalMinimizer* mlmfInstance;
