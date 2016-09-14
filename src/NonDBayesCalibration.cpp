@@ -565,8 +565,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       Cout << "Exp Data  i " << i << " value = " << exp_data.all_data(i);
 
   // need to initialize this from user input eventually
-  size_t num_candidates = 12; //, num_mcmc_samples = 1000;
-  //size_t num_candidates = 9; //, num_mcmc_samples = 1000;
+  size_t num_candidates = 12; 
   RealMatrix design_matrix;
   NonDLHSSampling* lhs_sampler_rep2;
   int randomSeed1 = 6543;
@@ -582,11 +581,13 @@ void NonDBayesCalibration::calibrate_to_hifi()
  
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Design Matrix   " << design_matrix << '\n';
+  /*
   for (size_t i=0; i < num_candidates; i++){
     const RealVector& col = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
     hifiModel.continuous_variables(col);
     hifiModel.evaluate();
   }
+  */
  
   bool stop_metric = false;
   size_t optimal_ind;
@@ -595,136 +596,16 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = 12;
+  int max_hifi = 5;
   int num_hifi = 0;
 
   std::ofstream kamstream("kam.txt");
 
   while (!stop_metric) {
-
-    // If the experiment data changed, need to update a number of
-    // models that wrap it.  TODO: make this more lightweight instead
-    // of reconstructing
-
-    // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    residualModel.assign_rep
-      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
-			      obsErrorMultiplierMode, mcmcDerivOrder), false);
-
-    construct_map_optimizer();
-
-    Cout << "hifi = " << hifiModel.current_variables() << '\n';
-    Cout << "lofi = " << mcmcModel.current_variables() << '\n';
-    Cout << "hifi cont = " << hifiModel.current_variables().continuous_variables_view() << '\n';
-    Cout << "lofi cont = " << mcmcModel.current_variables().continuous_variables_view() << '\n';
-    Cout << "hifi inactive = " << hifiModel.inactive_continuous_variables() << '\n';
-    Cout << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
-    Cout << "num params = " << numContinuousVars << '\n';
-    Cout << "num hyper params = " << numHyperparams << '\n';
-
-    // Run the underlying calibration solver (MCMC)
-    calibrate();
-
-    // After QUESO is run, get the posterior values of the samples; go
-    // through all the designs and pick the one with maximum mutual
-    // information
-
-      // Filter posterior, aim for 5000 samples
-    int num_mcmc_samples = acceptanceChain.numCols();
-    int burn_in_post = int(0.2*num_mcmc_samples);
-    int burned_in_post = num_mcmc_samples - burn_in_post;
-    int num_skip;
-    int num_filtered;
-    int ind = 0;
-    int it_cntr = 0;
-    if (num_mcmc_samples < 18750){
-      num_skip = 3;
-    }
-    else{
-      num_skip = int(burned_in_post/5000);
-    }
-    num_filtered = int(burned_in_post/num_skip);
-    RealVector lofi_params(numContinuousVars);
-    RealMatrix mi_chain(acceptanceChain.numRows(), num_filtered);
-    for (int j=burn_in_post; j<num_mcmc_samples; j++) {
-      ++it_cntr;
-      if (it_cntr % num_skip == 0){
-        lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
-        Teuchos::setCol(lofi_params, ind, mi_chain);
-        ind++;
-      }
-    }
-
-    // BMA: You can now use acceptanceChain/acceptedFnVals, though
-    // need to be careful about what subset for this chain run (may
-    // need indices to track)
-    for (size_t i=0; i<num_candidates; i++) {
-
-      RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
-      Model::inactive_variables(xi_i, mcmcModel);
-      kamstream << "design " << i << '\n';
-      kamstream << "xi_i = " << xi_i << '\n';
-
-      // BMA: The low fidelity model can now be referred to as
-      // mcmcModel (it may be wrapped in a surrogate, but I think
-      // that's what we want if the user said "emulator")
-
-      // Set the experimental configuration on the low-fi model:
-      // Model::inactive_variables(candidate_exp_config[i], residualModel)
-
-      // Declare a matrix to store the low fidelity responses
-      // KAM: check num_theta = numContinuousVars
-      //      and numFunctions corresponds to lofi model
-      RealMatrix lofi_resp_mat(numFunctions, num_filtered);
-      RealVector lofi_resp_vec(numFunctions);
-      RealVector col_vec(numContinuousVars + numFunctions);
-      RealMatrix Xmatrix(numContinuousVars + numFunctions, num_filtered);
-      for (int j=0; j<num_filtered; j++) {
-        // for each posterior sample, get the param values, and run the model
-	// KAM: Double check whether acceptanceChain is overwritten or appended
-        lofi_params = Teuchos::getCol(Teuchos::View, mi_chain, j);
-    	mcmcModel.continuous_variables(lofi_params);
-    	mcmcModel.evaluate();
-
-	lofi_resp_vec = mcmcModel.current_response().function_values();
- 	Teuchos::setCol(lofi_resp_vec, j, lofi_resp_mat);
-        // now concatenate posterior_theta and lofi_resp_mat into Xmatrix
-        for (size_t k = 0; k < numContinuousVars; k++){
-          col_vec[k] = lofi_params[k];
-        }
-        for (size_t k = 0; k < numFunctions; k ++){
-          col_vec[numContinuousVars+k] = lofi_resp_vec[k];
-        }
-        Teuchos::setCol(col_vec, j, Xmatrix);
-      }
-      //kamstream << "lofi = " << mcmcModel.current_variables() << '\n';
-      //kamstream << "lofi cont = " << mcmcModel.current_variables().continuous_variables_view() << '\n';
-      //kamstream << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
-      // calculate the mutual information b/w post theta and lofi responses
-      Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
-      //Real MI = knn_mutual_info(Xmatrix, 3, 1);
-      kamstream << "Xmatrix = " << Xmatrix << '\n';
-      kamstream << "MI = " << MI << '\n';
-
-      // Now track max MI:
-      if (i == 0){
-	max_MI = MI;
-	optimal_ind = i;
-      }
-      else {
-        if ( MI > max_MI) {
-          max_MI = MI;
-	  optimal_ind = i;
-        }
-      }
-    } // end for over the number of candidates
-
+    
     // EVALUATE STOPPING CRITERIA
     // check relative MI change
-    if (num_hifi == 0){
-      prev_MI = max_MI;
-    }
-    else {
+    if (num_hifi != 0) {
       MIdiff = prev_MI - max_MI;
       MIrel = fabs(MIdiff/prev_MI);
       if (MIrel < 0.05)
@@ -750,38 +631,127 @@ void NonDBayesCalibration::calibrate_to_hifi()
       Cout << "Experimental Design Stop Criteria met: "
 	   << "maximum number of hifi evaluations has been reached " << '\n';
     }
-    else{
-      // evaluate hi fidelity iteratedModel at optimal_config;
-      // Add this data to the expData for the next iteteration of likelihood
-      // print design_i and corresponding hi-fi response to data file?
-      // BMA (pseudocode); TODO add multiple points up to concurrency
-      /*
-        Model::active_variables(candidate_best, hifiModel)
-        hifiModel.evaluate();
-        expData.add_datapoint(hifiModel.current_response())
-        num_hifi++;
-      */
-    
-        RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, int(optimal_ind));
-        kamstream << "optimal config = " << optimal_config << '\n';
-        //hifiModel.continuous_variables(optimal_config);
-	Model::active_variables(optimal_config, hifiModel);
-        hifiModel.evaluate();
-        expData.add_data(optimal_config, hifiModel.current_response().copy());
-        num_hifi++;
-        // update list of candidates
-        remove_column(design_matrix, optimal_ind);
-        --num_candidates;
-    
-    }
-    kamstream << "hifi = " << hifiModel.current_variables() << '\n';
-    kamstream << "new data point = " << hifiModel.current_response() << '\n';
-    kamstream << "optimal design = " << optimal_ind << '\n';
-    //kamstream << "max_MI = " << max_MI << '\n';
-    Cout << '\n' << "max MI = " << max_MI << '\n';
-    Cout << "optimal design = " << optimal_ind << '\n';
-    Cout << "Exp Data value = " << hifiModel.current_response() << '\n';
-    //stop_metric = true;
+
+    // If the experiment data changed, need to update a number of
+    // models that wrap it.  TODO: make this more lightweight instead
+    // of reconstructing
+
+    // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
+    residualModel.assign_rep
+      (new DataTransformModel(mcmcModel, expData, numHyperparams, 
+			      obsErrorMultiplierMode, mcmcDerivOrder), false);
+
+    construct_map_optimizer();
+
+    Cout << "hifi = " << hifiModel.current_variables() << '\n';
+    Cout << "lofi = " << mcmcModel.current_variables() << '\n';
+    Cout << "hifi cont = " << hifiModel.current_variables().continuous_variables_view() << '\n';
+    Cout << "lofi cont = " << mcmcModel.current_variables().continuous_variables_view() << '\n';
+    Cout << "hifi inactive = " << hifiModel.inactive_continuous_variables() << '\n';
+    Cout << "lofi inactive = " << mcmcModel.inactive_continuous_variables() << '\n';
+    Cout << "num params = " << numContinuousVars << '\n';
+    Cout << "num hyper params = " << numHyperparams << '\n';
+
+    // Run the underlying calibration solver (MCMC)
+    calibrate();
+
+    if (!stop_metric) {
+      // After QUESO is run, get the posterior values of the samples; go
+      // through all the designs and pick the one with maximum mutual
+      // information
+  
+      // Filter posterior, aim for 5000 samples
+      int num_mcmc_samples = acceptanceChain.numCols();
+      int burn_in_post = int(0.2*num_mcmc_samples);
+      int burned_in_post = num_mcmc_samples - burn_in_post;
+      int num_skip;
+      int num_filtered;
+      int ind = 0;
+      int it_cntr = 0;
+      if (num_mcmc_samples < 18750){
+        num_skip = 3;
+      }
+      else{
+        num_skip = int(burned_in_post/5000);
+      }
+      num_filtered = int(burned_in_post/num_skip);
+      RealVector lofi_params(numContinuousVars);
+      RealMatrix mi_chain(acceptanceChain.numRows(), num_filtered);
+      for (int j=burn_in_post; j<num_mcmc_samples; j++) {
+        ++it_cntr;
+        if (it_cntr % num_skip == 0){
+          lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
+          Teuchos::setCol(lofi_params, ind, mi_chain);
+          ind++;
+        }
+      }
+
+      // BMA: You can now use acceptanceChain/acceptedFnVals, though
+      // need to be careful about what subset for this chain run (may
+      // need indices to track)
+      for (size_t i=0; i<num_candidates; i++) {
+  
+        RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
+        Model::inactive_variables(xi_i, mcmcModel);
+  
+        // BMA: The low fidelity model can now be referred to as
+        // mcmcModel (it may be wrapped in a surrogate, but I think
+        // that's what we want if the user said "emulator")
+  
+        // Declare a matrix to store the low fidelity responses
+        RealMatrix lofi_resp_mat(numFunctions, num_filtered);
+        RealVector lofi_resp_vec(numFunctions);
+        RealVector col_vec(numContinuousVars + numFunctions);
+        RealMatrix Xmatrix(numContinuousVars + numFunctions, num_filtered);
+        for (int j=0; j<num_filtered; j++) {
+          // for each posterior sample, get the param values, and run the model
+          lofi_params = Teuchos::getCol(Teuchos::View, mi_chain, j);
+    	  mcmcModel.continuous_variables(lofi_params);
+    	  mcmcModel.evaluate();
+  
+	  lofi_resp_vec = mcmcModel.current_response().function_values();
+ 	  Teuchos::setCol(lofi_resp_vec, j, lofi_resp_mat);
+          // now concatenate posterior_theta and lofi_resp_mat into Xmatrix
+          for (size_t k = 0; k < numContinuousVars; k++){
+            col_vec[k] = lofi_params[k];
+          }
+          for (size_t k = 0; k < numFunctions; k ++){
+            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+          }
+          Teuchos::setCol(col_vec, j, Xmatrix);
+        }
+        // calculate the mutual information b/w post theta and lofi responses
+        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
+  
+        // Now track max MI:
+        if (i == 0){
+	  max_MI = MI;
+	  optimal_ind = i;
+        }
+        else {
+          if ( MI > max_MI) {
+            max_MI = MI;
+	    optimal_ind = i;
+          }
+        }
+      } // end for over the number of candidates
+  
+      // RUN HIFI MODEL WITH NEW POINT
+      // TODO: add multiple points up to concurrency
+      RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, 
+ 					   int(optimal_ind));
+      Model::active_variables(optimal_config, hifiModel);
+      hifiModel.evaluate();
+      expData.add_data(optimal_config, hifiModel.current_response().copy());
+      num_hifi++;
+      // update list of candidates
+      remove_column(design_matrix, optimal_ind);
+      --num_candidates;
+      //stop_metric = true;
+      //kamstream << "design " << i << '\n';
+      //kamstream << "xi_i = " << xi_i << '\n';
+      //kamstream << "MI = " << MI << '\n';
+    } // end MI loop
   } // end while loop
 
 }
