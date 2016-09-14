@@ -1632,6 +1632,8 @@ void NonDBayesCalibration::prior_sample_matrix(RealMatrix& prior_dist_samples)
 Real NonDBayesCalibration::knn_kl_div(RealMatrix& distX_samples,
     			 	RealMatrix& distY_samples, size_t dim)
 {
+  approxnn::normSelector::instance().method(approxnn::L2_NORM);
+
   size_t NX = distX_samples.numCols();
   size_t NY = distY_samples.numCols();
   //size_t dim = numContinuousVars; 
@@ -1690,6 +1692,8 @@ Real NonDBayesCalibration::knn_kl_div(RealMatrix& distX_samples,
 
   annDeallocPts( dataX );
   annDeallocPts( dataY );
+
+  approxnn::normSelector::instance().reset();
 
   return Dkl_est;
 }
@@ -1762,6 +1766,8 @@ void NonDBayesCalibration::mutual_info_buildX()
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     int dimY)
 {
+  approxnn::normSelector::instance().method(approxnn::LINF_NORM);
+
   std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
   //Cout << "Xmatrix = " << Xmatrix << '\n';
@@ -1883,6 +1889,8 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   annDeallocPts(dataX);
   annDeallocPts(dataY);
   annDeallocPts(dataXY);
+
+  approxnn::normSelector::instance().reset();
 
   // Compare to dkl
   /*
