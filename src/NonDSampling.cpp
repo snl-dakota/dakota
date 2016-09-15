@@ -78,10 +78,10 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     }
 
     // Wilks order statistics
-    unsigned short order = probDescDB.get_ushort("method.order");
+    wilksOrder = probDescDB.get_ushort("method.order");
     // Wilks interval sidedness
     short wilks_sidedness = probDescDB.get_short("method.wilks.sided_interval");
-    bool twosided = (wilks_sidedness == TWO_SIDED);
+    wilksTwosided = (wilks_sidedness == TWO_SIDED);
 
     // Support multiple probability_levels
     Real max_prob_level = 0.0;
@@ -92,14 +92,14 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
           max_prob_level = requestedProbLevels[i][j] ;
       }
     }
-    Real alpha = max_prob_level;
-    if (alpha <= 0.0) // Assign a default if probability_levels unspecified
-      alpha = 0.95;
+    wilksAlpha = max_prob_level;
+    if (wilksAlpha <= 0.0) // Assign a default if probability_levels unspecified
+      wilksAlpha = 0.95;
 
-    Real beta = probDescDB.get_real("method.confidence_level");
-    if (beta <= 0.0) // Assign a default if probability_levels unspecified
-      beta = 0.95;
-    numSamples = compute_wilks_sample_size(order, alpha, beta, twosided);
+    wilksBeta = probDescDB.get_real("method.confidence_level");
+    if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
+      wilksBeta = 0.95;
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilksTwosided);
     samplesRef = numSamples;
   }
 
@@ -1226,7 +1226,7 @@ Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Re
     return std::log(1.0-beta)/std::log(alpha) - (Real) nsamples;
 
   if( twosided )
-    return  boost::math::ibeta<Real>((Real)nsamples-2.0*rorder+1.0, 2.0*rorder, alpha) - (1.0-beta);
+    return boost::math::ibeta<Real>((Real)nsamples-2.0*rorder+1.0, 2.0*rorder, alpha) - (1.0-beta);
   else
     return boost::math::ibeta<Real>(rorder, (Real)nsamples-rorder+1.0, 1-alpha) - beta;
 }
@@ -1236,8 +1236,8 @@ Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real 
 {
   Real rorder = (Real) order;
 
-  Real alpha_l = 0.001; // initial lower bound
-  Real alpha_u = 0.999; // initial upper bound
+  Real alpha_l = get_wilks_alpha_min(); // initial lower bound
+  Real alpha_u = get_wilks_alpha_max(); // initial upper bound
   Real resid_l = compute_wilks_residual(order, nsamples, alpha_l, beta, twosided);
   Real resid_u = compute_wilks_residual(order, nsamples, alpha_u, beta, twosided);
   if( resid_l*resid_u > 0 )
@@ -1277,8 +1277,8 @@ Real NonDSampling::compute_wilks_beta(unsigned short order, int nsamples, Real a
 {
   Real rorder = (Real) order;
 
-  Real beta_l = 0.001; // initial lower bound
-  Real beta_u = 0.999; // initial upper bound
+  Real beta_l = get_wilks_beta_min(); // initial lower bound
+  Real beta_u = get_wilks_beta_max(); // initial upper bound
   Real resid_l = compute_wilks_residual(order, nsamples, alpha, beta_l, twosided);
   Real resid_u = compute_wilks_residual(order, nsamples, alpha, beta_u, twosided);
   if( resid_l*resid_u > 0 )
@@ -1529,6 +1529,8 @@ void NonDSampling::print_statistics(std::ostream& s) const
       print_level_mappings(s);
       print_system_mappings(s);
     }
+    if( wilksFlag && outputLevel >= DEBUG_OUTPUT)
+      print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
   if (!subIteratorFlag) {
     StringMultiArrayConstView
@@ -1611,4 +1613,55 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
   }
 }
 
+void NonDSampling::
+print_wilks_stastics(std::ostream& s) const
+{
+  size_t j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
+
+  size_t fn_index = 0; // should we ensure there is only one response? - RWH
+
+  s << "\nWilks Stastics:" /* << qoi_label */ << "\n";
+  
+  s << "     Response Level  Probability Level  "
+    << (wilksTwosided ? "Two-" : "One-") << "Sided Confidence Level "
+    << "\n     --------------  -----------------  -------------------------- \n";
+  size_t num_resp_levels = requestedRespLevels[fn_index].length();
+  for (j=0; j<num_resp_levels; j++) { // map from 1 requested to 1 computed
+    s << "  " << std::setw(width) << requestedRespLevels[fn_index][j] << "  ";
+    switch (respLevelTarget) {
+    case PROBABILITIES:
+      s << std::setw(width) << computedProbLevels[fn_index][j]   << "  "
+        << compute_wilks_beta(wilksOrder, numSamples, wilksAlpha, wilksTwosided) << '\n'; break;
+    case RELIABILITIES:
+      s << std::setw(w2p2)  << computedRelLevels[fn_index][j]    << '\n'; break;
+    case GEN_RELIABILITIES:
+      s << std::setw(w3p4)  << computedGenRelLevels[fn_index][j] << '\n'; break;
+    }
+  }
+
+  const Real max_confidence = get_wilks_beta_max();
+
+  size_t num_prob_levels = requestedProbLevels[fn_index].length();
+  for (j=0; j<num_prob_levels; j++) {
+    Real prob_level = requestedProbLevels[fn_index][j];
+    // Determine an upper bound on confidence level based on sample size
+    int upper_bound = compute_wilks_sample_size(wilksOrder, prob_level, max_confidence, wilksTwosided);
+
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j]
+      << "  " << std::setw(width) << requestedProbLevels[fn_index][j]
+      << "  " << ( (numSamples > upper_bound) ?  "> " + convert_to_string<Real>(max_confidence) :
+                   convert_to_string(compute_wilks_beta(wilksOrder, numSamples, prob_level, wilksTwosided)) )
+      << '\n';
+  }
+  size_t num_rel_levels = requestedRelLevels[fn_index].length(),
+    offset = num_prob_levels;
+  for (j=0; j<num_rel_levels; j++) // map from 1 requested to 1 computed
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
+      << "  " << std::setw(w2p2)  << requestedRelLevels[fn_index][j] << '\n';
+  size_t num_gen_rel_levels = requestedGenRelLevels[fn_index].length();
+  offset += num_rel_levels;
+  for (j=0; j<num_gen_rel_levels; j++) // map from 1 requested to 1 computed
+    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
+      << "  " << std::setw(w3p4)  << requestedGenRelLevels[fn_index][j] << '\n';
+}
 } // namespace Dakota
