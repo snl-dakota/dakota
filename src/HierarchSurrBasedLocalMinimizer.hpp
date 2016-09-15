@@ -20,52 +20,10 @@
 #include "SurrBasedLocalMinimizer.hpp"
 #include "HierarchSurrModel.hpp"
 #include "DakotaModel.hpp"
+#include "HierarchSurrBasedLocalMinimizerHelper.hpp"
 
 namespace Dakota
 {
-
-class HierarchSurrBasedLocalMinimizerHelper
-{
-public:
-  /// constructor
-  HierarchSurrBasedLocalMinimizerHelper();
-  /// destructor
-  ~HierarchSurrBasedLocalMinimizerHelper();
-
-  const Response& response_star(bool return_corrected) const;
-
-  const Response& response_center(bool return_corrected) const;
-
-  void response_star_corrected(const Response& resp);
-  void response_star_uncorrected(const Response& resp);
-  void response_center_corrected(const Response& resp);
-  void response_center_uncorrected(const Response& resp);
-
-  Real trust_region_factor();
-  void trust_region_factor(Real val);
-
-  bool new_center();
-  void new_center(bool val);
-
-  const Variables& vars_center() const;
-  void vars_center(const Variables& val);
-
-private:
-  Response responseStarUncorrected;
-  Response responseStarCorrected;
-
-  Response responseCenterUncorrected;
-  Response responseCenterCorrected;
-
-  Variables varsCenter;          ///< variables at the trust region centers
-  
-  Real trustRegionFactor;
-
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  bool newCenterFlag;
-};
-
 
 /// Class for multilevel-multifidelity optimization algorithm
 
@@ -109,14 +67,13 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void find_center(size_t lf_model_form, size_t hf_model_form);
+  void find_center(size_t tr_index);
 
-  void hard_convergence_check(const Response& response_truth,
-                         const RealVector& c_vars,
-                         const RealVector& lower_bnds,
-                         const RealVector& upper_bnds);
+  void hard_convergence_check(size_t tr_index);
 
-  void tr_ratio_check();
+  void tr_ratio_check(size_t tr_index);
+
+  void set_model_states(size_t tr_index);
 
   //
   //- Heading: Data members
@@ -124,6 +81,9 @@ private:
 
   size_t numFid;
   SizetArray numLev;
+  size_t minimizeIndex;
+
+  RealVector initialPoint;
 
   std::vector<HierarchSurrBasedLocalMinimizerHelper> trustRegions;
 
