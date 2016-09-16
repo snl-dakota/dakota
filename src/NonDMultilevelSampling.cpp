@@ -33,6 +33,7 @@ NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   pilotSamples(probDescDB.get_sza("method.nond.pilot_samples")),
+  finalCVRefinement(true),
   exportSampleSets(probDescDB.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     probDescDB.get_ushort("method.nond.export_samples_format"))
@@ -267,6 +268,8 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 	raw_N_l[lev] += numSamples;
 
 	// compute estimator variance from current sample accumulation:
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "variance of Y[" << lev << "]: ";
 	agg_var_l = aggregate_variance(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
       }
 
@@ -440,7 +443,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_cost = truth_model.solution_level_cost(),
-    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev);
+    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev),
+    avg_eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -541,24 +545,14 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  raw_N_lf[lev] += numSamples; raw_N_hf[lev] += numSamples;
 
 	  // compute the average evaluation ratio and Lambda factor
-	  avg_eval_ratio
-	    = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
-			 sum_HH[1], hf_lev_cost/lf_lev_cost, lev, N_hf[lev],
-			 var_H, rho2_LH);
+	  avg_eval_ratio = avg_eval_ratios[lev] =
+	    eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1], sum_LH[1],
+		       sum_HH[1], hf_lev_cost/lf_lev_cost, lev, N_hf[lev],
+		       var_H, rho2_LH);
 	  avg_rho2_LH[lev] = average(rho2_LH[lev], numFunctions);
 	  Lambda[lev] = 1. - avg_rho2_LH[lev]
 	              * (avg_eval_ratio - 1.) / avg_eval_ratio;
 	  agg_var_hf_l = sum(var_H[lev], numFunctions);
-	  // now execute additional LF sample increment, if needed
-	  if (lf_increment(avg_eval_ratio, N_lf[lev], N_hf[lev], iter, lev)) {
-	    accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
-	    if (outputLevel == DEBUG_OUTPUT) {
-	      Cout << "Accumulated sums (L_refined[1,2]):\n";
-	      write_data(Cout, sum_L_refined[1]);
-	      write_data(Cout, sum_L_refined[2]);
-	    }
-	    raw_N_lf[lev] += numSamples;
-	  }
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  RealMatrix& sum_HH1 = sum_HH[1];
@@ -570,6 +564,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  }
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
 	    = aggregate_variance(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -594,6 +590,31 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
       eps_sq_div_2 = estimator_var0 * convergenceTol;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+    }
+
+    // All CV lf_increment() calls now follow all ML level evals:
+    for (lev=0; lev<num_cv_lev; ++lev) {
+      if (delta_N_hf[lev]) {
+	if (lev) {
+	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+	  iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
+	  iteratedModel.truth_model_indices(lf_model_form,     lev);
+	}
+	else {
+	  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+	  iteratedModel.surrogate_model_indices(lf_model_form, 0);
+	}
+	// now execute additional LF sample increment, if needed
+	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
+	  accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
+	  raw_N_lf[lev] += numSamples;
+	  if (outputLevel == DEBUG_OUTPUT) {
+	    Cout << "Accumulated sums (L_refined[1,2]):\n";
+	    write_data(Cout, sum_L_refined[1]);
+	    write_data(Cout, sum_L_refined[2]);
+	  }
+	}
+      }
     }
 
     // update targets based on variance estimates
@@ -803,6 +824,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  }
 	  raw_N_hf[lev] += numSamples;
 	  // aggregate Y variances across QoI for this level
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
 	    = aggregate_variance(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
@@ -1826,12 +1849,19 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     if (exportSampleSets)
       export_all_samples("cv_", iteratedModel.surrogate_model(), iter, lev);
 
-    // iter 0 is defined as the pilot sample, with the iteration counter
-    // incremented for a CV increment followed by an ML increment.  Convergence,
-    // however, is defined when the ML
-    // increment is zero, resulting in an additional CV iteration at the end.
+    // Iteration 0 is defined as the pilot sample, and each subsequent iter
+    // can be defined as a CV increment followed by an ML increment.  In this
+    // case, terminating based on max_iterations results in a final ML increment
+    // without a corresponding CV refinement; thus the number of ML and CV
+    // refinements is consistent although the final sample profile is not
+    // self-consistent -- to override this and finish with a final CV increment
+    // corresponding to the final ML increment, the finalCVRefinement flag can
+    // be set.  Note: termination based on delta_N_hf=0 has a final ML increment
+    // of zero and corresponding final CV increment of zero.  Therefore, this
+    // iteration completes on the previous CV increment and is more consistent
+    // with finalCVRefinement=true.
     size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-    if (iter < max_iter) {
+    if (iter < max_iter || finalCVRefinement) {
       // mode for hierarchical surrogate model can be uncorrected surrogate
       // for CV MC, or uncorrected surrogate/aggregated models for ML-CV MC
       // --> set at calling level
@@ -1880,6 +1910,9 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
       ++num_avg;
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "variance of HF Q:\n" << var_H;
+
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
     avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -1911,6 +1944,11 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
       ++num_avg;
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "variance of HF Q[" << lev << "]:\n";
+    write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_H);
+  }
+
   if (num_avg) avg_eval_ratio /= num_avg;
   else // should not happen, but provide a reasonable upper bound
     avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -1956,6 +1994,11 @@ eval_ratio(RealMatrix& sum_Ll,   RealMatrix& sum_Llm1,  RealMatrix& sum_Hl,
 	++num_avg;
       }
     }
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "variance of HF Y[" << lev << "]:\n";
+      write_col_vector_trans(Cout, (int)lev, (int)numFunctions, var_YHl);
+    }
+
     if (num_avg) avg_eval_ratio /= num_avg;
     else // should not happen, but provide a reasonable upper bound
       avg_eval_ratio = (Real)maxFunctionEvals / average(N_shared);
@@ -2242,6 +2285,15 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
     std_mom(1,qoi) = stdev;                  // std deviation
     std_mom(2,qoi) = cm3 / (cm2 * stdev);    // skewness
     std_mom(3,qoi) = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout <<  "raw mom 1 = " << raw_mom(qoi,0) << " cent mom 1 = " << m1
+	   << " std mom 1 = " << std_mom(0,qoi) << '\n'
+	   <<  "raw mom 2 = " << raw_mom(qoi,1) << " cent mom 2 = " << cm2
+	   << " std mom 2 = " << std_mom(1,qoi) << '\n'
+	   <<  "raw mom 3 = " << raw_mom(qoi,2) << " cent mom 3 = " << cm3
+	   << " std mom 3 = " << std_mom(2,qoi) << '\n'
+	   <<  "raw mom 4 = " << raw_mom(qoi,3) << " cent mom 4 = " << cm4
+	   << " std mom 4 = " << std_mom(3,qoi) << "\n\n";
   }
 }
 
