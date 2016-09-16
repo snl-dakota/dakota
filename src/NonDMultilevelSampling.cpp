@@ -472,12 +472,12 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      lf_lev_cost = lf_cost[lev]; hf_lev_cost = hf_cost[lev];
+      hf_lev_cost = hf_cost[lev];
       if (lev) {
 	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
 	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
 	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	lf_lev_cost += lf_cost[lev-1]; hf_lev_cost += hf_cost[lev-1];// 2 levels
+	hf_lev_cost += hf_cost[lev-1]; // 2 levels
       }
 
       // set the number of current samples from the defined increment
@@ -516,9 +516,11 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
+	  lf_lev_cost = lf_cost[lev]; 
 	  if (lev) {
 	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	    iteratedModel.truth_model_indices(lf_model_form,     lev);
+	    lf_lev_cost += lf_cost[lev-1];
 	  }
 	  else
 	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
@@ -706,12 +708,12 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     sum_sqrt_var_cost = 0.;
     for (lev=0; lev<num_hf_lev; ++lev) {
 
-      lf_lev_cost = lf_cost[lev]; hf_lev_cost = hf_cost[lev];
+      hf_lev_cost = hf_cost[lev];
       if (lev) {
 	iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // both resp
 	iteratedModel.surrogate_model_indices(hf_model_form, lev-1);// HF lev-1
 	iteratedModel.truth_model_indices(hf_model_form,     lev);  // HF lev
-	lf_lev_cost += lf_cost[lev-1]; hf_lev_cost += hf_cost[lev-1];// 2 levels
+	hf_lev_cost += hf_cost[lev-1]; // 2 levels
       }
 
       // set the number of current samples from the defined increment
@@ -750,9 +752,11 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  // response mode are same as HF above, only the model form changes.
 	  // However, we must pass the unchanged level index to update the
 	  // corresponding variable values for the new model form.
+	  lf_lev_cost = lf_cost[lev];
 	  if (lev) {
 	    iteratedModel.surrogate_model_indices(lf_model_form, lev-1);
 	    iteratedModel.truth_model_indices(lf_model_form,     lev);
+	    lf_lev_cost += lf_cost[lev-1];
 	  }
 	  else
 	    iteratedModel.surrogate_model_indices(lf_model_form, 0);
