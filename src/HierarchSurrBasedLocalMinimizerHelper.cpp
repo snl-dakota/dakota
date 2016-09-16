@@ -116,40 +116,40 @@ vars_star() { return varsStar; }
 void HierarchSurrBasedLocalMinimizerHelper::
 vars_star(const Variables& val) { varsStar = val; }
 
-const Response& HierarchSurrBasedLocalMinimizerHelper::
+Response HierarchSurrBasedLocalMinimizerHelper::
 response_star(short response_type, bool return_corrected) const
 {
   switch (response_type) {
     case TRUTH_MODEL:
       if (return_corrected)
-        return responseTruthStarCorrected;
+        return responseTruthStarCorrected.copy();
       else
-        return responseTruthStarUncorrected;
+        return responseTruthStarUncorrected.copy();
       break;
     case APPROX_MODEL:
       if (return_corrected)
-        return responseApproxStarCorrected;
+        return responseApproxStarCorrected.copy();
       else
-        return responseApproxStarUncorrected;
+        return responseApproxStarUncorrected.copy();
       break;
   }
 }
 
-const Response& HierarchSurrBasedLocalMinimizerHelper::
+Response HierarchSurrBasedLocalMinimizerHelper::
 response_center(short response_type, bool return_corrected) const
 {
   switch (response_type) {
     case TRUTH_MODEL:
       if (return_corrected)
-        return responseTruthCenterCorrected;
+        return responseTruthCenterCorrected.copy();
       else
-        return responseTruthCenterUncorrected;
+        return responseTruthCenterUncorrected.copy();
       break;
     case APPROX_MODEL:
       if (return_corrected)
-        return responseApproxCenterCorrected;
+        return responseApproxCenterCorrected.copy();
       else
-        return responseApproxCenterUncorrected;
+        return responseApproxCenterUncorrected.copy();
       break;
   }
 }

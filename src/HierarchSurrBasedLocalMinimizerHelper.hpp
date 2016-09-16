@@ -30,8 +30,8 @@ public:
   /// destructor
   ~HierarchSurrBasedLocalMinimizerHelper();
 
-  const Response& response_star(short response_type, bool return_corrected = false) const;
-  const Response& response_center(short response_type, bool return_corrected = false) const;
+  Response response_star(short response_type, bool return_corrected = false) const;
+  Response response_center(short response_type, bool return_corrected = false) const;
 
   Response response_star(short response_type, bool return_corrected = false);
   Response response_center(short response_type, bool return_corrected = false);

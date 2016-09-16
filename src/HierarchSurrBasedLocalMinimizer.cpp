@@ -208,8 +208,9 @@ find_center(size_t tr_index)
 void HierarchSurrBasedLocalMinimizer::
 hard_convergence_check(size_t tr_index)
 {
-  const RealVector& fns_truth   = trustRegions[tr_index].response_center(TRUTH_MODEL, false).function_values();
-  const RealMatrix& grads_truth = trustRegions[tr_index].response_center(TRUTH_MODEL, false).function_gradients();
+  Response truth_center_uncorrected = trustRegions[tr_index].response_center(TRUTH_MODEL, false);
+  const RealVector& fns_truth   = truth_center_uncorrected.function_values();
+  const RealMatrix& grads_truth = truth_center_uncorrected.function_gradients();
 
   RealVector fn_grad(numContinuousVars, true);
   const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
@@ -243,10 +244,15 @@ hard_convergence_check(size_t tr_index)
     be terminated (diminishing returns). */
 void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
 {
-  const RealVector& fns_center_truth = trustRegions[tr_index].response_center(TRUTH_MODEL).function_values();
-  const RealVector& fns_star_truth = trustRegions[tr_index].response_star(TRUTH_MODEL).function_values();
-  const RealVector& fns_center_approx = trustRegions[tr_index].response_center(APPROX_MODEL,true).function_values();
-  const RealVector& fns_star_approx = trustRegions[tr_index].response_star(APPROX_MODEL,true).function_values();
+  Response truth_center_uncorrected = trustRegions[tr_index].response_center(TRUTH_MODEL, false);
+  Response truth_star_uncorrected = trustRegions[tr_index].response_star(TRUTH_MODEL, false);
+  Response approx_center_corrected = trustRegions[tr_index].response_center(APPROX_MODEL,true);
+  Response approx_star_corrected = trustRegions[tr_index].response_star(APPROX_MODEL,true);
+
+  const RealVector& fns_center_truth = truth_center_uncorrected.function_values();
+  const RealVector& fns_star_truth = truth_star_uncorrected.function_values();
+  const RealVector& fns_center_approx = approx_center_corrected.function_values();
+  const RealVector& fns_star_approx = approx_star_corrected.function_values();
 
   // ---------------------------------------------------
   // Compute trust region ratio based on merit fn values
