@@ -50,6 +50,7 @@ protected:
   //
 
   void pre_run();
+  void post_run(std::ostream& s);
 
   /// reset convergence controls in case of multiple MLMF executions
   void reset();

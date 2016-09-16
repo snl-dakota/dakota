@@ -105,7 +105,7 @@ Variables& HierarchSurrBasedLocalMinimizerHelper::
 vars_center() { return varsCenter; }
 
 void HierarchSurrBasedLocalMinimizerHelper::
-vars_center(const Variables& val) { varsCenter = val; }
+vars_center(const Variables& val) { varsCenter = val.copy(); }
 
 const Variables& HierarchSurrBasedLocalMinimizerHelper::
 vars_star() const { return varsStar; }
@@ -114,7 +114,7 @@ Variables& HierarchSurrBasedLocalMinimizerHelper::
 vars_star() { return varsStar; }
 
 void HierarchSurrBasedLocalMinimizerHelper::
-vars_star(const Variables& val) { varsStar = val; }
+vars_star(const Variables& val) { varsStar = val.copy(); }
 
 Response HierarchSurrBasedLocalMinimizerHelper::
 response_star(short response_type, bool return_corrected) const
@@ -160,15 +160,15 @@ response_star(short response_type, bool return_corrected)
   switch (response_type) {
     case TRUTH_MODEL:
       if (return_corrected)
-        return responseTruthStarCorrected.copy();
+        return responseTruthStarCorrected;
       else
-        return responseTruthStarUncorrected.copy();
+        return responseTruthStarUncorrected;
       break;
     case APPROX_MODEL:
       if (return_corrected)
-        return responseApproxStarCorrected.copy();
+        return responseApproxStarCorrected;
       else
-        return responseApproxStarUncorrected.copy();
+        return responseApproxStarUncorrected;
       break;
   }
 }
@@ -179,15 +179,15 @@ response_center(short response_type, bool return_corrected)
   switch (response_type) {
     case TRUTH_MODEL:
       if (return_corrected)
-        return responseTruthCenterCorrected.copy();
+        return responseTruthCenterCorrected;
       else
-        return responseTruthCenterUncorrected.copy();
+        return responseTruthCenterUncorrected;
       break;
     case APPROX_MODEL:
       if (return_corrected)
-        return responseApproxCenterCorrected.copy();
+        return responseApproxCenterCorrected;
       else
-        return responseApproxCenterUncorrected.copy();
+        return responseApproxCenterUncorrected;
       break;
   }
 }
