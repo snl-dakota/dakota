@@ -238,6 +238,9 @@ private:
   /// scheduling processes
   bool sameInterfaceInstance;
 
+  /// store index pair that is active in component_parallel_mode()
+  SizetSizetPair componentParallelIndices;
+
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
   std::map<SizetSizetPair,Response> truthResponseRef;

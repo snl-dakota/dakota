@@ -23,7 +23,8 @@ namespace Dakota
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
-  corrOrder(problem_db.get_short("model.surrogate.correction_order"))
+  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
+  componentParallelIndices(_NPOS,_NPOS)
 {
   Response initial_response = currentResponse.copy();
 
@@ -1113,18 +1114,20 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   //if (componentParallelMode == mode)
   //  return; // already in correct parallel mode
 
-  // ******************************************************************
-  // TO DO: change in model indices w/o change in componentParallelMode
-  // ******************************************************************
-  // ... if != mode checks commented out for short term patch ...
-
   // terminate previous serve mode (if active)
-  //if (componentParallelMode != mode) {
-    if (componentParallelMode == LF_MODEL) // old mode
-      stop_model(lowFidelityIndices.first);
-    else if (componentParallelMode == HF_MODEL) // old mode
-      stop_model(highFidelityIndices.first);
-  //}
+  SizetSizetPair new_indices;
+  switch (mode) {
+  case LF_MODEL: new_indices =  lowFidelityIndices; break;
+  case HF_MODEL: new_indices = highFidelityIndices; break;
+  default:       new_indices.first = new_indices.second = _NPOS; break;
+  }
+  // TO DO: restarting servers for a change in soln control index w/o change
+  // in model may be overkill (send of state vars in vars buffer sufficient?)
+  bool restart = false;
+  if (componentParallelMode != mode || componentParallelIndices != new_indices){
+    if (componentParallelMode) stop_model(componentParallelIndices.first);
+    restart = true;
+  }
 
   // set ParallelConfiguration for new mode and retrieve new data
   if (mode == HF_MODEL) { // new mode
@@ -1135,8 +1138,7 @@ void HierarchSurrModel::component_parallel_mode(short mode)
 
   // activate new serve mode (matches HierarchSurrModel::serve_run(pl_iter)).
   // These bcasts match the outer parallel context (pl_iter).
-  if (//componentParallelMode != mode &&
-      modelPCIter->mi_parallel_level_defined(miPLIndex)) {
+  if (restart && modelPCIter->mi_parallel_level_defined(miPLIndex)) {
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(miPLIndex);
     if (mi_pl.server_communicator_size() > 1) {
       parallelLib.bcast(mode, mi_pl);
@@ -1150,7 +1152,8 @@ void HierarchSurrModel::component_parallel_mode(short mode)
     }
   }
 
-  componentParallelMode = mode;
+  componentParallelMode    = mode;
+  componentParallelIndices = new_indices;
 }
 
 
@@ -1160,12 +1163,14 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
   // manage LF model and HF model servers, matching communication from
   // HierarchSurrModel::component_parallel_mode()
+  // Note: could consolidate logic by bcasting componentParallelIndices,
+  //       except for special handling of responseMode for HF_MODEL.
   componentParallelMode = 1;
   while (componentParallelMode) {
     parallelLib.bcast(componentParallelMode, *pl_iter); // outer context
     if (componentParallelMode) {
       SizetSizetPair model_indices(0,0);
-      // use a quick size estimation for recv buffer i/o bcast
+      // use a quick size estimation for recv buffer i/o size bcast
       MPIPackBuffer send_buff;
       send_buff << model_indices << responseMode;
       int buffer_len = send_buff.size();
@@ -1178,15 +1183,14 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 	// update model indices
 	surrogate_model_indices(model_indices); // set LF model + soln index
 	// serve active LF model
-	orderedModels[lowFidelityIndices.first].serve_run(pl_iter,
-          max_eval_concurrency);
+	surrogate_model().serve_run(pl_iter, max_eval_concurrency);
 	// Note: ignores erroneous BYPASS_SURROGATE
       }
       else if (componentParallelMode == HF_MODEL) {
 	// update model indices
 	truth_model_indices(model_indices); // set HF model + soln index
 	// serve active HF model, employing correct iterator concurrency
-	Model& hf_model = orderedModels[highFidelityIndices.first];
+	Model& hf_model = truth_model();
 	switch (responseMode) {
 	case UNCORRECTED_SURROGATE:
 	  Cerr << "Error: setting parallel mode to HF_MODEL is erroneous for a "
