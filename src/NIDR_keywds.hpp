@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1923 distinct keywords (plus 251 aliases) **/
+/** 1932 distinct keywords (plus 251 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -2142,15 +2142,24 @@ static KeyWord
 		{"initial_size",10,0,1,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRInitSize)},
 		{"minimum_size",10,0,2,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRMinSize)}
 		},
-	kw_340[16] = {
+	kw_340[25] = {
 		{"acceptance_logic",8,2,8,0,kw_335},
-		{"approx_method_name",3,0,1,1,0,0.,0.,9,N_mdm(str,subMethodName)},
-		{"approx_method_pointer",3,0,1,1,0,0.,0.,9,N_mdm(str,subMethodPointer)},
-		{"approx_model_pointer",3,0,2,2,0,0.,0.,9,N_mdm(str,modelPointer)},
+		{"approx_method_name",3,0,1,1,0,0.,0.,18,N_mdm(str,subMethodName)},
+		{"approx_method_pointer",3,0,1,1,0,0.,0.,18,N_mdm(str,subMethodPointer)},
+		{"approx_model_pointer",3,0,2,2,0,0.,0.,18,N_mdm(str,modelPointer)},
 		{"approx_subproblem",8,7,6,0,kw_336},
 		{"constraint_relax",8,1,9,0,kw_337},
 		{"constraint_tolerance",10,0,12,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"convergence_tolerance",10,0,11,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
+		{"linear_equality_constraint_matrix",14,0,18,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
+		{"linear_equality_scale_types",15,0,20,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
+		{"linear_equality_scales",14,0,21,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
+		{"linear_equality_targets",14,0,19,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
+		{"linear_inequality_constraint_matrix",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
+		{"linear_inequality_lower_bounds",14,0,14,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
+		{"linear_inequality_scale_types",15,0,16,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
+		{"linear_inequality_scales",14,0,17,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
+		{"linear_inequality_upper_bounds",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"max_iterations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"merit_function",8,4,7,0,kw_338},
 		{"method_name",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodName)},
@@ -2252,7 +2261,7 @@ static KeyWord
 		{"stanford",8,2,4,1,kw_333},
 		{"stoch_collocation",8,26,4,1,kw_311,0.,0.,0,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"surrogate_based_global",8,8,4,1,kw_334,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)},
-		{"surrogate_based_local",8,16,4,1,kw_340,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)},
+		{"surrogate_based_local",8,25,4,1,kw_340,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)},
 		{"vector_parameter_study",8,3,4,1,kw_341,0.,0.,0,N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}
 		},
 	kw_343[1] = {
