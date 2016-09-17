@@ -202,6 +202,10 @@ private:
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
+  /// stop the servers for the orderedModels instance identified by
+  /// the passed index
+  void stop_model(size_t ordered_model_index);
+
   //
   //- Heading: Data members
   //
@@ -421,9 +425,7 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
 
 inline void HierarchSurrModel::
 surrogate_function_indices(const IntSet& surr_fn_indices)
-{
-  surrogateFnIndices = surr_fn_indices;
-}
+{ surrogateFnIndices = surr_fn_indices; }
 
 
 inline IntIntPair HierarchSurrModel::
@@ -456,8 +458,17 @@ inline void HierarchSurrModel::derived_init_serial()
 
 
 inline void HierarchSurrModel::stop_servers()
+{ component_parallel_mode(0); }
+
+
+inline void HierarchSurrModel::stop_model(size_t ordered_model_index)
 {
-  component_parallel_mode(0);
+  Model& model = orderedModels[ordered_model_index];
+  ParConfigLIter pc_it = model.parallel_configuration_iterator();
+  size_t index = model.mi_parallel_level_index();
+  if (pc_it->mi_parallel_level_defined(index) &&
+      pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+    model.stop_servers();
 }
 
 
