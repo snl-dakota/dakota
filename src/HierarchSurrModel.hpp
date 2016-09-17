@@ -273,6 +273,10 @@ inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 { return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
 
 
+inline SizetSizet2DPair HierarchSurrModel::get_indices()
+{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
+
+
 inline void HierarchSurrModel::
 surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 {
@@ -306,9 +310,6 @@ inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
 
 inline Model& HierarchSurrModel::truth_model()
 { return orderedModels[highFidelityIndices.first]; }
-
-inline SizetSizet2DPair HierarchSurrModel::get_indices()
-{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
 
 
 inline void HierarchSurrModel::
