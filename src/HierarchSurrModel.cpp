@@ -1103,7 +1103,7 @@ void HierarchSurrModel::resize_response()
                             !currentResponse.function_hessians().empty());
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
-    estimate_message_lengths();
+    //estimate_message_lengths();
   }
 }
 
