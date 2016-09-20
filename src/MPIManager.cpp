@@ -11,9 +11,11 @@
 //- Owner:       Brian Adams
 //- Checked by:
 
+#include <cctype>
 #include "dakota_system_defs.hpp"
 #include "MPIManager.hpp"
 #include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"
 
 namespace Dakota {
 
@@ -141,7 +143,35 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
   // e.g. DIGITALMPI_ENV_MAP, MPI_ENVIRONMENT.  These variables are set for all
   // processors on DEC/SGI, but again it is not consistent across platforms 
   // (MPICH sets MPIRUN_DEVICE=ch_p4, but only on the master processor).
+  // 
+  // The logic falls through and sets mpi_launch true if Dakota was configured 
+  // with MPI but lacks detection for the platform/MPI implementation. 
+  //
+  // The environment variable DAKOTA_RUN_PARALLEL overrides automatic
+  // detection. If it is set and begins with 1, t, or T, mpi_launch is set 
+  // true (run in parallel mode). If it is defined and set to anything else, 
+  // mpi_launch remains false (run in serial mode).
+  
+#ifdef DAKOTA_HAVE_MPI
+  // Check DAKOTA_RUN_PARALLEL override.
+  char* parallel_override = std::getenv("DAKOTA_RUN_PARALLEL");
+  if(parallel_override) {
+    if(parallel_override[0] == '1' || toupper(parallel_override[0]) == 'T') {
+#ifdef MPI_DEBUG
+    Cout << "Parallel run forced by DAKOTA_RUN_PARALLEL" << std::endl;
+#endif
+      mpi_launch = true;
+    }
+#ifdef MPI_DEBUG
+    else {
+      Cout << "Serial run forced by DAKOTA_RUN_PARALLEL" << std::endl;
+    }
+#endif
+    return mpi_launch;
+  }
+#endif
 
+  // Begin checks for automatic detection
 #ifdef OPEN_MPI
   // run-time test for OpenMPI v1.2 or greater
   char* ompi_1_2_test = std::getenv("OMPI_MCA_universe");
@@ -173,6 +203,7 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
     // Command-line content didn't suffice.  Check environment variables.
     // MPICH environment variables in preferred order (roughly newest to oldest)
     StringArray env_vars;
+    env_vars.push_back("ALPS_APP_PE");              // MPICH on Cray Linux Environment
     env_vars.push_back("PMI_SIZE");                 // MPICH3
     env_vars.push_back("MPICH_NP");                 // MPICH2, incl shmem
     env_vars.push_back("MPICH_INTERFACE_HOSTNAME"); // MPICH2, old p4 check
