@@ -1,8 +1,6 @@
 
 namespace Dakota {
 
-/** 1932 distinct keywords (plus 251 aliases) **/
-
 static KeyWord
 	kw_1[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)},
