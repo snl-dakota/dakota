@@ -60,13 +60,10 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   lowFidelityIndices.first  = 0;
   lowFidelityIndices.second = 0;
   highFidelityIndices.first = num_models - 1;
-  if (num_models == 1) {
-    sameModelInstance = true;
-    highFidelityIndices.second = 1;
-  } else {
-    sameModelInstance = false;
-    highFidelityIndices.second = 0;
-  }
+  if (num_models == 1)
+    { sameModelInstance = true;  highFidelityIndices.second = 1; }
+  else
+    { sameModelInstance = false; highFidelityIndices.second = 0; }
   check_interface_instance();
 
   // Correction is required in the hierarchical case (since without correction,
@@ -227,7 +224,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       if (sameModelInstance) {
         asynchEvalFlag = lf_model.asynch_flag();
         evaluationCapacity = lf_model.evaluation_capacity();
-      } else {
+      }
+      else {
         hf_model.set_communicators(pl_iter, max_eval_concurrency);
         asynchEvalFlag = ( lf_model.asynch_flag() || hf_model.asynch_flag() );
         evaluationCapacity = std::max( lf_model.evaluation_capacity(),
@@ -504,7 +502,8 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     component_parallel_mode(LF_MODEL); // TO DO: sameModelInstance
     if (sameModelInstance)
       lf_model.solution_level_index(lowFidelityIndices.second);
-    else update_model(lf_model);
+    else
+      update_model(lf_model);
     ActiveSet lo_fi_set;
     switch (responseMode) {
     case UNCORRECTED_SURROGATE:
@@ -707,6 +706,7 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     if (sameModelInstance)
       hf_model.solution_level_index(highFidelityIndices.second);
     hf_model.evaluate(hi_fi_set);
+    // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
     cachedTruthRespMap[surrModelEvalCntr] = hf_model.current_response().copy();
   }
   if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
@@ -736,7 +736,8 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
                                             quiet_flag);
       }
     }
-    // cache corrected LF response for retrieval during synchronization
+    // cache corrected LF response for retrieval during synchronization.
+    // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
     cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
   }
 }
@@ -758,7 +759,8 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     derived_synchronize_sequential(hf_resp_map_rekey, lf_resp_map_rekey, true);
     derived_synchronize_combine(hf_resp_map_rekey, lf_resp_map_rekey,
                                 surrResponseMap);
-  } else                             // competing queues: nonblocking synch
+  }
+  else                               // competing queues: nonblocking synch
     derived_synchronize_competing();
 
   return surrResponseMap;
@@ -863,8 +865,8 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
   switch (responseMode) {
   case MODEL_DISCREPANCY: {
     SizetSizet2DPair indices = get_indices();
-    for (; hf_cit != hf_resp_map.end() &&
-         lf_cit != lf_resp_map.end(); ++hf_cit, ++lf_cit) {
+    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
+	 ++hf_cit, ++lf_cit) {
       check_key(hf_cit->first, lf_cit->first);
       deltaCorr[indices].compute(hf_cit->second, lf_cit->second,
 				 combined_resp_map[hf_cit->first], quiet_flag);
@@ -872,8 +874,8 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
     break;
   }
   case AGGREGATED_MODELS:
-    for (; hf_cit != hf_resp_map.end() &&
-         lf_cit != lf_resp_map.end(); ++hf_cit, ++lf_cit) {
+    for (; hf_cit != hf_resp_map.end() && lf_cit != lf_resp_map.end();
+	 ++hf_cit, ++lf_cit) {
       check_key(hf_cit->first, lf_cit->first);
       aggregate_response(hf_cit->second, lf_cit->second,
                          combined_resp_map[hf_cit->first]);
@@ -893,6 +895,7 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
     // process combinations of HF and LF completions
     Response empty_resp;
     while (hf_cit != hf_resp_map.end() || lf_cit != lf_resp_map.end()) {
+      // these have been rekeyed already to top-level surrModelEvalCntr:
       int hf_eval_id = (hf_cit == hf_resp_map.end()) ?
                        INT_MAX : hf_cit->first;
       int lf_eval_id = (lf_cit == lf_resp_map.end()) ?
@@ -902,11 +905,13 @@ derived_synchronize_combine(const IntResponseMap& hf_resp_map,
         response_mapping(hf_cit->second, empty_resp,
                          combined_resp_map[hf_eval_id]);
         ++hf_cit;
-      } else if (lf_eval_id < hf_eval_id) { // only LF available
+      }
+      else if (lf_eval_id < hf_eval_id) { // only LF available
         response_mapping(empty_resp, lf_cit->second,
                          combined_resp_map[lf_eval_id]);
         ++lf_cit;
-      } else { // both LF and HF available
+      }
+      else { // both LF and HF available
         response_mapping(hf_cit->second, lf_cit->second,
                          combined_resp_map[hf_eval_id]);
         ++hf_cit;
@@ -957,6 +962,7 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   SizetSizet2DPair indices = get_indices();
   while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
+    // these have been rekeyed already to top-level surrModelEvalCntr:
     int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX : hf_cit->first;
     int lf_eval_id = (lf_it  == lf_resp_map.end()) ? INT_MAX : lf_it->first;
     // process LF/HF results or cache them for next pass
@@ -977,7 +983,8 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
         break;
       }
       ++hf_cit;
-    } else if (lf_eval_id < hf_eval_id) { // only LF available
+    }
+    else if (lf_eval_id < hf_eval_id) { // only LF available
       switch (responseMode) {
       case MODEL_DISCREPANCY:
       case AGGREGATED_MODELS:
@@ -994,7 +1001,8 @@ derived_synchronize_combine_nowait(const IntResponseMap& hf_resp_map,
         break;
       }
       ++lf_it;
-    } else { // both LF and HF available
+    }
+    else { // both LF and HF available
       bool cache_for_pending_corr = false;
       switch (responseMode) {
       case MODEL_DISCREPANCY: {
@@ -1063,7 +1071,8 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
                                               quiet_flag);
         }
         rawVarsMap.erase(v_it);
-      } else // no new corrections can be applied -> cache uncorrected
+      }
+      else // no new corrections can be applied -> cache uncorrected
         cachedApproxRespMap.insert(*lf_it);
     }
     // else correction already applied
@@ -1101,9 +1110,17 @@ void HierarchSurrModel::resize_response()
     currentResponse.reshape(num_curr_fns, currentVariables.cv(),
                             !currentResponse.function_gradients().empty(),
                             !currentResponse.function_hessians().empty());
+
     // update message lengths for send/receive of parallel jobs (normally
     // performed once in Model::init_communicators() just after construct time)
     //estimate_message_lengths();
+    //
+    // NOT NECESSARY: Model::synchronize() and Model::serve_run() delegate to
+    // HierarchSurrModel::{derived_synchronize,serve_run}() which delegate to
+    // synchronize() and serve_run() by the LF or HF model.
+    // --> Jobs are never returned using messages containing the expanded
+    //     Response object.  Expansion by combination only happens on
+    //     iteratorCommRank 0 within derived_synchronize_combine{,_nowait}().
   }
 }
 
@@ -1132,7 +1149,8 @@ void HierarchSurrModel::component_parallel_mode(short mode)
   // set ParallelConfiguration for new mode and retrieve new data
   if (mode == HF_MODEL) { // new mode
     // activation delegated to HF model
-  } else if (mode == LF_MODEL) { // new mode
+  }
+  else if (mode == LF_MODEL) { // new mode
     // activation delegated to LF model
   }
 
