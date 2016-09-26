@@ -484,7 +484,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NomadOptimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_NOWPAC
-  case NOWPAC: case SNOWPAC:
+  case NOWPAC_OPT: case SNOWPAC_OPT:
     return new NOWPACOptimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_NPSOL
@@ -817,8 +817,8 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case SOGA:                    return String("soga"); break;
   case DL_SOLVER:               return String("dl_solver"); break;
   case MESH_ADAPTIVE_SEARCH:    return String("mesh_adaptive_search"); break;
-  case NOWPAC:                  return String("nowpac"); break;
-  case SNOWPAC:                 return String("snowpac"); break;
+  case NOWPAC_OPT:              return String("nowpac"); break;
+  case SNOWPAC_OPT:             return String("snowpac"); break;
   case NPSOL_SQP:               return String("npsol_sqp"); break;
   case NLSSOL_SQP:              return String("nlssol_sqp"); break;
   case NLPQL_SQP:               return String("nlpql_sqp"); break;
@@ -904,8 +904,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "soga")             return SOGA;
   else if (method_name == "dl_solver")        return DL_SOLVER;
   else if (method_name == "mesh_adaptive_search")  return MESH_ADAPTIVE_SEARCH;
-  else if (method_name == "nowpac")           return NOWPAC;
-  else if (method_name == "snowpac")          return SNOWPAC;
+  else if (method_name == "nowpac")           return NOWPAC_OPT;
+  else if (method_name == "snowpac")          return SNOWPAC_OPT;
   else if (method_name == "npsol_sqp")        return NPSOL_SQP;
   else if (method_name == "nlssol_sqp")       return NLSSOL_SQP;
   else if (method_name == "nlpql_sqp")        return NLPQL_SQP;

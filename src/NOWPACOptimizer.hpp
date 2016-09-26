@@ -15,13 +15,14 @@
 #define NOWPAC_OPTIMIZER_H
 
 #include "DakotaOptimizer.hpp"
-
+#include <BlackBoxBaseClass.hpp>
+#include <NOWPAC.hpp>
 
 namespace Dakota {
 
 /// Derived class for plugging Dakota evaluations into NOWPAC solver
 
-class NOWPACBlackBoxEvaluator : public BlackBoxBaseClass
+class NOWPACBlackBoxEvaluator: public BlackBoxBaseClass
 {
   void evaluate(std::vector<double> const &x, // incoming params in user space
 		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
@@ -31,7 +32,7 @@ class NOWPACBlackBoxEvaluator : public BlackBoxBaseClass
   // nonlin ineq constr (this is tied to SNOWPAC stochastic_optimization)
 
   // TO DO: queue() + synchronize()
-}
+};
 
 
 /// Wrapper class for the (S)NOWPAC optimization algorithms from
