@@ -85,6 +85,7 @@ private:
   size_t minimizeIndex;
 
   RealVector initialPoint;
+  bool nestedTrustRegions;
 
   std::vector<HierarchSurrBasedLocalMinimizerHelper> trustRegions;
 
