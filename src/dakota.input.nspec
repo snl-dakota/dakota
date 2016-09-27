@@ -216,6 +216,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+    [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+    [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+    [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+    [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+    [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+    [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+    [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+    [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+    [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
    )
   |
   ( surrogate_based_global {N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}

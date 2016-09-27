@@ -63,7 +63,6 @@ protected:
   //void initialize_expansion();
   //void compute_expansion();
   void update_expansion();
-  //void print_coefficients(std::ostream& s);
 
   Real compute_covariance_metric();
   Real compute_final_statistics_metric();

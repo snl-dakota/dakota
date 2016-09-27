@@ -2347,6 +2347,43 @@ void NonD::print_system_mappings(std::ostream& s) const
 }
 
 
+void NonD::
+print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_samp)
+{
+  size_t j, width = write_precision+7, num_lev = N_samp.size();
+  for (j=0; j<num_lev; ++j)
+    s << "                     " << std::setw(width) << N_samp[j] << '\n';
+}
+
+
+void NonD::
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_samp)
+{
+  size_t j, width = write_precision+7, num_lev = N_samp.size();
+  for (j=0; j<num_lev; ++j) {
+    const SizetArray& N_j = N_samp[j];
+    s << "                     " << std::setw(width) << N_j[0];
+    if (!homogeneous(N_j)) // print all qoi counts
+      for (size_t q=1; q<numFunctions; ++q)
+	s << ' ' << N_j[q];
+    s << '\n';
+  }
+}
+
+
+void NonD::
+print_multilevel_evaluation_summary(std::ostream& s, const Sizet3DArray& N_samp)
+{
+  size_t i, j, num_mf = N_samp.size(), width = write_precision+7;
+  if (num_mf == 1)  s << "<<<<< Final samples per level:\n";
+  else              s << "<<<<< Final samples per model form:\n";
+  for (i=0; i<num_mf; ++i) {
+    if (num_mf > 1) s << "      Model Form " << i+1 << ":\n";
+    print_multilevel_evaluation_summary(s, N_samp[i]);
+  }
+}
+
+
 void NonD::archive_allocate_mappings()
 {
   if (!resultsDB.active())  return;

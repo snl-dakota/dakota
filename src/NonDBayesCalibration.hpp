@@ -221,6 +221,10 @@ protected:
   /// export the acceptance chain in user space
   void export_chain();
 
+  /// Print filtered posterior and function values (later: credibility
+  /// and prediction intervals)
+  void export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals);
+
   /// Perform chain filtering with burn-in and sub-sampling
   void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
   void filter_fnvals(RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
@@ -235,11 +239,6 @@ protected:
   void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
   void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
       			  RealVector& std_devs);
-  /// Print credibility and prediction intervals
-  void print_filtered_tabular(RealMatrix& filteredChain,
-      			      RealMatrix& filteredFnVals_for_intervals,
-			      RealMatrix& PredVals, int num_filtered,
-			      size_t num_exp);
   void print_intervals_file(std::ostream& stream, RealMatrix& functionvalsT,
   			      RealMatrix& predvalsT, int length, 
 			      size_t aug_length);

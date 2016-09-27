@@ -88,6 +88,8 @@ public:
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
 			    const RealMatrix moment_cis, String qoi_type,
 			    const StringArray& moment_labels, bool print_cis);
+  /// prints the Wilks stastics
+  void print_wilks_stastics(std::ostream& s) const;
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
@@ -101,8 +103,25 @@ public:
 			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
-  /// Static for now so I can test without instantiating a NonDSampling object - RWH
+  /// Static so I can test without instantiating a NonDSampling object - RWH
   static int compute_wilks_sample_size(unsigned short order, Real alpha, Real beta, bool twosided = false);
+
+  /// Helper function - calculates the Wilks residual 
+  static Real compute_wilks_residual(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided);
+
+  /// calculates the alpha paramter given number of samples using the Wilks formula
+  /// Static so I can test without instantiating a NonDSampling object - RWH
+  static Real compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided = false);
+
+  /// calculates the beta paramter given number of samples using the Wilks formula
+  /// Static so I can test without instantiating a NonDSampling object - RWH
+  static Real compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided = false);
+
+  /// Get the lower and upper bounds supported by Wilks bisection solves
+  static Real get_wilks_alpha_min() { return 1.e-6; }
+  static Real get_wilks_alpha_max() { return 0.999999; }
+  static Real get_wilks_beta_min() { return 1.e-6; }
+  static Real get_wilks_beta_max() { return 0.999999; }
 
   /// transform allSamples imported by alternate constructor.  This is needed
   /// since random variable distribution parameters are not updated until
@@ -242,6 +261,10 @@ protected:
   unsigned short sampleType;  ///< the sample type: default, random, lhs,
                               ///< incremental random, or incremental lhs
   bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  unsigned short wilksOrder;
+  Real      wilksAlpha;    
+  Real      wilksBeta;    
+  bool      wilksTwosided;
 
   /// current increment in a sequence of samples
   int samplesIncrement;

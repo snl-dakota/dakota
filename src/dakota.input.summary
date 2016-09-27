@@ -192,6 +192,15 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
 	  )
 	|
 	( surrogate_based_global

@@ -545,6 +545,7 @@
           &default_max_iterations;
           &default_convergence_tolerance;
           &default_constraint_tolerance;
+          &default_linear_constraints;
         </keyword>
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>

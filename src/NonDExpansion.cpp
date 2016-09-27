@@ -2354,8 +2354,6 @@ void NonDExpansion::print_results(std::ostream& s)
   // Print analytic moments and local and global sensitivities, defined from
   // expansion coefficients
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    print_coefficients(s);
   s << "-----------------------------------------------------------------------"
     << "------\nStatistics derived analytically from polynomial expansion:\n";
   print_moments(s);

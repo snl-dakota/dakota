@@ -213,6 +213,10 @@ private:
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
 
+  /// stop the servers for the orderedModels instance identified by
+  /// the passed index
+  void stop_model(size_t ordered_model_index);
+
   //
   //- Heading: Data members
   //
@@ -249,6 +253,9 @@ private:
   /// scheduling processes
   bool sameInterfaceInstance;
 
+  /// store index pair that is active in component_parallel_mode()
+  SizetSizetPair componentParallelIndices;
+
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
   std::map<SizetSizetPair,Response> truthResponseRef;
@@ -281,6 +288,10 @@ inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 { return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
 
 
+inline SizetSizet2DPair HierarchSurrModel::get_indices()
+{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
+
+
 inline void HierarchSurrModel::
 surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 {
@@ -292,8 +303,7 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   if (lf_soln_lev_index != _NPOS)
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
 
-  DiscrepancyCorrection& delta_corr
-    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
+  DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
     delta_corr.initialize(orderedModels[lowFidelityIndices.first],
 			  surrogateFnIndices, corrType, corrOrder);
@@ -306,26 +316,7 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
 
 inline void HierarchSurrModel::
 surrogate_model_indices(const SizetSizetPair& lf_form_level)
-{
-  lowFidelityIndices = lf_form_level;
-  size_t lf_model_index = lf_form_level.first,
-         lf_soln_lev_index = lf_form_level.second;
-  sameModelInstance = (lf_model_index == highFidelityIndices.first);
-  check_interface_instance();
-
-  if (lf_soln_lev_index != _NPOS)
-    orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
-
-  DiscrepancyCorrection& delta_corr
-    = deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)];
-  if (!delta_corr.initialized())
-    delta_corr.initialize(orderedModels[lowFidelityIndices.first],
-			  surrogateFnIndices, corrType, corrOrder);
-
-  // TO DO:
-  //deltaCorr.surrogate_model(orderedModels[lf_model_index]);
-  //deltaCorr.clear();
-}
+{ surrogate_model_indices(lf_form_level.first, lf_form_level.second); }
 
 
 inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
@@ -334,9 +325,6 @@ inline const SizetSizetPair& HierarchSurrModel::surrogate_model_indices() const
 
 inline Model& HierarchSurrModel::truth_model()
 { return orderedModels[highFidelityIndices.first]; }
-
-inline SizetSizet2DPair HierarchSurrModel::get_indices()
-{ return std::make_pair(lowFidelityIndices,highFidelityIndices); }
 
 
 inline void HierarchSurrModel::
@@ -350,8 +338,7 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
   if (hf_soln_lev_index != _NPOS)
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
 
-  DiscrepancyCorrection& delta_corr
-    = deltaCorr[get_indices()];
+  DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
     delta_corr.initialize(surrogate_model(),
 			  surrogateFnIndices, corrType, corrOrder);
@@ -360,22 +347,7 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
 
 inline void HierarchSurrModel::
 truth_model_indices(const SizetSizetPair& hf_form_level)
-{
-  highFidelityIndices = hf_form_level;
-  size_t hf_model_index = hf_form_level.first,
-         hf_soln_lev_index = hf_form_level.second;
-  sameModelInstance = (hf_model_index == lowFidelityIndices.first);
-  check_interface_instance();
-
-  if (hf_soln_lev_index != _NPOS)
-    orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
-
-  DiscrepancyCorrection& delta_corr
-    = deltaCorr[get_indices()];
-  if (!delta_corr.initialized())
-    delta_corr.initialize(surrogate_model(),
-			  surrogateFnIndices, corrType, corrOrder);
-}
+{ truth_model_indices(hf_form_level.first, hf_form_level.second); }
 
 
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
@@ -441,9 +413,7 @@ inline void HierarchSurrModel::surrogate_response_mode(short mode)
 
 inline void HierarchSurrModel::
 surrogate_function_indices(const IntSet& surr_fn_indices)
-{
-  surrogateFnIndices = surr_fn_indices;
-}
+{ surrogateFnIndices = surr_fn_indices; }
 
 
 inline IntIntPair HierarchSurrModel::
@@ -476,8 +446,17 @@ inline void HierarchSurrModel::derived_init_serial()
 
 
 inline void HierarchSurrModel::stop_servers()
+{ component_parallel_mode(0); }
+
+
+inline void HierarchSurrModel::stop_model(size_t ordered_model_index)
 {
-  component_parallel_mode(0);
+  Model& model = orderedModels[ordered_model_index];
+  ParConfigLIter pc_it = model.parallel_configuration_iterator();
+  size_t index = model.mi_parallel_level_index();
+  if (pc_it->mi_parallel_level_defined(index) &&
+      pc_it->mi_parallel_level(index).server_communicator_size() > 1)
+    model.stop_servers();
 }
 
 

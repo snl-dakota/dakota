@@ -315,3 +315,121 @@ TEUCHOS_UNIT_TEST(wilks, twosided_secondorder)
     TEST_EQUALITY( miter->second, num_samples );
   }
 }
+
+
+//----------------------------------------------------------------
+
+/*
+   The following tests exercise some Wilks utilities which compute a
+   Wilks parameter given specified values for the other Wilks data.
+*/
+
+namespace {
+  void plot_residuals(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided)
+  {
+    std::ofstream ofile1("plot_alpha_resids.txt");
+    std::ofstream ofile2("plot_beta_resids.txt");
+    for( int i=0; i<101; ++i )
+    {
+      Real test_val = (Real)i/100.0;
+      ofile1 << (Real)i/100.0 << "\t" << NonDSampling::compute_wilks_residual(order, nsamples, test_val, beta, twosided) << std::endl;
+      ofile2 << (Real)i/100.0 << "\t" << NonDSampling::compute_wilks_residual(order, nsamples, alpha, test_val, twosided) << std::endl;
+    }
+    ofile1.close();
+    ofile2.close();
+  }
+}
+
+
+TEUCHOS_UNIT_TEST(wilks, compute_residual)
+{
+  Real alpha = 0.95, beta = 0.95;
+  bool twosided = false;
+  unsigned short order = 1;
+  int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+
+  // Check agreement to within an integer
+  Real res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
+  TEST_FLOATING_EQUALITY( 1.0, res, 1.0 );
+
+  // Check agreement to within an integer
+  order = 3;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
+  TEST_FLOATING_EQUALITY( 1.0, res, 1.0 );
+
+  // Check agreement to within an integer
+  twosided = true;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
+  TEST_FLOATING_EQUALITY( 1.0, res, 1.0 );
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(wilks, compute_alpha)
+{
+  const Real alpha = 0.97, beta = 0.99, max_tol = 4.e-4;
+
+  bool twosided = false;
+  unsigned short order = 1;
+  int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  Real test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
+  Real test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
+  Real tol = std::fabs(test_alpha - test_alpha_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( alpha, test_alpha, tol );
+
+  twosided = false;
+  order = 3;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
+  test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
+  tol = std::fabs(test_alpha - test_alpha_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( alpha, test_alpha, tol );
+
+  twosided = true;
+  order = 2;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
+  test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
+  tol = std::fabs(test_alpha - test_alpha_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( alpha, test_alpha, tol );
+
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(wilks, compute_beta)
+{
+  const Real alpha = 0.97, beta = 0.99, max_tol = 4.e-4;
+
+  bool twosided = false;
+  unsigned short order = 1;
+  int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  Real test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
+  Real test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
+  Real tol = std::fabs(test_beta - test_beta_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( beta, test_beta, tol );
+
+  twosided = false;
+  order = 3;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
+  test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
+  tol = std::fabs(test_beta - test_beta_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( beta, test_beta, tol );
+
+  twosided = true;
+  order = 2;
+  num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
+  test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
+  test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
+  tol = std::fabs(test_beta - test_beta_m1);
+  TEST_ASSERT( tol < max_tol );
+  TEST_FLOATING_EQUALITY( beta, test_beta, tol );
+}
