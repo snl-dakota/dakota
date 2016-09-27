@@ -8,8 +8,7 @@
 
 //- Class:       NOWPACOptimizer
 //- Description: Implementation code for the NOWPACOptimizer class
-//- Owner:       Bengt Abel
-//- Checked by:  Mike Eldred
+//- Owner:       Mike Eldred
 
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
