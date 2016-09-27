@@ -689,7 +689,7 @@ MG_Opt(const RealVector &xk, int k)
     return optimize(xk_2, max_iter, k);
   }
 }
-astyle --style=linux -s2 -xC80 src/ProbabilityTransformModel.*
+
 RealVector HierarchSurrBasedLocalMinimizer::
 linesearch(const RealVector &xk, const RealVector &pk, double alpha0)
 {
