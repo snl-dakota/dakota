@@ -1237,16 +1237,16 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
-  // factors for relationship between variance of mean estimator and N_l
+  // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
   // Initialize for pilot sample
-  SizetArray N_l, delta_N_l; N_l.assign(num_lev, 0);
+  SizetArray delta_N_l; NLev.assign(num_lev, 0);
   delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
   Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
 
-  // now converge on sample counts per level (N_l)
+  // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
@@ -1266,20 +1266,20 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
       }
 
-      // aggregate variances across QoI for estimating N_l (justification:
+      // aggregate variances across QoI for estimating NLev (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (delta_N_l[lev]) {
-	N_l[lev] += delta_N_l[lev]; // update total samples for this level
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 
 	if (iter == 0) { // initial expansion build
-	  increment_sample_sequence(delta_N_l[lev], N_l[lev]);
+	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
 	  if (lev == 0) compute_expansion(); // init + build
 	  else           update_expansion(); // just build 
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
-	  increment_sample_sequence(delta_N_l[lev], N_l[lev]);
+	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
 	  append_expansion();
 	}
 
@@ -1290,9 +1290,9 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	  PecosApproximation* poly_approx_q
 	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
 
-	  // We must assume a functional dependence on N_l for formulating the
+	  // We must assume a functional dependence on NLev for formulating the
 	  // optimum of the cost functional subject to error balance constraint.
-	  //   Var(Q-hat) = sigma_Q^2 / (gamma N_l^kappa)
+	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
 	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
 	  // the parameters kappa and gamma for PCE regression.
 	  
@@ -1300,7 +1300,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	  // the variance in the mean estimator (alpha_0) from two sources:
 	  // > from variation across k folds for the selected CV settings
 	  //   (estimate gamma?)
-	  // > from var decrease as N_l increases across iters (estimate kappa?)
+	  // > from var decrease as NLev increases across iters (estimate kappa?)
           //Real cv_var_i = poly_approx_rep->
 	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
 	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
@@ -1323,11 +1323,11 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
       sum_root_var_cost
 	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
       // MSE reference is MC applied to HF:
-      if (iter == 0) estimator_var0 += agg_var_l / N_l[lev];
+      if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+    // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
     // discretization error, we compute an initial estimator variance and
     // then seek to reduce it by a relative_factor <= 1.
     if (iter == 0) { // eps^2 / 2 = var * relative factor
@@ -1344,7 +1344,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
-      delta_N_l[lev] = (new_N_l > N_l[lev]) ? new_N_l - N_l[lev] : 0;
+      delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
     }
     ++iter;
     Cout << "\nML PCE iteration " << iter << " sample increments:\n"
@@ -1358,12 +1358,27 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     iteratedModel.discrepancy_correction().correction_type());
 
   // compute the equivalent number of HF evaluations
-  Real equiv_hf_evals = N_l[0] * cost[0]; // first level is single eval
-  for (lev=1; lev<num_lev; ++lev) // subsequent levels incur 2 model costs
-    equiv_hf_evals += N_l[lev] * (cost[lev] + cost[lev-1]);
-  equiv_hf_evals /= cost[num_lev-1]; // normalize into equivalent HF evals
-  Cout << "<<<<< Equivalent number of high fidelity evaluations: "
-       << equiv_hf_evals << std::endl;
+  equivHFEvals = NLev[0] * cost[0]; // first level is single eval
+  for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
+    equivHFEvals += NLev[lev] * (cost[lev] + cost[lev-1]);
+  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+}
+
+
+void NonDPolynomialChaos::print_results(std::ostream& s)
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    print_coefficients(s);
+
+  if (//iteratedModel.subordinate_models(false).size() == 1 &&
+      iteratedModel.truth_model().solution_levels() > 1) {
+    s << "<<<<< Samples per solution level:\n";
+    print_multilevel_evaluation_summary(s, NLev);
+    s << "<<<<< Equivalent number of high fidelity evaluations: "
+      << equivHFEvals << std::endl;
+  }
+
+  NonDExpansion::print_results(s);
 }
 
 

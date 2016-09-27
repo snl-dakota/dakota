@@ -97,6 +97,8 @@ protected:
 
   void increment_order_and_grid();
 
+  /// print the final coefficients and final statistics
+  void print_results(std::ostream& s);
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
 
@@ -204,19 +206,15 @@ private:
 
   /// user request of quadrature order
   UShortArray quadOrderSeqSpec;
-
   /// user request of sparse grid level
   UShortArray ssgLevelSeqSpec;
-
   /// cubature integrand
   unsigned short cubIntSpec;
 
   /// user specified import approx. points file
   String importBuildPointsFile;
-
   /// user specified import file format
   unsigned short importBuildFormat;
-
   /// user specified import build active only
   bool importBuildActiveOnly;
 
@@ -226,6 +224,13 @@ private:
   /// local flag to signal an explicit call to resize
   /// is necessary if resizedFlag is false
   bool callResize;
+
+  /// number of samples allocated to each level of a discretization
+  /// hierarchy within multilevel regression
+  SizetArray NLev;
+  /// equivalent number of high fidelity evaluations accumulated using samples
+  /// across multiple model forms and/or discretization levels
+  Real equivHFEvals;
 };
 
 
