@@ -34,14 +34,13 @@ namespace Dakota
 extern PRPCache data_pairs; // global container
 
 // initialization of statics
-HierarchSurrBasedLocalMinimizer* HierarchSurrBasedLocalMinimizer::mlmfInstance(
-  NULL);
+HierarchSurrBasedLocalMinimizer* HierarchSurrBasedLocalMinimizer::mlmfInstance(NULL);
 
 
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model), minimizeIndex(0),
-  nestedTrustRegions(true)
+	nestedTrustRegions(true)
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -86,10 +85,8 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // TODO: This is specific for just multifidelity:
   // TODO: This is hard coded for just multifidelity:
   for(size_t ii = 0; ii < numFid-1; ii++) {
-    trustRegions.push_back(HierarchSurrBasedLocalMinimizerHelper(
-                             iteratedModel.truth_model().current_response(), ii, ii+1));
-    trustRegions[ii].trust_region_factor(origTrustRegionFactor*std::pow(0.5,
-                                         numFid - 2 - ii));
+    trustRegions.push_back(HierarchSurrBasedLocalMinimizerHelper(iteratedModel.truth_model().current_response(), ii, ii+1));
+    trustRegions[ii].trust_region_factor(origTrustRegionFactor*std::pow(0.5, numFid - 2 - ii));
     trustRegions[ii].new_center(true);
   }
 }
@@ -115,8 +112,7 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   // need copies of initial point and initial global bounds, since iteratedModel
   // continuous vars will be reset to the TR center and iteratedModel bounds
   // will be reset to the TR bounds
-  copy_data(iteratedModel.current_variables().continuous_variables(),
-            initialPoint);
+  copy_data(iteratedModel.current_variables().continuous_variables(), initialPoint);
   copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
   copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
 
@@ -139,8 +135,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   bestVariablesArray.front().continuous_variables(
     trustRegions[minimizeIndex].vars_center().continuous_variables());
   bestResponseArray.front().function_values(
-    trustRegions[minimizeIndex].response_center(TRUTH_MODEL,
-        false).function_values());
+    trustRegions[minimizeIndex].response_center(TRUTH_MODEL,false).function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
 }
@@ -167,10 +162,12 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     if (ind == trustRegions.size()-1 || (!nestedTrustRegions && ind > 0)) {
       parent_upper_bounds = globalUpperBnds;
       parent_lower_bounds = globalLowerBnds;
-    } else if (nestedTrustRegions) {
+    }
+    else if (nestedTrustRegions) {
       parent_upper_bounds = trustRegions[ind+1].tr_upper_bnds();
       parent_lower_bounds = trustRegions[ind+1].tr_lower_bnds();
-    } else {
+    }
+    else {
       for (int jj = 0; jj < numContinuousVars; jj++) {
         double min_upper_bound = 0.0;
         double max_lower_bound = 0.0;
@@ -190,11 +187,9 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
 
     size_t i;
     bool c_vars_truncation = false, tr_lower_truncation = false,
-         tr_upper_truncation = false;
-    RealVector c_vars_center, tr_lower_bnds(numContinuousVars),
-               tr_upper_bnds(numContinuousVars);
-    copy_data(trustRegions[ind].vars_center().continuous_variables(),
-              c_vars_center);
+       tr_upper_truncation = false;
+    RealVector c_vars_center, tr_lower_bnds(numContinuousVars), tr_upper_bnds(numContinuousVars);
+    copy_data(trustRegions[ind].vars_center().continuous_variables(), c_vars_center);
     for (i=0; i<numContinuousVars; i++) {
       // verify that varsCenter is within global bounds
       if ( c_vars_center[i] > parent_upper_bounds[i] ) {
@@ -206,8 +201,8 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
         c_vars_truncation = true;
       }
       // scalar tr_offset was previously trustRegionOffset[i]
-      Real tr_offset = trustRegions[ind].trust_region_factor()/2. *
-                       ( parent_upper_bounds[i] - parent_lower_bounds[i] );
+      Real tr_offset = trustRegions[ind].trust_region_factor()/2. * 
+        ( parent_upper_bounds[i] - parent_lower_bounds[i] );
       Real up_bound = c_vars_center[i] + tr_offset;
       Real lo_bound = c_vars_center[i] - tr_offset;
       if ( up_bound <= parent_upper_bounds[i] )
@@ -235,14 +230,10 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     Cout << "\n**************************************************************"
          << "************\nBegin SBLM Iteration Number " << sbIterNum+1
          << "\n\nTrust Region " << ind << "\n";
-    Cout << "Truth model form = " << trustRegions[ind].truth_model_form() <<
-         std::endl;
-    Cout << "Truth model level = " << trustRegions[ind].truth_model_level() <<
-         std::endl;
-    Cout << "Approx. model form = " << trustRegions[ind].approx_model_form() <<
-         std::endl;
-    Cout << "Approx. model level = " << trustRegions[ind].approx_model_level() <<
-         std::endl;
+    Cout << "Truth model form = " << trustRegions[ind].truth_model_form() << std::endl;
+    Cout << "Truth model level = " << trustRegions[ind].truth_model_level() << std::endl;
+    Cout << "Approx. model form = " << trustRegions[ind].approx_model_form() << std::endl;
+    Cout << "Approx. model level = " << trustRegions[ind].approx_model_level() << std::endl;
     Cout << "                 ";
     if (tr_lower_truncation)
       Cout << std::setw(write_precision+9) << "Lower (truncated)";
@@ -258,20 +249,17 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
       = iteratedModel.continuous_variable_labels();
     for (i=0; i<numContinuousVars; i++)
       Cout << std::setw(16) << c_vars_labels[i] << ':'
-           << std::setw(write_precision+9)
-           << tr_lower_bnds[i] << std::setw(write_precision+9) << c_vars_center[i]
-           << std::setw(write_precision+9) << tr_upper_bnds[i] << '\n';
+     << std::setw(write_precision+9)
+     << tr_lower_bnds[i] << std::setw(write_precision+9) << c_vars_center[i]
+     << std::setw(write_precision+9) << tr_upper_bnds[i] << '\n';
     Cout << "****************************************************************"
          << "**********\n";
   }
 
   // Set the trust region center and bounds for approxSubProbOptimizer
-  approxSubProbModel.continuous_variables(
-    trustRegions[minimizeIndex].vars_center().continuous_variables());
-  approxSubProbModel.continuous_lower_bounds(
-    trustRegions[minimizeIndex].tr_lower_bnds());
-  approxSubProbModel.continuous_upper_bounds(
-    trustRegions[minimizeIndex].tr_upper_bnds());
+  approxSubProbModel.continuous_variables(trustRegions[minimizeIndex].vars_center().continuous_variables());
+  approxSubProbModel.continuous_lower_bounds(trustRegions[minimizeIndex].tr_lower_bnds());
+  approxSubProbModel.continuous_upper_bounds(trustRegions[minimizeIndex].tr_upper_bnds());
 }
 
 void HierarchSurrBasedLocalMinimizer::build()
@@ -279,8 +267,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   // Compute new trust region centers:
   for (size_t ii = 0; ii < trustRegions.size(); ii++) {
     // Set the trust region center and bounds
-    iteratedModel.continuous_variables(
-      trustRegions[ii].vars_center().continuous_variables());
+    iteratedModel.continuous_variables(trustRegions[ii].vars_center().continuous_variables());
     iteratedModel.continuous_lower_bounds(trustRegions[ii].tr_lower_bnds());
     iteratedModel.continuous_upper_bounds(trustRegions[ii].tr_upper_bnds());
 
@@ -312,27 +299,21 @@ void HierarchSurrBasedLocalMinimizer::build()
   // Recompute corrected center responses:
   for (size_t ii = 0; ii < trustRegions.size(); ii++) {
     // Compute responseCenterCorrected
-    Cout << "\nApplying corrections to trust region center response for:" <<
-         std::endl;
-    Cout << "Approx. model form = " << trustRegions[ii].approx_model_form() <<
-         std::endl;
-    Cout << "Approx. model level = " << trustRegions[ii].approx_model_level() <<
-         std::endl;
-    Response response_center_corrected_temp = trustRegions[ii].response_center(
-          APPROX_MODEL, false);
+    Cout << "\nApplying corrections to trust region center response for:" << std::endl;
+    Cout << "Approx. model form = " << trustRegions[ii].approx_model_form() << std::endl;
+    Cout << "Approx. model level = " << trustRegions[ii].approx_model_level() << std::endl;
+    Response response_center_corrected_temp = trustRegions[ii].response_center(APPROX_MODEL, false);
     for (size_t jj = ii; jj < trustRegions.size(); jj++) {
       set_model_states(jj);
 
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
       delta.apply(trustRegions[ii].vars_center(), response_center_corrected_temp);
     }
-    trustRegions[ii].response_center(response_center_corrected_temp, APPROX_MODEL,
-                                     true);
+    trustRegions[ii].response_center(response_center_corrected_temp, APPROX_MODEL, true);
   }
 
   // highest fidelity model doesn't need correcting:
-  trustRegions.back().response_center(trustRegions.back().response_center(
-                                        TRUTH_MODEL, false),TRUTH_MODEL, true);
+  trustRegions.back().response_center(trustRegions.back().response_center(TRUTH_MODEL, false),TRUTH_MODEL, true);
 }
 
 
@@ -357,12 +338,11 @@ find_center(size_t tr_index)
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
-    truth_model.continuous_variables(
-      trustRegions[tr_index].vars_center().continuous_variables());
+    truth_model.continuous_variables(trustRegions[tr_index].vars_center().continuous_variables());
     truth_model.evaluate(trustRegions[tr_index].active_set());
 
     trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           TRUTH_MODEL, false);
+                                                TRUTH_MODEL, false);
   }
 
   hard_convergence_check(tr_index);
@@ -379,24 +359,22 @@ find_center(size_t tr_index)
     PRPCacheHIter cache_it
       = lookup_by_val(data_pairs, search_id, search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
-      trustRegions[tr_index].response_center(APPROX_MODEL,
-                                             false).function_values(cache_it->response().function_values());
+      trustRegions[tr_index].response_center(APPROX_MODEL, false).function_values(cache_it->response().function_values());
       search_set.request_values(2);
       cache_it
         = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
-        trustRegions[tr_index].response_center(APPROX_MODEL,
-                                               false).function_gradients(cache_it->response().function_gradients());
+        trustRegions[tr_index].response_center(APPROX_MODEL, false).function_gradients(cache_it->response().function_gradients());
         found = true;
       }
     }
-
+    
     if (!found) {
       Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
       iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
       iteratedModel.evaluate(trustRegions[tr_index].active_set());
       trustRegions[tr_index].response_center(iteratedModel.current_response(),
-                                             APPROX_MODEL, false);
+                                                  APPROX_MODEL, false);
     }
   }
 }
@@ -410,8 +388,7 @@ find_center(size_t tr_index)
 void HierarchSurrBasedLocalMinimizer::
 hard_convergence_check(size_t tr_index)
 {
-  Response truth_center_uncorrected = trustRegions[tr_index].response_center(
-                                        TRUTH_MODEL, false);
+  Response truth_center_uncorrected = trustRegions[tr_index].response_center(TRUTH_MODEL, false);
   const RealVector& fns_truth   = truth_center_uncorrected.function_values();
   const RealMatrix& grads_truth = truth_center_uncorrected.function_gradients();
 
@@ -424,7 +401,7 @@ hard_convergence_check(size_t tr_index)
 
   Real fn_grad_norm = 0.0;
   for (size_t i=0; i<numContinuousVars; i++) {
-    fn_grad_norm += std::pow(fn_grad[i], 2);
+      fn_grad_norm += std::pow(fn_grad[i], 2);
   }
 
   // Terminate SBLM if the norm of the projected merit function gradient
@@ -449,7 +426,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_model_states(minimizeIndex);
 
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
-  correction_mode(FULL_MODEL_FORM_CORRECTION);
+    correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
@@ -459,10 +436,8 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   sbIterNum++; // full iteration performed: increment the counter
 
   // Retrieve vars_star and responseStarCorrected[lf_model_form]
-  trustRegions[minimizeIndex].vars_star(
-    approxSubProbMinimizer.variables_results());
-  trustRegions[minimizeIndex].response_star(
-    approxSubProbMinimizer.response_results(), APPROX_MODEL, true);
+  trustRegions[minimizeIndex].vars_star(approxSubProbMinimizer.variables_results());
+  trustRegions[minimizeIndex].response_star(approxSubProbMinimizer.response_results(), APPROX_MODEL, true);
 }
 
 void HierarchSurrBasedLocalMinimizer::verify()
@@ -484,8 +459,7 @@ void HierarchSurrBasedLocalMinimizer::verify()
   truth_model.active_variables(trustRegions[minimizeIndex].vars_star());
   truth_model.evaluate(trustRegions[minimizeIndex].active_set());
 
-  trustRegions[minimizeIndex].response_star(truth_model.current_response(),
-      TRUTH_MODEL, false);
+  trustRegions[minimizeIndex].response_star(truth_model.current_response(), TRUTH_MODEL, false);
 
   tr_ratio_check(tr_index);
 
@@ -494,8 +468,7 @@ void HierarchSurrBasedLocalMinimizer::verify()
   if (trustRegions[tr_index].new_center()) {
     trustRegions[tr_index].vars_center(trustRegions[minimizeIndex].vars_star());
 
-    trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           TRUTH_MODEL, false);
+    trustRegions[tr_index].response_center(truth_model.current_response(), TRUTH_MODEL, false);
   }
 
   // Check for soft convergence:
@@ -517,14 +490,10 @@ void HierarchSurrBasedLocalMinimizer::verify()
     be terminated (diminishing returns). */
 void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
 {
-  Response truth_center_uncorrected = trustRegions[tr_index].response_center(
-                                        TRUTH_MODEL, false);
-  Response truth_star_uncorrected = trustRegions[tr_index].response_star(
-                                      TRUTH_MODEL, false);
-  Response approx_center_corrected = trustRegions[tr_index].response_center(
-                                       APPROX_MODEL,true);
-  Response approx_star_corrected = trustRegions[tr_index].response_star(
-                                     APPROX_MODEL,true);
+  Response truth_center_uncorrected = trustRegions[tr_index].response_center(TRUTH_MODEL, false);
+  Response truth_star_uncorrected = trustRegions[tr_index].response_star(TRUTH_MODEL, false);
+  Response approx_center_corrected = trustRegions[tr_index].response_center(APPROX_MODEL,true);
+  Response approx_star_corrected = trustRegions[tr_index].response_star(APPROX_MODEL,true);
 
   const RealVector& fns_center_truth = truth_center_uncorrected.function_values();
   const RealVector& fns_star_truth = truth_star_uncorrected.function_values();
@@ -650,10 +619,10 @@ MG_Opt_driver(const Variables &x0)
   int num_iter = 0;
   while (!convergenceFlag && num_iter < max_iter) {
     vars_star = MG_Opt(vars_star, numLev[0] - 1);
-
+    
     // Check for convergence
     // TODO: add code here
-
+    
     num_iter++;
   }
 }
@@ -665,7 +634,8 @@ MG_Opt(const RealVector &xk, int k)
     // Full optimization on corrected lowest level
     int max_iter = 30;
     return optimize(xk, max_iter, k);
-  } else {
+  }
+  else {
     // Partial optimization
     int max_iter = 3;
     RealVector xk_1 = optimize(xk, max_iter, k);
@@ -689,7 +659,7 @@ MG_Opt(const RealVector &xk, int k)
     return optimize(xk_2, max_iter, k);
   }
 }
-astyle --style=linux -s2 -xC80 src/ProbabilityTransformModel.*
+
 RealVector HierarchSurrBasedLocalMinimizer::
 linesearch(const RealVector &xk, const RealVector &pk, double alpha0)
 {
@@ -710,7 +680,7 @@ optimize(const RealVector &x, int max_iter, int index)
   set_model_states(index);
 
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
-  correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
+    correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);

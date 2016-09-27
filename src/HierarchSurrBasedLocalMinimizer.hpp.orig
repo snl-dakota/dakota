@@ -80,8 +80,7 @@ private:
 
   RealVector optimize(const RealVector &x, int max_iter, int index);
 
-  RealVector linesearch(const RealVector &xk, const RealVector &pk,
-                        double alpha0);
+  RealVector linesearch(const RealVector &xk, const RealVector &pk, double alpha0);
 
   RealVector MG_Opt(const RealVector &xk, int k);
 

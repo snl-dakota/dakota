@@ -26,24 +26,18 @@ class HierarchSurrBasedLocalMinimizerHelper
 {
 public:
   /// constructor
-  HierarchSurrBasedLocalMinimizerHelper(const Response& initial_resp,
-                                        size_t approx_form, size_t truth_form, size_t approx_level = 0,
-                                        size_t truth_level = 0);
+  HierarchSurrBasedLocalMinimizerHelper(const Response& initial_resp, size_t approx_form, size_t truth_form, size_t approx_level = 0, size_t truth_level = 0);
   /// destructor
   ~HierarchSurrBasedLocalMinimizerHelper();
 
-  Response response_star(short response_type,
-                         bool return_corrected = false) const;
-  Response response_center(short response_type,
-                           bool return_corrected = false) const;
+  Response response_star(short response_type, bool return_corrected = false) const;
+  Response response_center(short response_type, bool return_corrected = false) const;
 
   Response response_star(short response_type, bool return_corrected = false);
   Response response_center(short response_type, bool return_corrected = false);
 
-  void response_star(const Response& resp, short response_type,
-                     bool return_corrected = false);
-  void response_center(const Response& resp, short response_type,
-                       bool return_corrected = false);
+  void response_star(const Response& resp, short response_type, bool return_corrected = false);
+  void response_center(const Response& resp, short response_type, bool return_corrected = false);
 
   Real trust_region_factor();
   void trust_region_factor(Real val);
@@ -89,7 +83,7 @@ private:
 
   Variables varsCenter;
   Variables varsStar;
-
+  
   Real trustRegionFactor;
 
   /// flags the acceptance of a candidate point and the existence of
