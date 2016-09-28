@@ -19,8 +19,8 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 
-#define TRUTH_RESPONSE 2
-#define APPROX_RESPONSE 3
+#define APPROX_RESPONSE 1
+#define  TRUTH_RESPONSE 2
 
 namespace Dakota {
 
@@ -112,6 +112,10 @@ private:
   RealVector trLowerBounds;
   RealVector trUpperBounds;
 };
+
+
+inline SurrBasedLevelData::SurrBasedLevelData()
+{ }
 
 
 inline SurrBasedLevelData::~SurrBasedLevelData()

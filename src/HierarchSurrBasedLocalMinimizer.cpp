@@ -26,6 +26,10 @@
 
 namespace Dakota {
 
+// define special values for componentParallelMode
+//#define SURROGATE_MODEL 1
+#define TRUTH_MODEL 2
+
 // initialization of statics
 //HierarchSurrBasedLocalMinimizer*
 //HierarchSurrBasedLocalMinimizer::mlmfInstance(NULL);
@@ -60,8 +64,8 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // TODO: This is hard coded for just multifidelity:
   trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++ml_iter, ++i)
-    trustRegions[i] = HierarchSurrBasedLocalMinimizerHelper(
-      ml_iter->current_response(), i, i+1); // TODO: fine-grained init of Helper responses
+    trustRegions[i] = SurrBasedLevelData(ml_iter->current_response(), i, i+1);
+    // TODO: fine-grained init of SurrBasedLevelData responses
 
   // Simpler case than DFSBLM:
   short correction_order
@@ -110,7 +114,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   bestVariablesArray.front().continuous_variables(
     trustRegions[minimizeIndex].vars_center().continuous_variables());
   bestResponseArray.front().function_values(
-    trustRegions[minimizeIndex].response_center(TRUTH_MODEL,
+    trustRegions[minimizeIndex].response_center(TRUTH_RESPONSE,
         false).function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
@@ -294,8 +298,8 @@ void HierarchSurrBasedLocalMinimizer::build()
         // ******************************************
         DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
         delta.compute(trustRegions[i].vars_center(),
-                      trustRegions[i].response_center(TRUTH_MODEL, false),
-                      trustRegions[i].response_center(APPROX_MODEL, false));
+                      trustRegions[i].response_center(TRUTH_RESPONSE, false),
+                      trustRegions[i].response_center(APPROX_RESPONSE, false));
       }
 
       trustRegions[i].new_center(false);
@@ -313,7 +317,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     Cout << "Approx. model level = " << trustRegions[i].approx_model_level() <<
          std::endl;
     Response response_center_corrected_temp = trustRegions[i].response_center(
-          APPROX_MODEL, false);
+          APPROX_RESPONSE, false);
     for (size_t j = i; j < trustRegions.size(); ++j) {
       set_model_states(j);
 
@@ -322,12 +326,12 @@ void HierarchSurrBasedLocalMinimizer::build()
 		  response_center_corrected_temp);
     }
     trustRegions[i].response_center(response_center_corrected_temp,
-				    APPROX_MODEL, true);
+				    APPROX_RESPONSE, true);
   }
 
   // highest fidelity model doesn't need correcting:
   trustRegions.back().response_center(trustRegions.back().response_center(
-                                        TRUTH_MODEL, false),TRUTH_MODEL, true);
+                                        TRUTH_RESPONSE, false),TRUTH_RESPONSE, true);
 }
 
 
@@ -355,7 +359,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   trustRegions[minimizeIndex].vars_star(
     approxSubProbMinimizer.variables_results());
   trustRegions[minimizeIndex].response_star(
-    approxSubProbMinimizer.response_results(), APPROX_MODEL, true);
+    approxSubProbMinimizer.response_results(), APPROX_RESPONSE, true);
 }
 
 
@@ -380,7 +384,7 @@ void HierarchSurrBasedLocalMinimizer::verify()
   truth_model.evaluate(trustRegions[minimizeIndex].active_set());
 
   trustRegions[minimizeIndex].response_star(truth_model.current_response(),
-      TRUTH_MODEL, false);
+      TRUTH_RESPONSE, false);
 
   tr_ratio_check(tr_index);
 
@@ -390,7 +394,7 @@ void HierarchSurrBasedLocalMinimizer::verify()
     trustRegions[tr_index].vars_center(trustRegions[minimizeIndex].vars_star());
 
     trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           TRUTH_MODEL, false);
+                                           TRUTH_RESPONSE, false);
   }
 
   // Check for soft convergence:
@@ -418,7 +422,7 @@ find_center(size_t tr_index)
   // TODO: this is hard-coded:
   found = true;
   trustRegions[tr_index].response_center(truth_model.current_response(),
-                                         TRUTH_MODEL, false);
+                                         TRUTH_RESPONSE, false);
 
   /*
   if (!found) { // bypassed for now due to hard-coding above...
@@ -432,7 +436,7 @@ find_center(size_t tr_index)
     truth_model.evaluate(trustRegions[tr_index].active_set());
 
     trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           TRUTH_MODEL, false);
+                                           TRUTH_RESPONSE, false);
   }
   */
 
@@ -452,7 +456,7 @@ find_center(size_t tr_index)
       = lookup_by_val(data_pairs, search_id, search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
       Response tr_resp
-	= trustRegions[tr_index].response_center(APPROX_MODEL, false);
+	= trustRegions[tr_index].response_center(APPROX_RESPONSE, false);
       // fn vals
       tr_resp.function_values(cache_it->response().function_values());
       // fn grads
@@ -471,7 +475,7 @@ find_center(size_t tr_index)
       iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
       iteratedModel.evaluate(trustRegions[tr_index].active_set());
       trustRegions[tr_index].response_center(iteratedModel.current_response(),
-                                             APPROX_MODEL, false);
+                                             APPROX_RESPONSE, false);
     }
   }
 }
@@ -486,7 +490,7 @@ void HierarchSurrBasedLocalMinimizer::
 hard_convergence_check(size_t tr_index)
 {
   Response truth_center_uncorrected = trustRegions[tr_index].response_center(
-                                        TRUTH_MODEL, false);
+                                        TRUTH_RESPONSE, false);
 
   // TODO: same from here down...
 
@@ -531,16 +535,16 @@ hard_convergence_check(size_t tr_index)
 void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
 {
   Response truth_center_uncorrected = trustRegions[tr_index].response_center(
-                                        TRUTH_MODEL, false);
+                                        TRUTH_RESPONSE, false);
   Response truth_star_uncorrected = trustRegions[tr_index].response_star(
-                                      TRUTH_MODEL, false);
+                                      TRUTH_RESPONSE, false);
   Response approx_center_corrected = trustRegions[tr_index].response_center(
-                                       APPROX_MODEL,true);
+                                       APPROX_RESPONSE,true);
   Response approx_star_corrected = trustRegions[tr_index].response_star(
-                                     APPROX_MODEL,true);
+                                     APPROX_RESPONSE,true);
 
   // TODO: mostly the same from here down...
-  // TODO: make modular on a Helper instance and then DFSBLM has one,
+  // TODO: make modular on a SurrBasedLevelData instance and then DFSBLM has 1,
   // while HSBLM has multiple
 
   const RealVector& fns_center_truth = truth_center_uncorrected.function_values();
