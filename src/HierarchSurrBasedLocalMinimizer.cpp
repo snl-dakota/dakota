@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 //- Class:       HierarchSurrBasedLocalMinimizer
-//- Description: Implementation code for the HierarchSurrBasedLocalMinimizer class
+//- Description: Implementation code for HierarchSurrBasedLocalMinimizer class
 //- Owner:       Mike Eldred, Sandia National Laboratories
 //- Checked by:
 
@@ -43,15 +43,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model), minimizeIndex(0),
   nestedTrustRegions(true)
 {
-  // Verify that iteratedModel is a surrogate model so that
-  // approximation-related functions are defined.
-  if (iteratedModel.model_type() != "surrogate") {
-    Cerr << "Error: HierarchSurrBasedLocalMinimizer::iteratedModel must be a "
-         << "surrogate model." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // check iteratedModel for model form hierarchy and/or discretization levels;
+  // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel.surrogate_type() != "hierarchical") {
     Cerr << "Error: HierarchSurrBasedLocalMinimizer requires a hierarchical "
          << "surrogate model specification." << std::endl;
@@ -63,33 +55,21 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // Instantiate the approximate sub-problem minimizer
   initialize_sub_minimizer();
 
-  // Extract subIterator/subModel(s) from the SurrogateModel
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
-
   // Get number of model fidelities and number of levels for each fidelity:
-  numFid = iteratedModel.subordinate_models(false).size();
-  numLev = std::vector<size_t>(numFid);
-  for(size_t ii = 0; ii < numFid - 1; ii++) {
-    size_t lf_model_form = ii;
-    size_t hf_model_form = ii + 1;
-
-    iteratedModel.surrogate_model_indices(lf_model_form);
-    iteratedModel.truth_model_indices(hf_model_form);
-    numLev[ii]  = approx_model.solution_levels();
-  }
-  // Get the number of levels for highest fidelity: (in correct state from loop
-  // above)
-  numLev[numFid - 1]  = truth_model.solution_levels();
-
+  ModelList& models = iteratedModel.subordinate_models(false);
+  numFid = models.size();
+  numLev.resize(numFid);
+  ModelLIter ml_iter; size_t i;
+  for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i)
+    numLev[i] = ml_iter->solution_levels();
 
   // TODO: This is specific for just multifidelity:
   // TODO: This is hard coded for just multifidelity:
   for(size_t ii = 0; ii < numFid-1; ii++) {
     trustRegions.push_back(HierarchSurrBasedLocalMinimizerHelper(
-                             iteratedModel.truth_model().current_response(), ii, ii+1));
-    trustRegions[ii].trust_region_factor(origTrustRegionFactor*std::pow(0.5,
-                                         numFid - 2 - ii));
+      iteratedModel.truth_model().current_response(), ii, ii+1)); // *** MSE
+    trustRegions[ii].trust_region_factor(origTrustRegionFactor *
+					 std::pow(0.5, numFid - 2 - ii));
     trustRegions[ii].new_center(true);
   }
 }
