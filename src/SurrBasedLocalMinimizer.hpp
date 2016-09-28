@@ -45,9 +45,6 @@ public:
 
 protected:
 
-
-  void initialize_sub_minimizer();
-
   //
   //- Heading: Virtual function redefinitions
   //
@@ -72,6 +69,13 @@ protected:
   virtual void verify() = 0;
   virtual void minimize() = 0;
   virtual void build() = 0;
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// construct and initialize approxSubProbMinimizer
+  void initialize_sub_minimizer();
 
   //
   //- Heading: Data members
@@ -119,6 +123,9 @@ protected:
   /// of each trust region
   short correctionType;
 
+  /// starting point prior to sequence of SBLM iterations
+  RealVector initialPoint;
+  
   /// Global lower bounds
   RealVector globalLowerBnds;
   /// Global Upper bounds
@@ -128,6 +135,10 @@ protected:
   ActiveSet fullApproxSet;
   ActiveSet fullTruthSet;
 };
+
+
+inline void SurrBasedLocalMinimizer::reset()
+{ convergenceFlag = softConvCount = sbIterNum = 0; }
 
 } // namespace Dakota
 

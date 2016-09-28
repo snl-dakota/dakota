@@ -31,11 +31,6 @@ static const char rcsId[]="@(#) $Id: SurrBasedLocalMinimizer.cpp 7031 2010-10-22
 
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
-
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
 
 SurrBasedLocalMinimizer::
 SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
@@ -78,7 +73,6 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 SurrBasedLocalMinimizer::~SurrBasedLocalMinimizer()
 { }
-
 
 
 void SurrBasedLocalMinimizer::initialize_sub_minimizer()
@@ -139,6 +133,16 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
 
 void SurrBasedLocalMinimizer::pre_run()
 {
+  // reset convergence controls in case of multiple executions
+  if (convergenceFlag)
+    reset();
+
+  // need copies of initial point and initial global bounds, since iteratedModel
+  // continuous vars will be reset to the TR center and iteratedModel bounds
+  // will be reset to the TR bounds
+  copy_data(iteratedModel.continuous_variables(),    initialPoint);
+  copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
+  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
 }
 
 
@@ -198,12 +202,6 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   Cout << "Total Number of Iterations = " << sbIterNum << '\n';
 
   Minimizer::post_run(s);
-}
-
-
-void SurrBasedLocalMinimizer::reset()
-{
-  convergenceFlag = softConvCount = sbIterNum = 0;
 }
 
 } // namespace Dakota

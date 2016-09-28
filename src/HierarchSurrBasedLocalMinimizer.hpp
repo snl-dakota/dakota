@@ -95,13 +95,12 @@ private:
   SizetArray numLev;
   size_t minimizeIndex;
 
-  RealVector initialPoint;
   bool nestedTrustRegions;
 
   std::vector<HierarchSurrBasedLocalMinimizerHelper> trustRegions;
 
-  /// pointer to MLMF instance used in static member functions
-  static HierarchSurrBasedLocalMinimizer* mlmfInstance;
+  // pointer to MLMF instance used in static member functions
+  //static HierarchSurrBasedLocalMinimizer* mlmfInstance;
 };
 
 } // namespace Dakota

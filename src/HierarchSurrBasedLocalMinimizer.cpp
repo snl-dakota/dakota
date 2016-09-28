@@ -34,8 +34,8 @@ namespace Dakota
 extern PRPCache data_pairs; // global container
 
 // initialization of statics
-HierarchSurrBasedLocalMinimizer* HierarchSurrBasedLocalMinimizer::mlmfInstance(
-  NULL);
+//HierarchSurrBasedLocalMinimizer*
+//HierarchSurrBasedLocalMinimizer::mlmfInstance(NULL);
 
 
 HierarchSurrBasedLocalMinimizer::
@@ -104,21 +104,7 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   SurrBasedLocalMinimizer::pre_run();
 
   // static pointer to HierarchSurrBasedLocalMinimizer instance
-  mlmfInstance = this;
-
-  // reset convergence controls in case of multiple executions
-  if (convergenceFlag)
-    reset();
-
-  OutputManager& output_mgr = parallelLib.output_manager();
-
-  // need copies of initial point and initial global bounds, since iteratedModel
-  // continuous vars will be reset to the TR center and iteratedModel bounds
-  // will be reset to the TR bounds
-  copy_data(iteratedModel.current_variables().continuous_variables(),
-            initialPoint);
-  copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
+  //mlmfInstance = this;
 
   for (size_t ii = 0; ii < trustRegions.size(); ii++) {
     trustRegions[ii].vars_center(iteratedModel.current_variables());
@@ -131,8 +117,8 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // restore original/global bounds
-  //approxSubProbModel.continuous_variables(initial_pt);
-  //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
+  //approxSubProbModel.continuous_variables(initialPoint);
+  //if (recastSubProb) iteratedModel.continuous_variables(initialPoint);
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
 

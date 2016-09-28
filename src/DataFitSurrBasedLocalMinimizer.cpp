@@ -7,7 +7,7 @@
     _______________________________________________________________________ */
 
 //- Class:       DataFitSurrBasedLocalMinimizer
-//- Description: Implementation code for the DataFitSurrBasedLocalMinimizer class
+//- Description: Implementation code for DataFitSurrBasedLocalMinimizer class
 //- Owner:       Mike Eldred, Sandia National Laboratories
 //- Checked by:
 
@@ -31,14 +31,17 @@ static const char rcsId[]="@(#) $Id: DataFitSurrBasedLocalMinimizer.cpp 7031 201
 
 
 namespace Dakota {
-  extern PRPCache data_pairs; // global container
+
+extern PRPCache data_pairs; // global container
 
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
 #define TRUTH_MODEL 2
 
 // initialization of statics
-DataFitSurrBasedLocalMinimizer* DataFitSurrBasedLocalMinimizer::sblmInstance(NULL);
+DataFitSurrBasedLocalMinimizer*
+DataFitSurrBasedLocalMinimizer::sblmInstance(NULL);
+
 
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
@@ -280,13 +283,6 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 
   // Create arrays for variables and variable bounds
   varsCenter = iteratedModel.current_variables().copy();
-  // need copies of initial point and initial global bounds, since iteratedModel
-  // continuous vars will be reset to the TR center and iteratedModel bounds
-  // will be reset to the TR bounds
-  RealVector initial_pt;
-  copy_data(varsCenter.continuous_variables(), initial_pt);
-  copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
 
   // Create commonly-used ActiveSets
   valSet = fullApproxSet = fullTruthSet
@@ -299,19 +295,12 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   valSet.request_values(1);
   fullApproxSet.request_values(full_approx_val);
   fullTruthSet.request_values(full_truth_val);
+
   // Set ActiveSets within the response copies
   responseStarApprox.active_set(valSet);
   responseStarTruth.second.active_set(valSet);
   responseCenterApprox.active_set(fullApproxSet);
   responseCenterTruth.second.active_set(fullTruthSet);
-
-  // static pointer to DataFitSurrBasedLocalMinimizer instance
-  sblmInstance = this;
-  // reset convergence controls in case of multiple executions
-  if (convergenceFlag)
-    reset();
-
-  OutputManager& output_mgr = parallelLib.output_manager();
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();
@@ -345,8 +334,8 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // restore original/global bounds
-  //approxSubProbModel.continuous_variables(initial_pt);
-  //if (recastSubProb) iteratedModel.continuous_variables(initial_pt);
+  //approxSubProbModel.continuous_variables(initialPoint);
+  //if (recastSubProb) iteratedModel.continuous_variables(initialPoint);
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
   if (globalApproxFlag) { // propagate to DFSModel
@@ -391,8 +380,7 @@ void DataFitSurrBasedLocalMinimizer::reset()
 }
 
 
-void DataFitSurrBasedLocalMinimizer::
-update_trust_region()
+void DataFitSurrBasedLocalMinimizer::update_trust_region()
 {
   // Compute the trust region bounds
   size_t i;
@@ -477,7 +465,7 @@ update_trust_region()
 
 void DataFitSurrBasedLocalMinimizer::build()
 {
-  if (!(globalApproxFlag || newCenterFlag)) {
+  if (!globalApproxFlag && !newCenterFlag) {
     Cout << "\n>>>>> Reusing previous approximation.\n";
     return;
   }
@@ -486,13 +474,10 @@ void DataFitSurrBasedLocalMinimizer::build()
     build_global() : // global rebuild: new center or new TR bounds
     build_local();   // local/multipt/hierarch: rebuild if new center
 
-  OutputManager& output_mgr = parallelLib.output_manager();
-  Model& truth_model  = iteratedModel.truth_model();
-
   // Update graphics for iteration 0 (initial guess).
   if (sbIterNum == 0)
-    output_mgr.add_datapoint(varsCenter, truth_model.interface_id(),
-			     responseCenterTruth.second);
+    parallelLib.output_manager().add_datapoint(varsCenter,
+      iteratedModel.truth_model().interface_id(), responseCenterTruth.second);
 
   if (!convergenceFlag)
     compute_center_correction(embed_correction);
@@ -559,7 +544,8 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
 }
 
 
-void DataFitSurrBasedLocalMinimizer::compute_center_correction(bool embed_correction)
+void DataFitSurrBasedLocalMinimizer::
+compute_center_correction(bool embed_correction)
 {
   // **************************************
   // Evaluate/retrieve responseCenterApprox
@@ -1295,7 +1281,7 @@ update_penalty(const RealVector& fns_center_truth,
     //   Rodriguez, Renaud, Watson:             r_p *= 10
     //   Robinson, Willcox, Eldred, and Haimes: r_p *= 5
     penaltyParameter *= 10.;
-    //penaltyParameter = std::min(penaltyParameter, 1.e+20); // cap the max penalty?
+    //penaltyParameter = std::min(penaltyParameter, 1.e+20); // cap max penalty?
     Real mu = 1./2./penaltyParameter; // conversion between r_p and mu penalties
     etaSequence = eta*std::pow(mu, alphaEta);
   }
