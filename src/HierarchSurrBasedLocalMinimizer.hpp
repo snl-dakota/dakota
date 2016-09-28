@@ -20,10 +20,10 @@
 #include "SurrBasedLocalMinimizer.hpp"
 #include "HierarchSurrModel.hpp"
 #include "DakotaModel.hpp"
-#include "HierarchSurrBasedLocalMinimizerHelper.hpp"
+#include "SurrBasedLevelData.hpp"
 
-namespace Dakota
-{
+namespace Dakota {
+
 
 /// Class for multilevel-multifidelity optimization algorithm
 
@@ -52,8 +52,8 @@ protected:
   void pre_run();
   void post_run(std::ostream& s);
 
-  /// reset convergence controls in case of multiple MLMF executions
-  void reset();
+  // reset convergence controls in case of multiple MLMF executions
+  //void reset();
 
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region();
@@ -97,11 +97,22 @@ private:
 
   bool nestedTrustRegions;
 
-  std::vector<HierarchSurrBasedLocalMinimizerHelper> trustRegions;
+  std::vector<SurrBasedLevelData> trustRegions;
 
   // pointer to MLMF instance used in static member functions
   //static HierarchSurrBasedLocalMinimizer* mlmfInstance;
 };
+
+
+inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
+{
+  iteratedModel.surrogate_model_indices(
+    trustRegions[tr_index].approx_model_form(),
+    trustRegions[tr_index].approx_model_level());
+  iteratedModel.truth_model_indices(
+    trustRegions[tr_index].truth_model_form(),
+    trustRegions[tr_index].truth_model_level());
+}
 
 } // namespace Dakota
 

@@ -337,8 +337,9 @@ void HierarchSurrModel::build_approximation()
   hf_model.evaluate(hf_set);
   truthResponseRef[highFidelityIndices].update(hf_model.current_response());
 
-  // could compute the correction to LF model here, but rely on an
-  // external call for consistency with DataFitSurr and to facilitate SBO logic.
+  // could compute the correction to LF model here, but rely on an external
+  // call for consistency with DataFitSurr and to facilitate SBO logic.  In
+  // particular, lo_fi_response involves find_center(), hard conv check, etc.
   //deltaCorr[indices].compute(..., truthResponseRef, lo_fi_response);
 
   Cout << "\n<<<<< Hierarchical approximation build completed.\n";

@@ -24,14 +24,7 @@
 #include "NPSOLOptimizer.hpp"
 #endif // HAVE_NPSOL
 
-//#define DEBUG
-#define TRUTH_MODEL 2
-#define APPROX_MODEL 3
-
-
-namespace Dakota
-{
-extern PRPCache data_pairs; // global container
+namespace Dakota {
 
 // initialization of statics
 //HierarchSurrBasedLocalMinimizer*
@@ -65,13 +58,21 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   // TODO: This is specific for just multifidelity:
   // TODO: This is hard coded for just multifidelity:
-  for (i=0; i<numFid-1; ++i) {
-    trustRegions.push_back(HierarchSurrBasedLocalMinimizerHelper(
-      iteratedModel.truth_model().current_response(), i, i+1)); // *** MSE: response from each lev?
-    trustRegions[i].trust_region_factor(origTrustRegionFactor *
-					std::pow(0.5, numFid-2-i));
-    trustRegions[i].new_center(true);
-  }
+  trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds
+  for (ml_iter=models.begin(), i=0; i<numFid-1; ++ml_iter, ++i)
+    trustRegions[i] = HierarchSurrBasedLocalMinimizerHelper(
+      ml_iter->current_response(), i, i+1); // TODO: fine-grained init of Helper responses
+
+  // Simpler case than DFSBLM:
+  short correction_order
+    = probDescDB.get_short("model.surrogate.correction_order");
+  truthGradientFlag  = ( ( correctionType && correction_order >= 1 ) );// ||
+			 // meritFnType      == LAGRANGIAN_MERIT ||
+			 // approxSubProbObj == LAGRANGIAN_OBJECTIVE );
+  approxGradientFlag = ( ( correctionType && correction_order >= 1 ) );// ||
+                        // approxSubProbCon == LINEARIZED_CONSTRAINTS );
+  truthHessianFlag  = ( correctionType && correction_order == 2 );
+  approxHessianFlag = ( correctionType && correction_order == 2 );
 }
 
 
@@ -81,15 +82,19 @@ HierarchSurrBasedLocalMinimizer::~HierarchSurrBasedLocalMinimizer()
 
 void HierarchSurrBasedLocalMinimizer::pre_run()
 {
+  // TODO; then this step if active sets will be passed below...
   SurrBasedLocalMinimizer::pre_run();
 
   // static pointer to HierarchSurrBasedLocalMinimizer instance
   //mlmfInstance = this;
 
-  for (size_t ii = 0; ii < trustRegions.size(); ii++) {
-    trustRegions[ii].vars_center(iteratedModel.current_variables());
-    trustRegions[ii].tr_lower_bnds(globalLowerBnds);
-    trustRegions[ii].tr_upper_bnds(globalLowerBnds);
+  for (size_t i = 0; i < trustRegions.size(); ++i) {
+    //trustRegions[i].new_center(true); // vars_center() sets newCenterFlag
+    trustRegions[i].vars_center(iteratedModel.current_variables());
+    trustRegions[i].tr_lower_bnds(globalLowerBnds);
+    trustRegions[i].tr_upper_bnds(globalLowerBnds);
+    trustRegions[i].trust_region_factor(origTrustRegionFactor *
+					std::pow(0.5, numFid-2-i)); // shaped
   }
 }
 
@@ -112,23 +117,25 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
 }
 
 
-void HierarchSurrBasedLocalMinimizer::reset()
-{
-  SurrBasedLocalMinimizer::reset();
-
-  for(size_t ii = 0; ii < trustRegions.size(); ii++) {
-    trustRegions[ii].trust_region_factor(origTrustRegionFactor);
-    trustRegions[ii].new_center(true);
-  }
-}
+//void HierarchSurrBasedLocalMinimizer::reset()
+//{
+//  SurrBasedLocalMinimizer::reset();
+//}
 
 
+/** Step 1 in SurrBasedLocalMinimizer::core_run(). */
 void HierarchSurrBasedLocalMinimizer::update_trust_region()
 {
   Cout << "Update trust region" << std::endl;
 
+  // recur top down to enforce strict bound inter-relationships:
+  // > Nested case: all levels are strict subsets of previous
+  // > Non-nested case: only the bottom (LF) level is nested; top level is
+  //   global bounds; intermediate levels can evolve independently based on 
+  //   the accuracy of their individual discrepancies
   for (int ind = trustRegions.size()-1; ind >= 0; ind--) {
-    // Compute the trust region bounds
+    // Compute the parent TR bounds that truncate the actual TR bounds for this
+    // level; in the non-nested case, these parent bounds are not restrictive
     RealVector parent_upper_bounds, parent_lower_bounds;
     if (ind == trustRegions.size()-1 || (!nestedTrustRegions && ind > 0)) {
       parent_upper_bounds = globalUpperBnds;
@@ -136,24 +143,31 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     } else if (nestedTrustRegions) {
       parent_upper_bounds = trustRegions[ind+1].tr_upper_bnds();
       parent_lower_bounds = trustRegions[ind+1].tr_lower_bnds();
-    } else {
-      for (int jj = 0; jj < numContinuousVars; jj++) {
+    } else { // !nested && ind == 0
+      // in this case, there was no recursive enforcement for previous levels,
+      // but level 0 must recur because it is the level where optimization
+      // over LF + \Sum_j delta_j,j+1 is performed --> enforce all trust regions
+      // for all individual deltas.
+      for (int j = 0; j < numContinuousVars; ++j) {
         double min_upper_bound = 0.0;
         double max_lower_bound = 0.0;
-        for (int ii = 1; ii < trustRegions.size(); ii++) {
-          RealVector upper_bounds = trustRegions[ii].tr_upper_bnds();
-          RealVector lower_bounds = trustRegions[ii].tr_lower_bnds();
-          if (ii == 1 || upper_bounds[jj] < min_upper_bound)
-            min_upper_bound = upper_bounds[jj];
-          if (ii == 1 || lower_bounds[jj] < max_lower_bound)
-            max_lower_bound = lower_bounds[jj];
+        for (int i = 1; i < trustRegions.size(); ++i) {
+          RealVector upper_bounds = trustRegions[i].tr_upper_bnds();
+          RealVector lower_bounds = trustRegions[i].tr_lower_bnds();
+          if (i == 1 || upper_bounds[j] < min_upper_bound)
+            min_upper_bound = upper_bounds[j];
+          if (i == 1 || lower_bounds[j] > max_lower_bound)
+            max_lower_bound = lower_bounds[j];
         }
-
-        parent_upper_bounds[jj] = min_upper_bound;
-        parent_lower_bounds[jj] = max_lower_bound;
+	// TODO: check for max_lower_bound > min_upper_bound
+	// Recourse: target levels that are causing an undesirable truncation
+	//  and recenter w/ new evals w/i hierarchy
+        parent_upper_bounds[j] = min_upper_bound;
+        parent_lower_bounds[j] = max_lower_bound;
       }
     }
 
+    // TODO: combine with DFSBLM (pass in parent bounds)
     size_t i;
     bool c_vars_truncation = false, tr_lower_truncation = false,
          tr_upper_truncation = false;
@@ -190,6 +204,10 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
       }
     }
     if (c_vars_truncation) {
+      // TODO: reconsider this...   Asymmetric TR may be preferable in terms
+      // of continuity of solution / warm-start efficiency / etc.  It has also
+      // caused problems for export/restart workflows (starting point for new
+      // cycle moves from final soln from prev cycle).
       trustRegions[ind].vars_center().continuous_variables(c_vars_center);
       trustRegions[ind].new_center(true);
     }
@@ -232,6 +250,11 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   }
 
   // Set the trust region center and bounds for approxSubProbOptimizer
+  // (for the lowest level with opt over LF + \Sum_j delta_j,j+1)
+  // As enforced aboe, the bounds for the lowest level are a strict subset 
+  // of all level bounds --> candidate iterate that gets generated by the
+  // sub-problem solver will lie within all higher level TRs and not require
+  // any recentering.
   approxSubProbModel.continuous_variables(
     trustRegions[minimizeIndex].vars_center().continuous_variables());
   approxSubProbModel.continuous_lower_bounds(
@@ -240,60 +263,66 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     trustRegions[minimizeIndex].tr_upper_bnds());
 }
 
+
+/** Step 2 in SurrBasedLocalMinimizer::core_run(). */
 void HierarchSurrBasedLocalMinimizer::build()
 {
   // Compute new trust region centers:
-  for (size_t ii = 0; ii < trustRegions.size(); ii++) {
-    // Set the trust region center and bounds
-    iteratedModel.continuous_variables(
-      trustRegions[ii].vars_center().continuous_variables());
-    iteratedModel.continuous_lower_bounds(trustRegions[ii].tr_lower_bnds());
-    iteratedModel.continuous_upper_bounds(trustRegions[ii].tr_upper_bnds());
+  for (size_t i = 0; i < trustRegions.size(); ++i) {
 
-    if (trustRegions[ii].new_center()) {
-      set_model_states(ii);
+    if (trustRegions[i].new_center()) {
 
-      // This only evaluates the high fidelity model:
+      // Set the trust region center and bounds
+      iteratedModel.continuous_variables(
+        trustRegions[i].vars_center().continuous_variables());
+      iteratedModel.continuous_lower_bounds(trustRegions[i].tr_lower_bnds());
+      iteratedModel.continuous_upper_bounds(trustRegions[i].tr_upper_bnds());
+
+      // This only evaluates the high fidelity model (active indices set in ):
+      set_model_states(i);
       iteratedModel.build_approximation();
 
       // Extract truth model evaluation and evaluate approx model
-      find_center(ii);
+      // TODO: code from DFSBLM case does lookup, which makes sense if last HF
+      // eval was a rejected validation, but if find_center w/i HSBLM always
+      // follows build_approximation, then this lookup is not necessary...
+      find_center(i);
 
       if (!convergenceFlag) {
         // ******************************************
         // Compute additive/multiplicative correction
         // ******************************************
-
         DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-        delta.compute(trustRegions[ii].vars_center(),
-                      trustRegions[ii].response_center(TRUTH_MODEL, false),
-                      trustRegions[ii].response_center(APPROX_MODEL, false));
+        delta.compute(trustRegions[i].vars_center(),
+                      trustRegions[i].response_center(TRUTH_MODEL, false),
+                      trustRegions[i].response_center(APPROX_MODEL, false));
       }
 
-      trustRegions[ii].new_center(false);
+      trustRegions[i].new_center(false);
     }
   }
 
   // TODO: This assumes only model fidelities:
   // Recompute corrected center responses:
-  for (size_t ii = 0; ii < trustRegions.size(); ii++) {
+  for (size_t i = 0; i < trustRegions.size(); ++i) {
     // Compute responseCenterCorrected
     Cout << "\nApplying corrections to trust region center response for:" <<
          std::endl;
-    Cout << "Approx. model form = " << trustRegions[ii].approx_model_form() <<
+    Cout << "Approx. model form = " << trustRegions[i].approx_model_form() <<
          std::endl;
-    Cout << "Approx. model level = " << trustRegions[ii].approx_model_level() <<
+    Cout << "Approx. model level = " << trustRegions[i].approx_model_level() <<
          std::endl;
-    Response response_center_corrected_temp = trustRegions[ii].response_center(
+    Response response_center_corrected_temp = trustRegions[i].response_center(
           APPROX_MODEL, false);
-    for (size_t jj = ii; jj < trustRegions.size(); jj++) {
-      set_model_states(jj);
+    for (size_t j = i; j < trustRegions.size(); ++j) {
+      set_model_states(j);
 
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-      delta.apply(trustRegions[ii].vars_center(), response_center_corrected_temp);
+      delta.apply(trustRegions[i].vars_center(),
+		  response_center_corrected_temp);
     }
-    trustRegions[ii].response_center(response_center_corrected_temp, APPROX_MODEL,
-                                     true);
+    trustRegions[i].response_center(response_center_corrected_temp,
+				    APPROX_MODEL, true);
   }
 
   // highest fidelity model doesn't need correcting:
@@ -302,109 +331,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 }
 
 
-
-void HierarchSurrBasedLocalMinimizer::
-find_center(size_t tr_index)
-{
-  bool found = false;
-
-  Model& truth_model = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
-
-  trustRegions[tr_index].response_center(truth_model.current_response(),
-                                         TRUTH_MODEL, false);
-
-  // TODO: this is hard-coded:
-  found = true;
-
-  if (!found) {
-    Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
-
-    // since we're bypassing iteratedModel, iteratedModel.serve()
-    // must be in the correct server mode.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL);
-    truth_model.continuous_variables(
-      trustRegions[tr_index].vars_center().continuous_variables());
-    truth_model.evaluate(trustRegions[tr_index].active_set());
-
-    trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           TRUTH_MODEL, false);
-  }
-
-  hard_convergence_check(tr_index);
-
-  if (!convergenceFlag) {
-    found = false;
-
-    // search for fn vals, grads, and Hessians separately since they may
-    // be different fn evaluations
-    ActiveSet search_set = trustRegions[tr_index].active_set(); // copy
-    search_set.request_values(1);
-    const Variables& search_vars = iteratedModel.current_variables();
-    const String& search_id = iteratedModel.surrogate_model().interface_id();
-    PRPCacheHIter cache_it
-      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-    if (cache_it != data_pairs.get<hashed>().end()) {
-      trustRegions[tr_index].response_center(APPROX_MODEL,
-                                             false).function_values(cache_it->response().function_values());
-      search_set.request_values(2);
-      cache_it
-        = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-      if (cache_it != data_pairs.get<hashed>().end()) {
-        trustRegions[tr_index].response_center(APPROX_MODEL,
-                                               false).function_gradients(cache_it->response().function_gradients());
-        found = true;
-      }
-    }
-
-    if (!found) {
-      Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-      iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-      iteratedModel.evaluate(trustRegions[tr_index].active_set());
-      trustRegions[tr_index].response_center(iteratedModel.current_response(),
-                                             APPROX_MODEL, false);
-    }
-  }
-}
-
-
-/** The hard convergence check computes the gradient of the merit
-    function at the trust region center, performs a projection for
-    active bound constraints (removing any gradient component directed
-    into an active bound), and signals convergence if the 2-norm of
-    this projected gradient is less than convergenceTol. */
-void HierarchSurrBasedLocalMinimizer::
-hard_convergence_check(size_t tr_index)
-{
-  Response truth_center_uncorrected = trustRegions[tr_index].response_center(
-                                        TRUTH_MODEL, false);
-  const RealVector& fns_truth   = truth_center_uncorrected.function_values();
-  const RealMatrix& grads_truth = truth_center_uncorrected.function_gradients();
-
-  RealVector fn_grad(numContinuousVars, true);
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-
-  // objective function portion
-  objective_gradient(fns_truth, grads_truth, sense, wts, fn_grad);
-
-  Real fn_grad_norm = 0.0;
-  for (size_t i=0; i<numContinuousVars; i++) {
-    fn_grad_norm += std::pow(fn_grad[i], 2);
-  }
-
-  // Terminate SBLM if the norm of the projected merit function gradient
-  // at x_c is less than convTol (hard convergence).
-  fn_grad_norm = std::sqrt( fn_grad_norm );
-  if ( fn_grad_norm < convergenceTol )
-    convergenceFlag = 4; // hard convergence
-
-#ifdef DEBUG
-  Cout << "In hard convergence check: merit_fn_grad_norm =  "
-       << merit_fn_grad_norm << '\n';
-#endif
-}
-
+/** Step 3 in SurrBasedLocalMinimizer::core_run(). */
 void HierarchSurrBasedLocalMinimizer::minimize()
 {
   // *********************************
@@ -431,6 +358,8 @@ void HierarchSurrBasedLocalMinimizer::minimize()
     approxSubProbMinimizer.response_results(), APPROX_MODEL, true);
 }
 
+
+/** Step 4 in SurrBasedLocalMinimizer::core_run(). */
 void HierarchSurrBasedLocalMinimizer::verify()
 {
   // ****************************
@@ -476,6 +405,124 @@ void HierarchSurrBasedLocalMinimizer::verify()
 }
 
 
+void HierarchSurrBasedLocalMinimizer::
+find_center(size_t tr_index)
+{
+  extern PRPCache data_pairs; // global container
+
+  bool found = false;
+
+  Model& truth_model = iteratedModel.truth_model();
+  Model& approx_model = iteratedModel.surrogate_model();
+
+  // TODO: this is hard-coded:
+  found = true;
+  trustRegions[tr_index].response_center(truth_model.current_response(),
+                                         TRUTH_MODEL, false);
+
+  /*
+  if (!found) { // bypassed for now due to hard-coding above...
+    Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
+
+    // since we're bypassing iteratedModel, iteratedModel.serve()
+    // must be in the correct server mode.
+    iteratedModel.component_parallel_mode(TRUTH_MODEL);
+    truth_model.continuous_variables(
+      trustRegions[tr_index].vars_center().continuous_variables());
+    truth_model.evaluate(trustRegions[tr_index].active_set());
+
+    trustRegions[tr_index].response_center(truth_model.current_response(),
+                                           TRUTH_MODEL, false);
+  }
+  */
+
+  hard_convergence_check(tr_index);
+
+  // retrieve or evaluate response center approx
+  if (!convergenceFlag) {
+    found = false;
+
+    // search for fn vals, grads, and Hessians separately since they may
+    // be different fn evaluations
+    ActiveSet search_set = trustRegions[tr_index].active_set(); // copy
+    search_set.request_values(1);
+    const Variables& search_vars = iteratedModel.current_variables();
+    const String& search_id = iteratedModel.surrogate_model().interface_id();
+    PRPCacheHIter cache_it
+      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+    if (cache_it != data_pairs.get<hashed>().end()) {
+      Response tr_resp
+	= trustRegions[tr_index].response_center(APPROX_MODEL, false);
+      // fn vals
+      tr_resp.function_values(cache_it->response().function_values());
+      // fn grads
+      search_set.request_values(2);
+      cache_it
+        = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+      if (cache_it != data_pairs.get<hashed>().end()) {
+        tr_resp.function_gradients(cache_it->response().function_gradients());
+        found = true;
+      }
+      // TODO: Hessians?
+    }
+
+    if (!found) {
+      Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
+      iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+      iteratedModel.evaluate(trustRegions[tr_index].active_set());
+      trustRegions[tr_index].response_center(iteratedModel.current_response(),
+                                             APPROX_MODEL, false);
+    }
+  }
+}
+
+
+/** The hard convergence check computes the gradient of the merit
+    function at the trust region center, performs a projection for
+    active bound constraints (removing any gradient component directed
+    into an active bound), and signals convergence if the 2-norm of
+    this projected gradient is less than convergenceTol. */
+void HierarchSurrBasedLocalMinimizer::
+hard_convergence_check(size_t tr_index)
+{
+  Response truth_center_uncorrected = trustRegions[tr_index].response_center(
+                                        TRUTH_MODEL, false);
+
+  // TODO: same from here down...
+
+  // TODO: recursive logic must detect hard convergence on corrected response
+  // (correction applied recursively).  When detected, you don't stop until 
+  // hard conv at top level, so this must proliferate up the TR hierarchy to
+  // update and recenter one or more TR --> refer to animation for logic.
+
+  const RealVector& fns_truth   = truth_center_uncorrected.function_values();
+  const RealMatrix& grads_truth = truth_center_uncorrected.function_gradients();
+
+  RealVector fn_grad(numContinuousVars, true);
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+
+  // objective function portion
+  objective_gradient(fns_truth, grads_truth, sense, wts, fn_grad);
+
+  Real fn_grad_norm = 0.0;
+  for (size_t i=0; i<numContinuousVars; i++) {
+    fn_grad_norm += std::pow(fn_grad[i], 2);
+  }
+
+  // Terminate SBLM if the norm of the projected merit function gradient
+  // at x_c is less than convTol (hard convergence).
+  fn_grad_norm = std::sqrt( fn_grad_norm );
+  if ( fn_grad_norm < convergenceTol )
+    convergenceFlag = 4; // hard convergence
+
+#ifdef DEBUG
+  Cout << "In hard convergence check: merit_fn_grad_norm =  "
+       << merit_fn_grad_norm << '\n';
+#endif
+}
+
+
 /** Assess acceptance of SBLM iterate (trust region ratio or filter)
     and compute soft convergence metrics (number of consecutive
     failures, min trust region size, etc.) to assess whether the
@@ -491,6 +538,10 @@ void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
                                        APPROX_MODEL,true);
   Response approx_star_corrected = trustRegions[tr_index].response_star(
                                      APPROX_MODEL,true);
+
+  // TODO: mostly the same from here down...
+  // TODO: make modular on a Helper instance and then DFSBLM has one,
+  // while HSBLM has multiple
 
   const RealVector& fns_center_truth = truth_center_uncorrected.function_values();
   const RealVector& fns_star_truth = truth_star_uncorrected.function_values();
@@ -549,7 +600,7 @@ void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
   // ------------------------------------------
 
   if (accept_step) {
-    trustRegions[tr_index].new_center(true);
+    trustRegions[tr_index].new_center(true); // TODO: differs...
 
     // Update the trust region size depending on the accuracy of the approximate
     // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
@@ -584,9 +635,9 @@ void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
   }
 
   Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-                   std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
+    std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
   Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-                   std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
+    std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
   if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
        denominator <= 0. || rel_denom < convergenceTol )
     softConvCount++;
@@ -594,74 +645,124 @@ void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
     softConvCount = 0; // reset counter to zero
 }
 
-void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
-{
-  size_t approx_model_form = trustRegions[tr_index].approx_model_form();
-  size_t truth_model_form = trustRegions[tr_index].truth_model_form();
 
-  size_t approx_model_level = trustRegions[tr_index].approx_model_level();
-  size_t truth_model_level = trustRegions[tr_index].truth_model_level();
-
-  iteratedModel.surrogate_model_indices(approx_model_form, approx_model_level);
-  iteratedModel.truth_model_indices(truth_model_form, truth_model_level);
-}
-
-
+// top level: not bound to core_run() yet...
 void HierarchSurrBasedLocalMinimizer::
 MG_Opt_driver(const Variables &x0)
 {
   RealVector vars_star = x0.continuous_variables();
 
-  int max_iter = 10;
-  int num_iter = 0;
-  while (!convergenceFlag && num_iter < max_iter) {
+  int max_iter = 10, iter = 0;
+  while (!convergenceFlag && iter < max_iter) {
+    // Perform one complete V cycle:
+    // recursively applied MG/Opt to all levels w/ line search
+    // (no prolongation/restriction at this pt)
+    //
+    // vars_star returned has already been validated at the HF level
+    // (from final line search or final opt post-smoothing)
     vars_star = MG_Opt(vars_star, numLev[0] - 1);
 
-    // Check for convergence
+    // Only need is to check for hard + soft convergence at top level (no TR
+    // updates).  If not converged, then continue V cycles until max iter.
+    // On exit of V cycle, we have performed a line search at HF level, but 
+    // no gradient evaluation assuming value-based line search.
+
     // TODO: add code here
 
-    num_iter++;
+    ++iter;
   }
+
+  // TODO: warm starting of Hessian approximations were critical to render this
+  // algorithm competitive in Jason's MATLAB prototype
+  // > 1st-order MG/Opt was ~2x better than 1st-order single-level opt.
+  // > Quasi-2nd-order MG/Opt required warm starts to achieve ~2x again,
+  //   relative to 2nd-order single-level opt.  W/o warm starts, 2nd-order
+  //   MG/Opt was similar to 1st-order MG/Opt since secant updates did not 
+  //   have sufficient iters to accumulate.
+
+  // Note: if remove pre- and post-optimization and replace line search with
+  // TR logic, then basically recover TRMM.
+  // Jason's feeling is that TR usage is the most fruitful direction for MG/Opt:
+  // > pre-optimization w/o max_iters limited by TR
+  // > instead of line search, compute TR ratios, accept/reject, adapt
+  // An important question is whether pre-optimization adds anything relative
+  // to TRMM without it.
 }
+
 
 RealVector HierarchSurrBasedLocalMinimizer::
-MG_Opt(const RealVector &xk, int k)
+MG_Opt(const RealVector& x0_k, int k)
+// TODO: pass full Vars object i/o continuous only
 {
-  if (k == 0) {
-    // Full optimization on corrected lowest level
-    int max_iter = 30;
-    return optimize(xk, max_iter, k);
-  } else {
-    // Partial optimization
+  // TODO: flatten and iterate across V cycle to replace fn recursion at ***
+
+  // V cycle:
+  // > comes in with k = n-1 and recurs top down with partial opt (max_iter = 3)
+  //   until k = 0 --> full/more extensive opt (max_iter = 30)
+  // > then begins to unroll nested call stack, bottom up, from k=0 to k=n-1
+
+  if (k == 0) { // Full optimization on corrected lowest level
+    // Some authors: run until convergence; others: tune as well.
+    // Care is needed due to embedded use of local corrections.
+    // **********************************************************************
+    // Either need to add trust region control or continue poor-man's control
+    // with max iterations to avoid leaving region of correction accuracy.
+    // **********************************************************************
+    int max_iter = 30; // until convergence...  (tune or expose?)
+    return optimize(x0_k, max_iter, k); // Steps 3,4
+  }
+  else { // Partial optimization
+
+    // Step 6: pre-optimization
     int max_iter = 3;
-    RealVector xk_1 = optimize(xk, max_iter, k);
+    RealVector x1_k = optimize(x0_k, max_iter, k); // pre-opt / step 1, level k
 
-    // Build discrepancy correction between levels k and k-1:
+    // Step 7: Restriction: x1_km1 = R[x1_k]
+
+    // Step 8: Build discrepancy correction between levels k and k-1:
     // TODO: add code here to compute discrepancy corrections
+    //   reuse same trustRegions arrays (but support multidimensional MLMF case)
 
-    // Recursively call MG_Opt
-    RealVector xkm1 = MG_Opt(xk_1, k-1);
+    // Step 9: Recursively call MG_Opt
+    RealVector x2_km1 = MG_Opt(x1_k, k-1); // use x1_km1 if restriction
 
-    // Compute correction:
-    RealVector pk(numContinuousVars);
-    for (int ii = 0; ii < pk.length(); ii++)
-      pk[ii] = xkm1[ii] - xk_1[ii];
+    // Step 10a: prolongation x2_k = P[x2_km1]
 
-    // Perform line search:
-    double alpha0 = 1.0;
-    RealVector xk_2 = linesearch(xk_1, pk, alpha0);
+    // Step 10b: compute search direction from difference in iterates
+    RealVector p_k = x2_km1; // use x2_k if prolongation
+    p_k -= x1_k;
 
-    // Partial optimization
-    return optimize(xk_2, max_iter, k);
+    // Step 11: perform line search:
+    Real alpha0 = 1.;
+    RealVector x2_k = linesearch(x1_k, p_k, alpha0);
+
+    // Optional additional step 12: "post smoothing" (partial opt)
+    // This step not represented in Jason's graphic; but does appear in
+    // some papers (Lewis & Nash?, Borzi?)
+    //return optimize(x2_k, max_iter, k);
+    // ...OR...
+    return x2_k;
   }
 }
 
+
+// alpha0 is initial step size;
+// pk is search direction defined from change in x;
+// xk comes in as x^{k-1}, return as x^k
 RealVector HierarchSurrBasedLocalMinimizer::
 linesearch(const RealVector &xk, const RealVector &pk, double alpha0)
 {
-  // TODO: add a real line search algorithm here. For now, always accept the step:
-  return xk;
+  // TODO: add a real line search algorithm here...
+
+  // For now, always accept full step defined from predicted change in x:
+  RealVector new_xk = xk;
+  // Perform alpha step.  Note: s = -grad f (take care with sign of pk)
+  size_t i, len = xk.length();
+  for (i=0; i<len; ++i)
+    new_xk[i] += alpha0 * pk[i];
+  return new_xk;
 }
+
 
 RealVector HierarchSurrBasedLocalMinimizer::
 optimize(const RealVector &x, int max_iter, int index)

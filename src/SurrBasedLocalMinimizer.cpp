@@ -143,6 +143,21 @@ void SurrBasedLocalMinimizer::pre_run()
   copy_data(iteratedModel.continuous_variables(),    initialPoint);
   copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
   copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
+
+  // grad/Hess flags are set in derived ctors prior to calling base pre_run()
+
+  // TO DO: verify utility of these for HSBLM...
+  // Create commonly-used ActiveSets
+  valSet = fullApproxSet = fullTruthSet
+    = iteratedModel.current_response().active_set();
+  int full_approx_val = 1, full_truth_val = 1;
+  if (approxGradientFlag) full_approx_val += 2;
+  if (approxHessianFlag)  full_approx_val += 4;
+  if (truthGradientFlag)  full_truth_val  += 2;
+  if (truthHessianFlag)   full_truth_val  += 4;
+  valSet.request_values(1);
+  fullApproxSet.request_values(full_approx_val);
+  fullTruthSet.request_values(full_truth_val);
 }
 
 
