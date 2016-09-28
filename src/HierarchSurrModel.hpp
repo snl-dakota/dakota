@@ -21,12 +21,7 @@
 #include "DataModel.hpp"
 
 
-namespace Dakota
-{
-
-// define special values for componentParallelMode
-#define LF_MODEL 1
-#define HF_MODEL 2
+namespace Dakota {
 
 enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
        FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };

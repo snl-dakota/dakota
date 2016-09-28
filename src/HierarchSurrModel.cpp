@@ -17,9 +17,12 @@
 static const char rcsId[]=
   "@(#) $Id: HierarchSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
 
+// define special values for componentParallelMode
+#define LF_MODEL 1
+#define HF_MODEL 2
 
-namespace Dakota
-{
+namespace Dakota {
+
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),

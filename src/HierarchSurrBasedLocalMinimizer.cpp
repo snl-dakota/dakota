@@ -24,11 +24,13 @@
 #include "NPSOLOptimizer.hpp"
 #endif // HAVE_NPSOL
 
-namespace Dakota {
-
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
+#define  TRUTH_MODEL    2
+#define APPROX_RESPONSE 1
+#define  TRUTH_RESPONSE 2
+
+namespace Dakota {
 
 // initialization of statics
 //HierarchSurrBasedLocalMinimizer*
@@ -47,6 +49,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
+  // no sub-problem recastings yet...
   approxSubProbModel = iteratedModel;
 
   // Instantiate the approximate sub-problem minimizer
@@ -92,8 +95,8 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   // static pointer to HierarchSurrBasedLocalMinimizer instance
   //mlmfInstance = this;
 
-  for (size_t i = 0; i < trustRegions.size(); ++i) {
-    //trustRegions[i].new_center(true); // vars_center() sets newCenterFlag
+  for (size_t i=0; i<trustRegions.size(); ++i) {
+    //trustRegions[i].new_center(true); // vars_center() now sets newCenterFlag
     trustRegions[i].vars_center(iteratedModel.current_variables());
     trustRegions[i].tr_lower_bnds(globalLowerBnds);
     trustRegions[i].tr_upper_bnds(globalLowerBnds);

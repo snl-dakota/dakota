@@ -27,10 +27,6 @@
 
 namespace Dakota {
 
-// define special values for componentParallelMode
-#define OPTIONAL_INTERFACE 1
-#define SUB_MODEL          2
-
 
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
@@ -540,39 +536,6 @@ inline void NestedModel::derived_init_serial()
 
 inline size_t NestedModel::mi_parallel_level_index() const
 { return subIteratorSched.miPLIndex; }
-
-
-inline void NestedModel::
-serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
-{
-  // don't recurse, as subModel.serve() will set subModel comms
-  set_communicators(pl_iter, max_eval_concurrency, false);
-
-  // manage optionalInterface and subModel servers
-  componentParallelMode = 1;
-  while (componentParallelMode) {
-    // outer context: matches bcast at bottom of component_parallel_mode()
-    parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == OPTIONAL_INTERFACE &&
-	!optInterfacePointer.empty()) {
-      // store/set/restore the ParallelLibrary::currPCIter
-      ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
-      parallelLib.parallel_configuration_iterator(modelPCIter);
-      optionalInterface.serve_evaluations();
-      parallelLib.parallel_configuration_iterator(pc_iter); // restore
-    }
-    else if (componentParallelMode == SUB_MODEL) {
-      if (subIteratorSched.messagePass) // serve concurrent subIterator execs
-	subIteratorSched.schedule_iterators(*this, subIterator);
-      else { // service the subModel for a single subIterator execution
-	ParLevLIter si_pl_iter // inner context
-	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
-	subModel.serve_run(si_pl_iter,
-			   subIterator.maximum_evaluation_concurrency());
-      }
-    }
-  }
-}
 
 
 inline void NestedModel::stop_servers()

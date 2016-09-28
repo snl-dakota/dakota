@@ -19,9 +19,6 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 
-#define APPROX_RESPONSE 1
-#define  TRUTH_RESPONSE 2
-
 namespace Dakota {
 
 
@@ -84,13 +81,11 @@ private:
 
   Response responseApproxStarUncorrected;
   Response responseApproxStarCorrected;
-
   Response responseApproxCenterUncorrected;
   Response responseApproxCenterCorrected;
 
   Response responseTruthStarUncorrected;
   Response responseTruthStarCorrected;
-
   Response responseTruthCenterUncorrected;
   Response responseTruthCenterCorrected;
 
@@ -187,103 +182,6 @@ inline Variables& SurrBasedLevelData::vars_star()
 inline void SurrBasedLevelData::
 vars_star(const Variables& val)
 { varsStar = val.copy(); }
-
-
-inline Response SurrBasedLevelData::
-response_star(short response_type, bool return_corrected) const
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return (return_corrected) ? responseTruthStarCorrected.copy() :
-      responseTruthStarUncorrected.copy();
-    break;
-  case APPROX_RESPONSE:
-    return (return_corrected) ? responseApproxStarCorrected.copy() :
-      responseApproxStarUncorrected.copy();
-    break;
-  }
-}
-
-
-inline Response SurrBasedLevelData::
-response_center(short response_type, bool return_corrected) const
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return (return_corrected) ? responseTruthCenterCorrected.copy() :
-      responseTruthCenterUncorrected.copy();
-    break;
-  case APPROX_RESPONSE:
-    return (return_corrected) ? responseApproxCenterCorrected.copy() :
-      responseApproxCenterUncorrected.copy();
-    break;
-  }
-}
-
-
-inline Response& SurrBasedLevelData::
-response_star(short response_type, bool return_corrected)
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return (return_corrected) ?
-      responseTruthStarCorrected : responseTruthStarUncorrected;
-    break;
-  case APPROX_RESPONSE:
-    return (return_corrected) ?
-      responseApproxStarCorrected : responseApproxStarUncorrected;
-    break;
-  }
-}
-
-
-inline Response& SurrBasedLevelData::
-response_center(short response_type, bool return_corrected)
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return (return_corrected) ? 
-      responseTruthCenterCorrected : responseTruthCenterUncorrected;
-    break;
-  case APPROX_RESPONSE:
-    return (return_corrected) ?
-      responseApproxCenterCorrected : responseApproxCenterUncorrected;
-    break;
-  }
-}
-
-
-inline void SurrBasedLevelData::
-response_star(const Response& resp, short response_type, bool return_corrected)
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    if (return_corrected) responseTruthStarCorrected.update(resp);
-    else                  responseTruthStarUncorrected.update(resp);
-    break;
-  case APPROX_RESPONSE:
-    if (return_corrected) responseApproxStarCorrected.update(resp);
-    else                  responseApproxStarUncorrected.update(resp);
-    break;
-  }
-}
-
-
-inline void SurrBasedLevelData::
-response_center(const Response& resp, short response_type,
-                bool return_corrected)
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    if (return_corrected) responseTruthCenterCorrected.update(resp);
-    else                  responseTruthCenterUncorrected.update(resp);
-    break;
-  case APPROX_RESPONSE:
-    if (return_corrected) responseApproxCenterCorrected.update(resp);
-    else                  responseApproxCenterUncorrected.update(resp);
-    break;
-  }
-}
 
 
 inline void SurrBasedLevelData::tr_lower_bnds(const RealVector& bounds)

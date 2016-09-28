@@ -13,8 +13,11 @@
 
 #include "SurrBasedLevelData.hpp"
 
+#define APPROX_RESPONSE 1
+#define  TRUTH_RESPONSE 2
 
 namespace Dakota {
+
 
 SurrBasedLevelData::
 SurrBasedLevelData(const Response& initial_resp,
@@ -45,6 +48,103 @@ void SurrBasedLevelData::active_set(const ActiveSet& set)
   responseTruthStarCorrected.active_set(set);
   responseTruthCenterUncorrected.active_set(set);
   responseTruthCenterCorrected.active_set(set);
+}
+
+
+Response SurrBasedLevelData::
+response_star(short response_type, bool return_corrected) const
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    return (return_corrected) ? responseTruthStarCorrected.copy() :
+      responseTruthStarUncorrected.copy();
+    break;
+  case APPROX_RESPONSE:
+    return (return_corrected) ? responseApproxStarCorrected.copy() :
+      responseApproxStarUncorrected.copy();
+    break;
+  }
+}
+
+
+Response SurrBasedLevelData::
+response_center(short response_type, bool return_corrected) const
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    return (return_corrected) ? responseTruthCenterCorrected.copy() :
+      responseTruthCenterUncorrected.copy();
+    break;
+  case APPROX_RESPONSE:
+    return (return_corrected) ? responseApproxCenterCorrected.copy() :
+      responseApproxCenterUncorrected.copy();
+    break;
+  }
+}
+
+
+Response& SurrBasedLevelData::
+response_star(short response_type, bool return_corrected)
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    return (return_corrected) ?
+      responseTruthStarCorrected : responseTruthStarUncorrected;
+    break;
+  case APPROX_RESPONSE:
+    return (return_corrected) ?
+      responseApproxStarCorrected : responseApproxStarUncorrected;
+    break;
+  }
+}
+
+
+Response& SurrBasedLevelData::
+response_center(short response_type, bool return_corrected)
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    return (return_corrected) ? 
+      responseTruthCenterCorrected : responseTruthCenterUncorrected;
+    break;
+  case APPROX_RESPONSE:
+    return (return_corrected) ?
+      responseApproxCenterCorrected : responseApproxCenterUncorrected;
+    break;
+  }
+}
+
+
+void SurrBasedLevelData::
+response_star(const Response& resp, short response_type, bool return_corrected)
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    if (return_corrected) responseTruthStarCorrected.update(resp);
+    else                  responseTruthStarUncorrected.update(resp);
+    break;
+  case APPROX_RESPONSE:
+    if (return_corrected) responseApproxStarCorrected.update(resp);
+    else                  responseApproxStarUncorrected.update(resp);
+    break;
+  }
+}
+
+
+void SurrBasedLevelData::
+response_center(const Response& resp, short response_type,
+		bool return_corrected)
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    if (return_corrected) responseTruthCenterCorrected.update(resp);
+    else                  responseTruthCenterUncorrected.update(resp);
+    break;
+  case APPROX_RESPONSE:
+    if (return_corrected) responseApproxCenterCorrected.update(resp);
+    else                  responseApproxCenterUncorrected.update(resp);
+    break;
+  }
 }
 
 } // namespace Dakota
