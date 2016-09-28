@@ -65,12 +65,12 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   // TODO: This is specific for just multifidelity:
   // TODO: This is hard coded for just multifidelity:
-  for(size_t ii = 0; ii < numFid-1; ii++) {
+  for (i=0; i<numFid-1; ++i) {
     trustRegions.push_back(HierarchSurrBasedLocalMinimizerHelper(
-      iteratedModel.truth_model().current_response(), ii, ii+1)); // *** MSE
-    trustRegions[ii].trust_region_factor(origTrustRegionFactor *
-					 std::pow(0.5, numFid - 2 - ii));
-    trustRegions[ii].new_center(true);
+      iteratedModel.truth_model().current_response(), i, i+1)); // *** MSE: response from each lev?
+    trustRegions[i].trust_region_factor(origTrustRegionFactor *
+					std::pow(0.5, numFid-2-i));
+    trustRegions[i].new_center(true);
   }
 }
 
