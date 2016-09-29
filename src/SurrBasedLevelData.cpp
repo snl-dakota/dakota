@@ -17,18 +17,21 @@ namespace Dakota {
 
 
 void SurrBasedLevelData::
-initialize_responses(const Response& initial_resp, bool uncorr)
+initialize_responses(const Response& approx_resp, const Response& truth_resp,
+		     bool uncorr)
 {
-  responseApproxStarCorrected   = initial_resp.copy();
-  responseApproxCenterCorrected = initial_resp.copy();
-  responseTruthStarCorrected    = initial_resp.copy();
-  responseTruthCenterCorrected  = initial_resp.copy();
+  responseStarApproxCorrected   = approx_resp.copy();
+  responseCenterApproxCorrected = approx_resp.copy();
+
+  responseStarTruthCorrected    = truth_resp.copy();
+  responseCenterTruthCorrected  = truth_resp.copy();
 
   if (uncorr) {
-    responseApproxStarUncorrected   = initial_resp.copy();
-    responseApproxCenterUncorrected = initial_resp.copy();
-    responseTruthStarUncorrected    = initial_resp.copy();
-    responseTruthCenterUncorrected  = initial_resp.copy();
+    responseStarApproxUncorrected   = approx_resp.copy();
+    responseCenterApproxUncorrected = approx_resp.copy();
+
+    responseStarTruthUncorrected    = truth_resp.copy();
+    responseCenterTruthUncorrected  = truth_resp.copy();
   }
 }
 
@@ -37,8 +40,11 @@ void SurrBasedLevelData::
 initialize_indices(size_t approx_form,  size_t truth_form,
 		   size_t approx_level, size_t truth_level)
 {
-  approxModelForm  = approx_form;  truthModelForm  = truth_form;
-  approxModelLevel = approx_level; truthModelLevel = truth_level;
+  approxModelIndices.first  = approx_form;
+  approxModelIndices.second = approx_level;
+
+  truthModelIndices.first   = truth_form;
+  truthModelIndices.second  = truth_level;
 }
 
 
@@ -47,12 +53,12 @@ active_set_star(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
   case TRUTH_RESPONSE:
-    responseTruthStarCorrected.active_set(set);
-    if (uncorr) responseTruthStarUncorrected.active_set(set);
+    responseStarTruthCorrected.active_set(set);
+    if (uncorr) responseStarTruthUncorrected.active_set(set);
     break;
   case APPROX_RESPONSE:
-    responseApproxStarCorrected.active_set(set);
-    if (uncorr) responseApproxStarUncorrected.active_set(set);
+    responseStarApproxCorrected.active_set(set);
+    if (uncorr) responseStarApproxUncorrected.active_set(set);
     break;
   }
 }
@@ -61,8 +67,8 @@ active_set_star(const ActiveSet& set, short response_type, bool uncorr)
 const ActiveSet& SurrBasedLevelData::active_set_star(short response_type) const
 {
   switch (response_type) {
-  case TRUTH_RESPONSE:  return responseTruthStarCorrected.active_set();  break;
-  case APPROX_RESPONSE: return responseApproxStarCorrected.active_set(); break;
+  case TRUTH_RESPONSE:  return responseStarTruthCorrected.active_set();  break;
+  case APPROX_RESPONSE: return responseStarApproxCorrected.active_set(); break;
   }
 }
 
@@ -72,12 +78,12 @@ active_set_center(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
   case TRUTH_RESPONSE:
-    responseTruthCenterCorrected.active_set(set);
-    if (uncorr) responseTruthCenterUncorrected.active_set(set);
+    responseCenterTruthCorrected.active_set(set);
+    if (uncorr) responseCenterTruthUncorrected.active_set(set);
     break;
   case APPROX_RESPONSE:
-    responseApproxCenterCorrected.active_set(set);
-    if (uncorr) responseApproxCenterUncorrected.active_set(set);
+    responseCenterApproxCorrected.active_set(set);
+    if (uncorr) responseCenterApproxUncorrected.active_set(set);
     break;
   }
 }
@@ -87,20 +93,21 @@ const ActiveSet& SurrBasedLevelData::
 active_set_center(short response_type) const
 {
   switch (response_type) {
-  case TRUTH_RESPONSE:  return responseTruthCenterCorrected.active_set(); break;
-  case APPROX_RESPONSE: return responseApproxCenterCorrected.active_set();break;
+  case TRUTH_RESPONSE:  return responseCenterTruthCorrected.active_set(); break;
+  case APPROX_RESPONSE: return responseCenterApproxCorrected.active_set();break;
   }
 }
 
 
+/*
 const Response& SurrBasedLevelData::
 response_star(short corr_response_type) const
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseTruthStarCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseTruthStarUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseApproxStarCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseApproxStarUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected;    break;
+  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;  break;
+  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;   break;
+  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected; break;
   }
 }
 
@@ -109,22 +116,23 @@ const Response& SurrBasedLevelData::
 response_center(short corr_response_type) const
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseTruthCenterCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseTruthCenterUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseApproxCenterCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseApproxCenterUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected;    break;
+  case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
+  case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
+  case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
   }
 }
+*/
 
 
 Response& SurrBasedLevelData::
 response_star(short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseTruthStarCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseTruthStarUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseApproxStarCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseApproxStarUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected;    break;
+  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;  break;
+  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;   break;
+  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected; break;
   }
 }
 
@@ -133,10 +141,10 @@ Response& SurrBasedLevelData::
 response_center(short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseTruthCenterCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseTruthCenterUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseApproxCenterCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseApproxCenterUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected;    break;
+  case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
+  case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
+  case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
   }
 }
 
@@ -145,11 +153,11 @@ void SurrBasedLevelData::
 response_star(const Response& resp, short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:   responseTruthStarCorrected.update(resp);   break;
-  case UNCORR_TRUTH_RESPONSE: responseTruthStarUncorrected.update(resp); break;
-  case CORR_APPROX_RESPONSE:  responseApproxStarCorrected.update(resp);  break;
+  case CORR_TRUTH_RESPONSE:   responseStarTruthCorrected.update(resp);   break;
+  case UNCORR_TRUTH_RESPONSE: responseStarTruthUncorrected.update(resp); break;
+  case CORR_APPROX_RESPONSE:  responseStarApproxCorrected.update(resp);  break;
   case UNCORR_APPROX_RESPONSE:
-    responseApproxStarUncorrected.update(resp); break;
+    responseStarApproxUncorrected.update(resp); break;
   }
 }
 
@@ -158,11 +166,11 @@ void SurrBasedLevelData::
 response_center(const Response& resp, short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:   responseTruthCenterCorrected.update(resp);  break;
-  case UNCORR_TRUTH_RESPONSE: responseTruthCenterUncorrected.update(resp);break;
-  case CORR_APPROX_RESPONSE:  responseApproxCenterCorrected.update(resp); break;
+  case CORR_TRUTH_RESPONSE:   responseCenterTruthCorrected.update(resp);  break;
+  case UNCORR_TRUTH_RESPONSE: responseCenterTruthUncorrected.update(resp);break;
+  case CORR_APPROX_RESPONSE:  responseCenterApproxCorrected.update(resp); break;
   case UNCORR_APPROX_RESPONSE:
-    responseApproxCenterUncorrected.update(resp); break;
+    responseCenterApproxUncorrected.update(resp); break;
   }
 }
 

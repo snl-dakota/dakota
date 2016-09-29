@@ -55,16 +55,17 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   // Get number of model fidelities and number of levels for each fidelity:
   ModelList& models = iteratedModel.subordinate_models(false);
-  numFid = models.size();
-  numLev.resize(numFid);
+  numFid = models.size(); numLev.resize(numFid);
   ModelLIter ml_iter; size_t i;
   for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i)
     numLev[i] = ml_iter->solution_levels();
 
-  // TODO: This is specific for just multifidelity:
+  // TODO: Only 1D for multifidelity -- need to support MLMF
   trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds
-  for (ml_iter=models.begin(), i=0; i<numFid-1; ++ml_iter, ++i) {
-    trustRegions[i].initialize_responses(ml_iter->current_response());
+  for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
+    // assign approx and truth for this level
+    trustRegions[i].initialize_responses(ml_iter->current_response(),
+					 (++ml_iter)->current_response());
     trustRegions[i].initialize_indices(i, i+1);
   }
 

@@ -38,13 +38,25 @@ public:
   ~SurrBasedLevelData();
 
   /// initialize response objects via copy
-  void initialize_responses(const Response& initial_resp, bool uncorr = true);
+  void initialize_responses(const Response& approx_resp,
+			    const Response& truth_resp, bool uncorr = true);
   /// initialize model forms and discretization levels
   void initialize_indices(size_t approx_form,      size_t truth_form,
 			  size_t approx_level = 0, size_t truth_level = 0);
 
-  const Response& response_star(short corr_response_type) const;
-  const Response& response_center(short corr_response_type) const;
+  bool new_center();
+  void new_center(bool flag);
+
+  const Variables& vars_center() const;
+  Variables& vars_center();
+  void vars_center(const Variables& vars);
+
+  const Variables& vars_star() const;
+  Variables& vars_star();
+  void vars_star(const Variables& vars);
+
+  //const Response& response_star(short corr_response_type) const;
+  //const Response& response_center(short corr_response_type) const;
   Response& response_star(short corr_response_type);
   Response& response_center(short corr_response_type);
 
@@ -54,17 +66,6 @@ public:
   Real trust_region_factor();
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
-
-  bool new_center();
-  void new_center(bool val);
-
-  const Variables& vars_center() const;
-  Variables& vars_center();
-  void vars_center(const Variables& val);
-
-  const Variables& vars_star() const;
-  Variables& vars_star();
-  void vars_star(const Variables& val);
 
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
@@ -79,44 +80,57 @@ public:
   size_t truth_model_level();
 
   void tr_lower_bnds(const RealVector& bounds);
-  void tr_upper_bnds(const RealVector& bounds);
-
   const RealVector& tr_lower_bnds() const;
+  void tr_upper_bnds(const RealVector& bounds);
   const RealVector& tr_upper_bnds() const;
 
 private:
 
-  Response responseApproxStarUncorrected;
-  Response responseApproxStarCorrected;
-  Response responseApproxCenterUncorrected;
-  Response responseApproxCenterCorrected;
+  Variables varsStar;   ///< variables at the new solution iterate
+  Variables varsCenter; ///< variables at the trust region center
 
-  Response responseTruthStarUncorrected;
-  Response responseTruthStarCorrected;
-  Response responseTruthCenterUncorrected;
-  Response responseTruthCenterCorrected;
+  /// uncorrected approximate response at the new solution iterate
+  Response responseStarApproxUncorrected;
+  /// corrected approximate response at the new solution iterate
+  Response responseStarApproxCorrected;
+  /// uncorrected approximate response at the trust region center
+  Response responseCenterApproxUncorrected;
+  /// corrected approximate response at the trust region center
+  Response responseCenterApproxCorrected;
 
-  Variables varsCenter;
-  Variables varsStar;
+  /// uncorrected truth response at trust region center
+  Response responseStarTruthUncorrected;
+  /// corrected truth response at trust region center
+  Response responseStarTruthCorrected;
+  /// uncorrected truth response at new solution iterate
+  IntResponsePair responseCenterTruthUncorrected;
+  /// corrected truth response at new solution iterate
+  Response responseCenterTruthCorrected;
 
+  /// the trust region factor is used to compute the total size of the trust
+  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
+  /// actual size of the trust region will be 10% of the global bounds.
   Real trustRegionFactor;
 
   /// flags the acceptance of a candidate point and the existence of
   /// a new trust region center
   bool newCenterFlag;
 
-  size_t approxModelForm;
-  size_t approxModelLevel;
+  /// model form and discretization level indices for the approximate model
+  SizetSizetPair approxModelIndices;
+  /// model form and discretization level indices for the truth model
+  SizetSizetPair truthModelIndices;
 
-  size_t truthModelForm;
-  size_t truthModelLevel;
-
+  /// Trust region lower bounds
   RealVector trLowerBounds;
+  /// Trust region Upper bounds
   RealVector trUpperBounds;
 };
 
 
-inline SurrBasedLevelData::SurrBasedLevelData()
+inline SurrBasedLevelData::SurrBasedLevelData():
+  trustRegionFactor(1.), newCenterFlag(true),
+  approxModelIndices(0,0), truthModelIndices(0,0)
 { }
 
 
@@ -125,19 +139,19 @@ inline SurrBasedLevelData::~SurrBasedLevelData()
 
 
 inline size_t SurrBasedLevelData::approx_model_form()
-{ return approxModelForm; }
+{ return approxModelIndices.first; }
 
 
 inline size_t SurrBasedLevelData::truth_model_form()
-{ return truthModelForm; }
+{ return truthModelIndices.first; }
 
 
 inline size_t SurrBasedLevelData::approx_model_level()
-{ return approxModelLevel; }
+{ return approxModelIndices.second; }
 
 
 inline size_t SurrBasedLevelData::truth_model_level()
-{ return truthModelLevel; }
+{ return truthModelIndices.second; }
 
 
 inline Real SurrBasedLevelData::trust_region_factor()
@@ -156,8 +170,8 @@ inline bool SurrBasedLevelData::new_center()
 { return newCenterFlag; }
 
 
-inline void SurrBasedLevelData::new_center(bool val)
-{ newCenterFlag = val; }
+inline void SurrBasedLevelData::new_center(bool flag)
+{ newCenterFlag = flag; }
 
 
 inline const Variables& SurrBasedLevelData::vars_center() const
@@ -168,9 +182,9 @@ inline Variables& SurrBasedLevelData::vars_center()
 { return varsCenter; }
 
 
-inline void SurrBasedLevelData::vars_center(const Variables& val)
+inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
-  varsCenter = val.copy();
+  varsCenter = vars.copy();
   newCenterFlag = true; // TODO: check for change in point? (DFSBLM manages update in TR center...)
 }
 
@@ -182,21 +196,20 @@ inline Variables& SurrBasedLevelData::vars_star()
 { return varsStar; }
 
 
-inline void SurrBasedLevelData::
-vars_star(const Variables& val)
-{ varsStar = val.copy(); }
+inline void SurrBasedLevelData::vars_star(const Variables& vars)
+{ varsStar = vars.copy(); }
 
 
 inline void SurrBasedLevelData::tr_lower_bnds(const RealVector& bounds)
 { trLowerBounds = bounds; }
 
 
-inline void SurrBasedLevelData::tr_upper_bnds(const RealVector& bounds)
-{ trUpperBounds = bounds; }
-
-
 inline const RealVector& SurrBasedLevelData::tr_lower_bnds() const
 { return trLowerBounds; }
+
+
+inline void SurrBasedLevelData::tr_upper_bnds(const RealVector& bounds)
+{ trUpperBounds = bounds; }
 
 
 inline const RealVector& SurrBasedLevelData::tr_upper_bnds() const

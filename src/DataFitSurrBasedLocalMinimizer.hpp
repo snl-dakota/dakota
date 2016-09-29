@@ -128,29 +128,8 @@ protected:
   //- Heading: Data members
   //
 
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  bool newCenterFlag;
-
-  /// Trust region lower bounds
-  RealVector trLowerBnds;
-  /// Trust region Upper bounds
-  RealVector trUpperBnds;
-
-  Variables varsStar;   ///< variables at the new solution iterate
-  Variables varsCenter; ///< variables at the trust region center
-
-  Response responseCenterApprox; ///< approx response at the trust region center
-  Response responseStarApprox;  ///< approx response at the new solution iterate
-
-  IntResponsePair responseCenterTruth;///< truth response at trust region center
-  IntResponsePair responseStarTruth; ///< truth response at new solution iterate
-
-  /// the trust region factor is used to compute the total size of the trust
-  /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
-  /// actual size of the trust region will be 10% of the global bounds (upper
-  /// bound - lower bound for each design variable).
-  Real trustRegionFactor;
+  /// container for 
+  SurrBasedLevelData trustRegionData;
 
   /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
   /// or AUGMENTED_LAGRANGIAN_OBJ
@@ -181,9 +160,13 @@ protected:
   bool localApproxFlag;
   /// flags the use of a model hierarchy/multifidelity surrogate 
   bool hierarchApproxFlag;
-  /// flags the availability of the center point in the DACE
-  /// evaluations for global approximations (CCD, Box-Behnken)
-  bool daceCenterPtFlag;
+
+  // flag indicating inclusion of the center point in the DACE
+  // evaluations for global approximations (CCD, Box-Behnken)
+  //bool daceCenterPtFlag;
+  // secondary flag indicating daceCenterPtFlag and no bounds truncation
+  //bool daceCenterEvalFlag;
+
   /// flags the simultaneous presence of two conditions: (1) additional
   /// layerings w/i actual_model (e.g., surrogateModel = layered/nested/layered
   /// -> actual_model = nested/layered), and (2) a user-specification to bypass
@@ -206,11 +189,13 @@ protected:
   /// constraint relaxation parameter backoff parameter (multiplier)
   Real alpha;
 
-  bool daceCenterEvalFlag;
-
   /// pointer to SBLM instance used in static member functions
   static DataFitSurrBasedLocalMinimizer* sblmInstance;
 };
+
+
+inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
+{ }
 
 } // namespace Dakota
 

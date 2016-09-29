@@ -27,8 +27,6 @@
 
 //#define DEBUG
 
-static const char rcsId[]="@(#) $Id: DataFitSurrBasedLocalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
-
 
 namespace Dakota {
 
@@ -64,12 +62,9 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // Initialize response results objects (approx/truth and center/star).  These
   // must be deep copies to avoid representation sharing: initialize with copy()
   // and then use update() within the main loop.
-  responseCenterApprox       = approx_model.current_response().copy();
-  responseStarApprox         = responseCenterApprox.copy();
-  responseCenterTruth.first  = truth_model.evaluation_id();
-  responseCenterTruth.second = truth_model.current_response().copy();
-  responseStarTruth.first    = responseCenterTruth.first;
-  responseStarTruth.second   = responseCenterTruth.second.copy();
+  trustRegionData.initialize_responses(approx_model.current_response(),
+				       truth_model.current_response(), false);
+  responseCenterTruth.first = truth_model.evaluation_id();
 
   // If the "direct surrogate" formulation is used, then approxSubProbMinimizer
   // is interfaced w/ iteratedModel directly. Otherwise, RecastModel indirection
@@ -273,10 +268,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
-{ }
-
-
 void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
@@ -286,7 +277,7 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 
   // Set ActiveSets within the response copies
   responseStarApprox.active_set(valSet);
-  responseStarTruth.second.active_set(valSet);
+  responseStarTruth.active_set(valSet);
   responseCenterApprox.active_set(fullApproxSet);
   responseCenterTruth.second.active_set(fullTruthSet);
 
@@ -296,7 +287,7 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  daceCenterEvalFlag = false;
+  //daceCenterEvalFlag = false;
   if (globalApproxFlag && !dace_iterator.is_null()) {
     // With correction approaches, the responses specification must provide
     // support for evaluating derivative info.  However, this data is usually
@@ -311,10 +302,10 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
     dace_iterator.active_set(dace_set);
 
     // Extract info on the sampling method type
-    unsigned short sampling_type = dace_iterator.sampling_scheme();
-    if (sampling_type == SUBMETHOD_BOX_BEHNKEN ||
-	sampling_type == SUBMETHOD_CENTRAL_COMPOSITE)
-      daceCenterEvalFlag = true;
+    //unsigned short sampling_type = dace_iterator.sampling_scheme();
+    //if (sampling_type == SUBMETHOD_BOX_BEHNKEN ||
+    //    sampling_type == SUBMETHOD_CENTRAL_COMPOSITE)
+    //  daceCenterEvalFlag = true;
   }
 }
 
@@ -410,8 +401,8 @@ void DataFitSurrBasedLocalMinimizer::update_trust_region()
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
   // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
-  daceCenterPtFlag
-    = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
+  //daceCenterPtFlag
+  //  = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
   approxSubProbModel.continuous_variables(varsCenter.continuous_variables());
@@ -475,11 +466,10 @@ void DataFitSurrBasedLocalMinimizer::build()
 bool DataFitSurrBasedLocalMinimizer::build_global()
 {
   // global with old or new center
-  Model& truth_model  = iteratedModel.truth_model();
-  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
 
   // Retrieve responseCenterTruth if possible, evaluate it if not
-  find_center_truth(dace_iterator, truth_model);
+  find_center_truth(iteratedModel.subordinate_iterator(),
+		    iteratedModel.truth_model());
 
   // Assess hard convergence prior to global surrogate construction
   if (newCenterFlag)
@@ -493,7 +483,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   if (!convergenceFlag)
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction
-      = iteratedModel.build_approximation(varsCenter, responseCenterTruth);
+      = iteratedModel.build_approximation(varsCenter, responseCenterTruth);//***
     // TO DO: problem with CCD/BB duplication!
 
   /*
@@ -618,19 +608,19 @@ void DataFitSurrBasedLocalMinimizer::verify()
   }
   else
     truth_model.evaluate(valSet);
-  responseStarTruth.first = truth_model.evaluation_id();
-  responseStarTruth.second.update(truth_model.current_response());
+  const Response& truth_resp = truth_model.current_response();
+  responseStarTruth.update(truth_resp);
 
   // compute the trust region ratio and update soft convergence counters
-  const RealVector& c_varsStar = varsStar.continuous_variables();
-  tr_ratio_check(c_varsStar, trLowerBnds, trUpperBnds);
+  const RealVector& c_vars_star = varsStar.continuous_variables();
+  tr_ratio_check(c_vars_star, trLowerBnds, trUpperBnds);
 
   // If the candidate optimum (varsStar) is accepted, then update the
   // center variables and response data.
   if (newCenterFlag) {
-    varsCenter.continuous_variables(c_varsStar);
-    responseCenterTruth.first = responseStarTruth.first;
-    responseCenterTruth.second.update(responseStarTruth.second);
+    varsCenter.continuous_variables(c_vars_star);
+    responseCenterTruth.first = truth_model.evaluation_id();
+    responseCenterTruth.second.update(truth_resp);
     // update responseCenterApprox in the hierarchical case only if the
     // old correction can be backed out.  Currently relying on a DB search
     // to recover uncorrected low fidelity fn values.
@@ -925,13 +915,12 @@ hard_convergence_check(const Response& response_truth,
     convergence rate has decreased to a point where the process should
     be terminated (diminishing returns). */
 void DataFitSurrBasedLocalMinimizer::
-tr_ratio_check(const RealVector& c_varsStar,
-	       const RealVector& trLowerBnds,
-	       const RealVector& trUpperBnds)
+tr_ratio_check(const RealVector& c_vars_star, const RealVector& tr_lower_bnds,
+	       const RealVector& tr_upper_bnds)
 {
   const RealVector& fns_center_truth
     = responseCenterTruth.second.function_values();
-  const RealVector& fns_star_truth = responseStarTruth.second.function_values();
+  const RealVector& fns_star_truth = responseStarTruth.function_values();
   const RealVector& fns_center_approx = responseCenterApprox.function_values();
   const RealVector& fns_star_approx = responseStarApprox.function_values();
 
@@ -1024,7 +1013,7 @@ tr_ratio_check(const RealVector& c_varsStar,
 
 #ifdef DEBUG
   Cout << "Response truth:\ncenter = " << responseCenterTruth.second
-       << "star = " << responseStarTruth.second << "Response approx:\ncenter = "
+       << "star = " << responseStarTruth << "Response approx:\ncenter = "
        << responseCenterApprox << "star = " << responseStarApprox;
   Cout << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
        << merit_fn_star_truth << "\nMerit fn approx: center = "
@@ -1092,8 +1081,8 @@ tr_ratio_check(const RealVector& c_varsStar,
       bool boundary_pt_flag = false;
       if (globalApproxFlag)
 	for (size_t i=0; i<numContinuousVars; i++)
-	  if ( c_varsStar[i] > trUpperBnds[i] - constraintTol ||
-	       c_varsStar[i] < trLowerBnds[i] + constraintTol )
+	  if ( c_vars_star[i] > tr_upper_bnds[i] - constraintTol ||
+	       c_vars_star[i] < tr_lower_bnds[i] + constraintTol )
 	    boundary_pt_flag = true;
 
       if (globalApproxFlag && !boundary_pt_flag)
