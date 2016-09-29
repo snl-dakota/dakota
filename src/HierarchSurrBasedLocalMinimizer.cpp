@@ -27,8 +27,6 @@
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
 #define  TRUTH_MODEL    2
-#define APPROX_RESPONSE 1
-#define  TRUTH_RESPONSE 2
 
 namespace Dakota {
 
