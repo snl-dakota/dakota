@@ -21,6 +21,12 @@
 
 namespace Dakota {
 
+// values for response type
+enum { APPROX_RESPONSE=1, TRUTH_RESPONSE };
+// values for corrected response type
+enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
+       CORR_TRUTH_RESPONSE,    UNCORR_TRUTH_RESPONSE };
+
 
 class SurrBasedLevelData
 {
@@ -28,25 +34,22 @@ public:
 
   /// default constructor
   SurrBasedLevelData();
-  /// constructor
-  SurrBasedLevelData(const Response& initial_resp, size_t approx_form,
-		     size_t truth_form, size_t approx_level = 0,
-		     size_t truth_level = 0);
   /// destructor
   ~SurrBasedLevelData();
 
-  Response response_star(short response_type,
-                         bool return_corrected = false) const;
-  Response response_center(short response_type,
-                           bool return_corrected = false) const;
+  /// initialize response objects via copy
+  void initialize_responses(const Response& initial_resp, bool uncorr = true);
+  /// initialize model forms and discretization levels
+  void initialize_indices(size_t approx_form,      size_t truth_form,
+			  size_t approx_level = 0, size_t truth_level = 0);
 
-  Response& response_star(short response_type, bool return_corrected = false);
-  Response& response_center(short response_type, bool return_corrected = false);
+  const Response& response_star(short corr_response_type) const;
+  const Response& response_center(short corr_response_type) const;
+  Response& response_star(short corr_response_type);
+  Response& response_center(short corr_response_type);
 
-  void response_star(const Response& resp, short response_type,
-                     bool return_corrected = false);
-  void response_center(const Response& resp, short response_type,
-                       bool return_corrected = false);
+  void response_star(const Response& resp, short corr_response_type);
+  void response_center(const Response& resp, short corr_response_type);
 
   Real trust_region_factor();
   void trust_region_factor(Real val);
@@ -63,8 +66,12 @@ public:
   Variables& vars_star();
   void vars_star(const Variables& val);
 
-  const ActiveSet& active_set () const;
-  void active_set (const ActiveSet& set);
+  const ActiveSet& active_set_center(short response_type) const;
+  void active_set_center(const ActiveSet& set, short response_type,
+			 bool uncorr = true);
+  const ActiveSet& active_set_star(short response_type) const;
+  void active_set_star(const ActiveSet& set, short response_type,
+		       bool uncorr = true);
 
   size_t approx_model_form();
   size_t truth_model_form();
@@ -131,10 +138,6 @@ inline size_t SurrBasedLevelData::approx_model_level()
 
 inline size_t SurrBasedLevelData::truth_model_level()
 { return truthModelLevel; }
-
-
-inline const ActiveSet& SurrBasedLevelData::active_set() const
-{ return responseTruthCenterUncorrected.active_set(); }
 
 
 inline Real SurrBasedLevelData::trust_region_factor()
