@@ -95,9 +95,8 @@ private:
   SizetArray numLev;
   size_t minimizeIndex;
 
-  bool nestedTrustRegions;
-
   std::vector<SurrBasedLevelData> trustRegions;
+  bool nestedTrustRegions;
 
   // pointer to MLMF instance used in static member functions
   //static HierarchSurrBasedLocalMinimizer* mlmfInstance;

@@ -23,8 +23,8 @@ initialize_responses(const Response& approx_resp, const Response& truth_resp,
   responseStarApproxCorrected   = approx_resp.copy();
   responseCenterApproxCorrected = approx_resp.copy();
 
-  responseStarTruthCorrected    = truth_resp.copy();
-  responseCenterTruthCorrected  = truth_resp.copy();
+  responseStarTruthCorrected          = truth_resp.copy();
+  responseCenterTruthCorrected.second = truth_resp.copy();
 
   if (uncorr) {
     responseStarApproxUncorrected   = approx_resp.copy();
@@ -78,7 +78,7 @@ active_set_center(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
   case TRUTH_RESPONSE:
-    responseCenterTruthCorrected.active_set(set);
+    responseCenterTruthCorrected.second.active_set(set);
     if (uncorr) responseCenterTruthUncorrected.active_set(set);
     break;
   case APPROX_RESPONSE:
@@ -93,8 +93,10 @@ const ActiveSet& SurrBasedLevelData::
 active_set_center(short response_type) const
 {
   switch (response_type) {
-  case TRUTH_RESPONSE:  return responseCenterTruthCorrected.active_set(); break;
-  case APPROX_RESPONSE: return responseCenterApproxCorrected.active_set();break;
+  case TRUTH_RESPONSE:
+    return responseCenterTruthCorrected.second.active_set(); break;
+  case APPROX_RESPONSE:
+    return responseCenterApproxCorrected.active_set();       break;
   }
 }
 
@@ -116,7 +118,7 @@ const Response& SurrBasedLevelData::
 response_center(short corr_response_type) const
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected;    break;
+  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected.second; break;
   case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
   case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
   case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
@@ -141,7 +143,8 @@ Response& SurrBasedLevelData::
 response_center(short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected;    break;
+  case CORR_TRUTH_RESPONSE:
+    return responseCenterTruthCorrected.second;                        break;
   case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
   case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
   case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
@@ -157,7 +160,7 @@ response_star(const Response& resp, short corr_response_type)
   case UNCORR_TRUTH_RESPONSE: responseStarTruthUncorrected.update(resp); break;
   case CORR_APPROX_RESPONSE:  responseStarApproxCorrected.update(resp);  break;
   case UNCORR_APPROX_RESPONSE:
-    responseStarApproxUncorrected.update(resp); break;
+    responseStarApproxUncorrected.update(resp);                          break;
   }
 }
 
@@ -166,11 +169,39 @@ void SurrBasedLevelData::
 response_center(const Response& resp, short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:   responseCenterTruthCorrected.update(resp);  break;
+  case CORR_TRUTH_RESPONSE:
+    responseCenterTruthCorrected.second.update(resp);  break;
   case UNCORR_TRUTH_RESPONSE: responseCenterTruthUncorrected.update(resp);break;
   case CORR_APPROX_RESPONSE:  responseCenterApproxCorrected.update(resp); break;
   case UNCORR_APPROX_RESPONSE:
     responseCenterApproxUncorrected.update(resp); break;
+  }
+}
+
+
+IntResponsePair& SurrBasedLevelData::
+response_center_pair(short corr_response_type)
+{
+  if (corr_response_type != CORR_TRUTH_RESPONSE) {
+    Cerr << "Error: eval_id not supported in SurrBasedLevelData for this "
+	 << "response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return responseCenterTruthCorrected;
+}
+
+
+void SurrBasedLevelData::
+response_center_id(int eval_id, short corr_response_type)
+{
+  switch (corr_response_type) {
+  case CORR_TRUTH_RESPONSE: responseCenterTruthCorrected.first = eval_id; break;
+  default:
+    Cerr << "Error: eval_id not supported in SurrBasedLevelData for this "
+	 << "response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
   }
 }
 

@@ -63,6 +63,9 @@ public:
   void response_star(const Response& resp, short corr_response_type);
   void response_center(const Response& resp, short corr_response_type);
 
+  IntResponsePair& response_center_pair(short corr_response_type);
+  void response_center_id(int eval_id, short corr_response_type);
+
   Real trust_region_factor();
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
@@ -131,7 +134,7 @@ private:
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), newCenterFlag(true),
   approxModelIndices(0,0), truthModelIndices(0,0)
-{ }
+{ responseCenterTruthUncorrected.first = 0; }
 
 
 inline SurrBasedLevelData::~SurrBasedLevelData()

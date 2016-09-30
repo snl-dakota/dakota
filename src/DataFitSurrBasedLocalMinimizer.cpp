@@ -64,7 +64,8 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // and then use update() within the main loop.
   trustRegionData.initialize_responses(approx_model.current_response(),
 				       truth_model.current_response(), false);
-  responseCenterTruth.first = truth_model.evaluation_id();
+  trustRegionData.response_center_id(truth_model.evaluation_id(),
+				     CORR_TRUTH_RESPONSE);
 
   // If the "direct surrogate" formulation is used, then approxSubProbMinimizer
   // is interfaced w/ iteratedModel directly. Otherwise, RecastModel indirection
@@ -272,14 +273,12 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
 
-  // Create arrays for variables and variable bounds
-  varsCenter = iteratedModel.current_variables().copy();
-
-  // Set ActiveSets within the response copies
-  responseStarApprox.active_set(valSet);
-  responseStarTruth.active_set(valSet);
-  responseCenterApprox.active_set(fullApproxSet);
-  responseCenterTruth.second.active_set(fullTruthSet);
+  // set variables and ActiveSets
+  trustRegionData.vars_center(iteratedModel.current_variables());
+  trustRegionData.active_set_center(fullTruthSet,   TRUTH_RESPONSE, false);
+  trustRegionData.active_set_center(fullApproxSet, APPROX_RESPONSE, false);
+  trustRegionData.active_set_star(valSet,  TRUTH_RESPONSE, false);
+  trustRegionData.active_set_star(valSet, APPROX_RESPONSE, false);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();
@@ -456,7 +455,8 @@ void DataFitSurrBasedLocalMinimizer::build()
   // Update graphics for iteration 0 (initial guess).
   if (sbIterNum == 0)
     parallelLib.output_manager().add_datapoint(varsCenter,
-      iteratedModel.truth_model().interface_id(), responseCenterTruth.second);
+      iteratedModel.truth_model().interface_id(),
+      trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
   if (!convergenceFlag)
     compute_center_correction(embed_correction);
@@ -471,10 +471,14 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   find_center_truth(iteratedModel.subordinate_iterator(),
 		    iteratedModel.truth_model());
 
+  Variables& vars_center = trustRegionData.vars_center();
+  IntResponsePair& resp_center_truth
+    = trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE);
+
   // Assess hard convergence prior to global surrogate construction
   if (newCenterFlag)
-    hard_convergence_check(responseCenterTruth.second,
-			   varsCenter.continuous_variables(),
+    hard_convergence_check(resp_center_truth.second,
+			   vars_center.continuous_variables(),
 			   globalLowerBnds, globalUpperBnds);
 
   bool embed_correction = false;
@@ -483,13 +487,13 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   if (!convergenceFlag)
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction
-      = iteratedModel.build_approximation(varsCenter, responseCenterTruth);//***
+      = iteratedModel.build_approximation(vars_center, resp_center_truth);
     // TO DO: problem with CCD/BB duplication!
 
   /*
   if ( !multiLayerBypassFlag && !daceCenterPtFlag )
     // Can augment the global approximation with new center point data
-    iteratedModel.update_approximation(varsCenter, responseCenterTruth, true);
+    iteratedModel.update_approximation(vars_center, resp_center_truth, true);
   */
 
   return embed_correction;
@@ -506,15 +510,13 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
   // may need grads/Hessians depending on order of correction.
   iteratedModel.build_approximation();
 
-  Model& truth_model  = iteratedModel.truth_model();
-  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
-
   // Retrieve responseCenterTruth if possible, evaluate it if not
-  find_center_truth(dace_iterator, truth_model);
+  find_center_truth(iteratedModel.subordinate_iterator(),
+		    iteratedModel.truth_model());
 
   // Assess hard convergence following build/retrieve
-  hard_convergence_check(responseCenterTruth.second,
-			 varsCenter.continuous_variables(),
+  hard_convergence_check(trustRegionData.response_center(CORR_TRUTH_RESPONSE),
+			 trustRegionData.vars_center().continuous_variables(),
 			 globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
@@ -529,7 +531,7 @@ compute_center_correction(bool embed_correction)
   // Evaluate/retrieve responseCenterApprox
   // **************************************
   find_center_approx();
-	  
+
   // ******************************************
   // Compute additive/multiplicative correction
   // ******************************************
@@ -538,9 +540,13 @@ compute_center_correction(bool embed_correction)
     // -->> hierarchical needs compute_correction if new center
     // -->> global needs compute_correction if new center or new bounds
     DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-    delta.compute(varsCenter, responseCenterTruth.second,
-		  responseCenterApprox);
-    delta.apply(varsCenter, responseCenterApprox);
+    Response resp_center_approx(
+      trustRegionData.response_center(UNCORR_APPROX_RESPONSE).copy());
+    delta.compute(trustRegionData.vars_center(),
+		  trustRegionData.response_center(CORR_TRUTH_RESPONSE),
+		  resp_center_approx);
+    delta.apply(varsCenter, resp_center_approx);
+    trustRegionData.response_center(resp_center_approx, CORR_APPROX_RESPONSE);
   }
 }
 
@@ -920,9 +926,9 @@ tr_ratio_check(const RealVector& c_vars_star, const RealVector& tr_lower_bnds,
 {
   const RealVector& fns_center_truth
     = responseCenterTruth.second.function_values();
-  const RealVector& fns_star_truth = responseStarTruth.function_values();
+  const RealVector& fns_star_truth    = responseStarTruth.function_values();
   const RealVector& fns_center_approx = responseCenterApprox.function_values();
-  const RealVector& fns_star_approx = responseStarApprox.function_values();
+  const RealVector& fns_star_approx   = responseStarApprox.function_values();
 
   // ---------------------------------------------------
   // Compute trust region ratio based on merit fn values
