@@ -1382,6 +1382,21 @@ sub parse_test_output {
       }
     }
 
+    while (/^Wilks Statistics for/) {
+      print;
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      $_ = <OUTPUT>; # grab next line
+      $_ = <OUTPUT>; # grab next line
+      $_ = <OUTPUT>; # grab next line
+      while (/\s+$e/) {
+#      while (/\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
+        print;
+        print TEST_OUT;
+        $_ = <OUTPUT>; # grab next line
+      }
+    }
+
   } # end while output lines
 
   # DMD (05/01/2006): the following "if" line may be needed if
