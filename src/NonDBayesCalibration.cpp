@@ -1076,41 +1076,46 @@ void NonDBayesCalibration::compute_statistics()
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_samples = acceptanceChain.numCols();
   int num_filtered = int((num_samples-burnin)/num_skip);
-  size_t num_exp = expData.num_experiments();
-  
-  if (burnInSamples > 0 || num_skip > 1)
-  {
-    RealMatrix filtered_chain;
+
+  RealMatrix filtered_chain;
+  if (burnInSamples > 0 || num_skip > 1) {
+
     filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
     filter_chain(acceptanceChain, filtered_chain);
+
     filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
     filter_fnvals(acceptedFnVals, filteredFnVals);
-    NonDSampling::compute_moments(filtered_chain, chainStats);
-    NonDSampling::compute_moments(filteredFnVals, fnStats);
-    if (outputLevel >= NORMAL_OUTPUT) {
-      compute_intervals();
-    }
-    // Print tabular file for filtered chain
-    print_filtered_tabular(filtered_chain, filteredFnVals, predVals, 
-      			   num_filtered, num_exp);
-  }
-  else
-  {
-    NonDSampling::compute_moments(acceptanceChain, chainStats);
-    NonDSampling::compute_moments(acceptedFnVals, fnStats);
-    filteredFnVals.shapeUninitialized(numFunctions, num_filtered);
-    filteredFnVals = acceptedFnVals;
-    if (outputLevel >= NORMAL_OUTPUT) {
-      compute_intervals();
-    }
-  }
-  
-  if(posteriorStatsKL)
-    kl_post_prior(acceptanceChain);
-  if(posteriorStatsMutual)
-    mutual_info_buildX();
 
+  }
+  else {
+
+    filtered_chain = 
+      RealMatrix(Teuchos::View, acceptanceChain.values(), 
+		 acceptanceChain.stride(), 
+		 acceptanceChain.numRows(), acceptanceChain.numCols());
+
+    filteredFnVals = 
+      RealMatrix(Teuchos::View, acceptedFnVals.values(), acceptedFnVals.stride(),
+		 acceptedFnVals.numRows(), acceptedFnVals.numCols());
+
+  }
+
+  NonDSampling::compute_moments(filtered_chain, chainStats);
+  NonDSampling::compute_moments(filteredFnVals, fnStats);
+  if (outputLevel >= NORMAL_OUTPUT) {
+    compute_intervals();
+  }
+
+  // Print tabular file for the filtered chain
+  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
+    export_chain(filtered_chain, filteredFnVals);
+
+  if (posteriorStatsKL)
+    kl_post_prior(acceptanceChain);
+  if (posteriorStatsMutual)
+    mutual_info_buildX();
 }
+
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
 					RealMatrix& filtered_chain)
@@ -1118,10 +1123,9 @@ void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain,
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
   int num_samples = acceptance_chain.numCols();
-  int num_filtered = int((num_samples - burnin)/num_skip);
   int j = 0;
-  for (int i = burnin; i < num_samples; ++i){
-    if (i % num_skip == 0){
+  for (int i = burnin; i < num_samples; ++i) {
+    if (i % num_skip == 0) {
       RealVector param_vec = Teuchos::getCol(Teuchos::View, 
 	  				acceptance_chain, i);
       Teuchos::setCol(param_vec, j, filtered_chain);
@@ -1136,10 +1140,9 @@ void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fn_vals,
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
   int num_samples = accepted_fn_vals.numCols();
-  int num_filtered = int((num_samples - burnin)/num_skip);
   int j = 0;
-  for (int i = burnin; i < num_samples; ++i){
-    if (i % num_skip == 0){
+  for (int i = burnin; i < num_samples; ++i) {
+    if (i % num_skip == 0) {
       RealVector col_vec = Teuchos::getCol(Teuchos::View, 
 	 	  			  accepted_fn_vals, i);
       Teuchos::setCol(col_vec, j, filtered_fn_vals);
@@ -1300,10 +1303,9 @@ compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_dev
 }
 
 
-// BMA TODO: the mcmc tabular and filtered tabular should be same
-// format, probably same outputter...
-
-void NonDBayesCalibration::export_chain()
+/** Print tabular file with filtered chain, function values, and pred values */
+void NonDBayesCalibration::
+export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
 {
   String mcmc_filename = 
     exportMCMCFilename.empty() ? "dakota_mcmc_tabular.dat" : exportMCMCFilename;
@@ -1311,83 +1313,63 @@ void NonDBayesCalibration::export_chain()
   TabularIO::open_file(export_mcmc_stream, mcmc_filename,
 		       "NonDBayesCalibration chain export");
 
-  // the residual model includes labels for the hyper-parameters, if present
+  // Use a Variables object for proper tabular formatting.
+  // The residual model includes hyper-parameters, if present
+  Variables output_vars = residualModel.current_variables().copy();
+
+  // When outputting only chain responses
+  const StringArray& resp_labels = 
+    mcmcModel.current_response().function_labels();
+  // When outputting experimental responses
+  /*
+  size_t num_exp = expData.num_experiments();
+  StringArray resp_labels;
+  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  for (size_t i=0; i<num_exp+1; ++i){
+    for (size_t k=0; k<numFunctions; ++k){
+      resp_labels.push_back(resp[k]);
+    }
+  }
+  */
+
   TabularIO::
-    write_header_tabular(export_mcmc_stream, residualModel.current_variables(), 
-			 StringArray(), "mcmc_id", exportMCMCFormat);
-  //  size_t wpp4 = write_precision+4;
+    write_header_tabular(export_mcmc_stream, output_vars, 
+			 resp_labels, "mcmc_id", exportMCMCFormat);
+
+  size_t wpp4 = write_precision+4;
   export_mcmc_stream << std::setprecision(write_precision) 
 		     << std::resetiosflags(std::ios::floatfield);
 
-  // use a Variables object for proper tabular formatting
-  Variables output_vars = residualModel.current_variables().copy();
-  for (int j=0; j<acceptanceChain.numCols(); ++j) {
-    String empty_id;
-    TabularIO::write_leading_columns(export_mcmc_stream, j+1,
-				     empty_id,//mcmcModel.interface_id(),
+  int num_filtered = filtered_chain.numCols();
+  for (int i=0; i<num_filtered; ++i) {
+    TabularIO::write_leading_columns(export_mcmc_stream, i+1,
+				     mcmcModel.interface_id(),
 				     exportMCMCFormat);
-    RealVector accept_pt = Teuchos::getCol(Teuchos::View, acceptanceChain, j);
+    RealVector accept_pt = Teuchos::getCol(Teuchos::View, filtered_chain, i);
     output_vars.continuous_variables(accept_pt);
     output_vars.write_tabular(export_mcmc_stream);
+    // Write function values to filtered_tabular
+    RealVector col_vec = Teuchos::getCol(Teuchos::View, filtered_fn_vals, i);
+    for (size_t j=0; j<numFunctions; ++j){
+      export_mcmc_stream << std::setw(wpp4) << col_vec[j] << ' ';
+    }      
+    // Write predicted values to filtered_tabular
+    // When outputting experimental responses 
+    /*
+    for (size_t j =0; j<num_exp; ++j){
+      for (size_t k = 0; k<numFunctions; ++k){
+	int col_index = j*num_filtered+i;
+        const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
+      				    predVals, col_index);
+  	export_mcmc_stream << std::setw(wpp4) << col_vec[k] << ' ';
+      }
+    }
+    */
     export_mcmc_stream << '\n';
   }
 
   TabularIO::close_file(export_mcmc_stream, mcmc_filename,
 			"NonDQUESOBayesCalibration chain export");
-}
-
-
-void NonDBayesCalibration::print_filtered_tabular(RealMatrix& filtered_chain, 
-RealMatrix& filtered_fn_vals, RealMatrix& predVals, int num_filtered,
-size_t num_exp)
-{
-  std::ofstream filtered_mcmc_stream;
-  // Print tabular file with filtered chain, function values, and pred values
-  String empty_id, filteredmcmc_filename = "dakota_mcmc_filtered_tabular.dat";
-  TabularIO::open_file(filtered_mcmc_stream, filteredmcmc_filename,
- 		       "NonDBayesCalibration filtered chain export");
-  // When outputting only chain responses
-  const StringArray& resp_array = mcmcModel.current_response().function_labels();
-  // When outputting experimental responses
-  /*StringArray resp_array;
-  const StringArray& resp = mcmcModel.current_response().function_labels(); 
-  for (size_t i=0; i<num_exp+1; ++i){
-    for (size_t k=0; k<numFunctions; ++k){
-      resp_array.push_back(resp[k]);
-    }
-  }*/
-  Variables output_vars = residualModel.current_variables().copy();
-  TabularIO::write_header_tabular(filtered_mcmc_stream, 
-		            	  residualModel.current_variables(), resp_array, 
-				  "mcmc_id", exportMCMCFormat);
-  size_t sample_cntr = 0;
-  size_t wpp4 = write_precision+4;
-  for (int i=0; i<filtered_chain.numCols(); ++i) {
-    String empty_id;
-    TabularIO::write_leading_columns(filtered_mcmc_stream, i+1,
-				     empty_id,//mcmcModel.interface_id(),
-				     exportMCMCFormat);
-    RealVector accept_pt = Teuchos::getCol(Teuchos::View, filtered_chain, i);
-    output_vars.continuous_variables(accept_pt);
-    output_vars.write_tabular(filtered_mcmc_stream);
-    // Write function values to filtered_tabular
-    RealVector col_vec = Teuchos::getCol(Teuchos::View, 
-  			    	filtered_fn_vals, i);
-    for (size_t j = 0; j<numFunctions; ++j){
-      filtered_mcmc_stream << std::setw(wpp4) << col_vec[j] << ' ';
-    }      
-    // Write predicted values to filtered_tabular
-    // When outputting experimental responses 
-    /*for (size_t j =0; j<num_exp; ++j){
-      for (size_t k = 0; k<numFunctions; ++k){
-	int col_index = j*num_filtered+i;
-        const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
-      				    predVals, col_index);
-  	filtered_mcmc_stream << std::setw(wpp4) << col_vec[k] << ' ';
-      }
-    }*/
-    filtered_mcmc_stream << '\n';
-  }
 }
 
 void NonDBayesCalibration::print_intervals_file

@@ -8,8 +8,7 @@
 
 //- Class:       NOWPACOptimizer
 //- Description: Implementation code for the NOWPACOptimizer class
-//- Owner:       Bengt Abel
-//- Checked by:  Mike Eldred
+//- Owner:       Mike Eldred
 
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
@@ -18,6 +17,8 @@
 #include "ParallelLibrary.hpp"
 
 static const char rcsId[]="@(#) $Id: NOWPACOptimizer.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+
+#if 0
 
 namespace Dakota {
 
@@ -43,7 +44,7 @@ NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
 { initialize(); }
 
 
-NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(NOWPAC, model),
+NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(NOWPAC_OPT, model),
   nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat")
 { initialize(); }
 
@@ -325,3 +326,5 @@ NOWPACOptimizer* new_NOWPACOptimizer(Model& model)
 #endif // HAVE_DYNLIB_FACTORIES
 
 } // namespace Dakota
+
+#endif

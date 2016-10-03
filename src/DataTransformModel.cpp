@@ -136,10 +136,9 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 
 
   // ---
-  // Expand submodel Variables data to account for hyper-parameters
+  // Expand currentVariables values/labels to account for hyper-parameters
   // ---
-
-  expand_var_labels(sub_model);
+  init_continuous_vars();
 
 
   // ---
@@ -157,6 +156,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
                primaryRespFnSense);
 
   // CV scales don't change in this recasting; base RecastModel captures them
+  // BMA TODO: What if there are hyper-parameters active?
 
   // Adjust each scaling type to right size, leaving as length 1 if needed
   expand_scales_array(srd, sub_model.scaling_options().priScaleTypes, 
@@ -248,45 +248,54 @@ SizetArray DataTransformModel::
 variables_expand(const Model& sub_model, size_t num_hyper)
 {
   SizetArray vc_totals;  // default is no size change
-  if (num_hyper) {
+  if (num_hyper > 0) {
     const SharedVariablesData& svd = sub_model.current_variables().shared_data();
     vc_totals = svd.components_totals();
-
-    short active_view = sub_model.current_variables().view().first;
-    switch (active_view) {
-      
-    case MIXED_DESIGN: case RELAXED_DESIGN:
-      // append to end of continuous design
-      vc_totals[TOTAL_CDV] += num_hyper; 
-      break;
-
-    case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
-      // append to end of continuous aleatory
-      vc_totals[TOTAL_CAUV] += num_hyper;
-      break;
-
-    case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: 
-    case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-      // append to end of continuous epistemic (note there may not actually be 
-      // any epistemic variables in the *_UNCERTAIN cases)
-      vc_totals[TOTAL_CEUV] += num_hyper;
-      break;
-
-    case MIXED_ALL: case RELAXED_ALL: case MIXED_STATE: case RELAXED_STATE:
-      // append to end of continuous state
-      vc_totals[TOTAL_CSV] += num_hyper;
-      break;
-
-    default:
-      Cerr << "\nError: invalid active variables view " << active_view 
-	   << " in DataTransformModel.\n";
-      abort_handler(-1);
-      break;
-
-    }
-
+    vc_totals[get_hyperparam_vc_index(sub_model)] += num_hyper;
   }
   return vc_totals;
+}
+
+
+int DataTransformModel::get_hyperparam_vc_index(const Model& sub_model)
+{
+  int vc_index = TOTAL_CDV;
+
+  const SharedVariablesData& svd = sub_model.current_variables().shared_data();
+  const SizetArray& vc_totals = svd.components_totals();
+  short active_view = sub_model.current_variables().view().first;
+  switch (active_view) {
+      
+  case MIXED_DESIGN: case RELAXED_DESIGN:
+    // append to end of continuous design
+    vc_index = TOTAL_CDV;
+
+  case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
+    // append to end of continuous aleatory
+    vc_index = TOTAL_CAUV;
+    break;
+
+  case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: 
+  case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
+    // append to end of continuous epistemic (note there may not actually be 
+    // any epistemic variables in the *_UNCERTAIN cases)
+    vc_index = TOTAL_CEUV;
+    break;
+
+  case MIXED_ALL: case RELAXED_ALL: case MIXED_STATE: case RELAXED_STATE:
+    // append to end of continuous state
+    vc_index = TOTAL_CSV;
+    break;
+
+  default:
+    Cerr << "\nError: invalid active variables view " << active_view 
+	 << " in DataTransformModel.\n";
+    abort_handler(-1);
+    break;
+
+  }
+  
+  return vc_index;
 }
 
 
@@ -568,18 +577,43 @@ scale_response(const Variables& submodel_vars,
 }
 
 
-void DataTransformModel::expand_var_labels(const Model& sub_model)
+/** Pull up the continuous variable values and labels into the
+    RecastModel, inserting the hyper-parameter values/labels  */
+void DataTransformModel::init_continuous_vars()
 {
-  // currentVariables should be sized by the RecastModel initialization
-  size_t num_calib = sub_model.cv();
-
-  StringMultiArrayConstView sm_labels(sub_model.continuous_variable_labels());
-  for (size_t i=0; i<num_calib; ++i)
-    currentVariables.continuous_variable_label(sm_labels[i], i);
+  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SizetArray& sm_vc_totals = svd.components_totals();
+  const RealVector& sm_acv = subModel.all_continuous_variables();
+  StringMultiArrayConstView sm_acvl = subModel.all_continuous_variable_labels();
   
-  StringArray hyper_labels = expData.hyperparam_labels(obsErrorMultiplierMode);
-  for (size_t i=0; i<numHyperparams; ++i)
-    currentVariables.continuous_variable_label(hyper_labels[i], num_calib + i);
+  int continuous_vc_inds[4] = {TOTAL_CDV, TOTAL_CAUV, TOTAL_CEUV, TOTAL_CSV};
+  int hyperparam_vc_ind = get_hyperparam_vc_index(subModel);
+
+  size_t sm_offset = 0;
+  size_t dtm_offset = 0;
+
+  BOOST_FOREACH(const int& vci, continuous_vc_inds) {
+    
+    size_t num_cvars = sm_vc_totals[vci];
+    for (size_t i=0; i<num_cvars; ++i) {
+      all_continuous_variable(sm_acv[sm_offset], dtm_offset);
+      all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
+      ++sm_offset;
+      ++dtm_offset;
+    }
+    if (vci == hyperparam_vc_ind) {
+      // insert the hyper-parameter values/labels
+      const StringArray& hyper_labels = 
+	expData.hyperparam_labels(obsErrorMultiplierMode);
+      for (size_t i=0; i<numHyperparams; ++i) {
+	all_continuous_variable(1.0, dtm_offset);
+	all_continuous_variable_label(hyper_labels[i], dtm_offset);
+	++dtm_offset;
+      }
+    }
+
+  }
+
 }
 
 

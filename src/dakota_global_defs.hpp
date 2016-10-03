@@ -62,6 +62,9 @@ enum {
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
 
+/// enum for active subspace cross validation identification
+enum {CV_ID_DEFAULT = 0, MINIMUM_METRIC, RELATIVE_TOLERANCE, DECREASE_TOLERANCE};
+
 /// whether dakota exits/aborts or throws on errors
 extern short abort_mode;
 

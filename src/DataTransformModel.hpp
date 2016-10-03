@@ -69,6 +69,10 @@ protected:
   /// expand the variable counts to account for hyper-parameters
   static SizetArray variables_expand(const Model& sub_model, size_t num_hyper);
 
+  /// determine the index into vc_totals corresponding to where the
+  /// hyper-parameters go
+  static int get_hyperparam_vc_index(const Model& sub_model);
+
   /// helper to compute the recast response order during member
   /// initialization; recast_resp_order passed is the minimum request
   /// client needs
@@ -118,8 +122,8 @@ protected:
   // NOTE: Shouldn't need non-default active set or secondary response
   // recast; default based on indices should suffice.
 
-  /// expand the variable labels to include the hyper parameters
-  void expand_var_labels(const Model& sub_model);
+  /// Initialize continuous variable values/labels
+  void init_continuous_vars();
 
   /// (if non-empty) expand submodel_array by replicates to populate a
   /// recast_array

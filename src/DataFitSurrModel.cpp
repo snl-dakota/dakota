@@ -442,7 +442,8 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     not intended to be used in isolation. */
 void DataFitSurrModel::update_approximation(bool rebuild_flag)
 {
-  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // replace the current points for each approximation
   //daceIterator.run(pl_iter);
@@ -463,7 +464,8 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -477,7 +479,8 @@ void DataFitSurrModel::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
-  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the anchor point for each approximation
   approxInterface.update_approximation(vars, response_pr); // update anchor pt
@@ -493,7 +496,8 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -507,7 +511,8 @@ void DataFitSurrModel::
 update_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
-  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the current points for each approximation
   approxInterface.update_approximation(vars_array, resp_map);
@@ -524,7 +529,8 @@ update_approximation(const VariablesArray& vars_array,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -538,7 +544,8 @@ void DataFitSurrModel::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 		     bool rebuild_flag)
 {
-  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the current points for each approximation
   approxInterface.update_approximation(samples, resp_map);
@@ -555,7 +562,8 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -567,7 +575,8 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     is not intended to be used in isolation. */
 void DataFitSurrModel::append_approximation(bool rebuild_flag)
 {
-  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   //daceIterator.run(pl_iter);
@@ -589,7 +598,8 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -603,7 +613,8 @@ void DataFitSurrModel::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
-  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.append_approximation(vars, response_pr);
@@ -619,7 +630,8 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -633,7 +645,8 @@ void DataFitSurrModel::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
-  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.append_approximation(vars_array, resp_map);
@@ -650,7 +663,8 @@ append_approximation(const VariablesArray& vars_array,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
@@ -664,7 +678,8 @@ void DataFitSurrModel::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 		     bool rebuild_flag)
 {
-  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.append_approximation(samples, resp_map);
@@ -681,13 +696,15 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
 }
 
 
 void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
-  Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.pop_approximation(save_surr_data);
@@ -698,14 +715,16 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
     approxBuilds++;
   }
 
-  Cout << "\n<<<<< " << surrogateType
-       << " approximation data removal completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType
+         << " approximation data removal completed.\n";
 }
 
 
 void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
 {
-  Cout << "\n>>>>> Retrieving " << surrogateType << " approximation data.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Retrieving " << surrogateType << " approximation data.\n";
 
   // append to the current points for each approximation
   approxInterface.push_approximation();
@@ -718,13 +737,15 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   }
   */
 
-  Cout << "\n<<<<< " << surrogateType << " approximation data retrieved.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation data retrieved.\n";
 }
 
 
 void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 {
-  Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.finalize_approximation();
@@ -737,13 +758,15 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
   }
   */
 
-  Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
 }
 
 
 void DataFitSurrModel::store_approximation(size_t index)
 {
-  Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
 
   // store the current data for each approximation for later combination
   approxInterface.store_approximation(index);
@@ -754,7 +777,8 @@ void DataFitSurrModel::store_approximation(size_t index)
 
 void DataFitSurrModel::restore_approximation(size_t index)
 {
-  Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
 
   // store the current data for each approximation for later combination
   approxInterface.restore_approximation(index);
@@ -777,7 +801,8 @@ void DataFitSurrModel::remove_stored_approximation(size_t index)
 
 void DataFitSurrModel::combine_approximation(short corr_type)
 {
-  Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
 
   // Manage swap detection here or within Pecos::sharedPolyApproxData?
   // Note: access to spec sequences are on Dakota side, but need to reach

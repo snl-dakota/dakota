@@ -12,8 +12,7 @@
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
 
-namespace Dakota
-{
+namespace Dakota {
 
 // define special values for componentParallelMode
 #define CONFIG_PHASE 0
@@ -143,8 +142,8 @@ protected:
   // Subspace identification functions: rank-revealing build phase
   // ---
 
-  /// sample the model's gradient, computed the SVD, and form the active
-  /// subspace rotation matrix.
+  /// sample the model's gradient, computed the SVD, and form the active subspace
+  /// rotation matrix.
   void build_subspace();
 
   /// sample the derivative at diff_samples points and leave temporary
@@ -176,9 +175,8 @@ protected:
   unsigned int computeCrossValidationMetric();
 
   /// Build moving least squares surrogate over candidate active subspace
-  Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
-                          IntResponseMap training_y,
-                          RealMatrix test_x, IntResponseMap test_y);
+  Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x, IntResponseMap training_y,
+                            RealMatrix test_x, IntResponseMap test_y);
 
 
   // Helper functions for the cross validation metric:
@@ -187,8 +185,7 @@ protected:
 
   unsigned int min_index(const std::vector<Real> &cv_error);
 
-  unsigned int tolerance_met_index(const std::vector<Real> &cv_error,
-                                   Real tolerance, bool &tol_met);
+  unsigned int tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance, bool &tol_met);
 
   std::vector<Real> negative_diff(const std::vector<Real> &cv_error);
 
@@ -311,7 +308,7 @@ protected:
   RealVector inactiveVars;
 
   /// matrix of derivative data with numFunctions columns per fullspace sample;
-  /// each column contains the gradient of one function at one sample point,
+  /// each column contains the gradient of one function at one sample point, 
   /// so total matrix size is numContinuousVars * (numFunctions * numSamples)
   /// [ D1 | D2 | ... | Dnum_samples]
   /// [ dy1/dx(k=1) | dy2/dx(k=1) | ... | dyM/dx(k=1) | k=2 | ... | k=n_s ]
@@ -319,7 +316,7 @@ protected:
 
   /// matrix of the left singular vectors of derivativeMatrix
   RealMatrix leftSingularVectors;
-
+  
   /// singular values of derivativeMatrix
   RealVector singularValues;
 
@@ -380,9 +377,7 @@ protected:
 
 
 inline bool ActiveSubspaceModel::mapping_initialized()
-{
-  return subspaceInitialized;
-}
+{ return subspaceInitialized; }
 
 } // namespace Dakota
 

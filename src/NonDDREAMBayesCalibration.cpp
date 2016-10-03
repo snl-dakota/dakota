@@ -277,10 +277,6 @@ void NonDDREAMBayesCalibration::calibrate()
   // Generate useful stats from the posterior samples
   compute_statistics();
 
-  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
-    export_chain();
-
-  return;
 }
 
 

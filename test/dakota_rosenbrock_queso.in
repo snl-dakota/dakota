@@ -8,9 +8,9 @@ method,
 	  delayed_rejection
 	  emulator			#s0,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7,#p8,#p11,#p12,#p14,#p16,#p17,#p19,#p20,#p22,#p23,#p25,#p26,#p27
 	    pce sparse_grid_level = 2				#s0,#p0,#p7,#p16,#p19,#p22,#p27
-#	    pce expansion_order = 4 collocation_ratio = 0.9	#p1
-#	    pce expansion_order = 4 collocation_ratio = 1.2	#p6
-#	    pce collocation_points = 30		      		#p25,#p26
+#	    pce expansion_order = 4 collocation_ratio = 0.9		#p1
+#	    pce expansion_order = 4 collocation_ratio = 1.2		#p6
+#	    pce orthogonal_least_interpolation collocation_points = 30	#p25,#p26
 #	    sc  sparse_grid_level = 2				#p2
 #	    gaussian_process surfpack build_samples = 30	#p3,#p5,#p8,#p11,#p14,#p17,#p20,#p23
 #	    gaussian_process dakota   build_samples = 30	#p4,#p12

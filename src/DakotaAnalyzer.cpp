@@ -28,6 +28,8 @@ static const char rcsId[]="@(#) $Id: DakotaAnalyzer.cpp 7035 2010-10-22 21:45:39
 
 namespace Dakota {
 
+extern PRPCache data_pairs;
+
 
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
@@ -120,7 +122,7 @@ void Analyzer::update_from_model(const Model& model)
       err_flag = true;
     }
     if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
-      Cerr << "\nWarning: discrete design variables ignored by "
+      Cerr << "\nWarning: active discrete variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
   // Check for response functions
@@ -695,7 +697,6 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   size_t i; PRPLIter prp_it;
   bool cache = iteratedModel.evaluation_cache(), // recurse_flag = true
      restart = iteratedModel.restart_file();     // recurse_flag = true
-  extern PRPCache data_pairs;
   Variables iter_vars; Response iter_resp;
   for (i=0, prp_it=import_prp_list.begin(); i<num_evals; ++i, ++prp_it) {
 

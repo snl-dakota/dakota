@@ -97,8 +97,6 @@ protected:
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   virtual void multifidelity_expansion();
-  /// print expansion coefficients, as supported by derived instance
-  virtual void print_coefficients(std::ostream& s);
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
@@ -343,9 +341,6 @@ private:
 inline const Model& NonDExpansion::algorithm_space_model() const
 { return uSpaceModel; }
 
-
-inline void NonDExpansion::print_coefficients(std::ostream& s)
-{ /* default is no-op */ }
 
 inline void NonDExpansion::archive_coefficients()
 { /* default is no-op */ }

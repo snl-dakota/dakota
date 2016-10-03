@@ -182,6 +182,16 @@ protected:
   /// print system series/parallel mappings for response levels
   void print_system_mappings(std::ostream& s) const;
 
+  /// print evaluation summary for multilevel sampling across 1D profile
+  void print_multilevel_evaluation_summary(std::ostream& s,
+					   const SizetArray& N_samp);
+  /// print evaluation summary for multilevel sampling across 2D profile
+  void print_multilevel_evaluation_summary(std::ostream& s,
+					   const Sizet2DArray& N_samp);
+  /// print evaluation summary for multilevel sampling across 3D profile
+  void print_multilevel_evaluation_summary(std::ostream& s,
+					   const Sizet3DArray& N_samp);
+
   /// recast x_model from x-space to u-space to create u_model
   void transform_model(Model& x_model, Model& u_model,
 		       bool truncated_bounds = false, Real bound = 10.);
@@ -429,6 +439,9 @@ private:
   /// aleatory uncertain variables used in variable transformations
   unsigned short pecos_to_dakota_variable_type(unsigned short pecos_var_type);
 
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
+
   //
   //- Heading: Data members
   //
@@ -513,6 +526,16 @@ vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
 {
   nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(),
 					    u_vars.continuous_variables_view());
+}
+
+
+inline bool NonD::homogeneous(const SizetArray& N_l) const
+{
+  size_t N0 = N_l[0], i, len = N_l.size();
+  for (i=1; i<len; ++i)
+    if (N_l[i] != N0)
+      return false;
+  return true;
 }
 
 } // namespace Dakota

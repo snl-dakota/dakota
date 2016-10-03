@@ -183,6 +183,15 @@ KEYWORD12 method
 	  [ max_iterations INTEGER >= 0 ]
 	  [ convergence_tolerance REAL ]
 	  [ constraint_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
 	  )
 	|
 	( surrogate_based_global
@@ -1618,7 +1627,8 @@ KEYWORD12 method
 		sparse_grid_level_sequence INTEGERLIST
 		|
 		( expansion_order_sequence INTEGERLIST
-		  collocation_ratio REAL
+		  collocation_points_sequence INTEGERLIST
+		  | collocation_ratio REAL
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1634,7 +1644,8 @@ KEYWORD12 method
 		    ]
 		  )
 		|
-		( collocation_points_sequence INTEGERLIST
+		( orthogonal_least_interpolation
+		  collocation_points_sequence INTEGERLIST
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1774,7 +1785,8 @@ KEYWORD12 method
 		sparse_grid_level_sequence INTEGERLIST
 		|
 		( expansion_order_sequence INTEGERLIST
-		  collocation_ratio REAL
+		  collocation_points_sequence INTEGERLIST
+		  | collocation_ratio REAL
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1790,7 +1802,8 @@ KEYWORD12 method
 		    ]
 		  )
 		|
-		( collocation_points_sequence INTEGERLIST
+		( orthogonal_least_interpolation
+		  collocation_points_sequence INTEGERLIST
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1862,7 +1875,8 @@ KEYWORD12 method
 		sparse_grid_level_sequence INTEGERLIST
 		|
 		( expansion_order_sequence INTEGERLIST
-		  collocation_ratio REAL
+		  collocation_points_sequence INTEGERLIST
+		  | collocation_ratio REAL
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1878,7 +1892,8 @@ KEYWORD12 method
 		    ]
 		  )
 		|
-		( collocation_points_sequence INTEGERLIST
+		( orthogonal_least_interpolation
+		  collocation_points_sequence INTEGERLIST
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -2453,6 +2468,15 @@ KEYWORD model
 	    [ energy
 	      [ truncation_tolerance REAL ]
 	      ]
+	    [ cross_validation
+	      [ minimum
+	      | relative
+	      | decrease ]
+	      [ relative_tolerance REAL ]
+	      [ decrease_tolerance REAL ]
+	      [ max_rank INTEGER ]
+	      [ exhaustive ]
+	      ]
 	    ]
 	  [ dimension INTEGER ]
 	  [ bootstrap_samples INTEGER ]
@@ -2460,8 +2484,9 @@ KEYWORD model
 	    [ refinement_samples INTEGERLIST ]
 	    ]
 	  [ normalization
-	    value
-	    | gradient
+	    mean_value
+	    | mean_gradient
+	    | local_gradient
 	    ]
 	  )
 	|
