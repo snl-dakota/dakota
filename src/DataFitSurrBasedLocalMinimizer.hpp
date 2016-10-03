@@ -18,6 +18,7 @@
 
 #include "SurrBasedLocalMinimizer.hpp"
 #include "DakotaModel.hpp"
+#include "SurrBasedLevelData.hpp"
 
 namespace Dakota {
 
@@ -196,6 +197,10 @@ protected:
 
 inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
 { }
+
+
+inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
+{ update_trust_region(trustRegionData); }
 
 } // namespace Dakota
 

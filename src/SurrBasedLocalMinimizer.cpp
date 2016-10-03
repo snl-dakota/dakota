@@ -219,4 +219,81 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   Minimizer::post_run(s);
 }
 
+
+void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
+{
+  // Compute the trust region bounds
+  size_t i;
+  bool tr_lower_truncation = false, tr_upper_truncation = false;
+  for (i=0; i<numContinuousVars; i++) {
+    // verify that varsCenter is within global bounds
+    Real cv_center = tr_data.c_vars_center(i);
+    if ( cv_center > globalUpperBnds[i] ) {
+      cv_center = globalUpperBnds[i];
+      tr_data.c_vars_center(cv_center, i);
+    }
+    if ( cv_center < globalLowerBnds[i] ) {
+      cv_center = globalLowerBnds[i];
+      tr_data.c_vars_center(cv_center, i);
+    }
+    // compute 1-sided trust region offset
+    Real tr_offset = tr_data.trust_region_factor() / 2. * 
+      ( globalUpperBnds[i] - globalLowerBnds[i] );
+    Real up_bound = cv_center + tr_offset, lo_bound = cv_center - tr_offset;
+    if ( up_bound <= globalUpperBnds[i] )
+      tr_data.tr_upper_bound(up_bound, i);
+    else {
+      tr_data.tr_upper_bound(globalUpperBnds[i], i);
+      tr_upper_truncation = true;
+    }
+    if ( lo_bound >= globalLowerBnds[i] )
+      tr_data.tr_lower_bound(lo_bound, i);
+    else {
+      tr_data.tr_lower_bound(globalLowerBnds[i], i);
+      tr_lower_truncation = true;
+    }
+  }
+
+  // a flag for global approximations defining the availability of the
+  // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
+  // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
+  //daceCenterPtFlag
+  //  = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
+
+  const RealVector&     cv_center = tr_data.c_vars_center();
+  const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
+  const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
+  // Set the trust region center and bounds for approxSubProbOptimizer
+  approxSubProbModel.continuous_variables();
+  approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
+  approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
+  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
+  //if (recastSubProb)
+  //  iteratedModel.continuous_variables(cv_center);
+  if (globalApproxFlag) { // propagate build bounds to DFSModel
+    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
+    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
+  }
+
+  // Output the trust region bounds
+  size_t wpp9 = write_precision+9;
+  Cout << "\n**************************************************************"
+       << "************\nBegin SBLM Iteration Number " << sbIterNum+1
+       << "\n\nCurrent Trust Region\n                 " << std::setw(wpp9);
+  if (tr_lower_truncation) Cout << "Lower (truncated)";
+  else                     Cout << "Lower";
+  Cout << std::setw(wpp9 << "Center" << std::setw(wpp9);
+  if (tr_upper_truncation) Cout << "Upper (truncated)";
+  else                     Cout << "Upper";
+  Cout << '\n';
+  StringMultiArrayConstView c_vars_labels
+    = iteratedModel.continuous_variable_labels();
+  for (i=0; i<numContinuousVars; i++)
+    Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
+	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]
+	 << std::setw(wpp9) << tr_upper_bnds << '\n';
+  Cout << "****************************************************************"
+       << "**********\n";
+}
+
 } // namespace Dakota

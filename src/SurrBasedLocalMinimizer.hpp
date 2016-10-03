@@ -77,6 +77,9 @@ protected:
   /// construct and initialize approxSubProbMinimizer
   void initialize_sub_minimizer();
 
+  /// update the trust region bounds, strictly contained within global bounds
+  void update_trust_region(SurrBasedLevelData& tr_data);
+
   //
   //- Heading: Data members
   //

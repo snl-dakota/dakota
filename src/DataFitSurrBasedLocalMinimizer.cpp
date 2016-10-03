@@ -44,7 +44,7 @@ DataFitSurrBasedLocalMinimizer::sblmInstance(NULL);
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model),
-  trustRegionFactor(origTrustRegionFactor),
+  //trustRegionFactor(origTrustRegionFactor),
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
@@ -53,9 +53,9 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   //approxSubProbObj(ORIGINAL_PRIMARY),approxSubProbCon(ORIGINAL_CONSTRAINTS),
   //meritFnType(AUGMENTED_LAGRANGIAN_MERIT), acceptLogic(FILTER),
   penaltyIterOffset(-200), multiLayerBypassFlag(false),
-  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage")),
-  trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars),
-  newCenterFlag(true)
+  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
+  //trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars),
+  //newCenterFlag(true)
 {
   Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
@@ -263,8 +263,8 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // point errors.
   minTrustRegionFactor = 
     (approx_type == "global_kriging") ? 1.e-3 : minTrustRegionFactor;
-  if (trustRegionFactor < minTrustRegionFactor)
-    trustRegionFactor = minTrustRegionFactor;
+  if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
+    trustRegionData.trust_region_factor(minTrustRegionFactor);
   //trustRegionOffset.reshape(numContinuousVars);
 }
 
@@ -329,9 +329,9 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
   }
 
   bestVariablesArray.front().continuous_variables(
-    varsCenter.continuous_variables());
+    trustRegionData.c_vars_center());
   bestResponseArray.front().function_values(
-    responseCenterTruth.second.function_values());
+    trustRegionData.response_center(CORR_TRUTH_RESPONSE).function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
 }
@@ -341,9 +341,8 @@ void DataFitSurrBasedLocalMinimizer::reset()
 {
   SurrBasedLocalMinimizer::reset();
 
-  trustRegionFactor = origTrustRegionFactor;
-
-  newCenterFlag = true;
+  trustRegionData.trust_region_factor(origTrustRegionFactor);
+  trustRegionData.new_center(true);
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;
@@ -355,89 +354,6 @@ void DataFitSurrBasedLocalMinimizer::reset()
 
   //lagrangeMult    = 0.; // not necessary since redefined each time
   augLagrangeMult   = 0.; // necessary since += used
-}
-
-
-void DataFitSurrBasedLocalMinimizer::update_trust_region()
-{
-  // Compute the trust region bounds
-  size_t i;
-  bool c_vars_truncation = false, tr_lower_truncation = false,
-     tr_upper_truncation = false;
-  RealVector c_vars_center;
-  copy_data(varsCenter.continuous_variables(), c_vars_center);
-  for (i=0; i<numContinuousVars; i++) {
-    // verify that varsCenter is within global bounds
-    if ( c_vars_center[i] > globalUpperBnds[i] ) {
-      c_vars_center[i] = globalUpperBnds[i];
-      c_vars_truncation = true;
-    }
-    if ( c_vars_center[i] < globalLowerBnds[i] ) {
-      c_vars_center[i] = globalLowerBnds[i];
-      c_vars_truncation = true;
-    }
-    // scalar tr_offset was previously trustRegionOffset[i]
-    Real tr_offset = trustRegionFactor/2. * 
-      ( globalUpperBnds[i] - globalLowerBnds[i] );
-    Real up_bound = c_vars_center[i] + tr_offset;
-    Real lo_bound = c_vars_center[i] - tr_offset;
-    if ( up_bound <= globalUpperBnds[i] )
-      trUpperBnds[i] = up_bound;
-    else {
-      trUpperBnds[i] = globalUpperBnds[i];
-      tr_upper_truncation = true;
-    }
-    if ( lo_bound >= globalLowerBnds[i] )
-      trLowerBnds[i] = lo_bound;
-    else {
-      trLowerBnds[i] = globalLowerBnds[i];
-      tr_lower_truncation = true;
-    }
-  }
-  if (c_vars_truncation)
-    varsCenter.continuous_variables(c_vars_center);
-
-  // a flag for global approximations defining the availability of the
-  // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
-  // center of the sampled region, whereas LHS/OA/QMC/CVT DACE does not.
-  //daceCenterPtFlag
-  //  = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
-
-  // Set the trust region center and bounds for approxSubProbOptimizer
-  approxSubProbModel.continuous_variables(varsCenter.continuous_variables());
-  approxSubProbModel.continuous_lower_bounds(trLowerBnds);
-  approxSubProbModel.continuous_upper_bounds(trUpperBnds);
-  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
-  //if (recastSubProb)
-  //  iteratedModel.continuous_variables(varsCenter.continuous_variables());
-  if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(trLowerBnds);
-    iteratedModel.continuous_upper_bounds(trUpperBnds);
-  }
-
-  // Output the trust region bounds
-  Cout << "\n**************************************************************"
-       << "************\nBegin SBLM Iteration Number " << sbIterNum+1
-       << "\n\nCurrent Trust Region\n                 ";
-  if (tr_lower_truncation)
-    Cout << std::setw(write_precision+9) << "Lower (truncated)";
-  else
-    Cout << std::setw(write_precision+9) << "Lower";
-  Cout   << std::setw(write_precision+9) << "Center";
-  if (tr_upper_truncation)
-    Cout << std::setw(write_precision+9) << "Upper (truncated)";
-  else
-    Cout << std::setw(write_precision+9) << "Upper";
-  Cout << '\n';
-  StringMultiArrayConstView c_vars_labels
-    = iteratedModel.continuous_variable_labels();
-  for (i=0; i<numContinuousVars; i++)
-    Cout << std::setw(16) << c_vars_labels[i] << ':'
-	 << std::setw(write_precision+9)
-	 << trLowerBnds[i] << std::setw(write_precision+9) << c_vars_center[i]
-	 << std::setw(write_precision+9) << trUpperBnds[i] << '\n';
-  Cout << "****************************************************************"
-       << "**********\n";
 }
 
 
@@ -516,7 +432,7 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
 
   // Assess hard convergence following build/retrieve
   hard_convergence_check(trustRegionData.response_center(CORR_TRUTH_RESPONSE),
-			 trustRegionData.vars_center().continuous_variables(),
+			 trustRegionData.c_vars_center(),
 			 globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
