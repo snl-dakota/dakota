@@ -131,35 +131,6 @@
     <!ENTITY default_scaling
       "<keyword  id='scaling' name='scaling' code='{N_mdm(true,methodScaling)}' label='Scaling flag' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='no scaling' />"
     >
-    <!ENTITY default_linear_constraints
-      "<keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_mdm(RealDL,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_inequality_lower_bounds' name='linear_inequality_lower_bounds' code='{N_mdm(RealDL,linearIneqLowerBnds)}' label='linear_inequality_lower_bounds' help='' minOccurs='0' default='vector values = -infinity' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_inequality_upper_bounds' name='linear_inequality_upper_bounds' code='{N_mdm(RealDL,linearIneqUpperBnds)}' label='linear_inequality_upper_bounds' help='' minOccurs='0' default='vector values = 0 .' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_inequality_scale_types' name='linear_inequality_scale_types' code='{N_mdm(strL,linearIneqScaleTypes)}' label='linear_inequality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
-        <param type='STRINGLIST' />
-      </keyword>
-      <keyword  id='linear_inequality_scales' name='linear_inequality_scales' code='{N_mdm(RealDL,linearIneqScales)}' label='linear_inequality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_equality_constraint_matrix' name='linear_equality_constraint_matrix' code='{N_mdm(RealDL,linearEqConstraintCoeffs)}' label='linear_equality_constraint_matrix' help='' minOccurs='0' default='no linear equality constraints' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_equality_targets' name='linear_equality_targets' code='{N_mdm(RealDL,linearEqTargets)}' label='linear_equality_targets' help='' minOccurs='0' default='vector values = 0 .' >
-        <param type='REALLIST' />
-      </keyword>
-      <keyword  id='linear_equality_scale_types' name='linear_equality_scale_types' code='{N_mdm(strL,linearEqScaleTypes)}' label='linear_equality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
-        <param type='STRINGLIST' />
-      </keyword>
-      <keyword  id='linear_equality_scales' name='linear_equality_scales' code='{N_mdm(RealDL,linearEqScales)}' label='linear_equality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
-        <param type='REALLIST' />
-      </keyword>"
-    >
     <!-- # TO DO: flatten this group and review contexts for inclusion: -->
     <!-- Defaults from old reference manual to be inserted: 
 	 local_reliability: 0
@@ -526,7 +497,7 @@
           &default_max_iterations;
           &default_convergence_tolerance;
           &default_constraint_tolerance;
-          &default_linear_constraints;
+          <!-- &default_linear_constraints; -->
         </keyword>
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global" help="" minOccurs="1" group="Surrogate-based Methods" >
           <oneOf>
@@ -573,7 +544,7 @@
               &default_speculative;
               &default_max_function_evaluations;
               &default_scaling;
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
             </required>
             <required>
               <oneOf label="OPT method">
@@ -592,12 +563,12 @@
               &default_speculative;
               &default_max_function_evaluations;
               &default_scaling;
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
             </required>
             <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
               <!-- store method name AND incoming STRING -->
               <param type="STRING" />
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
               &default_max_function_evaluations;
               &default_scaling;
             </keyword>
@@ -627,12 +598,12 @@
               &default_speculative;
               &default_max_function_evaluations;
               &default_scaling;
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
             </required>
             <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp" help=""  group="Optimization: Local, Derivative-based" >
               &default_max_iterations;
               &default_convergence_tolerance;
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
               &default_max_function_evaluations;
               &default_scaling;
             </keyword>
@@ -683,7 +654,7 @@
               &default_speculative;
               &default_max_function_evaluations;
               &default_scaling;
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
             </required>
             <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
               <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size" help="" minOccurs="0" default="32" >
@@ -732,7 +703,7 @@
               <keyword  id="smoothing_factor" name="smoothing_factor" code="{N_mdm(Real,smoothFactor)}" label="Smoothing factor" help="MethodCommands.html#MethodAPPSDC" minOccurs="0" default="0.0" >
                 <param type="REAL" />
               </keyword>
-              &default_linear_constraints;
+              <!-- &default_linear_constraints; -->
               &default_constraint_tolerance;
               &default_max_function_evaluations;
               &default_scaling;
@@ -815,7 +786,7 @@
                     </keyword>
                   </keyword>
                   &default_max_iterations;
-                  &default_linear_constraints;
+                  <!-- &default_linear_constraints; -->
                   &default_max_function_evaluations;
                   &default_scaling;
                 </keyword>
@@ -855,7 +826,7 @@
                     </oneOf>
                   </keyword>
                   &default_max_iterations;
-                  &default_linear_constraints;
+                  <!-- &default_linear_constraints; -->
                   &default_max_function_evaluations;
                   &default_scaling;
                 </keyword>
@@ -4124,6 +4095,33 @@
           </keyword>
         </keyword>
       </keyword>
+      <keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_vam(rvec,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_lower_bounds' name='linear_inequality_lower_bounds' code='{N_vam(rvec,linearIneqLowerBnds)}' label='linear_inequality_lower_bounds' help='' minOccurs='0' default='vector values = -infinity' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_upper_bounds' name='linear_inequality_upper_bounds' code='{N_vam(rvec,linearIneqUpperBnds)}' label='linear_inequality_upper_bounds' help='' minOccurs='0' default='vector values = 0 .' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_scale_types' name='linear_inequality_scale_types' code='{N_vam(strL,linearIneqScaleTypes)}' label='linear_inequality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
+        <param type='STRINGLIST' />
+      </keyword>
+      <keyword  id='linear_inequality_scales' name='linear_inequality_scales' code='{N_vam(rvec,linearIneqScales)}' label='linear_inequality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_constraint_matrix' name='linear_equality_constraint_matrix' code='{N_vam(rvec,linearEqConstraintCoeffs)}' label='linear_equality_constraint_matrix' help='' minOccurs='0' default='no linear equality constraints' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_targets' name='linear_equality_targets' code='{N_vam(rvec,linearEqTargets)}' label='linear_equality_targets' help='' minOccurs='0' default='vector values = 0 .' >
+        <param type='REALLIST' />
+      </keyword>
+      <keyword  id='linear_equality_scale_types' name='linear_equality_scale_types' code='{N_vam(strL,linearEqScaleTypes)}' label='linear_equality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
+        <param type='STRINGLIST' />
+      </keyword>
+      <keyword  id='linear_equality_scales' name='linear_equality_scales' code='{N_vam(rvec,linearEqScales)}' label='linear_equality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
+        <param type='REALLIST' />
+      </keyword>"
     </keyword>
 
     

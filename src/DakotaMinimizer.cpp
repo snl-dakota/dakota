@@ -188,6 +188,10 @@ void Minimizer::update_from_model(const Model& model)
   numIterPrimaryFns    = numUserPrimaryFns = model.num_primary_fns();
   if (model.primary_fn_type() == CALIB_TERMS)
     numTotalCalibTerms = numUserPrimaryFns;  // default value
+
+  // TO DO: hard error if not supported; warning if promoted;
+  //        quiet if natively supported
+
   // Check for linear constraint support in method selection
   if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
        ( methodName == NL2SOL       ||

@@ -1087,7 +1087,7 @@ const Model& ProblemDescDB::get_model()
   // specification, i.e., any dependence on an iterator specification
   // (dependence on the environment spec is OK since there is only one).
   // > method.output
-  // > Constraints: method.linear_*, variables view
+  // > Constraints: variables view
 
   // The DB list nodes are set prior to calling get_model():
   // >    model_ptr spec -> id_model must be defined
@@ -1416,13 +1416,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"concurrent.parameter_sets", P concurrentParameterSets},
 	{"jega.distance_vector", P distanceVector},
 	{"jega.niche_vector", P nicheVector},
-	{"linear_equality_constraints", P linearEqConstraintCoeffs},
-	{"linear_equality_scales", P linearEqScales},
-	{"linear_equality_targets", P linearEqTargets},
-	{"linear_inequality_constraints", P linearIneqConstraintCoeffs},
-	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
-	{"linear_inequality_scales", P linearIneqScales},
-	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
 	{"nond.data_dist_covariance", P dataDistCovariance},
 	{"nond.data_dist_means", P dataDistMeans},
 	{"nond.dimension_preference", P anisoDimPref},
@@ -1517,6 +1510,13 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"geometric_uncertain.prob_per_trial", P geometricUncProbPerTrial},
 	{"gumbel_uncertain.alphas", P gumbelUncAlphas},
 	{"gumbel_uncertain.betas", P gumbelUncBetas},
+	{"linear_equality_constraints", P linearEqConstraintCoeffs},
+	{"linear_equality_scales", P linearEqScales},
+	{"linear_equality_targets", P linearEqTargets},
+	{"linear_inequality_constraints", P linearIneqConstraintCoeffs},
+	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
+	{"linear_inequality_scales", P linearIneqScales},
+	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
 	{"lognormal_uncertain.error_factors", P lognormalUncErrFacts},
 	{"lognormal_uncertain.lambdas", P lognormalUncLambdas},
 	{"lognormal_uncertain.lower_bounds", P lognormalUncLowerBnds},
@@ -2100,9 +2100,7 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"coliny.misc_options", P miscOptions},
 	{"hybrid.method_names", P hybridMethodNames},
 	{"hybrid.method_pointers", P hybridMethodPointers},
-	{"hybrid.model_pointers", P hybridModelPointers},
-	{"linear_equality_scale_types", P linearEqScaleTypes},
-	{"linear_inequality_scale_types", P linearIneqScaleTypes}};
+	{"hybrid.model_pointers", P hybridModelPointers}};
     #undef P
 
     KW<StringArray, DataMethodRep> *kw;
@@ -2175,7 +2173,9 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
 	{"discrete_state_set_string.lower_bounds", P discreteStateSetStrLowerBnds},
 	{"discrete_state_set_string.upper_bounds", P discreteStateSetStrUpperBnds},
-	{"discrete_uncertain_set_string.initial_point", P discreteUncSetStrVars}};
+	{"discrete_uncertain_set_string.initial_point", P discreteUncSetStrVars},
+	{"linear_equality_scale_types", P linearEqScaleTypes},
+	{"linear_inequality_scale_types", P linearIneqScaleTypes}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;
@@ -3158,28 +3158,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
   const char *L;
   if (!dbRep)
 	Null_rep1("set(RealVector&)");
-  if ((L = Begins(entry_name, "method.linear_"))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<RealVector, DataMethodRep> RVdme[] = {	
-      // must be sorted by string (key)
-	{"equality_constraints", P linearEqConstraintCoeffs},
-	{"equality_scales", P linearEqScales},
-	{"equality_targets", P linearEqTargets},
-	{"inequality_constraints", P linearIneqConstraintCoeffs},
-	{"inequality_lower_bounds", P linearIneqLowerBnds},
-	{"inequality_scales", P linearIneqScales},
-	{"inequality_upper_bounds", P linearIneqUpperBnds}};
-    #undef P
-
-    KW<RealVector, DataMethodRep> *kw;
-    if ((kw = (KW<RealVector, DataMethodRep>*)Binsearch(RVdme, L))) {
-	dbRep->dataMethodIter->dataMethodRep->*kw->p = rv;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "model.nested."))) {
+  if ((L = Begins(entry_name, "model.nested."))) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
@@ -3251,6 +3230,13 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 	{"geometric_uncertain.prob_per_trial", P geometricUncProbPerTrial},
 	{"gumbel_uncertain.alphas", P gumbelUncAlphas},
 	{"gumbel_uncertain.betas", P gumbelUncBetas},
+	{"linear_equality_constraints", P linearEqConstraintCoeffs},
+	{"linear_equality_scales", P linearEqScales},
+	{"linear_equality_targets", P linearEqTargets},
+	{"linear_inequality_constraints", P linearIneqConstraintCoeffs},
+	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
+	{"linear_inequality_scales", P linearIneqScales},
+	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
 	{"lognormal_uncertain.error_factors", P lognormalUncErrFacts},
 	{"lognormal_uncertain.lambdas", P lognormalUncLambdas},
 	{"lognormal_uncertain.lower_bounds", P lognormalUncLowerBnds},
@@ -3630,23 +3616,7 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
   const char *L;
   if (!dbRep)
 	Null_rep1("set(StringArray&)");
-  if ((L = Begins(entry_name, "method.linear_"))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<StringArray, DataMethodRep> SAdme[] = {	
-      // must be sorted by string (key)
-	{"equality_scale_types", P linearEqScaleTypes},
-	{"inequality_scale_types", P linearIneqScaleTypes}};
-    #undef P
-
-    KW<StringArray, DataMethodRep> *kw;
-    if ((kw = (KW<StringArray, DataMethodRep>*)Binsearch(SAdme, L))) {
-	dbRep->dataMethodIter->dataMethodRep->*kw->p = sa;
-	return;
-	}
-  }
-  else if ((L = Begins(entry_name, "model."))) {
+  if ((L = Begins(entry_name, "model."))) {
     if (dbRep->modelDBLocked)
 	Locked_db();
     #define P &DataModelRep::
@@ -3689,7 +3659,9 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 	{"discrete_state_range.labels", P discreteStateRangeLabels},
 	{"discrete_state_set_int.labels", P discreteStateSetIntLabels},
 	{"discrete_state_set_real.labels", P discreteStateSetRealLabels},
-	{"discrete_state_set_string.labels", P discreteStateSetStrLabels}};
+	{"discrete_state_set_string.labels", P discreteStateSetStrLabels},
+	{"linear_equality_scale_types", P linearEqScaleTypes},
+	{"linear_inequality_scale_types", P linearIneqScaleTypes}};
     #undef P
 
     KW<StringArray, DataVariablesRep> *kw;

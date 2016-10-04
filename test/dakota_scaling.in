@@ -33,18 +33,6 @@ method,
 	  convergence_tolerance = 1e-8	#s0,#s1,#s2,#s3,#s4,#s5,#s6
 #	  convergence_tolerance = 1e-8	#s7,#s8,#s9,#s20,#s21
 #	mesh_adaptive_search	  	#s22,#s23,#s24
-	linear_inequality_constraint_matrix = 1. 1.	#s0,#s4,#s6
-	linear_inequality_upper_bounds = 3.7         	#s0,#s4,#s6
-	linear_inequality_scale_types = 'auto'		#s0
-#	linear_inequality_scale_types = 'none'		#s4
-#	linear_inequality_scale_types = 'value'		#s6
-#	  linear_inequality_scales    = 1.9		#s6
-#	linear_equality_constraint_matrix = 1. 1.    	#s2,#s5,#s7
-#	linear_equality_targets = 3.7                 	#s2,#s5,#s7
-#	linear_equality_scale_types = 'value'		#s2
-#	  linear_equality_scales = 2.1			#s2
-#	linear_equality_scale_types = 'none'		#s5
-#	linear_equality_scale_types = 'auto'		#s7
 #-----------------------------------------------------------------------
 # OPT tests with hessian formulations and log scaled functions
 #	optpp_newton			#s10,#s11
@@ -75,12 +63,6 @@ method,
 #	optpp_g_newton			#s18,#s19
 #         max_iterations = 100,     	#s14,#s15,#s16,#s17,#s18,#s19
 #         convergence_tolerance = 1e-6  #s14,#s15,#s16,#s17,#s18,#s19
-#	linear_inequality_constraint_matrix = 1. 1.	#s16,#s17,#s18,#s19
-#	linear_inequality_upper_bounds = 1.05	      	#s16,#s17,#s18,#s19
-# 	linear_inequality_scale_types = 'none'		#s17
-# 	linear_inequality_scale_types = 'auto'		#s18
-# 	linear_inequality_scale_types = 'value'		#s16,#s19
-# 	linear_inequality_scales = 2.0			#s16,#s19
 
 #=======================================================================
 variables,
@@ -137,6 +119,26 @@ variables,
 #	  scale_types      'value' 'none'	#s15,#s17,#s18
 #	  scales           2.0     1.0	#s15,#s17,#s18
 #	  descriptors      'x1'    'x2'	#s14,#s15,#s16,#s17,#s18,#s19
+#-----------------------------------------------------------------------
+# Linear constraints
+	linear_inequality_constraint_matrix = 1. 1.	#s0,#s4,#s6
+	linear_inequality_upper_bounds = 3.7         	#s0,#s4,#s6
+	linear_inequality_scale_types = 'auto'		#s0
+#	linear_inequality_scale_types = 'none'		#s4
+#	linear_inequality_scale_types = 'value'		#s6
+#	  linear_inequality_scales    = 1.9		#s6
+#	linear_equality_constraint_matrix = 1. 1.    	#s2,#s5,#s7
+#	linear_equality_targets = 3.7                 	#s2,#s5,#s7
+#	linear_equality_scale_types = 'value'		#s2
+#	  linear_equality_scales = 2.1			#s2
+#	linear_equality_scale_types = 'none'		#s5
+#	linear_equality_scale_types = 'auto'		#s7
+#	linear_inequality_constraint_matrix = 1. 1.	#s16,#s17,#s18,#s19
+#	linear_inequality_upper_bounds = 1.05	      	#s16,#s17,#s18,#s19
+# 	linear_inequality_scale_types = 'none'		#s17
+# 	linear_inequality_scale_types = 'auto'		#s18
+# 	linear_inequality_scale_types = 'value'		#s16,#s19
+# 	linear_inequality_scales = 2.0			#s16,#s19
 
 #=======================================================================
 interface,
