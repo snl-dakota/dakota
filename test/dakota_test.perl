@@ -1387,8 +1387,11 @@ sub parse_test_output {
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
       $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
       while (/\s+$e/) {
 #      while (/\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
         print;
