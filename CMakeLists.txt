@@ -534,6 +534,8 @@ endif()
 
 add_subdirectory(examples)
 
+add_subdirectory(interfaces)
+
 # Top-level install rules from source (binary rules are in subdirs)
 install(FILES INSTALL LICENSE COPYRIGHT README
 	${DAKOTA_VERSION_file_path}VERSION
@@ -568,6 +570,8 @@ endif()
 if(NOT MSVC)
   install(PROGRAMS "scripts/dakota.sh" DESTINATION "bin")
 endif()
+
+
 
 
 # Final CPack settings

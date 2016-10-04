@@ -22,9 +22,18 @@ params, results = dipy.read_parameters_file()
 # The asv has to be mapped back into an integer
 continuous_vars = [ float(params['x1']), float(params['x2']) ]
 active_set_vector = 0
-for i, bit in enumerate(results["obj_fn"].asv):
-    if bit:
-        active_set_vector += 1 << i
+if results["obj_fn"].asv.function:
+    active_set_vector += 1
+if results["obj_fn"].asv.gradient:
+    active_set_vector += 2
+if results["obj_fn"].asv.hessian:
+    active_set_vector += 4
+
+# Alternatively, the ASV can be accessed by index in
+# function, gradient, hessian order
+#for i, bit in enumerate(results["obj_fn"].asv):
+#    if bit:
+#        active_set_vector += 1 << i
 
 # set a dictionary for passing to rosenbrock via Python kwargs
 rosen_params = {}

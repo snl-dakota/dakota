@@ -8,6 +8,7 @@ import copy
 
 #### Exceptions
 
+
 class ResponseError(Exception):
     """Response data is improperly specified.
     
@@ -18,9 +19,11 @@ class ResponseError(Exception):
     """
     pass
 
+
 class MissingSourceError(Exception):
     """A filename or stream was not provided and cannot be inferred."""
     pass
+
 
 class ParamsFormatError(Exception):
     """Parameters file does not have a recognized format."""
@@ -29,13 +32,16 @@ class ParamsFormatError(Exception):
 
 #### Class definitions
 
+
 class Parameters(object):
     """Conveniently access variables from a Dakota parameters file
     
-    Parameters objects should be constructed by the function read_parameters_file.
+    Parameters objects should be constructed by the function 
+    read_parameters_file.
     """
 
-    def __init__(self,aprepro_format=None, variables=None, an_comps=None, eval_id=None):
+    def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
+            eval_id=None):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
@@ -43,7 +49,7 @@ class Parameters(object):
 
     @property
     def descriptors(self):
-        """Return a list of variable descriptors."""
+        """The variable descriptors."""
         return self._variables.keys()
 
     def __getitem__(self,key):
@@ -60,10 +66,12 @@ class Parameters(object):
 
     @property
     def num_variables(self):
+        """Number of variables."""
         return len(self._variables)
 
     @property
     def num_an_comps(self):
+        """Number of analysis components."""
         return len(self.an_comps)
 
     def __iter__(self):
@@ -72,16 +80,20 @@ class Parameters(object):
             yield index, name, response
 
 
+# Datatype to hold ASV element for a single response. function, gradient,
+# and hession are set to True or False.
 _asvType = collections.namedtuple("ASVType",["function","gradient","hessian"])
 
 
 # A class to hold the ASV and data for a single response
-class Response(object):
+class _Response(object):
+    """ASV and data for a single response"""
     def __init__(self, descriptor, num_deriv_vars, ignore_asv, asv):
         self._descriptor = descriptor
         self._num_deriv_vars = num_deriv_vars
         int_asv = int(asv)
-        self.asv = _asvType(int_asv & 1 == 1, int_asv & 2 == 2, int_asv &4 == 4)
+        self.asv = _asvType(int_asv & 1 == 1, int_asv & 2 == 2, 
+                int_asv &4 == 4)
         self._function = None
         self._gradient = None
         self._hessian = None
@@ -90,10 +102,12 @@ class Response(object):
     @property
     def function(self):
         return self._function
+
     @function.setter
     def function(self,val):
         if not (self._ignore_asv or self.asv.function):
-            raise ResponseError("Function value not requested for '%s'." % self._descriptor)
+            raise ResponseError("Function value not requested for '%s'." 
+                    % self._descriptor)
         self._function = float(val)
 
     @property
@@ -108,10 +122,12 @@ class Response(object):
     @gradient.setter
     def gradient(self,val):
         if not (self._ignore_asv or self.asv.gradient):
-            raise ResponseError("Gradient not requested for '%s'." % self._descriptor)
+            raise ResponseError("Gradient not requested for '%s'." 
+                    % self._descriptor)
         self._gradient = [float(e) for e in val]
         if len(self._gradient) != self._num_deriv_vars:
-            raise ResponseError("Length of gradient must equal number of derivative variables.")
+            raise ResponseError("Length of gradient must equal number of "
+                    "derivative variables.")
 
     @property
     def hessian(self):
@@ -125,7 +141,8 @@ class Response(object):
     @hessian.setter
     def hessian(self,val):
         if not (self._ignore_asv or self.asv.hessian):
-            raise ResponseError("Hessian not requested for '%s'." % self._descriptor)
+            raise ResponseError("Hessian not requested for '%s'." 
+                    % self._descriptor)
         ### validate dimensions
         rctr = 0
         for r in val:
@@ -134,36 +151,33 @@ class Response(object):
             for c in r:
                 cctr += 1
             if cctr != self._num_deriv_vars:
-                raise ResponseError("Hessian must be square and size num_deriv_variables.")
+                raise ResponseError("Hessian must be square and size "
+                        "num_deriv_variables.")
         if rctr != self._num_deriv_vars:
-            raise ResponseError("Hessian must be square and size num_deriv_variables.")
-        ### copy upper triangular of val into self._hessian
-        coffset = 0
+            raise ResponseError("Hessian must be square and size "
+                    "num_deriv_variables.")
+        ### copy the Hessian
         self._hessian = []
         for r in val:
-            cctr = 0
             row = []
             for c in r:
-                if cctr < coffset:
-                    row.append(0.0)
-                    continue
                 row.append(float(c))
             self._hessian.append(row)
-        ### symmetrize self._hessian
-        for i in xrange(self._num_deriv_vars):
-            for j in xrange(i+1, self._num_deriv_vars):
-                self._hessian[j][i] = self._hessian[i][j]
+    
 
 class Results(object):
     """ASV, response data container, and results file writer."""
-    def __init__(self, aprepro_format=None, responses=None, deriv_vars=None, eval_id=None, ignore_asv=False, results_file=None):
+    def __init__(self, aprepro_format=None, responses=None, 
+            deriv_vars=None, eval_id=None, ignore_asv=False, 
+            results_file=None):
         self.aprepro_format = aprepro_format
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
         num_deriv_vars = len(deriv_vars)
         self._responses = collections.OrderedDict()
         for t, v in responses.iteritems():
-            self._responses[t] = Response(t, num_deriv_vars, ignore_asv, int(v)) 
+            self._responses[t] = _Response(t, num_deriv_vars, ignore_asv, 
+                    int(v)) 
         self.results_file = results_file
         self.eval_id = eval_id
 
@@ -209,14 +223,16 @@ class Results(object):
     def write(self, stream=None, ignore_asv=None):
         """Write the results to the Dakota results file.
 
-        Use the output stream if provided, otherwise open a file with the name
-        provided to the constructor. If no name was provided, raise MissingSourceError.
+        Use the output stream if provided, otherwise open a file with 
+        the name provided to the constructor. If no name was provided, 
+        raise MissingSourceError.
 
-        ignore_asv overrides the setting provided at construct time. If it is True,
-        then ASV checking is disabled and all available response data is written.
+        ignore_asv overrides the setting provided at construct time. If
+        it is True, then ASV checking is disabled and all available 
+        response data is written.
         
-        Raise a ResponseError if a result requested by Dakota is missing and ignore_asv
-        is False.
+        Raise a ResponseError if a result requested by Dakota is missing
+        and ignore_asv is False.
         """
         my_ignore_asv = self.ignore_asv
         if ignore_asv is not None:
@@ -226,15 +242,19 @@ class Results(object):
         if not my_ignore_asv:
             for t, v in self._responses.iteritems():
                 if v.asv.function and v.function is None:
-                    raise ResponseError("Response '" + t + "' is missing requested function result.") 
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested function result.") 
                 if v.asv.gradient and v.gradient is None:
-                    raise ResponseError("Response '" + t + "' is missing requested gradient result.")
+                    raise ResponseError("Response '" + t + "' is missing "
+                            "requested gradient result.")
                 if v.asv.hessian and v.hessian is None:
-                    raise ResponseError("Response '" +t + "' is missing requested Hessian result.")
+                    raise ResponseError("Response '" +t + "' is missing "
+                            "requested Hessian result.")
 
         if stream is None:
             if self.results_file is None:
-                raise MissingSourceError("No stream specified and no results_file provided at construct time.")
+                raise MissingSourceError("No stream specified and no "
+                        "results_file provided at construct time.")
             else:
                 with open(self.results_file, "w") as ofp:
                     self._write_results(ofp, my_ignore_asv)
@@ -251,10 +271,6 @@ class Results(object):
         """Return a list of the derivative variables."""
         return list(self._deriv_vars)
 
-    def iteritems(self):
-        for i, (k, v) in enumerate(self._responses.iteritems()):
-            yield i, k, v
-
     def __iter__(self):
         """Iterate over index, response name, and response."""
         for index, (name, response) in enumerate(self._responses.iteritems()):
@@ -264,49 +280,50 @@ class Results(object):
 
 ### Free functions and their helpers for constructing objects
 
-# Collections of regexes for parsing aprepro and dprepro formatted Dakota parameter files
+# Collections of regexes for parsing aprepro and dprepro formatted Dakota 
+# parameter files
 
 _aprepro_re_base = " {{20}}{{ {tag} += +{value} }}\n"
 _dakota_re_base = "\s*{value} {tag}\n"
 
 _pRE = {
-        "APREPRO":{"num_variables":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-            tag="(?P<tag>DAKOTA_VARS)")),
-            "num_functions":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>DAKOTA_FNS)")),
-            "num_deriv_vars":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>DAKOTA_DER_VARS)")),
-            "num_an_comps":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>DAKOTA_AN_COMPS)")),
-            "eval_id":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>DAKOTA_EVAL_ID)")),
-            "variable":re.compile(_aprepro_re_base.format(value="\"?(?P<value>.+?)\"?",
-                tag ="(?P<tag>\S+)")),
-            "function":re.compile(_aprepro_re_base.format(value="(?P<value>[1-7])",
-                tag="ASV_\d+:(?P<tag>\S+)")),
-            "deriv_var":re.compile(_aprepro_re_base.format(value="(?P<value>\d+)",
-                tag="DVV_\d+:(?P<tag>\S+)")),
-            "an_comp":re.compile(_aprepro_re_base.format(value="\"(?P<value>.+?)\"",
-                tag="AC_\d+:(?P<tag>.+?)"))
+        "APREPRO":{"num_variables":re.compile(_aprepro_re_base.format(
+            value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_VARS)")),
+            "num_functions":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_FNS)")),
+            "num_deriv_vars":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_DER_VARS)")),
+            "num_an_comps":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
+            "eval_id":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
+            "variable":re.compile(_aprepro_re_base.format(
+                value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
+            "function":re.compile(_aprepro_re_base.format(
+                value="(?P<value>[1-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+            "deriv_var":re.compile(_aprepro_re_base.format(
+                value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
+            "an_comp":re.compile(_aprepro_re_base.format(
+                value="\"(?P<value>.+?)\"", tag="AC_\d+:(?P<tag>.+?)"))
             },
-        "DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-            tag="(?P<tag>variables)")),
-            "num_functions":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>functions)")),
-            "num_deriv_vars":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>derivative_variables)")),
-            "num_an_comps":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>analysis_components)")),
-            "eval_id":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-                tag="(?P<tag>eval_id)")),
+        "DAKOTA":{"num_variables":re.compile(_dakota_re_base.format(
+            value="(?P<value>\d+)", tag="(?P<tag>variables)")),
+            "num_functions":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>functions)")),
+            "num_deriv_vars":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>derivative_variables)")),
+            "num_an_comps":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
+            "eval_id":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with spaces
             "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
-            "function":re.compile(_dakota_re_base.format(value="(?P<value>[1-7])",
-                tag="ASV_\d+:(?P<tag>\S+)")),
-            "deriv_var":re.compile(_dakota_re_base.format(value="(?P<value>\d+)",
-                tag="DVV_\d+:(?P<tag>\S+)")),
-            "an_comp":re.compile(_dakota_re_base.format(value="(?P<value>.+?)",
-                tag="AC_\d+:(?P<tag>.+?)"))
+            "function":re.compile(_dakota_re_base.format(
+                value="(?P<value>[1-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+            "deriv_var":re.compile(_dakota_re_base.format(
+                value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
+            "an_comp":re.compile(_dakota_re_base.format(
+                value="(?P<value>.+?)", tag="AC_\d+:(?P<tag>.+?)"))
             }
         }
 
@@ -331,6 +348,7 @@ def _extract_block(stream, numRE, dataRE, handle):
         value = m.group("value")
         handle(tag,value)
 
+
 def _read_parameters_stream(stream=None, ignore_asv=False, results_file=None):
     """Extract the parameters data from the stream."""
 
@@ -353,48 +371,56 @@ def _read_parameters_stream(stream=None, ignore_asv=False, results_file=None):
     variables = collections.OrderedDict()
     def store_variables(t, v):
         variables[t]=v
-    _extract_block(stream, useRE["num_variables"], useRE["variable"], store_variables)
+    _extract_block(stream, useRE["num_variables"], useRE["variable"], 
+            store_variables)
     # Read functions block
     responses = collections.OrderedDict()
     def store_responses(t, v):
         responses[t]=v
-    _extract_block(stream, useRE["num_functions"], useRE["function"], store_responses)
+    _extract_block(stream, useRE["num_functions"], useRE["function"], 
+            store_responses)
     # Read derivative variables block
     deriv_vars = []
     def store_deriv_vars(t,v):
         deriv_vars.append(t)
-    _extract_block(stream, useRE["num_deriv_vars"], useRE["deriv_var"], store_deriv_vars)
+    _extract_block(stream, useRE["num_deriv_vars"], useRE["deriv_var"], 
+            store_deriv_vars)
 
     # Read analysis components
     an_comps = []
     def store_an_comps(t, v):
         an_comps.append(v)
-    _extract_block(stream, useRE["num_an_comps"], useRE["an_comp"], store_an_comps)
+    _extract_block(stream, useRE["num_an_comps"], useRE["an_comp"], 
+            store_an_comps)
 
     # Read eval_id
     m = useRE["eval_id"].match(stream.readline())
     eval_id = m.group("value")
     
     return (Parameters(aprepro_format, variables, an_comps, eval_id),
-            Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv, results_file))
+            Results(aprepro_format, responses, deriv_vars, eval_id, ignore_asv,
+                results_file))
 
 
-def read_parameters_file(parameters_file=None, results_file=None, ignore_asv=False):
-    """Read Dakota parameters file and return Parameters object and Results object.
+def read_parameters_file(parameters_file=None, results_file=None, 
+        parameters_stream=None, ignore_asv=False):
+    """Read Dakota parameters file, return Parameters and Results objects.
     
-    The parameters_file and results_file keywords contain the names of the 
-    Dakota parameters and results files. If they are not provided, the 1st and 
-    2nd command line arguments will be used.
+    The parameters_file and results_file keywords contain the names of 
+    the Dakota parameters and results files. If they are not provided,
+    the first and second command line arguments (sys.argv[1] and [2]) 
+    will be used.
 
-    MissingSourceError is raised if no filenames are provided or can be inferred,
-    and also when the parameters file cannot be opened.
+    MissingSourceError is raised if no filenames are provided or can be 
+    inferred, and also when the parameters file cannot be opened.
     """
     ### Determine the name of the parameters file and read it in
     if parameters_file is None:
         try:
             parameters_file = sys.argv[1]
         except IndexError:
-            raise MissingSourceError("No parameters filename provided and no command line argument.")
+            raise MissingSourceError("No parameters filename provided and no "
+                    "command line argument.")
     with open(parameters_file,"r") as ifp:
         parameters_list = ifp.readlines()
 
@@ -403,7 +429,8 @@ def read_parameters_file(parameters_file=None, results_file=None, ignore_asv=Fal
         try:
             results_file = sys.argv[2]
         except IndexError:
-            raise MissingSourceError("No results filename provided and no command line argument.")
+            raise MissingSourceError("No results filename provided and no "
+                    "command line argument.")
 
     ### Open and parse the parameters file
     with open(parameters_file, "r") as ifp:
