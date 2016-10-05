@@ -80,7 +80,9 @@ protected:
   void initialize_sub_minimizer();
 
   /// update the trust region bounds, strictly contained within global bounds
-  void update_trust_region(SurrBasedLevelData& tr_data);
+  void update_trust_region_data(SurrBasedLevelData& tr_data,
+				const RealVector& parent_l_bnds,
+				const RealVector& parent_u_bnds);
 
   //
   //- Heading: Data members

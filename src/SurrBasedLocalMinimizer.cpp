@@ -221,39 +221,49 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 }
 
 
-void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
+void SurrBasedLocalMinimizer::
+update_trust_region_data(SurrBasedLevelData& tr_data,
+			 const RealVector& parent_l_bnds,
+			 const RealVector& parent_u_bnds)
 {
-  // Compute the trust region bounds
+  // Compute the trust region bounds.  Center is only updated if it violates
+  // a bound --> TR may be asymmetric: preferable in terms of continuity of
+  // iteration / warm-start efficiency / etc.  Recentering could also cause
+  // problems for export/restart workflows (starting point for new cycle moves
+  // from final soln from prev cycle).
   size_t i;
-  bool tr_lower_truncation = false, tr_upper_truncation = false;
+  bool cv_truncation = false, tr_lower_truncation = false,
+    tr_upper_truncation = false;
   for (i=0; i<numContinuousVars; i++) {
     // verify that varsCenter is within global bounds
     Real cv_center = tr_data.c_var_center(i);
-    if ( cv_center > globalUpperBnds[i] ) {
-      cv_center = globalUpperBnds[i];
+    if ( cv_center > parent_u_bnds[i] ) {
+      cv_center = parent_u_bnds[i]; cv_truncation = true;
       tr_data.c_var_center(cv_center, i);
     }
-    if ( cv_center < globalLowerBnds[i] ) {
-      cv_center = globalLowerBnds[i];
+    if ( cv_center < parent_l_bnds[i] ) {
+      cv_center = parent_l_bnds[i]; cv_truncation = true;
       tr_data.c_var_center(cv_center, i);
     }
     // compute 1-sided trust region offset
     Real tr_offset = tr_data.trust_region_factor() / 2. * 
-      ( globalUpperBnds[i] - globalLowerBnds[i] );
+      ( parent_u_bnds[i] - parent_l_bnds[i] );
     Real up_bound = cv_center + tr_offset, lo_bound = cv_center - tr_offset;
-    if ( up_bound <= globalUpperBnds[i] )
+    if ( up_bound <= parent_u_bnds[i] )
       tr_data.tr_upper_bound(up_bound, i);
     else {
-      tr_data.tr_upper_bound(globalUpperBnds[i], i);
+      tr_data.tr_upper_bound(parent_u_bnds[i], i);
       tr_upper_truncation = true;
     }
-    if ( lo_bound >= globalLowerBnds[i] )
+    if ( lo_bound >= parent_l_bnds[i] )
       tr_data.tr_lower_bound(lo_bound, i);
     else {
-      tr_data.tr_lower_bound(globalLowerBnds[i], i);
+      tr_data.tr_lower_bound(parent_l_bnds[i], i);
       tr_lower_truncation = true;
     }
   }
+  if (cv_truncation)
+    tr_data.new_center(true);
 
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
@@ -273,12 +283,16 @@ void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
        << "************\nBegin SBLM Iteration Number " << sbIterNum+1
-       << "\n\nCurrent Trust Region\n                 " << std::setw(wpp9);
-  if (tr_lower_truncation) Cout << "Lower (truncated)";
-  else                     Cout << "Lower";
-  Cout << std::setw(wpp9) << "Center" << std::setw(wpp9);
-  if (tr_upper_truncation) Cout << "Upper (truncated)";
-  else                     Cout << "Upper";
+       << "\n\nCurrent Trust Region for Truth model form "
+       << tr_data.truth_model_form() << " level " << tr_data.truth_model_level()
+       << ", Approx. model form " << tr_data.approx_model_form() << " level "
+       << tr_data.approx_model_level() << "\n                 ";
+  if (tr_lower_truncation) Cout << std::setw(wpp9) << "Lower (truncated)";
+  else                     Cout << std::setw(wpp9) << "Lower";
+  if (cv_truncation)       Cout << std::setw(wpp9) << "Center (truncated)";
+  else                     Cout << std::setw(wpp9) << "Center";
+  if (tr_upper_truncation) Cout << std::setw(wpp9) << "Upper (truncated)";
+  else                     Cout << std::setw(wpp9) << "Upper";
   Cout << '\n';
   StringMultiArrayConstView c_vars_labels
     = iteratedModel.continuous_variable_labels();

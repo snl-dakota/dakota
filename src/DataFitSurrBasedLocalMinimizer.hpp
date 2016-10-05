@@ -201,7 +201,7 @@ inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
 
 inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
 {
-  SurrBasedLocalMinimizer::update_trust_region(trustRegionData);
+  update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds);
 
   // TO DO: will propagate in recast evaluate() but are there direct evaluates?
   //if (recastSubProb)
