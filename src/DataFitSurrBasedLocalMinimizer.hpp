@@ -200,7 +200,17 @@ inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
 
 
 inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
-{ update_trust_region(trustRegionData); }
+{
+  SurrBasedLocalMinimizer::update_trust_region(trustRegionData);
+
+  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
+  //if (recastSubProb)
+  //  iteratedModel.continuous_variables(cv_center);
+  if (globalApproxFlag) { // propagate build bounds to DFSModel
+    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
+    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
+  }
+}
 
 } // namespace Dakota
 

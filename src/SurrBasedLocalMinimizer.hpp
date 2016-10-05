@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+class SurrBasedLevelData;
+
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -122,6 +124,7 @@ protected:
   bool truthHessianFlag;
   /// flags the use/availability of surrogate Hessians within the SBLM process
   bool approxHessianFlag;
+
   /// flags the use of surrogate correction techniques at the center
   /// of each trust region
   short correctionType;

@@ -44,7 +44,6 @@ DataFitSurrBasedLocalMinimizer::sblmInstance(NULL);
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model),
-  //trustRegionFactor(origTrustRegionFactor),
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
@@ -54,8 +53,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   //meritFnType(AUGMENTED_LAGRANGIAN_MERIT), acceptLogic(FILTER),
   penaltyIterOffset(-200), multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
-  //trLowerBnds(numContinuousVars), trUpperBnds(numContinuousVars),
-  //newCenterFlag(true)
 {
   Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
@@ -359,7 +356,7 @@ void DataFitSurrBasedLocalMinimizer::reset()
 
 void DataFitSurrBasedLocalMinimizer::build()
 {
-  if (!globalApproxFlag && !newCenterFlag) {
+  if (!globalApproxFlag && !trustRegionData.new_center()) {
     Cout << "\n>>>>> Reusing previous approximation.\n";
     return;
   }
@@ -392,7 +389,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
     = trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE);
 
   // Assess hard convergence prior to global surrogate construction
-  if (newCenterFlag)
+  if (trustRegionData.new_center())
     hard_convergence_check(resp_center_truth.second,
 			   vars_center.continuous_variables(),
 			   globalLowerBnds, globalUpperBnds);
@@ -456,6 +453,8 @@ compute_center_correction(bool embed_correction)
     // -->> hierarchical needs compute_correction if new center
     // -->> global needs compute_correction if new center or new bounds
     DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+
+    /* DFSBLM::trustRegionData does not store UNCORR_APPROX_RESPONSE!
     Response resp_center_approx(
       trustRegionData.response_center(UNCORR_APPROX_RESPONSE).copy());
     delta.compute(trustRegionData.vars_center(),
@@ -463,6 +462,15 @@ compute_center_correction(bool embed_correction)
 		  resp_center_approx);
     delta.apply(varsCenter, resp_center_approx);
     trustRegionData.response_center(resp_center_approx, CORR_APPROX_RESPONSE);
+    */
+
+    // correct response in place using shallow copy
+    Response resp_center_approx(
+      trustRegionData.response_center(CORR_APPROX_RESPONSE));
+    delta.compute(trustRegionData.vars_center(),
+		  trustRegionData.response_center(CORR_TRUTH_RESPONSE),
+		  resp_center_approx);
+    delta.apply(varsCenter, resp_center_approx); // apply corr to shared rep
   }
 }
 
@@ -539,7 +547,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
 
   // If the candidate optimum (varsStar) is accepted, then update the
   // center variables and response data.
-  if (newCenterFlag) {
+  if (trustRegionData.new_center()) {
     varsCenter.continuous_variables(c_vars_star);
     responseCenterTruth.first = truth_model.evaluation_id();
     responseCenterTruth.second.update(truth_resp);
@@ -749,8 +757,8 @@ hard_convergence_check(const Response& response_truth,
   // -------------------------------------------------
   // Initialize/update Lagrange multipliers and filter
   // -------------------------------------------------
-  // These updates are only performed for new iterates from accepted
-  // steps (hard_convergence_check() invoked only if newCenterFlag).
+  // These updates are only performed for new iterates from accepted steps
+  // (hard_convergence_check() invoked only if trustRegionData.new_center()).
 
   // initialize augmented Lagrangian multipliers and filter
   if (sbIterNum == 0) {
@@ -973,7 +981,7 @@ tr_ratio_check(const RealVector& c_vars_star, const RealVector& tr_lower_bnds,
   // ------------------------------------------
 
   if (accept_step) {
-    newCenterFlag = true;
+    trustRegionData.new_center(true);
 
     // Update the trust region size depending on the accuracy of the approximate
     // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
@@ -1022,7 +1030,7 @@ tr_ratio_check(const RealVector& c_vars_star, const RealVector& tr_lower_bnds,
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    newCenterFlag = false;
+    trustRegionData.new_center(false);
     trustRegionFactor *= gammaContract;
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "

@@ -222,7 +222,7 @@ inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
 
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
-{ varsStar.continuous_variable(c_vars, i); }
+{ varsStar.continuous_variable(c_var, i); }
 
 
 inline size_t SurrBasedLevelData::approx_model_form()

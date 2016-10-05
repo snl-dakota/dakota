@@ -14,6 +14,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 #include "SurrBasedLocalMinimizer.hpp"
+#include "SurrBasedLevelData.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
@@ -227,14 +228,14 @@ void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
   bool tr_lower_truncation = false, tr_upper_truncation = false;
   for (i=0; i<numContinuousVars; i++) {
     // verify that varsCenter is within global bounds
-    Real cv_center = tr_data.c_vars_center(i);
+    Real cv_center = tr_data.c_var_center(i);
     if ( cv_center > globalUpperBnds[i] ) {
       cv_center = globalUpperBnds[i];
-      tr_data.c_vars_center(cv_center, i);
+      tr_data.c_var_center(cv_center, i);
     }
     if ( cv_center < globalLowerBnds[i] ) {
       cv_center = globalLowerBnds[i];
-      tr_data.c_vars_center(cv_center, i);
+      tr_data.c_var_center(cv_center, i);
     }
     // compute 1-sided trust region offset
     Real tr_offset = tr_data.trust_region_factor() / 2. * 
@@ -264,16 +265,9 @@ void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
   const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
   const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   // Set the trust region center and bounds for approxSubProbOptimizer
-  approxSubProbModel.continuous_variables();
+  approxSubProbModel.continuous_variables(cv_center);
   approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
   approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
-  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
-  //if (recastSubProb)
-  //  iteratedModel.continuous_variables(cv_center);
-  if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
-    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
-  }
 
   // Output the trust region bounds
   size_t wpp9 = write_precision+9;
