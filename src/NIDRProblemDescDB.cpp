@@ -1326,13 +1326,9 @@ static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
 void NIDRProblemDescDB::
 method_stop(const char *keyname, Values *val, void **g, void *v)
 {
-  static const char *mr_scaletypes[] = { "auto", "none", 0 };
   Meth_Info *mi = *(Meth_Info**)g;
-  DataMethodRep *dm = mi->dme;
-  scale_chk(dm->linearIneqScaleTypes, dm->linearIneqScales,
-	    "linear_inequality", mr_scaletypes);
-  scale_chk(dm->linearEqScaleTypes, dm->linearEqScales,
-	    "linear_equality", mr_scaletypes);
+  //DataMethodRep *dm = mi->dme;
+  // ... any checks ...
   pDDBInstance->dataMethodList.push_back(*mi->dme0);
   delete mi->dme0;
   delete mi;
@@ -5003,10 +4999,18 @@ static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
 void NIDRProblemDescDB::
 var_stop(const char *keyname, Values *val, void **g, void *v)
 {
+  static const char *mr_scaletypes[] = { "auto", "none", 0 };
+
   Var_Info *vi = *(Var_Info**)g;
   DataVariablesRep *dv = vi->dv;
+
   scale_chk(dv->continuousDesignScaleTypes, dv->continuousDesignScales,
 	    "cdv", aln_scaletypes);
+  scale_chk(dv->linearIneqScaleTypes, dv->linearIneqScales,
+	    "linear_inequality", mr_scaletypes);
+  scale_chk(dv->linearEqScaleTypes, dv->linearEqScales,
+	    "linear_equality", mr_scaletypes);
+
   pDDBInstance->VIL.push_back(vi);
   pDDBInstance->dataVariablesList.push_back(*vi->dv_handle);
   delete vi->dv_handle;
@@ -6694,13 +6698,6 @@ static RealVector
 	MP_(finalPoint),
 	MP_(hyperPriorAlphas),
 	MP_(hyperPriorBetas),
-	MP_(linearEqConstraintCoeffs),
-	MP_(linearEqScales),
-	MP_(linearEqTargets),
-	MP_(linearIneqConstraintCoeffs),
-	MP_(linearIneqLowerBnds),
-	MP_(linearIneqUpperBnds),
-	MP_(linearIneqScales),
 	MP_(listOfPoints),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
@@ -6766,8 +6763,6 @@ static StringArray
 	MP_(hybridMethodNames),
 	MP_(hybridMethodPointers),
 	MP_(hybridModelPointers),
-	MP_(linearEqScaleTypes),
-	MP_(linearIneqScaleTypes),
         MP_(miscOptions);
 
 static bool
@@ -7533,6 +7528,13 @@ static RealVector
 	MP_(gumbelUncVars),
 	MP_(histogramBinUncVars),
         MP_(histogramPointRealUncVars),
+	MP_(linearEqConstraintCoeffs),
+	MP_(linearEqScales),
+	MP_(linearEqTargets),
+	MP_(linearIneqConstraintCoeffs),
+	MP_(linearIneqLowerBnds),
+	MP_(linearIneqUpperBnds),
+	MP_(linearIneqScales),
         MP_(negBinomialUncProbPerTrial),
 	MP_(normalUncLowerBnds),
 	MP_(normalUncMeans),
@@ -7580,6 +7582,8 @@ static StringArray
 	MP_(discreteUncSetStrVars),
 	MP_(discreteStateSetStrVars),
         MP_(histogramPointStrUncVars),
+	MP_(linearEqScaleTypes),
+	MP_(linearIneqScaleTypes),
         VP_(hpsa),
         VP_(ddss),
         VP_(duss),

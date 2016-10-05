@@ -45,11 +45,11 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
     problem_db.get_rv("responses.nonlinear_equality_targets")), 
   numLinearIneqCons(0), numLinearEqCons(0),
   linearIneqConLowerBnds(
-    problem_db.get_rv("method.linear_inequality_lower_bounds")),
+    problem_db.get_rv("variables.linear_inequality_lower_bounds")),
   linearIneqConUpperBnds(
-    problem_db.get_rv("method.linear_inequality_upper_bounds")),
+    problem_db.get_rv("variables.linear_inequality_upper_bounds")),
   linearEqConTargets(
-    problem_db.get_rv("method.linear_equality_targets")),
+    problem_db.get_rv("variables.linear_equality_targets")),
   constraintsRep(NULL), referenceCount(1)
 {
   shape(); // size all*{Lower,Upper}Bnds arrays
@@ -540,9 +540,9 @@ reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
   const RealVector& linear_ineq_cons
-    = problem_db.get_rv("method.linear_inequality_constraints");
+    = problem_db.get_rv("variables.linear_inequality_constraints");
   const RealVector& linear_eq_cons
-    = problem_db.get_rv("method.linear_equality_constraints");
+    = problem_db.get_rv("variables.linear_equality_constraints");
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.

@@ -81,34 +81,6 @@ method,
 		synchronization blocking	#s0,#p0,#p1,#p6,#p8,#p11,#p12
 #		synchronization blocking	#p13,#p14,#p15,#p16,#p17,#p18
 #		synchronization blocking	#p19,#p20,#p22,#p23,#p24,#p25
-#		linear_equality_constraint_matrix = 2. 1. 1.	#s3,#s5,#s8,#s9
-#		linear_equality_constraint_matrix = 2. 1. 1.	#s11,#s13,#s15,#s16
-#		linear_equality_constraint_matrix = 2. 1. 1.	#s17,#s18,#s21,#s22
-#		linear_equality_constraint_matrix = 2. 1. 1.	#p3,#p5,#p8,#p9
-#		linear_equality_constraint_matrix = 2. 1. 1.	#p11,#p13,#p15
-#		linear_equality_constraint_matrix = 2. 1. 1.	#p16,#p17
-#		linear_equality_constraint_matrix = 2. 1. 1.	#p18,#p21
-#		linear_equality_targets = 4.0			#s3,#s5,#s8,#s9
-#		linear_equality_targets = 4.0			#s11,#s13,#s15,#s16
-#		linear_equality_targets = 4.0			#s17,#s18,#s21,#s22
-#		linear_equality_targets = 4.0			#p3,#p5,#p8,#p9
-#		linear_equality_targets = 4.0			#p11,#p13,#p15
-#		linear_equality_targets = 4.0			#p16,#p17
-#		linear_equality_targets = 4.0			#p18,#p21
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#s1,#s2,#s3,#s10
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#s11,#s14,#s16
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#s18,#s19,#s21,#s22
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#p1,#p2,#p3
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#p10,#p11,#p14
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#p16,#p18
-#		linear_inequality_constraint_matrix = 1. 1. 1.	#p19,#p21
-#		linear_inequality_upper_bounds = 5.0		#s1,#s2,#s3,#s10
-#		linear_inequality_upper_bounds = 5.0		#s11,#s14,#s16
-#		linear_inequality_upper_bounds = 5.0		#s18,#s19,#s21,#s22
-#		linear_inequality_upper_bounds = 5.0		#p1,#p2,#p3
-#		linear_inequality_upper_bounds = 5.0		#p10,#p11,#p14
-#		linear_inequality_upper_bounds = 5.0		#p16,#p18
-#		linear_inequality_upper_bounds = 5.0		#p19,#p21
 #		merit_function merit_max		#s11,#s14,#s19
 #		merit_function merit_max		#p11,#p14,#p19
 #		merit_function merit_max_smooth		#s1,#s7,#s15,#s20
@@ -159,6 +131,34 @@ variables,
 #		scales		5.0   1.5   2.0		#p10,#p11,#p12,#p15
 #		scales		5.0   1.5   2.0		#p17,#p19,#p20,#p21
 		descriptors	'x1'  'x2'  'x3'
+#		linear_equality_constraint_matrix = 2. 1. 1.	#s3,#s5,#s8,#s9
+#		linear_equality_constraint_matrix = 2. 1. 1.	#s11,#s13,#s15,#s16
+#		linear_equality_constraint_matrix = 2. 1. 1.	#s17,#s18,#s21,#s22
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p3,#p5,#p8,#p9
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p11,#p13,#p15
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p16,#p17
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p18,#p21
+#		linear_equality_targets = 4.0			#s3,#s5,#s8,#s9
+#		linear_equality_targets = 4.0			#s11,#s13,#s15,#s16
+#		linear_equality_targets = 4.0			#s17,#s18,#s21,#s22
+#		linear_equality_targets = 4.0			#p3,#p5,#p8,#p9
+#		linear_equality_targets = 4.0			#p11,#p13,#p15
+#		linear_equality_targets = 4.0			#p16,#p17
+#		linear_equality_targets = 4.0			#p18,#p21
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#s1,#s2,#s3,#s10
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#s11,#s14,#s16
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#s18,#s19,#s21,#s22
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p1,#p2,#p3
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p10,#p11,#p14
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p16,#p18
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p19,#p21
+#		linear_inequality_upper_bounds = 5.0		#s1,#s2,#s3,#s10
+#		linear_inequality_upper_bounds = 5.0		#s11,#s14,#s16
+#		linear_inequality_upper_bounds = 5.0		#s18,#s19,#s21,#s22
+#		linear_inequality_upper_bounds = 5.0		#p1,#p2,#p3
+#		linear_inequality_upper_bounds = 5.0		#p10,#p11,#p14
+#		linear_inequality_upper_bounds = 5.0		#p16,#p18
+#		linear_inequality_upper_bounds = 5.0		#p19,#p21
 
 interface,
 	system					#s0,#s2,#s3,#s13,#s18

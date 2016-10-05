@@ -1234,7 +1234,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
     qoi, iter = 0, new_N_l, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and NLev
@@ -1300,7 +1300,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	  // the variance in the mean estimator (alpha_0) from two sources:
 	  // > from variation across k folds for the selected CV settings
 	  //   (estimate gamma?)
-	  // > from var decrease as NLev increases across iters (estimate kappa?)
+	  // > from var decrease as NLev increases across iters (estim kappa?)
           //Real cv_var_i = poly_approx_rep->
 	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
 	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
@@ -1310,7 +1310,11 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	  // variance approximation (similar to traditional CV erro plots, but
 	  // predicting estimator variance instead of actual L2 fit error).
 	  
-	  agg_var_l += poly_approx_q->variance();
+	  var_l = poly_approx_q->variance();
+	  agg_var_l += var_l;
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Variance (lev " << lev << ", qoi " << qoi
+		 << ", iter " << iter << ") = " << var_l << '\n';
 	}
         // store all approximation levels, whenever recomputed.
 	// Note: the active approximation upon completion of this loop may be

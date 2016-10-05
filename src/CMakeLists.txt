@@ -747,12 +747,11 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
-  list(APPEND DAKOTA_INCDIRS 
-    ${NOWPAC_SOURCE_DIR}/include ${NOWPAC_SOURCE_DIR}/external/nlopt/include ${NOWPAC_SOURCE_DIR}/external/eigen/include/eigen3)
-  link_directories(${NOWPAC_BINARY_DIR}/lib ...) # cmake external package
+  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT})
+  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ...) # cmake external package
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
-  list(APPEND EXPORT_TARGETS nowpac nlopt)
+  #list(APPEND EXPORT_TARGETS nowpac nlopt)
   # package requires C++ flags "-std=c++11"
 endif(HAVE_NOWPAC)
 

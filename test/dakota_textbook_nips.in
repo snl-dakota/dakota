@@ -16,8 +16,6 @@ method
     merit_function el_bakry   #s0,#s1,#s2,#s3,#s4,#s5
     max_iterations = 50
     convergence_tolerance = 1e-8
-#    linear_inequality_constraint_matrix = 1. 1.  #s5,#s6
-#    linear_inequality_upper_bounds = 1.05	      #s5,#s6
 #    output debug
 
 variables
@@ -26,6 +24,8 @@ variables
     upper_bounds     5.8    2.9
     lower_bounds     0.5   -2.9
     descriptors      'x1'   'x2'
+#  linear_inequality_constraint_matrix = 1. 1.  #s5,#s6
+#  linear_inequality_upper_bounds = 1.05	#s5,#s6
 
 interface
   fork

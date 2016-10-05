@@ -128,6 +128,11 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
     << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
+
+  // Linear constraints
+  s << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales;
 }
 
 
@@ -223,6 +228,11 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteStateSetIntLowerBnds >> discreteStateSetIntUpperBnds
     >> discreteStateSetStrLowerBnds >> discreteStateSetStrUpperBnds
     >> discreteStateSetRealLowerBnds >> discreteStateSetRealUpperBnds;
+
+  // Linear constraints
+  s >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
+    >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
+    >> linearEqTargets >> linearEqScaleTypes >> linearEqScales;
 }
 
 
@@ -317,6 +327,11 @@ void DataVariablesRep::write(std::ostream& s) const
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
     << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
+
+  // Linear constraints
+  s << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales;
 }
 
 

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1939 distinct keywords (plus 254 aliases) **/
+/** 1858 distinct keywords (plus 254 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -259,24 +259,15 @@ static KeyWord
 		{"blocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronize_blocking)},
 		{"nonblocking",8,0,1,1,0,0.,0.,0,N_mdm(lit,evalSynchronize_nonblocking)}
 		},
-	kw_45[22] = {
+	kw_45[13] = {
 		{0,0,1,0,0,kw_27},
 		{"constraint_penalty",10,0,7,0,0,0.,0.,0,N_mdm(Real,constrPenalty)},
-		{"constraint_tolerance",10,0,18,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
+		{"constraint_tolerance",10,0,9,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"contraction_factor",10,0,2,0,0,0.,0.,0,N_mdm(Real,contractStepLength)},
 		{"initial_delta",10,0,1,0,0,0.,0.,0,N_mdm(Real,initStepLength)},
-		{"linear_equality_constraint_matrix",14,0,14,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,16,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,17,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,10,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,12,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
-		{"max_function_evaluations",0x29,0,19,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"max_function_evaluations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"merit_function",8,7,6,0,kw_43},
-		{"scaling",8,0,20,0,0,0.,0.,0,N_mdm(true,methodScaling)},
+		{"scaling",8,0,11,0,0,0.,0.,0,N_mdm(true,methodScaling)},
 		{"smoothing_factor",10,0,8,0,0,0.,0.,0,N_mdm(Real,smoothFactor)},
 		{"solution_accuracy",2,0,4,0,0,0.,0.,1,N_mdm(Real,solnTarget)},
 		{"solution_target",10,0,4,0,0,0.,0.,0,N_mdm(Real,solnTarget)},
@@ -789,18 +780,9 @@ static KeyWord
 		{"expand_after_success",9,0,3,0,0,0.,0.,0,N_mdm(int,expandAfterSuccess)},
 		{"no_expansion",8,0,2,0,0,0.,0.,0,N_mdm(false,expansionFlag)}
 		},
-	kw_131[15] = {
+	kw_131[6] = {
 		{"constraint_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"convergence_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"linear_equality_constraint_matrix",14,0,12,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,14,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,8,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,10,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"max_function_evaluations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,1,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"scaling",8,0,6,0,0,0.,0.,0,N_mdm(true,methodScaling)},
@@ -808,13 +790,13 @@ static KeyWord
 		},
 	kw_132[4] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,15,0,0,kw_131},
+		{0,0,6,0,0,kw_131},
 		{"frcg",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_CONMIN_FRCG)},
 		{"mfd",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_CONMIN_MFD)}
 		},
 	kw_133[3] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,15,0,0,kw_131},
+		{0,0,6,0,0,kw_131},
 		{""}
 		},
 	kw_134[1] = {
@@ -837,32 +819,14 @@ static KeyWord
 		{"symbols",9,0,8,0,0,0.,0.,0,N_mdm(int,numSymbols)},
 		{"variance_based_decomp",8,1,6,0,kw_134,0.,0.,0,N_mdm(true,vbdFlag)}
 		},
-	kw_136[12] = {
+	kw_136[3] = {
 		{0,0,1,0,0,kw_27},
-		{"linear_equality_constraint_matrix",14,0,6,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,8,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,2,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,4,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,5,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,3,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
-		{"max_function_evaluations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
-		{"scaling",8,0,11,0,0,0.,0.,0,N_mdm(true,methodScaling)}
+		{"max_function_evaluations",0x29,0,1,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"scaling",8,0,2,0,0,0.,0.,0,N_mdm(true,methodScaling)}
 		},
-	kw_137[15] = {
+	kw_137[6] = {
 		{"constraint_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"convergence_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"linear_equality_constraint_matrix",14,0,12,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,14,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,8,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,10,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"max_function_evaluations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,1,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"scaling",8,0,6,0,0,0.,0.,0,N_mdm(true,methodScaling)},
@@ -870,7 +834,7 @@ static KeyWord
 		},
 	kw_138[7] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,15,0,0,kw_137},
+		{0,0,6,0,0,kw_137},
 		{"bfgs",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_DOT_BFGS)},
 		{"frcg",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_DOT_FRCG)},
 		{"mmfd",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_DOT_MMFD)},
@@ -879,7 +843,7 @@ static KeyWord
 		},
 	kw_139[3] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,15,0,0,kw_137},
+		{0,0,6,0,0,kw_137},
 		{""}
 		},
 	kw_140[3] = {
@@ -1450,26 +1414,17 @@ static KeyWord
 		{"roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_roulette_wheel)},
 		{"unique_roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_unique_roulette_wheel)}
 		},
-	kw_238[19] = {
+	kw_238[10] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,8,0,0,kw_230},
 		{"convergence_type",8,3,4,0,kw_231},
 		{"fitness_type",8,2,1,0,kw_232},
-		{"linear_equality_constraint_matrix",14,0,12,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,14,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,8,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,10,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
-		{"max_function_evaluations",0x29,0,16,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"max_function_evaluations",0x29,0,7,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,6,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"niching_type",8,3,3,0,kw_234},
 		{"postprocessor_type",8,1,5,0,kw_235},
 		{"replacement_type",8,4,2,0,kw_237},
-		{"scaling",8,0,17,0,0,0.,0.,0,N_mdm(true,methodScaling)}
+		{"scaling",8,0,8,0,0,0.,0.,0,N_mdm(true,methodScaling)}
 		},
 	kw_239[1] = {
 		{"model_pointer",11,0,1,0,0,0.,0.,0,N_mdm(str,subModelPointer)}
@@ -1552,21 +1507,12 @@ static KeyWord
 		{"speculative",8,0,12,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
 		{"x_conv_tol",10,0,3,0,0,0.,0.,0,N_mdm(Real,xConvTol)}
 		},
-	kw_250[14] = {
+	kw_250[5] = {
 		{0,0,1,0,0,kw_27},
 		{"convergence_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"linear_equality_constraint_matrix",14,0,8,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,10,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,3,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,4,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,6,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,5,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
-		{"max_function_evaluations",0x29,0,12,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"max_function_evaluations",0x29,0,3,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,1,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"scaling",8,0,13,0,0,0.,0.,0,N_mdm(true,methodScaling)}
+		{"scaling",8,0,4,0,0,0.,0.,0,N_mdm(true,methodScaling)}
 		},
 	kw_251[2] = {
 		{"global",8,0,1,1,0,0.,0.,0,N_mdm(lit,lipschitzType_global)},
@@ -1952,19 +1898,10 @@ static KeyWord
 		{"misc_options",15,0,1,0,0,0.,0.,0,N_mdm(strL,miscOptions)},
 		{"scaling",8,0,4,0,0,0.,0.,0,N_mdm(true,methodScaling)}
 		},
-	kw_314[18] = {
+	kw_314[9] = {
 		{"constraint_tolerance",10,0,6,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"convergence_tolerance",10,0,4,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
 		{"function_precision",10,0,2,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
-		{"linear_equality_constraint_matrix",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,17,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,18,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,16,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,10,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,13,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,14,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,12,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"linesearch_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,lineSearchTolerance)},
 		{"max_function_evaluations",0x29,0,8,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
@@ -1974,21 +1911,12 @@ static KeyWord
 		},
 	kw_315[3] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,18,0,0,kw_314},
+		{0,0,9,0,0,kw_314},
 		{""}
 		},
-	kw_316[16] = {
+	kw_316[7] = {
 		{"convergence_tolerance",10,0,4,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
 		{"gradient_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,gradientTolerance)},
-		{"linear_equality_constraint_matrix",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,15,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,16,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,14,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,8,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,11,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,12,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,10,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"max_function_evaluations",0x29,0,6,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,3,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"max_step",10,0,1,0,0,0.,0.,0,N_mdm(Real,maxStep)},
@@ -1997,7 +1925,7 @@ static KeyWord
 		},
 	kw_317[3] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,16,0,0,kw_316},
+		{0,0,7,0,0,kw_316},
 		{""}
 		},
 	kw_318[6] = {
@@ -2021,7 +1949,7 @@ static KeyWord
 		},
 	kw_321[6] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,16,0,0,kw_316},
+		{0,0,7,0,0,kw_316},
 		{"centering_parameter",10,0,4,0,0,0.,0.,0,N_mdm(Real,centeringParam)},
 		{"merit_function",8,3,2,0,kw_319},
 		{"search_method",8,4,1,0,kw_320},
@@ -2088,28 +2016,19 @@ static KeyWord
 		{"roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_roulette_wheel)},
 		{"unique_roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_unique_roulette_wheel)}
 		},
-	kw_333[17] = {
+	kw_333[8] = {
 		{0,0,1,0,0,kw_27},
 		{0,0,8,0,0,kw_230},
 		{"convergence_type",8,2,3,0,kw_330},
 		{"fitness_type",8,2,1,0,kw_331},
-		{"linear_equality_constraint_matrix",14,0,10,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,12,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,11,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,5,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,6,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,8,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,9,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,7,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
-		{"max_function_evaluations",0x29,0,14,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"max_function_evaluations",0x29,0,5,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",0x29,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"replacement_type",8,4,2,0,kw_332},
-		{"scaling",8,0,15,0,0,0.,0.,0,N_mdm(true,methodScaling)}
+		{"scaling",8,0,6,0,0,0.,0.,0,N_mdm(true,methodScaling)}
 		},
 	kw_334[4] = {
 		{0,0,1,0,0,kw_27},
-		{0,0,18,0,0,kw_314},
+		{0,0,9,0,0,kw_314},
 		{"nlssol",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_NLSSOL_SQP)},
 		{"npsol",8,0,1,1,0,0.,0.,0,N_mdm(utype,methodName_NPSOL_SQP)}
 		},
@@ -2153,24 +2072,15 @@ static KeyWord
 		{"initial_size",10,0,1,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRInitSize)},
 		{"minimum_size",10,0,2,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRMinSize)}
 		},
-	kw_341[25] = {
+	kw_341[16] = {
 		{"acceptance_logic",8,2,8,0,kw_336},
-		{"approx_method_name",3,0,1,1,0,0.,0.,18,N_mdm(str,subMethodName)},
-		{"approx_method_pointer",3,0,1,1,0,0.,0.,18,N_mdm(str,subMethodPointer)},
-		{"approx_model_pointer",3,0,2,2,0,0.,0.,18,N_mdm(str,modelPointer)},
+		{"approx_method_name",3,0,1,1,0,0.,0.,9,N_mdm(str,subMethodName)},
+		{"approx_method_pointer",3,0,1,1,0,0.,0.,9,N_mdm(str,subMethodPointer)},
+		{"approx_model_pointer",3,0,2,2,0,0.,0.,9,N_mdm(str,modelPointer)},
 		{"approx_subproblem",8,7,6,0,kw_337},
 		{"constraint_relax",8,1,9,0,kw_338},
 		{"constraint_tolerance",10,0,12,0,0,0.,0.,0,N_mdm(Real,constraintTolerance)},
 		{"convergence_tolerance",10,0,11,0,0,0.,0.,0,N_mdm(Real,convergenceTolerance)},
-		{"linear_equality_constraint_matrix",14,0,18,0,0,0.,0.,0,N_mdm(RealDL,linearEqConstraintCoeffs)},
-		{"linear_equality_scale_types",15,0,20,0,0,0.,0.,0,N_mdm(strL,linearEqScaleTypes)},
-		{"linear_equality_scales",14,0,21,0,0,0.,0.,0,N_mdm(RealDL,linearEqScales)},
-		{"linear_equality_targets",14,0,19,0,0,0.,0.,0,N_mdm(RealDL,linearEqTargets)},
-		{"linear_inequality_constraint_matrix",14,0,13,0,0,0.,0.,0,N_mdm(RealDL,linearIneqConstraintCoeffs)},
-		{"linear_inequality_lower_bounds",14,0,14,0,0,0.,0.,0,N_mdm(RealDL,linearIneqLowerBnds)},
-		{"linear_inequality_scale_types",15,0,16,0,0,0.,0.,0,N_mdm(strL,linearIneqScaleTypes)},
-		{"linear_inequality_scales",14,0,17,0,0,0.,0.,0,N_mdm(RealDL,linearIneqScales)},
-		{"linear_inequality_upper_bounds",14,0,15,0,0,0.,0.,0,N_mdm(RealDL,linearIneqUpperBnds)},
 		{"max_iterations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"merit_function",8,4,7,0,kw_339},
 		{"method_name",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodName)},
@@ -2188,11 +2098,11 @@ static KeyWord
 		},
 	kw_343[88] = {
 		{"adaptive_sampling",8,14,4,1,kw_42,0.,0.,0,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
-		{"asynch_pattern_search",8,21,4,1,kw_45,0.,0.,0,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
+		{"asynch_pattern_search",8,12,4,1,kw_45,0.,0.,0,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
 		{"bayes_calibration",8,13,4,1,kw_108,0.,0.,0,N_mdm(utype,methodName_BAYES_CALIBRATION)},
 		{"branch_and_bound",8,3,4,1,kw_110,0.,0.,0,N_mdm(utype,methodName_BRANCH_AND_BOUND)},
 		{"centered_parameter_study",8,3,4,1,kw_111,0.,0.,0,N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)},
-		{"coliny_apps",0,21,4,1,kw_45,0.,0.,-4,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
+		{"coliny_apps",0,12,4,1,kw_45,0.,0.,-4,N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)},
 		{"coliny_beta",8,1,4,1,kw_113,0.,0.,0,N_mdm(utype,methodName_COLINY_BETA)},
 		{"coliny_cobyla",8,0,4,1,kw_115,0.,0.,0,N_mdm(utype,methodName_COLINY_COBYLA)},
 		{"coliny_direct",8,6,4,1,kw_117,0.,0.,0,N_mdm(utype,methodName_COLINY_DIRECT)},
@@ -2203,7 +2113,7 @@ static KeyWord
 		{"conmin_frcg",8,0,4,1,kw_133,0.,0.,0,N_mdm(utype,methodName_CONMIN_FRCG)},
 		{"conmin_mfd",8,0,4,1,kw_133,0.,0.,0,N_mdm(utype,methodName_CONMIN_MFD)},
 		{"dace",8,14,4,1,kw_135,0.,0.,0,N_mdm(utype,methodName_DACE)},
-		{"dl_solver",11,11,4,1,kw_136,0.,0.,0,N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)},
+		{"dl_solver",11,2,4,1,kw_136,0.,0.,0,N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)},
 		{"dot",8,5,4,1,kw_138},
 		{"dot_bfgs",8,0,4,1,kw_139,0.,0.,0,N_mdm(utype,methodName_DOT_BFGS)},
 		{"dot_frcg",8,0,4,1,kw_139,0.,0.,0,N_mdm(utype,methodName_DOT_FRCG)},
@@ -2229,7 +2139,7 @@ static KeyWord
 		{"local_interval_est",8,3,4,1,kw_215,0.,0.,0,N_mdm(utype,methodName_LOCAL_INTERVAL_EST)},
 		{"local_reliability",8,5,4,1,kw_223,0.,0.,0,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
 		{"mesh_adaptive_search",8,10,4,1,kw_224,0.,0.,0,N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)},
-		{"moga",8,17,4,1,kw_238,0.,0.,0,N_mdm(utype,methodName_MOGA)},
+		{"moga",8,8,4,1,kw_238,0.,0.,0,N_mdm(utype,methodName_MOGA)},
 		{"multi_start",8,4,4,1,kw_241,0.,0.,0,N_mdm(utype,methodName_MULTI_START)},
 		{"multidim_parameter_study",8,1,4,1,kw_242,0.,0.,0,N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)},
 		{"multilevel_mc",0,7,4,1,kw_246,0.,0.,2,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
@@ -2237,7 +2147,7 @@ static KeyWord
 		{"multilevel_sampling",8,7,4,1,kw_246,0.,0.,0,N_mdm(utype,methodName_MULTILEVEL_SAMPLING)},
 		{"ncsu_direct",8,8,4,1,kw_248,0.,0.,0,N_mdm(utype,methodName_NCSU_DIRECT)},
 		{"nl2sol",8,14,4,1,kw_249,0.,0.,0,N_mdm(utype,methodName_NL2SOL)},
-		{"nlpql_sqp",8,13,4,1,kw_250,0.,0.,0,N_mdm(utype,methodName_NLPQL_SQP)},
+		{"nlpql_sqp",8,4,4,1,kw_250,0.,0.,0,N_mdm(utype,methodName_NLPQL_SQP)},
 		{"nlssol_sqp",8,0,4,1,kw_315,0.,0.,0,N_mdm(utype,methodName_NLSSOL_SQP)},
 		{"nond_adaptive_sampling",0,14,4,1,kw_42,0.,0.,-52,N_mdm(utype,methodName_ADAPTIVE_SAMPLING)},
 		{"nond_bayes_calibration",0,13,4,1,kw_108,0.,0.,-51,N_mdm(utype,methodName_BAYES_CALIBRATION)},
@@ -2269,11 +2179,11 @@ static KeyWord
 		{"richardson_extrap",8,6,4,1,kw_327,0.,0.,0,N_mdm(utype,methodName_RICHARDSON_EXTRAP)},
 		{"rkd_darts",8,6,4,1,kw_293,0.,0.,0,N_mdm(utype,methodName_RKD_DARTS)},
 		{"sampling",8,11,4,1,kw_299,0.,0.,0,N_mdm(utype,methodName_RANDOM_SAMPLING)},
-		{"soga",8,15,4,1,kw_333,0.,0.,0,N_mdm(utype,methodName_SOGA)},
+		{"soga",8,6,4,1,kw_333,0.,0.,0,N_mdm(utype,methodName_SOGA)},
 		{"stanford",8,2,4,1,kw_334},
 		{"stoch_collocation",8,26,4,1,kw_312,0.,0.,0,N_mdm(utype,methodName_STOCH_COLLOCATION)},
 		{"surrogate_based_global",8,8,4,1,kw_335,0.,0.,0,N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)},
-		{"surrogate_based_local",8,25,4,1,kw_341,0.,0.,0,N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)},
+		{"surrogate_based_local",8,16,4,1,kw_341,0.,0.,0,N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)},
 		{"vector_parameter_study",8,3,4,1,kw_342,0.,0.,0,N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}
 		},
 	kw_344[1] = {
@@ -3216,7 +3126,7 @@ static KeyWord
 		{"wuv_betas",6,0,2,2,0,0.,0.,-4,N_vam(RealLb,weibullUncBetas)},
 		{"wuv_descriptors",7,0,4,0,0,0.,0.,-4,N_vae(caulbl,CAUVar_weibull)}
 		},
-	kw_479[34] = {
+	kw_479[43] = {
 		{"active",8,6,2,0,kw_435},
 		{"beta_uncertain",0x19,11,13,0,kw_436,0.,0.,0,N_vam(pintz,numBetaUncVars)},
 		{"binomial_uncertain",0x19,5,20,0,kw_437,0.,0.,0,N_vam(pintz,numBinomialUncVars)},
@@ -3240,6 +3150,15 @@ static KeyWord
 		{"hypergeometric_uncertain",0x19,5,23,0,kw_468,0.,0.,0,N_vam(pintz,numHyperGeomUncVars)},
 		{"id_variables",11,0,1,0,0,0.,0.,0,N_vam(str,idVariables)},
 		{"interval_uncertain",0x11,10,26,0,kw_439,0.,0.,-18,N_vam(pintz,numContinuousIntervalUncVars)},
+		{"linear_equality_constraint_matrix",14,0,37,0,0,0.,0.,0,N_vam(rvec,linearEqConstraintCoeffs)},
+		{"linear_equality_scale_types",15,0,39,0,0,0.,0.,0,N_vam(strL,linearEqScaleTypes)},
+		{"linear_equality_scales",14,0,40,0,0,0.,0.,0,N_vam(rvec,linearEqScales)},
+		{"linear_equality_targets",14,0,38,0,0,0.,0.,0,N_vam(rvec,linearEqTargets)},
+		{"linear_inequality_constraint_matrix",14,0,32,0,0,0.,0.,0,N_vam(rvec,linearIneqConstraintCoeffs)},
+		{"linear_inequality_lower_bounds",14,0,33,0,0,0.,0.,0,N_vam(rvec,linearIneqLowerBnds)},
+		{"linear_inequality_scale_types",15,0,35,0,0,0.,0.,0,N_vam(strL,linearIneqScaleTypes)},
+		{"linear_inequality_scales",14,0,36,0,0,0.,0.,0,N_vam(rvec,linearIneqScales)},
+		{"linear_inequality_upper_bounds",14,0,34,0,0,0.,0.,0,N_vam(rvec,linearIneqUpperBnds)},
 		{"lognormal_uncertain",0x19,11,8,0,kw_471,0.,0.,0,N_vam(pintz,numLognormalUncVars)},
 		{"loguniform_uncertain",0x19,7,10,0,kw_472,0.,0.,0,N_vam(pintz,numLoguniformUncVars)},
 		{"mixed",8,0,3,0,0,0.,0.,0,N_vam(type,varsDomain_MIXED_DOMAIN)},
@@ -3258,7 +3177,7 @@ static KeyWord
 		{"method",0x308,88,2,2,kw_343,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,12,3,3,kw_408,0.,0.,0,N_mom3(start,0,stop)},
 		{"responses",0x308,19,6,6,kw_434,0.,0.,0,N_rem3(start,0,stop)},
-		{"variables",0x308,34,4,4,kw_479,0.,0.,0,N_vam3(start,0,stop)}
+		{"variables",0x308,43,4,4,kw_479,0.,0.,0,N_vam3(start,0,stop)}
 		};
 
 } // namespace Dakota

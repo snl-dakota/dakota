@@ -161,11 +161,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << maxRefineIterations << maxSolverIterations << maxFunctionEvaluations
     << speculativeFlag << methodUseDerivsFlag << convergenceTolerance
     << constraintTolerance << methodScaling << numFinalSolutions
-    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
-    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
-    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethod << subMethodName << subModelPointer << subMethodPointer
-    << lowFidModelPointer;
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer << lowFidModelPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -303,11 +300,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> maxRefineIterations >> maxSolverIterations >> maxFunctionEvaluations
     >> speculativeFlag >> methodUseDerivsFlag >> convergenceTolerance
     >> constraintTolerance >> methodScaling >> numFinalSolutions
-    >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
-    >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
-    >> linearEqTargets >> linearEqScaleTypes >> linearEqScales >> methodName
-    >> subMethod >> subMethodName >> subModelPointer >> subMethodPointer
-    >> lowFidModelPointer;
+    >> methodName >> subMethod >> subMethodName >> subModelPointer
+    >> subMethodPointer >> lowFidModelPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -446,11 +440,8 @@ void DataMethodRep::write(std::ostream& s) const
     << maxRefineIterations << maxSolverIterations << maxFunctionEvaluations
     << speculativeFlag << methodUseDerivsFlag << convergenceTolerance
     << constraintTolerance << methodScaling << numFinalSolutions
-    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
-    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
-    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethod << subMethodName << subModelPointer << subMethodPointer 
-    << lowFidModelPointer;
+    << methodName << subMethod << subMethodName << subModelPointer
+    << subMethodPointer << lowFidModelPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling

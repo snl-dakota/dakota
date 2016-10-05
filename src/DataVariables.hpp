@@ -802,6 +802,38 @@ public:
   /// discrete state real set upper bounds inferred from set values
   RealVector discreteStateSetRealUpperBnds;
 
+  // Linear constraints
+
+  /// coefficient matrix for the linear inequality constraints (from
+  /// the \c linear_inequality_constraint_matrix specification in \ref
+  /// MethodIndControl)
+  RealVector linearIneqConstraintCoeffs;
+  /// lower bounds for the linear inequality constraints (from the \c
+  /// linear_inequality_lower_bounds specification in \ref MethodIndControl)
+  RealVector linearIneqLowerBnds;
+  /// upper bounds for the linear inequality constraints (from the \c
+  /// linear_inequality_upper_bounds specification in \ref MethodIndControl)
+  RealVector linearIneqUpperBnds;
+  /// scaling types for the linear inequality constraints (from the \c
+  /// linear_inequality_scale_types specification in \ref MethodIndControl)
+  StringArray linearIneqScaleTypes;
+  /// scaling factors for the linear inequality constraints (from the \c
+  /// linear_inequality_scales specification in \ref MethodIndControl)
+  RealVector linearIneqScales;
+  /// coefficient matrix for the linear equality constraints (from
+  /// the \c linear_equality_constraint_matrix specification in \ref
+  /// MethodIndControl)
+  RealVector linearEqConstraintCoeffs;
+  /// targets for the linear equality constraints (from the \c
+  /// linear_equality_targets specification in \ref MethodIndControl)
+  RealVector linearEqTargets;
+  /// scaling types for the linear equality constraints (from the \c
+  /// linear_equality_scale_types specification in \ref MethodIndControl)
+  StringArray linearEqScaleTypes;
+  /// scaling factors for the linear equality constraints (from the \c
+  /// linear_equality_scales specification in \ref MethodIndControl)
+  RealVector linearEqScales;
+
 private:
 
   //
