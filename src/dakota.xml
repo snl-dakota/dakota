@@ -730,9 +730,9 @@
               <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
               <keyword  id="use_surrogate" name="use_surrogate" code="{0}" label="use_surrogate" help="" minOccurs="0" default="optimize">
                 <oneOf>
-                  <keyword  id="inform_search" name="inform_search" code="{N_mdm(lit,TYPE_DATA_usesurrogate_inform_search)}" label="inform_search" help=""  >
+                  <keyword  id="inform_search" name="inform_search" code="{N_mdm(lit,TYPE_DATA_useSurrogate_inform_search)}" label="inform_search" help=""  >
                   </keyword>
-                  <keyword  id="optimize" name="optimize" code="{N_mdm(lit,TYPE_DATA_usesurrogate_optimize)}" label="optimize" help=""  >
+                  <keyword  id="optimize" name="optimize" code="{N_mdm(lit,TYPE_DATA_useSurrogate_optimize)}" label="optimize" help=""  >
                   </keyword>
                 </oneOf>
               </keyword>
