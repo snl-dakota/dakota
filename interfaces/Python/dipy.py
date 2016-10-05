@@ -300,7 +300,7 @@ _pRE = {
             "variable":re.compile(_aprepro_re_base.format(
                 value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
             "function":re.compile(_aprepro_re_base.format(
-                value="(?P<value>[1-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+                value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_aprepro_re_base.format(
@@ -319,7 +319,7 @@ _pRE = {
             # A lookahead assertion is required to catch string variables with spaces
             "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
             "function":re.compile(_dakota_re_base.format(
-                value="(?P<value>[1-7])", tag="ASV_\d+:(?P<tag>\S+)")),
+                value="(?P<value>[0-7])", tag="ASV_\d+:(?P<tag>\S+)")),
             "deriv_var":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="DVV_\d+:(?P<tag>\S+)")),
             "an_comp":re.compile(_dakota_re_base.format(
