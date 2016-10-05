@@ -1,4 +1,28 @@
-"""Read Dakota parameter files and write Dakota response files"""
+"""This module simplifies development of interfaces between Dakota and black-
+box, Python-based simulation codes. It provides a convenient Dakota parameter 
+file reader, results file writer, and objects for accessing the contents of the
+parameter file and for collecting response data. It interprets the active set 
+vector and prevents (by raising exceptions) the user from returning response
+data to Dakota that was not requested.
+
+Example Usage::
+
+    import dipy
+    # Read and parse the parameters file and construct Parameters and Results 
+    # objects
+    params, results = dipy.read_parameters_file("params.in", "results.out")
+    # Accessing variables
+    x1 = params["x1"]
+    x2 = params["x2"]
+    # Run a fictitious Python-based simulation and store the result in the
+    # function value of the 'f1' response.
+    results["f1"].function =  sim_results = my_simulation(x1, x2)
+    results.write()
+
+Other members and methods of the Parameters and Results objects are described
+below. A more full-featured example is available in 
+``examples/script_interfaces/Python``.
+"""
 from __future__ import print_function
 import collections
 import re
@@ -10,34 +34,38 @@ import copy
 
 
 class ResponseError(Exception):
-    """Response data is improperly specified.
-    
-    Example issues:
-        - Gradients or Hessians are wrongly sized.
-        - Requested information for a response is missing at write time.
-        - Unrequested information has been provided.
-    """
     pass
 
 
 class MissingSourceError(Exception):
-    """A filename or stream was not provided and cannot be inferred."""
     pass
 
 
 class ParamsFormatError(Exception):
-    """Parameters file does not have a recognized format."""
     pass
 
 
 #### Class definitions
 
-
 class Parameters(object):
-    """Conveniently access variables from a Dakota parameters file
+    """Access variables and analysis components from a Dakota parameters file
     
-    Parameters objects should be constructed by the function 
-    read_parameters_file.
+    Parameters objects typically should be constructed by the function
+    dipy.read_parameters_file.
+
+    Variable values can be accessed by name or by index using []. Analysis
+    components are accessible by index only using the an_comp attribute. The
+    Parameters class supports iteration, yielding the index, variable
+    descriptor, and variable value.
+
+    Attributes:
+        an_comps: List of strings containing the analysis components.
+        eval_id: Evaluation id (a string).
+        aprepro_format: Boolean indicating whether the parameters file was in
+            aprepro (True) or Dakota (False) format.
+        descriptors: List of the variable descriptors (read-only)
+        num_variables: Number of variables (read-only)
+        num_an_comps: Number of analysis components (read-only)
     """
 
     def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
@@ -45,11 +73,10 @@ class Parameters(object):
         self.aprepro_format = aprepro_format
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
-        self.eval_id = eval_id
+        self.eval_id = str(eval_id)
 
     @property
     def descriptors(self):
-        """The variable descriptors."""
         return self._variables.keys()
 
     def __getitem__(self,key):
@@ -66,28 +93,47 @@ class Parameters(object):
 
     @property
     def num_variables(self):
-        """Number of variables."""
         return len(self._variables)
 
     @property
     def num_an_comps(self):
-        """Number of analysis components."""
         return len(self.an_comps)
 
     def __iter__(self):
-        """Iterate over index, variable name, and variable."""
         for index, (name, response) in enumerate(self._variables.iteritems()):
             yield index, name, response
 
 
 # Datatype to hold ASV element for a single response. function, gradient,
-# and hession are set to True or False.
+# and hession are set to True or False. 
 _asvType = collections.namedtuple("ASVType",["function","gradient","hessian"])
 
 
 # A class to hold the ASV and data for a single response
-class _Response(object):
-    """ASV and data for a single response"""
+class Response(object):
+    """Active set vector and data for a single response.
+
+    Instances of this class are constructed by Results objects.
+
+    Attributes:
+        asv: namedtuple with three members, function, gradient, and hessian.
+            Each are a boolean indicating whether Dakota requested the
+            associated information for the response. namedtuples can be
+            accessed by index or by member.
+        function: Function value for the response. A dipy.ResponseError
+            is raised if Dakota did not request the function value (and
+            ignore_asv is False).
+        gradient: Gradient for the response. Gradients must be a 1D iterable
+            of values that can be converted to float. A dipy.ResponseError
+            is raised if Dakota did not request the gradient (and ignore_asv is
+            False), or if the number of elements does not equal the number of 
+            derivative variables.
+        hessian: Hessian value for the response. Hessians must be an iterable
+            of iterables (e.g. a 2D numpy array or list of lists). A 
+            dipy.ResponseError is raised if Dakota did not request the Hessian 
+            (and ignore_asv is False), or if the dimension does not correspond 
+            correctly with the number of derivative variables.    
+    """
     def __init__(self, descriptor, num_deriv_vars, ignore_asv, asv):
         self._descriptor = descriptor
         self._num_deriv_vars = num_deriv_vars
@@ -116,7 +162,7 @@ class _Response(object):
         # tests for existence of this member        
         try: 
             return list(self._gradient) # return a copy
-        except:
+        except TypeError:
             return None
 
     @gradient.setter
@@ -166,7 +212,27 @@ class _Response(object):
     
 
 class Results(object):
-    """ASV, response data container, and results file writer."""
+    """Collect response data and write to results file.
+
+    Results objects typically should be constructed by the function
+    dipy.read_parameters_file.
+
+    Each response is represented by a Response objected, and can be accessed 
+    by name or by index using []. The Results class supports iteration, yielding
+    the index, response descriptor, and Response object.
+
+    Attributes:
+        eval_id: Evaluation id (a string).
+        aprepro_format: Boolean indicating whether the parameters file was in
+            aprepro (True) or Dakota (False) format.
+        descriptors: List of the response descriptors (read-only)
+        num_responses: Number of variables (read-only)
+        deriv_vars: List of the derivative variables (read-only)
+        num_deriv_vars: Number of derivative variables (read-only)
+    """
+
+
+
     def __init__(self, aprepro_format=None, responses=None, 
             deriv_vars=None, eval_id=None, ignore_asv=False, 
             results_file=None):
@@ -176,7 +242,7 @@ class Results(object):
         num_deriv_vars = len(deriv_vars)
         self._responses = collections.OrderedDict()
         for t, v in responses.iteritems():
-            self._responses[t] = _Response(t, num_deriv_vars, ignore_asv, 
+            self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
         self.results_file = results_file
         self.eval_id = eval_id
@@ -223,16 +289,18 @@ class Results(object):
     def write(self, stream=None, ignore_asv=None):
         """Write the results to the Dakota results file.
 
-        Use the output stream if provided, otherwise open a file with 
-        the name provided to the constructor. If no name was provided, 
-        raise MissingSourceError.
+        Keyword Args:
+            stream: Write results to this I/O stream. Overrides results_file
+                with which the object was constructed.
+            ignore_asv: Ignore the active set vector while writing the response
+                data to the results file (or stream). Overrides ignore_asv
+                setting provided at construct time.
 
-        ignore_asv overrides the setting provided at construct time. If
-        it is True, then ASV checking is disabled and all available 
-        response data is written.
-        
-        Raise a ResponseError if a result requested by Dakota is missing
-        and ignore_asv is False.
+        Raises:
+            dipy.MissingSourceError: No results_file was provided at construct
+                time, and no stream was provided to the method call.
+            dipy.ResponseError: A result requested by Dakota is missing (and 
+                ignore_asv is False).
         """
         my_ignore_asv = self.ignore_asv
         if ignore_asv is not None:
@@ -263,16 +331,13 @@ class Results(object):
 
     @property
     def descriptors(self):
-        """Return a list of the response descriptors."""
         return self._responses.keys()
 
     @property
     def deriv_vars(self):
-        """Return a list of the derivative variables."""
         return list(self._deriv_vars)
 
     def __iter__(self):
-        """Iterate over index, response name, and response."""
         for index, (name, response) in enumerate(self._responses.iteritems()):
             yield index, name, response
 
@@ -403,16 +468,26 @@ def _read_parameters_stream(stream=None, ignore_asv=False, results_file=None):
 
 
 def read_parameters_file(parameters_file=None, results_file=None, 
-        parameters_stream=None, ignore_asv=False):
-    """Read Dakota parameters file, return Parameters and Results objects.
+        ignore_asv=False):
+    """Read and parse the Dakota parameters file.
     
-    The parameters_file and results_file keywords contain the names of 
-    the Dakota parameters and results files. If they are not provided,
-    the first and second command line arguments (sys.argv[1] and [2]) 
-    will be used.
+    Keyword Args:
+        parameters_file: Pathname to the Dakota parameters file. If not
+            provided, the first command line argument will be used.
+        results_file: Pathname to the Dakota results file. If not provided,
+            the second command line argument will be used.
+        ignore_asv: If True, ignore the active set vector when setting
+            responses on the returned Results object.
 
-    MissingSourceError is raised if no filenames are provided or can be 
-    inferred, and also when the parameters file cannot be opened.
+    Returns:
+        A tuple containing a Parameters object and Results object configured 
+        based on the parameters file.
+            
+    Raises:
+        dipy.MissingSourceError: Either filename is not provided and cannot
+            be read from the command line arguments.
+
+        dipy.ParamsFormatError: The Dakota parameters file was not valid. 
     """
     ### Determine the name of the parameters file and read it in
     if parameters_file is None:
