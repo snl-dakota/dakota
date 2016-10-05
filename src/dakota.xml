@@ -734,8 +734,6 @@
                   </keyword>
                   <keyword  id="optimize" name="optimize" code="{N_mdm(lit,TYPE_DATA_usesurrogate_optimize)}" label="optimize" help=""  >
                   </keyword>
-                  <keyword  id="multi_fidelity" name="multi_fidelity" code="{N_mdm(lit,TYPE_DATA_usesurrogate_multi_fidelity)}" label="multi_fidelity" help="" >
-                  </keyword>
                 </oneOf>
               </keyword>
               &default_max_iterations;
