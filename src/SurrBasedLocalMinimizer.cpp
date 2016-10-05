@@ -276,7 +276,7 @@ void SurrBasedLocalMinimizer::update_trust_region(SurrBasedLevelData& tr_data)
        << "\n\nCurrent Trust Region\n                 " << std::setw(wpp9);
   if (tr_lower_truncation) Cout << "Lower (truncated)";
   else                     Cout << "Lower";
-  Cout << std::setw(wpp9 << "Center" << std::setw(wpp9);
+  Cout << std::setw(wpp9) << "Center" << std::setw(wpp9);
   if (tr_upper_truncation) Cout << "Upper (truncated)";
   else                     Cout << "Upper";
   Cout << '\n';

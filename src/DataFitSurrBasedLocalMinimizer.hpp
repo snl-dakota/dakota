@@ -207,8 +207,8 @@ inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
   //if (recastSubProb)
   //  iteratedModel.continuous_variables(cv_center);
   if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(tr_lower_bnds);
-    iteratedModel.continuous_upper_bounds(tr_upper_bnds);
+    iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
+    iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
   }
 }
 

@@ -99,8 +99,8 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 
     //sbl_data.new_center(true); // vars_center() now sets newCenterFlag
     sbl_data.vars_center(iteratedModel.current_variables());
-    sbl_data.tr_lower_bnds(globalLowerBnds);
-    sbl_data.tr_upper_bnds(globalLowerBnds);
+    sbl_data.tr_lower_bounds(globalLowerBnds);
+    sbl_data.tr_upper_bounds(globalLowerBnds);
     sbl_data.trust_region_factor(origTrustRegionFactor * 
 				 std::pow(0.5, numFid-2-i)); // shaped
 
@@ -153,8 +153,8 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
       parent_upper_bounds = globalUpperBnds;
       parent_lower_bounds = globalLowerBnds;
     } else if (nestedTrustRegions) {
-      parent_upper_bounds = trustRegions[ind+1].tr_upper_bnds();
-      parent_lower_bounds = trustRegions[ind+1].tr_lower_bnds();
+      parent_upper_bounds = trustRegions[ind+1].tr_upper_bounds();
+      parent_lower_bounds = trustRegions[ind+1].tr_lower_bounds();
     } else { // !nested && ind == 0
       // in this case, there was no recursive enforcement for previous levels,
       // but level 0 must recur because it is the level where optimization
@@ -164,8 +164,8 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
         double min_upper_bound = 0.0;
         double max_lower_bound = 0.0;
         for (int i = 1; i < trustRegions.size(); ++i) {
-          RealVector upper_bounds = trustRegions[i].tr_upper_bnds();
-          RealVector lower_bounds = trustRegions[i].tr_lower_bnds();
+          RealVector upper_bounds = trustRegions[i].tr_upper_bounds();
+          RealVector lower_bounds = trustRegions[i].tr_lower_bounds();
           if (i == 1 || upper_bounds[j] < min_upper_bound)
             min_upper_bound = upper_bounds[j];
           if (i == 1 || lower_bounds[j] > max_lower_bound)
@@ -224,8 +224,8 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
       trustRegions[ind].new_center(true);
     }
 
-    trustRegions[ind].tr_lower_bnds(tr_lower_bnds);
-    trustRegions[ind].tr_upper_bnds(tr_upper_bnds);
+    trustRegions[ind].tr_lower_bounds(tr_lower_bnds);
+    trustRegions[ind].tr_upper_bounds(tr_upper_bnds);
 
     // Output the trust region bounds
     Cout << "\n**************************************************************"
@@ -270,9 +270,9 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   approxSubProbModel.continuous_variables(
     trustRegions[minimizeIndex].vars_center().continuous_variables());
   approxSubProbModel.continuous_lower_bounds(
-    trustRegions[minimizeIndex].tr_lower_bnds());
+    trustRegions[minimizeIndex].tr_lower_bounds());
   approxSubProbModel.continuous_upper_bounds(
-    trustRegions[minimizeIndex].tr_upper_bnds());
+    trustRegions[minimizeIndex].tr_upper_bounds());
 }
 
 
@@ -287,8 +287,8 @@ void HierarchSurrBasedLocalMinimizer::build()
       // Set the trust region center and bounds
       iteratedModel.continuous_variables(
         trustRegions[i].vars_center().continuous_variables());
-      iteratedModel.continuous_lower_bounds(trustRegions[i].tr_lower_bnds());
-      iteratedModel.continuous_upper_bounds(trustRegions[i].tr_upper_bnds());
+      iteratedModel.continuous_lower_bounds(trustRegions[i].tr_lower_bounds());
+      iteratedModel.continuous_upper_bounds(trustRegions[i].tr_upper_bounds());
 
       // This only evaluates the high fidelity model (active indices set in ):
       set_model_states(i);

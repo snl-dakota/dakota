@@ -75,6 +75,9 @@ public:
 
   IntResponsePair& response_center_pair(short corr_response_type);
   void response_center_id(int eval_id, short corr_response_type);
+  void response_center_pair(IntResponsePair& pair, short corr_response_type);
+  void response_center_pair(int eval_id, const Response& resp,
+			    short corr_response_type);
 
   Real trust_region_factor();
   void trust_region_factor(Real val);
