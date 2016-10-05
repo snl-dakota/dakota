@@ -1587,7 +1587,7 @@
 			  <param type="REAL" />
 			</keyword>
 		      </keyword>
-		      <keyword  id="wilks" name="wilks" code="{N_mdm(true,wilksFlag)}" label="wilks" help="" minOccurs="0" >
+		      <keyword  id="wilks" name="wilks" code="{N_mdm(false,wilksFlag)}" label="wilks" help="" minOccurs="0" >
 			<keyword  id="order" name="order" code="{N_mdm(ushint,wilksOrder)}" label="order" help="" minOccurs="0" >
                           <param type="INTEGER" />
 			</keyword>

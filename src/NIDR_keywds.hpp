@@ -1790,7 +1790,7 @@ static KeyWord
 		{"samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"variance_based_decomp",8,1,7,0,kw_296,0.,0.,0,N_mdm(true,vbdFlag)},
-		{"wilks",8,5,10,0,kw_297,0.,0.,0,N_mdm(true,wilksFlag)}
+		{"wilks",8,5,10,0,kw_297,0.,0.,0,N_mdm(false,wilksFlag)}
 		},
 	kw_299[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)},
