@@ -80,8 +80,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     // Wilks order statistics
     wilksOrder = probDescDB.get_ushort("method.order");
     // Wilks interval sidedness
-    short wilks_sidedness = probDescDB.get_short("method.wilks.sided_interval");
-    wilksTwosided = (wilks_sidedness == TWO_SIDED);
+    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    bool wilks_twosided = (wilksSidedness == TWO_SIDED);
 
     // Support multiple probability_levels
     Real max_prob_level = 0.0;
@@ -99,7 +99,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     wilksBeta = probDescDB.get_real("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
-    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilksTwosided);
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilks_twosided);
     samplesRef = numSamples;
   }
 
@@ -1633,6 +1633,8 @@ print_wilks_stastics(std::ostream& s) const
   //    Cout << "It #" << count << "\t" << it2->second.function_value(i) << "\t" << *cit2 << std::endl;
   //}
 
+  bool wilks_twosided = (wilksSidedness == TWO_SIDED);
+
   size_t j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
 
   std::multiset<Real> sorted_resp_subset;
@@ -1644,12 +1646,13 @@ print_wilks_stastics(std::ostream& s) const
 
   for (size_t fn_index=0; fn_index<numFunctions; ++fn_index) {
     s << "\n\n" << "Wilks Statistics for "
-      << (wilksTwosided ? "Two-" : "One-") << "Sided "
+      << (wilks_twosided ? "Two-" : "One-") << "Sided "
       << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
       << " for "  << iteratedModel.response_labels()[fn_index] << ":\n\n";
 
-    s << "    Coverage Level     " << (wilksTwosided ? "Lower Bound      " : "")  << "  Upper Bound     Number of Samples"
-      << "\n    --------------  "  << (wilksTwosided ? "----------------- " : "") << " -----------------  ----------------- \n";
+    std::string one_sided_bound_label = (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower");
+    s << "    Coverage Level     " << (wilks_twosided ? "Lower Bound      " : "")  << "  " << one_sided_bound_label << " Bound     Number of Samples"
+      << "\n    --------------  "  << (wilks_twosided ? "----------------- " : "") << " -----------------  ----------------- \n";
 
     // Create a default probability level if none given
     RealVector prob_levels;
@@ -1665,7 +1668,7 @@ print_wilks_stastics(std::ostream& s) const
     for (j=0; j<num_prob_levels; ++j)
     {
       Real prob_level = prob_levels[j];
-      int num_samples = compute_wilks_sample_size(wilksOrder, prob_level, wilksBeta, wilksTwosided);
+      int num_samples = compute_wilks_sample_size(wilksOrder, prob_level, wilksBeta, wilks_twosided);
 
       // Grab the first num_samples subset in sorted order (could also randomly sample) - RWH
       sorted_resp_subset.clear();
@@ -1682,9 +1685,9 @@ print_wilks_stastics(std::ostream& s) const
       max = *crit;
 
       s << "  " << std::setw(width) << prob_levels[j];
-      if( wilksTwosided )
+      if( wilks_twosided )
         s << "  " << min;
-      s << "   " << max
+      s << "   " << ( (wilks_twosided || wilksSidedness == ONE_SIDED_UPPER) ? max : min )
         << "        " << num_samples
         << '\n';
     }

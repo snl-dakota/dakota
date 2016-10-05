@@ -116,7 +116,7 @@ DataMethodRep::DataMethodRep():
   numSamples(0), fixedSeedFlag(false), vbdFlag(false),
   vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
-  wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED),
+  wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
   vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE), rngName("mt19937"),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),

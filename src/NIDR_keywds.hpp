@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 1851 distinct keywords (plus 251 aliases) **/
+/** 1852 distinct keywords (plus 251 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1769,11 +1769,12 @@ static KeyWord
 	kw_296[1] = {
 		{"drop_tolerance",10,0,1,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)}
 		},
-	kw_297[4] = {
+	kw_297[5] = {
 		{"confidence_level",10,0,2,0,0,0.,0.,0,N_mdm(Real,wilksConfidenceLevel)},
-		{"one_sided",8,0,3,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_ONE_SIDED)},
+		{"one_sided_lower",8,0,3,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)},
+		{"one_sided_upper",8,0,4,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)},
 		{"order",9,0,1,0,0,0.,0.,0,N_mdm(ushint,wilksOrder)},
-		{"two_sided",8,0,4,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_TWO_SIDED)}
+		{"two_sided",8,0,5,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_TWO_SIDED)}
 		},
 	kw_298[14] = {
 		{0,0,1,0,0,kw_27},
@@ -1789,7 +1790,7 @@ static KeyWord
 		{"samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"variance_based_decomp",8,1,7,0,kw_296,0.,0.,0,N_mdm(true,vbdFlag)},
-		{"wilks",8,4,10,0,kw_297,0.,0.,0,N_mdm(true,wilksFlag)}
+		{"wilks",8,5,10,0,kw_297,0.,0.,0,N_mdm(true,wilksFlag)}
 		},
 	kw_299[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)},
