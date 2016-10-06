@@ -369,6 +369,10 @@ KEYWORD12 method
 	  [ variable_neighborhood_search REAL ]
 	  [ neighbor_order INTEGER > 0 ]
 	  [ display_all_evaluations ]
+	  [ use_surrogate
+	    inform_search
+	    | optimize
+	    ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ scaling ]

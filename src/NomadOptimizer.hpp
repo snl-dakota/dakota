@@ -132,7 +132,7 @@ private:
   std::vector<double> constraintMapOffsets;
 
   /// defines use of surrogate in NOMAD
-  std::string use_surrogate;
+  std::string useSurrogate;
 };
 
 ///  NOMAD-based Evaluator class.

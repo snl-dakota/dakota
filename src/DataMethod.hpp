@@ -737,6 +737,8 @@ public:
   int neighborOrder;
   /// the \c DISPLAY_ALL_EVAL specification for NOMAD
   bool showAllEval;
+  /// the \c HAS_SGTE specification for NOMAD
+  String useSurrogate;
 
   // NonD & DACE
 
