@@ -130,6 +130,9 @@ private:
 
   /// offsets for constraint transformations
   std::vector<double> constraintMapOffsets;
+
+  /// defines use of surrogate in NOMAD
+  std::string use_surrogate;
 };
 
 ///  NOMAD-based Evaluator class.

@@ -85,6 +85,12 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   // Adjacency matrices for string variables.
   discreteSetStrAdj = 
     probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
+
+  use_surrogate = probDescDB.get_string("method.use_surrogate");
+  if (crossover_operator != "")
+    this->_theParamDB->AddStringParam("method.use_surrogate", use_surrogate);
+  else
+    this->_theParamDB->AddStringParam("method.use_surrogate", "optimize");
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
