@@ -6615,7 +6615,9 @@ static Method_mp_lit
 	MP2(searchMethod,value_based_line_search),
 	MP2(trialType,grid),
 	MP2(trialType,halton),
-	MP2(trialType,random);
+	MP2(trialType,random),
+  MP2(useSurrogate,inform_search),
+  MP2(useSurrogate,optimize);
 
 static Method_mp_litc
 	MP3(crossoverType,crossoverRate,shuffle_random),
