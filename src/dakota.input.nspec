@@ -1031,7 +1031,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ principal_components {N_mdm(true,pcaFlag)}
             [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
            ]
-          [ wilks {N_mdm(false,wilksFlag)}
+          [ wilks {N_mdm(true,wilksFlag)}
             [ order INTEGER {N_mdm(ushint,wilksOrder)} ]
             [ confidence_level REAL {N_mdm(Real,wilksConfidenceLevel)} ]
             [ one_sided_lower {N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)} ]
