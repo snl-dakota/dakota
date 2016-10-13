@@ -370,8 +370,9 @@ void Environment::construct()
   // nodes separately within else block below.
   if (method_ptr.empty()) probDescDB.resolve_top_method(false); // no model set
   else                    probDescDB.set_db_method_node(method_ptr);
-  // non-meta-iterators construct a Model: augment setting of method node
-  if ( (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT) == 0)
+  // augment setting of method node with model nodes according to top method
+  // (std iterators need model; meta-iterators may need a default model spec)
+  if (assign_model_pointer())
     probDescDB.set_db_model_nodes(
       probDescDB.get_string("method.model_pointer"));
 

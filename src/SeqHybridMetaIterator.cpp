@@ -70,10 +70,7 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 
   // validate iteratedModel against any model pointers
   String empty_str;
-  if (!lightwtCtor)
-    for (i=0; i<num_iterators; ++i)
-      check_model(method_ptrs[i], empty_str);
-  else {
+  if (lightwtCtor) {
     StringArray model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
     if (!model_ptrs.empty()) {
       Pecos::inflate_scalar(model_ptrs, num_iterators);
@@ -81,6 +78,9 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
 	check_model(empty_str, model_ptrs[i]);
     }
   }
+  else
+    for (i=0; i<num_iterators; ++i)
+      check_model(method_ptrs[i], empty_str);
 
   maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
 }

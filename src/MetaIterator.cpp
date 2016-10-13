@@ -103,10 +103,9 @@ check_model(const String& method_ptr, const String& model_ptr)
     warn_flag = true;
 
   if (warn_flag)
-    Cerr << "Warning: concurrent meta-iterator specification includes an "
-	 << "inconsistent\n          model_pointer.  Sub-iterator database "
-	 << "initialization could be inconsistent\n          with passed Model."
-	 << std::endl;
+    Cerr << "Warning: meta-iterator specification includes an inconsistent "
+	 << "model_pointer.\n         Sub-iterator database initialization "
+	 << "could be inconsistent with passed Model.\n" << std::endl;
 }
 
 
@@ -114,8 +113,9 @@ void MetaIterator::
 allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 		    Model& the_model)
 {
-  // due to the possibility of Model recursion, store/restore the method/model
-  // indices separately
+  // store/restore the method/model indices separately (the current
+  // state of the iterator/model DB nodes may not be synched due to
+  // Model ctor recursions in process)
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
@@ -149,8 +149,9 @@ IntIntPair MetaIterator::
 estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 		    Model& the_model)
 {
-  // due to the possibility of Model recursion, store/restore the method/model
-  // indices separately
+  // store/restore the method/model indices separately (the current
+  // state of the iterator/model DB nodes may not be synched due to
+  // Model ctor recursions in process)
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);

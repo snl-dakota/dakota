@@ -44,26 +44,32 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   const RealVector& raw_param_sets
     = problem_db.get_rv("method.concurrent.parameter_sets");
 
-  const String& method_ptr = problem_db.get_string("method.sub_method_pointer");
-  const String& method_name = problem_db.get_string("method.sub_method_name");
-  const String& model_ptr = problem_db.get_string("method.sub_model_pointer");
+  const String& sub_meth_ptr
+    = problem_db.get_string("method.sub_method_pointer");
+  const String& sub_meth_name = problem_db.get_string("method.sub_method_name");
+  const String& sub_model_ptr
+    = problem_db.get_string("method.sub_model_pointer");
 
-  // Instantiate the model.  A model is used on all processors, even a
-  // dedicated master.
-  size_t method_index, model_index;
+  // store/restore the method/model indices separately (the current state of the
+  // iterator/model DB nodes may not be synched due to Model ctor recursions in
+  // process)
+  size_t method_index, model_index; // Note: _NPOS is a valid restoration value
+  bool restore_method = false, restore_model = false;
   bool print_rank = (parallelLib.world_rank() == 0); // prior to lead_rank()
-  if (!method_ptr.empty()) {
-    lightwtCtor = false;
+  if (!sub_meth_ptr.empty()) {
+    restore_method = restore_model = true;
     method_index = problem_db.get_db_method_node(); // for restoration
     model_index  = problem_db.get_db_model_node();  // for restoration
-    problem_db.set_db_list_nodes(method_ptr);
+    problem_db.set_db_list_nodes(sub_meth_ptr);
   }
-  else if (!method_name.empty()) {
-    lightwtCtor = true;
-    if (!model_ptr.empty()) {
-      model_index = problem_db.get_db_model_node(); // for restoration
-      problem_db.set_db_model_nodes(model_ptr);
-    }
+  else if (!sub_meth_name.empty()) {
+    // if sub_model_ptr is defined, activate this model spec;
+    // if sub_model_ptr is empty, identify default model using empty string.
+    // Note: inheriting a previous model setting is desirable in some contexts,
+    //       but not this ctor since a top-level/non-subordinate MetaIterator.
+    restore_model = true;
+    model_index   = problem_db.get_db_model_node(); // for restoration
+    problem_db.set_db_model_nodes(sub_model_ptr);
   }
   else {
     if (print_rank)
@@ -71,6 +77,8 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 	   << "ConcurrentMetaIterator." << std::endl;
     abort_handler(-1);
   }
+
+  // Instantiate the model on all processors, even a dedicated master
   iteratedModel = problem_db.get_model();
   initialize_model();
 
@@ -90,12 +98,8 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
 
   // restore list nodes
-  if (!lightwtCtor) {
-    problem_db.set_db_method_node(method_index);
-    problem_db.set_db_model_nodes(model_index);
-  }
-  else if (!model_ptr.empty())
-    problem_db.set_db_model_nodes(model_index);
+  if (restore_method) problem_db.set_db_method_node(method_index);
+  if (restore_model)  problem_db.set_db_model_nodes(model_index);
 }
 
 
@@ -105,27 +109,18 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
   numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
   randomSeed(probDescDB.get_int("method.random_seed"))
 {
-  const String& method_ptr = problem_db.get_string("method.sub_method_pointer");
-  const String& model_ptr  = problem_db.get_string("method.sub_model_pointer");
   const RealVector& raw_param_sets
     = problem_db.get_rv("method.concurrent.parameter_sets");
 
   // ensure consistency between model and any method/model pointers
-  check_model(method_ptr, model_ptr);
+  check_model(problem_db.get_string("method.sub_method_pointer"),
+	      problem_db.get_string("method.sub_model_pointer"));
+  // For this ctor with an incoming model, we can simplify DB node assignment
+  // and mirror logic in check_model()
+  size_t model_index = problem_db.get_db_model_node();  // for restoration
+  problem_db.set_db_model_nodes(iteratedModel.model_id());
 
-  lightwtCtor = method_ptr.empty();
-  size_t method_index, model_index;
-  if (!lightwtCtor) {
-    method_index = problem_db.get_db_method_node(); // for restoration
-    model_index  = problem_db.get_db_model_node();  // for restoration
-    problem_db.set_db_list_nodes(method_ptr);
-  }
-  else if (!model_ptr.empty()) {
-    model_index = problem_db.get_db_model_node(); // for restoration
-    problem_db.set_db_model_nodes(model_ptr);
-  }
-
-  initialize_model(); // uses DB lookup for number of obj fns
+  initialize_model(); // uses DB lookup for model data (number of obj fns)
 
   // user-specified jobs
   copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
@@ -141,12 +136,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
   }
 
   // restore list nodes
-  if (!lightwtCtor) {
-    problem_db.set_db_method_node(method_index);
-    problem_db.set_db_model_nodes(model_index);
-  }
-  else if (!model_ptr.empty())
-    problem_db.set_db_model_nodes(model_index);
+  problem_db.set_db_model_nodes(model_index);
 }
 
 
@@ -156,21 +146,28 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
 
 void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  const String& method_name = probDescDB.get_string("method.sub_method_name");
-  const String& model_ptr   = probDescDB.get_string("method.sub_model_pointer");
+  const String& sub_meth_ptr
+    = probDescDB.get_string("method.sub_method_pointer");
+  const String& sub_meth_name = probDescDB.get_string("method.sub_method_name");
+  //const String& sub_model_ptr
+  //  = probDescDB.get_string("method.sub_model_pointer");
+
   // Model recursions may update method or model nodes and restoration may not
   // occur until the recursion completes, so don't assume that method and
   // model indices are in sync.
-  size_t method_index, model_index;
-  if (!lightwtCtor) {
+  size_t method_index, model_index; // Note: _NPOS is a valid restoration value
+  bool restore_method = false, restore_model = false,
+    lightwt_ctor = sub_meth_ptr.empty();
+  if (lightwt_ctor) {
+    restore_model = true;
+    model_index = probDescDB.get_db_model_node(); // for restoration
+    probDescDB.set_db_model_nodes(iteratedModel.model_id());
+  }
+  else {
+    restore_method = restore_model = true;
     method_index = probDescDB.get_db_method_node(); // for restoration
     model_index  = probDescDB.get_db_model_node();  // for restoration
-    probDescDB.set_db_list_nodes(
-      probDescDB.get_string("method.sub_method_pointer"));
-  }
-  else if (!model_ptr.empty()) {
-    model_index = probDescDB.get_db_model_node(); // for restoration
-    probDescDB.set_db_model_nodes(model_ptr);
+    probDescDB.set_db_list_nodes(sub_meth_ptr);
   }
 
   iterSched.update(methodPCIter);
@@ -186,9 +183,9 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // as through the lookup in problem_db_get_iterator() (method_ptr case); this
   // requires that no calls to init_comms occur at construct time, since the
   // mi_pl basis for this is not yet available.
-  IntIntPair ppi_pr = (lightwtCtor) ?
-    iterSched.configure(probDescDB, method_name,
-			selectedIterator, iteratedModel) :
+  IntIntPair ppi_pr = (lightwt_ctor) ?
+    iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
+			iteratedModel) :
     iterSched.configure(probDescDB, selectedIterator, iteratedModel);
   iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
@@ -199,11 +196,11 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // master processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     // Instantiate the iterator
-    if (lightwtCtor) {
-      iterSched.init_iterator(probDescDB, method_name, selectedIterator,
+    if (lightwt_ctor) {
+      iterSched.init_iterator(probDescDB, sub_meth_name, selectedIterator,
 			      iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-	Cout << "Concurrent Iterator = " << method_name << std::endl;
+	Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
     }
     else {
       iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
@@ -214,13 +211,9 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     }
   }
 
-  // Restore the DB list nodes
-  if (!lightwtCtor) {
-    probDescDB.set_db_method_node(method_index); // restore
-    probDescDB.set_db_model_nodes(model_index);  // restore
-  }
-  else if (!model_ptr.empty())
-    probDescDB.set_db_model_nodes(model_index); // restore
+  // restore list nodes
+  if (restore_method) probDescDB.set_db_method_node(method_index);
+  if (restore_model)  probDescDB.set_db_model_nodes(model_index);
 }
 
 
