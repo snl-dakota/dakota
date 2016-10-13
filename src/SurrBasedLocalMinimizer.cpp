@@ -304,4 +304,11 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
        << "**********\n";
 }
 
+
+/* TO DO:
+  tr_ratio_check
+  find_center
+  ...
+*/
+
 } // namespace Dakota

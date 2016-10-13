@@ -341,14 +341,13 @@ void HierarchSurrBasedLocalMinimizer::verify()
 }
 
 
-void HierarchSurrBasedLocalMinimizer::
-find_center(size_t tr_index)
+void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
 {
   extern PRPCache data_pairs; // global container
 
   bool found = false;
 
-  Model& truth_model = iteratedModel.truth_model();
+  Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
 
   // TODO: this is hard-coded:
