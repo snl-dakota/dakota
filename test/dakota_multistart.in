@@ -5,6 +5,7 @@
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=4 CheckOutput='dakota.out.1'
 #@ p3: MPIProcs=4
+#@ p4: MPIProcs=3
 #@ s0: UserMan=qsf_multistart_strat
 #@ [taxonomy:start]
 #@ s0: [analysis:Optimization]
@@ -38,11 +39,11 @@ method
   multi_start
 #    iterator_servers = 3         #p0,#p2
 #    iterator_scheduling peer     #p0,#p2
-#    iterator_servers = 2         #p1,#p3
-#    iterator_scheduling master   #p1,#p3
+#    iterator_servers = 2         #p1,#p3,#p4
+#    iterator_scheduling master   #p1,#p3,#p4
 #    processors_per_iterator = 1  #p2,#p3
     method_pointer = 'NLP'        #s0,#s1,#s2,#p0,#p1,#p2,#p3
-#    method_name 'dot_bfgs'       #s3 
+#    method_name 'dot_bfgs'       #s3,#p4
     random_starts = 3 seed = 123
     starting_points = -0.8  -0.8
                       -0.8   0.8
@@ -50,9 +51,9 @@ method
                        0.8   0.8
                        0.0   0.0
 
-method                            #s0,#s1,#s2,#p0,#p1,#p2,#p3
-  id_method = 'NLP'               #s0,#s1,#s2,#p0,#p1,#p2,#p3
-  dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3
+method                            #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
+  id_method = 'NLP'               #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
+  dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 #   scaling                       #s1,#s2
 
 variables
