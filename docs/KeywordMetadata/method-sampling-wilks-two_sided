@@ -7,7 +7,7 @@ This option causes the sample size to be based on the interval defined by
 the lowest N and uppermost N outputs for order N statistics (default N=1).
 
 <b> Default Behavior </b>
-The default for Wilks is one_sided.
+The default for Wilks is one_sided_upper.
 
 Topics::
 

@@ -6922,7 +6922,8 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
 	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE),
-	MP2s(wilksSidedInterval,ONE_SIDED),
+	MP2s(wilksSidedInterval,ONE_SIDED_LOWER),
+	MP2s(wilksSidedInterval,ONE_SIDED_UPPER),
 	MP2s(wilksSidedInterval,TWO_SIDED);
 
 static Method_mp_utype

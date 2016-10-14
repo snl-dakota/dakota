@@ -102,7 +102,6 @@ private:
   //
 
   Iterator selectedIterator; ///< the iterator selected for concurrent iteration
-  bool     lightwtCtor; ///< use of lightweight Iterator construction by name
 
   /// the initial continuous variables for restoring the starting
   /// point in the Pareto set minimization

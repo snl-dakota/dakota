@@ -35,6 +35,7 @@ my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
 my $using_qsub = 0;
 my $using_slurm = 0;
+my $using_aprun = 0;
 
 # Use default extension .exe on Windows and Cygwin
 if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
@@ -103,6 +104,8 @@ if ($mode eq "test_props") {
   open (PROPERTIES_OUT, ">${test_props_dir}/dakota_tests.props");
   open (USEREXAMPLES_OUT, ">${test_props_dir}/dakota_usersexamples.props");
 }
+
+
 
 # for each input file perform test actions
 foreach my $file (@test_inputs) {
@@ -603,6 +606,15 @@ sub manage_parallelism {
   if ( $parallelism eq "parallel" ) {
     $ENV{'OMPI_MCA_mpi_warn_on_fork'} = '0';
   }
+
+  # Detect launch within a job on a Cray XC system. These systems
+  # can run MOAB, PBS (only with MOAB?), or SLURM
+  if (exists $ENV{CRAYPE_VERSION} && 
+	( exists $ENV{MOAB_JOBNAME} || 
+	  exists $ENV{PBS_VERSION} ||   
+	  exists $ENV{SLURM_JOB_ID} )) {
+    $using_aprun = 1;
+  }
 }
 
 
@@ -1014,13 +1026,20 @@ sub form_test_command {
 
   my ($num_proc, $dakota_command, $dakota_args, $restart_command,
       $dakota_input, $output, $error) = @_;
-
+  
   my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} ${dakota_args} $restart_command $dakota_input";
   my $redir = "> $output 2> $error";     
 
+
   # default serial command
   my $test_command = "$fulldakota $redir";
+
+  # If testing within a Cray XC job, aprun the test and force Dakota into serial mode
+  if( $using_aprun && $parallelism eq "serial") {
+    $test_command = "aprun -e DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+  }
  
+
   if ($parallelism eq "parallel") {
     my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
     # parallel test
@@ -1034,7 +1053,11 @@ sub form_test_command {
     elsif ($sysname =~ /SunOS/) {
       $test_command = "mprun -np $num_proc $fulldakota $redir";
     }
-    else { 
+    elsif($using_aprun == 1) {
+      $test_command = "aprun -n $num_proc $fulldakota $redir";
+    } 
+    else
+    { 
       # default for Linux workstation
       $test_command = 
         "mpirun -np $num_proc -machinefile machines $fulldakota $redir";
@@ -1376,6 +1399,24 @@ sub parse_test_output {
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
       while (/^\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
+        print;
+        print TEST_OUT;
+        $_ = <OUTPUT>; # grab next line
+      }
+    }
+
+    while (/^Wilks Statistics for/) {
+      print;
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      print TEST_OUT;
+      while (/\s+$e/) {
+#      while (/\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
         print;
         print TEST_OUT;
         $_ = <OUTPUT>; # grab next line

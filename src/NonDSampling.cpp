@@ -80,8 +80,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     // Wilks order statistics
     wilksOrder = probDescDB.get_ushort("method.order");
     // Wilks interval sidedness
-    short wilks_sidedness = probDescDB.get_short("method.wilks.sided_interval");
-    wilksTwosided = (wilks_sidedness == TWO_SIDED);
+    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    bool wilks_twosided = (wilksSidedness == TWO_SIDED);
 
     // Support multiple probability_levels
     Real max_prob_level = 0.0;
@@ -99,7 +99,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     wilksBeta = probDescDB.get_real("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
-    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilksTwosided);
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilks_twosided);
     samplesRef = numSamples;
   }
 
@@ -117,7 +117,7 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), samplesIncrement(0), 
+  sampleType(sample_type), wilksFlag(false), samplesIncrement(0), 
   statsFlag(false), allDataFlag(true),
   samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
   varyPattern(vary_pattern), backfillFlag(false), numLHSRuns(0)
@@ -148,7 +148,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), 
-  samplesIncrement(0), statsFlag(false),
+  wilksFlag(false), samplesIncrement(0), statsFlag(false),
   allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
   sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
   numLHSRuns(0)
@@ -174,7 +174,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), 
-  samplesIncrement(0), statsFlag(false),
+  wilksFlag(false), samplesIncrement(0), statsFlag(false),
   allDataFlag(true), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
   numLHSRuns(0)
@@ -196,7 +196,7 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
-  samplesIncrement(0), statsFlag(true), allDataFlag(true),
+  wilksFlag(false), samplesIncrement(0), statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
   varyPattern(false), backfillFlag(false), numLHSRuns(0)
 {
@@ -1529,7 +1529,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       print_level_mappings(s);
       print_system_mappings(s);
     }
-    if( wilksFlag && outputLevel >= DEBUG_OUTPUT)
+    if( wilksFlag )
       print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
   if (!subIteratorFlag) {
@@ -1616,52 +1616,81 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
 void NonDSampling::
 print_wilks_stastics(std::ostream& s) const
 {
+  using boost::math::isfinite;
+
+  //std::multiset<Real> sorted_resp;
+  //IntRespMCIter it2;
+  //std::multiset<Real>::const_iterator cit2;
+  //for (int i=0; i<numFunctions; ++i) {
+  //  sorted_resp.clear();
+  //  for( it2 = allResponses.begin(); it2!=allResponses.end(); ++it2)
+  //  {
+  //    Cout << "It #" << it2->first << "\t" << it2->second.function_value(i) << std::endl;
+  //    sorted_resp.insert(it2->second.function_value(i));
+  //  }
+  //  int count = 0;
+  //  for( it2 = allResponses.begin(), cit2 = sorted_resp.begin(); cit2 != sorted_resp.end(); ++cit2, ++count, ++it2 )
+  //    Cout << "It #" << count << "\t" << it2->second.function_value(i) << "\t" << *cit2 << std::endl;
+  //}
+
+  bool wilks_twosided = (wilksSidedness == TWO_SIDED);
+
   size_t j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
 
-  size_t fn_index = 0; // should we ensure there is only one response? - RWH
+  std::multiset<Real> sorted_resp_subset;
+  std::multiset<Real>::const_iterator cit;
+  std::multiset<Real>::const_reverse_iterator crit;
+  IntRespMCIter it;
+  int n;
+  Real min, max;
 
-  s << "\nWilks Stastics:" /* << qoi_label */ << "\n";
-  
-  s << "     Response Level  Probability Level  "
-    << (wilksTwosided ? "Two-" : "One-") << "Sided Confidence Level "
-    << "\n     --------------  -----------------  -------------------------- \n";
-  size_t num_resp_levels = requestedRespLevels[fn_index].length();
-  for (j=0; j<num_resp_levels; j++) { // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << requestedRespLevels[fn_index][j] << "  ";
-    switch (respLevelTarget) {
-    case PROBABILITIES:
-      s << std::setw(width) << computedProbLevels[fn_index][j]   << "  "
-        << compute_wilks_beta(wilksOrder, numSamples, wilksAlpha, wilksTwosided) << '\n'; break;
-    case RELIABILITIES:
-      s << std::setw(w2p2)  << computedRelLevels[fn_index][j]    << '\n'; break;
-    case GEN_RELIABILITIES:
-      s << std::setw(w3p4)  << computedGenRelLevels[fn_index][j] << '\n'; break;
+  for (size_t fn_index=0; fn_index<numFunctions; ++fn_index) {
+    s << "\n\n" << "Wilks Statistics for "
+      << (wilks_twosided ? "Two-" : "One-") << "Sided "
+      << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
+      << " for "  << iteratedModel.response_labels()[fn_index] << ":\n\n";
+
+    std::string one_sided_bound_label = (wilksSidedness == ONE_SIDED_UPPER ? "Upper" : "Lower");
+    s << "    Coverage Level     " << (wilks_twosided ? "Lower Bound      " : "")  << "  " << one_sided_bound_label << " Bound     Number of Samples"
+      << "\n    --------------  "  << (wilks_twosided ? "----------------- " : "") << " -----------------  ----------------- \n";
+
+    // Create a default probability level if none given
+    RealVector prob_levels;
+    size_t num_prob_levels = requestedProbLevels[fn_index].length();
+    if( 0 == num_prob_levels ) {
+      num_prob_levels = 1;
+      prob_levels.resize(1);
+      prob_levels[0] = 0.95; // default probability level
+    }
+    else
+      prob_levels = requestedProbLevels[fn_index];
+
+    for (j=0; j<num_prob_levels; ++j)
+    {
+      Real prob_level = prob_levels[j];
+      int num_samples = compute_wilks_sample_size(wilksOrder, prob_level, wilksBeta, wilks_twosided);
+
+      // Grab the first num_samples subset in sorted order (could also randomly sample) - RWH
+      sorted_resp_subset.clear();
+      for (n=0, it=allResponses.begin(); n<num_samples; ++n, ++it)
+      {
+        Real sample = it->second.function_value(fn_index);
+        if (isfinite(sample)) // neither NaN nor +/-Inf
+          sorted_resp_subset.insert(sample);
+      }
+      cit = sorted_resp_subset.begin();
+      crit = sorted_resp_subset.rbegin();
+      for( int i=0; i<wilksOrder-1; ++i, ++cit, ++crit ) continue;
+      min = *cit;
+      max = *crit;
+
+      s << "  " << std::setw(width) << prob_levels[j];
+      if( wilks_twosided )
+        s << "  " << min;
+      s << "   " << ( (wilks_twosided || wilksSidedness == ONE_SIDED_UPPER) ? max : min )
+        << "        " << num_samples
+        << '\n';
     }
   }
-
-  const Real max_confidence = get_wilks_beta_max();
-
-  size_t num_prob_levels = requestedProbLevels[fn_index].length();
-  for (j=0; j<num_prob_levels; j++) {
-    Real prob_level = requestedProbLevels[fn_index][j];
-    // Determine an upper bound on confidence level based on sample size
-    int upper_bound = compute_wilks_sample_size(wilksOrder, prob_level, max_confidence, wilksTwosided);
-
-    s << "  " << std::setw(width) << computedRespLevels[fn_index][j]
-      << "  " << std::setw(width) << requestedProbLevels[fn_index][j]
-      << "  " << ( (numSamples > upper_bound) ?  "> " + convert_to_string<Real>(max_confidence) :
-                   convert_to_string(compute_wilks_beta(wilksOrder, numSamples, prob_level, wilksTwosided)) )
-      << '\n';
-  }
-  size_t num_rel_levels = requestedRelLevels[fn_index].length(),
-    offset = num_prob_levels;
-  for (j=0; j<num_rel_levels; j++) // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
-      << "  " << std::setw(w2p2)  << requestedRelLevels[fn_index][j] << '\n';
-  size_t num_gen_rel_levels = requestedGenRelLevels[fn_index].length();
-  offset += num_rel_levels;
-  for (j=0; j<num_gen_rel_levels; j++) // map from 1 requested to 1 computed
-    s << "  " << std::setw(width) << computedRespLevels[fn_index][j+offset]
-      << "  " << std::setw(w3p4)  << requestedGenRelLevels[fn_index][j] << '\n';
 }
 } // namespace Dakota

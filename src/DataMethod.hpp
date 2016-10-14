@@ -172,7 +172,7 @@ enum { UNCERTAIN,           UNCERTAIN_UNIFORM,
 // Note that ACTIVE modes will overlap with either UNCERTAIN or ALL modes
 // depending on whether the Model/Variables employ an All or Distinct view.
 // Wilks type of confidence interval
-enum { ONE_SIDED, TWO_SIDED };
+enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
 // ---------------
 // NonDReliability

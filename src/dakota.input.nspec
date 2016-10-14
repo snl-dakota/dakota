@@ -1044,7 +1044,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ wilks {N_mdm(true,wilksFlag)}
             [ order INTEGER {N_mdm(ushint,wilksOrder)} ]
             [ confidence_level REAL {N_mdm(Real,wilksConfidenceLevel)} ]
-            [ one_sided {N_mdm(type,wilksSidedInterval_ONE_SIDED)} ]
+            [ one_sided_lower {N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)} ]
+            [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
             [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
            ]
          )

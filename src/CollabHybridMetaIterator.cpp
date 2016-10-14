@@ -21,7 +21,7 @@ static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-0
 namespace Dakota {
 
 CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db)
+  MetaIterator(problem_db), singlePassedModel(false)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))
 {
@@ -29,12 +29,23 @@ CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
     = problem_db.get_sa("method.hybrid.method_pointers");
   const StringArray& method_names
     = problem_db.get_sa("method.hybrid.method_names");
-  if (!method_ptrs.empty())
-    { methodList = method_ptrs;  lightwtCtor = false; }
-  else if (!method_names.empty())
-    { methodList = method_names; lightwtCtor = true;  }
 
-  maxIteratorConcurrency = methodList.size();
+  if (!method_ptrs.empty())
+    { lightwtMethodCtor = false; methodStrings = method_ptrs;  }
+  else if (!method_names.empty()) {
+    lightwtMethodCtor = true;    methodStrings = method_names;
+    modelStrings = problem_db.get_sa("method.hybrid.model_pointers");
+    // define an array of null strings to use for set_db_model_nodes()
+    if (modelStrings.empty()) modelStrings.resize(method_names.size());
+    // allow input of single string
+    else      Pecos::inflate_scalar(modelStrings, method_names.size());
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  maxIteratorConcurrency = methodStrings.size();
   if (!maxIteratorConcurrency) { // verify at least one method in list
     if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
@@ -46,7 +57,7 @@ CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
 
 CollabHybridMetaIterator::
 CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
-  MetaIterator(problem_db, model)
+  MetaIterator(problem_db, model), singlePassedModel(true)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))
 {
@@ -54,31 +65,43 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
     = problem_db.get_sa("method.hybrid.method_pointers");
   const StringArray& method_names
     = problem_db.get_sa("method.hybrid.method_names");
-  if (!method_ptrs.empty())
-    { methodList = method_ptrs;  lightwtCtor = false; }
-  else if (!method_names.empty())
-    { methodList = method_names; lightwtCtor = true;  }
+  const StringArray& model_ptrs
+    = problem_db.get_sa("method.hybrid.model_pointers");
 
-  size_t i, num_iterators = methodList.size();
+  // process and validate method and model strings
+  size_t i, num_iterators; String empty_str;
+  if (!method_ptrs.empty()) {
+    lightwtMethodCtor = false;
+    num_iterators = method_ptrs.size();
+    for (i=0; i<num_iterators; ++i)
+      check_model(method_ptrs[i], empty_str);
+    methodStrings = method_ptrs;
+  }
+  else if (!method_names.empty()) {
+    lightwtMethodCtor = true;
+    methodStrings = method_names;
+    num_iterators = method_names.size();
+    // define an array of strings to use for set_db_model_nodes()
+    if (model_ptrs.empty()) // assign array using id from iteratedModel
+      modelStrings.assign(num_iterators, iteratedModel.model_id());
+    else {
+      size_t num_models = model_ptrs.size();
+      for (i=0; i<num_models; ++i)
+	check_model(empty_str, model_ptrs[i]);
+      modelStrings = model_ptrs;
+      Pecos::inflate_scalar(modelStrings, num_iterators); // allow single input
+    }
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   if (!num_iterators) { // verify at least one method in list
     if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
 	   << std::endl;
     abort_handler(-1);
-  }
-
-  // validate iteratedModel against any model pointers
-  String empty_str;
-  if (!lightwtCtor)
-    for (i=0; i<num_iterators; ++i)
-      check_model(method_ptrs[i], empty_str);
-  else {
-    StringArray model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
-    if (!model_ptrs.empty()) {
-      Pecos::inflate_scalar(model_ptrs, num_iterators);
-      for (i=0; i<num_iterators; ++i)
-	check_model(empty_str, model_ptrs[i]);
-    }
   }
 
   maxIteratorConcurrency = num_iterators;
@@ -93,36 +116,23 @@ CollabHybridMetaIterator::~CollabHybridMetaIterator()
 
 void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  size_t i, num_iterators = methodList.size();
-  StringArray model_ptrs; bool models = false;
-  if (lightwtCtor) {
-    model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
-    if (!model_ptrs.empty()) models = true;
-  }
-  if (models)
-    Pecos::inflate_scalar(model_ptrs, num_iterators);
+  size_t i, num_iterators = methodStrings.size();
   selectedIterators.resize(num_iterators); // slaves also need for run_iterator
-  if (!lightwtCtor || models) // this test is conservative
+  if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
   iterSched.update(methodPCIter);
 
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
-  String empty_str; BitArray new_mod(num_iterators);
+  String empty_str;
   for (i=0; i<num_iterators; ++i) {
-    if (lightwtCtor) {
-      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
-      new_mod[i] = new_model(empty_str, model_ptr);
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr_i = estimate_by_name(methodList[i], model_ptr,
-				  selectedIterators[i], selected_model);
-    }
-    else {
-      new_mod[i] = new_model(methodList[i], empty_str);
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr_i = estimate_by_pointer(methodList[i], selectedIterators[i],
-				     selected_model);
-    }
+    // compute min/max processors per iterator for each method
+    Iterator& the_iterator = selectedIterators[i];
+    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    ppi_pr_i = (lightwtMethodCtor) ?
+      estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
+		       the_model) :
+      estimate_by_pointer(methodStrings[i], the_iterator, the_model);
     if (ppi_pr_i.first  < ppi_pr.first)  ppi_pr.first  = ppi_pr_i.first;
     if (ppi_pr_i.second > ppi_pr.second) ppi_pr.second = ppi_pr_i.second;
   }
@@ -137,18 +147,14 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     return;
 
   // Instantiate all Models and Iterators
-  if (lightwtCtor)
-    for (i=0; i<num_iterators; ++i) {
-      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      allocate_by_name(methodList[i], model_ptr, selectedIterators[i],
-		       selected_model);
-    }
-  else
-    for (i=0; i<num_iterators; ++i) {
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      allocate_by_pointer(methodList[i], selectedIterators[i], selected_model);
-    }
+  for (i=0; i<num_iterators; ++i) {
+    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    if (lightwtMethodCtor)
+      allocate_by_name(methodStrings[i], modelStrings[i],
+		       selectedIterators[i], the_model);
+    else
+      allocate_by_pointer(methodStrings[i], selectedIterators[i], the_model);
+  }
   // Note: rather than the standard allocate_methods() approach, this is where
   // logic would be placed to process the model list and create
   // CollaborativeModel recursions, one for each unique user-defined model.
@@ -164,7 +170,7 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodList.size();
+    size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
       iterSched.set_iterator(selectedIterators[i], si_pl_iter);
   }
@@ -178,7 +184,7 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodList.size();
+    size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
       iterSched.free_iterator(selectedIterators[i], si_pl_iter);
   }
@@ -193,14 +199,14 @@ void CollabHybridMetaIterator::core_run()
   // THIS CODE IS JUST A PLACEHOLDER
 
   bool lead_rank = iterSched.lead_rank();
-  size_t i, num_iterators = methodList.size();
+  size_t i, num_iterators = methodStrings.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
   for (i=0; i<num_iterators; i++) {
 
     if (lead_rank)
       Cout << "\n>>>>> Running Collaborative Hybrid with iterator "
-	   << methodList[i] << ".\n";
+	   << methodStrings[i] << ".\n";
 
     Iterator& curr_iterator = selectedIterators[i];
 

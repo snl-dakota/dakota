@@ -82,6 +82,9 @@ private:
   /// the model employed by the inner iterator
   Model localModel;
 
+  /// use of constructor that enforces use of a single passed Model
+  bool singlePassedModel;
+
   /// the probability of running a local search refinement within
   /// phases of the global minimization for tightly-coupled hybrids
   Real localSearchProb;
@@ -105,10 +108,8 @@ inline IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (new_model(global_method_ptr, global_model_ptr)) ?
-    globalModel : iteratedModel;
-  Model& local_model  = (new_model(local_method_ptr, local_model_ptr)) ?
-    localModel  : iteratedModel;
+  Model& global_model = (singlePassedModel) ? iteratedModel : globalModel;
+  Model& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
 
   iterSched.construct_sub_iterator(probDescDB, globalIterator, global_model,
     global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),

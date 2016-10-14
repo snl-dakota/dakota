@@ -1,0 +1,65 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
+#@ s1: DakotaConfig=HAVE_NPSOL
+#@ s2: DakotaConfig=HAVE_NPSOL
+
+environment,
+#	graphics
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	max_iterations = 50
+	trust_region
+	  initial_size = 0.10
+	  contraction_factor = 0.5
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+	npsol_sqp
+	  convergence_tolerance = 1.e-8
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global
+	  dace_method_pointer = 'SAMPLING'
+	  correction additive first_order
+	  polynomial quadratic
+# 	surrogate local taylor_series
+#	  actual_model_pointer = 'TRUTH'
+
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+	dace lhs
+	  seed = 12345 samples = 10
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+
+variables,
+	continuous_design = 2
+	  initial_point    1.8          1.0
+	  upper_bounds     2.164        4.0
+	  lower_bounds     1.5          0.0
+	  descriptors      'intake_dia' 'flatness'
+#	linear_inequality_constraint_matrix = 1. 1.	#s1
+#	linear_inequality_upper_bounds = 3.7		#s1
+#	linear_equality_constraint_matrix = 1. 1.	#s2
+#	linear_equality_targets = 3.3			#s2
+
+interface,
+	id_interface = 'TRUE_FN'
+	direct
+	  analysis_driver=  'cyl_head'
+
+responses,
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	analytic_gradients
+	no_hessians

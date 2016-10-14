@@ -264,7 +264,7 @@ sub compare_output {
     my $best_re = '^<<<<< Best [ \w\(\)]+=$';
     my $surr_re = '^Surrogate quality metrics';
     my $pce_re = 'of Polynomial Chaos Expansion for';
-    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):)$';
+    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
 
     while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
             ($base =~ /${surr_re}/) && ($test =~ /${surr_re}/) ||
@@ -563,6 +563,18 @@ sub compare_output {
 	   /^<<<<< Function evaluation summary[ \w\(\)]*: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) &&
 	 ( ($b_tev, $b_nev, $b_dev) = $base =~
 	   /^<<<<< Function evaluation summary[ \w\(\)]*: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) ) {
+      if ( diff($t_tev, $b_tev) || diff($t_nev, $b_nev) ||
+	   diff($t_dev, $b_dev) ) {
+	$test_diff = 1;
+	push @base_diffs, $base;
+	push @test_diffs, $test;
+      }
+    }
+    elsif ( ( ($t_tev, $t_nev, $t_dev) = $test =~
+
+	   /^Wilks Statistics for One-Sided ($e)% Confidence Level, Order = (\d+) for response_fn_(\d+).+$/ ) &&
+	 ( ($b_tev, $b_nev, $b_dev) = $base =~
+	   /^Wilks Statistics for One-Sided ($e)% Confidence Level, Order = (\d+) for response_fn_(\d+).+$/ ) ) {
       if ( diff($t_tev, $b_tev) || diff($t_nev, $b_nev) ||
 	   diff($t_dev, $b_dev) ) {
 	$test_diff = 1;

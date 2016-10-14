@@ -1613,7 +1613,8 @@
 			<keyword  id="confidence_level" name="confidence_level" code="{N_mdm(Real,wilksConfidenceLevel)}" label="confidence_level" help="" minOccurs="0" >
 			  <param type="REAL" />
 			</keyword>
-                        <keyword  id="one_sided" name="one_sided" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED)}" label="one_sided" help="" minOccurs="0" />
+                        <keyword  id="one_sidedlower" name="one_sided_lower" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)}" label="one_sided_lower" help="" minOccurs="0" />
+                        <keyword  id="one_sidedupper" name="one_sided_upper" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)}" label="one_sided_upper" help="" minOccurs="0" />
                         <keyword  id="two_sided" name="two_sided" code="{N_mdm(type,wilksSidedInterval_TWO_SIDED)}" label="two_sided" help="" minOccurs="0" />
 		      </keyword>
 		    </keyword>

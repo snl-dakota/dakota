@@ -1065,7 +1065,8 @@ KEYWORD12 method
 	  [ wilks
 	    [ order INTEGER ]
 	    [ confidence_level REAL ]
-	    [ one_sided ]
+	    [ one_sided_lower ]
+	    [ one_sided_upper ]
 	    [ two_sided ]
 	    ]
 	  [ reliability_levels REALLIST

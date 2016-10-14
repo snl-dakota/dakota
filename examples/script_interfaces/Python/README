@@ -1,0 +1,27 @@
+=== Interface to a simulation written in Python ===
+
+--Files--
+
+dakota_rosenbrock_python.in:	Dakota input file
+rosenbrock_bb_dipy.py:		Analysis driver (interface) that uses the 
+				Dakota-supplied dipy module to read the 
+				parameters file write the results file.
+rosenbrock_bb.py:		Analysis driver (interface) that directly
+				parses the parameters file and writes the
+				results file.
+rosenbrock.py:			The simulation, which is imported by the
+				analysis drivers.
+
+
+--Instructions--
+
+As-is, dakota_rosenbrock_python.in is configured to run on Linux or OSX and to 
+use rosenbrock_bb_dipy.py as the analysis driver. If you are a Windows user,
+modify the .in file according to the comments it contains. In order for this
+analysis driver to function correcty, Python >= 2.6 must be installed, and the
+path share/dakota/interfaces/Python in the Dakota installation folder must 
+be added to your PYTHONPATH so that the dipy module can be located.
+
+
+The other analysis driver can be demonstrated by modifying the analysis_driver
+keyword.

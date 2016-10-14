@@ -104,7 +104,8 @@ endif()
 # Assumes extra args are in format
 # -D CMAKE_ARG1=value1 -D CMAKE_ARG2=value2
 
-set( DAKOTA_CMAKE_EXTRA_ARGS $ENV{DAKOTA_CMAKE_EXTRA_ARGS} )
+set( DAKOTA_CMAKE_EXTRA_ARGS "$ENV{DAKOTA_CMAKE_EXTRA_ARGS}" )
+message( "DAKOTA_CMAKE_EXTRA_ARGS = ${DAKOTA_CMAKE_EXTRA_ARGS}" )
 
 #*****************************************************************
 # Set DAKOTA_CTEST_PROJECT_TAG
@@ -169,6 +170,9 @@ if ( DAKOTA_CMAKE_HOSTFILE )
   set_configure_command( ${DAKOTA_CMAKE_HOSTFILE} SUBDIR platforms )
 endif()
 
+if ( DAKOTA_CMAKE_HOSTFILE )
+  set_configure_command( “JenkinsBuild.cmake” )
+endif()
 
 set(CTEST_CONFIGURE_COMMAND
   "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTORY}\"")

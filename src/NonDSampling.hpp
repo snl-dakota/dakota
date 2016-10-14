@@ -264,7 +264,7 @@ protected:
   unsigned short wilksOrder;
   Real      wilksAlpha;    
   Real      wilksBeta;    
-  bool      wilksTwosided;
+  short     wilksSidedness;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
