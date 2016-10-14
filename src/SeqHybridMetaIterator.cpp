@@ -23,7 +23,7 @@ static const char rcsId[]="@(#) $Id: SeqHybridMetaIterator.cpp 6972 2010-09-17 2
 namespace Dakota {
 
 SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db)
+  MetaIterator(problem_db), singlePassedModel(false)
   //seqHybridType(problem_db.get_string("method.hybrid.type")),
   //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
 {
@@ -43,10 +43,21 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
     = problem_db.get_sa("method.hybrid.method_pointers");
   const StringArray& method_names
     = problem_db.get_sa("method.hybrid.method_names");
+
   if (!method_ptrs.empty())
-    { methodList = method_ptrs;  lightwtCtor = false; }
-  else if (!method_names.empty())
-    { methodList = method_names; lightwtCtor = true;  }
+    { lightwtMethodCtor = false; methodStrings = method_ptrs;  }
+  else if (!method_names.empty()) {
+    lightwtMethodCtor = true;    methodStrings = method_names;
+    modelStrings = problem_db.get_sa("method.hybrid.model_pointers");
+    // define an array of null strings to use for set_db_model_nodes()
+    if (modelStrings.empty()) modelStrings.resize(method_names.size());
+    // allow input of single string
+    else      Pecos::inflate_scalar(modelStrings, method_names.size());
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
 }
@@ -54,7 +65,7 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
 
 SeqHybridMetaIterator::
 SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
-  MetaIterator(problem_db, model)
+  MetaIterator(problem_db, model), singlePassedModel(true)
   //seqHybridType(problem_db.get_string("method.hybrid.type")),
   //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
 {
@@ -62,25 +73,37 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
     = problem_db.get_sa("method.hybrid.method_pointers");
   const StringArray& method_names
     = problem_db.get_sa("method.hybrid.method_names");
-  if (!method_ptrs.empty())
-    { methodList = method_ptrs;  lightwtCtor = false; }
-  else if (!method_names.empty())
-    { methodList = method_names; lightwtCtor = true;  }
-  size_t i, num_iterators = methodList.size();
+  const StringArray& model_ptrs
+    = problem_db.get_sa("method.hybrid.model_pointers");
 
-  // validate iteratedModel against any model pointers
-  String empty_str;
-  if (lightwtCtor) {
-    StringArray model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
-    if (!model_ptrs.empty()) {
-      Pecos::inflate_scalar(model_ptrs, num_iterators);
-      for (i=0; i<num_iterators; ++i)
-	check_model(empty_str, model_ptrs[i]);
-    }
-  }
-  else
+  // process and validate method and model strings
+  size_t i, num_iterators; String empty_str;
+  if (!method_ptrs.empty()) {
+    lightwtMethodCtor = false;
+    num_iterators = method_ptrs.size();
     for (i=0; i<num_iterators; ++i)
       check_model(method_ptrs[i], empty_str);
+    methodStrings = method_ptrs;
+  }
+  else if (!method_names.empty()) {
+    lightwtMethodCtor = true;
+    methodStrings = method_names;
+    num_iterators = method_names.size();
+    // define an array of strings to use for set_db_model_nodes()
+    if (model_ptrs.empty()) // assign array using id from iteratedModel
+      modelStrings.assign(num_iterators, iteratedModel.model_id());
+    else {
+      size_t num_models = model_ptrs.size();
+      for (i=0; i<num_models; ++i)
+	check_model(empty_str, model_ptrs[i]);
+      modelStrings = model_ptrs;
+      Pecos::inflate_scalar(modelStrings, num_iterators); // allow single input
+    }
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
 }
@@ -94,40 +117,26 @@ SeqHybridMetaIterator::~SeqHybridMetaIterator()
 
 void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  size_t i, num_iterators = methodList.size();
-  StringArray model_ptrs; bool models = false;
-  if (lightwtCtor) {
-    model_ptrs = probDescDB.get_sa("method.hybrid.model_pointers");
-    if (!model_ptrs.empty()) models = true;
-  }
-  if (models)
-    Pecos::inflate_scalar(model_ptrs, num_iterators);
+  size_t i, num_iterators = methodStrings.size();
   selectedIterators.resize(num_iterators); // all procs need for iterator sched
-  if (!lightwtCtor || models) // this test is conservative
+  if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
   iterSched.update(methodPCIter);
 
   int pl_rank = pl_iter->server_communicator_rank();
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
-  String empty_str; BitArray new_mod(num_iterators);
+  String empty_str;
   size_t running_product = 1, sizet_max = std::numeric_limits<size_t>::max();
   bool sizet_max_replace = false;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
     Iterator& the_iterator = selectedIterators[i];
-    if (lightwtCtor) {
-      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
-      new_mod[i] = new_model(empty_str, model_ptr);
-      Model& the_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr_i
-	= estimate_by_name(methodList[i], model_ptr, the_iterator, the_model);
-    }
-    else {
-      new_mod[i] = new_model(methodList[i], empty_str);
-      Model& the_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      ppi_pr_i = estimate_by_pointer(methodList[i], the_iterator, the_model);
-    }
+    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    ppi_pr_i = (lightwtMethodCtor) ?
+      estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
+		       the_model) :
+      estimate_by_pointer(methodStrings[i], the_iterator, the_model);
     if (ppi_pr_i.first  < ppi_pr.first)  ppi_pr.first  = ppi_pr_i.first;
     if (ppi_pr_i.second > ppi_pr.second) ppi_pr.second = ppi_pr_i.second;
 
@@ -203,18 +212,14 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   }
 
   // Instantiate all Models and Iterators
-  if (lightwtCtor)
-    for (i=0; i<num_iterators; ++i) {
-      const String& model_ptr = (models) ? model_ptrs[i] : empty_str;
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      allocate_by_name(methodList[i], model_ptr, selectedIterators[i],
-		       selected_model);
-    }
-  else
-    for (i=0; i<num_iterators; ++i) {
-      Model& selected_model = (new_mod[i]) ? selectedModels[i] : iteratedModel;
-      allocate_by_pointer(methodList[i], selectedIterators[i], selected_model);
-    }
+  for (i=0; i<num_iterators; ++i) {
+    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    if (lightwtMethodCtor)
+      allocate_by_name(methodStrings[i], modelStrings[i],
+		       selectedIterators[i], the_model);
+    else
+      allocate_by_pointer(methodStrings[i], selectedIterators[i], the_model);
+  }
 
   // now that parallel paritioning and iterator allocation has occurred,
   // manage acceptable values for Iterator::numFinalSolutions (needed for
@@ -236,7 +241,7 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodList.size();
+    size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
       iterSched.set_iterator(selectedIterators[i], si_pl_iter);
   }
@@ -250,7 +255,7 @@ void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodList.size();
+    size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
       iterSched.free_iterator(selectedIterators[i], si_pl_iter);
   }
@@ -272,7 +277,7 @@ void SeqHybridMetaIterator::core_run()
     satisfied.  Status: fully operational. */
 void SeqHybridMetaIterator::run_sequential()
 {
-  size_t num_iterators = methodList.size();
+  size_t num_iterators = methodStrings.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
 
@@ -287,11 +292,11 @@ void SeqHybridMetaIterator::run_sequential()
     // each of these is safe for all processors
     Iterator& curr_iterator = selectedIterators[seqCount];
     Model&    curr_model
-      = (lightwtCtor) ? iteratedModel : selectedModels[seqCount];
+      = (singlePassedModel) ? iteratedModel : selectedModels[seqCount];
  
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running Sequential Hybrid with iterator "
-	   << methodList[seqCount] << ".\n";
+	   << methodStrings[seqCount] << ".\n";
 
     if (server_id <= iterSched.numIteratorServers) {
 
@@ -447,7 +452,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   // NOTE 2: Parallel iterator scheduling is not currently supported (and this
   // code will fail if non-default iterator servers or scheduling is specified).
 
-  size_t num_iterators = methodList.size();
+  size_t num_iterators = methodStrings.size();
   int server_id =  iterSched.iteratorServerId;
   bool    rank0 = (iterSched.iteratorCommRank == 0);
   Real progress_metric = 1.0;
@@ -466,7 +471,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
 
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running adaptive Sequential Hybrid with iterator "
-	   << methodList[seqCount] << '\n';
+	   << methodStrings[seqCount] << '\n';
 
     curr_iterator.initialize_run();
     while (progress_metric >= progressThreshold) {
@@ -477,7 +482,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
     curr_iterator.finalize_run();
 
     if (summaryOutputFlag)
-      Cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
+      Cout << "\n<<<<< Iterator " << methodStrings[seqCount] << " completed."
 	   << "  Progress metric has fallen below threshold.\n";
 
     // Set the starting point for the next iterator.

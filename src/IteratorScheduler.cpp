@@ -59,14 +59,9 @@ construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 {
   if (sub_iterator.is_null()) { // if not already constructed on this rank
 
-    // could embed this logic, but only helps EmbedHybridMetaIterator since
-    // hybrids with method lists must check for valid method[i] anyway
-    //Model& ctor_model = (new_model(method_ptr, model_ptr)) ?
-    //  sub_model : iteratedModel;
-
     bool light_wt = method_ptr.empty();
-    if (!light_wt)               problem_db.set_db_list_nodes(method_ptr);
-    else if (!model_ptr.empty()) problem_db.set_db_model_nodes(model_ptr);
+    if (light_wt) problem_db.set_db_model_nodes(model_ptr);
+    else          problem_db.set_db_list_nodes(method_ptr);
 
     sub_iterator = (light_wt) ?
       problem_db.get_iterator(method_name, sub_model) : //, ctor_model) :

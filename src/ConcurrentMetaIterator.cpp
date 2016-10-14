@@ -65,7 +65,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   else if (!sub_meth_name.empty()) {
     // if sub_model_ptr is defined, activate this model spec;
     // if sub_model_ptr is empty, identify default model using empty string.
-    // Note: inheriting a previous model setting is desirable in some contexts,
+    // Note: inheriting a prev model spec could be desirable in some contexts,
     //       but not this ctor since a top-level/non-subordinate MetaIterator.
     restore_model = true;
     model_index   = problem_db.get_db_model_node(); // for restoration

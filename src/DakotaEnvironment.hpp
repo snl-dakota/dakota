@@ -219,14 +219,12 @@ inline bool Environment::assign_model_pointer() const
   // meta-iterators may need to activate a default model spec
   if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT)
 
-    // ConcurrentMI handles default Model spec within its ctors/init_comms
-
-    // Other MetaIterators do not yet:
+    /* MetaIterators now handle default Model spec within their ctors/init_comms
     return
-      ( //( ConcurrentMI:
-        // !probDescDB.get_string("method.sub_method_name").empty() &&
-        //  probDescDB.get_string("method.sub_model_pointer").empty() )
-        ( // SeqHybridMI, CollabHybridMI:
+      ( ( // ConcurrentMI:
+         !probDescDB.get_string("method.sub_method_name").empty() &&
+          probDescDB.get_string("method.sub_model_pointer").empty() )
+     || ( // SeqHybridMI, CollabHybridMI:
 	 !probDescDB.get_sa("method.hybrid.method_names").empty() &&
 	  probDescDB.get_sa("method.hybrid.model_pointers").empty() )
      || ( // EmbedHybridMI:
@@ -234,7 +232,9 @@ inline bool Environment::assign_model_pointer() const
 	  probDescDB.get_string("method.hybrid.global_model_pointer").empty() )
      || (!probDescDB.get_string("method.hybrid.local_method_name").empty() &&
 	  probDescDB.get_string("method.hybrid.local_model_pointer").empty()) );
+    */
 
+    return false;
   else // standard iterator requires setting of DB model nodes
     return true;
 }

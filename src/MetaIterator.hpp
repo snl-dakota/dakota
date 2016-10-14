@@ -64,9 +64,6 @@ protected:
   //- Heading: Convenience member functions
   //
 
-  /// identify presence of a new model specification identified by pointer,
-  /// necessitating a new instantiation
-  bool new_model(const String& method_ptr, const String& model_ptr);
   /// check that a model identified by pointer has the same id as the
   /// iteratedModel passed through the ctor chain
   void check_model(const String& method_ptr, const String& model_ptr);

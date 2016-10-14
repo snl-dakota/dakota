@@ -65,28 +65,6 @@ bool MetaIterator::resize()
 }
 
 
-bool MetaIterator::
-new_model(const String& method_ptr, const String& model_ptr)
-{
-  // if an existing model was passed in through ctor, return false
-  if (!iteratedModel.is_null())
-    return false;
-
-  bool new_flag = false;
-  if (!method_ptr.empty()) {
-    size_t restore_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_method_node(method_ptr);
-    if (!probDescDB.get_string("method.model_pointer").empty())
-      new_flag = true;
-    probDescDB.set_db_method_node(restore_index);           // restore
-  }
-  else if (!model_ptr.empty())
-    new_flag = true;
-
-  return new_flag;
-}
-
-
 void MetaIterator::
 check_model(const String& method_ptr, const String& model_ptr)
 {
@@ -119,9 +97,11 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
+
   if (the_model.is_null())
     the_model = probDescDB.get_model();
   iterSched.init_iterator(probDescDB, the_iterator, the_model);
+
   probDescDB.set_db_method_node(method_index);          // restore
   probDescDB.set_db_model_nodes(model_index);           // restore
 }
@@ -132,15 +112,21 @@ allocate_by_name(const String& method_string, const String& model_ptr,
 		 Iterator& the_iterator, Model& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
-  bool set = !model_ptr.empty(); size_t model_index;
-  if (set) {// && the_model.is_null())
+
+  size_t model_index;
+  // if sub_model_ptr is defined, activate this model spec;
+  // if sub_model_ptr is empty, identify default model using empty string.
+  //bool set = !model_ptr.empty();
+  //if (set) {// && the_model.is_null())
     model_index = probDescDB.get_db_model_node(); // for restoration
     probDescDB.set_db_model_nodes(model_ptr);
-  }
+  //}
+
   if (the_model.is_null())
     the_model = probDescDB.get_model();
   iterSched.init_iterator(probDescDB, method_string, the_iterator, the_model);
-  if (set)
+
+  //if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
 }
 
@@ -158,7 +144,6 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
   if (the_model.is_null())
     the_model = probDescDB.get_model();
-
   IntIntPair ppi_pr = iterSched.configure(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
@@ -172,11 +157,15 @@ estimate_by_name(const String& method_string, const String& model_ptr,
 		 Iterator& the_iterator, Model& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
-  bool set = !model_ptr.empty(); size_t model_index;
-  if (set) {// && the_model.is_null())
+
+  size_t model_index;
+  // if sub_model_ptr is defined, activate this model spec;
+  // if sub_model_ptr is empty, identify default model using empty string.
+  //bool set = !model_ptr.empty();
+  //if (set) {// && the_model.is_null())
     model_index = probDescDB.get_db_model_node(); // for restoration
     probDescDB.set_db_model_nodes(model_ptr);
-  }
+  //}
 
   if (the_model.is_null())
     the_model = probDescDB.get_model();
@@ -184,7 +173,7 @@ estimate_by_name(const String& method_string, const String& model_ptr,
   IntIntPair ppi_pr
     = iterSched.configure(probDescDB, method_string, the_iterator, the_model);
 
-  if (set)
+  //if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
   return ppi_pr;
 }
