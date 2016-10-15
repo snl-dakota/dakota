@@ -1,12 +1,6 @@
 
 namespace Dakota {
 
-<<<<<<< HEAD
-/** 1858 distinct keywords (plus 254 aliases) **/
-=======
-/** 1852 distinct keywords (plus 251 aliases) **/
->>>>>>> devel
-
 static KeyWord
 	kw_1[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)},
@@ -1784,11 +1778,7 @@ static KeyWord
 	kw_297[1] = {
 		{"drop_tolerance",10,0,1,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)}
 		},
-<<<<<<< HEAD
-	kw_298[4] = {
-=======
-	kw_297[5] = {
->>>>>>> devel
+	kw_298[5] = {
 		{"confidence_level",10,0,2,0,0,0.,0.,0,N_mdm(Real,wilksConfidenceLevel)},
 		{"one_sided_lower",8,0,3,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)},
 		{"one_sided_upper",8,0,4,0,0,0.,0.,0,N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)},
@@ -1808,13 +1798,8 @@ static KeyWord
 		{"sample_type",8,4,4,0,kw_296},
 		{"samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
-<<<<<<< HEAD
 		{"variance_based_decomp",8,1,7,0,kw_297,0.,0.,0,N_mdm(true,vbdFlag)},
-		{"wilks",8,4,10,0,kw_298,0.,0.,0,N_mdm(true,wilksFlag)}
-=======
-		{"variance_based_decomp",8,1,7,0,kw_296,0.,0.,0,N_mdm(true,vbdFlag)},
-		{"wilks",8,5,10,0,kw_297,0.,0.,0,N_mdm(true,wilksFlag)}
->>>>>>> devel
+		{"wilks",8,5,10,0,kw_298,0.,0.,0,N_mdm(true,wilksFlag)}
 		},
 	kw_300[3] = {
 		{"eval_id",8,0,2,0,0,0.,0.,0,N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)},
