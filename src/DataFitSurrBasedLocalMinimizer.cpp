@@ -603,44 +603,9 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
       CORR_APPROX_RESPONSE);
     found = true;
   }
-  else if (hierarchApproxFlag && sbIterNum) {
-    // search for fn vals, grads, and Hessians separately since they may
-    // be different fn evaluations
-    ActiveSet search_set // copy
-      = trustRegionData.response_center(CORR_APPROX_RESPONSE).active_set();
-    search_set.request_values(1);
-    const Variables& search_vars = iteratedModel.current_variables();
-    const String& search_id = iteratedModel.surrogate_model().interface_id();
-    PRPCacheHIter cache_it
-      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-    if (cache_it != data_pairs.get<hashed>().end()) {
-      trustRegionData.response_center(CORR_APPROX_RESPONSE).function_values(
-	cache_it->response().function_values());
-      if (approxGradientFlag) {
-	search_set.request_values(2);
-	cache_it
-	  = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-	if (cache_it != data_pairs.get<hashed>().end()) {
-	  trustRegionData.response_center(CORR_APPROX_RESPONSE).
-	    function_gradients(cache_it->response().function_gradients());
-	  if (approxHessianFlag) {
-	    search_set.request_values(4);
-	    cache_it
-	      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-	    if (cache_it != data_pairs.get<hashed>().end()) {
-	      trustRegionData.response_center(CORR_APPROX_RESPONSE).
-		function_hessians(cache_it->response().function_hessians());
-	      found = true;
-	    }
-	  }
-	  else
-	    found = true;
-	}
-      }
-      else
-	found = true;
-    }
-  }
+  else if (hierarchApproxFlag && sbIterNum)
+    found = find_approx_response(iteratedModel.current_variables(),
+      trustRegionData.response_center(CORR_APPROX_RESPONSE));
 
   if (found)
     Cout << "\n>>>>> Previous approximate response retrieved at trust "

@@ -113,6 +113,9 @@ protected:
 					     const Response& surrogate_response,
 					     Response& recast_response);
 
+  /// locate an approximate response with the data_pairs cache
+  bool find_approx_response(const Variables& search_vars,Response& search_resp);
+
   /// relax constraints by updating bounds when current iterate is infeasible
   void relax_constraints(SurrBasedLevelData& tr_data);
 

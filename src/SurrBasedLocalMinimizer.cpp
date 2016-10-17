@@ -942,6 +942,48 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 }
 
 
+bool SurrBasedLocalMinimizer::
+find_approx_response(const Variables& search_vars, Response& search_resp)
+{
+  extern PRPCache data_pairs;
+  bool found = false;
+
+  // search for fn vals, grads, and Hessians separately since they may
+  // be different fn evals
+  ActiveSet search_set = search_resp.active_set(); // copy
+  search_set.request_values(1);
+  const String& search_id = iteratedModel.surrogate_model().interface_id();
+  PRPCacheHIter cache_it
+    = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+  if (cache_it != data_pairs.get<hashed>().end()) {
+    search_resp.function_values(cache_it->response().function_values());
+    if (approxGradientFlag) {
+      search_set.request_values(2);
+      cache_it = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+      if (cache_it != data_pairs.get<hashed>().end()) {
+	search_resp.function_gradients(
+	  cache_it->response().function_gradients());
+	if (approxHessianFlag) {
+	  search_set.request_values(4);
+	  cache_it
+	    = lookup_by_val(data_pairs, search_id, search_vars, search_set);
+	  if (cache_it != data_pairs.get<hashed>().end()) {
+	    search_resp.function_hessians(
+	      cache_it->response().function_hessians());
+	    found = true;
+	  }
+	}
+	else
+	  found = true;
+      }
+    }
+    else
+      found = true;
+  }
+  return found;
+}
+
+
 void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 {
   // NOTE 1: this needs revision in the case where the surrogates could
@@ -956,8 +998,6 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
   // get current function/constraint values
   const RealVector& fns_center_truth
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
-  const RealVector& lower_bnds = tr_data.tr_lower_bounds();
-  const RealVector& upper_bnds = tr_data.tr_upper_bounds();
 
   // initial relaxation data during the first SBLM iteration
   if (sbIterNum == 0) {
@@ -1032,9 +1072,9 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     tau_and_x_upper_bnds[0] = 1.;
     
     // x
-    copy_data_partial(tr_data.c_vars_center(), tau_and_x_initial, 1);
-    copy_data_partial(lower_bnds, tau_and_x_lower_bnds, 1);
-    copy_data_partial(upper_bnds, tau_and_x_upper_bnds, 1);
+    copy_data_partial(tr_data.c_vars_center(),   tau_and_x_initial, 1);
+    copy_data_partial(tr_data.tr_lower_bounds(), tau_and_x_lower_bnds, 1);
+    copy_data_partial(tr_data.tr_upper_bounds(), tau_and_x_upper_bnds, 1);
     
     // setup optimization problem for updating tau
 #ifdef HAVE_NPSOL
@@ -1069,7 +1109,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
       if (numNonlinearIneqConstraints) {
 	// create copies of true constraints
 	RealVector nln_ineq_l_bnds(origNonlinIneqLowerBnds), 
-	                nln_ineq_u_bnds(origNonlinIneqUpperBnds);
+	           nln_ineq_u_bnds(origNonlinIneqUpperBnds);
 
 	// update constraint bounds to be used with SBLM iteration
 	for(size_t i=0; i<numNonlinearIneqConstraints; i++) {
@@ -1233,10 +1273,5 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 #endif // DEBUG
   } // gradient computation
 }
-
-/* TO DO:
-  find_center
-  ...
-*/
 
 } // namespace Dakota

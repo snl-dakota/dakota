@@ -347,73 +347,46 @@ void HierarchSurrBasedLocalMinimizer::verify()
 
 void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
 {
-  extern PRPCache data_pairs; // global container
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
 
-  bool found = false;
-
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
-
-  // TODO: this is hard-coded:
-  found = true;
-  trustRegions[tr_index].response_center(truth_model.current_response(),
-                                         UNCORR_TRUTH_RESPONSE);
-
+  // -----------------
+  // FIND CENTER TRUTH:  TODO -- this is hard-coded
+  // -----------------
+  Model& truth_model = iteratedModel.truth_model();
+  //bool truth_found = true;
+  tr_data.response_center(truth_model.current_response(),UNCORR_TRUTH_RESPONSE);
   /*
-  if (!found) { // bypassed for now due to hard-coding above...
+  if (!truth_found) { // bypassed for now due to hard-coding above...
     Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.continuous_variables(
-      trustRegions[tr_index].vars_center().continuous_variables());
-    truth_model.evaluate(
-      trustRegions[tr_index].active_set_center(TRUTH_RESPONSE));
+      tr_data.vars_center().continuous_variables());
+    truth_model.evaluate(tr_data.active_set_center(TRUTH_RESPONSE));
 
-    trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           UNCORR_TRUTH_RESPONSE);
+    tr_data.response_center(truth_model.current_response(),
+                            UNCORR_TRUTH_RESPONSE);
   }
   */
 
   hard_convergence_check(tr_index);
 
-  // retrieve or evaluate response center approx
+  // ------------------
+  // FIND CENTER APPROX
+  // ------------------
   if (!convergenceFlag) {
-    found = false;
+    bool approx_found =
+      find_approx_response(iteratedModel.current_variables(),
+			   tr_data.response_center(UNCORR_APPROX_RESPONSE));
 
-    // search for fn vals, grads, and Hessians separately since they may
-    // be different fn evaluations
-    ActiveSet search_set
-      = trustRegions[tr_index].active_set_center(APPROX_RESPONSE); // copy
-    search_set.request_values(1);
-    const Variables& search_vars = iteratedModel.current_variables();
-    const String& search_id = iteratedModel.surrogate_model().interface_id();
-    PRPCacheHIter cache_it
-      = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-    if (cache_it != data_pairs.get<hashed>().end()) {
-      Response tr_resp
-	= trustRegions[tr_index].response_center(UNCORR_APPROX_RESPONSE);
-      // fn vals
-      tr_resp.function_values(cache_it->response().function_values());
-      // fn grads
-      search_set.request_values(2);
-      cache_it
-        = lookup_by_val(data_pairs, search_id, search_vars, search_set);
-      if (cache_it != data_pairs.get<hashed>().end()) {
-        tr_resp.function_gradients(cache_it->response().function_gradients());
-        found = true;
-      }
-      // TODO: Hessians?
-    }
-
-    if (!found) {
+    if (!approx_found) {
       Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
       iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-      iteratedModel.evaluate(
-	trustRegions[tr_index].active_set_center(APPROX_RESPONSE));
-      trustRegions[tr_index].response_center(iteratedModel.current_response(),
-                                             UNCORR_APPROX_RESPONSE);
+      iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
+      tr_data.response_center(iteratedModel.current_response(),
+			      UNCORR_APPROX_RESPONSE);
     }
   }
 }
@@ -447,20 +420,14 @@ hard_convergence_check(size_t tr_index)
   // objective function portion
   objective_gradient(fns_truth, grads_truth, sense, wts, fn_grad);
 
-  Real fn_grad_norm = 0.0;
-  for (size_t i=0; i<numContinuousVars; i++) {
-    fn_grad_norm += std::pow(fn_grad[i], 2);
-  }
-
   // Terminate SBLM if the norm of the projected merit function gradient
   // at x_c is less than convTol (hard convergence).
-  fn_grad_norm = std::sqrt( fn_grad_norm );
+  Real fn_grad_norm = fn_grad.normFrobenius();
   if ( fn_grad_norm < convergenceTol )
     convergenceFlag = 4; // hard convergence
 
 #ifdef DEBUG
-  Cout << "In hard convergence check: merit_fn_grad_norm =  "
-       << merit_fn_grad_norm << '\n';
+  Cout << "In hard convergence check: fn_grad_norm = " << fn_grad_norm << '\n';
 #endif
 }
 
