@@ -183,8 +183,8 @@ IntResponsePair& SurrBasedLevelData::
 response_center_pair(short corr_response_type)
 {
   if (corr_response_type != CORR_TRUTH_RESPONSE) {
-    Cerr << "Error: eval_id not supported in SurrBasedLevelData for this "
-	 << "response type" << std::endl;
+    Cerr << "Error: IntResponsePair return not supported in SurrBasedLevelData "
+	 << "for this response type" << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
@@ -198,11 +198,39 @@ response_center_id(int eval_id, short corr_response_type)
   switch (corr_response_type) {
   case CORR_TRUTH_RESPONSE: responseCenterTruthCorrected.first = eval_id; break;
   default:
-    Cerr << "Error: eval_id not supported in SurrBasedLevelData for this "
-	 << "response type" << std::endl;
+    Cerr << "Error: eval_id assignment not supported in SurrBasedLevelData for "
+	 << "this response type" << std::endl;
     abort_handler(METHOD_ERROR);
     break;
   }
+}
+
+
+void SurrBasedLevelData::
+response_center_pair(IntResponsePair& pair, short corr_response_type)
+{
+  if (corr_response_type != CORR_TRUTH_RESPONSE) {
+    Cerr << "Error: IntResponsePair assignment not supported in "
+	 << "SurrBasedLevelData for this response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  responseCenterTruthCorrected = pair;
+}
+
+
+void SurrBasedLevelData::
+response_center_pair(int eval_id, const Response& resp,
+		     short corr_response_type)
+{
+  if (corr_response_type != CORR_TRUTH_RESPONSE) {
+    Cerr << "Error: eval_id + response assignment not supported in "
+	 << "SurrBasedLevelData for this response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  responseCenterTruthCorrected.first  = eval_id;
+  responseCenterTruthCorrected.second = resp;
 }
 
 } // namespace Dakota

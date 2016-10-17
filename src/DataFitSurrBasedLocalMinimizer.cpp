@@ -167,10 +167,12 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
   short correction_order
     = probDescDB.get_short("model.surrogate.correction_order");
+  // approximation types:
   globalApproxFlag   = (strbegins(approx_type, "global_"));
   multiptApproxFlag  = (strbegins(approx_type, "multipoint_"));
   localApproxFlag    = (strbegins(approx_type, "local_"));
   hierarchApproxFlag = (approx_type == "hierarchical");
+  // derivative orders:
   truthGradientFlag  = ( localApproxFlag || multiptApproxFlag || 
 			 ( globalApproxFlag && useDerivsFlag ) ||
 			 ( correctionType && correction_order >= 1 ) ||
@@ -182,7 +184,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     = ( ( localApproxFlag && truth_model.hessian_type() != "none" ) ||
 	( correctionType  && correction_order == 2 ) );
   approxHessianFlag = ( correctionType && correction_order == 2 );
-
   // Sanity check on derivative specifications for first- and second-order SBLM.
   if ( truthGradientFlag && truth_model.gradient_type() == "none" ) {
     Cerr << "\nError: a gradient calculation method must be specified for the "
