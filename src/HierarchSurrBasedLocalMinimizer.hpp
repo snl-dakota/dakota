@@ -52,15 +52,15 @@ protected:
   void pre_run();
   void post_run(std::ostream& s);
 
-  // reset convergence controls in case of multiple MLMF executions
   //void reset();
 
-  /// update the trust region bounds, strictly contained within global bounds
+  SurrBasedLevelData& trust_region();
+
   void update_trust_region();
 
-  void verify();
-  void minimize();
   void build();
+  void minimize();
+  void verify();
 
 private:
 
@@ -101,6 +101,10 @@ private:
   // pointer to MLMF instance used in static member functions
   //static HierarchSurrBasedLocalMinimizer* mlmfInstance;
 };
+
+
+inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
+{ return trustRegions[minimizeIndex]; }
 
 
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)

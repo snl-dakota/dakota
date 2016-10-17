@@ -65,17 +65,26 @@ protected:
   //- Heading: New Virtual functions
   //
 
+  /// return the active SurrBasedLevelData instance
+  virtual SurrBasedLevelData& trust_region() = 0;
+
   /// update the trust region bounds, strictly contained within global bounds
   virtual void update_trust_region() = 0;
 
-  virtual void verify() = 0;
-  virtual void minimize() = 0;
+  /// build the approximation over the current trust region
   virtual void build() = 0;
+  /// solve the approximate subproblem
+  virtual void minimize() = 0;
+  /// verify the approximate iterate and update the trust region for
+  /// the next approximate optimization cycle
+  virtual void verify() = 0;
 
   //
   //- Heading: Member functions
   //
 
+  /// construct and initialize approxSubProbModel
+  void initialize_sub_model();
   /// construct and initialize approxSubProbMinimizer
   void initialize_sub_minimizer();
 
@@ -83,6 +92,39 @@ protected:
   void update_trust_region_data(SurrBasedLevelData& tr_data,
 				const RealVector& parent_l_bnds,
 				const RealVector& parent_u_bnds);
+
+  /// compute trust region ratio (for SBLM iterate acceptance and trust
+  /// region resizing) and check for soft convergence (diminishing returns)
+  void compute_trust_region_ratio(SurrBasedLevelData& tr_data,
+				  bool check_interior = false);
+
+  /// initialize and update the penaltyParameter
+  void update_penalty(const RealVector& fns_center_truth,
+		      const RealVector& fns_star_truth);
+
+  /// static function used to define the approximate subproblem objective.
+  static void approx_subprob_objective_eval(const Variables& surrogate_vars,
+					    const Variables& recast_vars,
+					    const Response& surrogate_response,
+					    Response& recast_response);
+  /// static function used to define the approximate subproblem constraints.
+  static void approx_subprob_constraint_eval(const Variables& surrogate_vars,
+					     const Variables& recast_vars,
+					     const Response& surrogate_response,
+					     Response& recast_response);
+
+  /// relax constraints by updating bounds when current iterate is infeasible
+  void relax_constraints(SurrBasedLevelData& tr_data);
+
+  /// static function used by NPSOL as the objective function in the
+  /// homotopy constraint relaxation formulation.
+  static void hom_objective_eval(int& mode, int& n, double* tau_and_x,
+				 double& f, double* grad_f, int&);
+  /// static function used by NPSOL as the constraint function in the
+  /// homotopy constraint relaxation formulation.
+  static void hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj,
+				  int* needc, double* tau_and_x, double* c,
+				  double* cjac, int& nstate);
 
   //
   //- Heading: Data members
@@ -92,6 +134,24 @@ protected:
   /// minimization cycle: may be a shallow copy of iteratedModel, or may
   /// involve a RecastModel recursion applied to iteratedModel
   Model approxSubProbModel;
+
+  /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
+  /// or AUGMENTED_LAGRANGIAN_OBJ
+  short approxSubProbObj;
+  /// type of approximate subproblem constraints: NO_CON, LINEARIZED_CON, or
+  /// ORIGINAL_CON
+  short approxSubProbCon;
+  /// flag to indicate when approxSubProbModel involves a RecastModel recursion
+  bool recastSubProb;
+  /// type of merit function used in trust region ratio logic: PENALTY_MERIT,
+  /// ADAPTIVE_PENALTY_MERIT, LAGRANGIAN_MERIT, or AUGMENTED_LAGRANGIAN_MERIT
+  short meritFnType;
+  /// type of iterate acceptance test logic: FILTER or TR_RATIO
+  short acceptLogic;
+
+  /// iteration offset used to update the scaling of the penalty parameter
+  /// for adaptive_penalty merit functions
+  int penaltyIterOffset;
 
   // the +/- offsets for each of the variables in the current trust region
   //RealVector trustRegionOffset;
@@ -142,11 +202,35 @@ protected:
   ActiveSet valSet;
   ActiveSet fullApproxSet;
   ActiveSet fullTruthSet;
+
+  // Data needed for computing merit functions
+  /// individual violations of nonlinear inequality constraint lower bounds
+  RealVector nonlinIneqLowerBndsSlack;
+  /// individual violations of nonlinear inequality constraint upper bounds
+  RealVector nonlinIneqUpperBndsSlack;
+  /// individual violations of nonlinear equality constraint targets
+  RealVector nonlinEqTargetsSlack;
+  /// constraint relaxation parameter
+  Real tau;
+  /// constraint relaxation parameter backoff parameter (multiplier)
+  Real alpha;
+
+  /// pointer to SBLM instance used in static member functions
+  static SurrBasedLocalMinimizer* sblmInstance;
 };
 
 
 inline void SurrBasedLocalMinimizer::reset()
-{ convergenceFlag = softConvCount = sbIterNum = 0; }
+{
+  convergenceFlag = softConvCount = sbIterNum = 0;
+
+  penaltyIterOffset = -200; penaltyParameter  = 5.;
+
+  eta               = 1.;
+  alphaEta          = 0.1;
+  betaEta           = 0.9;
+  etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
+}
 
 } // namespace Dakota
 

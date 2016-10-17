@@ -48,9 +48,13 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // no sub-problem recastings yet...
-  approxSubProbModel = iteratedModel;
+  approxSubProbObj = ORIGINAL_PRIMARY;
+  approxSubProbCon = ORIGINAL_CONSTRAINTS;
+  meritFnType = AUGMENTED_LAGRANGIAN_MERIT;
+  acceptLogic = FILTER;
 
-  // Instantiate the approximate sub-problem minimizer
+  // Instantiate the Model and Minimizer for the approximate sub-problem
+  initialize_sub_model();
   initialize_sub_minimizer();
 
   // Get number of model fidelities and number of levels for each fidelity:
@@ -318,7 +322,7 @@ void HierarchSurrBasedLocalMinimizer::verify()
   trustRegions[minimizeIndex].response_star(truth_model.current_response(),
 					    UNCORR_TRUTH_RESPONSE);
 
-  tr_ratio_check(tr_index);
+  compute_trust_region_ratio(trustRegions[tr_index]); // no check_interior
 
   // If the candidate optimum (vars_star) is accepted, then update the
   // center variables and response data.
@@ -461,127 +465,35 @@ hard_convergence_check(size_t tr_index)
 }
 
 
-/** Assess acceptance of SBLM iterate (trust region ratio or filter)
-    and compute soft convergence metrics (number of consecutive
-    failures, min trust region size, etc.) to assess whether the
-    convergence rate has decreased to a point where the process should
-    be terminated (diminishing returns). */
-void HierarchSurrBasedLocalMinimizer::tr_ratio_check(size_t tr_index)
+/*
+void HierarchSurrBasedLocalMinimizer::
+compute_trust_region_ratio(SurrBasedLevelData& tr_data)
 {
-  Response truth_center_uncorrected
-    = trustRegions[tr_index].response_center(UNCORR_TRUTH_RESPONSE);
-  Response truth_star_uncorrected
-    = trustRegions[tr_index].response_star(UNCORR_TRUTH_RESPONSE);
-  Response approx_center_corrected
-    = trustRegions[tr_index].response_center(CORR_APPROX_RESPONSE);
-  Response approx_star_corrected
-    = trustRegions[tr_index].response_star(CORR_APPROX_RESPONSE);
+  // TODO: we need both data sets consistently corrected, but for > 2 levels,
+  // do we want both sets corrected all the way to HF, or the approx corrected
+  // 1 level only for consistency with uncorrected truth?
 
-  // TODO: mostly the same from here down...
-  // TODO: make modular on a SurrBasedLevelData instance and then DFSBLM has 1,
-  // while HSBLM has multiple
+  const RealVector& fns_center_truth
+    = tr_data.response_center(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_star_truth
+    = tr_data.response_star(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_center_approx
+    = tr_data.response_center(CORR_APPROX_RESPONSE).function_values();
+  const RealVector& fns_star_approx
+    = tr_data.response_star(CORR_APPROX_RESPONSE).function_values();
 
-  const RealVector& fns_center_truth = truth_center_uncorrected.function_values();
-  const RealVector& fns_star_truth = truth_star_uncorrected.function_values();
-  const RealVector& fns_center_approx = approx_center_corrected.function_values();
-  const RealVector& fns_star_approx = approx_star_corrected.function_values();
-
-  // ---------------------------------------------------
-  // Compute trust region ratio based on merit fn values
-  // ---------------------------------------------------
-
-  Real merit_fn_center_truth,  merit_fn_star_truth,
-       merit_fn_center_approx, merit_fn_star_approx;
-
-  // TO DO: in global case, search dace_iterator.all_responses() for a
-  // better point (using merit fn or filter?) than the minimizer found.
-  // If this occurs, then accept point but shrink TR.
-  //Iterator& dace_iterator = iteratedModel.subordinate_iterator();
-  //IntResponseMap dace_responses;
-  //if (globalApproxFlag && !dace_iterator.is_null())
-  //  dace_responses = dace_iterator.all_responses();
-
-  // Consolidate objective fn values and constraint violations into a
-  // single merit fn value for center truth/approx and star truth/approx.
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-
+  // no constraints...
   merit_fn_center_truth = objective(fns_center_truth, sense, wts);
   merit_fn_star_truth = objective(fns_star_truth, sense, wts);
   merit_fn_center_approx = objective(fns_center_approx, sense, wts);
   merit_fn_star_approx = objective(fns_star_approx, sense, wts);
 
-  // Compute numerator/denominator for the TR ratio using merit fn values.
-  // NOTE 1: this formulation generalizes to the case where correction is not
-  // applied.  When correction is applied, this is equivalent to the form of
-  // center_truth - star_approx published by some authors (which can give the
-  // wrong sense without at least 0th-order consistency).
-  // NOTE 2: it is possible for the denominator to be < 0.0 due to
-  // (1) inconsistencies in merit function definition between the minimizer
-  // and SBLM, or (2) minimizer failure on the surrogate models (e.g., early
-  // termination if no feasible solution can be found).  For this reason, the
-  // logic checks below cannot rely solely on tr_ratio (and the signs of
-  // numerator and denominator must be preserved).
-  Real numerator   = merit_fn_center_truth  - merit_fn_star_truth;
-  Real denominator = merit_fn_center_approx - merit_fn_star_approx;
-  Real tr_ratio = (std::fabs(denominator) > DBL_MIN) ? numerator / denominator
-                  : numerator;
-
-  // Accept the step based on simple decrease in the truth merit functions.
-  // This avoids any issues with denominator < 0 in tr_ratio:
-  //   numerator > 0 and denominator < 0: accept step and contract TR
-  //   numerator < 0 and denominator < 0: reject step even though tr_ratio > 0
+   // no FILTER...
   bool accept_step = (numerator > 0.);
 
-  // ------------------------------------------
-  // Trust region shrink/expand/translate logic
-  // ------------------------------------------
-
-  if (accept_step) {
-    trustRegions[tr_index].new_center(true); // TODO: differs...
-
-    // Update the trust region size depending on the accuracy of the approximate
-    // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
-    // change where eta_1 = trRatioContractValue and eta_2 = trRatioExpandValue
-    // Recommended values from Conn/Gould/Toint are: eta_1 = 0.05, eta_2 = 0.90
-    // For SBLM, the following are working better:   eta_1 = 0.25, eta_2 = 0.75
-    // More experimentation is needed.
-    Cout << "\n<<<<< Trust Region Ratio = " << tr_ratio << ":\n<<<<< ";
-    if (tr_ratio <= trRatioContractValue) { // accept optimum, shrink TR
-      trustRegions[tr_index].scale_trust_region_factor(gammaContract);
-      Cout << "Marginal Accuracy, ACCEPT Step, REDUCE Trust Region Size\n\n";
-    } else if (std::fabs(1.-tr_ratio) <= 1.-trRatioExpandValue) { //accept & expand
-      // for trRatioExpandValue = 0.75, expand if 0.75 <= tr_ratio <= 1.25
-      // This new logic avoids increasing the TR size when a good step is found
-      // but the surrogates are inaccurate (e.g., tr_ratio = 2).
-      trustRegions[tr_index].scale_trust_region_factor(gammaExpand);
-      Cout << "Excellent Accuracy, ACCEPT Step, INCREASE Trust Region Size"
-           << "\n\n";
-    } else // accept optimum, retain current TR
-      Cout <<"Satisfactory Accuracy, ACCEPT Step, RETAIN Trust Region Size\n\n";
-  } else {
-    // If the step is rejected, then retain the current design variables
-    // and shrink the TR size.
-    trustRegions[tr_index].new_center(false);
-    trustRegions[tr_index].scale_trust_region_factor(gammaContract);
-    if (tr_ratio > 0.) // rare case of denominator<0
-      Cout << "\n<<<<< Trust Region Ratio Numerator = " << numerator;
-    else
-      Cout << "\n<<<<< Trust Region Ratio = " << tr_ratio;
-
-    Cout << ":\n<<<<< Poor accuracy, REJECT Step, REDUCE Trust Region Size\n\n";
-  }
-
-  Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-    std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
-  Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-    std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
-  if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
-       denominator <= 0. || rel_denom < convergenceTol )
-    softConvCount++;
-  else
-    softConvCount = 0; // reset counter to zero
+  // Same from here down, except no FILTER, globalApprox options ...
 }
+*/
 
 
 // top level: not bound to core_run() yet...
