@@ -130,16 +130,19 @@ add_custom_target(docs-doxygen
 
 # build PDFs of dev/ref (not portable due to tex modifications)
 
-# Create texmf.cnf to prevent buffer overrun problem 
-# TODO: use `kpsewhich texmf.cnf` to get file location
-set(texmf_cnf_src /usr/share/texmf/web2c/texmf.cnf)
+# Create (or modify) texmf.cnf to prevent buffer overrun problem 
+execute_process(COMMAND kpsewhich texmf.cnf OUTPUT_VARIABLE texmf_cnf_src)
+
+# If save_size exists in texmf.cnf, multiply it by 10x and replace. Otherwise, append 
+# save_size = 150000 to the end.
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   DEPENDS ${texmf_cnf_src}
-  COMMAND sh -c 
+    COMMAND sh -c 
     'curr_save_size=`grep -o \"save_size = [0-9]*\" ${texmf_cnf_src} | cut -f2 -d'='` && 
      new_save_size=`expr 10 \\* $$curr_save_size` &&
-     sed -e \"s/save_size = [0-9]\\+/save_size = $$new_save_size/g\" ${texmf_cnf_src} > ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf'
+     sed -e \"s/save_size = [0-9]\\+/save_size = $$new_save_size/g\" ${texmf_cnf_src} > ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf ||
+     { cat ${texmf_cnf_src}; echo \"save_size = 150000\"; } > ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf'
 )
 add_custom_target(docs-texmf-cnf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf)
 
