@@ -74,15 +74,16 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Simpler case than DFSBLM:
-  short correction_order
-    = probDescDB.get_short("model.surrogate.correction_order");
-  truthGradientFlag  = ( ( correctionType && correction_order >= 1 ) );// ||
-			 // meritFnType      == LAGRANGIAN_MERIT ||
-			 // approxSubProbObj == LAGRANGIAN_OBJECTIVE );
-  approxGradientFlag = ( ( correctionType && correction_order >= 1 ) );// ||
-                        // approxSubProbCon == LINEARIZED_CONSTRAINTS );
-  truthHessianFlag  = ( correctionType && correction_order == 2 );
-  approxHessianFlag = ( correctionType && correction_order == 2 );
+  short corr_order = (correctionType) ?
+    probDescDB.get_short("model.surrogate.correction_order") : -1;
+  approxSetRequest = truthSetRequest = 1;
+  if (corr_order >= 1 )// || meritFnType      == LAGRANGIAN_MERIT
+                       // || approxSubProbObj == LAGRANGIAN_OBJECTIVE )
+    truthSetRequest |= 2;
+  if (corr_order >= 1 )// || approxSubProbCon == LINEARIZED_CONSTRAINTS )
+    approxSetRequest |= 2;
+  if (corr_order == 2)
+    { truthSetRequest |= 4; approxSetRequest |= 4; }
 }
 
 
@@ -108,10 +109,10 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
     sbl_data.trust_region_factor(origTrustRegionFactor * 
 				 std::pow(0.5, numFid-2-i)); // shaped
 
-    sbl_data.active_set_star(valSet, APPROX_RESPONSE);
-    sbl_data.active_set_star(valSet,  TRUTH_RESPONSE);
-    sbl_data.active_set_center(fullApproxSet, APPROX_RESPONSE);
-    sbl_data.active_set_center(fullTruthSet,   TRUTH_RESPONSE);
+    sbl_data.active_set_star(1, APPROX_RESPONSE);
+    sbl_data.active_set_star(1,  TRUTH_RESPONSE);
+    sbl_data.active_set_center(approxSetRequest, APPROX_RESPONSE);
+    sbl_data.active_set_center(truthSetRequest,   TRUTH_RESPONSE);
   }
 }
 

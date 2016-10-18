@@ -181,14 +181,10 @@ protected:
   /// exceeded by softConvCount, stop SBLM.
   unsigned short softConvLimit;
 
-  /// flags the use/availability of truth gradients within the SBLM process
-  bool truthGradientFlag;
-  /// flags the use/availability of surrogate gradients within the SBLM process
-  bool approxGradientFlag;
-  /// flags the use/availability of truth Hessians within the SBLM process
-  bool truthHessianFlag;
-  /// flags the use/availability of surrogate Hessians within the SBLM process
-  bool approxHessianFlag;
+  /// derivative order of truth data used within the SBLM process
+  short truthSetRequest;
+  /// derivative order of surrogate data used within the SBLM process
+  bool approxSetRequest;
 
   /// flags the use of surrogate correction techniques at the center
   /// of each trust region
@@ -201,10 +197,6 @@ protected:
   RealVector globalLowerBnds;
   /// Global Upper bounds
   RealVector globalUpperBnds;
-
-  ActiveSet valSet;
-  ActiveSet fullApproxSet;
-  ActiveSet fullTruthSet;
 
   // Data needed for computing merit functions
   /// individual violations of nonlinear inequality constraint lower bounds

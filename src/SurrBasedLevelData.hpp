@@ -86,9 +86,13 @@ public:
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
 			 bool uncorr = true);
+  void active_set_center(short request, short response_type,
+			 bool uncorr = true);
+
   const ActiveSet& active_set_star(short response_type) const;
   void active_set_star(const ActiveSet& set, short response_type,
 		       bool uncorr = true);
+  void active_set_star(short request, short response_type, bool uncorr = true);
 
   size_t approx_model_form();
   size_t approx_model_level();
@@ -105,7 +109,7 @@ public:
   Real tr_upper_bound(size_t i) const;
   void tr_upper_bounds(const RealVector& bounds);
   void tr_upper_bound(Real bound, size_t i);
-  
+
 private:
 
   Variables varsStar;   ///< variables at the new solution iterate
@@ -226,6 +230,46 @@ inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
 { varsStar.continuous_variable(c_var, i); }
+
+
+inline const ActiveSet& SurrBasedLevelData::
+active_set_center(short response_type) const
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:
+    return responseCenterTruthCorrected.second.active_set(); break;
+  case APPROX_RESPONSE:
+    return responseCenterApproxCorrected.active_set();       break;
+  }
+}
+
+
+inline void SurrBasedLevelData::
+active_set_center(short request, short response_type, bool uncorr)
+{
+  ActiveSet new_set = active_set_center(response_type); // copy
+  new_set.request_values(request);
+  active_set_center(new_set, response_type, uncorr);
+}
+
+
+inline const ActiveSet& SurrBasedLevelData::
+active_set_star(short response_type) const
+{
+  switch (response_type) {
+  case TRUTH_RESPONSE:  return responseStarTruthCorrected.active_set();  break;
+  case APPROX_RESPONSE: return responseStarApproxCorrected.active_set(); break;
+  }
+}
+
+
+inline void SurrBasedLevelData::
+active_set_star(short request, short response_type, bool uncorr)
+{
+  ActiveSet new_set = active_set_star(response_type); // copy
+  new_set.request_values(request);
+  active_set_star(new_set, response_type, uncorr);
+}
 
 
 inline size_t SurrBasedLevelData::approx_model_form()

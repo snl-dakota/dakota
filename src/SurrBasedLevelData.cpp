@@ -49,31 +49,6 @@ initialize_indices(size_t approx_form,  size_t truth_form,
 
 
 void SurrBasedLevelData::
-active_set_star(const ActiveSet& set, short response_type, bool uncorr)
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    responseStarTruthCorrected.active_set(set);
-    if (uncorr) responseStarTruthUncorrected.active_set(set);
-    break;
-  case APPROX_RESPONSE:
-    responseStarApproxCorrected.active_set(set);
-    if (uncorr) responseStarApproxUncorrected.active_set(set);
-    break;
-  }
-}
-
-
-const ActiveSet& SurrBasedLevelData::active_set_star(short response_type) const
-{
-  switch (response_type) {
-  case TRUTH_RESPONSE:  return responseStarTruthCorrected.active_set();  break;
-  case APPROX_RESPONSE: return responseStarApproxCorrected.active_set(); break;
-  }
-}
-
-
-void SurrBasedLevelData::
 active_set_center(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
@@ -89,14 +64,18 @@ active_set_center(const ActiveSet& set, short response_type, bool uncorr)
 }
 
 
-const ActiveSet& SurrBasedLevelData::
-active_set_center(short response_type) const
+void SurrBasedLevelData::
+active_set_star(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
   case TRUTH_RESPONSE:
-    return responseCenterTruthCorrected.second.active_set(); break;
+    responseStarTruthCorrected.active_set(set);
+    if (uncorr) responseStarTruthUncorrected.active_set(set);
+    break;
   case APPROX_RESPONSE:
-    return responseCenterApproxCorrected.active_set();       break;
+    responseStarApproxCorrected.active_set(set);
+    if (uncorr) responseStarApproxUncorrected.active_set(set);
+    break;
   }
 }
 

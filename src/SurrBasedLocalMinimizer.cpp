@@ -240,21 +240,6 @@ void SurrBasedLocalMinimizer::pre_run()
   copy_data(iteratedModel.continuous_variables(),    initialPoint);
   copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
   copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
-
-  // grad/Hess flags are set in derived ctors prior to calling base pre_run()
-
-  // TO DO: verify utility of these for HSBLM...
-  // Create commonly-used ActiveSets
-  valSet = fullApproxSet = fullTruthSet
-    = iteratedModel.current_response().active_set();
-  int full_approx_val = 1, full_truth_val = 1;
-  if (approxGradientFlag) full_approx_val += 2;
-  if (approxHessianFlag)  full_approx_val += 4;
-  if (truthGradientFlag)  full_truth_val  += 2;
-  if (truthHessianFlag)   full_truth_val  += 4;
-  valSet.request_values(1);
-  fullApproxSet.request_values(full_approx_val);
-  fullTruthSet.request_values(full_truth_val);
 }
 
 
@@ -957,13 +942,13 @@ find_approx_response(const Variables& search_vars, Response& search_resp)
     = lookup_by_val(data_pairs, search_id, search_vars, search_set);
   if (cache_it != data_pairs.get<hashed>().end()) {
     search_resp.function_values(cache_it->response().function_values());
-    if (approxGradientFlag) {
+    if (approxSetRequest & 2) {
       search_set.request_values(2);
       cache_it = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
 	search_resp.function_gradients(
 	  cache_it->response().function_gradients());
-	if (approxHessianFlag) {
+	if (approxSetRequest & 4) {
 	  search_set.request_values(4);
 	  cache_it
 	    = lookup_by_val(data_pairs, search_id, search_vars, search_set);

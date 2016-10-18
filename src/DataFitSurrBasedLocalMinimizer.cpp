@@ -74,46 +74,56 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   // Initialize method/interface dependent settings
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
-  short correction_order
-    = probDescDB.get_short("model.surrogate.correction_order");
+  short corr_order = (correctionType) ?
+    probDescDB.get_short("model.surrogate.correction_order") : -1;
   // approximation types:
   globalApproxFlag   = (strbegins(approx_type, "global_"));
   multiptApproxFlag  = (strbegins(approx_type, "multipoint_"));
   localApproxFlag    = (strbegins(approx_type, "local_"));
   hierarchApproxFlag = (approx_type == "hierarchical");
   // derivative orders:
-  truthGradientFlag  = ( localApproxFlag || multiptApproxFlag || 
-			 ( globalApproxFlag && useDerivsFlag ) ||
-			 ( correctionType && correction_order >= 1 ) ||
-			 meritFnType      == LAGRANGIAN_MERIT ||
-			 approxSubProbObj == LAGRANGIAN_OBJECTIVE );
-  approxGradientFlag = ( ( correctionType && correction_order >= 1 ) ||
-			 approxSubProbCon == LINEARIZED_CONSTRAINTS );
-  truthHessianFlag
-    = ( ( localApproxFlag && truth_model.hessian_type() != "none" ) ||
-	( correctionType  && correction_order == 2 ) );
-  approxHessianFlag = ( correctionType && correction_order == 2 );
-  // Sanity check on derivative specifications for first- and second-order SBLM.
-  if ( truthGradientFlag && truth_model.gradient_type() == "none" ) {
-    Cerr << "\nError: a gradient calculation method must be specified for the "
-	 << "truth model.\n" << std::endl;
-    abort_handler(-1);
+  approxSetRequest = truthSetRequest = 1;
+  if (corr_order >= 1 || ( globalApproxFlag && useDerivsFlag ) ||
+      localApproxFlag || multiptApproxFlag || meritFnType == LAGRANGIAN_MERIT ||
+      approxSubProbObj == LAGRANGIAN_OBJECTIVE ) {
+    truthSetRequest |= 2;
+    if (truth_model.gradient_type() == "none" ) {
+      Cerr << "\nError: a gradient calculation method must be specified for "
+	   << "the truth model.\n" << std::endl;
+      abort_handler(-1);
+    }
   }
-  if ( approxGradientFlag && approx_model.gradient_type() == "none" ) {
-    Cerr << "\nError: a gradient calculation method must be specified for the "
-	 << "surrogate model.\n" << std::endl;
-    abort_handler(-1);
+  if (corr_order == 2 ||
+      ( localApproxFlag && truth_model.hessian_type() != "none" ) ) {
+    truthSetRequest |= 4;
+    if (truth_model.hessian_type() == "none" ) {
+      Cerr << "\nError: a Hessian calculation method must be specified for the "
+	   << "truth model.\n" << std::endl;
+      abort_handler(-1);
+    }
   }
-  if ( truthHessianFlag && truth_model.hessian_type() == "none" ) {
-    Cerr << "\nError: a Hessian calculation method must be specified for the "
-	 << "truth model.\n" << std::endl;
-    abort_handler(-1);
+  if (corr_order >= 1 || approxSubProbCon == LINEARIZED_CONSTRAINTS) {
+    approxSetRequest |= 2;
+    if (approx_model.gradient_type() == "none" ) {
+      Cerr << "\nError: a gradient calculation method must be specified for "
+	   << "the surrogate model.\n" << std::endl;
+      abort_handler(-1);
+    }
   }
-  if ( approxHessianFlag && approx_model.hessian_type() == "none" ) {
-    Cerr << "\nError: a Hessian calculation method must be specified for the "
-	 << "surrogate model.\n" << std::endl;
-    abort_handler(-1);
+  if (corr_order == 2) {
+    approxSetRequest |= 4;
+    if (approx_model.hessian_type() == "none" ) {
+      Cerr << "\nError: a Hessian calculation method must be specified for the "
+	   << "surrogate model.\n" << std::endl;
+      abort_handler(-1);
+    }
   }
+
+  // initialize ActiveSets
+  trustRegionData.active_set_center(truthSetRequest,   TRUTH_RESPONSE, false);
+  trustRegionData.active_set_center(approxSetRequest, APPROX_RESPONSE, false);
+  trustRegionData.active_set_star(1,  TRUTH_RESPONSE, false);
+  trustRegionData.active_set_star(1, APPROX_RESPONSE, false);
 
   // initialize Lagrange multipliers
   size_t num_multipliers = numNonlinearEqConstraints;
@@ -123,7 +133,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
       num_multipliers++;
   }
-  if (truthGradientFlag || meritFnType == LAGRANGIAN_MERIT ||
+  if ( (truthSetRequest & 2) || meritFnType == LAGRANGIAN_MERIT ||
       approxSubProbObj == LAGRANGIAN_OBJECTIVE) {
     lagrangeMult.resize(num_multipliers);
     lagrangeMult = 0.;
@@ -180,12 +190,8 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
 
-  // set variables and ActiveSets
+  // initialize TR center from initial point
   trustRegionData.vars_center(iteratedModel.current_variables());
-  trustRegionData.active_set_center(fullTruthSet,   TRUTH_RESPONSE, false);
-  trustRegionData.active_set_center(fullApproxSet, APPROX_RESPONSE, false);
-  trustRegionData.active_set_star(valSet,  TRUTH_RESPONSE, false);
-  trustRegionData.active_set_star(valSet, APPROX_RESPONSE, false);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();
@@ -335,7 +341,7 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
 			 globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
-  return ( localApproxFlag || (multiptApproxFlag && !approxHessianFlag) );
+  return ( localApproxFlag || (multiptApproxFlag && !(approxSetRequest & 4)) );
 }
 
 
@@ -408,7 +414,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
 	 << "recasting.\n";
     iteratedModel.active_variables(trustRegionData.vars_star());
     // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-    iteratedModel.evaluate(valSet);
+    iteratedModel.evaluate(); // fn values only
     trustRegionData.response_star(iteratedModel.current_response(),
 				  CORR_APPROX_RESPONSE);
   }
@@ -437,11 +443,11 @@ void DataFitSurrBasedLocalMinimizer::verify()
   if (multiLayerBypassFlag) {
     short mode = truth_model.surrogate_response_mode();
     truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-    truth_model.evaluate(valSet);
+    truth_model.evaluate(); // fn values only
     truth_model.surrogate_response_mode(mode); // restore
   }
   else
-    truth_model.evaluate(valSet);
+    truth_model.evaluate(); // fn values only
   const Response& truth_resp = truth_model.current_response();
   trustRegionData.response_star(truth_resp, CORR_TRUTH_RESPONSE);
 
@@ -502,8 +508,8 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
   // -->> local/multipt/hierarchical: don't replace truth response w/i surrogate
   // -->> global CCD/BB: don't replace data in fit (apples/oranges).
   // -->> global with other DACE: don't add to fit (apples/oranges).
-  bool found = false;
-  if (sbIterNum && !truthGradientFlag)
+  bool found = false, truth_grads = (truthSetRequest & 2);
+  if (sbIterNum && !truth_grads)
     // responseCenterTruth updated from responseStarTruth
     // (responseStarTruth has surrogate bypass; build_approx() does not)
     found = true;
@@ -529,8 +535,8 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
 	const ShortArray& asv = r_it->active_set_request_vector();
 	bool incomplete = false;
 	for (j=0; j<numFunctions; j++)
-	  if ( !(asv[j] & 1) || ( truthGradientFlag && !(asv[j] & 2) )
-	                     || ( truthHessianFlag  && !(asv[j] & 4) ) )
+	  if ( !(asv[j] & 1) || ( truth_grads           && !(asv[j] & 2) )
+	                     || ( (truthSetRequest & 4) && !(asv[j] & 4) ) )
 	    incomplete = true;
 	if (!incomplete) {
 	  trustRegionData.response_center_pair(*r_it, CORR_TRUTH_RESPONSE);
@@ -548,16 +554,14 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.continuous_variables(trustRegionData.c_vars_center());
-    const ActiveSet& set
-      = trustRegionData.response_center(CORR_TRUTH_RESPONSE).active_set();
     if (multiLayerBypassFlag) {
       short mode = truth_model.surrogate_response_mode();
       truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-      truth_model.evaluate(set);
+      truth_model.evaluate(trustRegionData.active_set_center(TRUTH_RESPONSE));
       truth_model.surrogate_response_mode(mode); // restore
     }
     else
-      truth_model.evaluate(set);
+      truth_model.evaluate(trustRegionData.active_set_center(TRUTH_RESPONSE));
     trustRegionData.response_center_pair(truth_model.evaluation_id(),
 					 truth_model.current_response(),
 					 CORR_TRUTH_RESPONSE);
@@ -593,7 +597,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
       CORR_APPROX_RESPONSE);
     found = true;
   }
-  else if (multiptApproxFlag && !approxHessianFlag) {
+  else if (multiptApproxFlag && !(approxSetRequest & 4)) {
     // Note: current multipoint approximation (TANA) exactly reproduces value
     // and gradient at current expansion point and value at previous expansion
     // point.  It will also normally reproduce the gradient at the previous
@@ -613,8 +617,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
   else { // responseCenterApprox not available
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    iteratedModel.evaluate(
-      trustRegionData.response_center(CORR_APPROX_RESPONSE).active_set());
+    iteratedModel.evaluate(trustRegionData.active_set_center(APPROX_RESPONSE));
     trustRegionData.response_center(iteratedModel.current_response(),
 				    CORR_APPROX_RESPONSE);
   }
@@ -651,7 +654,7 @@ hard_convergence_check(const Response& response_truth,
   }
 
   // hard convergence assessment requires gradients
-  if (!truthGradientFlag)
+  if ( !(truthSetRequest & 2) )
     return;
 
   // update standard Lagrangian multipliers
