@@ -172,6 +172,9 @@ private:
   /// offsets for constraint transformations
   std::vector<double> constrMapOffsets;
 
+  /// defines use of surrogate in NOMAD
+  std::string useSgte;
+
 public:
 
   /// Constructor
@@ -222,6 +225,10 @@ public:
       constrMapIndices = constraintMapIndices;
     constrMapMultipliers = constraintMapMultipliers;
     constrMapOffsets = constraintMapOffsets;}
+
+  /// publishes surrogate usage
+  void set_surrogate_usage (std::string useSurrogate)
+  { useSgte = useSurrogate;}
 };
 
 class NomadOptimizer::Extended_Poll : public NOMAD::Extended_Poll

@@ -11,6 +11,8 @@ environment,
 method,
 	mesh_adaptive_search
 #	model_pointer = 'SURROGATE'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	use_surrogate optimize					#s9,#s10,#s11,#s12
+#	use_surrogate inform_search				#s13,#s14,#s15,#s16
 	seed = 1234
 #       max_function_evaluations = 1000				#s5,#s14
 #	max_iterations = 100					#s5,#s14
