@@ -316,7 +316,7 @@ void DataFitSurrModel::build_approximation()
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed1.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 }
 
 
@@ -423,7 +423,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 
   approxBuilds++;
 
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed2.\n";
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be

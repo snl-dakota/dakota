@@ -20,6 +20,9 @@ void SurrBasedLevelData::
 initialize_responses(const Response& approx_resp, const Response& truth_resp,
 		     bool uncorr)
 {
+  // Initialize with deep response copies to avoid representation sharing;
+  // Response::update() is then used for run time assignments.
+
   responseStarApproxCorrected   = approx_resp.copy();
   responseCenterApproxCorrected = approx_resp.copy();
 
@@ -194,7 +197,8 @@ response_center_pair(IntResponsePair& pair, short corr_response_type)
     abort_handler(METHOD_ERROR);
   }
 
-  responseCenterTruthCorrected = pair;
+  responseCenterTruthCorrected.first = pair.first;
+  responseCenterTruthCorrected.second.update(pair.second);
 }
 
 
@@ -209,7 +213,7 @@ response_center_pair(int eval_id, const Response& resp,
   }
 
   responseCenterTruthCorrected.first  = eval_id;
-  responseCenterTruthCorrected.second = resp;
+  responseCenterTruthCorrected.second.update(resp);
 }
 
 } // namespace Dakota

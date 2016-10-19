@@ -46,13 +46,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 {
   Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
-  // Initialize response results objects (approx/truth and center/star).  These
-  // must be deep copies to avoid representation sharing: initialize with copy()
-  // and then use update() within the main loop.
-  trustRegionData.initialize_responses(approx_model.current_response(),
-				       truth_model.current_response(), false);
-  trustRegionData.response_center_id(truth_model.evaluation_id(),
-				     CORR_TRUTH_RESPONSE);
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
@@ -63,7 +56,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // surrogate bypass allows for rigorous evaluation of responseCenterTruth
   // and responseStarTruth (which would otherwise involve an approximation).
   if ( probDescDB.get_bool("method.sbl.truth_surrogate_bypass") == true ) {
-    Model& truth_model = iteratedModel.truth_model();
     if (truth_model.model_type() == "surrogate")
       multiLayerBypassFlag = true;
     ModelList& ml = truth_model.subordinate_models();
@@ -119,11 +111,21 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     }
   }
 
+  // size the trust region bounds to allow individual updates
+  trustRegionData.initialize_bounds(numContinuousVars);
+  // Initialize response results objects (approx/truth and center/star)
+  trustRegionData.initialize_responses(approx_model.current_response(),
+				       truth_model.current_response(), false);
+  // responseCenterTruth is an IntResponsePair: init the eval_id
+  trustRegionData.response_center_id(truth_model.evaluation_id(),
+				     CORR_TRUTH_RESPONSE);
   // initialize ActiveSets
   trustRegionData.active_set_center(truthSetRequest,   TRUTH_RESPONSE, false);
   trustRegionData.active_set_center(approxSetRequest, APPROX_RESPONSE, false);
   trustRegionData.active_set_star(1,  TRUTH_RESPONSE, false);
   trustRegionData.active_set_star(1, APPROX_RESPONSE, false);
+  // initialize TR factor
+  trustRegionData.trust_region_factor(origTrustRegionFactor);
 
   // initialize Lagrange multipliers
   size_t num_multipliers = numNonlinearEqConstraints;
@@ -190,7 +192,7 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
 
-  // initialize TR center from initial point
+  // initialize TR center from current Model state
   trustRegionData.vars_center(iteratedModel.current_variables());
 
   // Extract subIterator/subModel(s) from the SurrogateModel
@@ -254,8 +256,8 @@ void DataFitSurrBasedLocalMinimizer::reset()
 {
   SurrBasedLocalMinimizer::reset();
 
-  trustRegionData.trust_region_factor(origTrustRegionFactor);
   trustRegionData.new_center(true);
+  trustRegionData.trust_region_factor(origTrustRegionFactor);
 
   //lagrangeMult    = 0.; // not necessary since redefined each time
   augLagrangeMult   = 0.; // necessary since += used

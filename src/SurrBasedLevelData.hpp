@@ -37,6 +37,8 @@ public:
   /// destructor
   ~SurrBasedLevelData();
 
+  /// size the trsut region bound arrays to allow individual updates
+  void initialize_bounds(size_t num_c_vars);
   /// initialize response objects via copy
   void initialize_responses(const Response& approx_resp,
 			    const Response& truth_resp, bool uncorr = true);
@@ -162,6 +164,13 @@ inline SurrBasedLevelData::SurrBasedLevelData():
 
 inline SurrBasedLevelData::~SurrBasedLevelData()
 { }
+
+
+inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
+{
+  trLowerBounds.sizeUninitialized(num_c_vars); // assign -DBL_MAX?
+  trUpperBounds.sizeUninitialized(num_c_vars); // assign +DBL_MAX?
+}
 
 
 inline bool SurrBasedLevelData::new_center()

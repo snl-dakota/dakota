@@ -184,7 +184,7 @@ protected:
   /// derivative order of truth data used within the SBLM process
   short truthSetRequest;
   /// derivative order of surrogate data used within the SBLM process
-  bool approxSetRequest;
+  short approxSetRequest;
 
   /// flags the use of surrogate correction techniques at the center
   /// of each trust region

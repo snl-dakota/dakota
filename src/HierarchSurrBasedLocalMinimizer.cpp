@@ -67,9 +67,12 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // TODO: Only 1D for multifidelity -- need to support MLMF
   trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
+    // size the trust region bounds to allow individual updates
+    trustRegions[i].initialize_bounds(numContinuousVars);
     // assign approx and truth for this level
     trustRegions[i].initialize_responses(ml_iter->current_response(),
 					 (++ml_iter)->current_response());
+    // assign the approx / truth model forms
     trustRegions[i].initialize_indices(i, i+1);
   }
 
