@@ -171,7 +171,7 @@ if ( DAKOTA_CMAKE_HOSTFILE )
 endif()
 
 if ( DAKOTA_JENKINS_BUILD )
-  set_configure_command( “JenkinsBuild.cmake” )
+  set_configure_command( "JenkinsBuild.cmake" )
 endif()
 
 set(CTEST_CONFIGURE_COMMAND
