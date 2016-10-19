@@ -65,7 +65,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   if (iteratedModel.model_type() != "surrogate") {
     Cerr << "Error: SurrBasedLocalMinimizer::iteratedModel must be a "
 	 << "surrogate model." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   bestVariablesArray.push_back(
@@ -295,7 +295,7 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   else {
     Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   Cout << "Total Number of Iterations = " << sbIterNum << '\n';
 

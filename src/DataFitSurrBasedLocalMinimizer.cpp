@@ -90,7 +90,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (truth_model.gradient_type() == "none" ) {
       Cerr << "\nError: a gradient calculation method must be specified for "
 	   << "the truth model.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
   if (corr_order == 2 ||
@@ -99,7 +99,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (truth_model.hessian_type() == "none" ) {
       Cerr << "\nError: a Hessian calculation method must be specified for the "
 	   << "truth model.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
   if (corr_order >= 1 || approxSubProbCon == LINEARIZED_CONSTRAINTS) {
@@ -107,7 +107,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (approx_model.gradient_type() == "none" ) {
       Cerr << "\nError: a gradient calculation method must be specified for "
 	   << "the surrogate model.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
   if (corr_order == 2) {
@@ -115,7 +115,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (approx_model.hessian_type() == "none" ) {
       Cerr << "\nError: a Hessian calculation method must be specified for the "
 	   << "surrogate model.\n" << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
 
@@ -170,7 +170,7 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     Cerr << "Error: this executable not configured with NPSOL.\n       "
 	 << "DataFitSurrBasedLocalMinimizer cannot perform constraint "
 	 << "relaxation." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 #endif
 

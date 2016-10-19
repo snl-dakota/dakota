@@ -97,10 +97,10 @@ const Response& SurrBasedLevelData::
 response_center(short corr_response_type) const
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseCenterTruthCorrected.second; break;
-  case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
+  case CORR_TRUTH_RESPONSE:   return responseCenterTruthCorrected.second; break;
+  case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;     break;
+  case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;      break;
+  case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected;    break;
   }
 }
 */
