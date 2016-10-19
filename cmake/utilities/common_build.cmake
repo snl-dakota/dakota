@@ -170,7 +170,7 @@ if ( DAKOTA_CMAKE_HOSTFILE )
   set_configure_command( ${DAKOTA_CMAKE_HOSTFILE} SUBDIR platforms )
 endif()
 
-if ( DAKOTA_CMAKE_HOSTFILE )
+if ( DAKOTA_JENKINS_BUILD )
   set_configure_command( “JenkinsBuild.cmake” )
 endif()
 
