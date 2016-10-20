@@ -20,9 +20,6 @@
 #include "PRPMultiIndex.hpp"
 #include "DakotaGraphics.hpp"
 #include "DiscrepancyCorrection.hpp"
-#ifdef HAVE_NPSOL
-#include "NPSOLOptimizer.hpp"
-#endif // HAVE_NPSOL
 
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
@@ -46,12 +43,6 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
          << "surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-
-  // hard-wired for right now...
-  approxSubProbObj = ORIGINAL_PRIMARY;
-  approxSubProbCon = ORIGINAL_CONSTRAINTS;
-  meritFnType = AUGMENTED_LAGRANGIAN_MERIT;
-  acceptLogic = FILTER;
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();

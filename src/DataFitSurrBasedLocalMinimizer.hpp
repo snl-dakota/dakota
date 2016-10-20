@@ -96,10 +96,6 @@ protected:
   /// container for trust region variable/response data
   SurrBasedLevelData trustRegionData;
 
-  /// type of trust region constraint relaxation for infeasible starting
-  /// points: NO_RELAX or HOMOTOPY
-  short trConstraintRelax;
-
   /// flags the use of a global data fit surrogate (rsm, ann, mars, kriging)
   bool globalApproxFlag;
   /// flags the use of a multipoint data fit surrogate (TANA)

@@ -151,6 +151,9 @@ protected:
   short meritFnType;
   /// type of iterate acceptance test logic: FILTER or TR_RATIO
   short acceptLogic;
+  /// type of trust region constraint relaxation for infeasible starting
+  /// points: NO_RELAX or HOMOTOPY
+  short trConstraintRelax;
 
   /// iteration offset used to update the scaling of the penalty parameter
   /// for adaptive_penalty merit functions

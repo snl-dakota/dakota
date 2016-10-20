@@ -44,6 +44,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
   acceptLogic(probDescDB.get_short("method.sbl.acceptance_logic")),
+  trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
   penaltyIterOffset(-200), 
   origTrustRegionFactor(
     probDescDB.get_real("method.sbl.trust_region.initial_size")),
@@ -67,6 +68,55 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 	 << "surrogate model." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+
+  // initialize Lagrange multipliers
+  size_t num_multipliers = numNonlinearEqConstraints;
+  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
+      num_multipliers++;
+    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
+      num_multipliers++;
+  }
+  if ( (truthSetRequest & 2) || meritFnType == LAGRANGIAN_MERIT ||
+      approxSubProbObj == LAGRANGIAN_OBJECTIVE) {
+    lagrangeMult.resize(num_multipliers);
+    lagrangeMult = 0.;
+  }
+  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
+      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE) {
+    augLagrangeMult.resize(num_multipliers);
+    augLagrangeMult = 0.;
+  }
+
+  // alert user to constraint settings
+#ifdef DEBUG
+  if (numNonlinearConstraints)
+    Cout << "\n<<<<< approxSubProbObj  = " << approxSubProbObj
+	 << "\n<<<<< approxSubProbCon  = " << approxSubProbCon
+	 << "\n<<<<< meritFnType       = " << meritFnType
+	 << "\n<<<<< acceptLogic       = " << acceptLogic
+	 << "\n<<<<< trConstraintRelax = " << trConstraintRelax << "\n\n";
+#endif
+  // sanity checks
+  if ( (approxSubProbCon == NO_CONSTRAINTS || !numNonlinearConstraints) &&
+       trConstraintRelax != NO_RELAX) {
+    Cerr << "\nWarning: constraint relaxation is inactive without approximate "
+	 << "subproblem constraints.\n";
+    trConstraintRelax = NO_RELAX;
+  }
+  else if (trConstraintRelax == COMPOSITE_STEP) { // planned implementation
+    Cerr << "\nWarning: COMPOSITE STEP constraint relaxation not yet "
+	 << "implemented.\n               Using HOMOTOPY method instead.\n";
+    trConstraintRelax = HOMOTOPY;
+  }
+#ifndef HAVE_NPSOL
+  if (trConstraintRelax > NO_RELAX) {
+    Cerr << "Error: this executable not configured with NPSOL.\n       "
+	 << "DataFitSurrBasedLocalMinimizer cannot perform constraint "
+	 << "relaxation." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+#endif
 
   bestVariablesArray.push_back(
     iteratedModel.truth_model().current_variables().copy());

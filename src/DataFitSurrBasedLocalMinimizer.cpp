@@ -21,9 +21,6 @@
 #include "DakotaGraphics.hpp"
 #include "RecastModel.hpp"
 #include "DiscrepancyCorrection.hpp"
-#ifdef HAVE_NPSOL
-#include "NPSOLOptimizer.hpp"
-#endif // HAVE_NPSOL
 
 //#define DEBUG
 
@@ -40,10 +37,16 @@ extern PRPCache data_pairs; // global container
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model),
-  trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
   multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
 {
+  // check iteratedModel for model form hierarchy and/or discretization levels
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    Cerr << "Error: DataFitSurrBasedLocalMinimizer requires a local, multipoint"
+	 << ", or global surrogate model specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
 
@@ -126,55 +129,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   trustRegionData.active_set_star(1, APPROX_RESPONSE, false);
   // initialize TR factor
   trustRegionData.trust_region_factor(origTrustRegionFactor);
-
-  // initialize Lagrange multipliers
-  size_t num_multipliers = numNonlinearEqConstraints;
-  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
-    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
-      num_multipliers++;
-    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
-      num_multipliers++;
-  }
-  if ( (truthSetRequest & 2) || meritFnType == LAGRANGIAN_MERIT ||
-      approxSubProbObj == LAGRANGIAN_OBJECTIVE) {
-    lagrangeMult.resize(num_multipliers);
-    lagrangeMult = 0.;
-  }
-  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE) {
-    augLagrangeMult.resize(num_multipliers);
-    augLagrangeMult = 0.;
-  }
-
-  // alert user to constraint settings
-#ifdef DEBUG
-  if (numNonlinearConstraints)
-    Cout << "\n<<<<< approxSubProbObj  = " << approxSubProbObj
-	 << "\n<<<<< approxSubProbCon  = " << approxSubProbCon
-	 << "\n<<<<< meritFnType       = " << meritFnType
-	 << "\n<<<<< acceptLogic       = " << acceptLogic
-	 << "\n<<<<< trConstraintRelax = " << trConstraintRelax << "\n\n";
-#endif
-  // sanity checks
-  if ( (approxSubProbCon == NO_CONSTRAINTS || !numNonlinearConstraints) &&
-       trConstraintRelax != NO_RELAX) {
-    Cerr << "\nWarning: constraint relaxation is inactive without approximate "
-	 << "subproblem constraints.\n";
-    trConstraintRelax = NO_RELAX;
-  }
-  else if (trConstraintRelax == COMPOSITE_STEP) { // planned implementation
-    Cerr << "\nWarning: COMPOSITE STEP constraint relaxation not yet "
-	 << "implemented.\n               Using HOMOTOPY method instead.\n";
-    trConstraintRelax = HOMOTOPY;
-  }
-#ifndef HAVE_NPSOL
-  if (trConstraintRelax > NO_RELAX) {
-    Cerr << "Error: this executable not configured with NPSOL.\n       "
-	 << "DataFitSurrBasedLocalMinimizer cannot perform constraint "
-	 << "relaxation." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-#endif
 
   // Set the minimum trust region size.  For kriging, the minimum trust region
   // must be set to O(10^-2 10^-3).  Otherwise, the correlation matrix becomes
