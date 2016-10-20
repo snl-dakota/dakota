@@ -44,10 +44,6 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // Instantiate the Model and Minimizer for the approximate sub-problem
-  initialize_sub_model();
-  initialize_sub_minimizer();
-
   // Get number of model fidelities and number of levels for each fidelity:
   ModelList& models = iteratedModel.subordinate_models(false);
   numFid = models.size(); numLev.resize(numFid);
@@ -78,6 +74,12 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     approxSetRequest |= 2;
   if (corr_order == 2)
     { truthSetRequest |= 4; approxSetRequest |= 4; }
+
+  // Instantiate the Model and Minimizer for the approximate sub-problem
+  initialize_sub_model();
+  initialize_sub_minimizer();
+  // Initialize any Lagrange multiplier arrays
+  initialize_multipliers();
 }
 
 

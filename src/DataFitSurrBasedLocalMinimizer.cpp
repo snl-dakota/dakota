@@ -50,10 +50,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
 
-  // Instantiate the Model and Minimizer for the approximate sub-problem
-  initialize_sub_model();
-  initialize_sub_minimizer();
-
   // If (and only if) the user has requested a surrogate bypass, test sub-models
   // to verify that there there is an additional approx layer to bypass.  The
   // surrogate bypass allows for rigorous evaluation of responseCenterTruth
@@ -113,6 +109,12 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
       abort_handler(METHOD_ERROR);
     }
   }
+
+  // Instantiate the Model and Minimizer for the approximate sub-problem
+  initialize_sub_model();
+  initialize_sub_minimizer();
+  // Initialize any Lagrange multiplier arrays
+  initialize_multipliers();
 
   // size the trust region bounds to allow individual updates
   trustRegionData.initialize_bounds(numContinuousVars);

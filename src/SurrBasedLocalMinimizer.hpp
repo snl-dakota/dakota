@@ -87,6 +87,8 @@ protected:
   void initialize_sub_model();
   /// construct and initialize approxSubProbMinimizer
   void initialize_sub_minimizer();
+  /// initialize lagrangeMult and augLagrangeMult
+  void initialize_multipliers();
 
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region_data(SurrBasedLevelData& tr_data,

@@ -69,25 +69,6 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // initialize Lagrange multipliers
-  size_t num_multipliers = numNonlinearEqConstraints;
-  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
-    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
-      num_multipliers++;
-    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
-      num_multipliers++;
-  }
-  if ( (truthSetRequest & 2) || meritFnType == LAGRANGIAN_MERIT ||
-      approxSubProbObj == LAGRANGIAN_OBJECTIVE) {
-    lagrangeMult.resize(num_multipliers);
-    lagrangeMult = 0.;
-  }
-  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE) {
-    augLagrangeMult.resize(num_multipliers);
-    augLagrangeMult = 0.;
-  }
-
   // alert user to constraint settings
 #ifdef DEBUG
   if (numNonlinearConstraints)
@@ -274,6 +255,29 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
     Minimizer* aspm = (Minimizer*)approxSubProbMinimizer.iterator_rep();
     aspm->constraint_tolerance(constraintTol);
+  }
+}
+
+
+void SurrBasedLocalMinimizer::initialize_multipliers()
+{
+  // initialize Lagrange multipliers
+  size_t num_multipliers = numNonlinearEqConstraints;
+  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+    if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
+      ++num_multipliers;
+    if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
+      ++num_multipliers;
+  }
+  if ( (truthSetRequest & 2) || meritFnType == LAGRANGIAN_MERIT ||
+      approxSubProbObj == LAGRANGIAN_OBJECTIVE) {
+    lagrangeMult.resize(num_multipliers);
+    lagrangeMult = 0.;
+  }
+  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
+      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE) {
+    augLagrangeMult.resize(num_multipliers);
+    augLagrangeMult = 0.;
   }
 }
 
