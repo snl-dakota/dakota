@@ -157,17 +157,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ scaling {N_mdm(true,methodScaling)} ]
    )
   |
-  ( multilevel_multifidelity_opt {N_mdm(utype,methodName_HIERARCH_SURROGATE_BASED_LOCAL)}
-    method_pointer ALIAS approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
-    |
-    method_name ALIAS approx_method_name STRING {N_mdm(str,subMethodName)}
-    model_pointer ALIAS approx_model_pointer STRING {N_mdm(str,modelPointer)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-   )
-  |
-  ( surrogate_based_local {N_mdm(utype,methodName_DATA_FIT_SURROGATE_BASED_LOCAL)}
+  ( surrogate_based_local {N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}
     method_pointer ALIAS approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
     |
     method_name ALIAS approx_method_name STRING {N_mdm(str,subMethodName)}

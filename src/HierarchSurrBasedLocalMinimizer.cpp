@@ -47,7 +47,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // no sub-problem recastings yet...
+  // hard-wired for right now...
   approxSubProbObj = ORIGINAL_PRIMARY;
   approxSubProbCon = ORIGINAL_CONSTRAINTS;
   meritFnType = AUGMENTED_LAGRANGIAN_MERIT;
@@ -212,15 +212,17 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
 void HierarchSurrBasedLocalMinimizer::build()
 {
   // Compute new trust region centers:
-  for (size_t i = 0; i < trustRegions.size(); ++i) {
+  size_t i, j, num_tr = trustRegions.size();
+  for (i=0; i<num_tr; ++i) {
 
-    if (trustRegions[i].new_center()) {
+    SurrBasedLevelData& tr_i = trustRegions[i];
+    if (tr_i.new_center()) {
 
       // Set the trust region center and bounds
       iteratedModel.continuous_variables(
-        trustRegions[i].vars_center().continuous_variables());
-      iteratedModel.continuous_lower_bounds(trustRegions[i].tr_lower_bounds());
-      iteratedModel.continuous_upper_bounds(trustRegions[i].tr_upper_bounds());
+        tr_i.vars_center().continuous_variables());
+      iteratedModel.continuous_lower_bounds(tr_i.tr_lower_bounds());
+      iteratedModel.continuous_upper_bounds(tr_i.tr_upper_bounds());
 
       // This only evaluates the high fidelity model (active indices set in ):
       set_model_states(i);
@@ -237,40 +239,47 @@ void HierarchSurrBasedLocalMinimizer::build()
         // Compute additive/multiplicative correction
         // ******************************************
         DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-        delta.compute(trustRegions[i].vars_center(),
-                      trustRegions[i].response_center(UNCORR_TRUTH_RESPONSE),
-                      trustRegions[i].response_center(UNCORR_APPROX_RESPONSE));
+        delta.compute(tr_i.vars_center(),
+                      tr_i.response_center(UNCORR_TRUTH_RESPONSE),
+                      tr_i.response_center(UNCORR_APPROX_RESPONSE));
       }
 
-      trustRegions[i].new_center(false);
+      tr_i.new_center(false);
     }
   }
 
   // TODO: This assumes only model fidelities:
   // Recompute corrected center responses:
-  for (size_t i = 0; i < trustRegions.size(); ++i) {
-    // Compute responseCenterCorrected
-    Cout << "\nApplying corrections to trust region center response for:"
-	 << "\nApprox. model form = "  << trustRegions[i].approx_model_form()
-	 << "\nApprox. model level = " << trustRegions[i].approx_model_level()
-	 << std::endl;
-    Response response_center_corrected_temp
-      = trustRegions[i].response_center(UNCORR_APPROX_RESPONSE).copy();
-    for (size_t j = i; j < trustRegions.size(); ++j) {
-      set_model_states(j);
-
-      DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-      delta.apply(trustRegions[i].vars_center(),
-		  response_center_corrected_temp);
+  for (i=0; i<num_tr; ++i) {
+    SurrBasedLevelData& tr_i = trustRegions[i];
+    Variables& center_vars = tr_i.vars_center();
+    // Compute responseCenterApproxCorrected
+    Cout << "\nApplying corrections to trust region center response for "
+	 << "surrogate model (form "  << tr_i.approx_model_form() << ", level "
+	 << tr_i.approx_model_level() << ')' << std::endl;
+    // correct approximation across all levels above i
+    Response resp_center_approx_tmp
+      = tr_i.response_center(UNCORR_APPROX_RESPONSE).copy();
+    for (j=i; j<num_tr; ++j) {
+      set_model_states(j); // activate deltaCorr[indices]
+      iteratedModel.discrepancy_correction().
+	apply(center_vars, resp_center_approx_tmp);
     }
-    trustRegions[i].response_center(response_center_corrected_temp,
-				    CORR_APPROX_RESPONSE);
+    tr_i.response_center(resp_center_approx_tmp, CORR_APPROX_RESPONSE);
+    // correct truth across all levels above, excepting current level
+    Response& resp_center_truth = tr_i.response_center(UNCORR_TRUTH_RESPONSE);
+    if (i+1 < num_tr) {
+      Response resp_center_truth_tmp = resp_center_truth.copy();
+      for (j=i+1; j<num_tr; ++j) {
+	set_model_states(j); // activate deltaCorr[indices]
+	iteratedModel.discrepancy_correction().
+	  apply(center_vars, resp_center_truth_tmp);
+      }
+      tr_i.response_center(resp_center_truth_tmp, CORR_TRUTH_RESPONSE);
+    }
+    else
+      tr_i.response_center(resp_center_truth,     CORR_TRUTH_RESPONSE);
   }
-
-  // highest fidelity model doesn't need correcting:
-  trustRegions.back().response_center(
-    trustRegions.back().response_center(UNCORR_TRUTH_RESPONSE),
-    CORR_TRUTH_RESPONSE);
 }
 
 
@@ -295,6 +304,8 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   sbIterNum++; // full iteration performed: increment the counter
 
   // Retrieve vars_star and responseStarCorrected[lf_model_form]
+  // Corrections are applied recursively during the minimization, so this
+  // response is corrected to the highest fidelity level.
   trustRegions[minimizeIndex].vars_star(
     approxSubProbMinimizer.variables_results());
   trustRegions[minimizeIndex].response_star(
@@ -309,39 +320,59 @@ void HierarchSurrBasedLocalMinimizer::verify()
   // Validate candidate point
   // ****************************
 
-  int tr_index = minimizeIndex;
-
   Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
 
-  set_model_states(tr_index);
+  set_model_states(minimizeIndex);
 
-  Model& truth_model = iteratedModel.truth_model();
+  Model& truth_model  = iteratedModel.truth_model();
   Model& approx_model = iteratedModel.surrogate_model();
+  SurrBasedLevelData& tr_i = trustRegions[minimizeIndex];
+
+  // Candidate iterate:
+  Variables& vars_star = tr_i.vars_star();
 
   iteratedModel.component_parallel_mode(TRUTH_MODEL);
-  truth_model.active_variables(trustRegions[minimizeIndex].vars_star());
-  truth_model.evaluate(
-    trustRegions[minimizeIndex].active_set_star(TRUTH_RESPONSE));
+  truth_model.active_variables(vars_star);
+  truth_model.evaluate(tr_i.active_set_star(TRUTH_RESPONSE));
+  const Response& truth_resp = truth_model.current_response();
 
-  trustRegions[minimizeIndex].response_star(truth_model.current_response(),
-					    UNCORR_TRUTH_RESPONSE);
+  // Apply correction recursively so that this truth response is consistent
+  // with the highest fidelity level.
+  size_t j, num_tr = trustRegions.size();
+  if (num_tr > 1) {
+    tr_i.response_star(truth_resp, UNCORR_TRUTH_RESPONSE); // TODO: not needed for num_tr=1?
+    Response resp_center_truth_tmp = truth_resp.copy();
+    for (j=1; j<num_tr; ++j) {
+      set_model_states(j); // activate deltaCorr[indices]
+      iteratedModel.discrepancy_correction().
+	apply(vars_star/*TODO*/, resp_center_truth_tmp);
+    }
+    tr_i.response_star(resp_center_truth_tmp, CORR_TRUTH_RESPONSE);
+  }
+  else
+    tr_i.response_star(truth_resp, CORR_TRUTH_RESPONSE);
 
-  compute_trust_region_ratio(trustRegions[tr_index]); // no check_interior
+  // TODO: TR updates needs to recur
+
+  compute_trust_region_ratio(tr_i); // no check_interior
 
   // If the candidate optimum (vars_star) is accepted, then update the
   // center variables and response data.
-  if (trustRegions[tr_index].new_center()) {
-    trustRegions[tr_index].vars_center(trustRegions[minimizeIndex].vars_star());
-
-    trustRegions[tr_index].response_center(truth_model.current_response(),
-                                           UNCORR_TRUTH_RESPONSE);
+  if (tr_i.new_center()) {
+    tr_i.vars_center(vars_star);
+    if (num_tr > 1) // TODO: not needed for num_tr=1?
+      tr_i.response_center(tr_i.response_star(UNCORR_TRUTH_RESPONSE),
+			   UNCORR_TRUTH_RESPONSE);
+    /*TODO: re-eval for new corr is handled later?*/
+    tr_i.response_center(tr_i.response_star(CORR_TRUTH_RESPONSE),
+			 CORR_TRUTH_RESPONSE);
   }
 
   // Check for soft convergence:
   if (softConvCount >= softConvLimit)
     convergenceFlag = 3; // soft convergence
   // terminate SBLM if trustRegionFactor is less than its minimum value
-  else if (trustRegions[tr_index].trust_region_factor() < minTrustRegionFactor)
+  else if (tr_i.trust_region_factor() < minTrustRegionFactor)
     convergenceFlag = 1;
   // terminate SBLM if the maximum number of iterations has been reached
   else if (sbIterNum >= maxIterations)
