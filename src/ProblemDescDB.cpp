@@ -696,7 +696,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
   else if (model_tag != "NO_SPECIFICATION") {
     // set dataModelIter from model_tag
     if (model_tag.empty()) { // no pointer specification
-      if (dataModelList.empty()) {
+      if (dataModelList.empty()) { // Note: check_input() prevents this
 	DataModel data_model; // for library mode
 	dataModelList.push_back(data_model);
       }

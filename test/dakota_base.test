@@ -9474,6 +9474,17 @@ Test Number 2 succeeded
         6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
         7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
         8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
+Test Number 3 succeeded
+<<<<< Results summary:
+   set_id             x1             x2            x1*            x2*         obj_fn 
+        1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
+        2           -0.8            0.8  -0.9998398719    0.177092822    0.291406596 
+        3            0.8           -0.8    0.177092822  -0.9998398719    0.291406596 
+        4            0.8            0.8   0.1770928217   0.1770928217   0.0602471946 
+        5              0              0  0.03572926375  0.03572926375  0.08730499239 
+        6  -0.5356872085    -0.18209903  -0.5509956192  -0.1074790789   0.3261816536 
+        7   0.1419702143  -0.7143527167   0.1770928312  -0.7024117488   0.3030233398 
+        8   0.5240928925   0.7939232343  0.03572923987    0.177092822  0.07377609349 
 dakota_multistart_ie.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
@@ -16562,7 +16573,7 @@ Test Number 7 succeeded
 <<<<< Best data captured at function evaluation 31
 dakota_sbo_cyl_head.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 52 total (52 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 51 total (51 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 97 total (97 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1224189248e+00 intake_dia
@@ -16570,12 +16581,12 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                      -2.4610313357e+00
 <<<<< Best constraint values   =
-                      8.1817880981e-07
+                      8.1817881781e-07
                      -3.3471647490e-01
-                     -1.5356205196e-10
+                     -1.5356194094e-10
 <<<<< Best data captured at function evaluation 97
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 65 total (65 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 56 total (56 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 108 total (101 new, 7 duplicate)
 <<<<< Best parameters          =
                       1.9314431689e+00 intake_dia
@@ -16585,21 +16596,21 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -4.4086847942e-01
                      -3.3471647533e-01
-                      3.2697178298e-10
+                      3.2697156094e-10
 <<<<< Best data captured at function evaluation 60
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 137 total (137 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 168 total (166 new, 2 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 168 total (167 new, 1 duplicate)
 <<<<< Best parameters          =
-                      1.5314432703e+00 intake_dia
-                      1.7685567297e+00 flatness
+                      1.5314432708e+00 intake_dia
+                      1.7685567292e+00 flatness
 <<<<< Best objective function  =
-                     -2.2031041699e+00
+                     -2.2031041702e+00
 <<<<< Best constraint values   =
-                     -4.9178929263e-01
-                     -3.3471649055e-01
-                      1.7376697858e-08
-<<<<< Best data captured at function evaluation 168
+                     -4.9178929262e-01
+                     -3.3471649062e-01
+                      1.7457669088e-08
+<<<<< Best data captured at function evaluation 157
 dakota_sbo_hier_poly_prod.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 26 total (20 new, 6 duplicate)

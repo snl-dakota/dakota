@@ -88,6 +88,7 @@ void TrackerHTTP::post_start(ProblemDescDB& problem_db)
   std::string datatopost;
   build_default_data(datatopost, startTime, "START");
   //send_data_using_post(datatopost.str());
+  
   send_data_using_post(datatopost);
 
   // GET example (deprecated)
@@ -122,8 +123,34 @@ void TrackerHTTP::post_finish(unsigned runtime)
 // private implementations
 //
 
-// Initialization helpers
 
+void TrackerHTTP::split_string(const std::string &s, const char &delim, 
+		std::vector<std::string> &elems) {
+  // Split s at delim and place the tokens into elems.
+  std::stringstream ss;
+  ss.str(s);
+  std::string item;
+  while (std::getline(ss, item, delim))
+    elems.push_back(item);
+}
+
+void TrackerHTTP::parse_tracking_string(const std::string &dt) {
+  // Split dt on % to separate tracker/proxy pairs. Then, split each pair on @ 
+  // to separate tracker from proxy. Other, more intuitive delimiters like ;
+  // are tricky to pass in as compiler defines.
+  std::vector<std::string> pairs, pair;
+  split_string(dt, '%', pairs);
+  for(size_t i = 0; i < pairs.size(); i++) {
+    pair.clear();
+    split_string(pairs[i], '@', pair);
+    if(pair.size() == 1)
+      serverList.push_back(Server(pair[0], std::string("")));
+    else // Big assumption: ignore tokens in pair after pair[1].
+      serverList.push_back(Server(pair[0], pair[1]));
+  }
+}
+    
+// Initialization helpers
 void TrackerHTTP::initialize(int world_rank)
 {
   dakotaVersion = DakotaBuildInfo::get_rev_number();
@@ -137,24 +164,11 @@ void TrackerHTTP::initialize(int world_rank)
   if (curlPtr == NULL)
     return;
 
-  // get the URL and optional proxy from configure
+  // get the list of URLs and optional proxies from configure
 #ifdef DAKOTA_USAGE_TRACKING
   std::string dt = DAKOTA_USAGE_TRACKING;
-#else
-  std::string dt;
+  parse_tracking_string(dt);
 #endif
-  size_t delim_loc = dt.find(';');
-  if (delim_loc == std::string::npos)
-    trackerLocation = dt;
-  else {
-    trackerLocation = dt.substr(0, delim_loc);
-    proxyLocation = dt.substr(delim_loc+1);
-  }
-
-  // override default behavior where empty string means DISALLOW proxy
-  if (proxyLocation.size() > 0)
-    curl_easy_setopt(curlPtr, CURLOPT_PROXY, proxyLocation.c_str());
-
   curl_easy_setopt(curlPtr, CURLOPT_TIMEOUT, timeoutSeconds);
 
   // TODO: get return info from the request
@@ -219,32 +233,53 @@ void TrackerHTTP::send_data_using_get(const std::string& urltopost) const
   CURLcode res = curl_easy_perform(curlPtr);
   if (res != 0 && outputLevel > TH_QUIET_OUTPUT)
     Cerr << "curl_easy_perform returned " << res << std::endl;
-  
+  Cout << "CURL Result is " << res << std::endl; 
   delete[] cstr_url;
 }
 
+
 /// separate location and query; datatopost="name=daniel&project=curl"
-void TrackerHTTP::send_data_using_post(const std::string& datatopost) const
-{
-  if (outputLevel > TH_NORMAL_OUTPUT)
-    Cout << "POSTing data:\n" << datatopost << "\nto URL\n" << trackerLocation 
-	 << std::endl;
-
-
-  char* cstr_location = new char[trackerLocation.size()+1];
-  std::strcpy(cstr_location, trackerLocation.c_str());
-  curl_easy_setopt(curlPtr, CURLOPT_URL, cstr_location);
-
+void TrackerHTTP::send_data_using_post(const std::string& datatopost) 
+{ 
+  // Try the Servers in serverList until one works. A failed attempt may take
+  // timeoutSeconds, and removing the bad ones prevents the second usage 
+  // tracking call by post_finish() from trying the  whole list again.
   char* cstr_data = new char[datatopost.size()+1];
   std::strcpy(cstr_data, datatopost.c_str());
   curl_easy_setopt(curlPtr, CURLOPT_POSTFIELDS, cstr_data);   
-
-  CURLcode res = curl_easy_perform(curlPtr);
-  if (res != 0 && outputLevel > TH_QUIET_OUTPUT)
-    Cerr << "curl_easy_perform returned " << res << std::endl;
   
-  delete[] cstr_data;
-  delete[] cstr_location;
+  std::list<Server>::iterator it = serverList.begin();
+  while(it != serverList.end()) {
+    if (outputLevel > TH_NORMAL_OUTPUT)
+      Cout << "Attempting to POST data:\n" << datatopost << "\nto URL\n" << 
+	      it->tracker << " using proxy " << it->proxy << std::endl;
+    char* cstr_location = new char[it->tracker.size()+1];
+    std::strcpy(cstr_location, it->tracker.c_str());
+    curl_easy_setopt(curlPtr, CURLOPT_URL, cstr_location);
+    delete [] cstr_location;
+    // Use a proxy if provided. Reset to NULL otherwise. NULL is needed
+    // because an empty string prevents CURL from using system-defined
+    // proxies.
+    if(it->proxy.size() > 0) {
+      char* cstr_proxy = new char[it->proxy.size()+1];
+      std::strcpy(cstr_proxy, it->proxy.c_str());
+      curl_easy_setopt(curlPtr, CURLOPT_PROXY, cstr_proxy);
+      delete [] cstr_proxy;
+    } else {
+      curl_easy_setopt(curlPtr, CURLOPT_PROXY, NULL);
+    }
+
+    CURLcode res = curl_easy_perform(curlPtr);
+    if (res != 0) {
+      if(outputLevel > TH_QUIET_OUTPUT) 
+        Cerr << "curl_easy_perform returned " << res << std::endl;
+      serverList.pop_front();
+      it = serverList.begin();
+    } else {
+      break;
+    }
+  } 
+  delete [] cstr_data;
 }
 
 

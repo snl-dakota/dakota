@@ -136,6 +136,9 @@ protected:
   /// Deallocate parallel partitioning for topLevelIterator
   void destruct();
 
+  // logic for triggering set_db_model_nodes() within construct()
+  bool assign_model_pointer() const;
+
   //
   //- Heading: Data
   //
@@ -208,6 +211,32 @@ inline const Response& Environment::response_results() const
   return (environmentRep) ?
     environmentRep->topLevelIterator.response_results() :
     topLevelIterator.response_results();
+}
+
+
+inline bool Environment::assign_model_pointer() const
+{
+  // meta-iterators may need to activate a default model spec
+  if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT)
+
+    /* MetaIterators now handle default Model spec within their ctors/init_comms
+    return
+      ( ( // ConcurrentMI:
+         !probDescDB.get_string("method.sub_method_name").empty() &&
+          probDescDB.get_string("method.sub_model_pointer").empty() )
+     || ( // SeqHybridMI, CollabHybridMI:
+	 !probDescDB.get_sa("method.hybrid.method_names").empty() &&
+	  probDescDB.get_sa("method.hybrid.model_pointers").empty() )
+     || ( // EmbedHybridMI:
+	 !probDescDB.get_string("method.hybrid.global_method_name").empty() &&
+	  probDescDB.get_string("method.hybrid.global_model_pointer").empty() )
+     || (!probDescDB.get_string("method.hybrid.local_method_name").empty() &&
+	  probDescDB.get_string("method.hybrid.local_model_pointer").empty()) );
+    */
+
+    return false;
+  else // standard iterator requires setting of DB model nodes
+    return true;
 }
 
 } // namespace Dakota

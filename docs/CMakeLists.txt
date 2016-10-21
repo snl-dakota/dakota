@@ -130,17 +130,19 @@ add_custom_target(docs-doxygen
 
 # build PDFs of dev/ref (not portable due to tex modifications)
 
-# Create texmf.cnf to prevent buffer overrun problem 
-# TODO: use `kpsewhich texmf.cnf` to get file location
-set(texmf_cnf_src /usr/share/texmf/web2c/texmf.cnf)
+# Create (or modify) texmf.cnf to prevent buffer overrun problem 
+# Afterward, strip the trailing newline
+execute_process(COMMAND kpsewhich texmf.cnf OUTPUT_VARIABLE texmf_cnf_src)
+string(REGEX REPLACE "\n$" "" texmf_cnf_src ${texmf_cnf_src})
+
+# If save_size exists in texmf.cnf, multiply it by 10x and replace. Otherwise, append 
+# save_size = 150000 to the end.
 add_custom_command(
   OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   DEPENDS ${texmf_cnf_src}
-  COMMAND sh -c 
-    'curr_save_size=`grep -o \"save_size = [0-9]*\" ${texmf_cnf_src} | cut -f2 -d'='` && 
-     new_save_size=`expr 10 \\* $$curr_save_size` &&
-     sed -e \"s/save_size = [0-9]\\+/save_size = $$new_save_size/g\" ${texmf_cnf_src} > ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf'
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/modify_texmf.sh ${texmf_cnf_src} ${CMAKE_CURRENT_BINARY_DIR}
 )
+
 add_custom_target(docs-texmf-cnf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf)
 
 # Build Developer's Manual into PDF
@@ -149,7 +151,7 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
   COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
---developers
+   --developers
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Developers to PDF"
@@ -164,7 +166,7 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-ref/refman.tex
   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Reference Manual PDF..."
   COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
---reference
+  --reference
   COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-ref make
   COMMAND ${CMAKE_COMMAND} -E echo "Done."
   COMMENT "LaTeX: Reference to PDF"

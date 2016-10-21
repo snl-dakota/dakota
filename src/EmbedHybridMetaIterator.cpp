@@ -21,14 +21,14 @@ static const char rcsId[]="@(#) $Id: EmbedHybridMetaIterator.cpp 6715 2010-04-02
 namespace Dakota {
 
 EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db),
+  MetaIterator(problem_db), singlePassedModel(false),
   localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 { maxIteratorConcurrency = 1; }
 
 
 EmbedHybridMetaIterator::
 EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
-  MetaIterator(problem_db, model),
+  MetaIterator(problem_db, model), singlePassedModel(true),
   localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 {
   // Ensure consistency between iteratedModel and any method/model pointers
@@ -65,10 +65,8 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (new_model(global_method_ptr, global_model_ptr)) ?
-    globalModel : iteratedModel;
-  Model& local_model  = (new_model(local_method_ptr, local_model_ptr)) ?
-    localModel  : iteratedModel;
+  Model& global_model = (singlePassedModel) ? iteratedModel : globalModel;
+  Model& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
 
   iterSched.update(methodPCIter);
 

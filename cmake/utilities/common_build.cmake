@@ -170,10 +170,6 @@ if ( DAKOTA_CMAKE_HOSTFILE )
   set_configure_command( ${DAKOTA_CMAKE_HOSTFILE} SUBDIR platforms )
 endif()
 
-if ( DAKOTA_CMAKE_HOSTFILE )
-  set_configure_command( “JenkinsBuild.cmake” )
-endif()
-
 set(CTEST_CONFIGURE_COMMAND
   "${CTEST_CONFIGURE_COMMAND} \"${CTEST_SOURCE_DIRECTORY}\"")
 
