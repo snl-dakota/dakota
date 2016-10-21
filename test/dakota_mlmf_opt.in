@@ -8,11 +8,11 @@ environment,
 
 method,
 	id_method = 'MLMF'
-  multilevel_multifidelity_opt
-	model_pointer = 'HIERARCH'
-  max_iterations = 10000
-	approx_method_pointer = 'OPTIM'
-  convergence_tolerance = 1.e-7
+	surrogate_based_local
+	  model_pointer = 'HIERARCH'
+	  max_iterations = 10000
+	  approx_method_pointer = 'OPTIM'
+	  convergence_tolerance = 1.e-7
 
 method,
 	id_method = 'OPTIM'
@@ -40,23 +40,23 @@ model,
 variables,
 	continuous_design = 2
 	  initial_point     = -12.2   15.0
-    lower_bounds      = -20.   -20.
+	  lower_bounds      = -20.   -20.
 	  upper_bounds      =  20.    20.
 	  descriptors       = 'x1'   'x2'
 
 interface
-    id_interface = 'HI_I'
+	id_interface = 'HI_I'
 	  direct
    	  analysis_driver = 'rosenbrock'
 	    deactivate restart_file
 
 interface
-    id_interface = 'LO_I'
-	  direct
-   	  analysis_driver = 'lf_rosenbrock'
-	    deactivate restart_file
+	id_interface = 'LO_I'
+	direct
+	  analysis_driver = 'lf_rosenbrock'
+	  deactivate restart_file
 
 responses,
 	objective_functions = 1
-	analytic_gradients
-  no_hessians
+	  analytic_gradients
+	  no_hessians
