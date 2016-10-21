@@ -71,7 +71,6 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   globalApproxFlag   = (strbegins(approx_type, "global_"));
   multiptApproxFlag  = (strbegins(approx_type, "multipoint_"));
   localApproxFlag    = (strbegins(approx_type, "local_"));
-  hierarchApproxFlag = (approx_type == "hierarchical");
   // derivative orders:
   approxSetRequest = truthSetRequest = 1;
   if (corr_order >= 1 || ( globalApproxFlag && useDerivsFlag ) ||
@@ -565,9 +564,9 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
       CORR_APPROX_RESPONSE);
     found = true;
   }
-  else if (hierarchApproxFlag && sbIterNum)
-    found = find_approx_response(iteratedModel.current_variables(),
-      trustRegionData.response_center(CORR_APPROX_RESPONSE));
+  //else if (hierarchApproxFlag && sbIterNum)
+  //  found = find_approx_response(iteratedModel.current_variables(),
+  //    trustRegionData.response_center(CORR_APPROX_RESPONSE));
 
   if (found)
     Cout << "\n>>>>> Previous approximate response retrieved at trust "

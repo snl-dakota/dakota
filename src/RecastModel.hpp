@@ -215,6 +215,13 @@ protected:
   /// return subModel interface
   Interface& derived_interface();
 
+  /// return size of subModel::solnControlCostMap
+  size_t solution_levels() const;
+  /// activate entry in subModel::solnControlCostMap
+  void solution_level_index(size_t lev_index);
+  /// return cost estimates from subModel::solnControlCostMap
+  RealVector solution_level_cost() const;
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into subModel
   void primary_response_fn_weights(const RealVector& wts,
@@ -524,6 +531,18 @@ inline void RecastModel::update_from_subordinate_model(size_t depth)
 
 inline Interface& RecastModel::derived_interface()
 { return subModel.derived_interface(); }
+
+
+inline size_t RecastModel::solution_levels() const
+{ return subModel.solution_levels(); }
+
+
+inline void RecastModel::solution_level_index(size_t lev_index)
+{ subModel.solution_level_index(lev_index); }
+
+
+inline RealVector RecastModel::solution_level_cost() const
+{ return subModel.solution_level_cost(); }
 
 
 inline void RecastModel::

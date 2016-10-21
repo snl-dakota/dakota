@@ -35,7 +35,7 @@ namespace Dakota {
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model), minimizeIndex(0),
-  nestedTrustRegions(true)
+  nestedTrustRegions(true), multiLev(false)//, multiFid(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel.surrogate_type() != "hierarchical") {
@@ -47,9 +47,12 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // Get number of model fidelities and number of levels for each fidelity:
   ModelList& models = iteratedModel.subordinate_models(false);
   numFid = models.size(); numLev.resize(numFid);
+  //if (numFid > 1) multiFid = true;
   ModelLIter ml_iter; size_t i;
-  for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i)
+  for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i) {
     numLev[i] = ml_iter->solution_levels();
+    if (numLev[i] > 1) multiLev = true;
+  }
 
   // TODO: Only 1D for multifidelity -- need to support MLMF
   trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds

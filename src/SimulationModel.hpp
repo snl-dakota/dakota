@@ -51,7 +51,7 @@ protected:
 
   /// return userDefinedInterface
   Interface& derived_interface();
-  
+
   /// return size of solnControlCostMap
   size_t solution_levels() const;
   /// activate entry in solnControlCostMap

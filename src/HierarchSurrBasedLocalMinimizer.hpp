@@ -74,25 +74,36 @@ private:
 
   void tr_ratio_check(size_t tr_index);
 
+  /// activate model forms and, optionally, discretization levels within
+  /// the HierarchSurrModel associated with trustRegions[tr_index]
   void set_model_states(size_t tr_index);
 
   // MG/Opt functions:
+
+  RealVector MG_Opt(const RealVector &xk, int k);
+
+  void MG_Opt_driver(const Variables &x0);
 
   RealVector optimize(const RealVector &x, int max_iter, int index);
 
   RealVector linesearch(const RealVector &xk, const RealVector &pk,
                         double alpha0);
 
-  RealVector MG_Opt(const RealVector &xk, int k);
-
-  void MG_Opt_driver(const Variables &x0);
-
   //
   //- Heading: Data members
   //
 
+  /// number of ordered model fidelities within iteratedModel
+  /// (a HierarchSurrModel)
   size_t numFid;
+  //bool multiFid;
+
+  /// number of discretization levels per ordered model fidelity
   SizetArray numLev;
+  /// flag indicating presence of more than one level per fidelity
+  bool multiLev;
+
+  /// index for trustRegions at which the minimization is performed
   size_t minimizeIndex;
 
   std::vector<SurrBasedLevelData> trustRegions;
@@ -109,12 +120,20 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 {
-  iteratedModel.surrogate_model_indices(
-    trustRegions[tr_index].approx_model_form(),
-    trustRegions[tr_index].approx_model_level());
-  iteratedModel.truth_model_indices(
-    trustRegions[tr_index].truth_model_form(),
-    trustRegions[tr_index].truth_model_level());
+  if (multiLev) {
+    iteratedModel.surrogate_model_indices(
+      trustRegions[tr_index].approx_model_form(),
+      trustRegions[tr_index].approx_model_level());
+    iteratedModel.truth_model_indices(
+      trustRegions[tr_index].truth_model_form(),
+      trustRegions[tr_index].truth_model_level());
+  }
+  else {
+    iteratedModel.surrogate_model_indices(
+      trustRegions[tr_index].approx_model_form());
+    iteratedModel.truth_model_indices(
+      trustRegions[tr_index].truth_model_form());
+  }
 }
 
 } // namespace Dakota

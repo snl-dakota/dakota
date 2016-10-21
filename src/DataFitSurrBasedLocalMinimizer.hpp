@@ -102,8 +102,6 @@ protected:
   bool multiptApproxFlag;
   /// flags the use of a local data fit surrogate (Taylor series)
   bool localApproxFlag;
-  /// flags the use of a model hierarchy/multifidelity surrogate 
-  bool hierarchApproxFlag;
 
   // flag indicating inclusion of the center point in the DACE
   // evaluations for global approximations (CCD, Box-Behnken)
