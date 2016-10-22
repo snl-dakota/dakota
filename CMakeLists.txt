@@ -99,15 +99,24 @@ elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
     # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
     # and the Dakota/ directory may be symlinked.
     get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
-
-    execute_process(COMMAND ${GIT_EXECUTABLE} log --pretty=format:"%h on %cd" -1 
+    
+    # Get the abbreviated SHA1 of the most recent commit
+    execute_process(COMMAND ${GIT_EXECUTABLE} log --pretty=format:%h -1 
       WORKING_DIRECTORY ${abs_source_dir}
-      OUTPUT_VARIABLE Dakota_GIT_REV)
+      OUTPUT_VARIABLE Dakota_GIT_ABBREV_SHA1)
+    # Get the date and time of the most recent commit
+    execute_process(COMMAND ${GIT_EXECUTABLE} log --pretty=format:%ci -1 
+      WORKING_DIRECTORY ${abs_source_dir}
+      OUTPUT_VARIABLE Dakota_GIT_DATETIME)
+    # Extract the date
+    string(SUBSTRING "${Dakota_GIT_DATETIME}" 0 10 Dakota_GIT_DATE)
+    # Build revision string
+    string(CONFIGURE "@Dakota_GIT_ABBREV_SHA1@(@Dakota_GIT_DATE@)" Dakota_GIT_REV)
   endif(GIT_FOUND) # GIT_FOUND
 
   # Create VERSION file
   file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
-        "DAKOTA Version ${Dakota_VERSION_SRC}
+        "DakotaVersion ${Dakota_VERSION_SRC}
 Built from GIT revision ${Dakota_GIT_REV}
 " )
   set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")

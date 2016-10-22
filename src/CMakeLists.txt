@@ -118,7 +118,7 @@ if(DAKOTA_SVN_checkout OR DAKOTA_GIT_checkout)
       "// -- AUTO GENERATED FILE; DO NOT EDIT --
       #include \"DakotaBuildInfo.hpp\"
       std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
-      std::string Dakota::DakotaBuildInfo::revision=${Dakota_GIT_REV};
+      std::string Dakota::DakotaBuildInfo::revision=\"${Dakota_GIT_REV}\";
       std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
       " )
   endif(DAKOTA_SVN_checkout)
