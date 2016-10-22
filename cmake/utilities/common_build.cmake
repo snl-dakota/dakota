@@ -125,22 +125,26 @@ message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" )
 #*****************************************************************
 # Set CTEST_BUILD_COMMAND and CTEST_TEST_COMMAND
 
-# First set parallel level if not already set
-if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
- set( DAKOTA_CTEST_PARALLEL_LEVEL 1 )
-
+# Set parallel level for building (MAKE) and testing (CTEST) 
+# if not already set
+if ( NOT DAKOTA_MAKE_PARALLEL_LEVEL )
+  set( DAKOTA_MAKE_PARALLEL_LEVEL 1 )
   if(EXISTS "/proc/cpuinfo")
     file(STRINGS "/proc/cpuinfo" cpuInfo REGEX "processor" )
     list( LENGTH cpuInfo processorCount )
     if ( processorCount GREATER 1)
-       math(EXPR DAKOTA_CTEST_PARALLEL_LEVEL
-       		 "${processorCount}*3/4")
+      math(EXPR DAKOTA_MAKE_PARALLEL_LEVEL
+       	"${processorCount}*3/4")
     endif()     
   endif()
 endif()
 
+if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
+  set( DAKOTA_CTEST_PARALLEL_LEVEL ${DAKOTA_MAKE_PARALLEL_LEVEL} )
+endif()
+
 if ( NOT CTEST_BUILD_COMMAND )
-  set( CTEST_BUILD_COMMAND "make -j${DAKOTA_CTEST_PARALLEL_LEVEL}" )
+  set( CTEST_BUILD_COMMAND "make -j${DAKOTA_MAKE_PARALLEL_LEVEL}" )
 endif()
 
 # ***************************************************************************
