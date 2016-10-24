@@ -18,7 +18,6 @@ set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
 set( CTEST_BUILD_CONFIGURATION Release )
 
 set( DAKOTA_CTEST_REGEXP "dakota_*" )
-set( DAKOTA_DEBUG ON )
 
 ##############################################################################
 

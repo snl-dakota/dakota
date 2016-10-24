@@ -10,9 +10,7 @@ set( DAKOTA_CMAKE_PLATFORM "RHEL5.cmake")
 set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 
 set( DAKOTA_CTEST_PROJECT_TAG "Continuous" )
-set( CTEST_BUILD_CONFIGURATION RelWithDebInfo )
-
-set( DAKOTA_DEBUG ON )
+set( CTEST_BUILD_CONFIGURATION Release )
 
 ##############################################################################
 
