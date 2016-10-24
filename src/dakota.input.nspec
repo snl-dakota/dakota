@@ -1,11 +1,32 @@
 KEYWORD01 environment {NIDRProblemDescDB::env_start}
-  [ check {N_stm(true,checkFlag)} ]
+  [ tabular_data ALIAS tabular_graphics_data {N_stm(true,tabularDataFlag)}
+    [ tabular_data_file ALIAS tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
+    [ 
+      annotated {N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}
+      |
+      ( 
+        ( custom_annotated {N_stm(utype,tabularFormat_TABULAR_NONE)}
+          [ header {N_stm(augment_utype,tabularFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)} ]
+         )
+       )
+      |
+      freeform {N_stm(utype,tabularFormat_TABULAR_NONE)}
+     ]
+   ]
   [ output_file STRING {N_stm(str,outputFile)} ]
   [ error_file STRING {N_stm(str,errorFile)} ]
   [ read_restart STRING {N_stm(str,readRestart)}
     [ stop_restart INTEGER >= 0 {N_stm(int,stopRestart)} ]
    ]
   [ write_restart STRING {N_stm(str,writeRestart)} ]
+  [ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
+  [ results_output {N_stm(true,resultsOutputFlag)}
+    [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
+   ]
+  [ graphics {N_stm(true,graphicsFlag)} ]
+  [ check {N_stm(true,checkFlag)} ]
   [ pre_run {N_stm(true,preRunFlag)}
     [ input STRING {N_stm(str,preRunInput)} ]
     [ output STRING {N_stm(str,preRunOutput)}
@@ -45,27 +66,6 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
        ]
      ]
     [ output STRING {N_stm(str,postRunOutput)} ]
-   ]
-  [ graphics {N_stm(true,graphicsFlag)} ]
-  [ tabular_data ALIAS tabular_graphics_data {N_stm(true,tabularDataFlag)}
-    [ tabular_data_file ALIAS tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
-    [ 
-      annotated {N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}
-      |
-      ( 
-        ( custom_annotated {N_stm(utype,tabularFormat_TABULAR_NONE)}
-          [ header {N_stm(augment_utype,tabularFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)} ]
-         )
-       )
-      |
-      freeform {N_stm(utype,tabularFormat_TABULAR_NONE)}
-     ]
-   ]
-  [ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
-  [ results_output {N_stm(true,resultsOutputFlag)}
-    [ results_output_file STRING {N_stm(str,resultsOutputFile)} ]
    ]
   [ top_method_pointer ALIAS method_pointer STRING {N_stm(str,topMethodPointer)} ]
 
@@ -2129,9 +2129,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 
 KEYWORD model {N_mom3(start,0,stop)}
   [ id_model STRING {N_mom(str,idModel)} ]
-  [ variables_pointer STRING {N_mom(str,variablesPointer)} ]
-  [ responses_pointer STRING {N_mom(str,responsesPointer)} ]
-  [ hierarchical_tagging {N_mom(true,hierarchicalTags)} ]
   ( single ALIAS simulation {N_mom(lit,modelType_simulation)}
     [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
     [ solution_level_control STRING {N_mom(str,solutionLevelControl)}
@@ -2389,14 +2386,13 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
      )
     |
-    ( 
-      ( multipoint {N_mom(lit,surrogateType_multipoint_tana)}
-        tana {0}
-       )
-      |
-      ( local {N_mom(lit,surrogateType_local_taylor)}
-        taylor_series {0}
-       )
+    ( multipoint {N_mom(lit,surrogateType_multipoint_tana)}
+      tana {0}
+      actual_model_pointer STRING {N_mom(str,actualModelPointer)}
+     )
+    |
+    ( local {N_mom(lit,surrogateType_local_taylor)}
+      taylor_series {0}
       actual_model_pointer STRING {N_mom(str,actualModelPointer)}
      )
     |
@@ -2508,6 +2504,9 @@ KEYWORD model {N_mom3(start,0,stop)}
     [ truncation_tolerance REAL {N_mom(Real,truncationTolerance)} ]
     propagation_model_pointer STRING {N_mom(str,propagationModelPointer)}
    )
+  [ variables_pointer STRING {N_mom(str,variablesPointer)} ]
+  [ responses_pointer STRING {N_mom(str,responsesPointer)} ]
+  [ hierarchical_tagging {N_mom(true,hierarchicalTags)} ]
 
 KEYWORD12 variables {N_vam3(start,0,stop)}
   [ id_variables STRING {N_vam(str,idVariables)} ]

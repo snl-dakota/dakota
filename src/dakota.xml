@@ -67,13 +67,13 @@
     >
     <!ENTITY model_full_surfpack_export_format
         "<optional>
-	      <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' />
+	      <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'/>
           <optional>
-		    <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' >
+		    <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
               <param type='STRING' />
             </keyword>
           </optional>
-		  <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats'>
+		  <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
 		    <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text Archive' maxOccurs='1' minOccurs='0' />
 		    <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary Archive' maxOccurs='1' minOccurs='0'  />
 		    <keyword id='algebraic_file' name='algebraic_file' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)}' label='Algebraic File' maxOccurs='1' minOccurs='0'  />
@@ -83,13 +83,13 @@
     >
     <!ENTITY model_partial_surfpack_export_format
         "<optional>
-	       <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' />
+	       <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'/>
              <optional>
-		       <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' >
+		     <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
                  <param type='STRING' />
                </keyword>
              </optional>
-		   <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats'>
+		   <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
 		     <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text SPS' maxOccurs='1' minOccurs='0' />
 		     <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary SPS' maxOccurs='1' minOccurs='0'  />
 		   </keyword>
@@ -147,7 +147,28 @@
   <input>
     <!-- **** TOPLEVEL *** -->
     <keyword id="environment" name="environment" minOccurs="0" maxOccurs="1" code="{NIDRProblemDescDB::env_start}" label="Environment" help="EnvCommands.html" default="no environment" >
-      <keyword  id="check" name="check" code="{N_stm(true,checkFlag)}" label="Enable Check Mode" help="" minOccurs="0" default="no check; proceed to run" complexity="1"/>
+      <group label="Input/Output">
+        <keyword  id="tabular_data" name="tabular_data" code="{N_stm(true,tabularDataFlag)}" label="Enable Tabular Data" help="" minOccurs="0" default="no tabular data output" complexity="0">
+          <alias name="tabular_graphics_data"/>
+          <keyword  id="tabular_data_file" name="tabular_data_file" code="{N_stm(str,tabularDataFile)}" label="Tabular Data File" help="" minOccurs="0" default="dakota_tabular.dat">
+            <alias name="tabular_graphics_file"/>
+            <param type="OUTPUT_FILE" />
+          </keyword>
+          <optional>
+            <oneOf label="Tabular Data Format">
+              <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="Annotated" help="" default="annotated format" />
+	          <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+	          <required>
+                <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
+		          <keyword id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
+		          <keyword id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
+		          <keyword id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
+	            </keyword>
+	          </required>
+              <keyword id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated format" />
+            </oneOf>
+          </optional>
+        </keyword>      
       <keyword  id="output_file" name="output_file" code="{N_stm(str,outputFile)}" label="Output File" help="" minOccurs="0" default="output to console, not file" complexity="0">
         <param type="OUTPUT_FILE" />
       </keyword>
@@ -160,10 +181,22 @@
           <param type="INTEGER" constraint=">= 0" />
         </keyword>
       </keyword>
-      <keyword  id="write_restart" name="write_restart" code="{N_stm(str,writeRestart)}" label="Restart Write File" help="" minOccurs="0" default="dakota.rst" complexity="1">
+        <keyword  id="write_restart" name="write_restart" code="{N_stm(str,writeRestart)}" label="Write Restart File" help="" minOccurs="0" default="dakota.rst" complexity="1">
         <param type="STRING" />
       </keyword>
-      <keyword  id="pre_run" name="pre_run" code="{N_stm(true,preRunFlag)}" label="Enable Pre-Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="1">
+        <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric Output Precision Value" help="EnvCommands.html#EnvOutput" minOccurs="0" default="10" complexity="1">
+          <param type="INTEGER" constraint=">= 0" />
+        </keyword>
+        <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable Results Output" help="EnvCommands.html#EnvOutput" minOccurs="0" default="no results output" complexity="1">
+          <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File" help="EnvCommands.html#EnvOutput" minOccurs="0" default="dakota_results.txt" >
+            <param type="OUTPUT_FILE" />
+          </keyword>
+        </keyword>        
+        <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window" help="EnvCommands.html#EnvOutput" minOccurs="0" default="graphics off" complexity="1"/>
+      </group>
+      <group label="Run Modes">
+        <keyword  id="check" name="check" code="{N_stm(true,checkFlag)}" label="Enable Check Mode" help="" minOccurs="0" default="no check; proceed to run" complexity="0"/>
+        <keyword  id="pre_run" name="pre_run" code="{N_stm(true,preRunFlag)}" label="Enable Pre-Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="0">
         <keyword  id="input" name="input" code="{N_stm(str,preRunInput)}" label="Input File" help="" minOccurs="0" default="no pre-run specific input read">
           <param type="STRING" />
         </keyword>
@@ -185,7 +218,7 @@
           </optional>
         </keyword>
       </keyword>
-      <keyword  id="run" name="run" code="{N_stm(true,runFlag)}" label="Enable Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="1">
+        <keyword  id="run" name="run" code="{N_stm(true,runFlag)}" label="Enable Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="0">
         <keyword  id="input1" name="input" code="{N_stm(str,runInput)}" label="Input File" help="" minOccurs="0" default="no run specific input read" >
           <param type="STRING" />
         </keyword>
@@ -193,7 +226,7 @@
           <param type="STRING" />
         </keyword>
       </keyword>
-      <keyword  id="post_run" name="post_run" code="{N_stm(true,postRunFlag)}" label="Enable Post-Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="1">
+        <keyword  id="post_run" name="post_run" code="{N_stm(true,postRunFlag)}" label="Enable Post-Run Mode" help="" minOccurs="0" default="pre-run, run, post-run all executed" complexity="0">
         <keyword  id="input2" name="input" code="{N_stm(str,postRunInput)}" label="Input File" help="" minOccurs="0" default="no post-run specific input read" >
           <param type="STRING" />
           <optional>
@@ -215,36 +248,7 @@
           <param type="STRING" />
         </keyword>
       </keyword>
-      <keyword  id="graphics" name="graphics" code="{N_stm(true,graphicsFlag)}" label="Enable Graphics Window" help="EnvCommands.html#EnvOutput" minOccurs="0" default="graphics off" complexity="1"/>
-      <keyword  id="tabular_data" name="tabular_data" code="{N_stm(true,tabularDataFlag)}" label="Enable Tabular Data" help="" minOccurs="0" default="no tabular data output" complexity="0">
-        <alias name="tabular_graphics_data"/>
-        <keyword  id="tabular_data_file" name="tabular_data_file" code="{N_stm(str,tabularDataFile)}" label="Tabular Data File" help="" minOccurs="0" default="dakota_tabular.dat">
-          <alias name="tabular_graphics_file"/>
-          <param type="OUTPUT_FILE" />
-        </keyword>
-        <optional>
-          <oneOf label="Tabular Data Format">
-            <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="Annotated" help="" default="annotated format" />
-	        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-	        <required>
-              <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
-		        <keyword id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
-		        <keyword id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
-		        <keyword id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
-	          </keyword>
-	        </required>
-            <keyword id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated format" />
-          </oneOf>
-        </optional>
-      </keyword>
-      <keyword  id="output_precision" name="output_precision" code="{N_stm(int,outputPrecision)}" label="Numeric Output Precision Value" help="EnvCommands.html#EnvOutput" minOccurs="0" default="10" complexity="1">
-        <param type="INTEGER" constraint=">= 0" />
-      </keyword>
-      <keyword  id="results_output" name="results_output" code="{N_stm(true,resultsOutputFlag)}" label="Enable Results Output" help="EnvCommands.html#EnvOutput" minOccurs="0" default="no results output" complexity="1">
-        <keyword  id="results_output_file" name="results_output_file" code="{N_stm(str,resultsOutputFile)}" label="Results Output File" help="EnvCommands.html#EnvOutput" minOccurs="0" default="dakota_results.txt" >
-          <param type="OUTPUT_FILE" />
-        </keyword>
-      </keyword>
+      </group>
       <keyword  id="top_method_pointer" name="top_method_pointer" code="{N_stm(str,topMethodPointer)}" label="Method Pointer" help="EnvCommands.html#EnvMethPtr" minOccurs="0" default="see discussion" complexity="1">
         <alias name="method_pointer"/>
         <param type="STRING" in_taglist="method" />
@@ -2820,76 +2824,69 @@
     
     <!-- **** TOPLEVEL *** -->
     <keyword id="model" name="model" minOccurs="0" maxOccurs="unbounded" code="{N_mom3(start,0,stop)}" label="Model" help="ModelCommands.html">
-      <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model set identifier" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="method use of last model parsed" >
+      <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="method use of last model parsed" complexity="0">
         <param type="STRING" taglist="model" />
       </keyword>
-      <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables set pointer" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="model use of last variables parsed" >
-        <param type="STRING" in_taglist="variables" />
-      </keyword>
-      <keyword  id="responses_pointer" name="responses_pointer" code="{N_mom(str,responsesPointer)}" label="Responses set pointer" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="model use of last responses parsed" >
-        <param type="STRING" in_taglist="responses" />
-      </keyword>
-      <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical evaluation tags" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="no hierarchical tagging" />
       <oneOf>
-        <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="single" help="" minOccurs="1" default="N/A ( single if no model specification)" >
+        <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single" help="" minOccurs="1" default="N/A ( single if no model specification)" complexity="0">
           <alias name="simulation"/>
-          <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface set pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
+          <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
-          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation solution level control variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" >
+          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" complexity="1">
             <param type="STRING" />
-	    <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative simulation cost factors for solution levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
+	        <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
               <param type="REALLIST" />
             </keyword>
           </keyword>
         </keyword>
-        <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="surrogate" help="" minOccurs="1" >
-          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate response ids" help="ModelCommands.html#ModelSurrogate" minOccurs="0" default="All response functions are approximated" >
+        <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate" help="" minOccurs="1" complexity="0" >
+          <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs" help="ModelCommands.html#ModelSurrogate" minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
           <oneOf>
-            <keyword  id="global" name="global" code="{0}" label="Global approximations " help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+            <keyword  id="global" name="global" code="{0}" label="Global Approximation" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
               <oneOf>
-                <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Dakota Gaussian process" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+                <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <alias name="kriging"/>
                   <oneOf>
-                    <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="dakota" help="" minOccurs="1" >
-                      <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="GP point selection" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point selection" />
-                      <keyword  id="trend" name="trend" code="{0}" label="GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
+                    <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="Dakota" help="" minOccurs="1" >
+                      <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="Point Selection" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point selection" />
+                      <keyword  id="trend" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
                         <oneOf>
-                          <keyword  id="constant" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="constant" help=""  />
-                          <keyword  id="linear" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="linear" help=""  />
-                          <keyword  id="reduced_quadratic" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="reduced_quadratic" help=""  />
+                          <keyword  id="constant" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
+                          <keyword  id="linear" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
+                          <keyword  id="reduced_quadratic" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
                         </oneOf>
                       </keyword>
                     </keyword>
-                    <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="surfpack" help="" minOccurs="1" >
-                      <keyword  id="trend1" name="trend" code="{0}" label="Surfpack GP trend function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
+                    <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="Surfpack" help="" minOccurs="1" >
+                      <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
                         <oneOf>
-                          <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="constant" help=""  />
-                          <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="linear" help=""  />
-                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="reduced_quadratic" help=""  />
-                          <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="quadratic" help=""  />
+                          <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
+                          <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
+                          <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
+                          <keyword  id="quadratic" name="quadratic" code="{N_mom(lit,trendOrder_quadratic)}" label="Quadratic" help=""  />
                         </oneOf>
                       </keyword>
                       <!-- # using generic STRING to avoid collision with local/global below -->
-                      <keyword  id="optimization_method" name="optimization_method" code="{N_mom(str,krigingOptMethod)}" label="Surfpack GP optimization method" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="global" >
+                      <keyword  id="optimization_method" name="optimization_method" code="{N_mom(str,krigingOptMethod)}" label="Optimization Method" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="global" complexity="1">
                         <param type="STRING" />
                       </keyword>
-                      <keyword  id="max_trials" name="max_trials" code="{N_mom(shint,krigingMaxTrials)}" label="Surfpack GP maximum trials" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                      <keyword  id="max_trials" name="max_trials" code="{N_mom(shint,krigingMaxTrials)}" label="Max Number of Likelihood Function Evaluations" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" complexity="1">
                         <param type="INTEGER" constraint="> 0" />
                       </keyword>
                       <optional>
-                        <oneOf>
-                          <keyword  id="nugget" name="nugget" code="{N_mom(Real,krigingNugget)}" label="Surfpack user-specified nugget " help="ModelCommands.html#ModelSurrG"  default="None" >
+                        <oneOf label="Nugget">
+                          <keyword  id="nugget" name="nugget" code="{N_mom(Real,krigingNugget)}" label="User-Specified Nugget " help="ModelCommands.html#ModelSurrG"  default="None" >
                             <param type="REAL" constraint="> 0" />
                           </keyword>
-                          <keyword  id="find_nugget" name="find_nugget" code="{N_mom(shint,krigingFindNugget)}" label="Surfpack finds the optimal nugget " help="ModelCommands.html#ModelSurrG"  default="None" >
+                          <keyword  id="find_nugget" name="find_nugget" code="{N_mom(shint,krigingFindNugget)}" label="Surfpack-Computed Nugget " help="ModelCommands.html#ModelSurrG"  default="None" >
                             <param type="INTEGER" />
                           </keyword>
                         </oneOf>
                       </optional>
-                      <keyword  id="correlation_lengths" name="correlation_lengths" code="{N_mom(RealDL,krigingCorrelations)}" label="Surfpack GP correlation lengths" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="internally computed correlation_lengths" >
+                      <keyword  id="correlation_lengths" name="correlation_lengths" code="{N_mom(RealDL,krigingCorrelations)}" label="Correlation Lengths" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="internally computed correlation_lengths" complexity="1">
                         <param type="REALLIST" />
                       </keyword>
                       <!-- #	        [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
@@ -2899,39 +2896,37 @@
 		    </keyword>
                   </oneOf>
                 </keyword>
-                <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate adaptive regression splines" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="max_bases" name="max_bases" code="{N_mom(shint,marsMaxBases)}" label="MARS maximum bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                <keyword  id="mars" name="mars" code="{N_mom(lit,surrogateType_global_mars)}" label="Multivariate Adaptive Regression Spline (MARS)" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+                  <keyword  id="max_bases" name="max_bases" code="{N_mom(shint,marsMaxBases)}" label="Maximum Number of Bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="interpolation" name="interpolation" code="{0}" label="MARS interpolation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="interpolation" name="interpolation" code="{0}" label="Interpolation Type" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <oneOf>
-                      <keyword  id="linear2" name="linear" code="{N_mom(lit,marsInterpolation_linear)}" label="linear" help=""  />
-                      <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="cubic" help=""  />
+                      <keyword  id="linear2" name="linear" code="{N_mom(lit,marsInterpolation_linear)}" label="Linear" help=""  />
+                      <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="Cubic" help=""  />
                     </oneOf>
                   </keyword>
-                  
 		  &model_partial_surfpack_export_format;
-
 	        </keyword>
-                <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving least squares" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="MLS polynomial order" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                <keyword  id="moving_least_squares" name="moving_least_squares" code="{N_mom(lit,surrogateType_global_moving_least_squares)}" label="Moving Least Squares" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+                  <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Polynomial Order for Bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
 		    <alias name="poly_order"/>
                     <param type="INTEGER" constraint=">= 0" />
                   </keyword>
-                  <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="MLS weight function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="weight_function" name="weight_function" code="{N_mom(shint,mlsWeightFunction)}" label="Weight Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
                   &model_partial_surfpack_export_format;
                </keyword>
-                <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial neural network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="ANN maximum nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="numTrainingData - 1">
+                <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial Neural Network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
+                  <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="Maximum Number of Nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="range" name="range" code="{N_mom(Real,annRange)}" label="ANN range" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="range" name="range" code="{N_mom(Real,annRange)}" label="Random Weights Range" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" complexity="1">
                     <param type="REAL" />
                   </keyword>
-                  <keyword  id="random_weight" name="random_weight" code="{N_mom(shint,annRandomWeight)}" label="ANN random weight" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="random_weight" name="random_weight" code="{N_mom(shint,annRandomWeight)}" label="Random Weight Control" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" complexity="1">
                     <param type="INTEGER" />
                   </keyword>
                   &model_full_surfpack_export_format;
@@ -2939,122 +2934,118 @@
                 <!-- #	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
                      #	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
                  -->
-                <keyword  id="radial_basis" name="radial_basis" code="{N_mom(lit,surrogateType_global_radial_basis)}" label="radial_basis" help="" minOccurs="1" >
-                  <keyword  id="bases" name="bases" code="{N_mom(shint,rbfBases)}" label="RBF number of bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                <keyword  id="radial_basis" name="radial_basis" code="{N_mom(lit,surrogateType_global_radial_basis)}" label="Radial Basis Function (RBF)" help="" minOccurs="1" >
+                  <keyword  id="bases" name="bases" code="{N_mom(shint,rbfBases)}" label="Initial Number of Bases" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="max_pts" name="max_pts" code="{N_mom(shint,rbfMaxPts)}" label="RBF maximum points" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="max_pts" name="max_pts" code="{N_mom(shint,rbfMaxPts)}" label="Maximum Number of CVT Points" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" complexity="1">
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="min_partition" name="min_partition" code="{N_mom(shint,rbfMinPartition)}" label="RBF minimum partitions" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
+                  <keyword  id="min_partition" name="min_partition" code="{N_mom(shint,rbfMinPartition)}" label="Minimum Partition" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" complexity="1">
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="max_subsets" name="max_subsets" code="{N_mom(shint,rbfMaxSubsets)}" label="max_subsets" help="" minOccurs="0" >
+                  <keyword  id="max_subsets" name="max_subsets" code="{N_mom(shint,rbfMaxSubsets)}" label="Number of Trial Subsets" help="" minOccurs="0" complexity="1">
                     <param type="INTEGER" />
                   </keyword>
                   &model_full_surfpack_export_format;
                 </keyword>
                 <keyword  id="polynomial" name="polynomial" code="{N_mom(lit,surrogateType_global_polynomial)}" label="Polynomial" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-                  <oneOf label="polynomial order">
-                    <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="polynomial order" help="" >
+                  <oneOf label="Polynomial Order">
+                    <keyword  id="basis_order" name="basis_order" code="{N_mom(shint,polynomialOrder)}" label="Basis Order" help="" >
                       <param type="INTEGER" constraint=">= 0" />
 		    </keyword>
-                    <keyword  id="linear3" name="linear" code="{N_mom(order,polynomialOrder_1)}" label="linear" help=""  />
-                    <keyword  id="quadratic1" name="quadratic" code="{N_mom(order,polynomialOrder_2)}" label="quadratic" help=""  />
-                    <keyword  id="cubic1" name="cubic" code="{N_mom(order,polynomialOrder_3)}" label="cubic" help=""  />
+                    <keyword  id="linear3" name="linear" code="{N_mom(order,polynomialOrder_1)}" label="Linear" help=""  />
+                    <keyword  id="quadratic1" name="quadratic" code="{N_mom(order,polynomialOrder_2)}" label="Quadratic" help=""  />
+                    <keyword  id="cubic1" name="cubic" code="{N_mom(order,polynomialOrder_3)}" label="Cubic" help=""  />
                   </oneOf>
                   &model_full_surfpack_export_format;
                 </keyword>
-
               </oneOf>
-
-              <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain decomposition" help="" minOccurs="0" >
-		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local cell type" help="" minOccurs="0">
+              <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition" help="" minOccurs="0" complexity="1">
+		        <keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local Cell Type" help="" minOccurs="0">
 		  <param type="STRING" />
 		</keyword>
-
-		<keyword  id="support_layers" name="support_layers" code="{N_mom(int,decompSupportLayers)}" label="Layers of support for local basis funcion" help="" minOccurs="0">
+		        <keyword  id="support_layers" name="support_layers" code="{N_mom(int,decompSupportLayers)}" label="Layers of Support for Local Basis Function" help="" minOccurs="0">
 		  <param type="INTEGER" />
 		</keyword>
-
-		<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable discontinuity detection" help="" minOccurs="0">
+				<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable Discontinuity Detection" help="" minOccurs="0">
 		  <oneOf>
-		    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute function jump threshold" help="" minOccurs="1">
+				    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute Function Jump Threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
-		    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,discontGradThresh)}" label="Absolute gradient threshold" help="" minOccurs="1">
+				    <keyword  id="gradient_threshold" name="gradient_threshold" code="{N_mom(Real,discontGradThresh)}" label="Absolute Gradient Threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
 		  </oneOf>
 		</keyword>
               </keyword>
               <optional>
-                <oneOf>
-                  <keyword  id="total_points" name="total_points" code="{N_mom(int,pointsTotal)}" label="total_points" help=""  default="recommended_points" >
+                <oneOf label="Number of Build Points">
+                  <keyword  id="total_points" name="total_points" code="{N_mom(int,pointsTotal)}" label="Total Points" help=""  default="recommended_points" >
                     <param type="INTEGER" />
                   </keyword>
-                  <keyword  id="minimum_points" name="minimum_points" code="{N_mom(type,pointsManagement_MINIMUM_POINTS)}" label="minimum_points" help=""  />
-                  <keyword  id="recommended_points" name="recommended_points" code="{N_mom(type,pointsManagement_RECOMMENDED_POINTS)}" label="recommended_points" help=""  />
+                  <keyword  id="minimum_points" name="minimum_points" code="{N_mom(type,pointsManagement_MINIMUM_POINTS)}" label="Minimum Points" help=""  />
+                  <keyword  id="recommended_points" name="recommended_points" code="{N_mom(type,pointsManagement_RECOMMENDED_POINTS)}" label="Recommended Points" help=""  />
                 </oneOf>
               </optional>
 	      <optional>
-		<oneOf>
-		  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
+			<oneOf label="Build Data Source">
+			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
-		    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically refine surrogate" help="" minOccurs="0" default="no refinement" >
-		      <keyword  id='max_iterations' name='max_iterations' code='{N_mom(int,maxIterations)}' label='max build iterations' help='' minOccurs='0' default='100'>
+			    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate" help="" minOccurs="0" default="no refinement" complexity="1">
+			      <keyword  id='max_iterations' name='max_iterations' code='{N_mom(int,maxIterations)}' label='Max Build Iterations' help='' minOccurs='0' default='100'>
 			<param type='INTEGER' constraint="> 0" />
 		      </keyword>
-		      <keyword  id='max_function_evaluations' name='max_function_evaluations' code='{N_mom(int,maxFunctionEvals)}' label='max build evaluations' help='' minOccurs='0' default='1000'>
+			      <keyword  id='max_function_evaluations' name='max_function_evaluations' code='{N_mom(int,maxFunctionEvals)}' label='Max Build Evaluations' help='' minOccurs='0' default='1000'>
 			<param type='INTEGER' constraint="> 0" />
 		      </keyword>
-		      <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence tolerance' help='' minOccurs='0' default='1.0e-4' >
+			      <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence Tolerance' help='' minOccurs='0' default='1.0e-4' >
 			<param type='REAL' />
 		      </keyword>
-		      <keyword  id='soft_convergence_limit' name='soft_convergence_limit' code='{N_mom(int,softConvergenceLimit)}' label='Soft convergence limit' help='' minOccurs='0' default='0' >
+			      <keyword  id='soft_convergence_limit' name='soft_convergence_limit' code='{N_mom(int,softConvergenceLimit)}' label='Soft Convergence Limit' help='' minOccurs='0' default='0' >
 		        <param type='INTEGER' constraint=">= 0" />
 		      </keyword>
-		      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-validation metric type" help="" minOccurs="0" default="root-mean-squared error" >
+			      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type" help="" minOccurs="0" default="root-mean-squared error" >
 			<param type="STRING" />
-			<keyword  id='folds' name='folds' code='{N_mom(int,refineCVFolds)}' label='CV folds' help='' minOccurs='0' default='10'>
+				    <keyword  id='folds' name='folds' code='{N_mom(int,refineCVFolds)}' label='CV Folds' help='' minOccurs='0' default='10'>
 			  <param type='INTEGER' constraint="> 0" />
 			</keyword>
 		      </keyword>
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
 		    </keyword>
 		  </keyword>
-		  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+			  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
                     <param type="STRING" in_taglist="model" />
 		  </keyword>
 		</oneOf>
 	      </optional>
-              <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="reuse_points" help="" minOccurs="0" default="all for import; none otherwise">
+          <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="Re-use Points" help="" minOccurs="0" default="all for import; none otherwise">
                 <alias name="reuse_samples"/>
                 <oneOf>
-                  <keyword  id="all" name="all" code="{N_mom(lit,approxPointReuse_all)}" label="all" help=""  />
-                  <keyword  id="region" name="region" code="{N_mom(lit,approxPointReuse_region)}" label="region" help=""  />
-                  <keyword  id="none" name="none" code="{N_mom(lit,approxPointReuse_none)}" label="none" help=""  />
+              <keyword  id="all" name="all" code="{N_mom(lit,approxPointReuse_all)}" label="All" help=""  />
+              <keyword  id="region" name="region" code="{N_mom(lit,approxPointReuse_region)}" label="Region" help=""  />
+              <keyword  id="none" name="none" code="{N_mom(lit,approxPointReuse_none)}" label="None" help=""  />
                 </oneOf>
               </keyword>
-              <keyword  id="import_build_points_file17" name="import_build_points_file" code="{N_mom(str,importBuildPtsFile)}" label="File import of samples for global approximation builds" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
+          <keyword  id="import_build_points_file17" name="import_build_points_file" code="{N_mom(str,importBuildPtsFile)}" label="File Import of Samples for Global Approximation Builds" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
                 <alias name="import_points_file"/>
 		<alias name="samples_file"/>
                 <param type="INPUT_FILE" />
 		<optional>
-		  <oneOf label="tabular format" >
-		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+				<oneOf label="Tabular Format" >
+				  <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
-		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			<keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			<keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			<keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+				    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+					  <keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+					  <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+					  <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0"/>
 		      </keyword>
 		    </required>
-		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated" />
+				  <keyword  id="freeform" name="freeform" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
-		<keyword  id="active_only20" name="active_only" code="{N_mom(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+		    <keyword  id="active_only20" name="active_only" code="{N_mom(true,importBuildActive)}" label="Active Variables Only" help="" minOccurs="0" />
               </keyword>
 	      <!-- MSE: this option seems undesirable from a design perspective; outer loop evaluations should be handled by Iterators.
               <keyword  id="import_approx_points_file2" name="import_approx_points_file" code="{N_mom(str,importApproxPtsFile)}" label="File import of samples for evaluation on global surrogate" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
@@ -3075,89 +3066,88 @@
 		<keyword  id="active_only21" name="active_only" code="{N_mom(true,importApproxActive)}" label="Active variables only" help="" minOccurs="0" />
               </keyword>
 	      -->
-              <keyword  id="export_approx_points_file8" name="export_approx_points_file" code="{N_mom(str,exportApproxPtsFile)}" label="File export of global approximation-based sample results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
+          <keyword  id="export_approx_points_file8" name="export_approx_points_file" code="{N_mom(str,exportApproxPtsFile)}" label="File Export of Global Approximation-Based Sample Results" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point export to a file" >
                 <alias name="export_points_file"/>
 		<param type="OUTPUT_FILE" />
 		<optional>
-		  <oneOf label="tabular format" >
-		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+			  <oneOf label="Tabular Format" >
+			    <keyword  id="annotated" name="annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
-		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			<keyword  id="header" name="header" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			<keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			<keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+				    <keyword  id="header" name="header" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+				    <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+				    <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
 		      </keyword>
 		    </required>
-		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+			    <keyword  id="freeform" name="freeform" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Freeform" help="" default="annotated" />
 		  </oneOf>
 		</optional>
               </keyword>
-              <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Surfpack GP gradient enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="use function values only" />
-              <keyword  id="correction" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no surrogate correction" >
-                <oneOf label="correction order">
-                  <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />
-                  <keyword  id="first_order1" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="first_order" help=""  />
-                  <keyword  id="second_order1" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="second_order" help=""  />
-                </oneOf>
-                <oneOf label="correction type">
-                  <keyword  id="additive" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="additive" help=""  />
-                  <keyword  id="multiplicative" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="multiplicative" help=""  />
-                  <keyword  id="combined" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="combined" help=""  />
+          <keyword  id="use_derivatives8" name="use_derivatives" code="{N_mom(true,modelUseDerivsFlag)}" label="Gradient Enhancement" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="use function values only" complexity="1"/>
+          <keyword  id="correction" name="correction" code="{0}" label="Surrogate Correction Approach" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no surrogate correction" complexity="1">
+            <oneOf label="Correction Order">
+              <keyword  id="zeroth_order" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order" help=""  />
+              <keyword  id="first_order1" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order" help=""  />
+              <keyword  id="second_order1" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order" help=""  />
+            </oneOf>
+            <oneOf label="Correction Type">
+              <keyword  id="additive" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive" help=""  />
+              <keyword  id="multiplicative" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative" help=""  />
+              <keyword  id="combined" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined" help=""  />
                 </oneOf>
               </keyword>
-              <keyword  id="metrics" name="metrics" code="{N_mom(strL,diagMetrics)}" label="Compute surrogate diagnostics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No diagnostics" >
+              <keyword  id="metrics" name="metrics" code="{N_mom(strL,diagMetrics)}" label="Compute Surrogate Diagnostics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No diagnostics" >
                 <alias name="diagnostics"/>
                 <param type="STRINGLIST" />
-                <keyword  id="cross_validation2" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform cross validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
+                <keyword  id="cross_validation2" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
                   <optional>
                     <oneOf>
-                      <keyword  id="folds" name="folds" code="{N_mom(int,numFolds)}" label="Number cross validation folds" help="ModelCommands.html#ModelSurrG"  default="10" >
+                      <keyword  id="folds" name="folds" code="{N_mom(int,numFolds)}" label="Number Cross Validation Folds" help="ModelCommands.html#ModelSurrG"  default="10" >
                         <param type="INTEGER" />
                       </keyword>
-                      <keyword  id="percent" name="percent" code="{N_mom(Real,percentFold)}" label="Percent points per CV fold" help="ModelCommands.html#ModelSurrG"  default="0.1" >
+                      <keyword  id="percent" name="percent" code="{N_mom(Real,percentFold)}" label="Percent Points per CV Fold" help="ModelCommands.html#ModelSurrG"  default="0.1" >
                         <param type="REAL" />
                       </keyword>
                     </oneOf>
                   </optional>
                 </keyword>
-                <keyword  id="press" name="press" code="{N_mom(true,pressFlag)}" label="Perform PRESS cross validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No PRESS cross validation" />
+                <keyword  id="press" name="press" code="{N_mom(true,pressFlag)}" label="Perform PRESS Cross-Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No PRESS cross validation" />
               </keyword>
-              <keyword  id="import_challenge_points_file" name="import_challenge_points_file" code="{N_mom(str,importChallengePtsFile)}" label="Challenge file for surrogate metrics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no user challenge data" >
+              <keyword  id="import_challenge_points_file" name="import_challenge_points_file" code="{N_mom(str,importChallengePtsFile)}" label="Challenge File for Surrogate Metrics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no user challenge data" >
                 <alias name="challenge_points_file"/>
                 <param type="STRING" />
 		<optional>
 		  <oneOf label="tabular format" >
-		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+					    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
-		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			<keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			<keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			<keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+					      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+						    <keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+						    <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+						    <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
 		      </keyword>
 		    </required>
-		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated" />
+					    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
-		<keyword  id="active_only22" name="active_only" code="{N_mom(true,importChallengeActive)}" label="Active variables only" help="" minOccurs="0" />
+		          <keyword  id="active_only22" name="active_only" code="{N_mom(true,importChallengeActive)}" label="Active Variables Only" help="" minOccurs="0" />
               </keyword>
             </keyword>
-            <required>
-              <oneOf>
-                <keyword  id="multipoint" name="multipoint" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Multipoint approximation" help="ModelCommands.html#ModelSurrMP" minOccurs="1" >
-                  <keyword  id="tana" name="tana" code="{0}" label="Two-point adaptive nonlinear approximation " help="ModelCommands.html#ModelSurrMP"  />
-                </keyword>
-                <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local approximation" help="ModelCommands.html#ModelSurrL" minOccurs="1" >
-                  <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor series local approximation " help="ModelCommands.html#ModelSurrL"  />
-                </keyword>
-              </oneOf>
-              <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help=""  >
-                <param type="STRING" in_taglist="model" />
-              </keyword>
-            </required>
-            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical approximation " help="ModelCommands.html#ModelSurrH" minOccurs="1" >
-              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Pointers to specifications of the model fidelities" help="ModelCommands.html#ModelSurrH"  >
+            <keyword  id="multipoint" name="multipoint" code="{N_mom(lit,surrogateType_multipoint_tana)}" label="Multipoint Approximation" help="ModelCommands.html#ModelSurrMP" minOccurs="1" complexity="1">
+              <keyword  id="tana" name="tana" code="{0}" label="Two-point adaptive nonlinear approximation " help="ModelCommands.html#ModelSurrMP"  />
+           	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help=""  >
+              <param type="STRING" in_taglist="model" />
+            </keyword>
+            </keyword>
+            <keyword  id="local" name="local" code="{N_mom(lit,surrogateType_local_taylor)}" label="Local Approximation" help="ModelCommands.html#ModelSurrL" minOccurs="1" complexity="1">
+              <keyword  id="taylor_series" name="taylor_series" code="{0}" label="Taylor Series Local Approximation " help="ModelCommands.html#ModelSurrL"  />
+        	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help=""  >
+            	<param type="STRING" in_taglist="model" />
+          	  </keyword>
+            </keyword>
+            <keyword  id="hierarchical1" name="hierarchical" code="{N_mom(lit,surrogateType_hierarchical)}" label="Hierarchical Approximation " help="ModelCommands.html#ModelSurrH" minOccurs="1" >
+              <keyword  id="ordered_model_fidelities" name="ordered_model_fidelities" code="{N_mom(strL,orderedModelPointers)}" label="Model Pointers (Ordered by Fidelity)" help="ModelCommands.html#ModelSurrH"  >
                 <alias name="model_fidelity_sequence"/>
                 <param type="STRINGLIST" in_taglist="model" />
               </keyword>
@@ -3169,172 +3159,180 @@
                 <param type="STRING" in_taglist="model" />
 		</keyword>
 	      -->
-              <keyword  id="correction1" name="correction" code="{0}" label="Surrogate correction approach" help="ModelCommands.html#ModelSurrH" minOccurs="0" default="no surrogate correction" >
+              <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach" help="ModelCommands.html#ModelSurrH" minOccurs="0" default="no surrogate correction" >
                 <oneOf label="correction order">
-                  <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="zeroth_order" help=""  />
-                  <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="first_order" help=""  />
-                  <keyword  id="second_order2" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="second_order" help=""  />
+                  <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order" help=""  />
+                  <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order" help=""  />
+                  <keyword  id="second_order2" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order" help=""  />
                 </oneOf>
                 <oneOf label="correction type">
-                  <keyword  id="additive1" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="additive" help=""  />
-                  <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="multiplicative" help=""  />
-                  <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="combined" help=""  />
+                  <keyword  id="additive1" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive" help=""  />
+                  <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative" help=""  />
+                  <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined" help=""  />
                 </oneOf>
               </keyword>
             </keyword>
           </oneOf>
         </keyword>
-        <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="nested" help="" minOccurs="1" >
-          <keyword  id="optional_interface_pointer" name="optional_interface_pointer" code="{N_mom(str,interfacePointer)}" label="Optional interface set pointer" help="ModelCommands.html#ModelNested" minOccurs="0" default="no optional interface" >
+        <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="Nested" help="" minOccurs="1" complexity="1">
+          <keyword  id="optional_interface_pointer" name="optional_interface_pointer" code="{N_mom(str,interfacePointer)}" label="Optional Interface Set Pointer" help="ModelCommands.html#ModelNested" minOccurs="0" default="no optional interface" >
             <param type="STRING" in_taglist="interface" />
-            <keyword  id="optional_interface_responses_pointer" name="optional_interface_responses_pointer" code="{N_mom(str,optionalInterfRespPointer)}" label="Responses pointer for nested model optional interfaces" help="ModelCommands.html#ModelNested" minOccurs="0" default="reuse of top-level responses specification" >
+            <keyword  id="optional_interface_responses_pointer" name="optional_interface_responses_pointer" code="{N_mom(str,optionalInterfRespPointer)}" label="Responses Pointer for Optional Interfaces" help="ModelCommands.html#ModelNested" minOccurs="0" default="reuse of top-level responses specification" >
               <param type="STRING" in_taglist="responses" />
             </keyword>
           </keyword>
-          <keyword  id="sub_method_pointer" name="sub_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Sub-method pointer for nested models" help="ModelCommands.html#ModelNested" minOccurs="1" >
+          <keyword  id="sub_method_pointer" name="sub_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Sub-Method Pointer" help="ModelCommands.html#ModelNested" minOccurs="1" >
             <param type="STRING" in_taglist="method" />
-            <keyword  id="iterator_servers1" name="iterator_servers" code="{N_mom(pint,subMethodServers)}" label="iterator_servers" help="" minOccurs="0" >
+            <keyword  id="iterator_servers1" name="iterator_servers" code="{N_mom(pint,subMethodServers)}" label="Iterator Servers" help="" minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
-            <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="iterator_scheduling" help="" minOccurs="0" >
+            <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="Iterator Scheduling" help="" minOccurs="0" >
               <oneOf>
-                <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
-                <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
+                <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="Master" help=""  />
+                <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer" help=""  />
 				<!-- #	      | ( peer {0}
                      #	          dynamic  {N_mom(type,subMethodScheduling_PEER_DYNAMIC_SCHEDULING)}
                      #	      	  | static {N_mom(type,subMethodScheduling_PEER_STATIC_SCHEDULING)} ) 
 				  -->
               </oneOf>
             </keyword>
-            <keyword  id="processors_per_iterator1" name="processors_per_iterator" code="{N_mom(pint,subMethodProcs)}" label="processors_per_iterator" help="" minOccurs="0" >
+            <keyword  id="processors_per_iterator1" name="processors_per_iterator" code="{N_mom(pint,subMethodProcs)}" label="Processors per Iterator" help="" minOccurs="0" >
               <param type="INTEGER" constraint="> 0" />
             </keyword>
-            <keyword  id="primary_variable_mapping" name="primary_variable_mapping" code="{N_mom(strL,primaryVarMaps)}" label="Primary variable mappings for nested models" help="ModelCommands.html#ModelNested" minOccurs="0" default="default variable insertions based on variable type" >
+            <keyword  id="primary_variable_mapping" name="primary_variable_mapping" code="{N_mom(strL,primaryVarMaps)}" label="Primary Variable Mappings" help="ModelCommands.html#ModelNested" minOccurs="0" default="default variable insertions based on variable type" >
               <param type="STRINGLIST" />
             </keyword>
-            <keyword  id="secondary_variable_mapping" name="secondary_variable_mapping" code="{N_mom(strL,secondaryVarMaps)}" label="Secondary variable mappings for nested models" help="ModelCommands.html#ModelNested" minOccurs="0" default="primary mappings into sub-model variables are value-based" >
+            <keyword  id="secondary_variable_mapping" name="secondary_variable_mapping" code="{N_mom(strL,secondaryVarMaps)}" label="Secondary Variable Mappings" help="ModelCommands.html#ModelNested" minOccurs="0" default="primary mappings into sub-model variables are value-based" >
               <param type="STRINGLIST" />
             </keyword>
-            <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary response mappings for nested models" help="ModelCommands.html#ModelNested" minOccurs="0" default="no sub-iterator contribution to primary functions" >
+            <keyword  id="primary_response_mapping" name="primary_response_mapping" code="{N_mom(RealDL,primaryRespCoeffs)}" label="Primary Response Mappings" help="ModelCommands.html#ModelNested" minOccurs="0" default="no sub-iterator contribution to primary functions" >
               <param type="REALLIST" />
             </keyword>
-            <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary response mappings for nested models" help="ModelCommands.html#ModelNested" minOccurs="0" default="no sub-iterator contribution to secondary functions" >
+            <keyword  id="secondary_response_mapping" name="secondary_response_mapping" code="{N_mom(RealDL,secondaryRespCoeffs)}" label="Secondary Response Mappings" help="ModelCommands.html#ModelNested" minOccurs="0" default="no sub-iterator contribution to secondary functions" >
               <param type="REALLIST" />
             </keyword>
           </keyword>
         </keyword>
-	<keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="active_subspace" help="" minOccurs="1" >
-    <alias name="subspace"/>
-	  <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+        <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace" help="" minOccurs="1" complexity="1">
+          <alias name="subspace"/>
+
+	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-	  <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='initial samples' help='' minOccurs='0' default='model-dependent'>
+	      <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='Initial Samples' help='' minOccurs='0' default='model-dependent'>
 	    <param type='INTEGER' />
 	  </keyword>
-	  <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
+	  <keyword  id="sample_type" name="sample_type" code="{0}" label="Sample Type" help="" minOccurs="0" default="random" >
 	    <oneOf>
-	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
-	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="random" help=""  />
+	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="LHS" help=""  />
+	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="Random" help=""  />
 	    </oneOf>
 	  </keyword>
-	  <keyword id="truncation_method" name="truncation_method" code="{0}" minOccurs="0">
-	    <keyword id="bing_li" name="bing_li" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
-	    <keyword id="constantine" name="constantine" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
-	    <keyword id="energy" name="energy" code="{N_mom(true,subspaceIdEnergy)}" minOccurs="0">
-	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
+	  <keyword id="truncation_method" name="truncation_method" label="Truncation Method" code="{0}" minOccurs="0">
+	    <keyword id="bing_li" name="bing_li" label="'Bing Li' Ladle Diagnostic" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
+	    <keyword id="constantine" name="constantine" label="Constantine Diagnostic" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
+	    <keyword id="energy" name="energy" label="Eigenvalue Energy" code="{N_mom(true,subspaceIdEnergy)}" minOccurs="0">
+	      <keyword  id="truncation_tolerance" name="truncation_tolerance" label="Truncation Tolerance" code="{N_mom(Real,truncationTolerance)}" help="" minOccurs="0" >
 	        <param type="REAL" />
 	      </keyword>
 	    </keyword>
-	    <keyword id="cross_validation" name="cross_validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
+	    <keyword id="cross_validation" name="cross_validation" label="Cross Validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
         <optional>
           <oneOf>
-            <keyword id="minimum" name="minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
-            <keyword id="relative" name="relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
-            <keyword id="decrease" name="decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
+            <keyword id="minimum" name="minimum" label="Minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
+            <keyword id="relative" name="relative" label="Relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
+            <keyword id="decrease" name="decrease" label="Decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
           </oneOf>
         </optional>
-        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="relative_tolerance" help="" minOccurs="0" >
+        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="Relative Tolerance" help="" minOccurs="0" >
           <param type="REAL" />
         </keyword>
-        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="decrease_tolerance" help="" minOccurs="0" >
+        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance" help="" minOccurs="0" >
           <param type="REAL" />
         </keyword>
-        <keyword  id='max_rank' name='max_rank' code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0'>
+        <keyword  id='max_rank' name='max_rank' label="Max Rank" code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0'>
           <param type='INTEGER' />
 	      </keyword>
-	      <keyword id="exhaustive" name="exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
+	      <keyword id="exhaustive" name="exhaustive" label="Exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
 	    </keyword>
 	  </keyword>
-	  <keyword  id='dimension' name='dimension' code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
+	  <keyword  id='dimension' name='dimension' label="Dimension" code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
             <param type='INTEGER' />
 	  </keyword>
-	  <keyword  id='bootstrap_samples' name='bootstrap_samples' code='{N_mom(int,numReplicates)}' minOccurs='0'>
+	  <keyword  id='bootstrap_samples' name='bootstrap_samples' label="Bootstrap Samples" code='{N_mom(int,numReplicates)}' minOccurs='0'>
             <param type='INTEGER' />
 	  </keyword>
-	  <keyword id="build_surrogate" name="build_surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement samples" help="" minOccurs="0" > 
+	  <keyword id="build_surrogate" name="build_surrogate" label="Build Surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples" help="" minOccurs="0" > 
               <param type="INTEGERLIST" />
             </keyword>
 	  </keyword>
-	  <keyword id="normalization" name="normalization" code="{0}" minOccurs="0"> 
+	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
       <oneOf> 
-        <keyword id="mean_value" name="mean_value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
-        <keyword id="mean_gradient" name="mean_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
-        <keyword id="local_gradient" name="local_gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
+        <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
+        <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
+        <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
       </oneOf> 
 	  </keyword>
 	</keyword>
-	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="adapted_basis" help="" minOccurs="1" >
-	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="actual_model_pointer" help="" minOccurs="1" >
+	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis" help="" minOccurs="1" >
+	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
 	  <oneOf>
-	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="adapted basis sparse grid level" >
+	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
 	    </keyword>
-	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="adapted basis expansion order" >
+	    <keyword  id="expansion_order" name="expansion_order" code="{N_mom(int,adaptedBasisExpOrder)}" label="Adapted Basis Expansion Order" >
 	      <param type="INTEGER" />
-	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="adapted basis collocation ratio" >
+	      <keyword  id="collocation_ratio4" name="collocation_ratio" code="{N_mom(Real,adaptedBasisCollocRatio)}" label="Adapted Basis Collocation Ratio" >
 		<param type="REAL" />
 	      </keyword>
 	    </keyword>
 	  </oneOf>
 	  <!-- TO DO: adaptation specification for testing higher-order and interaction terms for adapted basis. -->
 	</keyword>
-	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random field" help="" minOccurs="1" >
-	  <keyword id="build_source" name="build_source" code="{0}" minOccurs="0">
+	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field" help="" minOccurs="1" complexity="1">
+	      <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
 	    <oneOf>
-	      <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random field data file name" default="none">
+	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
               </keyword>
-	      <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of experiments method pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
+	          <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
                 <param type="STRING" in_taglist="method" />
               </keyword>
-	      <keyword id="analytic_covariance" name="analytic_covariance" code="{0}" >
+	          <keyword id="analytic_covariance" name="analytic_covariance" label="Analytic Covariance" code="{0}" >
 	        <oneOf>
-	          <keyword id="squared_exponential" name="squared_exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L2)}" />
-	          <keyword id="exponential" name="exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L1)}" />
+	              <keyword id="squared_exponential" name="squared_exponential" label="Squared Covariance" code="{N_mom(utype,analyticCovIdForm_EXP_L2)}" />
+	              <keyword id="exponential" name="exponential" label="Exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L1)}" />
 	        </oneOf>
 	      </keyword>
 	    </oneOf>
           </keyword>
-	  <keyword id="expansion_form" name="expansion_form" code="{0}" minOccurs="0">
+	      <keyword id="expansion_form" name="expansion_form" label="Expansion Form" code="{0}" minOccurs="0">
 	    <oneOf>
-	      <keyword id="karhunen_loeve" name="karhunen_loeve" code="{N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}" />
-	      <keyword id="principal_components" name="principal_components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
+	          <keyword id="karhunen_loeve" name="karhunen_loeve" label="Karhunen-Loeve" code="{N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}" />
+	          <keyword id="principal_components" name="principal_components" label="Principal Components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
 	    </oneOf>
 	  </keyword>
-	  <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,subspaceDimension)}" label="expansion_bases" help="" minOccurs="0" >
+	      <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,subspaceDimension)}" label="Expansion Bases" help="" minOccurs="0" >
 	    <param type='INTEGER' />
 	  </keyword>
-	  <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="truncation_tolerance" help="" minOccurs="0" >
+	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="Truncation Tolerance" help="" minOccurs="0" >
 	    <param type="REAL" />
 	  </keyword>
-	  <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="model accepting RF" help="" minOccurs="1" >
+	      <keyword  id="propagation_model_pointer" name="propagation_model_pointer" code="{N_mom(str,propagationModelPointer)}" label="Pointer to Model Accepting RF" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
         </keyword>	
     </oneOf>
+     <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables Pointer" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="model use of last variables parsed" complexity="0">
+       <param type="STRING" in_taglist="variables" />
+     </keyword>
+     <keyword  id="responses_pointer" name="responses_pointer" code="{N_mom(str,responsesPointer)}" label="Responses Pointer" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="model use of last responses parsed" complexity="0">
+       <param type="STRING" in_taglist="responses" />
+     </keyword>
+     <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical Evaluation Tags" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="no hierarchical tagging" complexity="1" />
     </keyword>
     
     <!-- **** TOPLEVEL *** -->
