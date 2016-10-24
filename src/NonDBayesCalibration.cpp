@@ -676,8 +676,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     }
   }
   
-  RealVectorArray std_deviations;
-  expData.cov_std_deviation(std_deviations);
+  //RealVectorArray std_deviations;
+  //expData.cov_std_deviation(std_deviations);
  
   bool stop_metric = false;
   size_t optimal_ind;
