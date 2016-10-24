@@ -999,6 +999,16 @@ public:
   int subSamplingPeriod;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
+  /// whether to import candidate design points for adaptive Bayesian experimtal
+  /// design
+  String importCandPtsFile;
+  /// tabular format for the candidate design points import file
+  unsigned short importCandFormat;
+  /// number of candidate designs for adaptive Bayesian experimental design
+  size_t numCandidates;
+  /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
+  //experimental design
+  size_t maxHifiEvals;
 
   // DREAM sub-specification
 

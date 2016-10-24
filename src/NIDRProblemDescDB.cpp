@@ -6749,6 +6749,7 @@ static String
 	MP_(idMethod),
 	MP_(importApproxPtsFile),
 	MP_(importBuildPtsFile),
+	MP_(importCandPtsFile),
 	MP_(importExpansionFile),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
@@ -6853,6 +6854,8 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+	MP_(maxHifiEvals),
+	MP_(numCandidates),
         MP_(numDesigns),
         MP_(numFinalSolutions),
 	MP_(numGenerations),
@@ -6956,6 +6959,11 @@ static Method_mp_utype
         MP2s(importBuildFormat,TABULAR_EVAL_ID),
         MP2s(importBuildFormat,TABULAR_IFACE_ID),
         MP2s(importBuildFormat,TABULAR_ANNOTATED),
+        MP2s(importCandFormat,TABULAR_NONE),
+        MP2s(importCandFormat,TABULAR_HEADER),
+        MP2s(importCandFormat,TABULAR_EVAL_ID),
+        MP2s(importCandFormat,TABULAR_IFACE_ID),
+        MP2s(importCandFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),

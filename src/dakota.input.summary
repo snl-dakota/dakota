@@ -1929,6 +1929,19 @@ KEYWORD12 method
 	    )
 	  [ experimental_design
 	    initial_samples ALIAS samples INTEGER
+	    num_candidates INTEGER >= 0
+	    [ max_hifi_evaluations INTEGER >= 0 ]
+	    [ import_candidate_points_file STRING
+	      [ annotated
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
+	      ]
 	    ]
 	  [ standardized_space ]
 	  [ calibrate_error_multipliers

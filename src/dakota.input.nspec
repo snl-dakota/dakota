@@ -1891,6 +1891,23 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ experimental_design {N_mdm(true,adaptExpDesign)}
         initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
+        ( num_candidates INTEGER >= 0 {N_mdm(sizet,numCandidates)} )
+        [ max_hifi_evaluations INTEGER >= 0 {N_mdm(sizet,maxHifiEvals)} ]
+        [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
+          [ 
+            annotated {N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importCandFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importCandFormat_TABULAR_NONE)}
+           ]
+         ]
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
       [ calibrate_error_multipliers {0}
