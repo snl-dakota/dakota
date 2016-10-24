@@ -160,6 +160,12 @@ protected:
   //
   //- Heading: Data
   //
+  
+  String scalarDataFilename;
+  String importCandPtsFile;
+  unsigned short importCandFormat;
+  size_t maxHifiEvals;
+  size_t numCandidates;
 
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR

@@ -37,6 +37,7 @@
 //#include "ANN/ANNperf.h"
 //#include "ANN/ANNx.h"
 #include "dakota_data_util.hpp"
+//#include "dakota_tabular_io.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -58,6 +59,13 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
+  scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
+  importCandPtsFile(
+    probDescDB.get_string("method.import_candidate_points_file")),
+  importCandFormat(
+    probDescDB.get_ushort("method.import_candidate_format")),
+  numCandidates(probDescDB.get_sizet("method.num_candidates")),
+  maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -541,47 +549,135 @@ void NonDBayesCalibration::calibrate_to_hifi()
   unsigned short sample_type = SUBMETHOD_LHS;
   bool vary_pattern = true;
   String rng("mt19937");
+  size_t num_exp = expData.num_experiments();
 
-  // TODO: construct the LHS sampler in ctor, but run it here
-  NonDLHSSampling* lhs_sampler_rep;
-  lhs_sampler_rep =
-    new NonDLHSSampling(hifiModel, sample_type, initHifiSamples, randomSeed,
-			rng, vary_pattern, ACTIVE_UNIFORM);
+  // If initial samples are read-in through a file, use them; otherwise,
+  // run LHS samples as initial calibration points
   Iterator lhs_iterator;
-  lhs_iterator.assign_rep(lhs_sampler_rep, false);
+  if (scalarDataFilename.empty()) {
+    // TODO: construct the LHS sampler in ctor, but run it here
+    NonDLHSSampling* lhs_sampler_rep;
+    lhs_sampler_rep =
+      new NonDLHSSampling(hifiModel, sample_type, initHifiSamples, randomSeed,
+  			rng, vary_pattern, ACTIVE_UNIFORM);
+    //Iterator lhs_iterator;
+    lhs_iterator.assign_rep(lhs_sampler_rep, false);
+  
+    lhs_iterator.run();
+    const RealMatrix& all_samples = lhs_iterator.all_samples();
+    const IntResponseMap& all_responses = lhs_iterator.all_responses();
+    
+    // BMA TODO: Once ExperimentData can be updated, post this into
+    // expData directly
+    ExperimentData exp_data(initHifiSamples, 
+                            mcmcModel.current_response().shared_data(), 
+                            all_samples, all_responses);
+    expData = exp_data;
+  }
+  // If number of num_experiments is less than the number of desired initial
+  // samples, run LHS to supplement
+  else if (num_exp < initHifiSamples) {
+    int num_lhs = initHifiSamples - num_exp;
+    NonDLHSSampling* lhs_sampler_rep;
+    lhs_sampler_rep =
+      new NonDLHSSampling(hifiModel, sample_type, num_lhs, randomSeed,
+  			rng, vary_pattern, ACTIVE_UNIFORM);
+    Iterator lhs_iterator;
+    lhs_iterator.assign_rep(lhs_sampler_rep, false);
+  
+    lhs_iterator.run();
+    RealMatrix all_samples = lhs_iterator.all_samples();
+    const IntResponseMap& all_responses = lhs_iterator.all_responses();
+ 
+    IntRespMCIter responses_it = all_responses.begin();
+    IntRespMCIter responses_end = all_responses.end();
+    int i = 0;
+    for ( ; responses_it != responses_end; ++ responses_it) {
+      RealVector col_vec = Teuchos::getCol(Teuchos::Copy, all_samples, i);
+      expData.add_data(col_vec, responses_it->second.copy());
+      i++;
+    }
+  }
 
-  lhs_iterator.run();
-  const RealMatrix& all_samples = lhs_iterator.all_samples();
-  const IntResponseMap& all_responses = lhs_iterator.all_responses();
-
-  // BMA TODO: Once ExperimentData can be updated, post this into
-  // expData directly
-  ExperimentData exp_data(initHifiSamples, 
-                          mcmcModel.current_response().shared_data(), 
-                          all_samples, all_responses);
-  expData = exp_data;
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
-      Cout << "Exp Data  i " << i << " value = " << exp_data.all_data(i);
+      Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
   // need to initialize this from user input eventually
-  size_t num_candidates = 12; 
+  size_t num_candidates = numCandidates; 
   RealMatrix design_matrix;
-  NonDLHSSampling* lhs_sampler_rep2;
-  int randomSeed1 = randomSeed+1;
-  //int randomSeed1 = 6543;
-  //int randomSeed1 = generate_system_seed();
-  lhs_sampler_rep2 =
-    new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed1,
-			rng, vary_pattern, ACTIVE_UNIFORM);
+  //RealMatrix response_matrix;
   Iterator lhs_iterator2;
-  lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
-  lhs_iterator2.pre_run();
-  //const RealMatrix design_matrix = lhs_iterator2.all_samples();
-  design_matrix = lhs_iterator2.all_samples();
- 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Design Matrix   " << design_matrix << '\n';
+
+  if (importCandPtsFile.empty()) {
+    NonDLHSSampling* lhs_sampler_rep2;
+    int randomSeed1 = randomSeed+1;
+    lhs_sampler_rep2 =
+      new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed1,
+  			rng, vary_pattern, ACTIVE_UNIFORM);
+    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+    lhs_iterator2.pre_run();
+    //const RealMatrix design_matrix = lhs_iterator2.all_samples();
+    design_matrix = lhs_iterator2.all_samples();
+  }
+  else {
+    /*
+    // KAM TODO: As is, do not support response read-in for 
+    // candidate points
+    Variables designvars = hifiModel.current_variables();
+    TabularIO::read_data_tabular(importCandPtsFile, 
+				 "user-provided candidate points", 
+				 designvars, numFunctions, design_matrix, 
+				 response_matrix, importCandFormat, false);	
+				 */
+    size_t num_designvars = hifiModel.tv();
+    RealMatrix design_matrix_in;
+    TabularIO::read_data_tabular(importCandPtsFile,
+				 "user-provided candidate points",
+				 design_matrix_in, num_designvars, 
+				 importCandFormat, false);
+    size_t num_candidates_in = design_matrix_in.numCols();
+    if (num_candidates_in < num_candidates) {
+      size_t new_candidates = num_candidates - num_candidates_in;
+      NonDLHSSampling* lhs_sampler_rep2;
+      int randomSeed1 = randomSeed+1;
+      lhs_sampler_rep2 =
+        new NonDLHSSampling(hifiModel, sample_type, new_candidates, randomSeed1,
+    			rng, vary_pattern, ACTIVE_UNIFORM);
+      lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+      lhs_iterator2.pre_run();
+      RealMatrix design_matrix_supp = lhs_iterator2.all_samples();
+      design_matrix.shape(num_designvars, num_candidates);
+      for (int i = 0; i < num_candidates_in; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
+	    				     i);
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
+      for (int i = num_candidates_in; i < num_candidates; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_supp,
+	    			      	     int(i-num_candidates_in));
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
+    }
+    else if (num_candidates_in == num_candidates)  
+      design_matrix = design_matrix_in;
+    else {
+      if (outputLevel >= VERBOSE_OUTPUT) {
+	Cout << "\nWarning: Bayesian design of experiments only using the "
+	     << "first " << num_candidates << " candidates in " 
+	     << importCandPtsFile << '\n';
+      }
+      design_matrix.shape(num_designvars, num_candidates);
+      for (int i = 0; i < num_candidates; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
+	    				     i);
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
+    }
+  }
+  
+  RealVectorArray std_deviations;
+  expData.cov_std_deviation(std_deviations);
  
   bool stop_metric = false;
   size_t optimal_ind;
@@ -590,11 +686,15 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = num_candidates;
+  int max_hifi = (maxHifiEvals > 0) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
 
-
   std::ofstream out_file("experimental_design_output.txt");
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Design Matrix   " << design_matrix << '\n';
+    Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
+  }
 
   while (!stop_metric) {
     
@@ -632,14 +732,15 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // of reconstructing
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
+
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
 			      obsErrorMultiplierMode, mcmcDerivOrder), false);
-
     construct_map_optimizer();
 
     // Run the underlying calibration solver (MCMC)
     calibrate();
+
     if (outputLevel >= DEBUG_OUTPUT) {
       // Print chain moments
       StringArray combined_labels;
