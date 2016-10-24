@@ -111,7 +111,7 @@ elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
     # Extract the date
     string(SUBSTRING "${Dakota_GIT_DATETIME}" 0 10 Dakota_GIT_DATE)
     # Build revision string
-    string(CONFIGURE "@Dakota_GIT_ABBREV_SHA1@(@Dakota_GIT_DATE@)" Dakota_GIT_REV)
+    string(CONFIGURE "@Dakota_GIT_ABBREV_SHA1@ (@Dakota_GIT_DATE@)" Dakota_GIT_REV)
   endif(GIT_FOUND) # GIT_FOUND
 
   # Create VERSION file
