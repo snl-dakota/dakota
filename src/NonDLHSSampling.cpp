@@ -59,19 +59,27 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
 
-  if (dOptimal && outputLevel > SILENT_OUTPUT)
-    Cout << "Warning 'd_optimal' sampling is an experimental capability."
-         << std::endl;
+  if (dOptimal) {
+    if (numDesignVars || numEpistemicUncVars || numStateVars) {
+      Cerr << "\nError: 'd_optimal' sampling not supported for design, "
+	   << "epistemic, or state\n       variables. Consider aleatory "
+	   << "uncertain variables instead.\n";
+      abort_handler(-1);
+    }
+    if (outputLevel > SILENT_OUTPUT)
+      Cout << "Warning 'd_optimal' sampling is an experimental capability."
+	   << std::endl;
 
-  if (sampleType == SUBMETHOD_LHS && dOptimal && outputLevel > SILENT_OUTPUT)
-    if (refineSamples.length() > 0)
-      Cout << "Warning: 'd_optimal' currently has no effect for incrementally "
-           << "refined LHS \n         sampling" << std::endl;
-    else
-      Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
-           << "designs" << " will be\n         Latin, but final design will not."
-           << std::endl;
-  // TODO: if (dOptimal && unsupported variable types)
+    // BMA TODO: Warn only if leja mode
+    if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
+      if (refineSamples.length() > 0)
+	Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
+	     << " refined LHS \n         sampling" << std::endl;
+      else
+	Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
+	     << "designs" << " will be\n         Latin, but final design will "
+	     << "not." << std::endl;
+  }
 }
 
 
@@ -480,21 +488,18 @@ void NonDLHSSampling::
 d_optimal_parameter_set(int previous_samples, int new_samples,
                         RealMatrix& full_samples)
 {
-  // BMA TODO: error on non-aleatory type, design, state
-
   // BMA TODO: can allow MC or LHS with new strategy, including
   // incremental if we want; pick the new Latin design that maximizes
   // det.
 
-  // BMA TODO: prohibit discrete variables... and possibly epistemic as well
-  // Guide user to MC vs. LHS...
-  // Sampling supports modes beyond just active
+  // BMA TODO: Sampling supports modes beyond just active; this gets
+  // counts for more cases, but may not cover all use cases
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
   mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
 	      dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
- 
+
   int total_samples = previous_samples + new_samples;
 
   // initial samples is a view of the first previous samples columns
@@ -525,7 +530,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // transform from x to u space; should we make a copy?
   bool x_to_u = true;
   transform_samples(initial_samples, x_to_u);
-  // BMA TODO: User option
+  // BMA TODO: User option; probably Leja only for continuous for now
   bool dopt_leja = true;
   if (dopt_leja) {
     // Use LejaSequence to select points using higher order basis
@@ -555,7 +560,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 
   }
   else {
-    // Alternate D-optimal, maximize det(B'*B) for basis_matrix B
+    // Classical D-optimal, maximize det(B'*B) for u-space basis_matrix B
 
     // TODO: user control
     int num_repl = (oversampleRatio > 0.0) ? std::ceil(oversampleRatio) : 100;
@@ -583,9 +588,8 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
       RealMatrix basis_matrix;
       Pecos::OrthogPolyApproximation::
         basis_matrix(selected_samples, poly_basis, multi_index, basis_matrix);
-      // BMA TODO: discuss with John
-      //      if ( precondition_ )
-      //      LejaSampler::apply_preconditioning(basis_matrix);
+      // preconditioning shouldn't matter for linear regression
+      //LejaSampler::apply_preconditioning(basis_matrix);
 
       double det = det_AtransA(basis_matrix);
       if (det > best_det) {
