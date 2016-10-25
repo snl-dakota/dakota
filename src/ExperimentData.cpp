@@ -56,11 +56,24 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 }
 
 ExperimentData::
-ExperimentData(size_t num_experiments, const IntResponseMap& all_responses):
+ExperimentData(size_t num_experiments, const SharedResponseData& srd,
+               const RealMatrix& configVars, 
+               const IntResponseMap& all_responses):
   calibrationDataFlag(false), 
-  numExperiments(num_experiments), numConfigVars(0),
+  numExperiments(num_experiments),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0)
 {
+  
+  simulationSRD = srd.copy();
+  allConfigVars.resize(numExperiments);
+  for (size_t i=0; i<numExperiments; ++i) {
+    allConfigVars[i]= Teuchos::getCol(Teuchos::View,
+      const_cast<RealMatrix&>(configVars), (int)i);
+    Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+  }
+  numConfigVars = allConfigVars[0].length();
+  Cout << "Number of config vars " << numConfigVars << '\n';
+
   IntRespMCIter resp_it = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
  
@@ -198,6 +211,19 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 
 }
 
+void ExperimentData::add_data(const RealVector& one_configVars, const Response& one_response)
+{
+  numExperiments = numExperiments + 1; 
+  Cout << "numExperiments in add_data " << numExperiments << '\n';
+  allConfigVars.resize(numExperiments);
+  allExperiments.resize(numExperiments);
+  
+  int last_exp = numExperiments - 1;
+  allConfigVars[last_exp]=one_configVars;
+  allExperiments[last_exp]=one_response;
+
+}
+
 
 void ExperimentData::load_data(const std::string& context_message)
 {
@@ -269,7 +295,7 @@ void ExperimentData::load_data(const std::string& context_message)
     TabularIO::read_header_tabular(scalar_data_stream, scalarDataFormat);
   }
 
-  if (!scalar_data_file) { 
+  if (!scalar_data_file && numConfigVars > 0) { 
     // read all experiment config vars from new field data format files at once
     // TODO: have the user give a name for this file, since should be
     // the same for all responses.  Read from foo.<exp_num>.config. 
@@ -336,13 +362,14 @@ void ExperimentData::load_data(const std::string& context_message)
 
   // verify that the two experiments have different data
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Experiment data summary:";
-    if (numConfigVars > 0)
-      Cout << "Values of experiment configuration variables:\n" 
-	   << allConfigVars << "\n";
+    Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      Cout << "\n  Data values, experiment " << i << "\n";
-      allExperiments[i].write(Cout);
+      if (numConfigVars > 0)
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
+	     << allConfigVars[i];
+      Cout << "  Experiment " << i+1 << " data values:"<< "\n";
+      write_data(Cout, allExperiments[i].function_values());
+      Cout << '\n';
     }
   }
 
@@ -632,11 +659,12 @@ num_fields() const
   return  simulationSRD.num_field_response_groups();
 }
 
-const RealVector& ExperimentData::
-config_vars(size_t experiment)
+
+const std::vector<RealVector>& ExperimentData::config_vars() const
 {
-  return(allConfigVars[experiment]);
+  return allConfigVars;
 }
+
 
 void ExperimentData::per_exp_length(IntVector& per_length) const
 {
@@ -872,6 +900,26 @@ form_residuals(const Response& sim_resp, Response& residual_resp) const
 		    residual_resp );
     residual_resp_offset += num_fns_exp;
   }
+}
+
+
+void ExperimentData::
+form_residuals(const Response& sim_resp, const size_t curr_exp,
+	       Response& residual_resp) const
+{
+  // BMA: perhaps a better name would be per_exp_asv?
+  // BMA TODO: Make this call robust to zero and single experiment cases
+  ShortArray total_asv = determine_active_request(residual_resp);
+
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+  size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < curr_exp; ++exp_ind){
+    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
+    residual_resp_offset += num_fns_exp;
+  }
+  form_residuals(sim_resp, curr_exp, total_asv, residual_resp_offset,
+		 residual_resp);
 }
 
 

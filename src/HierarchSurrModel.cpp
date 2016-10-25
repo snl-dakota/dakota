@@ -46,12 +46,12 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   for (i=0; i<num_models; ++i) {
     problem_db.set_db_model_nodes(ordered_model_ptrs[i]);
     orderedModels[i] = problem_db.get_model();
-    check_submodel_compatibility(orderedModels[i]);
-    if (cv_view != orderedModels[i].current_variables().view()) {
-      Cerr << "Error: variable views in hierarchical models must be identical."
-           << std::endl;
-      abort_handler(-1);
-    }
+    //check_submodel_compatibility(orderedModels[i]);
+    //if (cv_view != orderedModels[i].current_variables().view()) {
+    //  Cerr << "Error: variable views in hierarchical models must be identical."
+    //       << std::endl;
+    //  abort_handler(-1);
+    //}
   }
 
   problem_db.set_db_model_nodes(model_index); // restore

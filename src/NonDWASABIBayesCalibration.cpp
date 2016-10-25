@@ -59,11 +59,8 @@ NonDWASABIBayesCalibration::~NonDWASABIBayesCalibration()
 
 
 /** Perform the uncertainty quantification */
-void NonDWASABIBayesCalibration::core_run()
+void NonDWASABIBayesCalibration::calibrate()
 {
-
-  // initialize static pointers
-  nonDBayesInstance = this;
 
   ////////////////////////////////////////////////////////
   // Step 1 of 10: Build the response surface approximation (RSA)

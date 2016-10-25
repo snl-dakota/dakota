@@ -2396,19 +2396,37 @@
 		    </optional>
 		  </keyword>
 		</keyword>
-		<keyword  id="adaptive experimental design" name="experimental_design" code="{N_mdm(utype,subMethod_SUBMETHOD_EXPDESIGN_BAYES)}" label="experiment_design_bayes" help="" minOccurs="1" >
-		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='init samples' help='' default='method-dependent'>
-		    <alias name='samples' />
-		    <param type='INTEGER' />
-		  </keyword>
-		  <keyword  id='seed10' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
-		   </keyword>
-                   <keyword  id="model_pointer5" name="low_fidelity_model_pointer" code="{N_mdm(str,lowFidModelPointer)}" label="model_pointer" help="" minOccurs="0" default="" >
-            <param type="STRING" in_taglist="model" />
-                   </keyword>
-                 </keyword> 
 	      </oneOf>
+		<keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design" help="" minOccurs="0" >
+		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Hi-fi Samples" help="" default="method-dependent">
+		    <param type="INTEGER" />
+		    <alias name="samples" />
+		  </keyword>
+		  <!--&default_max_function_evaluations;-->
+                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="0" >
+                    <param type="INTEGER" constraint=">= 0" />
+                  </keyword>
+                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(sizet,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0" default="0" >
+                    <param type="INTEGER" constraint=">= 0" />
+                  </keyword>
+                  <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import" help="" minOccurs="0" default="no point import from a file" >
+                    <param type="INPUT_FILE" />
+		    <optional>
+		      <oneOf label="tabular_format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="freeform" help=""  />
+		      </oneOf>
+		    </optional>
+                  </keyword>
+		</keyword> 
 	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>

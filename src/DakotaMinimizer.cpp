@@ -352,13 +352,6 @@ void Minimizer::data_transform_model()
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
   expData.load_data("Least Squares");
 
-  // These may be promoted to members once we use state vars / sigma
-  size_t num_config_vars_read = 
-    probDescDB.get_sizet("responses.num_config_vars");
-  if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
-    Cout << "\nWarning (least squares): experimental_config_variables " 
-	 << "will be read from file, but ignored." << std::endl;
-
   iteratedModel.
     assign_rep(new DataTransformModel(iteratedModel, expData), false);
   ++myModelLayers;

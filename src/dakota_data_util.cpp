@@ -13,7 +13,7 @@
 //- Version: $Id: dakota_data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #include "dakota_data_util.hpp"
-
+#include <boost/math/special_functions/round.hpp>
 
 namespace Dakota {
 
@@ -192,5 +192,33 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
       std::sqrt(norm / scaling) : std::sqrt(norm);
   }
 }
+
+void remove_column(RealMatrix& matrix, int index)
+{
+  int num_cols = matrix.numCols();
+  RealMatrix matrix_new(matrix.numRows(), num_cols-1);
+  for (int i = 0; i<num_cols; ++i){
+      const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    if (i < index){
+      Teuchos::setCol(col_vec, i, matrix_new);
+    }
+    if (i > index){
+      Teuchos::setCol(col_vec, i-1, matrix_new);
+    }
+  }
+  matrix.reshape(matrix.numRows(), num_cols-1);
+  matrix = matrix_new;
+}
+
+
+void iround(const RealVector& input_vec, IntVector& rounded_vec)
+{
+  int len = input_vec.length();
+  if (rounded_vec.length() != len)
+    rounded_vec.resize(len);
+  for (int i=0; i<len; ++i)
+    rounded_vec[i] = boost::math::iround(input_vec[i]);
+}
+
 
 } // namespace Dakota

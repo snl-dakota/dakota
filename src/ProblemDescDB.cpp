@@ -2291,6 +2291,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"id", P idMethod},
 	{"import_approx_points_file", P importApproxPtsFile},
 	{"import_build_points_file", P importBuildPtsFile},
+	{"import_candidate_points_file", P importCandPtsFile},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2767,6 +2768,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"export_approx_format", P exportApproxFormat},
 	{"import_approx_format", P importApproxFormat},
 	{"import_build_format", P importBuildFormat},
+	{"import_candidate_format", P importCandFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
@@ -2859,7 +2861,9 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_designs", P numDesigns},
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
-	{"jega.num_parents", P numParents}};
+	{"jega.num_parents", P numParents},
+	{"max_hifi_evaluations", P maxHifiEvals},
+	{"num_candidates", P numCandidates}};
     #undef P
 
     KW<size_t, DataMethodRep> *kw;
@@ -3023,6 +3027,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"mesh_adaptive_search.display_all_evaluations", P showAllEval},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
+	{"nond.adapt_exp_design", P adaptExpDesign},
 	{"nond.adaptive_posterior_refinement", P adaptPosteriorRefine},
 	{"nond.cross_validation", P crossValidation},
 	{"nond.cross_validation.noise_only", P crossValidNoiseOnly},

@@ -101,7 +101,7 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 
 
 /** Perform the uncertainty quantification */
-void NonDGPMSABayesCalibration::core_run()
+void NonDGPMSABayesCalibration::calibrate()
 {
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
@@ -113,7 +113,7 @@ void NonDGPMSABayesCalibration::core_run()
   if (approxImportFile.empty())
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
   // instantiate QUESO objects and execute
-  nonDBayesInstance = nonDGPMSAInstance = this;
+  nonDGPMSAInstance = this;
   Cout << "\nNum Samples " << chainSamples << '\n';
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;
@@ -406,6 +406,7 @@ void NonDGPMSABayesCalibration::core_run()
   Cout << "num_bases_eta " << num_bases_eta << '\n';
   Cout << "got to line 306 " << '\n';
 
+  size_t num_experiments = expData.num_experiments();
 
   //***********************************************************************
   // Step 05 of 09: Instantiate the experiment storage
@@ -416,32 +417,32 @@ void NonDGPMSABayesCalibration::core_run()
   //    format, that is, with mean zero and standard deviation one.
   //***********************************************************************
 #if 1 // Replace by "if 0" if there is no experimental data available
-  // number of experiments; 'n' in paper; 3 in tower example, numExperiments
+  // number of experiments; 'n' in paper; 3 in tower example, num_experiments
 
   QUESO::ExperimentStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>* experimentStoragePtr = NULL;
-  experimentStoragePtr = new QUESO::ExperimentStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>(config_x_space, numExperiments);
+  experimentStoragePtr = new QUESO::ExperimentStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>(config_x_space, num_experiments);
  
   Cout << "Got to line 323 " << '\n';
   // Add experiments
-  std::vector<QUESO::GslVector* > experimentScenarios_original(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentScenarios_standard(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<unsigned int> experimentDims(numExperiments,0);
-  std::vector<unsigned int> experimentDimsEach(numExperiments,0);
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > experimentSpaces          (numExperiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > eachResponseSpace          (numExperiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forUvel(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forVvel(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_original   (numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean    (numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean1    (numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean2    (numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_transformed(numExperiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_original   (numExperiments,(QUESO::GslMatrix*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_transformed(numExperiments,(QUESO::GslMatrix*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_transformed_inv(numExperiments,(QUESO::GslMatrix*) NULL);
+  std::vector<QUESO::GslVector* > experimentScenarios_original(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentScenarios_standard(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<unsigned int> experimentDims(num_experiments,0);
+  std::vector<unsigned int> experimentDimsEach(num_experiments,0);
+  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > experimentSpaces          (num_experiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
+  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > eachResponseSpace          (num_experiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
+  std::vector<QUESO::GslVector* > extraExperimentGridVecs(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forUvel(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forVvel(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentVecs_original   (num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentVecs_auxMean    (num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentVecs_auxMean1    (num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentVecs_auxMean2    (num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslVector* > experimentVecs_transformed(num_experiments,(QUESO::GslVector*) NULL);
+  std::vector<QUESO::GslMatrix* > experimentMats_original   (num_experiments,(QUESO::GslMatrix*) NULL);
+  std::vector<QUESO::GslMatrix* > experimentMats_transformed(num_experiments,(QUESO::GslMatrix*) NULL);
+  std::vector<QUESO::GslMatrix* > experimentMats_transformed_inv(num_experiments,(QUESO::GslMatrix*) NULL);
 
-  //for (i = 0; i < numExperiments; ++i) {
+  //for (i = 0; i < num_experiments; ++i) {
     //experimentDims[i] = numFunctions; // constant for now
   //}
   experimentDims[0]=54; 
@@ -450,7 +451,7 @@ void NonDGPMSABayesCalibration::core_run()
   experimentDimsEach[0]=27;
   Cout << "Got to line 338 " << '\n';
  
-  for (i = 0; i < numExperiments; ++i) {
+  for (i = 0; i < num_experiments; ++i) {
     experimentScenarios_original[i] = new QUESO::GslVector(config_x_space.zeroVector());               // 'x_{i+1}' in paper
     experimentScenarios_standard[i] = new QUESO::GslVector(config_x_space.zeroVector());     
     experimentSpaces[i] = new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*env, "expSpace", experimentDims[i], NULL);
@@ -472,7 +473,7 @@ void NonDGPMSABayesCalibration::core_run()
   // Populate information regarding experiment '0'
   //***********************************************************************
 #if 0
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     // config vars are same for all functions for now
     size_t fn_ind = 0;
     const RealVector& xobs_i = expData.config_vars(fn_ind, i);
@@ -482,14 +483,14 @@ void NonDGPMSABayesCalibration::core_run()
   }
 #else
 // prudenci 2013-08-25
-   for (unsigned int i = 0; i < numExperiments; ++i) {
+   for (unsigned int i = 0; i < num_experiments; ++i) {
      for (unsigned int j = 0; j < num_config_vars; ++j) {
        (*(experimentScenarios_original[i]))[j] = 0.5;
      }
      std::cout << *(experimentScenarios_original[i]) << '\n';
    }
 #endif
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     *(experimentScenarios_standard[i])  = *(experimentScenarios_original[i]);
    // *(experimentScenarios_standard[i]) -= simulationModel.xSeq_original_mins();
    // for (unsigned int j = 0; j < num_config_vars; ++j) {
@@ -564,7 +565,7 @@ void NonDGPMSABayesCalibration::core_run()
    // (*(extraExperimentGridVecs[2]))[1] = 10.;
    // (*(extraExperimentGridVecs[2]))[2] = 15.;
 
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i]; ++j) { 
       Real yobs = expData.scalar_data(j,i);
       (*(experimentVecs_original[i]))[j] = yobs;
@@ -575,7 +576,7 @@ void NonDGPMSABayesCalibration::core_run()
     Cout << *(extraExperimentGridVecs_forVvel[i]) << '\n';
   }
   Cout << "Got to line 367 " << '\n';
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     QUESO::GslVector simulationModelEtaSeq1(n_grid.zeroVector());
     QUESO::GslVector simulationModelEtaSeq2(n_grid.zeroVector());
     for (int j = 0; j < 1001; ++j) {
@@ -628,13 +629,13 @@ void NonDGPMSABayesCalibration::core_run()
   }
 
   Cout << "Got to line 367A " << '\n';
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
       (*(experimentMats_original[i]))(j,j) = 0.0001;
     }
   }
 
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
 #ifdef UQ_GPMSA_CODE_TREATS_SIMULATION_VECTORS_IN_CHUNKS // prudenci_new_2013_09_06
     for (unsigned int j = 0; j < 27; ++j) { // prudenci_new_2013_09_06
       (*(experimentMats_transformed[i]))(j   ,j   ) = (*(experimentMats_original[i]))(j   ,j   )/(simulationModel.etaSeq_chunkStd(0)*simulationModel.etaSeq_chunkStd(0)); // prudenci_new_2013_09_06
@@ -649,7 +650,7 @@ void NonDGPMSABayesCalibration::core_run()
 #endif // prudenci_new_2013_09_06
   }
 
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
       (*(experimentMats_transformed_inv[i]))(j,j) = 1./(*(experimentMats_transformed[i]))(j,j);                                                                            
     }
@@ -658,7 +659,7 @@ void NonDGPMSABayesCalibration::core_run()
   //***********************************************************************
   // Finally, add information to the experiment storage
   //***********************************************************************
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     if ((env->subDisplayFile()) && (env->displayVerbosity() >= 2)) {
       *env->subDisplayFile() << "In compute(), step 05"
                             << ": calling experimentStorage.addExperiment() for experiment of id '" << i << "'..."
@@ -766,9 +767,9 @@ void NonDGPMSABayesCalibration::core_run()
   //   'D_{i+1}' in the paper
   //   'Dobs' in the GPMSA tower example document (page 11)
   //***********************************************************************
-  std::vector<QUESO::GslMatrix* > DobsMats(numExperiments, (QUESO::GslMatrix*) NULL);
-  DobsMats.resize(numExperiments, (QUESO::GslMatrix*) NULL); // Important matrices (D_i's on paper)
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  std::vector<QUESO::GslMatrix* > DobsMats(num_experiments, (QUESO::GslMatrix*) NULL);
+  DobsMats.resize(num_experiments, (QUESO::GslMatrix*) NULL); // Important matrices (D_i's on paper)
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     DobsMats[i] = new QUESO::GslMatrix(*env,experimentSpaces[i]->map(),num_delta_bases); // 'D_{i+1}' in paper
     QUESO::GslVector DobsCol(experimentSpaces[i]->zeroVector());
     unsigned int num_experimentPoints_forUvel = 27; // check
@@ -869,7 +870,7 @@ void NonDGPMSABayesCalibration::core_run()
                            << std::endl;
   }
 
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     // Extract submatrices from 'DobsMats[i]'
     unsigned int num_experimentPoints_forUvel = 27; // check
     unsigned int num_experimentPoints_forVvel = 27;
@@ -924,8 +925,8 @@ void NonDGPMSABayesCalibration::core_run()
   //***********************************************************************
   // Compute 'K_i' matrices (Kobs in the matlab documentation)
   //***********************************************************************
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > Kmats_interp_spaces(numExperiments, (QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::GslMatrix*                                      > Kmats_interp       (numExperiments, (QUESO::GslMatrix*) NULL); // Interpolations of 'Kmat_eta' = 'K_i's' in paper
+  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > Kmats_interp_spaces(num_experiments, (QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
+  std::vector<QUESO::GslMatrix*                                      > Kmats_interp       (num_experiments, (QUESO::GslMatrix*) NULL); // Interpolations of 'Kmat_eta' = 'K_i's' in paper
 
   // Extract submatrices from 'Kmat_eta' (Ksim in the matlab documentation)
   QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> Kmat_eta_space_forUvel(*env,"Kmat_interp_space_forUvel",num_eta_forUvel,NULL);
@@ -944,7 +945,7 @@ void NonDGPMSABayesCalibration::core_run()
     }
   }
 
-  for (unsigned int i = 0; i < numExperiments; ++i) {
+  for (unsigned int i = 0; i < num_experiments; ++i) {
     unsigned int num_experimentPoints_forUvel = 27;
     unsigned int num_experimentPoints_forVvel = 27;
 

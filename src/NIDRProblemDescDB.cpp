@@ -6746,6 +6746,7 @@ static String
 	MP_(idMethod),
 	MP_(importApproxPtsFile),
 	MP_(importBuildPtsFile),
+	MP_(importCandPtsFile),
 	MP_(importExpansionFile),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
@@ -6766,6 +6767,7 @@ static StringArray
         MP_(miscOptions);
 
 static bool
+	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
 	MP_(constantPenalty),
@@ -6847,6 +6849,8 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+	MP_(maxHifiEvals),
+	MP_(numCandidates),
         MP_(numDesigns),
         MP_(numFinalSolutions),
 	MP_(numGenerations),
@@ -6951,6 +6955,11 @@ static Method_mp_utype
         MP2s(importBuildFormat,TABULAR_EVAL_ID),
         MP2s(importBuildFormat,TABULAR_IFACE_ID),
         MP2s(importBuildFormat,TABULAR_ANNOTATED),
+        MP2s(importCandFormat,TABULAR_NONE),
+        MP2s(importCandFormat,TABULAR_HEADER),
+        MP2s(importCandFormat,TABULAR_EVAL_ID),
+        MP2s(importCandFormat,TABULAR_IFACE_ID),
+        MP2s(importCandFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
@@ -7042,7 +7051,6 @@ static Method_mp_utype
 	MP2s(subMethod,SUBMETHOD_SEQUENTIAL),
 	MP2s(subMethod,SUBMETHOD_DREAM),
 	MP2s(subMethod,SUBMETHOD_WASABI),
-	MP2s(subMethod,SUBMETHOD_EXPDESIGN_BAYES),
 	MP2s(subMethod,SUBMETHOD_GPMSA),
 	MP2s(subMethod,SUBMETHOD_QUESO),
 	MP2s(subMethod,SUBMETHOD_NIP),
