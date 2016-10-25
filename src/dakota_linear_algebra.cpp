@@ -12,7 +12,8 @@
 
 namespace Dakota {
 
-void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans)
+void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
+	 bool compute_vectors)
 {
   Teuchos::LAPACK<int, Real> la;
 
@@ -20,8 +21,12 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans)
   // compute the SVD of the incoming matrix
   // ----
 
-  char JOBU = 'O';  // overwrite A with U
-  char JOBVT = 'A'; // compute all singular vectors VT
+  char JOBU = 'N';
+  char JOBVT = 'N';
+  if (compute_vectors) {
+    JOBU = 'O';  // overwrite A with U
+    JOBVT = 'A'; // compute all singular vectors VT
+  }
   int M(matrix.numRows());
   int N(matrix.numCols());
   int LDA = matrix.stride();
@@ -29,8 +34,11 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans)
   singular_vals.resize(num_singular_values);
   Real* U = NULL;
   int LDU = 1;
-  v_trans.reshape(N, N);
-  int LDVT = N;
+  int LDVT = 1;
+  if (compute_vectors) {
+    v_trans.reshape(N, N);
+    LDVT = N;
+  }
   int info = 0;
   // Not used by real SVD?
   double* RWORK = NULL;
@@ -57,6 +65,14 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans)
 	 << "intermediate bidiagonal form B did not converge to 0.\n";
     abort_handler(-1);
   }
+}
+
+
+void singular_values(RealMatrix& matrix, RealVector& singular_vals)
+{
+  // empty matrix with NULL .values()
+  RealMatrix v_trans;
+  svd(matrix, singular_vals, v_trans, false);
 }
 
 
@@ -117,5 +133,16 @@ int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs)
   return info;
 }
 
+
+double det_AtransA(RealMatrix& A)
+{
+  RealVector sing_vals;
+  singular_values(A, sing_vals);
+  double det = 1.0;
+  for (int i=0; i<sing_vals.length(); ++i)
+    det *= sing_vals[i] * sing_vals[i];
+
+  return det;
+}
 
 }  // namespace Dakota

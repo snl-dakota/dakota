@@ -46,9 +46,16 @@ namespace Dakota {
  * \brief Compute the SVD of an arbitrary matrix A = USV^T
 
    Uses Teuchos::LAPACK.GESVD() to compute the singular value
-   decomposition, overwriting A with the left singular vectors U
+   decomposition, overwriting A with the left singular vectors U (or
+   destroying A if compute_vectors = false); optionally returns right
+   singular vectors in v_trans.
  */
-void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans);
+void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
+	 bool compute_vectors = true);
+
+/// compute the singular values without storing any singular vectors
+/// (A will be destroyed)
+void singular_values(RealMatrix& matrix, RealVector& singular_values);
 
 /**
  * \brief Compute an in-place QR factorization A = QR
@@ -65,5 +72,8 @@ int qr(RealMatrix& A);
    Uses Teuchos::LAPACK.TRTRS() to perform a triangular backsolve
  */
 int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs);
+
+/// Use SVD to compute det(A'*A), destroying A with the SVD
+double det_AtransA(RealMatrix& A);
 
 }  // namespace Dakota
