@@ -45,6 +45,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model), numResponseFunctions(0),
   refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
   dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
+  numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
   oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   pcaFlag(probDescDB.get_bool("method.principal_components")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
@@ -66,19 +67,31 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
 	   << "uncertain variables instead.\n";
       abort_handler(-1);
     }
-    if (outputLevel > SILENT_OUTPUT)
-      Cout << "Warning 'd_optimal' sampling is an experimental capability."
-	   << std::endl;
+    bool leja = (oversampleRatio > 0.0);
+    if (leja) {
+      if (oversampleRatio < 1.0) {
+        Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
+        abort_handler(-1);
+      }
+      // if (discrete vars) {
+      //   ERROR
+      // }
+    }
+    else {
+      // classical D-optimal
+      if (numCandidateDesigns == 0)
+        numCandidateDesigns = 100;
+    }
 
-    // BMA TODO: Warn only if leja mode
+    // BMA TODO: Warn only if leja mode after implementing D-optimal for LHS
     if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
       if (refineSamples.length() > 0)
-	Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
-	     << " refined LHS \n         sampling" << std::endl;
+        Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
+             << " refined LHS \n         sampling" << std::endl;
       else
-	Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
-	     << "designs" << " will be\n         Latin, but final design will "
-	     << "not." << std::endl;
+        Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
+             << "designs" << " will be\n         Latin, but final design will "
+             << "not." << std::endl;
   }
 }
 
@@ -488,6 +501,8 @@ void NonDLHSSampling::
 d_optimal_parameter_set(int previous_samples, int new_samples,
                         RealMatrix& full_samples)
 {
+  // BMA TODO: verify we can use numerically generated for discrete types
+
   // BMA TODO: can allow MC or LHS with new strategy, including
   // incremental if we want; pick the new Latin design that maximizes
   // det.
@@ -512,7 +527,6 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
-  // BMA TODO: can we use numerically generated for discrete types?
   // initialize nataf transform
   initialize_random_variables(EXTENDED_U);
   // Build polynomial basis using default basis configuration options
@@ -530,14 +544,18 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // transform from x to u space; should we make a copy?
   bool x_to_u = true;
   transform_samples(initial_samples, x_to_u);
-  // BMA TODO: User option; probably Leja only for continuous for now
-  bool dopt_leja = true;
-  if (dopt_leja) {
+
+  bool leja = (oversampleRatio > 0.0);
+  if (leja) {
     // Use LejaSequence to select points using higher order basis
 
     // BMA TODO: detect bad alloc in the candidate set
-    Real oversample_ratio = (oversampleRatio > 0.0) ? oversampleRatio : 10.0;
-    int num_candidates = (int) std::ceil(oversample_ratio * (Real) new_samples);
+    int num_candidates = (int) std::ceil(oversampleRatio * (Real) new_samples);
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nGenerating " << new_samples << " sample D-optimal design with "
+           << "Leja sampling from " << num_candidates << "\ncandidate points."
+           << std::endl;
 
     // generate a parameter set of size candidate
     RealMatrix candidate_samples(num_vars, num_candidates);
@@ -560,10 +578,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 
   }
   else {
-    // Classical D-optimal, maximize det(B'*B) for u-space basis_matrix B
-
-    // TODO: user control
-    int num_repl = (oversampleRatio > 0.0) ? std::ceil(oversampleRatio) : 100;
+    // Classical D-optimal, maximize det(B'*B) for linear u-space basis_matrix B
 
     // linear (order 1) terms only
     UShort2DArray multi_index(num_vars, UShortArray(num_vars, 0));
@@ -577,10 +592,14 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     // the best design is tracked here:
     RealMatrix best_new_samples(num_vars, new_samples);
 
-    double best_det = 0.0;
-    for (int repl_i = 0; repl_i < num_repl; ++repl_i) {
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nGenerating " << new_samples << " sample D-optimal design from "
+           << numCandidateDesigns << " candidate designs." << std::endl;
 
-      get_parameter_sets(iteratedModel, new_samples, curr_new_samples);
+    double best_det = 0.0;
+    for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
+
+      get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
       transform_samples(curr_new_samples, x_to_u);
 
       // build basis matrix from total sample set (selected_samples
@@ -588,7 +607,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
       RealMatrix basis_matrix;
       Pecos::OrthogPolyApproximation::
         basis_matrix(selected_samples, poly_basis, multi_index, basis_matrix);
-      // preconditioning shouldn't matter for linear regression
+      // preconditioning shouldn't matter for linear regression:
       //LejaSampler::apply_preconditioning(basis_matrix);
 
       double det = det_AtransA(basis_matrix);

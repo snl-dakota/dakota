@@ -876,6 +876,8 @@ public:
   unsigned short sampleType;
   /// whether to generate D-optimal designs
   bool dOptimal;
+  /// number of candidate designss in D-optimal design selection
+  size_t numCandidateDesigns;
   /// the type of limit state search in \ref MethodNonDLocalRel
   /// (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
   /// \c u_taylor_mpp, \c u_two_point, or \c no_approx) or

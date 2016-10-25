@@ -6847,6 +6847,7 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+        MP_(numCandidateDesigns),
         MP_(numDesigns),
         MP_(numFinalSolutions),
 	MP_(numGenerations),

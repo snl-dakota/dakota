@@ -2859,7 +2859,9 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_designs", P numDesigns},
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
-	{"jega.num_parents", P numParents}};
+	{"jega.num_parents", P numParents},
+	{"num_candidate_designs", P numCandidateDesigns}
+    };
     #undef P
 
     KW<size_t, DataMethodRep> *kw;

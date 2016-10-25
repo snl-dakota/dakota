@@ -1022,7 +1022,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
           [ d_optimal {N_mdm(true,dOptimal)}
-            [ oversample_ratio REAL {N_mdm(Real,collocationRatio)} ]
+            [ 
+              candidate_designs INTEGER > 0 {N_mdm(sizet,numCandidateDesigns)}
+              |
+              leja_oversample_ratio REAL {N_mdm(Real,collocationRatio)}
+             ]
            ]
           [ variance_based_decomp {N_mdm(true,vbdFlag)}
             [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]

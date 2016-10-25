@@ -1044,7 +1044,8 @@ KEYWORD12 method
 	    ]
 	  [ refinement_samples INTEGERLIST ]
 	  [ d_optimal
-	    [ oversample_ratio REAL ]
+	    [ candidate_designs INTEGER > 0
+	    | leja_oversample_ratio REAL ]
 	    ]
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]

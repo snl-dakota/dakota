@@ -1752,8 +1752,9 @@ static KeyWord
 		{"samples_on_emulator",9,0,4,0,0,0.,0.,0,N_mdm(int,samplesOnEmulator)},
 		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
-	kw_293[1] = {
-		{"oversample_ratio",10,0,1,0,0,0.,0.,0,N_mdm(Real,collocationRatio)}
+	kw_293[2] = {
+		{"candidate_designs",0x19,0,1,0,0,0.,0.,0,N_mdm(sizet,numCandidateDesigns)},
+		{"leja_oversample_ratio",10,0,1,0,0,0.,0.,0,N_mdm(Real,collocationRatio)}
 		},
 	kw_294[1] = {
 		{"percent_variance_explained",10,0,1,0,0,0.,0.,0,N_mdm(Real,percentVarianceExplained)}
@@ -1779,7 +1780,7 @@ static KeyWord
 		{0,0,4,0,0,kw_32},
 		{0,0,2,0,0,kw_259},
 		{"backfill",8,0,8,0,0,0.,0.,0,N_mdm(true,backfillFlag)},
-		{"d_optimal",8,1,6,0,kw_293,0.,0.,0,N_mdm(true,dOptimal)},
+		{"d_optimal",8,2,6,0,kw_293,0.,0.,0,N_mdm(true,dOptimal)},
 		{"fixed_seed",8,0,3,0,0,0.,0.,0,N_mdm(true,fixedSeedFlag)},
 		{"initial_samples",1,0,1,0,0,0.,0.,4,N_mdm(int,numSamples)},
 		{"principal_components",8,1,9,0,kw_294,0.,0.,0,N_mdm(true,pcaFlag)},
