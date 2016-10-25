@@ -1891,7 +1891,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ experimental_design {N_mdm(true,adaptExpDesign)}
         initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
-        ( num_candidates INTEGER >= 0 {N_mdm(sizet,numCandidates)} )
+        num_candidates INTEGER >= 0 {N_mdm(sizet,numCandidates)}
         [ max_hifi_evaluations INTEGER >= 0 {N_mdm(sizet,maxHifiEvals)} ]
         [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
           [ 

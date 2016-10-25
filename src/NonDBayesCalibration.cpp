@@ -630,6 +630,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 				 designvars, numFunctions, design_matrix, 
 				 response_matrix, importCandFormat, false);	
 				 */
+    // BMA TODO: This should probably be cv() + div() + ...
     size_t num_designvars = hifiModel.tv();
     RealMatrix design_matrix_in;
     TabularIO::read_data_tabular(importCandPtsFile,
