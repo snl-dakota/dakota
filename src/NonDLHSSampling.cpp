@@ -19,6 +19,7 @@
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ReducedBasis.hpp"
+#include "dakota_linear_algebra.hpp"
 
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseSolver.hpp"
@@ -27,7 +28,7 @@
 //#include <Teuchos_MatrixMarket_Raw_Writer.hpp>
 #include "nested_sampling.hpp"
 #include "BasisPolynomial.hpp"
-#include "SharedOrthogPolyApproxData.hpp"
+#include "OrthogPolyApproximation.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDLHSSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -479,6 +480,12 @@ void NonDLHSSampling::
 d_optimal_parameter_set(int previous_samples, int new_samples,
                         RealMatrix& full_samples)
 {
+  // BMA TODO: error on non-aleatory type, design, state
+
+  // BMA TODO: can allow MC or LHS with new strategy, including
+  // incremental if we want; pick the new Latin design that maximizes
+  // det.
+
   // BMA TODO: prohibit discrete variables... and possibly epistemic as well
   // Guide user to MC vs. LHS...
   // Sampling supports modes beyond just active
@@ -488,23 +495,15 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 	      dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
  
-
   int total_samples = previous_samples + new_samples;
-
-  // BMA TODO: detect bad alloc in the candidate set
-  Real oversample_ratio = (oversampleRatio > 0.0) ? oversampleRatio : 10.0;
-  int num_candidates = (int) std::ceil(oversample_ratio * (Real) new_samples);
-
-  // generate a parameter set of size candidate 
-  RealMatrix candidate_samples(num_vars, num_candidates);
-  get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
 
   // initial samples is a view of the first previous samples columns
   RealMatrix initial_samples(Teuchos::View, full_samples, 
 			     num_vars, previous_samples, 0, 0);
 
   // downselect points, populating full_samples with the initial
-  // points plus any new selected points
+  // points plus any new selected points; selected_samples is the
+  // aggregate of initial_samples and new samples
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
@@ -522,25 +521,81 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true,
 							     basis_types,
 							     poly_basis);
-  
-
-  // BMA TODO: construct and preserve the LejaSampler if possible
-  // BMA TODO: discuss with John what's needed...
-  LejaSampler down_sampler;
-  down_sampler.set_precondition(true);
-  down_sampler.set_polynomial_basis(poly_basis);
-  down_sampler.set_total_degree_basis_from_num_samples(num_vars, total_samples);
 
   // transform from x to u space; should we make a copy?
   bool x_to_u = true;
   transform_samples(initial_samples, x_to_u);
-  transform_samples(candidate_samples, x_to_u);
+  // BMA TODO: User option
+  bool dopt_leja = true;
+  if (dopt_leja) {
+    // Use LejaSequence to select points using higher order basis
 
-  // this interface takes an initial set of samples, number of samples
-  // to add, a candidate set, and returns selected = [initial, new]
-  down_sampler.Sampler::enrich_samples(num_vars, initial_samples, new_samples,
-				       candidate_samples, selected_samples);
-  // transform from u back to x space
+    // BMA TODO: detect bad alloc in the candidate set
+    Real oversample_ratio = (oversampleRatio > 0.0) ? oversampleRatio : 10.0;
+    int num_candidates = (int) std::ceil(oversample_ratio * (Real) new_samples);
+
+    // generate a parameter set of size candidate
+    RealMatrix candidate_samples(num_vars, num_candidates);
+    get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
+    // transform from x to u space; should we make a copy?
+    transform_samples(candidate_samples, x_to_u);
+
+    // BMA TODO: construct and preserve the LejaSampler if possible
+    // BMA TODO: discuss with John what's needed...
+    LejaSampler down_sampler;
+    down_sampler.set_precondition(true);
+    down_sampler.set_polynomial_basis(poly_basis);
+    down_sampler.set_total_degree_basis_from_num_samples(num_vars,
+							 total_samples);
+
+    // this interface takes an initial set of samples, number of samples
+    // to add, a candidate set, and returns selected = [initial, new]
+    down_sampler.Sampler::enrich_samples(num_vars, initial_samples, new_samples,
+					 candidate_samples, selected_samples);
+
+  }
+  else {
+    // Alternate D-optimal, maximize det(B'*B) for basis_matrix B
+
+    // TODO: user control
+    int num_repl = (oversampleRatio > 0.0) ? std::ceil(oversampleRatio) : 100;
+
+    // linear (order 1) terms only
+    UShort2DArray multi_index(num_vars, UShortArray(num_vars, 0));
+    for (size_t vi=0; vi<num_vars; ++vi)
+      multi_index[vi][vi] = 1;
+
+    // repeatedly generate a parameter set of size new_samples
+    // the newly populated points go in this block of full_samples
+    RealMatrix curr_new_samples(Teuchos::View, full_samples, 
+                                num_vars, new_samples, 0, previous_samples);
+    // the best design is tracked here:
+    RealMatrix best_new_samples(num_vars, new_samples);
+
+    double best_det = 0.0;
+    for (int repl_i = 0; repl_i < num_repl; ++repl_i) {
+
+      get_parameter_sets(iteratedModel, new_samples, curr_new_samples);
+      transform_samples(curr_new_samples, x_to_u);
+
+      // build basis matrix from total sample set (selected_samples
+      // includes intiial and new samples)
+      RealMatrix basis_matrix;
+      Pecos::OrthogPolyApproximation::
+        basis_matrix(selected_samples, poly_basis, multi_index, basis_matrix);
+      // BMA TODO: discuss with John
+      //      if ( precondition_ )
+      //      LejaSampler::apply_preconditioning(basis_matrix);
+
+      double det = det_AtransA(basis_matrix);
+      if (det > best_det) {
+        best_det = det;
+        best_new_samples.assign(curr_new_samples);
+      }
+    }
+    curr_new_samples.assign(best_new_samples);
+  }
+  // transform whole samples matrix from u back to x space
   bool u_to_x = false;
   transform_samples(selected_samples, u_to_x);
 }
