@@ -330,6 +330,14 @@ void ExperimentData::load_data(const std::string& context_message)
     if ( (numConfigVars > 0) && scalar_data_file ) {
       allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch
+      scalar_data_stream >> std::ws;
+      if ( scalar_data_stream.eof() ) {
+        Cerr << "\nError: End of file '" << scalarDataFilename
+          << "' reached before reading " 
+          << numExperiments << " sets of values."
+          << std::endl;
+        abort_handler(-1);
+      }
       scalar_data_stream >> allConfigVars[exp_index];
     }
     // TODO: else validate scalar vs. field configs?
@@ -390,8 +398,14 @@ void ExperimentData::load_data(const std::string& context_message)
       allExperiments[exp_ind].log_covariance_determinant();
   }
 
-  // TODO: exists extra data in scalar_data_stream
-
+  // Check and warn if extra data exists in scalar_data_stream
+  if (scalar_data_file) {
+    scalar_data_stream >> std::ws;
+    if ( !scalar_data_stream.eof() )
+      Cerr << "\nWarning: Data file '" << scalarDataFilename
+        << "' contains extra data."
+        << std::endl;
+  }
 }
 
 
@@ -450,6 +464,14 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     // Non-field response sigmas; field response sigma scalars later get expanded into diagonals
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       exp_values[fn_index].resize(1);
+      scalar_data_stream >> std::ws;
+      if ( scalar_data_stream.eof() ) {
+        Cerr << "\nError: End of file '" << scalarDataFilename
+          << "' reached before reading " 
+          << numExperiments << " sets of values."
+          << std::endl;
+        abort_handler(-1);
+      }
       scalar_data_stream >> exp_values[fn_index];
     }
     if (scalarSigmaPerRow > 0)
