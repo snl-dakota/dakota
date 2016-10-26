@@ -1544,7 +1544,6 @@ void NonD::initialize_random_variable_types(short u_space_type)
       u_types[av_cntr] = Pecos::HYPERGEOMETRIC; break;
     }
   }
-  /*
   for (i=0; i<numHistogramPtIntVars; ++i, ++av_cntr)
     x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_INT;
   
@@ -1555,7 +1554,6 @@ void NonD::initialize_random_variable_types(short u_space_type)
   // discrete real aleatory uncertain
   for (i=0; i<numHistogramPtRealVars; ++i, ++av_cntr)
     x_types[av_cntr] = u_types[av_cntr] = Pecos::HISTOGRAM_PT_REAL;
-  */
 
   // continuous epistemic uncertain
   for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {

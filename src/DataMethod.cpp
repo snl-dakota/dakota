@@ -129,8 +129,8 @@ DataMethodRep::DataMethodRep():
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   //expansionSampleType("lhs"),
-  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), reliabilitySearchType(MV),
-  integrationRefine(NO_INT_REFINE),
+  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
+  reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0),
@@ -260,7 +260,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
+    << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
@@ -401,7 +402,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
-    >> exportExpansionFile >> sampleType >> dOptimal >> reliabilitySearchType
+    >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
+    >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> pilotSamples >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
@@ -542,7 +544,8 @@ void DataMethodRep::write(std::ostream& s) const
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
+    << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
