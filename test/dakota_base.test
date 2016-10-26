@@ -3584,6 +3584,102 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       9.8193300913e+19
 <<<<< Best data captured at function evaluation 153
+dakota_calibration_configvars.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                     -7.2725713098e+02
+                     -7.0054064792e+00
+<<<<< Best model responses =
+                      2.3627428690e+03
+                     -6.7354064792e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
+least_sq_term_1: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9469435990e+07 E
+                      2.6335894124e+00 w
+<<<<< Best misfit              =
+                      3.5771128932e+02
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -3.8630315891e+02
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8996586799e+07  5.2327277771e+05  4.4764470330e-01 -1.2880903883e+00
+             w  2.6413360401e+00  1.2520729931e-02 -8.5193555441e-01  1.8047629847e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
+least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                     -7.2725713098e+02
+                     -7.0054064792e+00
+<<<<< Best model responses =
+                      2.3627428690e+03
+                     -6.7354064792e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.8500000211e+07 E
+                      2.6313476691e+00 w
+                      3.0000000000e+00 t
+                      4.0000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                     -7.2725713098e+02
+                     -7.0054064792e+00
+<<<<< Best model responses =
+                      2.3627428690e+03
+                     -6.7354064792e+00
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
+least_sq_term_1: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      2.9469435990e+07 E
+                      2.6335894124e+00 w
+<<<<< Best misfit              =
+                      3.5771128932e+02
+<<<<< Best log prior           =
+                     -2.0703165165e+01
+<<<<< Best log posterior       =
+                     -3.8630315891e+02
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  2.8996586799e+07  5.2327277771e+05  4.4764470330e-01 -1.2880903883e+00
+             w  2.6413360401e+00  1.2520729931e-02 -8.5193555441e-01  1.8047629847e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
+least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
 dakota_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
@@ -3795,63 +3891,6 @@ Test Number 13 succeeded
                      -1.6009004240e-02
                      -9.3419383340e-11
 <<<<< Best data captured at function evaluation 121
-dakota_cantilever_config.in
-Test Number 0 succeeded
-<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
-<<<<< Best parameters          =
-                      2.8500000211e+07 E
-                      2.6313476691e+00 w
-                      3.0000000000e+00 t
-                      4.0000000000e+04 R
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
-<<<<< Best residual terms =
-                     -1.7257130977e+01
-                     -7.0554064792e+00
-                     -7.2725713098e+02
-                     -7.0054064792e+00
-<<<<< Best model responses =
-                      2.3627428690e+03
-                     -6.7354064792e+00
-<<<<< Best data not found in evaluation cache
-Test Number 1 succeeded
-<<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
-least_sq_term_1: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      2.9469435990e+07 E
-                      2.6335894124e+00 w
-<<<<< Best misfit              =
-                      3.5771128932e+02
-<<<<< Best log prior           =
-                     -2.0703165165e+01
-<<<<< Best log posterior       =
-                     -3.8630315891e+02
-Sample moment statistics for each posterior variable:
-                            Mean           Std Dev          Skewness          Kurtosis
-             E  2.8996586799e+07  5.2327277771e+05  4.4764470330e-01 -1.2880903883e+00
-             w  2.6413360401e+00  1.2520729931e-02 -8.5193555441e-01  1.8047629847e+01
-Sample moment statistics for each response function:
-                            Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
-least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
-Test Number 2 succeeded
-<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
-<<<<< Best parameters          =
-                      2.8500000211e+07 E
-                      2.6313476691e+00 w
-                      3.0000000000e+00 t
-                      4.0000000000e+04 R
-                      5.0000000000e+02 X
-                      1.0000000000e+03 Y
-<<<<< Best residual terms =
-                     -1.7257130977e+01
-                     -7.0554064792e+00
-                     -7.2725713098e+02
-                     -7.0054064792e+00
-<<<<< Best model responses =
-                      2.3627428690e+03
-                     -6.7354064792e+00
 dakota_cantilever_dream.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
