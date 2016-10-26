@@ -402,7 +402,7 @@ void ExperimentData::load_data(const std::string& context_message)
   if (scalar_data_file) {
     scalar_data_stream >> std::ws;
     if ( !scalar_data_stream.eof() )
-      Cerr << "\nWarning: Data file '" << scalarDataFilename
+      Cout << "\nWarning: Data file '" << scalarDataFilename
         << "' contains extra data."
         << std::endl;
   }
