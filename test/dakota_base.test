@@ -21522,19 +21522,19 @@ Test Number 21 succeeded
                      -1.5650429086e-03
 <<<<< Best data captured at function evaluation 203
 Test Number 22 succeeded
-<<<<< Function evaluation summary: 333 total (333 new, 0 duplicate)
+<<<<< Function evaluation summary: 346 total (346 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1402474160e+00 intake_dia
                       3.2368571716e+00 flatness
 <<<<< Best objective function  =
                      -2.2485674050e+00
 <<<<< Best constraint values   =
-                      2.0000000000e-01
+                      1.9999999999e-01
                      -1.1447142426e-01
                      -2.0000000000e-01
-<<<<< Best data captured at function evaluation 267
+<<<<< Best data captured at function evaluation 345
 Test Number 23 succeeded
-<<<<< Function evaluation summary: 326 total (326 new, 0 duplicate)
+<<<<< Function evaluation summary: 405 total (405 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1402474160e+00 intake_dia
                       3.2368571716e+00 flatness
@@ -21544,19 +21544,19 @@ Test Number 23 succeeded
                       2.0000000000e-01
                      -1.1447142426e-01
                      -2.0000000000e-01
-<<<<< Best data captured at function evaluation 263
+<<<<< Best data captured at function evaluation 306
 Test Number 24 succeeded
-<<<<< Function evaluation summary: 321 total (321 new, 0 duplicate)
+<<<<< Function evaluation summary: 451 total (451 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0422900832e+00 intake_dia
-                      1.7685568333e+00 flatness
+                      2.0421443259e+00 intake_dia
+                      1.7685568331e+00 flatness
 <<<<< Best objective functions =
-                     -2.4260596646e+00
-                     -3.3706254351e-01
-                     -3.3471647500e-01
+                     -2.4259960499e+00
+                     -3.3733003302e-01
+                     -3.3471647504e-01
 <<<<< Best constraint values   =
-                     -4.8753223680e-11
-<<<<< Best data captured at function evaluation 294
+                      4.9982240569e-13
+<<<<< Best data captured at function evaluation 401
 dakota_scbdo_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 891 total (891 new, 0 duplicate)
