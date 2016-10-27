@@ -128,15 +128,36 @@ message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" )
 # Set parallel level for building (MAKE) and testing (CTEST) 
 # if not already set
 if ( NOT DAKOTA_MAKE_PARALLEL_LEVEL )
-  set( DAKOTA_MAKE_PARALLEL_LEVEL 1 )
+
+ # Linux
   if(EXISTS "/proc/cpuinfo")
     file(STRINGS "/proc/cpuinfo" cpuInfo REGEX "processor" )
     list( LENGTH cpuInfo processorCount )
-    if ( processorCount GREATER 1)
-      math(EXPR DAKOTA_MAKE_PARALLEL_LEVEL
-       	"${processorCount}*3/4")
-    endif()     
+
+  # Mac
+  elseif(APPLE)
+    message ("DENA: in APPLE")
+    set(sysctl_cmd sysctl)
+    execute_process(COMMAND ${sysctl_cmd} -n hw.ncpu 
+                      OUTPUT_VARIABLE processorCount)
+
+  # Windows
+  elseif(WIN32)
+    set(processorCount "$ENV{NUMBER_OF_PROCESSORS}")
+
+  # platform unknown
+  else()
+    set(processorCount 1)
   endif()
+
+  # Increase make parallel level if possible
+  if ( processorCount GREATER 1)
+    math(EXPR DAKOTA_MAKE_PARALLEL_LEVEL
+        "${processorCount}*3/4")
+  else()
+    set( DAKOTA_MAKE_PARALLEL_LEVEL 1 )
+  endif()
+
 endif()
 
 if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
