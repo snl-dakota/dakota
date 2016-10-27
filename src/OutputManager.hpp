@@ -193,8 +193,9 @@ public:
   // Modify output settings
   // -----
 
-  /// Extract environment options from ProblemDescDB
-  void parse(const ProblemDescDB& problem_db);
+  /// Extract environment options from ProblemDescDB and update from
+  /// late updates to ProgramOptions
+  void parse(const ProgramOptions& prog_opts, const ProblemDescDB& problem_db);
 
   /// Set the Dakota startup message ("Running on...")
   void startup_message(const String& start_msg);
@@ -272,6 +273,9 @@ public:
   String resultsOutputFile; ///< filename for results data
 
 private:
+
+  /// Perform initial output/error redirects from user requests
+  void initial_redirects(const ProgramOptions& prog_opts);
   
   /// conditionally import evaluations from restart file, then always
   /// create or overwrite restart file
