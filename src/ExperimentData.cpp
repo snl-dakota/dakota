@@ -214,7 +214,7 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 void ExperimentData::add_data(const RealVector& one_configVars, const Response& one_response)
 {
   numExperiments = numExperiments + 1; 
-  Cout << "numExperiments in add_data " << numExperiments << '\n';
+  //Cout << "numExperiments in add_data " << numExperiments << '\n';
   allConfigVars.resize(numExperiments);
   allExperiments.resize(numExperiments);
   

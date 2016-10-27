@@ -707,7 +707,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
       if (MIrel < 0.05) {
         stop_metric = true;
         Cout << "Experimental Design Stop Criteria met: "
-	     << "Relative change in mutual information is sufficiently small \n" 
+	     << "Relative change in mutual information is \n"
+	     << "sufficiently small \n" 
 	     << '\n';
       }
       else
@@ -724,7 +725,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
     if (num_hifi == max_hifi) {
       stop_metric = true;
       Cout << "Experimental Design Stop Criteria met: "
-	   << "Maximum number of hifi evaluations has been reached \n" 
+	   << "Maximum number of hifi evaluations has \n"
+	   << "been reached \n" 
 	   << '\n';
     }
 
