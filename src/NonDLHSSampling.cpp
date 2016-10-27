@@ -73,25 +73,29 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
         Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
         abort_handler(-1);
       }
-      // if (discrete vars) {
-      //   ERROR
-      // }
+      if (numPoissonVars || numBinomialVars || numNegBinomialVars ||
+	  numGeometricVars || numHyperGeomVars || numHistogramPtIntVars ||
+	  numHistogramPtStringVars || numHistogramPtRealVars) {
+        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not support "
+             << "discrete variables.\n";
+        abort_handler(-1);
+      }
     }
     else {
       // classical D-optimal
       if (numCandidateDesigns == 0)
         numCandidateDesigns = 100;
     }
-
-    // BMA TODO: Warn only if leja mode after implementing D-optimal for LHS
+    // NOTE: Classical D-optimal works with regular LHS by generating
+    // candidate designs that are Latin and picking the best.
     if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT)
       if (refineSamples.length() > 0)
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
-      else
-        Cout << "Warning: 'd_optimal' specified with LHS sampling; candidate "
-             << "designs" << " will be\n         Latin, but final design will "
-             << "not." << std::endl;
+      else if (leja)
+        Cout << "Warning: 'd_optimal', 'leja_oversample_ratio' specified with "
+	     << "LHS sampling;\n         candidate design will be Latin, but "
+	     << "final design will not." << std::endl;
   }
 }
 
@@ -176,15 +180,20 @@ void NonDLHSSampling::pre_run()
 {
   Analyzer::pre_run();
 
-  // incremental LHS needs CDF to compute ranks
   bool increm_lhs_active = (sampleType == SUBMETHOD_LHS && 
 			    refineSamples.length() > 0);
-  if (increm_lhs_active) {
+  if (dOptimal)
+    // initialize nataf transform for generating basis
+    initialize_random_variables(EXTENDED_U);
+  else if (increm_lhs_active) {
+    // incremental LHS needs CDF to compute ranks
     initialize_random_variable_transformation();
     initialize_random_variable_types(); // x_types only
+    // Capture any run-time updates for x-space distributions
+    initialize_random_variable_parameters();
   }
 
-  // BMA TODO: need to resolve interaction of MC/LHS with D-Optimal
+  // BMA TODO: D-optimal incremental LHS (challenging due to set/get ranks)
 
   // BMA TODO: resolve interaction between VBD and batch sampling
   // (need to generate the VBD replicates for each batch instead of
@@ -284,8 +293,6 @@ initial_increm_lhs_set(int new_samples,
                         num_vars, new_samples, 0, 0);
   store_ranks(batch_samples, batch_ranks);
 
-  // Capture any run-time updates for x-space distributions
-  initialize_random_variable_parameters();
 }
 
 
@@ -527,8 +534,6 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   RealMatrix selected_samples(Teuchos::View, full_samples, 
 			      num_vars, total_samples, 0, 0);
 
-  // initialize nataf transform
-  initialize_random_variables(EXTENDED_U);
   // Build polynomial basis using default basis configuration options
   Pecos::BasisConfigOptions bc_options;
   std::vector<Pecos::BasisPolynomial> poly_basis;
