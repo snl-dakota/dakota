@@ -22,7 +22,7 @@
 #include "DiscrepancyCorrection.hpp"
 
 // define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
+#define SURROGATE_MODEL 1
 #define  TRUTH_MODEL    2
 
 namespace Dakota {
@@ -127,7 +127,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   bestVariablesArray.front().continuous_variables(
     trustRegions[minimizeIndex].c_vars_center());
   bestResponseArray.front().function_values(
-    trustRegions[minimizeIndex].response_center(UNCORR_TRUTH_RESPONSE).
+    trustRegions[minimizeIndex].response_center(CORR_TRUTH_RESPONSE).
     function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
@@ -293,6 +293,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL);
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
@@ -384,9 +385,8 @@ void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
   // FIND CENTER TRUTH:  TODO -- this is hard-coded
   // -----------------
   Model& truth_model = iteratedModel.truth_model();
-  //bool truth_found = true;
   tr_data.response_center(truth_model.current_response(),UNCORR_TRUTH_RESPONSE);
-  /*
+  bool truth_found = true;
   if (!truth_found) { // bypassed for now due to hard-coding above...
     Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
 
@@ -400,7 +400,6 @@ void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
     tr_data.response_center(truth_model.current_response(),
                             UNCORR_TRUTH_RESPONSE);
   }
-  */
 
   // TODO: recursive logic must detect hard convergence on corrected response
   // (correction applied recursively).  When detected, you don't stop until 
@@ -420,6 +419,7 @@ void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
 
     if (!approx_found) {
       Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
+      iteratedModel.component_parallel_mode(SURROGATE_MODEL);
       iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
       iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
       tr_data.response_center(iteratedModel.current_response(),
