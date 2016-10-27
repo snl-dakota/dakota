@@ -548,8 +548,8 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 
 #ifdef DEBUG
   Cout << "Response truth:\ncenter = "
-       << tr_data.response_center(CORR_TRUTH_RESPONSE).
-       << "star = " << tr_data.response_star(CORR_TRUTH_RESPONSE)
+       << tr_data.response_center(CORR_TRUTH_RESPONSE) << "star = "
+       << tr_data.response_star(CORR_TRUTH_RESPONSE)
        << "Response approx:\ncenter = "
        << tr_data.response_center(CORR_APPROX_RESPONSE) << "star = "
        << tr_data.response_star(CORR_APPROX_RESPONSE);
