@@ -3379,10 +3379,10 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
          uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874847e+00  5.1704189204e-01
+         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874846e+00  5.1704189202e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528991e+00 -1.0776342386e+00  1.8268667481e-01
+least_sq_term_1  3.7654393290e+01  3.1298528992e+00 -1.0776342386e+00  1.8268667477e-01
 <<<<< Function evaluation summary (lofi_IF): 4931 total (4910 new, 21 duplicate)
 least_sq_term_1: 4931 val (4910 n, 21 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
@@ -3392,7 +3392,7 @@ least_sq_term_1: 3 val (3 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                      -3.9272680731e+00 uuv_2
                       1.3190008620e+02 uuv_3
 <<<<< Best misfit              =
-                      2.8330000302e-02
+                      2.8330000347e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
@@ -3401,10 +3401,10 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
          uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874847e+00  5.1704189204e-01
+         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874846e+00  5.1704189202e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528991e+00 -1.0776342386e+00  1.8268667481e-01
+least_sq_term_1  3.7654393290e+01  3.1298528992e+00 -1.0776342386e+00  1.8268667477e-01
 Test Number 1 succeeded
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -3457,10 +3457,10 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
          uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874847e+00  5.1704189204e-01
+         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874846e+00  5.1704189202e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528991e+00 -1.0776342386e+00  1.8268667481e-01
+least_sq_term_1  3.7654393290e+01  3.1298528992e+00 -1.0776342386e+00  1.8268667477e-01
 <<<<< Function evaluation summary (lofi_IF): 4931 total (4910 new, 21 duplicate)
 least_sq_term_1: 4931 val (4910 n, 21 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (hifi_IF): 1 total (1 new, 0 duplicate)
@@ -3470,7 +3470,7 @@ least_sq_term_1: 1 val (1 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                      -3.9272680731e+00 uuv_2
                       1.3190008620e+02 uuv_3
 <<<<< Best misfit              =
-                      2.8330000404e-02
+                      2.8330000449e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
@@ -3479,10 +3479,10 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
          uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874847e+00  5.1704189204e-01
+         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874846e+00  5.1704189202e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528991e+00 -1.0776342386e+00  1.8268667481e-01
+least_sq_term_1  3.7654393290e+01  3.1298528992e+00 -1.0776342386e+00  1.8268667477e-01
 dakota_bayes_linear.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
@@ -4560,8 +4560,8 @@ Sample moment statistics for each posterior variable:
              w  2.5016445558e+00  3.8306697138e-03 -1.2217188066e-01  3.8866929785e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052296e-02
-  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744509e-01 -1.2381836901e-01
+        stress  2.6282814617e+03  8.9765361327e+01  1.3400226598e-01  4.9239052295e-02
+  displacement  2.9604502307e-01  1.0636886950e-02 -3.5080744510e-01 -1.2381836901e-01
                   Response Level    Probability Level
                   ----------------- -----------------
                   2.4532691039e+03  5.0000000000e-02
@@ -4606,7 +4606,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
         stress  2.6428442969e+03  9.1977723081e+01  3.7000745315e-01  1.3550328156e+00
-  displacement  2.9357375791e-01  1.1652542201e-02 -5.7317768058e-02 -3.6122725669e-01
+  displacement  2.9357375791e-01  1.1652542201e-02 -5.7317768058e-02 -3.6122725670e-01
                   Response Level    Probability Level
                   ----------------- -----------------
                   2.4835862032e+03  5.0000000000e-02
@@ -15614,10 +15614,10 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 454 total (454 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 1200 total (1198 new, 2 duplicate)
 <<<<< Best parameters          =
-                      9.9974094064e-01 x1
-                      9.9947761598e-01 x2
+                      9.9974071325e-01 x1
+                      9.9947716827e-01 x2
 <<<<< Best objective function  =
-                      6.8988724941e-08
+                      6.9100571833e-08
 <<<<< Best data captured at function evaluation 1200
 dakota_rosenbrock_hessians.in
 Test Number 0 succeeded
@@ -16681,21 +16681,21 @@ Test Number 14 succeeded
                      -3.1636810400e+01
 <<<<< Best constraint values   =
                       3.8830471256e-01
-                     -1.5254464358e-12
+                     -1.5250023466e-12
                       3.8006821811e-01
 <<<<< Best data captured at function evaluation 100
 Test Number 15 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 25 total (25 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9526326843e+01 x1
-                      1.9622856395e+01 x2
+                      4.9526326842e+01 x1
+                      1.9622856394e+01 x2
 <<<<< Best objective function  =
                      -3.1636810424e+01
 <<<<< Best constraint values   =
-                      3.8835428484e-01
-                     -1.9724084588e-09
-                      3.8005568777e-01
+                      3.8835428477e-01
+                     -1.9724102351e-09
+                      3.8005568778e-01
 <<<<< Best data captured at function evaluation 49
 dakota_sbo_barnes_mf.in
 Test Number 0 succeeded
@@ -58293,20 +58293,20 @@ Surrogate quality metrics (challenge data) for response_fn_1:
             mean_abs    3.0833254425e+02
             rsquared    9.9204163247e-01
 Surrogate quality metrics for response_fn_2:
-   root_mean_squared    3.2735181342e-10
-            mean_abs    2.4040562300e-10
+   root_mean_squared    3.2735177496e-10
+            mean_abs    2.4040560024e-10
             rsquared    1.0000000000e+00
 Surrogate quality metrics (challenge data) for response_fn_2:
-   root_mean_squared    3.2735181342e-10
-            mean_abs    2.4040562300e-10
+   root_mean_squared    3.2735177496e-10
+            mean_abs    2.4040560024e-10
             rsquared    1.0000000000e+00
 Surrogate quality metrics for response_fn_3:
-   root_mean_squared    4.0369307798e-10
-            mean_abs    3.1434551956e-10
+   root_mean_squared    4.0369305650e-10
+            mean_abs    3.1434550231e-10
             rsquared    1.0000000000e+00
 Surrogate quality metrics (challenge data) for response_fn_3:
-   root_mean_squared    4.0369307798e-10
-            mean_abs    3.1434551956e-10
+   root_mean_squared    4.0369305650e-10
+            mean_abs    3.1434550231e-10
             rsquared    1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -58402,68 +58402,68 @@ Surrogate quality metrics (challenge data) for response_fn_1:
              max_abs    1.0764853114e+03
             rsquared    9.9204163247e-01
 Surrogate quality metrics for response_fn_2:
-         sum_squared    1.0715920975e-17
-        mean_squared    1.0715920975e-19
-   root_mean_squared    3.2735181342e-10
-             sum_abs    2.4040562300e-08
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+        mean_squared    1.0715918457e-19
+   root_mean_squared    3.2735177496e-10
+             sum_abs    2.4040560024e-08
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    4.1060558239e-17
-        mean_squared    4.1060558239e-19
-   root_mean_squared    6.4078512966e-10
-             sum_abs    4.6730952562e-08
-            mean_abs    4.6730952562e-10
-             max_abs    2.1671271444e-09
+         sum_squared    4.1060553722e-17
+        mean_squared    4.1060553722e-19
+   root_mean_squared    6.4078509441e-10
+             sum_abs    4.6730945276e-08
+            mean_abs    4.6730945276e-10
+             max_abs    2.1671260342e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    4.0362753697e-17
-        mean_squared    4.0362753697e-19
-   root_mean_squared    6.3531687918e-10
-             sum_abs    4.6257121471e-08
-            mean_abs    4.6257121471e-10
-             max_abs    2.1188635291e-09
+         sum_squared    4.0362763466e-17
+        mean_squared    4.0362763466e-19
+   root_mean_squared    6.3531695606e-10
+             sum_abs    4.6257125257e-08
+            mean_abs    4.6257125257e-10
+             max_abs    2.1188630850e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_2:
-         sum_squared    1.0715920975e-17
-        mean_squared    1.0715920975e-19
-   root_mean_squared    3.2735181342e-10
-             sum_abs    2.4040562300e-08
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+        mean_squared    1.0715918457e-19
+   root_mean_squared    3.2735177496e-10
+             sum_abs    2.4040560024e-08
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics for response_fn_3:
-         sum_squared    1.6296810121e-17
-        mean_squared    1.6296810121e-19
-   root_mean_squared    4.0369307798e-10
-             sum_abs    3.1434551956e-08
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+        mean_squared    1.6296808387e-19
+   root_mean_squared    4.0369305650e-10
+             sum_abs    3.1434550231e-08
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    6.2882224700e-17
-        mean_squared    6.2882224700e-19
-   root_mean_squared    7.9298313160e-10
-             sum_abs    6.4469683902e-08
-            mean_abs    6.4469683902e-10
-             max_abs    1.9086131425e-09
+         sum_squared    6.2882212834e-17
+        mean_squared    6.2882212834e-19
+   root_mean_squared    7.9298305678e-10
+             sum_abs    6.4469676066e-08
+            mean_abs    6.4469676066e-10
+             max_abs    1.9086133923e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    6.2047500326e-17
-        mean_squared    6.2047500326e-19
-   root_mean_squared    7.8770235702e-10
-             sum_abs    6.0566975440e-08
-            mean_abs    6.0566975440e-10
-             max_abs    2.3492203738e-09
+         sum_squared    6.2047503620e-17
+        mean_squared    6.2047503620e-19
+   root_mean_squared    7.8770237793e-10
+             sum_abs    6.0566971724e-08
+            mean_abs    6.0566971724e-10
+             max_abs    2.3492201517e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_3:
-         sum_squared    1.6296810121e-17
-        mean_squared    1.6296810121e-19
-   root_mean_squared    4.0369307798e-10
-             sum_abs    3.1434551956e-08
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+        mean_squared    1.6296808387e-19
+   root_mean_squared    4.0369305650e-10
+             sum_abs    3.1434550231e-08
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -58551,52 +58551,52 @@ Surrogate quality metrics (challenge data) for response_fn_1:
              max_abs    1.0764853114e+03
             rsquared    9.9204163247e-01
 Surrogate quality metrics for response_fn_2:
-         sum_squared    1.0715920975e-17
-        mean_squared    1.0715920975e-19
-   root_mean_squared    3.2735181342e-10
-             sum_abs    2.4040562300e-08
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+        mean_squared    1.0715918457e-19
+   root_mean_squared    3.2735177496e-10
+             sum_abs    2.4040560024e-08
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    4.0362753697e-17
-        mean_squared    4.0362753697e-19
-   root_mean_squared    6.3531687918e-10
-             sum_abs    4.6257121471e-08
-            mean_abs    4.6257121471e-10
-             max_abs    2.1188635291e-09
+         sum_squared    4.0362763466e-17
+        mean_squared    4.0362763466e-19
+   root_mean_squared    6.3531695606e-10
+             sum_abs    4.6257125257e-08
+            mean_abs    4.6257125257e-10
+             max_abs    2.1188630850e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_2:
-         sum_squared    1.0715920975e-17
-        mean_squared    1.0715920975e-19
-   root_mean_squared    3.2735181342e-10
-             sum_abs    2.4040562300e-08
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+        mean_squared    1.0715918457e-19
+   root_mean_squared    3.2735177496e-10
+             sum_abs    2.4040560024e-08
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics for response_fn_3:
-         sum_squared    1.6296810121e-17
-        mean_squared    1.6296810121e-19
-   root_mean_squared    4.0369307798e-10
-             sum_abs    3.1434551956e-08
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+        mean_squared    1.6296808387e-19
+   root_mean_squared    4.0369305650e-10
+             sum_abs    3.1434550231e-08
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    6.2047500326e-17
-        mean_squared    6.2047500326e-19
-   root_mean_squared    7.8770235702e-10
-             sum_abs    6.0566975440e-08
-            mean_abs    6.0566975440e-10
-             max_abs    2.3492203738e-09
+         sum_squared    6.2047503620e-17
+        mean_squared    6.2047503620e-19
+   root_mean_squared    7.8770237793e-10
+             sum_abs    6.0566971724e-08
+            mean_abs    6.0566971724e-10
+             max_abs    2.3492201517e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_3:
-         sum_squared    1.6296810121e-17
-        mean_squared    1.6296810121e-19
-   root_mean_squared    4.0369307798e-10
-             sum_abs    3.1434551956e-08
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+        mean_squared    1.6296808387e-19
+   root_mean_squared    4.0369305650e-10
+             sum_abs    3.1434550231e-08
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -58678,40 +58678,40 @@ Surrogate quality metrics (challenge data) for response_fn_1:
              max_abs    1.0764853114e+03
             rsquared    9.9204163247e-01
 Surrogate quality metrics for response_fn_2:
-         sum_squared    1.0715920975e-17
-   root_mean_squared    3.2735181342e-10
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+   root_mean_squared    3.2735177496e-10
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    4.1060558239e-17
-   root_mean_squared    6.4078512966e-10
-            mean_abs    4.6730952562e-10
-             max_abs    2.1671271444e-09
+         sum_squared    4.1060553722e-17
+   root_mean_squared    6.4078509441e-10
+            mean_abs    4.6730945276e-10
+             max_abs    2.1671260342e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (challenge data) for response_fn_2:
-         sum_squared    1.0715920975e-17
-   root_mean_squared    3.2735181342e-10
-            mean_abs    2.4040562300e-10
-             max_abs    1.0076464108e-09
+         sum_squared    1.0715918457e-17
+   root_mean_squared    3.2735177496e-10
+            mean_abs    2.4040560024e-10
+             max_abs    1.0076469659e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics for response_fn_3:
-         sum_squared    1.6296810121e-17
-   root_mean_squared    4.0369307798e-10
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+   root_mean_squared    4.0369305650e-10
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    6.2882224700e-17
-   root_mean_squared    7.9298313160e-10
-            mean_abs    6.4469683902e-10
-             max_abs    1.9086131425e-09
+         sum_squared    6.2882212834e-17
+   root_mean_squared    7.9298305678e-10
+            mean_abs    6.4469676066e-10
+             max_abs    1.9086133923e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (challenge data) for response_fn_3:
-         sum_squared    1.6296810121e-17
-   root_mean_squared    4.0369307798e-10
-            mean_abs    3.1434551956e-10
-             max_abs    1.1688536805e-09
+         sum_squared    1.6296808387e-17
+   root_mean_squared    4.0369305650e-10
+            mean_abs    3.1434550231e-10
+             max_abs    1.1688545687e-09
             rsquared    1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -62064,23 +62064,23 @@ Test Number 5 succeeded
   response_fn_1: 66 val (66 n, 0 d), 66 grad (66 n, 0 d), 0 Hess (0 n, 0 d)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
   4.5566666666666475e+02   P0   P0
-  -3.9999999999993214e+00   P1   P0
-  -5.3333333333332985e+02   P0   P1
-  9.1695238095237687e+02   P2   P0
-  -1.2573744074567661e-12   P1   P1
-  2.6666666666666458e+02   P0   P2
+  -3.9999999999996074e+00   P1   P0
+  -5.3333333333333007e+02   P0   P1
+  9.1695238095237710e+02   P2   P0
+  -5.4349930553673389e-13   P1   P1
+  2.6666666666666481e+02   P0   P2
   0.0000000000000000e+00   P3   P0
-  -1.0666666666666588e+03   P2   P1
-  7.1354565301769931e-13   P1   P2
-  5.1911881563360506e-13   P0   P3
-  3.6571428571428487e+02   P4   P0
+  -1.0666666666666592e+03   P2   P1
+  0.0000000000000000e+00   P1   P2
+  6.4337597895015955e-13   P0   P3
+  3.6571428571428476e+02   P4   P0
   0.0000000000000000e+00   P3   P1
-  -4.6484953186679675e-12   P2   P2
+  -3.9333421927190496e-12   P2   P2
   0.0000000000000000e+00   P1   P3
-  2.4386406001241335e-13   P0   P4
+  0.0000000000000000e+00   P0   P4
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  4.5566666666666475e+02  6.0656024184257490e+02
+ response_fn_1  4.5566666666666475e+02  6.0656024184257501e+02
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
   response_fn_1: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -66764,7 +66764,7 @@ cdf_beta:  Min = -2.3168922355e+00  Max = 1.3404670055e+01
 Test Number 9 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 63 total (63 new, 0 duplicate)
 mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
-cdf_beta:  Min = -2.8559186082e+00  Max = 5.9033328079e+00
+cdf_beta:  Min = -2.8559186082e+00  Max = 5.9033327622e+00
 Test Number 10 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 1050 total (1050 new, 0 duplicate)
 mean_area:  Min = 7.5000188168e+01  Max = 3.7499962366e+02
@@ -74039,8 +74039,8 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 45 total (43 new, 2 duplicate)
-response_fn_1:  Min = 6.0000017330e+00  Max = 1.6799918712e+02
+<<<<< Function evaluation summary: 60 total (58 new, 2 duplicate)
+response_fn_1:  Min = 6.0000008009e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 7 succeeded
