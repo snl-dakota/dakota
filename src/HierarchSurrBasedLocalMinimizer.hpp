@@ -70,10 +70,6 @@ private:
 
   void find_center(size_t tr_index);
 
-  void hard_convergence_check(size_t tr_index);
-
-  void tr_ratio_check(size_t tr_index);
-
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]
   void set_model_states(size_t tr_index);

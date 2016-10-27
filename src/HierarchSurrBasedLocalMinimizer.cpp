@@ -402,7 +402,13 @@ void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
   }
   */
 
-  hard_convergence_check(tr_index);
+  // TODO: recursive logic must detect hard convergence on corrected response
+  // (correction applied recursively).  When detected, you don't stop until 
+  // hard conv at top level, so this must proliferate up the TR hierarchy to
+  // update and recenter one or more TR --> refer to animation for logic.
+  hard_convergence_check(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+			 tr_data.c_vars_center(), globalLowerBnds,
+			 globalUpperBnds);
 
   // ------------------
   // FIND CENTER APPROX
@@ -420,46 +426,6 @@ void HierarchSurrBasedLocalMinimizer::find_center(size_t tr_index)
 			      UNCORR_APPROX_RESPONSE);
     }
   }
-}
-
-
-/** The hard convergence check computes the gradient of the merit
-    function at the trust region center, performs a projection for
-    active bound constraints (removing any gradient component directed
-    into an active bound), and signals convergence if the 2-norm of
-    this projected gradient is less than convergenceTol. */
-void HierarchSurrBasedLocalMinimizer::
-hard_convergence_check(size_t tr_index)
-{
-  Response truth_center_uncorrected
-    = trustRegions[tr_index].response_center(UNCORR_TRUTH_RESPONSE);
-
-  // TODO: same from here down...
-
-  // TODO: recursive logic must detect hard convergence on corrected response
-  // (correction applied recursively).  When detected, you don't stop until 
-  // hard conv at top level, so this must proliferate up the TR hierarchy to
-  // update and recenter one or more TR --> refer to animation for logic.
-
-  const RealVector& fns_truth   = truth_center_uncorrected.function_values();
-  const RealMatrix& grads_truth = truth_center_uncorrected.function_gradients();
-
-  RealVector fn_grad(numContinuousVars, true);
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-
-  // objective function portion
-  objective_gradient(fns_truth, grads_truth, sense, wts, fn_grad);
-
-  // Terminate SBLM if the norm of the projected merit function gradient
-  // at x_c is less than convTol (hard convergence).
-  Real fn_grad_norm = fn_grad.normFrobenius();
-  if ( fn_grad_norm < convergenceTol )
-    convergenceFlag = 4; // hard convergence
-
-#ifdef DEBUG
-  Cout << "In hard convergence check: fn_grad_norm = " << fn_grad_norm << '\n';
-#endif
 }
 
 

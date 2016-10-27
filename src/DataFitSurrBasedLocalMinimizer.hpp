@@ -82,13 +82,6 @@ protected:
   /// retrieve responseCenter_approx if possible, evaluate it if not
   void find_center_approx();
 
-  /// check for hard convergence (norm of projected gradient of
-  /// merit function near zero)
-  void hard_convergence_check(const Response& response_truth,
-			      const RealVector& c_vars,
-			      const RealVector& lower_bnds,
-			      const RealVector& upper_bnds);
-
   //
   //- Heading: Data members
   //

@@ -175,8 +175,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   // This aggressive logic is appropriate for invocations of the Model via
   // Iterator::run(), but is fragile w.r.t. invocations of the Model outside
-  // this scope (e.g., Model::evaluate() within SBLMinimizer).  The
-  // default responseMode value is AUTO_CORRECTED_SURROGATE, which mitigates
+  // this scope (e.g., Model::evaluate() within SBLMinimizer).  The default
+  // responseMode value is {AUTO_,UN}CORRECTED_SURROGATE, which mitigates
   // the specific case of SBLMinimizer, but the general fragility remains.
   if (recurse_flag) {
 
