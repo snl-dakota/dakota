@@ -1,0 +1,81 @@
+Blurb::
+Select the usage of surrogate models by adaptive mesh-based search
+
+Description::
+There are two approaches available: \c inform_search allows the users
+to use a static surrogate which adaptive mesh-based search (NOMAD)
+uses to evaluate the neighbors during the extended poll descent.
+Essentially NOMAD uses the surrogate to sort list of trial points and
+subsequently the true function is evaluated only on the most
+promising points. Both true function and surrogate are used
+interchangeably via a NOMAD built-in capability. \c optimize forces
+NOMAD to use a surrogate in lieu of the true model for both steps and
+thus the true function is never invoked.
+
+<b> Default Behavior </b>
+
+By default, NOMAD follows behaviour provided by \c optimize option.
+
+Examples::
+
+The following example shows the syntax used to set \c
+use_surrogate.
+
+\verbatim
+method,
+	mesh_adaptive_search
+	model_pointer = 'SURROGATE'
+	use_surrogate inform_search
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global
+	polynomial quadratic
+	dace_method_pointer = 'SAMPLING'
+
+variables,
+	continuous_design = 3
+	  initial_point   -1.0    1.5   2.0
+	  upper_bounds    10.0   10.0  10.0
+	  lower_bounds   -10.0  -10.0 -10.0
+	  descriptors      'x1'  'x2'  'x3'
+	discrete_design_range = 2
+	  initial_point      2     2
+	  lower_bounds       1     1
+	  upper_bounds       4     9
+	  descriptors      'y1'   'y2'
+       discrete_design_set
+         real = 2
+           elements_per_variable = 4 5
+           elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
+           descriptors      'y3'   'y4'
+         integer = 2
+           elements_per_variable = 2 2
+           elements = 4 7 8 9
+           descriptors      'z1'   'z2'
+
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+	sampling
+	  samples = 55
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+
+interface,
+	id_interface = 'TRUE_FN'
+       direct
+	  analysis_driver = 'text_book'
+
+responses,
+	objective_functions = 1
+	no_gradients
+	no_hessians
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

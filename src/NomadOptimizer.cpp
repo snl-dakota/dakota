@@ -85,6 +85,9 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   // Adjacency matrices for string variables.
   discreteSetStrAdj = 
     probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
+
+  // Definition for how to use surrogate model.
+  useSurrogate = probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
@@ -178,10 +181,11 @@ void NomadOptimizer::core_run()
   // Check the parameters -- Required by NOMAD for execution
   p.check();
      
-  // Create Evaluator object and communicate constraint mapping.
+  // Create Evaluator object and communicate constraint mapping and surrogate usage.
   Model& m = this->iteratedModel;
   NomadOptimizer::Evaluator ev (p,m);
   ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
+  ev.set_surrogate_usage(useSurrogate);
 
   // Construct Extended Poll object to form categorical neighbors.
   NomadOptimizer::Extended_Poll ep (p,categoricalAdjacency,numHops);
@@ -390,7 +394,7 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   }
 
   // Compute the Response using Dakota Interface
-  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE)) {
+  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE) && (useSgte.compare("inform_search") == 0)) {
     short orig_resp_mode = _model.surrogate_response_mode();
     _model.surrogate_response_mode(BYPASS_SURROGATE);
     _model.evaluate();
@@ -398,6 +402,7 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   }
   else
     _model.evaluate();
+    
 
   // Obtain Model response
   const RealVector& ftn_vals = _model.current_response().function_values();

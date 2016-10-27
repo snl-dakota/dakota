@@ -10331,75 +10331,75 @@ Test Number 8 succeeded
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 15
 Test Number 9 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 903 total (903 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 791 total (791 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 436 total (436 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 x1
-                      1.0000000000e+00 x2
-                      1.0000000000e+00 x3
+                      1.5707407814e+00 x1
+                      1.2201399858e+00 x2
+                      1.3584836512e+00 x3
 <<<<< Best objective function  =
-                      7.9625129718e-46
+                     -2.6076522674e+03
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1878 total (1878 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1055 total (1055 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 3151 total (3151 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      5.0000000000e-01 x2
-                      9.9999683241e-01 x3
+                      4.9999643846e-01 x1
+                      4.9999685428e-01 x2
+                      8.0194556764e-01 x3
                                      1 y1
-                                     1 y2
+                                     2 y2
 <<<<< Best objective function  =
-                      1.2500000000e-01
+                     -3.9244497305e+03
 <<<<< Best constraint values   =
-                      9.9975583367e-14
-                      9.9975583367e-14
+                     -1.9886701040e-06
+                     -1.3649400871e-06
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1528 total (1528 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 960 total (960 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1435 total (1435 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9998832405e-01 x1
-                      9.9999156936e-01 x2
-                      1.0000148994e+00 x3
+                      2.1723346678e+00 x1
+                      1.1898080791e+00 x2
+                      6.6560040790e-01 x3
                       1.2000000000e+00 y3
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
-                      3.2000000000e-03
+                     -4.3194298271e+03
 <<<<< Best data not found in evaluation cache
 Test Number 12 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1948 total (1948 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1055 total (1055 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1513 total (1513 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9999998580e-01 x1
-                      4.9999997258e-01 x2
-                      1.0044997909e+00 x3
+                      3.4164078650e-01 x1
+                      3.8196601125e-01 x2
+                      4.3475241575e-01 x3
                                      4 z1
                                      8 z2
 <<<<< Best objective function  =
-                      2.4821250000e+03
+                     -1.1520000000e+03
 <<<<< Best constraint values   =
-                     -4.8848303180e-10
-                     -2.0323641575e-08
+                     -7.4264578625e-02
+                     -2.4922359500e-02
 <<<<< Best data not found in evaluation cache
 Test Number 13 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 2403 total (2403 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1055 total (1055 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1943 total (1943 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9974250793e-01 x1
-                      4.9984741211e-01 x2
-                      9.4145456950e-01 x3
-                                     1 y1
-                                     1 y2
+                      1.3541666667e-01 x1
+                      1.8229166667e-01 x2
+                      1.0000000000e+01 x3
+                                     2 y1
+                                     9 y2
                                      4 z1
-                                     8 z2
-                      1.2000000000e+00 y3
-                      1.2000000000e+00 y4
+                                     9 z2
+                      7.7000000000e+00 y3
+                      7.7000000000e+00 y4
 <<<<< Best objective function  =
-                      2.4821284169e+03
+                     -1.0099826456e+05
 <<<<< Best constraint values   =
-                     -1.8113181795e-04
-                     -2.3818574846e-05
+                     -7.2808159723e-02
+                     -3.4478081598e-02
 <<<<< Best data not found in evaluation cache
 Test Number 14 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 18027 total (18027 new, 0 duplicate)

@@ -732,6 +732,14 @@
                 <param type="INTEGER" constraint="> 0" />
               </keyword>
               <keyword  id="display_all_evaluations" name="display_all_evaluations" code="{N_mdm(true,showAllEval)}" label="Display NOMAD evaluations" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="false" />
+              <keyword  id="use_surrogate" name="use_surrogate" code="{0}" label="use_surrogate" help="" minOccurs="0" default="optimize">
+                <oneOf>
+                  <keyword  id="inform_search" name="inform_search" code="{N_mdm(lit,useSurrogate_inform_search)}" label="inform_search" help=""  >
+                  </keyword>
+                  <keyword  id="optimize" name="optimize" code="{N_mdm(lit,useSurrogate_optimize)}" label="optimize" help=""  >
+                  </keyword>
+                </oneOf>
+              </keyword>
               &default_max_iterations;
               &default_max_function_evaluations;
               &default_scaling;
