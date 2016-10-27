@@ -149,7 +149,10 @@ private:
   /// whether to generate d-optimal point sets
   bool dOptimal;
 
-  /// oversampling ratio for d-optimal candidate set generation (default 10.0)
+  /// number of candidate designs to generate for classical D-optimal designs
+  size_t numCandidateDesigns;
+
+  /// oversampling ratio for Leja D-optimal candidate set generation
   Real oversampleRatio;
 
   /// static data used by static rank_sort() fn

@@ -81,7 +81,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void core_run();
+  void calibrate();
   void print_results(std::ostream& s);
 
   // Member functions

@@ -73,7 +73,7 @@ TEUCHOS_UNIT_TEST(expt_data, basic)
       TEST_FLOATING_EQUALITY( gold_coords(i,j), field_coords_view(i,j), 1.e-14 );
 
   // Test config vars correctness
-  const RealVector& config_vars = expt_data.config_vars(0);
+  const RealVector& config_vars = expt_data.config_vars()[0];
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
 
   // Test covariance correctness
@@ -154,7 +154,7 @@ TEUCHOS_UNIT_TEST(expt_data, twofield)
       TEST_FLOATING_EQUALITY( gold_coords2(i,j), field_coords_view2(i,j), 1.e-14 );
 
   // Test config vars correctness
-  const RealVector& config_vars = expt_data.config_vars(0);
+  const RealVector& config_vars = expt_data.config_vars()[0];
   TEST_EQUALITY( config_vars.length(), NUM_CONFIG_VARS );
   //
   // Test covariance correctness

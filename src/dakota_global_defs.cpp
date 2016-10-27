@@ -109,16 +109,30 @@ void abort_handler(int code)
 }
 
 
-void abort_throw_or_exit(int code)
+/** Throw a Boost system_error or call std::exit, with (256 +
+    dakota_code), where dakota_code < 0
+
+    RATIONALE:
+     * Avoid common "standard" exit codes and signals (signum.h) as
+       well as uncaught signals / uncatchable SIGKILL which return 128
+       + <signum> on Linux = [129, 192]
+
+     * Return a value in [0,255] since some operating systems only
+       return the 8 least significant bits, leaves [193, 255] for
+       Dakota.  This should make return codes consistent
+       cross-platform.  */
+void abort_throw_or_exit(int dakota_code)
 {
+  int os_code = 256 + dakota_code;
   if (abort_mode == ABORT_THROWS) {
     // throw a Boost exception that inherits from std::runtime_error, but
     // embeds the error code (since system_error is C++11 and newer)
-    boost::system::error_code ecode(code, boost::system::generic_category());
+    boost::system::error_code ecode(os_code, boost::system::generic_category());
     throw(boost::system::system_error(ecode, "Dakota aborted"));
   }
-  else
-    std::exit(code);  // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
+  else {
+    std::exit(os_code);  // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
+  }
 }
 
 

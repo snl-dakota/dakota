@@ -2512,12 +2512,13 @@ emulator.
 Credible and prediction intervals will be calculated if 
 \texttt{probability\_levels} is specified. Credible intervals propagate 
 uncertainties in parameter density information to the quantity of interest
-and quantify how well the model fits the provided data. Prediction intervals
-propagate both parameter and experimental measurement uncertainties and 
-contain the next experimental or simulated observation with the specified 
-probability. Further details can be found in \cite{Smith2013}. Note that if
-\texttt{probability\_levels} is specified, both the credible and prediction
-intervals will be calculated. 
+and quantify how well the model fits the provided data, while prediction 
+intervals propagate both parameter and experimental measurement uncertainties 
+and contain the next experimental or simulated observation with the specified 
+probability. Further details can be found in \cite{Smith2013}. If
+\texttt{probability\_levels} is specified, credible intervals will always be 
+calculated. Prediction intervals will only be calculated if 
+\texttt{variance\_type} is also specified in the \texttt{response} block. 
 
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
@@ -2684,12 +2685,11 @@ generates are written to a file in the run directory called
 \texttt{dakota\_mcmc\_tabular.dat}. The first columns of this file are
 the posterior values of the input variables. If \texttt{burn\_in} or 
 \texttt{sub\_sampling\_period} are specified, the filtered acceptance chain
-is written to a file in the run directory called 
-\texttt{dakota\_mcmc\_filtered\_tabular.dat}. This file contains the posterior
-values of the filtered MCMC chain, as well as the values of state variables
-and the resulting model responses. Finally, if one wants to see the 
-likelihood of each point, specifying verbose output in the method section will 
-result in the likelihoods being printed. 
+is written to the file \texttt{dakota\_mcmc\_tabular.dat}. This file 
+contains the posterior values of the filtered MCMC chain, as well as the values 
+of state variables and the resulting model responses. Finally, if one wants to 
+see the likelihood of each point, specifying verbose output in the method 
+section will result in the likelihoods being printed. 
 
 %We expect to continue development of Bayesian calibration methods, 
 %so check for updates to this capability. The QUESO and GPMSA capabilities

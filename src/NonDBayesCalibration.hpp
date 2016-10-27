@@ -76,6 +76,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void core_run();
+
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
@@ -85,11 +87,43 @@ protected:
   const Model& algorithm_space_model() const;
 
   //
+  //- Heading: New virtual functions
+  //
+
+  /// Perform Bayesian calibration (all derived classes must implement)
+  virtual void calibrate() = 0;
+
+
+  //
   //- Heading: Member functions
   //
 
+
+  /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
+  /// inbound Model
+  void construct_mcmc_model();
+
+  /// initialize the hyper-parameter priors
+  void init_hyper_parameters();
+
+  /// construct the negative log posterior RecastModel (wraps
+  /// residualModel) and corresponding MAP optimizer
+  void construct_map_optimizer();
+
   /// initialize emulator model and probability space transformations
   void initialize_model();
+
+  /// calibrate the model to a high-fidelity data source, using mutual
+  /// information-guided design of experiments (adaptive experimental
+  /// design)
+  void calibrate_to_hifi();
+
+  void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+					  const RealMatrix &samples_for_posterior_eval, 
+					  const RealVector &posterior_density, RealMatrix &posterior_data ) const;
+
+  void export_posterior_samples_to_file(const std::string filename,
+					const RealMatrix &posterior_data ) const;
 
   /// compute the (approximate) gradient of the negative log posterior by
   /// augmenting the (approximate) gradient of the negative log likelihood
@@ -126,6 +160,12 @@ protected:
   //
   //- Heading: Data
   //
+  
+  String scalarDataFilename;
+  String importCandPtsFile;
+  unsigned short importCandFormat;
+  size_t maxHifiEvals;
+  size_t numCandidates;
 
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
@@ -143,8 +183,11 @@ protected:
   /// preconditioning, could be activated for no-emulator cases with a
   /// specification option (not active by default).
   Iterator mapOptimizer;
-  /// RecastModel for solving for MAP using negative log posterior
+  /// RecastModel for solving for MAP: reduces residualModel to scalar
+  /// negative log posterior
   Model negLogPostModel;
+  /// user setting of the MAP optimization algorithm type
+  unsigned short mapOptAlgOverride;
 
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
@@ -158,6 +201,21 @@ protected:
   int chainCycles;
   /// random seed for MCMC process
   int randomSeed;
+
+  /// order of derivatives used in MCMC process (bitwise like ASV)
+  short mcmcDerivOrder;
+
+  // settings specific to adaptive DOE
+
+  /// whether to perform iterative design of experiments with
+  /// high-fidelity model
+  bool adaptExpDesign;
+  /// a high-fidelity model data source (given by pointer in input)
+  Model hifiModel;
+  /// initial high-fidelity model samples
+  int initHifiSamples;
+  /// LHS iterator to generate hi-fi model data
+  Iterator hifiSampler;
 
   /// the Cholesky factor of the prior covariance
   RealMatrix priorCovCholFactor;
@@ -257,7 +315,7 @@ protected:
   void prior_sample_matrix(RealMatrix& prior_dist_samples);
   void mutual_info_buildX();
   static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
-     		RealVector& distances, int NX, int NY, int dim, IntVector& k, 
+     		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		

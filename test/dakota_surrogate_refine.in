@@ -33,6 +33,7 @@ method
   sampling sample_type random 
   seed 4567
   d_optimal
+    leja_oversample_ratio 10.0
   samples 10
   refinement_samples 5
   model_pointer 'truthm'

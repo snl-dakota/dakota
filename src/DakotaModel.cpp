@@ -4521,4 +4521,74 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 }
 
 
+/** config_vars consists of [continuous, integer, string, real]. */
+void Model::active_variables(const RealVector& config_vars, Model& model)
+{
+  // TODO: If (as hoped) we convert the configuration reader to read
+  // values instead of indices for strings (and actually read
+  // integers), we can avoid the conversions below.
+
+  size_t offset = 0;  // current index into configuration variables
+
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.cv());
+  model.continuous_variables(ccv);
+  offset += model.cv();
+
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.div());
+  IntVector dicv_as_int(model.div());
+  iround(dicv, dicv_as_int);
+  model.discrete_int_variables(dicv_as_int);
+  offset += model.div();
+
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.dsv());
+  const StringSetArray& discrete_str_vals = model.discrete_set_string_values();
+  for (size_t i=0; i<model.dsv(); ++i) {
+    String str_value = 
+      set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
+    model.current_variables().discrete_string_variable(str_value, i);
+  }
+  offset += model.dsv();
+
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.drv());
+  model.discrete_real_variables(drcv);
+  //offset += model.drv();
+}
+
+
+/** config_vars consists of [continuous, integer, string, real]. */
+void Model::inactive_variables(const RealVector& config_vars, Model& model)
+{
+  // TODO: If (as hoped) we convert the configuration reader to read
+  // values instead of indices for strings (and actually read
+  // integers), we can avoid the conversions below.
+
+  size_t offset = 0;  // current index into configuration variables
+
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.icv());
+  model.inactive_continuous_variables(ccv);
+  offset += model.icv();
+
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.idiv());
+  IntVector dicv_as_int(model.idiv());
+  iround(dicv, dicv_as_int);
+  model.inactive_discrete_int_variables(dicv_as_int);
+  offset += model.idiv();
+
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.idsv());
+  // the admissible _inactive_ discrete string values
+  const StringSetArray& discrete_str_vals =
+    model.discrete_set_string_values(model.current_variables().view().second);
+  for (size_t i=0; i<model.idsv(); ++i) {
+    String str_value = 
+      set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
+    model.current_variables().inactive_discrete_string_variable(str_value, i);
+  }
+  offset += model.idsv();
+
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.idrv());
+  model.inactive_discrete_real_variables(drcv);
+  //offset += model.idrv();
+}
+
+
 } // namespace Dakota

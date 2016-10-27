@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
 {
   std::string util_command;                 // restart utility mode
   std::vector<std::string> pos_args;        // all remaining positional args
+  bool freeform = false;                    // whether freeform requested
   std::vector<std::string> tabular_opts;    // custom_annotated options
   int tabular_precision = write_precision;  // tabular write precision
   try {
@@ -75,6 +76,7 @@ int main(int argc, char* argv[])
       ("custom_annotated",
        bpo::value<std::vector<std::string> >(&tabular_opts)->multitoken(), 
        "tabular file options: header, eval_id, interface_id")
+      ("freeform", "tabular file: freeform format")
       ("output_precision", 
        bpo::value<int>(&tabular_precision)->default_value(write_precision),
        "set tabular output precision")
@@ -110,6 +112,13 @@ int main(int argc, char* argv[])
       Cerr << general_opts << std::endl;
       return -1;
     }
+    if (vm.count("freeform"))
+      freeform = true;
+    if (vm.count("freeform") && vm.count("custom_annotated")) {
+      Cerr << "\nError: options --freeform and --custom_annotated are mutually "
+	   << "exclusive.\n";
+      return -1;
+    }
     if (tabular_precision < 1) {
       Cerr << "\nError: output_precision must be a positive integer.\n";
       return -1;
@@ -120,8 +129,10 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  unsigned short tabular_format = TABULAR_ANNOTATED;
-  if (!tabular_opts.empty()) {
+  unsigned short tabular_format = TABULAR_ANNOTATED;  // default
+  if (freeform)
+    tabular_format = TABULAR_NONE;
+  else if (!tabular_opts.empty()) {
     bool found_error = false;
     tabular_format = TABULAR_NONE;
     BOOST_FOREACH(const String& tab_opt, tabular_opts) {

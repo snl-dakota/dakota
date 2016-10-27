@@ -23,8 +23,8 @@ namespace Dakota {
 DataMethodRep::DataMethodRep():
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
-  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
-  methodUseDerivsFlag(false), convergenceTolerance(1.e-4),
+  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false), 
+  methodUseDerivsFlag(false), convergenceTolerance(1.e-4), 
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
@@ -129,20 +129,21 @@ DataMethodRep::DataMethodRep():
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   //expansionSampleType("lhs"),
-  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), reliabilitySearchType(MV),
-  integrationRefine(NO_INT_REFINE),
+  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
+  reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  subSamplingPeriod(1), burnInSamples(0), 
-  posteriorStatsKL(false), posteriorStatsMutual(false),
-  adaptPosteriorRefine(false), logitTransform(false),
-  preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
-  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
-  lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE), 
-  numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
-  jumpStep(5), generatePosteriorSamples(false), evaluatePosteriorDensity(false),
+  burnInSamples(0), subSamplingPeriod(1), adaptExpDesign(false), 
+  maxHifiEvals(0), numCandidates(0), posteriorStatsKL(false), 
+  posteriorStatsMutual(false), adaptPosteriorRefine(false), 
+  logitTransform(false), preSolveMethod(SUBMETHOD_DEFAULT), 
+  proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
+  batchSelectionType("naive"), lipschitzType("local"), 
+  calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3), 
+  crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), 
+  generatePosteriorSamples(false), evaluatePosteriorDensity(false),
     // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
@@ -150,6 +151,7 @@ DataMethodRep::DataMethodRep():
   // Point import/export files
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
+  importCandFormat(TABULAR_ANNOTATED),
   exportApproxFormat(TABULAR_ANNOTATED),  exportSampleSeqFlag(false),
   exportSamplesFormat(TABULAR_ANNOTATED), referenceCount(1)
 { }
@@ -258,7 +260,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
+    << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
@@ -270,11 +273,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType << dataDistType 
-    << dataDistCovInputType << dataDistMeans << dataDistCovariance
-    << dataDistFile << posteriorDensityExportFilename
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
+    << maxHifiEvals << numCandidates << numChains << numCR 
+    << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
+    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
 
@@ -289,6 +292,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
+    << importCandPtsFile << importBuildFormat
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;
 }
@@ -398,7 +402,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
-    >> exportExpansionFile >> sampleType >> dOptimal >> reliabilitySearchType
+    >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
+    >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> pilotSamples >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
@@ -410,11 +415,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
     >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
-    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
-    >> numChains >> numCR >> crossoverChainPairs
-    >> grThreshold >> jumpStep >> lipschitzType >> dataDistType 
-    >> dataDistCovInputType >> dataDistMeans >> dataDistCovariance
-    >> dataDistFile >> posteriorDensityExportFilename
+    >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod >> adaptExpDesign
+    >> maxHifiEvals >> numCandidates >> numChains >> numCR 
+    >> crossoverChainPairs >> grThreshold >> jumpStep >> lipschitzType 
+    >> dataDistType >> dataDistCovInputType >> dataDistMeans 
+    >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity;
 
@@ -429,6 +434,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
+    >> importCandPtsFile >> importCandFormat
     >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
     >> exportSampleSeqFlag >> exportSamplesFormat;
 }
@@ -538,7 +544,8 @@ void DataMethodRep::write(std::ostream& s) const
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << reliabilitySearchType
+    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
+    << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << pilotSamples << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
@@ -550,11 +557,11 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
-    << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << numChains << numCR << crossoverChainPairs
-    << grThreshold << jumpStep << lipschitzType << dataDistType 
-    << dataDistCovInputType << dataDistMeans << dataDistCovariance
-    << dataDistFile << posteriorDensityExportFilename
+    << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
+    << maxHifiEvals << numCandidates << numChains << numCR 
+    << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
+    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
 
@@ -569,6 +576,7 @@ void DataMethodRep::write(std::ostream& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
+    << importCandPtsFile << importCandFormat 
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;
 }

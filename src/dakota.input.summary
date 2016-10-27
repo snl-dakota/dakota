@@ -1044,7 +1044,8 @@ KEYWORD12 method
 	    ]
 	  [ refinement_samples INTEGERLIST ]
 	  [ d_optimal
-	    [ oversample_ratio REAL ]
+	    [ candidate_designs INTEGER > 0
+	    | leja_oversample_ratio REAL ]
 	    ]
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
@@ -1802,12 +1803,22 @@ KEYWORD12 method
 	      ( freeform
 	      ]
 	    )
-	  |
-	  ( experimental_design
+	  [ experimental_design
 	    initial_samples ALIAS samples INTEGER
-	    [ seed INTEGER > 0 ]
-	    [ low_fidelity_model_pointer STRING ]
-	    )
+	    num_candidates INTEGER >= 0
+	    [ max_hifi_evaluations INTEGER >= 0 ]
+	    [ import_candidate_points_file STRING
+	      [ annotated
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
+	      ]
+	    ]
 	  [ standardized_space ]
 	  [ calibrate_error_multipliers
 	    one

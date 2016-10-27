@@ -254,9 +254,15 @@ void NonDSampling::get_parameter_sets(Model& model)
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
 void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-				      RealMatrix& design_matrix)
+                                      RealMatrix& design_matrix)
 {
-  initialize_lhs(true);
+  get_parameter_sets(model, num_samples, design_matrix, true);
+}
+
+void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
+                                      RealMatrix& design_matrix, bool write_msg)
+{
+  initialize_lhs(write_msg, num_samples);
 
   short model_view = model.current_variables().view().first;
   switch (samplingVarsMode) {
@@ -470,7 +476,7 @@ void NonDSampling::
 get_parameter_sets(const RealVector& lower_bnds,
 		   const RealVector& upper_bnds)
 {
-  initialize_lhs(true);
+  initialize_lhs(true, numSamples);
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds,
 				     numSamples, allSamples);
 }
@@ -483,7 +489,7 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
                    const RealVector& lower_bnds, const RealVector& upper_bnds,
                    RealSymMatrix& correl)
 {
-  initialize_lhs(true);
+  initialize_lhs(true, numSamples);
   lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
 				    numSamples, correl, allSamples);
 }
@@ -817,7 +823,7 @@ view_state_counts(const Model& model, size_t& num_csv, size_t& num_dsiv,
 }
 
 
-void NonDSampling::initialize_lhs(bool write_message)
+void NonDSampling::initialize_lhs(bool write_message, int num_samples)
 {
   // keep track of number of LHS executions for this object
   ++numLHSRuns;
@@ -845,7 +851,7 @@ void NonDSampling::initialize_lhs(bool write_message)
   // NonDAdaptImpSampling because it gets written a _LOT_
   String sample_string = submethod_enum_to_string(sampleType);
   if (write_message) {
-    Cout << "\nNonD " << sample_string << " Samples = " << numSamples;
+    Cout << "\nNonD " << sample_string << " Samples = " << num_samples;
     if (numLHSRuns == 1 || !varyPattern) {
       if (seedSpec) Cout << " Seed (user-specified) = ";
       else          Cout << " Seed (system-generated) = ";

@@ -78,17 +78,19 @@ public:
 
   /// typical DB-based constructor
   ExperimentData(const ProblemDescDB& prob_desc_db, 
-		 const SharedResponseData& srd, short output_level);
+                 const SharedResponseData& srd, short output_level);
 
   /// temporary? constructor for testing
   ExperimentData(size_t num_experiments, size_t num_config_vars, 
-		 const boost::filesystem::path& data_prefix,
-		 const SharedResponseData& srd,
+                 const boost::filesystem::path& data_prefix,
+                 const SharedResponseData& srd,
                  const StringArray& variance_types,
                  short output_level,
                  std::string scalarDataFilename = "");
  
-  ExperimentData(size_t num_experiments, const IntResponseMap& all_responses); 
+  ExperimentData(size_t num_experiments, const SharedResponseData& srd,
+                 const RealMatrix& configVars, 
+                 const IntResponseMap& all_responses, short output_level); 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
@@ -100,6 +102,8 @@ public:
  
   /// Load experiments from data files (simple scalar or field)
   void load_data(const std::string& context_message);
+  /// Add one data point to the experimental data set
+  void add_data(const RealVector& one_configvars, const Response& one_response);
 
   /// retrieve the number of experiments
   size_t num_experiments() const
@@ -115,9 +119,8 @@ public:
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;
 
-  /// retrieve the vector of configuration variables for the given
-  /// experiment number
-  const RealVector& config_vars(size_t experiment);
+  /// values of the configuration variables, 1 RealVector per experiment
+  const std::vector<RealVector>& config_vars() const;
 
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
@@ -176,9 +179,16 @@ public:
   /// vector per experiment
   void cov_as_correlation(RealSymMatrixArray& corr_matrix) const;
 
-  /// form residuals for all experiments, interpolating if necessary 
+  /// form residuals for all experiments, interpolating if necessary;
+  /// one simulation response maps to all experiments
   void form_residuals(const Response& sim_resp, Response& residual_resp) const;
     
+  /// Populate the portion of residual_resp corresponding to
+  /// experiment curr_exp; the passed simulation response maps only to
+  /// the specified experiment
+  void form_residuals(const Response& sim_resp, const size_t curr_exp,
+		      Response& residual_resp) const;
+
   /// form residuals for an individual experiment, interpolating if necessary 
   void form_residuals(const Response& sim_resp, size_t exp_num, 
 		      const ShortArray &total_asv, size_t residual_resp_offset,

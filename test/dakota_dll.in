@@ -1,5 +1,5 @@
 #@ s*: Label=FastTest
-#@ s0: ExecCmd='dll_tester' ExecArgs='1' Restart=none CheckOutput='dakota_dll.log'
+#@ s0: ExecCmd='dll_tester' ExecArgs='1' Restart=none CheckOutput='dakota_dll_tester.log'
 
 # Dakota DLL test, based on rosenbrock users test s0
 # To execute test outside of the Dakota testing infrastructure:

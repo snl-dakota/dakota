@@ -1,0 +1,90 @@
+#@ *: Label=Experimental
+#@ *: DakotaConfig=HAVE_QUESO
+#@ s1: ReqFiles=dakota_bayes_expdesign.dat
+#@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
+
+environment
+        tabular_graphics_data
+
+method,
+       bayes_calibration queso
+          output debug
+          dram
+	  seed = 34785				
+          chain_samples = 500
+          experimental_design
+          initial_samples = 2
+	  num_candidates = 2
+##	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
+##		freeform						#s2
+	  max_hifi_evaluations = 1
+          model_pointer = 'HIERARCH'
+ 
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'ALL_VARS'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LF' 'HF'
+
+model,
+        id_model = 'LF'
+        single
+        variables_pointer = 'ALL_VARS'
+        interface_pointer = 'lofi_IF'
+        responses_pointer = 'lofi_resp'
+
+model,
+        id_model = 'HF'
+        single
+        variables_pointer = 'CONFIG_VARS'
+        interface_pointer = 'hifi_IF'
+        responses_pointer = 'hifi_resp'
+
+variables,
+	id_variables = 'ALL_VARS'
+        continuous_state = 1 
+	  upper_bounds = 70
+          lower_bounds = 10
+        uniform_uncertain = 3 
+	  upper_bounds   0.06  	0   	260
+	  lower_bounds   0	-8	0                         
+
+variables,
+	id_variables = 'CONFIG_VARS'
+	active state
+	continuous_state = 1                                   
+          upper_bounds = 70
+          lower_bounds = 10
+
+interface,
+        fork
+        analysis_driver = 'expdesign_high'
+        analysis_servers = 1
+        id_interface = 'hifi_IF'
+
+interface,
+        fork 
+        analysis_driver = 'expdesign_low'
+        analysis_servers = 1
+        id_interface = 'lofi_IF'
+
+responses,
+ 	id_responses = 'lofi_resp'
+        calibration_terms = 1
+	no_gradients	
+	no_hessians
+
+responses,
+ 	id_responses = 'hifi_resp'
+ 	calibration_terms = 1
+#	calibration_data_file = "dakota_bayes_expdesign.dat"	#s1,#s2
+#	  freeform						#s1,#s2
+#	  num_config_variables = 1				#s1,#s2
+#	  num_experiments = 2				        #s2	
+#	  num_experiments = 1					#s1
+#	  variance_type = 'none'				#s1,#s2
+	  #variance_type = 'scalar'
+	no_gradients	
+	no_hessians
+
+

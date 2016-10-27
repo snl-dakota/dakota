@@ -186,18 +186,22 @@ protected:
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
   void get_parameter_sets(Model& model, const int num_samples, 
-			  RealMatrix& design_matrix);
+                          RealMatrix& design_matrix);
+
+  /// core of get_parameter_sets that accepts message print control
+  void get_parameter_sets(Model& model, const int num_samples,
+                          RealMatrix& design_matrix, bool write_msg);
 
   /// Uses lhsDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
-			  const RealVector& upper_bnds);
+                          const RealVector& upper_bnds);
 
   /// Uses lhsDriver to generate a set of normal samples 
   void get_parameter_sets(const RealVector& means,
                           const RealVector& std_devs,
                           const RealVector& lower_bnds,
-			  const RealVector& upper_bnds, 
+                          const RealVector& upper_bnds,
                           RealSymMatrix& correl);
 
   /// Override default update of continuous vars only
@@ -215,7 +219,7 @@ protected:
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
-  void initialize_lhs(bool write_message);
+  void initialize_lhs(bool write_message, int num_samples);
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model

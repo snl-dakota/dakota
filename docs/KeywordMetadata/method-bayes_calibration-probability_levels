@@ -11,8 +11,9 @@ uncertainty, which is specified by the user via the \c variance_type command.
 <b> Expected Output </b>
 
 If \c probability_levels is specified, Dakota will create a table containing 
-the credibile intervals and a table containing the prediction intervals for
-each response function. This information is output to the screen and to a file.
+the credibile intervals for each response function. The corresponding table 
+containing the prediction intervals will also be created if a \c variance_type 
+has been specified. This information is output to the screen and to a file.
 In addition, the output file contains the means and standard deviations of 
 each response function and Gaussian approximations of the 5/95 credible and
 prediction intervals, in which the lower bound is two standard deviations below 

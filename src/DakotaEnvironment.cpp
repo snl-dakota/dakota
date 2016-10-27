@@ -354,7 +354,9 @@ void Environment::construct()
   // extract global output specification data (environment keyword
   // spec) right before run time in case of late library updates to DB
   programOptions.parse(probDescDB);
-  outputManager.parse(probDescDB);
+  // user might have requested output/error redirection in environment block;
+  // check and update redirects
+  outputManager.parse(programOptions, probDescDB);
 
   // With respect to Environment interaction with the probDescDB linked lists,
   // the current design allows the user to either fully specify the method to

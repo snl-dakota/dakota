@@ -1,18 +1,21 @@
-# Tests for D-optimal sampling over all variable types, capturing 
-# issues
+# Tests for D-optimal sampling
+# Currently only support aleatory variables
+# With Leja option, only support continuous aleatory variables
 # test 0: continuous aleatory
 # test 1: discrete aleatory
-# test 2: epistemic
-# test 3: mixed design
-# test 4: mixed state
+# test 2: continuous aleatory with Leja option
 environment,				
 	  tabular_data		
 
 method, 				 
   sampling
     sample_type random
-    samples = 20
+    samples = 100                     #s0,#s1
+#   samples = 20                      #s2
       d_optimal
+# Default candidate designs = 100
+#       candidate_designs 50          #s1
+#       leja_oversample_ratio = 10.0  #s2
     seed 8272
 
 ## ERROR: Want samples greater, but get this error on s1:
@@ -22,13 +25,13 @@ method,
 
 variables,								 
 # (default is active uncertain)
-# active design                                   #s3
-# active state                                    #s4
+# active design                                   
+# active state                                    
 
 ## DESIGN
-#	continuous_design = 1                           #s3
-#          upper_bounds = 20.			                #s3
-#          lower_bounds = 10.			                #s3
+#	continuous_design = 1                           
+#          upper_bounds = 20.			                
+#          lower_bounds = 10.			                
 ## ERROR:
 #   Distribution required, not found for DiscDesRange2   
 #   Error: code 1 returned from lhs_prep in LHSDriver.
@@ -46,44 +49,44 @@ variables,
 #            elements = 30. 40. 50.       
 
 ## ALEATORY UNCERTAIN
-  normal_uncertain = 1                            #s0
-    means = 69.0       	                          #s0
-    std_deviations = 1.0  	                      #s0
-	lognormal_uncertain = 1		                      #s0
-    means             =  1.	                      #s0
-    std_deviations    =  0.5                      #s0
-	uniform_uncertain = 1                           #s0     
-	  lower_bounds      = 200.	                    #s0
-    upper_bounds = 300.		                        #s0
- 	loguniform_uncertain = 1	                      #s0
-    lower_bounds      =  0.1	                    #s0
-    upper_bounds      =  10.	                    #s0
- 	triangular_uncertain = 1	                      #s0
-    modes             =  0.  	                    #s0
-    lower_bounds      = -2.	                      #s0
-	  upper_bounds      =  2.  	                    #s0
-	exponential_uncertain = 1	                      #s0
-	  betas             =  2.	                      #s0
-	beta_uncertain = 1		                          #s0
-	  alphas            =  1.5  	                  #s0
-	  betas             =  2. 	                    #s0
-	  lower_bounds      = -2.	                      #s0
-	  upper_bounds      =  2.	                      #s0
-	gamma_uncertain = 1                             #s0
-	  alphas            =  2.5  	                  #s0
-	  betas             =  2.  	                    #s0
-	gumbel_uncertain = 1		                        #s0
-	  alphas            = 1.5 	                    #s0
-	  betas             = 2.5	                      #s0
-	frechet_uncertain = 1		                        #s0
-	  alphas            = 2.5 	                    #s0
-	  betas             = 3.5 	                    #s0
-	weibull_uncertain = 1		                        #s0
-	  alphas            =   12.                     #s0
-	  betas             =  250.	                    #s0
-	histogram_bin_uncertain = 1	                    #s0
-	  abscissas   =  5  8 10 	                      #s0
-	  counts      = 17 21  0	                      #s0
+  normal_uncertain = 1                            #s0,#s2
+    means = 69.0       	                          #s0,#s2
+    std_deviations = 1.0  	                      #s0,#s2
+	lognormal_uncertain = 1		                      #s0,#s2
+    means             =  1.	                      #s0,#s2
+    std_deviations    =  0.5                      #s0,#s2
+	uniform_uncertain = 1                           #s0,#s2     
+	  lower_bounds      = 200.	                    #s0,#s2
+    upper_bounds = 300.		                        #s0,#s2
+ 	loguniform_uncertain = 1	                      #s0,#s2
+    lower_bounds      =  0.1	                    #s0,#s2
+    upper_bounds      =  10.	                    #s0,#s2
+ 	triangular_uncertain = 1	                      #s0,#s2
+    modes             =  0.  	                    #s0,#s2
+    lower_bounds      = -2.	                      #s0,#s2
+	  upper_bounds      =  2.  	                    #s0,#s2
+	exponential_uncertain = 1	                      #s0,#s2
+	  betas             =  2.	                      #s0,#s2
+	beta_uncertain = 1		                          #s0,#s2
+	  alphas            =  1.5  	                  #s0,#s2
+	  betas             =  2. 	                    #s0,#s2
+	  lower_bounds      = -2.	                      #s0,#s2
+	  upper_bounds      =  2.	                      #s0,#s2
+	gamma_uncertain = 1                             #s0,#s2
+	  alphas            =  2.5  	                  #s0,#s2
+	  betas             =  2.  	                    #s0,#s2
+	gumbel_uncertain = 1		                        #s0,#s2
+	  alphas            = 1.5 	                    #s0,#s2
+	  betas             = 2.5	                      #s0,#s2
+	frechet_uncertain = 1		                        #s0,#s2
+	  alphas            = 2.5 	                    #s0,#s2
+	  betas             = 3.5 	                    #s0,#s2
+	weibull_uncertain = 1		                        #s0,#s2
+	  alphas            =   12.                     #s0,#s2
+	  betas             =  250.	                    #s0,#s2
+	histogram_bin_uncertain = 1	                    #s0,#s2
+	  abscissas   =  5  8 10 	                      #s0,#s2
+	  counts      = 17 21  0	                      #s0,#s2
 # poisson_uncertain = 1		                        #s1
 #   lambdas           =  0.2   	                  #s1
 # binomial_uncertain = 1		                      #s1
@@ -98,18 +101,22 @@ variables,
 #         total_population    = 50 	              #s1
 #         selected_population = 20	              #s1
 #         num_drawn           =  5 	              #s1
-## UNSUPPORTED
-##   Error: RandomVariable type 0 not available.
-#	histogram_point_uncertain
-#          real = 1		    
-#	  abscissas   = 3 4 5		
-#	  counts      = 1 1 1		
+#	histogram_point_uncertain                       #s1
+#   integer = 1                                   #s1
+#	    abscissas   = 3 4 5                         #s1
+#	    counts      = 1 2 1                         #s1
+#   string = 1                                    #s1
+#	    abscissas   = 's3' 's4' 's5'                #s1
+#	    counts      = 1 2 1                         #s1
+#   real = 1                                      #s1
+#	    abscissas   = 3.2 4.3 5.4                   #s1
+#	    counts      = 1 2 1                         #s1
 
 ## EPISTEMIC UNCERTAIN
-#	continuous_interval_uncertain = 1               #s2
-#	  interval_probabilities = .4 .6	              #s2
-#	  lower_bounds = 2. 4.	      		              #s2
-#	  upper_bounds = 5. 8.			                    #s2
+#	continuous_interval_uncertain = 1               
+#	  interval_probabilities = .4 .6	              
+#	  lower_bounds = 2. 4.	      		              
+#	  upper_bounds = 5. 8.			                    
 ## ERROR (no discrete histogram)
 #	discrete_interval_uncertain = 1		
 #	  interval_probabilities = .4 .6	
@@ -125,9 +132,9 @@ variables,
 #	    set_values        = 3.1 5.2 6.3 7.4	
 
 ## STATE
-#	continuous_state = 1                            #s4
-#          upper_bounds = 20.			                #s4
-#          lower_bounds = 10.			                #s4
+#	continuous_state = 1                            
+#          upper_bounds = 20.			                
+#          lower_bounds = 10.			                
 ## ERROR:
 #   Distribution required, not found for DiscDesRange2   
 #   Error: code 1 returned from lhs_prep in LHSDriver.
@@ -149,7 +156,6 @@ interface,
 	  deactivate evaluation_cache restart_file
 
 responses,                                      			 
-	response_functions= 1					 
+	response_functions = 1					 
 	no_gradients
 	no_hessians
-
