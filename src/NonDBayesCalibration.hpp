@@ -214,6 +214,8 @@ protected:
   Model hifiModel;
   /// initial high-fidelity model samples
   int initHifiSamples;
+  /// LHS iterator to generate hi-fi model data
+  Iterator hifiSampler;
 
   /// the Cholesky factor of the prior covariance
   RealMatrix priorCovCholFactor;

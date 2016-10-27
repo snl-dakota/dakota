@@ -15,14 +15,14 @@ namespace Dakota {
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
-  scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), 
-  outputLevel(NORMAL_OUTPUT)
+  scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
+  readSimFieldCoords(false), interpolateFlag(false), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
 
 
 ExperimentData::
 ExperimentData(const ProblemDescDB& pddb, 
-	       const SharedResponseData& srd, short output_level):
+               const SharedResponseData& srd, short output_level):
   calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
   numExperiments(pddb.get_sizet("responses.num_experiments")), 
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
@@ -40,13 +40,13 @@ ExperimentData(const ProblemDescDB& pddb,
 
 ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
-	       const boost::filesystem::path& data_prefix,
-	       const SharedResponseData& srd,
+               const boost::filesystem::path& data_prefix,
+               const SharedResponseData& srd,
                const StringArray& variance_types,
                short output_level,
                std::string scalar_data_filename):
-  calibrationDataFlag(true), 
-  numExperiments(num_experiments), numConfigVars(num_config_vars),
+  calibrationDataFlag(true), numExperiments(num_experiments),
+  numConfigVars(num_config_vars),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   dataPathPrefix(data_prefix), scalarDataFilename(scalar_data_filename),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
@@ -57,27 +57,30 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 
 ExperimentData::
 ExperimentData(size_t num_experiments, const SharedResponseData& srd,
-               const RealMatrix& configVars, 
-               const IntResponseMap& all_responses):
-  calibrationDataFlag(false), 
-  numExperiments(num_experiments),
-  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0)
+               const RealMatrix& config_vars,
+               const IntResponseMap& all_responses, short output_level):
+  calibrationDataFlag(false), numExperiments(num_experiments),
+  numConfigVars(config_vars.numRows()),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
+  readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
-  
   simulationSRD = srd.copy();
   allConfigVars.resize(numExperiments);
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i]= Teuchos::getCol(Teuchos::View,
-      const_cast<RealMatrix&>(configVars), (int)i);
-    Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+    allConfigVars[i] =
+      Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
+                      (int) i);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " allConfigVars i " << allConfigVars[i] << '\n';
   }
-  numConfigVars = allConfigVars[0].length();
-  Cout << "Number of config vars " << numConfigVars << '\n';
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Number of config vars " << numConfigVars << '\n';
 
+  // BMA TODO: This doesn't make an object of type ExperimentResponse!
   IntRespMCIter resp_it = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
- 
-  for (size_t i =0 ; resp_it != resp_end, i<num_experiments; ++resp_it,++i ) 
+  for ( ; resp_it != resp_end; ++resp_it)
      allExperiments.push_back(resp_it->second);
 }
 
@@ -211,17 +214,16 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 
 }
 
-void ExperimentData::add_data(const RealVector& one_configVars, const Response& one_response)
+void ExperimentData::
+add_data(const RealVector& one_configvars, const Response& one_response)
 {
-  numExperiments = numExperiments + 1; 
-  //Cout << "numExperiments in add_data " << numExperiments << '\n';
-  allConfigVars.resize(numExperiments);
-  allExperiments.resize(numExperiments);
-  
-  int last_exp = numExperiments - 1;
-  allConfigVars[last_exp]=one_configVars;
-  allExperiments[last_exp]=one_response;
+  // BMA TODO: This doesn't make an object of type ExperimentResponse!
+  numExperiments += 1;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "numExperiments in add_data " << numExperiments << '\n';
 
+  allConfigVars.push_back(one_configvars);
+  allExperiments.push_back(one_response);
 }
 
 

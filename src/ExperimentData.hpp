@@ -78,19 +78,19 @@ public:
 
   /// typical DB-based constructor
   ExperimentData(const ProblemDescDB& prob_desc_db, 
-		 const SharedResponseData& srd, short output_level);
+                 const SharedResponseData& srd, short output_level);
 
   /// temporary? constructor for testing
   ExperimentData(size_t num_experiments, size_t num_config_vars, 
-		 const boost::filesystem::path& data_prefix,
-		 const SharedResponseData& srd,
+                 const boost::filesystem::path& data_prefix,
+                 const SharedResponseData& srd,
                  const StringArray& variance_types,
                  short output_level,
                  std::string scalarDataFilename = "");
  
   ExperimentData(size_t num_experiments, const SharedResponseData& srd,
                  const RealMatrix& configVars, 
-                 const IntResponseMap& all_responses); 
+                 const IntResponseMap& all_responses, short output_level); 
 
   //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
@@ -103,7 +103,7 @@ public:
   /// Load experiments from data files (simple scalar or field)
   void load_data(const std::string& context_message);
   /// Add one data point to the experimental data set
-  void add_data(const RealVector& one_configVars, const Response& one_response);
+  void add_data(const RealVector& one_configvars, const Response& one_response);
 
   /// retrieve the number of experiments
   size_t num_experiments() const
