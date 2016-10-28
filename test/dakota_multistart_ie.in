@@ -3,7 +3,7 @@
 #@ p*: MPIProcs=8
 #@ p1: CheckOutput='dakota.out.1'
 #@ p2: CheckOutput='dakota.out.1'
-#@ p5: CheckOutput='dakota.out.1'
+#@ p5: CheckOutput='dakota.log.1'
 #@ p6: CheckOutput='dakota.out.1'
 #@ p9: CheckOutput='dakota.out.1'
 
@@ -25,6 +25,8 @@
 
 environment,
   top_method_pointer = 'MS'
+# Test input file output redirection in parallel
+#   output_file = 'dakota.log'    #p5
 
 method,
   id_method = 'MS'

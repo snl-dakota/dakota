@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   // instances in core are likely to be problematic.
   for (int i=0; i<ntrials; i++) {
     int id;
-    dakota_create(&id, "dakota_dll");
+    dakota_create(&id, "dakota_dll_tester");
     int retcode = dakota_readInput(id, argv[2]);
     if (retcode != 0) {
       dakota_destroy(id);

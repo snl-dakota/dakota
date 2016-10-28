@@ -15,14 +15,14 @@ namespace Dakota {
 ExperimentData::ExperimentData():
   calibrationDataFlag(false), numExperiments(0), numConfigVars(0), 
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
-  scalarDataFormat(TABULAR_EXPER_ANNOT), interpolateFlag(false), 
-  outputLevel(NORMAL_OUTPUT)
+  scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
+  readSimFieldCoords(false), interpolateFlag(false), outputLevel(NORMAL_OUTPUT)
 {  /* empty ctor */  }                                
 
 
 ExperimentData::
 ExperimentData(const ProblemDescDB& pddb, 
-	       const SharedResponseData& srd, short output_level):
+               const SharedResponseData& srd, short output_level):
   calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
   numExperiments(pddb.get_sizet("responses.num_experiments")), 
   numConfigVars(pddb.get_sizet("responses.num_config_vars")),
@@ -40,13 +40,13 @@ ExperimentData(const ProblemDescDB& pddb,
 
 ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
-	       const boost::filesystem::path& data_prefix,
-	       const SharedResponseData& srd,
+               const boost::filesystem::path& data_prefix,
+               const SharedResponseData& srd,
                const StringArray& variance_types,
                short output_level,
                std::string scalar_data_filename):
-  calibrationDataFlag(true), 
-  numExperiments(num_experiments), numConfigVars(num_config_vars),
+  calibrationDataFlag(true), numExperiments(num_experiments),
+  numConfigVars(num_config_vars),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
   dataPathPrefix(data_prefix), scalarDataFilename(scalar_data_filename),
   scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
@@ -56,15 +56,31 @@ ExperimentData(size_t num_experiments, size_t num_config_vars,
 }
 
 ExperimentData::
-ExperimentData(size_t num_experiments, const IntResponseMap& all_responses):
-  calibrationDataFlag(false), 
-  numExperiments(num_experiments), numConfigVars(0),
-  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0)
+ExperimentData(size_t num_experiments, const SharedResponseData& srd,
+               const RealMatrix& config_vars,
+               const IntResponseMap& all_responses, short output_level):
+  calibrationDataFlag(false), numExperiments(num_experiments),
+  numConfigVars(config_vars.numRows()),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  scalarDataFormat(TABULAR_EXPER_ANNOT), scalarSigmaPerRow(0),
+  readSimFieldCoords(false), interpolateFlag(false), outputLevel(output_level)
 {
+  simulationSRD = srd.copy();
+  allConfigVars.resize(numExperiments);
+  for (size_t i=0; i<numExperiments; ++i) {
+    allConfigVars[i] =
+      Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(config_vars),
+                      (int) i);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " allConfigVars i " << allConfigVars[i] << '\n';
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Number of config vars " << numConfigVars << '\n';
+
+  // BMA TODO: This doesn't make an object of type ExperimentResponse!
   IntRespMCIter resp_it = all_responses.begin();
   IntRespMCIter resp_end = all_responses.end();
- 
-  for (size_t i =0 ; resp_it != resp_end, i<num_experiments; ++resp_it,++i ) 
+  for ( ; resp_it != resp_end; ++resp_it)
      allExperiments.push_back(resp_it->second);
 }
 
@@ -198,6 +214,18 @@ void ExperimentData::parse_sigma_types(const StringArray& sigma_types)
 
 }
 
+void ExperimentData::
+add_data(const RealVector& one_configvars, const Response& one_response)
+{
+  // BMA TODO: This doesn't make an object of type ExperimentResponse!
+  numExperiments += 1;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "numExperiments in add_data " << numExperiments << '\n';
+
+  allConfigVars.push_back(one_configvars);
+  allExperiments.push_back(one_response);
+}
+
 
 void ExperimentData::load_data(const std::string& context_message)
 {
@@ -269,7 +297,7 @@ void ExperimentData::load_data(const std::string& context_message)
     TabularIO::read_header_tabular(scalar_data_stream, scalarDataFormat);
   }
 
-  if (!scalar_data_file) { 
+  if (!scalar_data_file && numConfigVars > 0) { 
     // read all experiment config vars from new field data format files at once
     // TODO: have the user give a name for this file, since should be
     // the same for all responses.  Read from foo.<exp_num>.config. 
@@ -304,6 +332,14 @@ void ExperimentData::load_data(const std::string& context_message)
     if ( (numConfigVars > 0) && scalar_data_file ) {
       allConfigVars[exp_index].sizeUninitialized(numConfigVars);
       // TODO: try/catch
+      scalar_data_stream >> std::ws;
+      if ( scalar_data_stream.eof() ) {
+        Cerr << "\nError: End of file '" << scalarDataFilename
+          << "' reached before reading " 
+          << numExperiments << " sets of values."
+          << std::endl;
+        abort_handler(-1);
+      }
       scalar_data_stream >> allConfigVars[exp_index];
     }
     // TODO: else validate scalar vs. field configs?
@@ -336,13 +372,14 @@ void ExperimentData::load_data(const std::string& context_message)
 
   // verify that the two experiments have different data
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Experiment data summary:";
-    if (numConfigVars > 0)
-      Cout << "Values of experiment configuration variables:\n" 
-	   << allConfigVars << "\n";
+    Cout << "Experiment data summary:\n\n";
     for (size_t i=0; i<numExperiments; ++i) {
-      Cout << "\n  Data values, experiment " << i << "\n";
-      allExperiments[i].write(Cout);
+      if (numConfigVars > 0)
+	Cout << "  Experiment " << i+1 << " configuration variables:"<< "\n"
+	     << allConfigVars[i];
+      Cout << "  Experiment " << i+1 << " data values:"<< "\n";
+      write_data(Cout, allExperiments[i].function_values());
+      Cout << '\n';
     }
   }
 
@@ -363,8 +400,14 @@ void ExperimentData::load_data(const std::string& context_message)
       allExperiments[exp_ind].log_covariance_determinant();
   }
 
-  // TODO: exists extra data in scalar_data_stream
-
+  // Check and warn if extra data exists in scalar_data_stream
+  if (scalar_data_file) {
+    scalar_data_stream >> std::ws;
+    if ( !scalar_data_stream.eof() )
+      Cout << "\nWarning: Data file '" << scalarDataFilename
+        << "' contains extra data."
+        << std::endl;
+  }
 }
 
 
@@ -423,6 +466,14 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     // Non-field response sigmas; field response sigma scalars later get expanded into diagonals
     for (size_t fn_index = 0; fn_index < num_scalars; ++fn_index) {
       exp_values[fn_index].resize(1);
+      scalar_data_stream >> std::ws;
+      if ( scalar_data_stream.eof() ) {
+        Cerr << "\nError: End of file '" << scalarDataFilename
+          << "' reached before reading " 
+          << numExperiments << " sets of values."
+          << std::endl;
+        abort_handler(-1);
+      }
       scalar_data_stream >> exp_values[fn_index];
     }
     if (scalarSigmaPerRow > 0)
@@ -632,11 +683,12 @@ num_fields() const
   return  simulationSRD.num_field_response_groups();
 }
 
-const RealVector& ExperimentData::
-config_vars(size_t experiment)
+
+const std::vector<RealVector>& ExperimentData::config_vars() const
 {
-  return(allConfigVars[experiment]);
+  return allConfigVars;
 }
+
 
 void ExperimentData::per_exp_length(IntVector& per_length) const
 {
@@ -872,6 +924,26 @@ form_residuals(const Response& sim_resp, Response& residual_resp) const
 		    residual_resp );
     residual_resp_offset += num_fns_exp;
   }
+}
+
+
+void ExperimentData::
+form_residuals(const Response& sim_resp, const size_t curr_exp,
+	       Response& residual_resp) const
+{
+  // BMA: perhaps a better name would be per_exp_asv?
+  // BMA TODO: Make this call robust to zero and single experiment cases
+  ShortArray total_asv = determine_active_request(residual_resp);
+
+  IntVector experiment_lengths;
+  per_exp_length(experiment_lengths);
+  size_t residual_resp_offset = 0;
+  for (size_t exp_ind = 0; exp_ind < curr_exp; ++exp_ind){
+    size_t num_fns_exp = experiment_lengths[exp_ind]; // total length this exper
+    residual_resp_offset += num_fns_exp;
+  }
+  form_residuals(sim_resp, curr_exp, total_asv, residual_resp_offset,
+		 residual_resp);
 }
 
 

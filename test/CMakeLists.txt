@@ -382,6 +382,8 @@ set(dakota_test_executables
   cantilever
   container
   cyl_head
+  expdesign_high
+  expdesign_low
   gerstner_string
   herbie
   illumination

@@ -54,6 +54,19 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 	 << "different method for bound constrained problems." << std::endl;
     err_flag = true;
   }
+  // RWH: Check for finite bound constraints for Coliny global optimizers
+  if ( (methodName == COLINY_DIRECT) || (methodName == COLINY_EA) ) {
+    const RealVector& c_l_bnds = model.continuous_lower_bounds();
+    const RealVector& c_u_bnds = model.continuous_upper_bounds();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      if (c_l_bnds[i] <= -bigRealBoundSize || c_u_bnds[i] >= bigRealBoundSize) {
+        Cerr << "\nError: finite bound constraints are required for global optimizer "
+          << method_enum_to_string(methodName) << ".\n       Please specify both "
+          << "lower_bounds and upper_bounds." << std::endl;
+        err_flag = true;
+        break;
+      }
+  }
  
   // Check for nongradient method with speculative flag set
   if ( speculativeFlag && methodName < NONLINEAR_CG ) {

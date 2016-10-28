@@ -364,6 +364,12 @@ protected:
   void init_response(size_t num_recast_primary_fns, 
 		     size_t num_recast_secondary_fns, 
 		     short recast_resp_order, bool reshape_vars);
+
+  /// Reshape the RecastModel Response, assuming no change in variables
+  /// or derivative information
+  void reshape_response(size_t num_recast_primary_fns, 
+			size_t num_recast_secondary_fns);
+
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
@@ -377,6 +383,23 @@ protected:
 
   /// local evaluation id counter used for id mapping
   int recastModelEvalCntr;
+
+  /// map of recast active set passed to derived_evaluate_nowait().
+  /// Needed for currentResponse update in synchronization routines.
+  IntActiveSetMap recastSetMap;
+  /// map of recast variables used by derived_evaluate_nowait().
+  /// Needed for primaryRespMapping() and secondaryRespMapping() in
+  /// synchronization routines.
+  IntVariablesMap recastVarsMap;
+  /// map of subModel variables used by derived_evaluate_nowait().
+  /// Needed for primaryRespMapping() and secondaryRespMapping() in
+  /// synchronization routines.
+  IntVariablesMap subModelVarsMap;
+  /// map of recast responses used by RecastModel::derived_synchronize()
+  /// and RecastModel::derived_synchronize_nowait()
+  IntResponseMap recastResponseMap;
+  /// mapping from subModel evaluation ids to RecastModel evaluation ids
+  IntIntMap recastIdMap;
 
 private:
 
@@ -422,23 +445,6 @@ private:
   /// recast function using a nonlinear mapping.  Used in transform_set() to
   /// augment the subModel function value/gradient requirements.
   BoolDequeArray nonlinearRespMapping;
-
-  /// map of recast active set passed to derived_evaluate_nowait().
-  /// Needed for currentResponse update in synchronization routines.
-  IntActiveSetMap recastSetMap;
-  /// map of recast variables used by derived_evaluate_nowait().
-  /// Needed for primaryRespMapping() and secondaryRespMapping() in
-  /// synchronization routines.
-  IntVariablesMap recastVarsMap;
-  /// map of subModel variables used by derived_evaluate_nowait().
-  /// Needed for primaryRespMapping() and secondaryRespMapping() in
-  /// synchronization routines.
-  IntVariablesMap subModelVarsMap;
-  /// map of recast responses used by RecastModel::derived_synchronize()
-  /// and RecastModel::derived_synchronize_nowait()
-  IntResponseMap recastResponseMap;
-  /// mapping from subModel evaluation ids to RecastModel evaluation ids
-  IntIntMap recastIdMap;
 
   /// holds pointer for variables mapping function passed in ctor/initialize
   void (*variablesMapping)     (const Variables& recast_vars,

@@ -118,7 +118,7 @@ if(DAKOTA_SVN_checkout OR DAKOTA_GIT_checkout)
       "// -- AUTO GENERATED FILE; DO NOT EDIT --
       #include \"DakotaBuildInfo.hpp\"
       std::string Dakota::DakotaBuildInfo::releaseNum=\"${Dakota_VERSION_SRC}\";
-      std::string Dakota::DakotaBuildInfo::revision=${Dakota_GIT_REV};
+      std::string Dakota::DakotaBuildInfo::revision=\"${Dakota_GIT_REV}\";
       std::string Dakota::DakotaBuildInfo::releaseDate=\"${Dakota_RELEASE_DATE}\";
       " )
   endif(DAKOTA_SVN_checkout)
@@ -531,7 +531,6 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
     NonDCalibration.cpp NonDBayesCalibration.cpp NonDWASABIBayesCalibration.cpp
-    NonDExpDesignBayesCalibration.cpp
     NonDSampling.cpp NonDLHSSampling.cpp
     NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp

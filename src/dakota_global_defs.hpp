@@ -46,8 +46,10 @@ extern double HALF_LOG_2PI;
 //extern PRPCache data_pairs;
 //extern ParallelLibrary dummy_lib;
 
-/// enum for Dakota abort reasons; using negative numbers to avoid
-/// clash with signal codes 1--64 in signum.h
+/// enum for Dakota abort reasons; using negative numbers to
+/// distinguish Dakota exit states from signals / uncaught signals.
+/// These need to be in range [-63, -1], so exit code (256+enum) is in
+/// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
   METHOD_ERROR    = -7, // error with Iterator/MetaIterator
   MODEL_ERROR     = -6, // error within Model recursion
@@ -69,7 +71,7 @@ enum {CV_ID_DEFAULT = 0, MINIMUM_METRIC, RELATIVE_TOLERANCE, DECREASE_TOLERANCE}
 extern short abort_mode;
 
 /// throw or exit depending on abort_mode
-void abort_throw_or_exit(int code);
+void abort_throw_or_exit(int dakota_code);
 
 
 /// base class for Dakota file read exceptions (to allow catching both

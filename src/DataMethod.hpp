@@ -93,7 +93,6 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
        // Bayesian inference algorithms:
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_QUESO, SUBMETHOD_WASABI,
-       SUBMETHOD_EXPDESIGN_BAYES,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_NIP, SUBMETHOD_SQP, SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBO,
        // verification approaches:
@@ -738,6 +737,8 @@ public:
   int neighborOrder;
   /// the \c DISPLAY_ALL_EVAL specification for NOMAD
   bool showAllEval;
+  /// the \c HAS_SGTE specification for NOMAD
+  String useSurrogate;
 
   // NonD & DACE
 
@@ -877,6 +878,8 @@ public:
   unsigned short sampleType;
   /// whether to generate D-optimal designs
   bool dOptimal;
+  /// number of candidate designss in D-optimal design selection
+  size_t numCandidateDesigns;
   /// the type of limit state search in \ref MethodNonDLocalRel
   /// (\c x_taylor_mean, \c x_taylor_mpp, \c x_two_point, \c u_taylor_mean,
   /// \c u_taylor_mpp, \c u_two_point, or \c no_approx) or
@@ -969,6 +972,18 @@ public:
   int burnInSamples;
   /// period or skip in post-processing the acceptance chain
   int subSamplingPeriod;
+  /// whether to perform adaptive Bayesian design of experiments
+  bool adaptExpDesign;
+  /// whether to import candidate design points for adaptive Bayesian experimtal
+  /// design
+  String importCandPtsFile;
+  /// tabular format for the candidate design points import file
+  unsigned short importCandFormat;
+  /// number of candidate designs for adaptive Bayesian experimental design
+  size_t numCandidates;
+  /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
+  //experimental design
+  size_t maxHifiEvals;
 
   // DREAM sub-specification
 

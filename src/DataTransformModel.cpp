@@ -49,10 +49,25 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 {
   dtModelInstance = this;
 
+  // register state variables as inactive vars if config vars are present
+  // BMA TODO: correctly manage the view if relaxed, also review recursion
+  if (!expData.config_vars().empty()) {
+    subModel.inactive_view(MIXED_STATE);
+    int num_state_vars =
+      subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
+    size_t num_config_vars = expData.config_vars()[0].length();
+    if (num_state_vars != num_config_vars) {
+      Cerr << "\nError: (DataTransformModel) Number of continuous state "
+	   << "variables = " << num_state_vars << " must match\n       number "
+	   << "of configuration variables = " << num_config_vars << "\n";
+      abort_handler(-1);
+    }
+  }
+
   size_t num_submodel_primary = sub_model.num_primary_fns();
   // the RecastModel will have one residual per experiment datum
   size_t num_recast_primary = expData.num_total_exppoints(),
-    num_secondary = sub_model.num_functions() - sub_model.num_primary_fns(),
+    num_secondary = sub_model.num_secondary_fns(),
     num_recast_fns = num_recast_primary + num_secondary;
 
   // ---
@@ -198,6 +213,34 @@ data_transform_response(const Variables& sub_model_vars,
 }
 
 
+void DataTransformModel::data_resize()
+{
+  // Actions from ctor chain to check:
+  // RecastModel ctor
+  // nonlinear_resp_mapping
+  // update primary resp mapping
+  // update secondary resp mapping, nonlinear resp mapping
+
+  // RecastModel init_maps
+
+  // expand arrays
+  if (numHyperparams > 0 || obsErrorMultiplierMode > CALIBRATE_NONE) {
+    // TODO: We could support update without size change, or even with
+    // size change in the case of only one multiplier.  Or later could
+    // allow updates including the whole parameter domain change.
+    Cerr << "\nError (DataTransformModel): data updates not supported when "
+	 << "calibrating\nhyper-parameters.";
+    abort_handler(-1);
+  }
+
+  // there is no change in variables or derivatives for now
+  reshape_response(expData.num_total_exppoints(),
+		   subModel.num_secondary_fns());
+
+}
+
+
+
 /** Incorporate the hyper parameters into Variables, assuming they are at the 
     end of the active continuous variables.  For example, append them to 
     continuous design or continuous aleatory uncertain. */ 
@@ -313,6 +356,184 @@ gen_primary_resp_map(const SharedResponseData& srd,
 }
 
 
+/** Blocking evaluation over all experiment configurations to compute
+    a single set of expanded residuals.  If the subModel supports
+    asynchronous evaluate_nowait(), do the configuration evals
+    concurrently and then synchronize. */
+void DataTransformModel::derived_evaluate(const ActiveSet& set)
+{
+  // If no configuration variables, use base class implementation
+  if (expData.config_vars().empty()) 
+    RecastModel::derived_evaluate(set);
+  else {
+    ++recastModelEvalCntr;
+
+    // transform from recast (Iterator) to sub-model (user) variables;
+    // NOTE: these are the same for all configurations
+    transform_variables(currentVariables, subModel.current_variables());
+
+    // the incoming set is for the recast problem, which must be converted
+    // back to the underlying response set for evaluation by the subModel.
+    ActiveSet sub_model_set;
+    transform_set(currentVariables, set, sub_model_set);
+    // update currentResponse early as it's used in form_residuals
+    currentResponse.active_set(set);
+
+    if (outputLevel >= VERBOSE_OUTPUT) {
+      Cout << "\n------------------------------------";
+      Cout << "\nEvaluating model for each experiment";
+      Cout << "\n------------------------------------" << std::endl;
+    }
+
+    size_t num_exp = expData.num_experiments();
+    for (size_t i=0; i<num_exp; ++i) {
+      // augment the active variables with the configuration variables
+      Model::inactive_variables(expData.config_vars()[i], subModel);
+
+      if (subModel.asynch_flag()) {
+        subModel.evaluate_nowait(sub_model_set);
+        // be able to map the subModel's evalID back to the right
+        // recastModel eval and omit evals we didn't schedule
+        // Don't need to cache ActiveSet or Variables
+        recastIdMap[subModel.evaluation_id()] = recastModelEvalCntr;
+      }
+      else {
+        // No need to cache when the subModel is synchronous; populate
+        // a subset of residuals for each subModel eval
+        subModel.evaluate(sub_model_set);
+        // recast the subModel response ("user space") into the currentResponse
+        // ("iterator space"); populate one experiment's residuals
+        expData.form_residuals(subModel.current_response(), i, currentResponse);
+      }
+    }
+
+    if (subModel.asynch_flag()) {
+      // Synchronize and map all configurations to the single eval's residuals
+      // BMA TODO ask MSE: Will these always be in the right order (seems so);
+      // it's important to map the responses in the right order (not
+      // checking yet)
+
+      // In this case we don't need a mapping to a recast ID, just an
+      // IntResponseMap with the subset of evals we own; filter in-place
+      const IntResponseMap& submodel_resp = filter_submodel_responses();
+      transform_response_map(submodel_resp, currentVariables, currentResponse);
+    }
+    else {
+      // BMA TODO: doesn't need submodel vars...
+      scale_response(subModel.current_variables(), currentVariables, 
+                     currentResponse);
+    }
+
+    print_residual_response(currentResponse);
+
+    // BMA TODO:
+    // We know that DataTransformModel didn't register a secondary
+    // transformation, but what if the submodel constraints differ per
+    // configuration?  Need to aggregate/expand the constraints!
+    //RecastModel::transform_secondary_response();
+  }
+}
+
+
+/** Non-blocking evaluation (scheduling) over all experiment
+    configurations.  Assumes that if this model supports nowait, its
+    subModel does too and schedules them all. */
+void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
+{
+  // BMA ask MSE: Is it possible RecastModel is asynch, but not subModel?
+
+  // If no configuration variables, use base class implementation
+  if (expData.config_vars().empty())
+    RecastModel::derived_evaluate_nowait(set);
+  else {
+    ++recastModelEvalCntr;
+
+    // transform from recast (Iterator) to sub-model (user) variables
+    // NOTE: these are the same for all configurations
+    transform_variables(currentVariables, subModel.current_variables());
+
+    // the incoming set is for the recast problem, which must be converted
+    // back to the underlying response set for evaluation by the subModel.
+    ActiveSet sub_model_set;
+    transform_set(currentVariables, set, sub_model_set);
+
+    if (outputLevel >= VERBOSE_OUTPUT) {
+      Cout << "\n------------------------------------";
+      Cout << "\nEvaluating model for each experiment";
+      Cout << "\n------------------------------------" << std::endl;
+    }
+
+    size_t num_exp = expData.num_experiments();
+    for (size_t i=0; i<num_exp; ++i) {
+      // augment the active variables with the configuration variables
+      Model::inactive_variables(expData.config_vars()[i], subModel);
+
+      subModel.evaluate_nowait(sub_model_set);
+
+      // be able to map the subModel's evalID back to the right
+      // recastModel eval
+      recastIdMap[subModel.evaluation_id()] = recastModelEvalCntr;
+    }
+
+    // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
+    //if (respMapping) {
+    recastSetMap[recastModelEvalCntr]  = set;
+    recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
+    // This RecastModel doens't map variables in a way that needs these
+    // if (variablesMapping)
+    // 	subModelVarsMap[recastModelEvalCntr] =
+    // 	  subModel.current_variables().copy();
+    //}
+  }
+}
+
+
+/** Collect all the subModel evals and build the residual sets for all
+    evaluations.  Like rekey functions in DakotaModel, but many
+    sub-model to one recast-model.  For the blocking synchronize case,
+    we force the subModel to synch and have all needed data. */
+const IntResponseMap& DataTransformModel::derived_synchronize()
+{
+  if (expData.config_vars().empty())
+    return RecastModel::derived_synchronize();
+  else {
+    // We don't even really need the recast ID lookup nor the cached
+    // data structure, but want to be tolerant of evals that this
+    // Model didn't schedule (and it simplifies the indexing logic).
+    bool deep_copy = false;
+    cache_submodel_responses(subModel.synchronize(), deep_copy);
+
+    // populate recastResponseMap with all evals
+    bool collect_all = true;
+    collect_residuals(collect_all);
+  }
+
+  return recastResponseMap;
+}
+
+
+/** Collect any completed subModel evals and build the residual sets
+    for any fully completed evaluations.  Like rekey functions in
+    DakotaModel, but many sub-model to one recast-model.  We do not
+    force the subModel to synch. */
+const IntResponseMap& DataTransformModel::derived_synchronize_nowait()
+{
+  if (expData.config_vars().empty())
+    return RecastModel::derived_synchronize_nowait();
+  else {
+    // need deep copy in case all the configurations aren't yet complete
+    bool deep_copy = true;
+    cache_submodel_responses(subModel.synchronize_nowait(), deep_copy);
+
+    // populate recastResponseMap with any fully completed evals
+    bool collect_all = false;
+    collect_residuals(collect_all);
+  }
+
+  return recastResponseMap;
+}
+
+
 void DataTransformModel::vars_mapping(const Variables& recast_vars, 
 				      Variables& submodel_vars)
 {
@@ -377,8 +598,14 @@ primary_resp_differencer(const Variables& submodel_vars,
 	 << std::endl;
   }
 
-  dtModelInstance->data_difference_core(submodel_vars, recast_vars, 
-					submodel_response, recast_response);
+  // form residuals (and gradients/Hessians) from the simulation
+  // response this call has to be careful not to resize gradients and
+  // Hessians in a way that tramples hyper-parameters: only update
+  // submodel cv entries, leaving objects sized
+  dtModelInstance->expData.form_residuals(submodel_response, recast_response);
+
+  // scale by covariance, including hyper-parameter multipliers
+  dtModelInstance->scale_response(submodel_vars, recast_vars, recast_response);
 
   if (dtModelInstance->outputLevel >= VERBOSE_OUTPUT && 
       dtModelInstance->subordinate_model().num_primary_fns() > 0) {
@@ -395,21 +622,140 @@ primary_resp_differencer(const Variables& submodel_vars,
 
 }
 
-// BMA TODO: decide how much output to have and where...
 
-/** quiet version of function used in recovery of function values */
-void DataTransformModel::
-data_difference_core(const Variables& submodel_vars, 
-                     const Variables& recast_vars,
-                     const Response& submodel_response, 
-                     Response& recast_response)
+/** (We don't quite want the rekey behavior since multiple subModel
+    evals map to one recast eval.) */
+const IntResponseMap& DataTransformModel::filter_submodel_responses()
 {
-  // form residuals (and gradients/Hessians) from the simulation
-  // response this call has to be careful not to resize gradients and
-  // Hessians in a way that tramples hyper-parameters: only update
-  // submodel cv entries, leaving objects sized
-  expData.form_residuals(submodel_response, recast_response);
+  const IntResponseMap& sm_resp_map = subModel.synchronize();
+  // Not using BOOST_FOREACH due to potential for iterator invalidation in 
+  // erase in cache_unmatched_response (shouldn't be a concern with map?)
+  IntRespMCIter sm_r_it = sm_resp_map.begin();
+  IntRespMCIter sm_r_end = sm_resp_map.end();
+  while (sm_r_it != sm_r_end) {
+    int sm_id = sm_r_it->first;
+    IntIntMIter id_it = recastIdMap.find(sm_id);
+    if (id_it != recastIdMap.end()) {
+      // no need to cache, just leave in the subModel's IntResponseMap
+      recastIdMap.erase(sm_id);
+      ++sm_r_it;
+    }
+    else {
+      ++sm_r_it; // prior to invalidation from erase()
+      subModel.cache_unmatched_response(sm_id);
+    }
+  }
+  return sm_resp_map;
+}
 
+
+void DataTransformModel::
+cache_submodel_responses(const IntResponseMap& sm_resp_map, bool deep_copy)
+{
+  // Not using BOOST_FOREACH due to potential for iterator invalidation in 
+  // erase in cache_unmatched_response (shouldn't be a concern with map?)
+  IntRespMCIter sm_r_it = sm_resp_map.begin();
+  IntRespMCIter sm_r_end = sm_resp_map.end();
+  while (sm_r_it != sm_r_end) {
+    int sm_id = sm_r_it->first;
+    IntIntMIter id_it = recastIdMap.find(sm_id);
+    if (id_it != recastIdMap.end()) {
+      int recast_id = id_it->second;
+
+      // this is our eval, cache it as <recast_id, <sm_id, Response> >
+      if (cachedResp.find(recast_id) == cachedResp.end()) {
+        // insert a new recast_id instance
+        cachedResp[recast_id] = IntResponseMap();
+        cachedResp[recast_id][sm_id] = deep_copy ? sm_r_it->second.copy() :
+          sm_r_it->second;
+      }
+      else
+        cachedResp[recast_id][sm_id] = deep_copy ? sm_r_it->second.copy() :
+          sm_r_it->second;
+      recastIdMap.erase(sm_id);
+      ++sm_r_it;
+    }
+    else {
+      ++sm_r_it;
+      subModel.cache_unmatched_response(sm_id);
+    }
+  }
+}
+
+
+void DataTransformModel::collect_residuals(bool collect_all)
+{
+  recastResponseMap.clear();
+
+  BOOST_FOREACH(IntIntResponseMapMap::value_type& cr_pair, cachedResp) {
+    int recast_id = cr_pair.first;  // (.second is a subModel IntResponseMap)
+    size_t num_exp = expData.num_experiments();
+
+    // the blocking synch case requires all data present
+    if (collect_all && cr_pair.second.size() != num_exp) {
+      Cerr << "\nError (DataTransformModel): Sub-model returned " 
+           << cr_pair.second.size() << "evaluations,\n  but have " << num_exp 
+           << " experiment configurations.\n";
+      abort_handler(-1);
+    }
+
+    // populate recastResponseMap with any recast evals that have all
+    // their configs complete (only complete/clear those with finished
+    // experiment configs)
+    if (cr_pair.second.size() == num_exp) {
+
+      IntASMIter s_it = recastSetMap.find(recast_id);
+      IntVarsMIter v_it = recastVarsMap.find(recast_id);
+
+      recastResponseMap[recast_id] = currentResponse.copy();
+      recastResponseMap[recast_id].active_set(s_it->second);
+
+      transform_response_map(cr_pair.second, v_it->second,
+                             recastResponseMap[recast_id]);
+
+      // cleanup (could do clear() at end)
+      recastVarsMap.erase(v_it);
+      recastSetMap.erase(s_it);
+      // BMA TODO: consider iterator here instead of value?
+      cachedResp.erase(cr_pair.first);
+
+      // BMA TODO:
+      //RecastModel::transform_secondary_response();
+
+      print_residual_response(recastResponseMap[recast_id]);
+    }
+
+  }
+}
+
+
+/** This transformation assumes the residuals are in submodel eval_id
+    order. */
+void DataTransformModel::
+transform_response_map(const IntResponseMap& submodel_resp,
+                       const Variables& recast_vars,
+                       Response& residual_resp)
+{
+  size_t num_exp = expData.num_experiments();
+  if (submodel_resp.size() != num_exp) {
+    // unsupported case: could (shouldn't) happen in complex MF workflows
+    Cerr << "\nError (DataTransformModel): sub model evals wrong size.\n";
+    abort_handler(-1);
+  }
+  IntRespMCIter sm_eval_it = submodel_resp.begin();
+  for (size_t i=0; i<num_exp; ++i, ++sm_eval_it)
+    expData.form_residuals(sm_eval_it->second, i, residual_resp);
+
+  // scale by covariance, including hyper-parameter multipliers
+  // BMA TODO: doesn't need submodel vars...
+  scale_response(subModel.current_variables(), recast_vars, residual_resp);
+}
+
+void DataTransformModel::
+scale_response(const Variables& submodel_vars, 
+	       const Variables& recast_vars,
+	       Response& recast_response)
+{
   // scale by (error covariance)^{-1/2}
   if (expData.variance_active())
     expData.scale_residuals(recast_response);
@@ -519,6 +865,30 @@ expand_array(const SharedResponseData& srd, const T& submodel_array,
       recast_array[calib_term_ind++] = submodel_array[sc_ind];
     for (size_t fg_ind = 0; fg_ind < num_field_groups; ++fg_ind)
       recast_array[calib_term_ind++] = submodel_array[num_scalar + fg_ind];
+  }
+}
+
+
+void DataTransformModel::print_residual_response(const Response& resid_resp)
+{
+  if (outputLevel >= VERBOSE_OUTPUT) {
+    Cout << "\n-----------------------------------------------------------";
+    Cout << "\nPost-processing Function Evaluation: Data Transformation";
+    Cout << "\n-----------------------------------------------------------"
+	 << std::endl;
+  }
+
+  if (outputLevel >= VERBOSE_OUTPUT &&
+      subordinate_model().num_primary_fns() > 0) {
+    Cout << "Calibration data transformation; residuals:\n";
+    write_data(Cout, resid_resp.function_values(),
+	       resid_resp.function_labels());
+    Cout << std::endl;
+  }
+  if (outputLevel >= DEBUG_OUTPUT &&
+      subordinate_model().num_primary_fns() > 0) {
+    Cout << "Calibration data transformation; full response:\n"
+	 << resid_resp << std::endl;
   }
 }
 

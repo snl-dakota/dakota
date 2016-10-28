@@ -22,7 +22,7 @@ method,
 #    initial_samples = 400                          #s1,#s2,#s3
 #      refinement_samples = 200 100                 #s1,#s3
       d_optimal                                     
-      oversample_ratio 5.0                          #s0
+        candidate_designs = 50
 	  response_levels = .1 1. 50. 100. 500. 1000.
 	  output silent
 

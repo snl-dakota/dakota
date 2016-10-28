@@ -1,9 +1,13 @@
 #@ s*: Label=FastTest
 #@ s0: ExecArgs='-pre_run ::dakota_tabular_io.0.dat -run -post_run'
+#@ s0: CheckOutput='dakota.0.log'
 #@ s2: ExecArgs='-post_run dakota_tabular_io.1.dat::'
+#@ s3: ExecArgs='-output dakota.3.log' CheckOutput='dakota.3.log'
+#@ s9: CheckOutput='dakota.9.log'
 
 # Test tabular output/input for annotated file formats
 # (adapted from dakota_uq_textbook_lhs_approx.in)
+# Also test command-line vs. input file run modes and output control
 
 # 0: LHS; generate tabular output using pre-run mode; must also run
 #    -run and -post_run so output is generated for test diffing
@@ -33,6 +37,8 @@ environment,
 #	      custom_annotated eval_id header			#s6
 #	    tabular_data_file = 'dakota_tabular_io.8.dat'  	#s8
 #	      custom_annotated eval_id interface_id		#s8
+    output_file = 'dakota.0.log'                      #s0
+#   output_file = 'dakota.9.log'                      #s9
 #	  method_pointer = 'UQ'					#s4,#s9
 #	  pre_run						#s5
 #	    output 'dakota_tabular_io.5.dat'			#s5

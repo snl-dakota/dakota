@@ -125,22 +125,47 @@ message( "CTEST_CMAKE_GENERATOR = ${CTEST_CMAKE_GENERATOR}" )
 #*****************************************************************
 # Set CTEST_BUILD_COMMAND and CTEST_TEST_COMMAND
 
-# First set parallel level if not already set
-if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
- set( DAKOTA_CTEST_PARALLEL_LEVEL 1 )
+# Set parallel level for building (MAKE) and testing (CTEST) 
+# if not already set
+if ( NOT DAKOTA_MAKE_PARALLEL_LEVEL )
 
+ # Linux
   if(EXISTS "/proc/cpuinfo")
     file(STRINGS "/proc/cpuinfo" cpuInfo REGEX "processor" )
     list( LENGTH cpuInfo processorCount )
-    if ( processorCount GREATER 1)
-       math(EXPR DAKOTA_CTEST_PARALLEL_LEVEL
-       		 "${processorCount}*3/4")
-    endif()     
+
+  # Mac
+  elseif(APPLE)
+    message ("DENA: in APPLE")
+    set(sysctl_cmd sysctl)
+    execute_process(COMMAND ${sysctl_cmd} -n hw.ncpu 
+                      OUTPUT_VARIABLE processorCount)
+
+  # Windows
+  elseif(WIN32)
+    set(processorCount "$ENV{NUMBER_OF_PROCESSORS}")
+
+  # platform unknown
+  else()
+    set(processorCount 1)
   endif()
+
+  # Increase make parallel level if possible
+  if ( processorCount GREATER 1)
+    math(EXPR DAKOTA_MAKE_PARALLEL_LEVEL
+        "${processorCount}*3/4")
+  else()
+    set( DAKOTA_MAKE_PARALLEL_LEVEL 1 )
+  endif()
+
+endif()
+
+if ( NOT DAKOTA_CTEST_PARALLEL_LEVEL )
+  set( DAKOTA_CTEST_PARALLEL_LEVEL ${DAKOTA_MAKE_PARALLEL_LEVEL} )
 endif()
 
 if ( NOT CTEST_BUILD_COMMAND )
-  set( CTEST_BUILD_COMMAND "make -j${DAKOTA_CTEST_PARALLEL_LEVEL}" )
+  set( CTEST_BUILD_COMMAND "make -j${DAKOTA_MAKE_PARALLEL_LEVEL}" )
 endif()
 
 # ***************************************************************************
@@ -168,10 +193,6 @@ set_configure_command( ${DAKOTA_CMAKE_BUILD_TYPE} REQUIRED )
 
 if ( DAKOTA_CMAKE_HOSTFILE )
   set_configure_command( ${DAKOTA_CMAKE_HOSTFILE} SUBDIR platforms )
-endif()
-
-if ( DAKOTA_CMAKE_HOSTFILE )
-  set_configure_command( “JenkinsBuild.cmake” )
 endif()
 
 set(CTEST_CONFIGURE_COMMAND
@@ -410,9 +431,9 @@ foreach(v
     DAKOTA_CMAKE_BUILD_TYPE
     DAKOTA_CTEST_PROJECT_TAG
     DAKOTA_CTEST_PARALLEL_LEVEL
+    DAKOTA_MAKE_PARALLEL_LEVEL
     DAKOTA_CTEST_REGEXP
     DAKOTA_CTEST_TAG
-    DAKOTA_DEBUG
     DAKOTA_DO_TEST
     DAKOTA_TEST_SBATCH
     DAKOTA_DO_PACK

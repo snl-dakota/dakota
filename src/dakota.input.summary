@@ -1,11 +1,28 @@
 KEYWORD01 environment
-	[ check ]
+	[ tabular_data ALIAS tabular_graphics_data
+	  [ tabular_data_file ALIAS tabular_graphics_file STRING ]
+	  [ annotated
+	  |
+	  ( custom_annotated
+	    [ header ]
+	    [ eval_id ]
+	    [ interface_id ]
+	    ]
+	  |
+	  ( freeform
+	  ]
 	[ output_file STRING ]
 	[ error_file STRING ]
 	[ read_restart STRING
 	  [ stop_restart INTEGER >= 0 ]
 	  ]
 	[ write_restart STRING ]
+	[ output_precision INTEGER >= 0 ]
+	[ results_output
+	  [ results_output_file STRING ]
+	  ]
+	[ graphics ]
+	[ check ]
 	[ pre_run
 	  [ input STRING ]
 	  [ output STRING
@@ -37,23 +54,6 @@ KEYWORD01 environment
 	    ( freeform
 	    ]
 	  [ output STRING ]
-	  ]
-	[ graphics ]
-	[ tabular_data ALIAS tabular_graphics_data
-	  [ tabular_data_file ALIAS tabular_graphics_file STRING ]
-	  [ annotated
-	  |
-	  ( custom_annotated
-	    [ header ]
-	    [ eval_id ]
-	    [ interface_id ]
-	    ]
-	  |
-	  ( freeform
-	  ]
-	[ output_precision INTEGER >= 0 ]
-	[ results_output
-	  [ results_output_file STRING ]
 	  ]
 	[ top_method_pointer ALIAS method_pointer STRING ]
 
@@ -369,6 +369,10 @@ KEYWORD12 method
 	  [ variable_neighborhood_search REAL ]
 	  [ neighbor_order INTEGER > 0 ]
 	  [ display_all_evaluations ]
+	  [ use_surrogate
+	    inform_search
+	    | optimize
+	    ]
 	  [ max_iterations INTEGER >= 0 ]
 	  [ max_function_evaluations INTEGER >= 0 ]
 	  [ scaling ]
@@ -1044,7 +1048,8 @@ KEYWORD12 method
 	    ]
 	  [ refinement_samples INTEGERLIST ]
 	  [ d_optimal
-	    [ oversample_ratio REAL ]
+	    [ candidate_designs INTEGER > 0
+	    | leja_oversample_ratio REAL ]
 	    ]
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
@@ -1802,12 +1807,22 @@ KEYWORD12 method
 	      ( freeform
 	      ]
 	    )
-	  |
-	  ( experimental_design
+	  [ experimental_design
 	    initial_samples ALIAS samples INTEGER
-	    [ seed INTEGER > 0 ]
-	    [ low_fidelity_model_pointer STRING ]
-	    )
+	    num_candidates INTEGER >= 0
+	    [ max_hifi_evaluations INTEGER >= 0 ]
+	    [ import_candidate_points_file STRING
+	      [ annotated
+	      |
+	      ( custom_annotated
+		[ header ]
+		[ eval_id ]
+		[ interface_id ]
+		]
+	      |
+	      ( freeform
+	      ]
+	    ]
 	  [ standardized_space ]
 	  [ calibrate_error_multipliers
 	    one
@@ -2091,9 +2106,6 @@ KEYWORD12 method
 
 KEYWORD model
 	[ id_model STRING ]
-	[ variables_pointer STRING ]
-	[ responses_pointer STRING ]
-	[ hierarchical_tagging ]
 	( single ALIAS simulation
 	  [ interface_pointer STRING ]
 	  [ solution_level_control STRING
@@ -2395,6 +2407,9 @@ KEYWORD model
 	  [ truncation_tolerance REAL ]
 	  propagation_model_pointer STRING
 	  )
+	[ variables_pointer STRING ]
+	[ responses_pointer STRING ]
+	[ hierarchical_tagging ]
 
 KEYWORD12 variables
 	[ id_variables STRING ]

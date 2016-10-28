@@ -60,17 +60,8 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
   cerrRedirector(dakota_cerr, &std::cerr),
   graphicsCntr(1), tabularCntrLabel("eval_id"), outputLevel(NORMAL_OUTPUT)
 {
-  //  if output file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
-    if (outputLevel >= DEBUG_OUTPUT) 
-      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
-		<< std::endl;
-    coutRedirector.push_back(prog_opts.output_file());
-  }
-
-  //  if error file specified, redirect immediately, possibly rebind later
-  if (worldRank == 0 && prog_opts.user_stderr_redirect())
-    cerrRedirector.push_back(prog_opts.error_file());
+  // This call will redirect based on command-line options
+  initial_redirects(prog_opts);
 
   if (!mpirunFlag
       // || (mpirunFlag && worldRank == 0) 
@@ -82,6 +73,28 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 OutputManager::~OutputManager()
 {
   close_streams();
+}
+
+
+void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
+{
+  // This will duplicate a redirector for the case of command-line
+  // option as that takes precedence over input file / environment and
+  // the name won't have changed, but the user-requested redirect flag
+  // will still be true.  This behavior is okay because the redirector
+  // will see the same filename and not reopen the file.
+
+  //  if output file specified, redirect immediately, possibly rebind later
+  if (worldRank == 0 && prog_opts.user_stdout_redirect()) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      std::cout << "\nRedirecting Cout on rank 0 to " << prog_opts.output_file()
+                << std::endl;
+    coutRedirector.push_back(prog_opts.output_file());
+  }
+
+  //  if error file specified, redirect immediately, possibly rebind later
+  if (worldRank == 0 && prog_opts.user_stderr_redirect())
+    cerrRedirector.push_back(prog_opts.error_file());
 }
 
 
@@ -112,8 +125,11 @@ void OutputManager::close_streams()
 }
 
 
-void OutputManager::parse(const ProblemDescDB& problem_db)
+void OutputManager::parse(const ProgramOptions& prog_opts, 
+                          const ProblemDescDB& problem_db)
 {
+  initial_redirects(prog_opts);
+
   graph2DFlag = problem_db.get_bool("environment.graphics");
   tabularDataFlag = problem_db.get_bool("environment.tabular_graphics_data");
   tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
