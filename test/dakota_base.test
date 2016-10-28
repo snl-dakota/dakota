@@ -8902,14 +8902,14 @@ Test Number 4 succeeded
 <<<<< Best data captured at function evaluation 1
 dakota_mlmf_opt.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (LO_I): 8394 total (5696 new, 2698 duplicate)
-<<<<< Function evaluation summary (HI_I): 5373 total (5373 new, 0 duplicate)
+<<<<< Function evaluation summary (LO_I): 617 total (510 new, 107 duplicate)
+<<<<< Function evaluation summary (HI_I): 213 total (213 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000003182e+00 x1
-                      1.0000006396e+00 x2
+                      9.9982940945e-01 x1
+                      9.9965193248e-01 x2
 <<<<< Best objective function  =
-                      1.0225278174e-13
-<<<<< Best data not found in evaluation cache
+                      3.3883574493e-08
+<<<<< Best data captured at function evaluation 213
 dakota_mogatest.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)
@@ -16491,7 +16491,7 @@ Test Number 0 succeeded
                       3.8950353572e-01
 <<<<< Best data captured at function evaluation 36
 Test Number 1 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 89 total (39 new, 50 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 64 total (39 new, 25 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 50 total (50 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9104305942e+01 x1
@@ -16504,7 +16504,7 @@ Test Number 1 succeeded
                       3.8903659526e-01
 <<<<< Best data captured at function evaluation 50
 Test Number 2 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 95 total (48 new, 47 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 77 total (48 new, 29 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 31 total (27 new, 4 duplicate)
 <<<<< Best parameters          =
                       7.8431699712e+01 x1
@@ -16517,7 +16517,7 @@ Test Number 2 succeeded
                       2.9574022587e-01
 <<<<< Best data captured at function evaluation 26
 Test Number 3 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 56 total (21 new, 35 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 42 total (21 new, 21 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 21 total (15 new, 6 duplicate)
 <<<<< Best parameters          =
                       4.9567968139e+01 x1
@@ -16530,7 +16530,7 @@ Test Number 3 succeeded
                       3.7948174962e-01
 <<<<< Best data captured at function evaluation 16
 Test Number 4 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 173 total (127 new, 46 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 151 total (127 new, 24 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 42 total (42 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9617979615e+01 x1
@@ -16543,7 +16543,7 @@ Test Number 4 succeeded
                       3.7810800888e-01
 <<<<< Best data captured at function evaluation 42
 Test Number 5 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 115 total (91 new, 24 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 103 total (91 new, 12 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.1000000000e+01 x1
@@ -16556,7 +16556,7 @@ Test Number 5 succeeded
                       4.8143237904e-01
 <<<<< Best data captured at function evaluation 14
 Test Number 6 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 71 total (31 new, 40 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 51 total (31 new, 20 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 40 total (40 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.9099480777e+01 x1
@@ -16569,7 +16569,7 @@ Test Number 6 succeeded
                       3.8913938868e-01
 <<<<< Best data captured at function evaluation 40
 Test Number 7 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 326 total (279 new, 47 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 305 total (279 new, 26 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 36 total (32 new, 4 duplicate)
 <<<<< Best parameters          =
                       4.9239916971e+01 x1
