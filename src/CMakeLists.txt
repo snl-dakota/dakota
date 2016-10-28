@@ -274,13 +274,13 @@ set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING
 if(DAKOTA_USAGE_TRACKING)
   find_package(CURL)
   if(CURL_FOUND)
-    message(STATUS "DAKOTA usage tracking enabled with <URL;proxy> = <${TRACKING_LOCATION_AND_PROXY}>")
+    message(STATUS "Dakota usage tracking enabled with URL/proxies = <${TRACKING_LOCATION_AND_PROXY}>")
     add_definitions("-DDAKOTA_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
     list(APPEND EXT_TPL_LIBS ${CURL_LIBRARIES})
   else()
     message(WARNING "Tracking requested, but curl not found; disabling.")
     set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL 
-      "Toggle DAKOTA usage tracking, default is disabled." FORCE)
+      "Toggle Dakota usage tracking, default is disabled." FORCE)
   endif(CURL_FOUND)
 endif(DAKOTA_USAGE_TRACKING)
 

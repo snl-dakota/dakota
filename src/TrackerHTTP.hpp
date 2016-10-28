@@ -15,6 +15,8 @@
 #define TRACKER_HTTP_H
 
 #include <string>
+#include <vector>
+#include <list>
 #include <curl/curl.h>
 #include "dakota_system_defs.hpp"
 
@@ -65,9 +67,14 @@ private:
   void send_data_using_get(const std::string& urltopost) const;
 
   /// POST separate location and query; datatopost="name=daniel&project=curl"
-  void send_data_using_post(const std::string& datatopost) const;
+  void send_data_using_post(const std::string& datatopost);
 
+  /// Split a string on a delimiter and place tokens in elems
+  void split_string(const std::string &s, const char &delim, 
+		std::vector<std::string> &elems);
 
+  /// Populate serverList with tracker and proxy URLs from dt
+  void parse_tracking_string(const std::string &dt);
 
   // ----------------------------
   // helpers to get tracking data
@@ -102,12 +109,15 @@ private:
   /// pointer to /dev/null
   FILE *devNull;
 
-  /// base URL for the tracker
-  std::string trackerLocation;
+  /// struct to hold tracker/proxy pairs
+  struct Server {
+    Server(std::string t, std::string p) : tracker(t), proxy(p) {};
+    std::string tracker;
+    std::string proxy;
+  };
 
-  /// if empty, proxy may still be specified via environment variables
-  /// (unlike default CURL behavior)
-  std::string proxyLocation;
+  /// List of servers to try (tracker and proxy)
+  std::list<Server> serverList;
 
   /// seconds until the request will timeout (may have issues with signals)
   long timeoutSeconds;
