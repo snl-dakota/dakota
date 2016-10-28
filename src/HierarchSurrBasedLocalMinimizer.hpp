@@ -68,7 +68,8 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void find_center(size_t tr_index);
+  void find_center_truth(size_t tr_index);
+  void find_center_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]

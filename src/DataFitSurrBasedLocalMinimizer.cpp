@@ -365,8 +365,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   trustRegionData.vars_star(approxSubProbMinimizer.variables_results());
   if (recastSubProb) { // Can't back out eval from recast data, can't assume
     // last iteratedModel eval was the final solution, and can't use a DB
-    // search for data fits.  Therefore, reevaluate (and rely on duplicate
-    // detection for multifidelity surrogates).
+    // search for data fits.  Therefore, reevaluate corrected approximation.
     Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
 	 << "recasting.\n";
     iteratedModel.active_variables(trustRegionData.vars_star());
