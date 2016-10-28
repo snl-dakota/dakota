@@ -68,8 +68,12 @@ private:
   //- Heading: Convenience member functions
   //
 
+  /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
   void find_center_truth(size_t tr_index);
+  /// Retrieve or evaluate SurrBasedLevelData::responseCenterApproxUncorrected
   void find_center_approx(size_t tr_index);
+  /// Retrieve or evaluate SurrBasedLevelData::responseStarApproxUncorrected
+  void find_star_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]

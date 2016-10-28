@@ -198,8 +198,7 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
     approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
   }
 
-  bestVariablesArray.front().continuous_variables(
-    trustRegionData.c_vars_center());
+  bestVariablesArray.front().active_variables(trustRegionData.vars_center());
   bestResponseArray.front().function_values(
     trustRegionData.response_center(CORR_TRUTH_RESPONSE).function_values());
 
@@ -426,7 +425,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   }
 
   // record the iteration results (irregardless of new center)
-  iteratedModel.continuous_variables(trustRegionData.c_vars_center());
+  iteratedModel.active_variables(trustRegionData.vars_center());
   OutputManager& output_mgr = parallelLib.output_manager();
   output_mgr.add_datapoint(trustRegionData.vars_center(),
     truth_model.interface_id(),
@@ -509,7 +508,7 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
-    truth_model.continuous_variables(trustRegionData.c_vars_center());
+    truth_model.active_variables(trustRegionData.vars_center());
     if (multiLayerBypassFlag) {
       short mode = truth_model.surrogate_response_mode();
       truth_model.surrogate_response_mode(BYPASS_SURROGATE);

@@ -124,8 +124,8 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
 
-  bestVariablesArray.front().continuous_variables(
-    trustRegions[minimizeIndex].c_vars_center());
+  bestVariablesArray.front().active_variables(
+    trustRegions[minimizeIndex].vars_center());
   bestResponseArray.front().function_values(
     trustRegions[minimizeIndex].response_center(CORR_TRUTH_RESPONSE).
     function_values());
@@ -215,8 +215,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     if (tr_data.new_center()) {
 
       // Set the trust region center and bounds
-      iteratedModel.continuous_variables(
-        tr_data.vars_center().continuous_variables());
+      iteratedModel.active_variables(tr_data.vars_center());
       iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
       iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
 
@@ -317,25 +316,21 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   // Corrections are applied recursively during the minimization, so this
   // response is corrected to the highest fidelity level.
   SurrBasedLevelData& tr_min = trustRegions[minimizeIndex];
-  tr_min.vars_star(approxSubProbMinimizer.variables_results());
+  const Variables& v_star = approxSubProbMinimizer.variables_results();
+  tr_min.vars_star(v_star);
   if (recastSubProb) {
     // Can't back out eval from recast data and can't assume last iteratedModel
-    // eval was the final solution, but can use a DB search for hierarchical.
-    // *** TO DO ***
-    //find_star_approx(); (falls back on evaluate)
-
-    // Or rely on duplicate detection + auto-correction as in previous
-    // consolidated code:
-    Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
-	 << "recasting.\n";
-    iteratedModel.active_variables(tr_min.vars_star());
-    // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-    iteratedModel.evaluate(); // fn values only
-    tr_min.response_star(iteratedModel.current_response(),CORR_APPROX_RESPONSE);
+    // eval was the final solution, but can use a DB search for hierarchical
+    // (with fallback to new eval if not found).
+    find_star_approx(minimizeIndex); // -> uncorrected resp_star_approx
+    // apply correction and store
+    Response corr_resp(tr_min.response_star(UNCORR_APPROX_RESPONSE).copy());
+    iteratedModel.discrepancy_correction().apply(v_star, corr_resp);
+    tr_min.response_star(corr_resp, CORR_APPROX_RESPONSE);
   }
-  else // Note: fn values only
+  else // retrieve corrected final results
     tr_min.response_star(approxSubProbMinimizer.response_results(),
-			 CORR_APPROX_RESPONSE);
+			 CORR_APPROX_RESPONSE); // Note: fn values only
 }
 
 
@@ -405,6 +400,8 @@ void HierarchSurrBasedLocalMinimizer::verify()
     convergenceFlag = 2;
 }
 
+// Note: find() implies a DB lookup and DB entries are uncorrected, so employ
+// this convention consistently and correct after find() when needed.
 
 void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
 {
@@ -421,8 +418,7 @@ void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
-    truth_model.continuous_variables(
-      tr_data.vars_center().continuous_variables());
+    truth_model.active_variables(tr_data.vars_center());
     truth_model.evaluate(tr_data.active_set_center(TRUTH_RESPONSE));
 
     tr_data.response_center(truth_model.current_response(),
@@ -434,18 +430,41 @@ void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
 void HierarchSurrBasedLocalMinimizer::find_center_approx(size_t tr_index)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  const Variables&   v_center = tr_data.vars_center();
 
   bool approx_found
-    = find_approx_response(iteratedModel.current_variables(),
+    = find_approx_response(v_center,
 			   tr_data.response_center(UNCORR_APPROX_RESPONSE));
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
     iteratedModel.component_parallel_mode(SURROGATE_MODEL);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    iteratedModel.active_variables(v_center);
     iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
     tr_data.response_center(iteratedModel.current_response(),
 			    UNCORR_APPROX_RESPONSE);
+  }
+}
+
+
+void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
+{
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  const Variables&     v_star = tr_data.vars_star();
+
+  bool approx_found
+    = find_approx_response(v_star,
+			   tr_data.response_star(UNCORR_APPROX_RESPONSE));
+
+  if (!approx_found) {
+    Cout <<"\n>>>>> Evaluating approximation at candidate optimum.\n";
+    iteratedModel.component_parallel_mode(SURROGATE_MODEL);
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    iteratedModel.active_variables(v_star);
+    iteratedModel.evaluate(); // fn values only
+    tr_data.response_star(iteratedModel.current_response(),
+			  UNCORR_APPROX_RESPONSE);
   }
 }
 
