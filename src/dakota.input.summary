@@ -834,9 +834,6 @@ KEYWORD12 method
 	  |
 	  ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli
 	    collocation_points_sequence INTEGERLIST
-	    [ cross_validation
-	      [ noise_only ]
-	      ]
 	    [ tensor_grid INTEGERLIST ]
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ import_build_points_file ALIAS import_points_file STRING
@@ -1509,6 +1506,7 @@ KEYWORD12 method
 		( expansion_order_sequence INTEGERLIST
 		  collocation_points_sequence INTEGERLIST
 		  | collocation_ratio REAL
+		  [ cross_validation ]
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1667,6 +1665,7 @@ KEYWORD12 method
 		( expansion_order_sequence INTEGERLIST
 		  collocation_points_sequence INTEGERLIST
 		  | collocation_ratio REAL
+		  [ cross_validation ]
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated
@@ -1757,6 +1756,7 @@ KEYWORD12 method
 		( expansion_order_sequence INTEGERLIST
 		  collocation_points_sequence INTEGERLIST
 		  | collocation_ratio REAL
+		  [ cross_validation ]
 		  [ posterior_adaptive ]
 		  [ import_build_points_file ALIAS import_points_file STRING
 		    [ annotated

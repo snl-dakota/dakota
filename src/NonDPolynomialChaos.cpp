@@ -322,10 +322,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    short u_space_type, bool piecewise_basis, bool use_derivs):
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
-  randomSeed(0), crossValidation(false), l2Penalty(0.), //initSGLevel(0),
-  numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
+  randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
   normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
-  callResize(false)
+  callResize(false) //, initSGLevel(0)
 {
   // -------------------
   // input sanity checks
@@ -397,9 +397,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  tensorRegression(false), crossValidation(cv_flag), l2Penalty(0.),
-  numAdvance(3), expOrderSeqSpec(exp_order_seq), dimPrefSpec(dim_pref),
-  collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
+  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), expOrderSeqSpec(exp_order_seq),
+  dimPrefSpec(dim_pref), collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
   normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
   callResize(false)
 {

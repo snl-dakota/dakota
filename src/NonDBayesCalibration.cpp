@@ -246,7 +246,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	  randomSeed, EXTENDED_U, false, derivs,	
-	  probDescDB.get_bool("method.nond.cross_validation"), // not exposed
+	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
 	  probDescDB.get_bool("method.import_build_active_only"));

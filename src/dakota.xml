@@ -1393,9 +1393,6 @@
 				<param type="INTEGERLIST" />
 			      </keyword>
 			      <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
-			      <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"  >
-				<keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
-			      </keyword>
 			      <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" >
 				<param type="INTEGERLIST" />
 			      </keyword>
@@ -2107,6 +2104,8 @@
 				    <param type="REAL" />
 				  </keyword>
 				</oneOf>
+				<keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+				</keyword>
 				<keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 				</keyword>
 				<keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2263,6 +2262,8 @@
 				<param type="REAL" />
 			      </keyword>
 			    </oneOf>
+			    <keyword  id="cross_validation2" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+			    </keyword>
 			    <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file11" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -2386,6 +2387,8 @@
 				<param type="REAL" />
 			      </keyword>
 			    </oneOf>
+			    <keyword  id="cross_validation3" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+			    </keyword>
 			    <keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
 			    <keyword  id="import_build_points_file14" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
@@ -3158,7 +3161,7 @@
               <keyword  id="metrics" name="metrics" code="{N_mom(strL,diagMetrics)}" label="Compute Surrogate Diagnostics" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No diagnostics" >
                 <alias name="diagnostics"/>
                 <param type="STRINGLIST" />
-                <keyword  id="cross_validation2" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
+                <keyword  id="cross_validation4" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
                   <optional>
                     <oneOf>
                       <keyword  id="folds" name="folds" code="{N_mom(int,numFolds)}" label="Number Cross Validation Folds" help="ModelCommands.html#ModelSurrG"  default="10" >
