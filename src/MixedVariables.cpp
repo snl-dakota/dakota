@@ -103,8 +103,13 @@ void MixedVariables::read(std::istream& s)
 { read_core(s, GeneralReader(), sharedVarsData.components_totals()); }
 
 
-void MixedVariables::write(std::ostream& s) const
-{ write_core(s, GeneralWriter(), sharedVarsData.components_totals()); }
+void MixedVariables::write(std::ostream& s, bool active_only) const
+{ 
+  const SizetArray& vc_totals = active_only ? 
+    sharedVarsData.active_components_totals() : 
+    sharedVarsData.components_totals(); 
+  write_core(s, GeneralWriter(), vc_totals); 
+}
 
 
 void MixedVariables::write_aprepro(std::ostream& s) const

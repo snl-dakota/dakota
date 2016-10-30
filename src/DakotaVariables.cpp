@@ -603,10 +603,10 @@ void Variables::read(std::istream& s)
 }
 
 
-void Variables::write(std::ostream& s) const
+void Variables::write(std::ostream& s, bool active_only) const
 {
   if (variablesRep)
-    variablesRep->write(s); // envelope fwd to letter
+    variablesRep->write(s, active_only); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write function.\n"
 	 << "No default defined at base class." << std::endl;

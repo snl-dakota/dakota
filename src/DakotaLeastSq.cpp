@@ -197,7 +197,14 @@ void LeastSq::print_results(std::ostream& s)
   // (as in ParamStudy::print_results), but restrict to just design 
   // parameters for the LeastSq branch.
   const Variables& best_vars = bestVariablesArray.front();
-  s << "<<<<< Best parameters          =\n" << best_vars;
+
+  if (expData.config_vars().size() == 0)
+    s << "<<<<< Best parameters          =\n" << best_vars;
+  else {
+    s << "<<<<< Best parameters (experiment configuration variables omitted) =\n";
+    bool active_only = true;
+    best_vars.write(s, active_only);
+  }
   //s << "<<<<< Best design parameters   =\n";
   //best_vars.continuous_variables().write(s);
   //best_vars.discrete_variables().write(s);
@@ -230,6 +237,10 @@ void LeastSq::print_results(std::ostream& s)
 
     // then print the original userModel Responses
     print_model_resp(numUserPrimaryFns, best_fns, num_best, best_ind, s);
+
+    if (expData.config_vars().size() > 0) {
+      dt_model_rep->recover_submodel_responses(s, best_vars);
+    }
   }
   else {
     // the original model had least squares terms and numLeastSqTerms

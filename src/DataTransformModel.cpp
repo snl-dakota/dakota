@@ -13,10 +13,14 @@
 
 #include "DataTransformModel.hpp"
 #include "ExperimentData.hpp"
+#include "PRPMultiIndex.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
 namespace Dakota {
+
+// BMA TODO: in DAkota { namespace outside functions
+extern PRPCache data_pairs; // global container
 
 /// initialization of static needed by RecastModel
 DataTransformModel* DataTransformModel::dtModelInstance(NULL);
@@ -891,6 +895,71 @@ void DataTransformModel::print_residual_response(const Response& resid_resp)
 	 << resid_resp << std::endl;
   }
 }
+
+
+// The core of this can be modular on the Model (and static)
+
+void DataTransformModel::
+recover_submodel_responses(std::ostream& s, const Variables& best_submodel_vars)
+{
+
+  // BMA TODO: only do this if
+  //    if (!expData.config_vars().empty())
+
+  // first try cache lookup
+  Variables lookup_vars = subModel.current_variables().copy();
+  String interface_id = subModel.interface_id();
+  Response lookup_resp = subModel.current_response().copy();
+  ActiveSet lookup_as = lookup_resp.active_set();
+  lookup_as.request_values(1);
+  lookup_resp.active_set(lookup_as);
+  ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
+
+  size_t lookup_failures = 0;
+
+  Response best_resp;
+
+  size_t num_exp = expData.num_experiments();
+  for (size_t i=0; i<num_exp; ++i) {
+
+    s << "Best model responses for experiment " << i+1 << '\n';
+
+    // TODO: use Variable object to print inactive with svd mode inactive
+    s << "Configuration variables:\n" << expData.config_vars()[i];
+     
+    //      Model::inactive_variables(expData.config_vars()[i], subModel);
+    Model::inactive_variables(expData.config_vars()[i], subModel, lookup_vars);
+
+    // BMA: why is this necessary?
+    lookup_pr.variables(lookup_vars);
+    PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
+    if (cache_it == data_pairs.get<hashed>().end()) {
+      ++lookup_failures;
+
+      // take a chance and reevaluate, hoping it's a surrogate or we
+      // hit cache underneath (could check whether cache is on)
+      if (subModel.model_type() != "simulation") {
+	subModel.current_variables() = lookup_vars;
+	subModel.evaluate(lookup_resp.active_set());
+	best_resp = subModel.current_response();
+      }
+    }
+    else {
+      best_resp = cache_it->response();
+    }
+
+    // BMA TODO: print as vector of values with labels
+
+    Cout << "Model responses\n" << best_resp;
+     
+  }
+
+
+}
+
+
+
+
 
 
 }  // namespace Dakota

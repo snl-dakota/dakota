@@ -4555,8 +4555,17 @@ void Model::active_variables(const RealVector& config_vars, Model& model)
 }
 
 
+
 /** config_vars consists of [continuous, integer, string, real]. */
 void Model::inactive_variables(const RealVector& config_vars, Model& model)
+{
+  inactive_variables(config_vars, model, model.current_variables());
+}
+
+
+/** config_vars consists of [continuous, integer, string, real]. */
+void Model::inactive_variables(const RealVector& config_vars, Model& model,
+			       Variables& vars)
 {
   // TODO: If (as hoped) we convert the configuration reader to read
   // values instead of indices for strings (and actually read
@@ -4565,13 +4574,13 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model)
   size_t offset = 0;  // current index into configuration variables
 
   RealVector ccv(Teuchos::View, config_vars.values() + offset, model.icv());
-  model.inactive_continuous_variables(ccv);
+  vars.inactive_continuous_variables(ccv);
   offset += model.icv();
 
   RealVector dicv(Teuchos::View, config_vars.values() + offset, model.idiv());
   IntVector dicv_as_int(model.idiv());
   iround(dicv, dicv_as_int);
-  model.inactive_discrete_int_variables(dicv_as_int);
+  vars.inactive_discrete_int_variables(dicv_as_int);
   offset += model.idiv();
 
   RealVector dscv(Teuchos::View, config_vars.values() + offset, model.idsv());
@@ -4581,12 +4590,12 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model)
   for (size_t i=0; i<model.idsv(); ++i) {
     String str_value = 
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
-    model.current_variables().inactive_discrete_string_variable(str_value, i);
+    vars.inactive_discrete_string_variable(str_value, i);
   }
   offset += model.idsv();
 
   RealVector drcv(Teuchos::View, config_vars.values() + offset, model.idrv());
-  model.inactive_discrete_real_variables(drcv);
+  vars.inactive_discrete_real_variables(drcv);
   //offset += model.idrv();
 }
 

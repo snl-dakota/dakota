@@ -1079,6 +1079,9 @@ public:
   /// as needed
   static void inactive_variables(const RealVector& config_vars, Model& model);
 
+  static void inactive_variables(const RealVector& config_vars, Model& model,
+				 Variables& updated_vars);
+
 protected:
 
   //

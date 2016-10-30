@@ -161,7 +161,7 @@ public:
   /// read a variables object from an std::istream
   virtual void read(std::istream& s);
   /// write a variables object to an std::ostream, e.g., the console
-  virtual void write(std::ostream& s) const;
+  virtual void write(std::ostream& s, bool active_only = false) const;
   /// write a variables object to an std::ostream in aprepro format,
   /// e.g., a parameters file
   virtual void write_aprepro(std::ostream& s) const;
