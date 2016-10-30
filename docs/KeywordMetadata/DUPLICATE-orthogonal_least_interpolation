@@ -1,0 +1,9 @@
+Blurb::
+Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.
+Description::
+Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation. Unlike the other regression methods \c expansion_order cannot be set. OLI will produce the lowest degree polynomial that interpolates the data
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
