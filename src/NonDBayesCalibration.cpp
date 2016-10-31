@@ -1318,6 +1318,10 @@ void NonDBayesCalibration::compute_intervals()
     print_intervals_file(interval_stream, filtered_fn_vals_transpose, 
       			   predVals, num_filtered, num_concatenated);
   }
+#ifdef DEBUG
+  if (expData.variance_active())
+    write_data(interval_stream, predVals);
+#endif
 }
 
 void NonDBayesCalibration::compute_prediction_vals
