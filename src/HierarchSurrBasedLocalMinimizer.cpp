@@ -98,20 +98,25 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   // static pointer to HierarchSurrBasedLocalMinimizer instance
   //mlmfInstance = this;
 
-  for (size_t i=0; i<trustRegions.size(); ++i) {
+  // initialize the trust region factors top-down with HF at origTRFactor
+  // and lower fidelities nested and reduced by 2x each level.
+  Real shaped_factor = origTrustRegionFactor;
+  for (int i=numFid-2; i>=0; --i) {
     SurrBasedLevelData& sbl_data = trustRegions[i];
 
     //sbl_data.new_center(true); // vars_center() now sets newCenterFlag
     sbl_data.vars_center(iteratedModel.current_variables());
     sbl_data.tr_lower_bounds(globalLowerBnds);
     sbl_data.tr_upper_bounds(globalLowerBnds);
-    sbl_data.trust_region_factor(origTrustRegionFactor * 
-				 std::pow(0.5, numFid-2-i)); // shaped
+    sbl_data.trust_region_factor(shaped_factor);
 
     sbl_data.active_set_star(1, APPROX_RESPONSE);
     sbl_data.active_set_star(1,  TRUTH_RESPONSE);
     sbl_data.active_set_center(approxSetRequest, APPROX_RESPONSE);
     sbl_data.active_set_center(truthSetRequest,   TRUTH_RESPONSE);
+
+    //shaped_factor = origTrustRegionFactor * std::pow(0.5, numFid-2-i));
+    shaped_factor *= .5;
   }
 }
 
