@@ -1,13 +1,13 @@
 \chapter{Additional Examples}\label{additional}
 
-This chapter contains additional examples of available methods being applied 
+This chapter contains additional examples of available methods being applied
 to several test problems. The examples are organized by the test problem
 being used. See Section~\ref{intro:files} for help in finding the files referenced
 here.
 
 Many of these examples are also used as code verification tests. The examples are
-run periodically and the results are checked against known solutions. This 
-ensures that the algorithms are correctly implemented. 
+run periodically and the results are checked against known solutions. This
+ensures that the algorithms are correctly implemented.
 
 \section{Textbook}\label{additional:textbook}
 
@@ -63,7 +63,7 @@ plots for the $n=2$ case have been shown previously in
 Figure~\ref{additional:textbook_prob}.
 
 For the optimization problem given in Equation~\ref{additional:tbe}, the
-unconstrained solution\\(\texttt{num\_nonlinear\_inequality\_constraints} 
+unconstrained solution\\(\texttt{num\_nonlinear\_inequality\_constraints}
 set to zero) for two design variables is:
 \begin{eqnarray*}
     x_1 &=& 1.0 \\
@@ -108,12 +108,12 @@ increase in the optimal objective function is observed.
 %as of 130124 the example results do NOT match the words in this manual.
 %this cannot be fixed without changing the test input file
 This example demonstrates the use of a gradient-based optimization
-algorithm on a nonlinearly constrained problem. The 
+algorithm on a nonlinearly constrained problem. The
 Dakota input file for this example is
 shown in Figure~\ref{additional:textbook_grad_constr}. This
 input file is similar to the input file for the unconstrained
 gradient-based optimization example involving the Rosenbrock
-function, seen in Section~\ref{tutorial:examples:optimization}. 
+function, seen in Section~\ref{tutorial:examples:optimization}.
 Note the addition of commands in the responses block of
 the input file that identify the number and type of constraints, along
 with the upper bounds on these constraints. The commands
@@ -180,7 +180,7 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 \end{figure}
 
 % \subsection{Least Squares Optimization}\label{additional:textbook:least}
-% 
+%
 %khu 130124 - I don't see the point of this example.  it is confusing because
 %the formulation changes and the solution changes. it also replicates the
 %example w/ the Rosenbrock test function.
@@ -189,14 +189,14 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 % \begin{equation}
 % \texttt{minimize } (f)^2+(g_1)^2+(g_2)^2 \label{additional:tbls}
 % \end{equation}
-% 
+%
 % This modification is performed by simply changing the responses
 % specification for the three functions from
 % \texttt{num\_objective\_functions = 1} and
 % \texttt{num\_nonlinear\_inequality\_constraints = 2} to \\
 % \texttt{num\_least\_squares\_terms = 3}. Note that the two problem
 % formulations are not equivalent and have different solutions.
-% 
+%
 % % Another way to exercise the least squares methods which would be
 % % equivalent to the optimization formulation would be to select the
 % % residual functions to be $(x_{i}-1)^2$. However, this formulation
@@ -206,8 +206,8 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 % Refer to Section~\ref{additional:rosenbrock} for an example of
 % minimizing the same objective function using both optimization and
 % least squares approaches.
-% 
-% The solution for the least squares problem given in 
+%
+% The solution for the least squares problem given in
 % Equation~\ref{additional:tbls} is:
 % \begin{eqnarray*}
 %     x_1 &=& 0.566 \\
@@ -220,10 +220,10 @@ Figure~\ref{additional:textbook_grad_constr_graphics}(a).
 %     g_2^{\ast} &=& 0.0371
 % \end{eqnarray*}
 % and a minimal sum of the squares of $0.00783$.
-% 
-% This study requires selection of \texttt{num\_least\_squares\_terms = 3} 
-% in the responses specification and selection of either 
-% \texttt{optpp\_g\_newton}, \texttt{nlssol\_sqp}, or \texttt{nl2sol} in 
+%
+% This study requires selection of \texttt{num\_least\_squares\_terms = 3}
+% in the responses specification and selection of either
+% \texttt{optpp\_g\_newton}, \texttt{nlssol\_sqp}, or \texttt{nl2sol} in
 % the method specification.
 
 \clearpage
@@ -233,9 +233,9 @@ The Rosenbrock function~\cite{Gil81} is a well known test problem
 for optimization algorithms. The standard formulation includes two design variables,
 and computes a single objective function.
 %however, additional formulations have been proposed to test algorithm performance in
-%higher dimensions. 
-This problem can also be posed as a least-squares optimization 
-problem with two residuals to be minimzed because the objective 
+%higher dimensions.
+This problem can also be posed as a least-squares optimization
+problem with two residuals to be minimzed because the objective
 function is the sum of squared terms.
 
 
@@ -246,7 +246,7 @@ The standard two-dimensional formulation can be stated as
 \end{equation}
 
 Surface and contour plots for this function have been shown previously
-in Figure~\ref{tutorial:rosenbrock_prob}. 
+in Figure~\ref{tutorial:rosenbrock_prob}.
 
 The optimal solution is:
 \begin{eqnarray*}
@@ -258,7 +258,7 @@ with
     f^{\ast} &=& 0.0
 \end{eqnarray*}
 
-A discussion of gradient based optimization to minimize 
+A discussion of gradient based optimization to minimize
 this function is in Section~\ref{tutorial:examples:optimization}.
 
 % {\bf ``Extended'' Formulation} \\
@@ -267,14 +267,14 @@ this function is in Section~\ref{tutorial:examples:optimization}.
 % f = \sum_{i=1}^{n/2} \left[ \alpha (x_{2i}-x_{2i-1}^2)^2+(1-x_{2i-1})^2 \right]
 % \label{additional:rosenexd}
 % \end{equation}
-% 
+%
 % {\bf ``Generalized'' Formulation} \\
 % Another n-dimensional formulation was propsed in~\cite{Sch87}.
 % \begin{equation}
 % f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right]
 % \label{additional:rosengen}
 % \end{equation}
-% 
+%
 % \begin{equation}
 % f = \sum_{i=1}^{n/2} \left[ e^{-x^2_{2i-1}} + 10 e^{-x^2_{2i}} \right]
 % \label{additional:gerstner_aniso1}
@@ -311,13 +311,13 @@ or two least squares terms (as computed from
 Equations~\ref{additional:rosenr1}-\ref{additional:rosenr2}) for use
 with least squares methods. Both cases support analytic gradients of
 the function set with respect to the design variables.
-See Figure~\ref{tutorial:rosenbrock_grad} (std formulation) 
+See Figure~\ref{tutorial:rosenbrock_grad} (std formulation)
 and Figure~\ref{additional:rosenbrock_nls} (least squares formulation)
 for examples of each usage.
 
 
 % \subsection{Optimization Results}\label{additional:rosenbrock:results}
-% 
+%
 %khu this belongs in a methods section
 % In comparing the two approaches, one would expect the Gauss-Newton
 % approach to be more efficient since it exploits the special-structure
@@ -336,7 +336,7 @@ for examples of each usage.
 % \texttt{optpp\_g\_newton}). However, once the vicinity is located and
 % the Hessian approximation becomes accurate, convergence is much more
 % rapid with the Gauss-Newton approach.
-% 
+%
 % Shown below is the complete Dakota output for the
 % \texttt{optpp\_g\_newton} method starting from\\
 % \texttt{cdv\_initial\_point = 0.8, 0.7}:
@@ -348,83 +348,83 @@ for examples of each usage.
 % Writing new restart file dakota.rst
 % gradientType = analytic
 % hessianType = none
-% 
+%
 % >>>>> Executing environment.
-% 
+%
 % >>>>> Running optpp_g_newton iterator.
-% 
+%
 % ------------------------------
 % Begin Function Evaluation    1
 % ------------------------------
 % Parameters for function evaluation 1:
 %                       8.0000000000e-01 x1
 %                       7.0000000000e-01 x2
-% 
+%
 % rosenbrock /tmp/file4t29aW /tmp/filezGeFpF
-% 
+%
 % Active response data for function evaluation 1:
 % Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
 %                       6.0000000000e-01 least_sq_term_1
 %                       2.0000000000e-01 least_sq_term_2
 %  [ -1.6000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
 %  [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-% 
-% 
-% 
-% 
+%
+%
+%
+%
 % ------------------------------
 % Begin Function Evaluation    2
 % ------------------------------
 % Parameters for function evaluation 2:
 %                       9.9999528206e-01 x1
 %                       9.5999243139e-01 x2
-% 
+%
 % rosenbrock /tmp/fileSaxQHo /tmp/fileHnU1Z7
-% 
+%
 % Active response data for function evaluation 2:
 % Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
 %                      -3.9998132761e-01 least_sq_term_1
 %                       4.7179363810e-06 least_sq_term_2
 %  [ -1.9999905641e+01  1.0000000000e+01 ] least_sq_term_1 gradient
 %  [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-% 
-% 
-% 
-% 
+%
+%
+%
+%
 % ------------------------------
 % Begin Function Evaluation    3
 % ------------------------------
 % Parameters for function evaluation 3:
 %                       9.9999904377e-01 x1
 %                       9.9999808276e-01 x2
-% 
+%
 % rosenbrock /tmp/filedtRtlR /tmp/file3kUVGA
-% 
+%
 % Active response data for function evaluation 3:
 % Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
 %                      -4.7950734494e-08 least_sq_term_1
 %                       9.5622502239e-07 least_sq_term_2
 %  [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
 %  [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-% 
-% 
-% 
-% 
+%
+%
+%
+%
 % ------------------------------
 % Begin Function Evaluation    4
 % ------------------------------
 % Parameters for function evaluation 4:
 %                       9.9999904377e-01 x1
 %                       9.9999808276e-01 x2
-% 
+%
 % Duplication detected: analysis_drivers not invoked.
-% 
+%
 % Active response data retrieved from database:
 % Active set vector = { 2 2 } Deriv vars vector = { 1 2 }
 %  [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
 %  [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-% 
-% 
+%
+%
 % <<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
 % <<<<< Best parameters          =
 %                       9.9999904377e-01 x1
@@ -436,7 +436,7 @@ for examples of each usage.
 % <<<<< Best data captured at function evaluation 3
 % Confidence Interval for x1 is [  9.9998687852e-01,  1.0000112090e+00 ]
 % Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
-% 
+%
 % <<<<< Iterator optpp_g_newton completed.
 % <<<<< Environment execution completed.
 % Dakota execution time in seconds:
@@ -449,7 +449,7 @@ for examples of each usage.
 
 Least squares methods are often used for calibration or parameter
 estimation, that is, to seek parameters maximizing agreement of models
-with experimental data. The least-squares formulation was described in 
+with experimental data. The least-squares formulation was described in
 the previous section.
 
 When using a least-squares approach to minimize a function, each of the
@@ -509,7 +509,7 @@ in the vicinity of the solution.
 
 \clearpage
 \section{Herbie, Smooth Herbie, and Shubert}
-% need to update citation from ToAppear to a date when it does appear 
+% need to update citation from ToAppear to a date when it does appear
 Lee, et al. \cite{herbiefunc} developed the Herbie function as a 2D
 test problem for surrogate-based optimization. However, since it is
 separable and each dimension is identical it is easily generalized to
@@ -518,7 +518,7 @@ dimensions) Herbie function is
 \begin{displaymath}
 {\rm herb}(\underline{x})=-\prod_{k=1}^M w_{herb}\left(x_k\right)
 \end{displaymath}
-where 
+where
 \begin{displaymath}
 w_{herb}\left(x_k\right)=\exp(-(x_k-1)^2)+\exp(-0.8(x_k+1)^2)-0.05\sin\left(8\left(x_k+0.1\right)\right).
 \end{displaymath}
@@ -532,11 +532,11 @@ identical to the Herbie function. The formula for smooth Herbie is
 \begin{displaymath}
 {\rm herb_{sm}}(\underline{x})=-\prod_{k=1}^M w_{sm}\left(x_k\right)
 \end{displaymath}
-where 
+where
 \begin{displaymath}
 w_{sm}\left(x_k\right)=\exp(-(x_k-1)^2)+\exp(-0.8(x_k+1)^2).
 \end{displaymath}
-Two dimensional versions of the \texttt{herbie} and \texttt{smooth\_herbie} 
+Two dimensional versions of the \texttt{herbie} and \texttt{smooth\_herbie}
 test functions are plotted in Figure~\ref{fig:2D_herbie__smooth_herbie}.
 \begin{figure}[hbp]
   \centering
@@ -544,29 +544,29 @@ test functions are plotted in Figure~\ref{fig:2D_herbie__smooth_herbie}.
   \caption{Plots of the \texttt{herbie} (left) and
            \texttt{smooth\_herbie} (right) test functions in 2
            dimensions. They can accept an arbitrary number of
-           inputs. The direction of the z-axis has been reversed 
+           inputs. The direction of the z-axis has been reversed
            (negative is up) to better view the functions' minima.}
   \label{fig:2D_herbie__smooth_herbie}
 \end{figure}
 
-Shubert is another separable (and therefore arbitrary dimensional) 
+Shubert is another separable (and therefore arbitrary dimensional)
 test function. Its analytical formula is
 \begin{eqnarray*}
 {\rm shu}(\underline{x})= \prod_{k=1}^M w_{shu}\left(x_k\right) \\
 w_{shu}\left(x_k\right)= \sum_{i=1}^5 i\cos((i+1)x_k+i)
 \end{eqnarray*}
-The 2D version of the \texttt{shubert} function is shown in 
-Figure~\ref{fig:2D_shubert}. 
+The 2D version of the \texttt{shubert} function is shown in
+Figure~\ref{fig:2D_shubert}.
 
 \subsection{Efficient Global Optimization}
 
 The Dakota input file \texttt{herbie\_shubert\_opt\_ego.in} shows how
 to use efficient global optimization (ego) to minimize the 5D version
-of any of these 3 separable functions. The input file is shown in 
+of any of these 3 separable functions. The input file is shown in
 Figure~\ref{additional:herbie_shubert_ego}. Note that in the variables
 section the \texttt{5*} preceding the values -2.0 and 2.0 for the
 \texttt{lower\_bounds} and \texttt{upper\_bounds}, respectively, tells
-Dakota to repeat them 5 times. The ``interesting'' region for each 
+Dakota to repeat them 5 times. The ``interesting'' region for each
 of these functions is $-2\le x_k \le 2$ for all dimensions.
 
 \begin{figure}[ht!]
@@ -691,20 +691,20 @@ which corresponds to the following optimal response quantities:
 The final report from the Dakota output is as follows:
 \begin{small}
 \begin{verbatim}
-    <<<<< Iterator npsol_sqp completed.					 
-    <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)	 
-    <<<<< Best parameters          =					 
-                          2.1224188322e+00 intake_dia			 
+    <<<<< Iterator npsol_sqp completed.
+    <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
+    <<<<< Best parameters          =
+                          2.1224188322e+00 intake_dia
                           1.7685568331e+00 flatness
-    <<<<< Best objective function  =					 
+    <<<<< Best objective function  =
                          -2.4610312954e+00
-    <<<<< Best constraint values   =		 
+    <<<<< Best constraint values   =
                           1.8407497748e-13
                          -3.3471647504e-01
                           0.0000000000e+00
     <<<<< Best data captured at function evaluation 51
     <<<<< Environment execution completed.
-    Dakota execution time in seconds:					 
+    Dakota execution time in seconds:
       Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
       Total wall clock =   0.232134
 \end{verbatim}
@@ -1060,8 +1060,8 @@ see \texttt{Dakota/examples/users/mogatest2.in} }
 \subsection{Multiobjective Test Problem 3}\label{additional:multiobjective:problem3}
 
 The third test problem is a case where $\mathtt{P_{true}}$ is
-disconnected but $\mathtt{PF_{true}}$ is connected. 
-% It is called the Srinivas problem in the literature (cite). 
+disconnected but $\mathtt{PF_{true}}$ is connected.
+% It is called the Srinivas problem in the literature (cite).
 This problem also has two
 nonlinear constraints. The problem is to simultaneously optimize
 $f_1$ and $f_2$ given two input variables, $x_1$ and $x_2$,
@@ -1087,8 +1087,8 @@ MOGA controls. The Pareto set is shown in
 Figure~\ref{additional:moga3set}. Note the discontinuous nature of the
 Pareto set (in the design space) in this example. The Pareto front is
 shown in Figure~\ref{additional:moga3front}.
-%Again, note the unusual nature of this Pareto example (these figures 
-%agree reasonably well with the Srinivas problem results shown in the 
+%Again, note the unusual nature of this Pareto example (these figures
+%agree reasonably well with the Srinivas problem results shown in the
 %literature).
 
 \begin{figure}
@@ -1133,7 +1133,7 @@ employed in the function evaluator. The computational model is:
 y = &\;\beta_0 + \sum_{i=1}^{20}{\beta_i w_i} + \sum_{i<j}^{20}{\beta_{i,j} w_i w_j} + \sum_{i<j<l}^{20}{\beta_{i,j,l} w_i w_j w_l} \\
     &+  \sum_{i<j<l<s}^{20}{\beta_{i,j,l,s} w_i w_j w_l w_s},
 \end{align*}
-where $w_i = 2(x_i-0.5)$ except for $i=3, 5, \mbox{ and } 7$, where $w_i=2(1.1x_i/(x_i+0.1) - 0.5)$. Large-valued coefficients are assigned as 
+where $w_i = 2(x_i-0.5)$ except for $i=3, 5, \mbox{ and } 7$, where $w_i=2(1.1x_i/(x_i+0.1) - 0.5)$. Large-valued coefficients are assigned as
 \begin{align*}
 &\beta_i = +20 & &i=1,\ldots,10; \;&\beta_{i,j} = -15& &i,j = 1, \ldots, 6; \\
 &\beta_{i,j,l} = -10& &i,j,l=1,\ldots,5; \;&\beta_{i,j,l,s} = +5& &i,j,l,s = 1, \ldots, 4.
@@ -1196,26 +1196,26 @@ parameters.}
 *************************************************************
 *********************** MOAT Analysis ***********************
 -------------------------------------------------------------
-Input   1 (mod. mean & std) =   9.5329e+01   9.0823e+01 
-Input   2 (mod. mean & std) =   6.7297e+01   9.5242e+01 
-Input   3 (mod. mean & std) =   1.0648e+02   1.5479e+02 
-Input   4 (mod. mean & std) =   6.6231e+01   7.5895e+01 
-Input   5 (mod. mean & std) =   9.5717e+01   1.2733e+02 
-Input   6 (mod. mean & std) =   8.0394e+01   9.9959e+01 
-Input   7 (mod. mean & std) =   3.2722e+01   2.7947e+01 
-Input   8 (mod. mean & std) =   4.2013e+01   7.6090e+00 
-Input   9 (mod. mean & std) =   4.1965e+01   7.8535e+00 
-Input  10 (mod. mean & std) =   3.6809e+01   3.6151e+00 
-Input  11 (mod. mean & std) =   8.2655e+00   1.0311e+01 
-Input  12 (mod. mean & std) =   4.9299e+00   7.0591e+00 
-Input  13 (mod. mean & std) =   3.5455e+00   4.4025e+00 
-Input  14 (mod. mean & std) =   3.4151e+00   2.4905e+00 
-Input  15 (mod. mean & std) =   2.5143e+00   5.5168e-01 
-Input  16 (mod. mean & std) =   9.0344e+00   1.0115e+01 
-Input  17 (mod. mean & std) =   6.4357e+00   8.3820e+00 
-Input  18 (mod. mean & std) =   9.1886e+00   2.5373e+00 
-Input  19 (mod. mean & std) =   2.4105e+00   3.1102e+00 
-Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00 
+Input   1 (mod. mean & std) =   9.5329e+01   9.0823e+01
+Input   2 (mod. mean & std) =   6.7297e+01   9.5242e+01
+Input   3 (mod. mean & std) =   1.0648e+02   1.5479e+02
+Input   4 (mod. mean & std) =   6.6231e+01   7.5895e+01
+Input   5 (mod. mean & std) =   9.5717e+01   1.2733e+02
+Input   6 (mod. mean & std) =   8.0394e+01   9.9959e+01
+Input   7 (mod. mean & std) =   3.2722e+01   2.7947e+01
+Input   8 (mod. mean & std) =   4.2013e+01   7.6090e+00
+Input   9 (mod. mean & std) =   4.1965e+01   7.8535e+00
+Input  10 (mod. mean & std) =   3.6809e+01   3.6151e+00
+Input  11 (mod. mean & std) =   8.2655e+00   1.0311e+01
+Input  12 (mod. mean & std) =   4.9299e+00   7.0591e+00
+Input  13 (mod. mean & std) =   3.5455e+00   4.4025e+00
+Input  14 (mod. mean & std) =   3.4151e+00   2.4905e+00
+Input  15 (mod. mean & std) =   2.5143e+00   5.5168e-01
+Input  16 (mod. mean & std) =   9.0344e+00   1.0115e+01
+Input  17 (mod. mean & std) =   6.4357e+00   8.3820e+00
+Input  18 (mod. mean & std) =   9.1886e+00   2.5373e+00
+Input  19 (mod. mean & std) =   2.4105e+00   3.1102e+00
+Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
 \end{verbatim}
 \end{small}
@@ -1249,8 +1249,8 @@ linear effects, and black Xs denote insignificant inputs.}
 
 \clearpage
 \section{Test Problems for Reliability Analyses}\label{additional:reliabilityproblems}
-This section includes several test problems and examples related to 
-reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/users} 
+This section includes several test problems and examples related to
+reliability analyses. {\bf These are NOT included in the {\tt Dakota/examples/users}
 directory, but are in the {\tt Dakota/test} directory.}
 
 
@@ -1269,7 +1269,7 @@ a correlation coefficient between the two variables of 0.3.
 
 First-order and second-order reliability analysis (FORM and SORM) are performed in the
 \texttt{logratio\_uq\_reliability.in} in the {\tt Dakota/examples/users}
- directory and \texttt{dakota\_logratio\_taylor2.in} in directory 
+ directory and \texttt{dakota\_logratio\_taylor2.in} in directory
 {\tt Dakota/test}.
 
 For the reliability index approach (RIA),
@@ -1318,7 +1318,7 @@ transformation.
 
 This test problem is taken from~\cite{Tve90,Hon99}. It involves a
 plastic collapse mechanism of a simple portal frame. It also has been
-used as a verification test for second-order integrations in 
+used as a verification test for second-order integrations in
 reliability methods. The limit state function is defined as:
 \begin{equation}
 g({\bf x}) = x_1 + 2 x_2 + 2 x_3 + x_4 - 5 x_5 - 5 x_6
@@ -1354,7 +1354,7 @@ respectively.
 
 First-order and second-order reliability analysis are performed in the
 \texttt{dakota\_short\_column.in} and \\
-\texttt{dakota\_short\_column\_taylor2.in} input files in 
+\texttt{dakota\_short\_column\_taylor2.in} input files in
 {\tt Dakota/test}. For RIA, 43 response levels (-9.0, -8.75,
 -8.5, -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5,
 -4.0, -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4,
@@ -1380,7 +1380,7 @@ Hypercube reference solution of $10^6$ samples.
 
 The short column test problem is also amenable to Reliability-Based Design Optimization (RBDO). An
 objective function of cross-sectional area and a target reliability
-index of 2.5 (cumulative failure probability $p(g \le 0) \le 0.00621$) 
+index of 2.5 (cumulative failure probability $p(g \le 0) \le 0.00621$)
 are used in the design problem:
 \begin{eqnarray}
 \min       & & bh \nonumber \\
@@ -1420,7 +1420,7 @@ variables are used in the problem to define the yield stress $F_s$
 with $\mu/\sigma$ = 21000/4200 MPa). The limit state has the
 following analytic form:
 \begin{equation}
-g = F_s - P \left( \frac{1}{2 B D} + 
+g = F_s - P \left( \frac{1}{2 B D} +
 \frac{F_0}{B D H} \frac{E_b}{E_b - P} \right)\\
 \end{equation}
 where
@@ -1445,3 +1445,141 @@ formulation maximizes the reliability subject to a cost constraint:
 which has the solution ($b$, $d$, $h$) = (200.0, 17.50, 100.0) with a
 maximal reliability of 3.132.
 
+\section{Test Problems for Forward Uncertainty Quantification}\label{additional:reliabilityproblems}
+This section includes several test problems and examples related to
+forward uncertainty quantification. {\bf These are NOT included in the
+  {\tt Dakota/examples/users} directory, but are in the {\tt
+    Dakota/test} directory.}
+
+\subsection{Genz functions}
+The Genz functions have traditionally been used to test quadrature
+methods, however more recently they hav also been used to test forward
+UQ methdos. Here we consider the oscilatory and corner-peak test
+functions, respectively given by
+\[
+ f_{\mathrm{OS}}(\boldsymbol{\xi})=\cos\left(-\sum_{i=1}^d c_i\, \xi_i \right),\quad \boldsymbol{\xi}\in[0,1]^d
+\]
+\[
+ f_{\mathrm{CP}}(\boldsymbol{\xi})=\left(1+\sum_{i=1}^d c_i\, \xi_i \right)^{-(d+1)},\quad \boldsymbol{\xi}\in[0,1]^d
+\]
+The coefficients $c_k$ can be used to control the effective dimensionality
+and the variability of these functions. In dakota we support three
+choices of $\boldsymbol = (c_1,\ldots,c_d)^T$, specifically
+\[
+c^{(1)}_k=\frac{k-\frac{1}{2}}{d},\quad c_k^{(2)}=\frac{1}{k^2}\quad \text{and}
+\quad c_k^{(3)} = \exp\left(\frac{k\log(10^{-8})}{d}\right), \quad k=1,\ldots,d
+\]
+normalizing such that for the oscillatory function $\sum_{k=1}^d c_k =
+4.5$ and for the corner peak function $\sum_{k=1}^d c_k = 0.25$. The
+different decay rates of the coefficients represent increasing levels
+of anisotropy and decreasing effective dimensionality. Anisotropy
+refers to the dependence of the function variability.
+
+In Dakota the genz function can be set by specifying
+{\tt analysis\_driver='genz'}. The type of coefficients decay can be
+set by sepcifying {\tt os1, cp1} which uses $\mathbf{c}^{(1)}$,
+{\tt os2, cp2} which uses
+$\mathbf{c}^{(2)}$, and {\tt os3, cp3} which uses $\mathbf{c}^{(3)}$,
+where {\tt os} is to be used with the oscillatory function and {\tt
+ cp} for the corner peak function
+
+\subsection{Elliptic Partial differential equation with uncertain
+  coefficients}
+Consider the following problem with $d \ge 1$ random dimensions:
+\begin{equation}\label{eq:hetrogeneous-diffusion}
+-\frac{d}{dx}\left[a(x,\boldsymbol{\xi})\frac{du}{dx}(x,\boldsymbol{\xi})\right] = 10,\quad
+(x,\boldsymbol{\xi})\in(0,1)\times I_{\boldsymbol{\xi}}
+\end{equation}
+subject to the physical boundary conditions
+\begin{equation}
+u(0,\boldsymbol{\xi})=0,\quad u(1,\boldsymbol{\xi})=0.
+\end{equation}
+We are interested in quantifying the uncertainty in the solution $u$
+at a number of locations $x\in[0,1]$ which can be specified by the
+user. This function can be run using dakota by specifying\\
+{\tt analysis\_driver='steady\_state\_diffusion\_1d'}.
+
+We represent the random diffusivity field $a$ using two types of
+expansions. The first option is to use represent the {\it logarithm} of the
+diffusivity field as Karhunen Lo\'{e}ve expansion
+\begin{equation}\label{eq:diffusivityZ}
+\log(a(x,\boldsymbol{\xi}))=\bar{a}+\sigma_a\sum_{k=1}^d\sqrt{\lambda_k}\phi_k(x)\xi_k
+\end{equation}
+where $\{\lambda_k\}_{k=1}^d$ and $\{\phi_k(x)\}_{k=1}^d$ are, respectively,
+the eigenvalues and eigenfunctions of the covariance kernel
+\begin{equation}\label{eq:heat-eq-qoi}
+ C_a(x_1,x_2) = \exp\left[-\frac{(x_1-x_2)^p}{l_c}\right].
+\end{equation}
+for some power $p=1,2$.
+The variability of the diffusivity field~\eqref{eq:diffusivityZ} is
+controlled by $\sigma_a$ and the correlation length
+$l_c$ which determines the decay of the eigenvalues
+$\lambda_k$. Dakota sets $\sigma_a=1.$ but allows the number of random
+variables $d$, the order of the kernel $p$ and the correlation
+length $l_c$ to vary. The random variables can be bounded or unbounded.
+
+The second expansion option is to represent the diffusivity by
+\begin{equation}\label{diffusivityZ}
+a(x,\boldsymbol{\xi})=1+\sigma\sum_{k=1}^d\frac{1}{k^2\pi^2}\cos(2\pi kx)\boldsymbol{\xi}_k
+\end{equation}
+where $\boldsymbol{\xi}_k\in[-1,1]$, $k=1,\ldots,d$ are bounded random variables. The form of \eqref{diffusivityZ} is
+similar to that obtained from a Karhunen-Lo\`{e}ve expansion. If the
+variables are i.i.d. uniform in [-1,1] the the diffusivity satisfies
+satisfies the auxiliary properties
+\begin{equation}
+\mathbb{E}[a(x,\boldsymbol{\xi})]=1\quad\text{and}\quad 1-\frac{\sigma}{6}<a(x,\boldsymbol{\xi})<1+\frac{\sigma}{6}.
+\end{equation}
+This is the same test case used in \cite{xiu05}.
+
+
+\subsection{Damped Oscillator}
+Consider a damped linear oscillator subject to external forcing
+with six unknown parameters $\boldsymbol{\xi}=(\gamma,k,f,\omega,x_0,x_1)$
+\begin{equation}\label{eq:oscillator_ode}
+\frac{d^2x}{dt^2}(t,\boldsymbol{\xi})+\gamma\frac{dx}{dt}+k x=f\cos(\omega t),
+\end{equation}
+subject to the initial conditions
+\begin{equation}
+x(0)=x_0,\quad \dot{x}(0)=x_1,
+\end{equation}
+Here we assume the damping coefficient $\gamma$, spring constant $k$,
+forcing amplitude $f$ and frequency $\omega$, and the initial
+conditions $x_0$ and $x_1$ are all uncertain.
+
+This test function can be specified with {\tt
+  analysis\_driver='damped\_oscillator'}. This function only works with
+the uncertain variables defined over certain ranges. These ranges
+are
+$$\gamma_k\in[0.08,0.12],k\in[0.03,0.04],f\in[0.08,0.12],\omega\in[0.8,1.2],x_0\in[0.45,0.55],x_1\in[-0.05,0.05].$$
+Do not use this function with unbounded variables, however any
+bounded variables such as Beta and trucated Normal variables that
+satisfy the aforementioned variable bounds are fine.
+
+\subsection{Non-linear coupled system of ODEs}\label{sec:predator-prey}
+Consider the non-linear system of ordinary differential equations
+governing a competitive Lotka–Volterra model of the population
+dynamics of species competing for some common resource. The model is given by
+\begin{equation}\label{eq:predprey}
+\begin{cases}
+\frac{du_i}{dt} = r_iu_i\left(1-\sum_{j=1}^3\alpha_{ij}u_j\right), & \quad t\in (0,10],\\
+u_i(0) = u_{i,0}
+\end{cases},
+\end{equation}
+for $i = 1,2,3$.  The initial condition, $u_{i,0}$, and the
+self-interacting terms, $\alpha_{ii}$, are given, but the remaining
+interaction parameters, $\alpha_{ij}$ with $i\neq j$ as well as the
+re-productivity parameters, $r_i$, are unknown.
+We approximate the solution to~\eqref{eq:predprey} in time using a
+Backward Euler method.
+
+This test function can be specified with {\tt
+  analysis\_driver='predator\_prey'}.
+
+We assume that these parameters are bounded. We have tested this model
+with all 9 parameters $\xi_i\in[0.3,0.7]$. However larger bounds are
+probably valid.  When using the aforemetioned ranges and $1000$ time steps
+with $\Delta t = 0.01$ the average (over the random parameters)
+deterministic error is approximately $1.00\times10^{-4}$.
+
+Dakota returns the population of each species $u_i(T)$ at the final
+time $T$. The final time and the number of time-steps can be changed.
