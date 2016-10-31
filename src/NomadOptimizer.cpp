@@ -107,8 +107,14 @@ void NomadOptimizer::core_run()
   // This is only used when using NOMAD with MPI
   NOMAD::begin ( 0 , NULL );  
      
-  // Create parameters
-  NOMAD::Parameters p (out);
+  // Verify that user has requested surrogate model construction
+  // when use_surrogate is defined.
+  if ((iteratedModel.model_type() != "surrogate") && 
+    ((useSurrogate.compare("inform_search") == 0) || (useSurrogate.compare("optimize") == 0))) {
+  Cerr << "%s Error: Specified use_surrogate without requesting surrogate model "
+    << "construction." << std::endl;
+    abort_handler(-1);
+  }
      
   // If model is a surrogate, build it and tell NOMAD to make use of
   // it.
