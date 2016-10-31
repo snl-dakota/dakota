@@ -156,12 +156,14 @@ void RelaxedVariables::read(std::istream& s)
 { read_core(s, GeneralReader(), sharedVarsData.components_totals()); }
 
 
-void RelaxedVariables::write(std::ostream& s, bool active_only) const
+void RelaxedVariables::write(std::ostream& s, unsigned short vars_part) const
 { 
-  const SizetArray& vc_totals = active_only ? 
-    sharedVarsData.active_components_totals() : 
-    sharedVarsData.components_totals(); 
-  write_core(s, GeneralWriter(), vc_totals); 
+  if (vars_part == ACTIVE_VARS)
+    write_core(s, GeneralWriter(), sharedVarsData.active_components_totals());
+  else if (vars_part == INACTIVE_VARS)
+    write_core(s, GeneralWriter(), sharedVarsData.inactive_components_totals());
+  else  // default: ALL_VARS
+    write_core(s, GeneralWriter(), sharedVarsData.components_totals());
 }
 
 
@@ -170,31 +172,38 @@ void RelaxedVariables::write_aprepro(std::ostream& s) const
 
 
 /** Presumes variables object is appropriately sized to receive data */
-void RelaxedVariables::read_tabular(std::istream& s, bool active_only)
+void RelaxedVariables::read_tabular(std::istream& s, unsigned short vars_part)
 {
-  const SizetArray& vc_totals = active_only ? 
-    sharedVarsData.active_components_totals() : 
-    sharedVarsData.components_totals(); 
-  read_core(s, TabularReader(), vc_totals);
-}
-
-
-void RelaxedVariables::write_tabular(std::ostream& s, bool active_only) const
-{
-  const SizetArray& vc_totals = active_only ? 
-    sharedVarsData.active_components_totals() : 
-    sharedVarsData.components_totals(); 
-  write_core(s, TabularWriter(), vc_totals);
+  if (vars_part == ACTIVE_VARS)
+    read_core(s, TabularReader(), sharedVarsData.active_components_totals());
+  else if (vars_part == INACTIVE_VARS)
+    read_core(s, TabularReader(), sharedVarsData.inactive_components_totals());
+  else  // default: ALL_VARS
+    read_core(s, TabularReader(), sharedVarsData.components_totals());
 }
 
 
 void RelaxedVariables::
-write_tabular_labels(std::ostream& s, bool active_only) const
+write_tabular(std::ostream& s, unsigned short vars_part) const
 {
-  const SizetArray& vc_totals = active_only ? 
-    sharedVarsData.active_components_totals() : 
-    sharedVarsData.components_totals(); 
-  write_core(s, LabelsWriter(), vc_totals);
+  if (vars_part == ACTIVE_VARS)
+    write_core(s, TabularWriter(), sharedVarsData.active_components_totals());
+  else if (vars_part == INACTIVE_VARS)
+    write_core(s, TabularWriter(), sharedVarsData.inactive_components_totals());
+  else  // default: ALL_VARS
+    write_core(s, TabularWriter(), sharedVarsData.components_totals());
+}
+
+
+void RelaxedVariables::
+write_tabular_labels(std::ostream& s, unsigned short vars_part) const
+{
+  if (vars_part == ACTIVE_VARS)
+    write_core(s, LabelsWriter(), sharedVarsData.active_components_totals());
+  else if (vars_part == INACTIVE_VARS)
+    write_core(s, LabelsWriter(), sharedVarsData.inactive_components_totals());
+  else  // default: ALL_VARS
+    write_core(s, LabelsWriter(), sharedVarsData.components_totals());
 }
 
 

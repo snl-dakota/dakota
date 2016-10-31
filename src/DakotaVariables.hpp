@@ -160,8 +160,9 @@ public:
 
   /// read a variables object from an std::istream
   virtual void read(std::istream& s);
-  /// write a variables object to an std::ostream, e.g., the console
-  virtual void write(std::ostream& s, bool active_only = false) const;
+  /// write a variables object to an std::ostream, e.g., the console,
+  /// optionally specifying which partition (all/active/inactive)
+  virtual void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
   /// write a variables object to an std::ostream in aprepro format,
   /// e.g., a parameters file
   virtual void write_aprepro(std::ostream& s) const;
@@ -172,14 +173,19 @@ public:
   /// write a variables object in annotated format to an std::ostream
   virtual void write_annotated(std::ostream& s) const;
 
-  /// read a variables object in tabular format from an istream
-  virtual void read_tabular(std::istream& s, bool active_only = false);
-  /// write a variables object in tabular format to an std::ostream
-  virtual void write_tabular(std::ostream& s, bool active_only = false) const;
+  /// read a variables object in tabular format from an istream,
+  /// optionally specifying which partition (all/active/inactive)
+  virtual void read_tabular(std::istream& s,
+			    unsigned short vars_part = ALL_VARS);
+  /// write a variables object in tabular format to an std::ostream,
+  /// optionally specifying which partition (all/active/inactive)
+  virtual void write_tabular(std::ostream& s,
+			     unsigned short vars_part = ALL_VARS) const;
 
-  /// write the labels in input spec order to a std::ostream
-  virtual void write_tabular_labels(std::ostream& s, 
-                                    bool active_only = false) const;
+  /// write the labels in input spec order to a std::ostream,
+  /// optionally specifying which partition (all/active/inactive)
+  virtual void write_tabular_labels(std::ostream& s,
+				    unsigned short vars_part = ALL_VARS) const;
 
   /// read a variables object from a packed MPI buffer
   virtual void read(MPIUnpackBuffer& s);

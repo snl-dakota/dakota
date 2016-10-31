@@ -421,7 +421,7 @@ void read_data_tabular(const std::string& input_filename,
       read_leading_columns(input_stream, tabular_format);
 
       // use a variables object because it knows how to read active vs. all
-      vars.read_tabular(input_stream, active_only);
+      vars.read_tabular(input_stream, (active_only ? ACTIVE_VARS : ALL_VARS) );
 
       // Extract the variables
       const RealVector& c_vars  = active_only ? vars.continuous_variables()
@@ -582,7 +582,7 @@ void read_data_tabular(const std::string& input_filename,
     try {
       // read the leading columns 
       read_leading_columns(data_stream, tabular_format, eval_id, iface_id);
-      vars.read_tabular(data_stream, active_only);
+      vars.read_tabular(data_stream, (active_only ? ACTIVE_VARS : ALL_VARS) );
       resp.read_tabular(data_stream);
     }
     catch (const TabularDataTruncated& tdtrunc) {
@@ -739,7 +739,7 @@ size_t read_data_tabular(const std::string& input_filename,
       read_leading_columns(input_stream, tabular_format);
 
       // read all or active, but set only the active variables into the lists
-      vars.read_tabular(input_stream, active_only);
+      vars.read_tabular(input_stream, (active_only ? ACTIVE_VARS : ALL_VARS) );
       ++num_evals;
 
       // the Variables object vars passed in is a deep copy, but these

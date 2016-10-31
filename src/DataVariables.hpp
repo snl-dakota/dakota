@@ -37,6 +37,9 @@ enum { EMPTY_VIEW=0, RELAXED_ALL, MIXED_ALL,
        MIXED_DESIGN, MIXED_UNCERTAIN, MIXED_ALEATORY_UNCERTAIN,
        MIXED_EPISTEMIC_UNCERTAIN, MIXED_STATE };
 
+/// values differentiating subsets of variables for I/O
+enum { ALL_VARS=0, ACTIVE_VARS, INACTIVE_VARS};
+
 // special values for SharedVariablesData::variablesComponents and
 // SharedVariablesData::all*Types (Note: these differ from the
 // pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)

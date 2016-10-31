@@ -52,11 +52,12 @@ protected:
   //
 
   void read(std::istream& s);
-  void write(std::ostream& s, bool active_only = false) const;
+  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
   void write_aprepro(std::ostream& s) const;
-  void read_tabular(std::istream& s, bool active_only = false);
-  void write_tabular(std::ostream& s, bool active_only = false) const;
-  void write_tabular_labels(std::ostream& s, bool active_only = false) const;
+  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS);
+  void write_tabular(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
+  void write_tabular_labels(std::ostream& s,
+			    unsigned short vars_part = ALL_VARS) const;
 
   /// Implementation of reading various formats using the specified read handler
   template<typename Reader>

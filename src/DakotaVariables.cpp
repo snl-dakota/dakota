@@ -603,10 +603,10 @@ void Variables::read(std::istream& s)
 }
 
 
-void Variables::write(std::ostream& s, bool active_only) const
+void Variables::write(std::ostream& s, unsigned short vars_part) const
 {
   if (variablesRep)
-    variablesRep->write(s, active_only); // envelope fwd to letter
+    variablesRep->write(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write function.\n"
 	 << "No default defined at base class." << std::endl;
@@ -725,10 +725,10 @@ void Variables::write_annotated(std::ostream& s) const
 }
 
 
-void Variables::read_tabular(std::istream& s, bool active_only)
+void Variables::read_tabular(std::istream& s, unsigned short vars_part)
 {
   if (variablesRep)
-    variablesRep->read_tabular(s, active_only); // envelope fwd to letter
+    variablesRep->read_tabular(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual read_tabular "
          << "function.\nNo default defined at base class." << std::endl;
@@ -736,10 +736,10 @@ void Variables::read_tabular(std::istream& s, bool active_only)
   }
 }
 
-void Variables::write_tabular(std::ostream& s, bool active_only) const
+void Variables::write_tabular(std::ostream& s, unsigned short vars_part) const
 {
   if (variablesRep)
-    variablesRep->write_tabular(s, active_only); // envelope fwd to letter
+    variablesRep->write_tabular(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular "
           << "function.\nNo default defined at base class." << std::endl;
@@ -750,10 +750,11 @@ void Variables::write_tabular(std::ostream& s, bool active_only) const
 
 /** Tabular output is always in input specification order, so can
     write labels independent of Mixed vs. Relaxed */
-void Variables::write_tabular_labels(std::ostream& s, bool active_only) const
+void Variables::
+write_tabular_labels(std::ostream& s, unsigned short vars_part) const
 {
   if (variablesRep)
-    variablesRep->write_tabular_labels(s, active_only); // envelope fwd to letter
+    variablesRep->write_tabular_labels(s, vars_part); // envelope fwd to letter
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual write_tabular_labels "
           << "function.\nNo default defined at base class." << std::endl;
