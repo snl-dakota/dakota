@@ -100,22 +100,15 @@ MixedVariables(const ProblemDescDB& problem_db,
 
 
 void MixedVariables::read(std::istream& s)
-{ read_core(s, GeneralReader(), sharedVarsData.components_totals()); }
+{ read_core(s, GeneralReader(), ALL_VARS); }
 
 
 void MixedVariables::write(std::ostream& s, unsigned short vars_part) const
-{ 
-  if (vars_part == ACTIVE_VARS)
-    write_core(s, GeneralWriter(), sharedVarsData.active_components_totals());
-  else if (vars_part == INACTIVE_VARS)
-    write_core(s, GeneralWriter(), sharedVarsData.inactive_components_totals());
-  else  // default: ALL_VARS
-    write_core(s, GeneralWriter(), sharedVarsData.components_totals());
-}
+{ write_core(s, GeneralWriter(), vars_part); }
 
 
 void MixedVariables::write_aprepro(std::ostream& s) const
-{ write_core(s, ApreproWriter(), sharedVarsData.components_totals()); }
+{ write_core(s, ApreproWriter(), ALL_VARS); }
 
 
 /** Tabular reader that reads data in order design, aleatory,
@@ -125,38 +118,17 @@ void MixedVariables::write_aprepro(std::ostream& s) const
     context. Assumes container sized, since might be a view into a
     larger array. */
 void MixedVariables::read_tabular(std::istream& s, unsigned short vars_part)
-{
-  if (vars_part == ACTIVE_VARS)
-    read_core(s, TabularReader(), sharedVarsData.active_components_totals());
-  else if (vars_part == INACTIVE_VARS)
-    read_core(s, TabularReader(), sharedVarsData.inactive_components_totals());
-  else  // default: ALL_VARS
-    read_core(s, TabularReader(), sharedVarsData.components_totals());
-}
+{ read_core(s, TabularReader(), vars_part); }
 
 
 void MixedVariables::
 write_tabular(std::ostream& s, unsigned short vars_part) const
-{
-  if (vars_part == ACTIVE_VARS)
-    write_core(s, TabularWriter(), sharedVarsData.active_components_totals());
-  else if (vars_part == INACTIVE_VARS)
-    write_core(s, TabularWriter(), sharedVarsData.inactive_components_totals());
-  else  // default: ALL_VARS
-    write_core(s, TabularWriter(), sharedVarsData.components_totals());
-}
+{ write_core(s, TabularWriter(), vars_part); }
 
 
 void MixedVariables::
 write_tabular_labels(std::ostream& s, unsigned short vars_part) const
-{
-  if (vars_part == ACTIVE_VARS)
-    write_core(s, LabelsWriter(), sharedVarsData.active_components_totals());
-  else if (vars_part == INACTIVE_VARS)
-    write_core(s, LabelsWriter(), sharedVarsData.inactive_components_totals());
-  else  // default: ALL_VARS
-    write_core(s, LabelsWriter(), sharedVarsData.components_totals());
-}
+{ write_core(s, LabelsWriter(), vars_part); }
 
 
 /** Reordering is required in all read/write cases that will be
@@ -166,9 +138,29 @@ write_tabular_labels(std::ostream& s, unsigned short vars_part) const
     as read/write are consistent) since this data is not intended for
     public consumption. */
 template<typename Reader>
-void MixedVariables::read_core(std::istream& s, Reader read_handler, 
-			       const SizetArray& vc_totals)
+void MixedVariables::read_core(std::istream& s, Reader read_handler,
+                               unsigned short vars_part)
 {
+  SizetArray vc_totals;
+  size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+  if (vars_part == ACTIVE_VARS) {
+    vc_totals = sharedVarsData.active_components_totals();
+    acv_offset = sharedVarsData.cv_start();
+    adiv_offset = sharedVarsData.div_start();
+    adsv_offset = sharedVarsData.dsv_start();
+    adrv_offset = sharedVarsData.drv_start();
+  }
+  else if (vars_part == INACTIVE_VARS) {
+    vc_totals = sharedVarsData.inactive_components_totals();
+    acv_offset = sharedVarsData.icv_start();
+    adiv_offset = sharedVarsData.idiv_start();
+    adsv_offset = sharedVarsData.idsv_start();
+    adrv_offset = sharedVarsData.idrv_start();  }
+  else {
+    // default: ALL_VARS, offsets start at 0;
+    vc_totals = sharedVarsData.components_totals();
+  }
+
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
@@ -176,8 +168,7 @@ void MixedVariables::read_core(std::istream& s, Reader read_handler,
     num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
     num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
     num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV];
 
   StringMultiArrayView  acv_labels = all_continuous_variable_labels();
   StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();
@@ -216,8 +207,28 @@ void MixedVariables::read_core(std::istream& s, Reader read_handler,
 
 template<typename Writer>
 void MixedVariables::write_core(std::ostream& s, Writer write_handler,
-				const SizetArray& vc_totals) const
+                                unsigned short vars_part) const
 {
+  SizetArray vc_totals;
+  size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+  if (vars_part == ACTIVE_VARS) {
+    vc_totals = sharedVarsData.active_components_totals();
+    acv_offset = sharedVarsData.cv_start();
+    adiv_offset = sharedVarsData.div_start();
+    adsv_offset = sharedVarsData.dsv_start();
+    adrv_offset = sharedVarsData.drv_start();
+  }
+  else if (vars_part == INACTIVE_VARS) {
+    vc_totals = sharedVarsData.inactive_components_totals();
+    acv_offset = sharedVarsData.icv_start();
+    adiv_offset = sharedVarsData.idiv_start();
+    adsv_offset = sharedVarsData.idsv_start();
+    adrv_offset = sharedVarsData.idrv_start();  }
+  else {
+    // default: ALL_VARS, offsets start at 0;
+    vc_totals = sharedVarsData.components_totals();
+  }
+
   size_t num_cdv = vc_totals[TOTAL_CDV], num_ddiv = vc_totals[TOTAL_DDIV],
     num_ddsv  = vc_totals[TOTAL_DDSV],  num_ddrv  = vc_totals[TOTAL_DDRV],
     num_cauv  = vc_totals[TOTAL_CAUV],  num_dauiv = vc_totals[TOTAL_DAUIV],
@@ -225,8 +236,7 @@ void MixedVariables::write_core(std::ostream& s, Writer write_handler,
     num_ceuv  = vc_totals[TOTAL_CEUV],  num_deuiv = vc_totals[TOTAL_DEUIV],
     num_deusv = vc_totals[TOTAL_DEUSV], num_deurv = vc_totals[TOTAL_DEURV],
     num_csv   = vc_totals[TOTAL_CSV],   num_dsiv  = vc_totals[TOTAL_DSIV],
-    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV],
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
+    num_dssv  = vc_totals[TOTAL_DSSV],  num_dsrv  = vc_totals[TOTAL_DSRV];
 
   StringMultiArrayView  acv_labels = all_continuous_variable_labels();
   StringMultiArrayView adiv_labels = all_discrete_int_variable_labels();

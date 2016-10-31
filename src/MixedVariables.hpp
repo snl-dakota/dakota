@@ -57,16 +57,15 @@ protected:
   void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS);
   void write_tabular(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
   void write_tabular_labels(std::ostream& s,
-			    unsigned short vars_part = ALL_VARS) const;
+                            unsigned short vars_part = ALL_VARS) const;
 
   /// Implementation of reading various formats using the specified read handler
   template<typename Reader>
-  void read_core(std::istream& s, Reader read_handler, 
-		 const SizetArray& vc_totals);
+  void read_core(std::istream& s, Reader read_handler, unsigned short vars_part);
   /// Implementation of writing various formats using the specified write handler
   template<typename Writer>
   void write_core(std::ostream& s, Writer write_handler, 
-		  const SizetArray& vc_totals) const;
+                  unsigned short vars_part) const;
 
 private:
 
