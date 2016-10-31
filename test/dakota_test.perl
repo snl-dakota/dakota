@@ -33,8 +33,6 @@ my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
-my $using_qsub = 0;
-my $using_slurm = 0;
 my $using_aprun = 0;
 
 # Use default extension .exe on Windows and Cygwin
@@ -557,37 +555,16 @@ sub process_command_line {
 
 # Set options specific to parallel runs or platforms and create machinefile. 
 # Uses global parallelism variable
-# May set environment variables and global option variables: 
-#   using_qsub, using_slurm
+# May set environment variables and global option variable using_aprun. 
 sub manage_parallelism {
 
-  # TODO: better detect SLURM and PBS clusters
-
-  # If either serial or parallel, and running on a torque/moab platform,
-  # this script should have been called inside a 'qsub'.  If not, don't run 
-  # the tests.  If okay, set $using_qsub flag for mpiexec parallel choice later.
-  # Similar behavior for slurm environment and $using_slurm flag.
-  if ( defined $ENV{SNLSYSTEM} && $ENV{SNLSYSTEM} eq "tlcc" ) {
-     $using_slurm = 1;
-     if ( ! $ENV{SLURM_JOB_ID} ) {
-       die "On this cluster, must run dakota tests with sbatch \n";
-     }
-  }
-  elsif ( defined $ENV{TORQUEHOME} && -d $ENV{TORQUEHOME} ) {
-     $using_qsub = 1;
-     if ( !-e $ENV{PBS_NODEFILE} ) {
-       die "On this cluster, must run dakota tests with qsub \n";
-     }
-  }
-  
   # Create a machines file for platforms where this is needed.
   # (always on AIX; if parallel on others)
   my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
   if ( $sysname =~ /AIX/ ||
-       ( $parallelism eq "parallel" &&
-         ($sysname =~ /Darwin/ || $sysname =~ /Linux/ || $sysname =~ /SunOS/) ) ) {
+       ( $parallelism eq "parallel" && $sysname =~ /SunOS/) ) {
     open (MACHINEFILE, ">machines") || die "cannot open machines\n$!";
-    for (my $count = 0; $count < 10; $count++) {
+    for (my $count = 0; $count < 12; $count++) {
       print MACHINEFILE "$nodename\n";
     }
     close (MACHINEFILE);
@@ -1043,10 +1020,7 @@ sub form_test_command {
   if ($parallelism eq "parallel") {
     my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
     # parallel test
-    if ( $using_qsub == 1 || $using_slurm == 1 ) {
-      $test_command = "mpiexec -np $num_proc $fulldakota $redir\n";
-    }
-    elsif ($sysname =~ /AIX/) {
+    if ( $sysname =~ /AIX/) {
       # TODO: perform poekill after specified time
       $test_command = "poe $fulldakota -procs $num_proc $redir";
     }
@@ -1058,9 +1032,9 @@ sub form_test_command {
     } 
     else
     { 
-      # default for Linux workstation
+      # default for Linux
       $test_command = 
-        "mpirun -np $num_proc -machinefile machines $fulldakota $redir";
+        "mpirun -np $num_proc $fulldakota $redir";
     }
   }
 
