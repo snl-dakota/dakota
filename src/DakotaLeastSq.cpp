@@ -193,54 +193,31 @@ void LeastSq::print_results(std::ostream& s)
   archive_allocate_best(num_best);
   archive_best(best_ind, bestVariablesArray.front(), bestResponseArray.front());
 
-  // Print best design parameters.  Could just print all of best variables 
-  // (as in ParamStudy::print_results), but restrict to just design 
-  // parameters for the LeastSq branch.
+  // Print best calibration parameters.  Include any inactive
+  // variables unless they are used as experiment configuration
+  // variables since there's no "best" configuration.
   const Variables& best_vars = bestVariablesArray.front();
-
   if (expData.config_vars().size() == 0)
     s << "<<<<< Best parameters          =\n" << best_vars;
   else {
-    s << "<<<<< Best parameters (experiment configuration variables omitted) =\n";
+    s << "<<<<< Best parameters (experiment config variables omitted) =\n";
     bool active_only = true;
-    best_vars.write(s, active_only);
+    best_vars.write(s, ACTIVE_VARS);
   }
-  //s << "<<<<< Best design parameters   =\n";
-  //best_vars.continuous_variables().write(s);
-  //best_vars.discrete_variables().write(s);
 
   // after post-run, responses should be back in user model space (no
   // data, scaling, or weighting)
   const RealVector& best_fns = bestResponseArray.front().function_values();
-  if (calibrationDataFlag) {
 
+  // BMA TODO: The following is printing weight(data_trans(model)),
+  // omitting scaling!
+  if (calibrationDataFlag) {
     // TODO: approximate models with interpolation of field data may
     // not have recovered the correct best residuals
-
-    // BMA TODO: Why copying the response, why not just update
-    // dataTransformModel?
-
-    // first use the data difference model to print data differenced
-    // residuals, perhaps most useful to the user
-    Response residual_resp(dataTransformModel.current_response().copy());
-    DataTransformModel* dt_model_rep = 
+    DataTransformModel* dt_model_rep =
       static_cast<DataTransformModel*>(dataTransformModel.model_rep());
-    dt_model_rep->data_transform_response(best_vars, bestResponseArray.front(), 
-                                          residual_resp);
-    const RealVector& resid_fns = residual_resp.function_values(); 
-
-    // must use the expanded weight set from the data difference model
-    const RealVector& lsq_weights 
-      = dataTransformModel.primary_response_fn_weights();
-    print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
-		    num_best, best_ind, s);
-
-    // then print the original userModel Responses
-    print_model_resp(numUserPrimaryFns, best_fns, num_best, best_ind, s);
-
-    if (expData.config_vars().size() > 0) {
-      dt_model_rep->recover_submodel_responses(s, best_vars);
-    }
+    dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
+                                       num_best, best_ind);
   }
   else {
     // the original model had least squares terms and numLeastSqTerms
@@ -251,6 +228,9 @@ void LeastSq::print_results(std::ostream& s)
 		    num_best, best_ind, s);
   }
 
+  // TODO: this may be per-experiment configuration, but there is no
+  // management of it in the problem formulation.  Need to explicitly
+  // disallow.
   if (numNonlinearConstraints) {
     s << "<<<<< Best constraint values   =\n";
     write_data_partial(s, numUserPrimaryFns, numNonlinearConstraints, best_fns);
@@ -260,6 +240,9 @@ void LeastSq::print_results(std::ostream& s)
   // directly because the optimizers track the best iterate internally and 
   // return the best results after iteration completion.  Therfore, perform a
   // search in the data_pairs cache to extract the evalId for the best fn. eval.
+
+  // TODO: for multi-config, there won't be a single best would have
+  // to check whether there are distinct configs
 
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
@@ -452,6 +435,12 @@ void LeastSq::post_run(std::ostream& s)
       // solver. Reverse transformations on each point in best data:
       // unweight, unscale, restore data
 
+      // BMA TODO: This requires fixing; when there is a data
+      // transformation, size(fn_vals) != size(lsq_weights).  Why does
+      // best_fns only contain the original user space functions at
+      // this call point? The previous convention of storing
+      // user-space best residuals in bestResponseArray, e.g., in
+      // NL2SOLLeastSq, may not be sound any longer.
       if (weightFlag) {
         // the weighting transformation consumes weights; get some sub-model
         const RealVector& lsq_weights
@@ -529,10 +518,10 @@ void LeastSq::get_confidence_intervals()
     // NOTE: This doesn't assume current_response() contains best;
     // just uses it as a temporary object for computing the residuals
     Response residual_resp(dataTransformModel.current_response().copy());
-    DataTransformModel* dt_model_rep = 
+    DataTransformModel* dt_model_rep =
       static_cast<DataTransformModel*>(dataTransformModel.model_rep());
     dt_model_rep->data_transform_response(bestVariablesArray.front(),
-                                          bestResponseArray.front(), 
+                                          bestResponseArray.front(),
                                           residual_resp);
     fn_vals_star = residual_resp.function_values(); 
   }

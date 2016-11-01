@@ -815,6 +815,12 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
 				size_t num_best, size_t best_index,
 				std::ostream& s)
 {
+  // Print best response functions
+  if (num_terms > 1) s << "<<<<< Best residual terms ";
+  else               s << "<<<<< Best residual term  ";
+  if (num_best > 1) s << "(set " << best_index+1 << ") "; s << "=\n";
+  write_data_partial(s, (size_t)0, num_terms, best_terms);
+
   // BMA TODO: if data and scaling are present, this won't print
   // correct weighted residual norms
 
@@ -825,12 +831,6 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
   s << "= " << std::setw(write_precision+7)
     << std::sqrt(wssr) << "; 0.5 * norm^2 = " 
     << std::setw(write_precision+7) << 0.5*wssr << '\n';
-
-  // Print best response functions
-  if (num_terms > 1) s << "<<<<< Best residual terms "; 
-  else               s << "<<<<< Best residual term  "; 
-  if (num_best > 1) s << "(set " << best_index+1 << ") "; s << "=\n"; 
-  write_data_partial(s, (size_t)0, num_terms, best_terms); 
 }
 
 

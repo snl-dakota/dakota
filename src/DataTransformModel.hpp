@@ -60,8 +60,11 @@ public:
   /// The size of the ExperimentData changed; update the residualModel size
   void data_resize();
 
-  void recover_submodel_responses(std::ostream& s, const Variables& best_submodel_vars);
 
+  /// manage best responses including residuals and model responses per config
+  void print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
+                            const Response& best_submodel_resp,
+                            size_t num_best, size_t best_ind);
 
 protected:
 
@@ -170,7 +173,10 @@ protected:
 
   void print_residual_response(const Response& resid_resp);
 
-
+  void recover_submodel_responses(std::ostream& s,
+                                  const Variables& best_submodel_vars,
+                                  size_t num_best, size_t best_ind,
+                                  Response& residual_resp);
 
   /// Reference to the experiment data used to construct this Model
   const ExperimentData& expData;

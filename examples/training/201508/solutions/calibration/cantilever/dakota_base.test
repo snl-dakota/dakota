@@ -12,6 +12,10 @@ Test Number 0 succeeded
                       3.0000000000e+00 t
                       2.9000000000e+07 E
                       5.0000000000e+02 Y
+<<<<< Best model responses =
+                      2.2517169200e+02
+                      2.6354328000e+04
+                      1.7892431400e+00
 <<<<< Best residual terms =
                      -1.3434798000e+01
                       3.9937400000e+02
@@ -163,8 +167,4 @@ Test Number 0 succeeded
                       1.4653702000e+01
                       1.6596030000e+03
                      -5.1990600000e-03
-<<<<< Best model responses =
-                      2.2517169200e+02
-                      2.6354328000e+04
-                      1.7892431400e+00
 <<<<< Best data not found in evaluation cache

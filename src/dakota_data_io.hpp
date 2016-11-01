@@ -852,12 +852,13 @@ void write_data_partial(std::ostream& s,
 
 
 /// standard ostream insertion operator for partial SerialDenseVector
-/// with labels
-template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+/// with labels (StringMultiArray or StringArray)
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType,
+	  typename LabelArrayType>
 void write_data_partial(std::ostream& s,
   OrdinalType2 start_index, OrdinalType2 num_items,
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v, 
-  const StringMultiArray& label_array)
+  const LabelArrayType& label_array)
 {
   OrdinalType2 i, end = start_index + num_items;
   OrdinalType1 len = v.length();

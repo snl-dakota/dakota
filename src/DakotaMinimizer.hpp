@@ -52,6 +52,22 @@ public:
   /// return the method constraint tolerance (constraintTol)
   Real constraint_tolerance() const;
 
+  /// return weighted sum of squared residuals
+  static Real sum_squared_residuals(size_t num_pri_fns,
+                                    const RealVector& residuals,
+                                    const RealVector& weights);
+
+  /// print num_terms residuals and misfit for final results
+  static void print_residuals(size_t num_terms, const RealVector& best_terms,
+                              const RealVector& weights,
+                              size_t num_best, size_t best_index,
+                              std::ostream& s);
+
+  /// print the original user model resp in the case of data transformations
+  static void print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
+                               size_t num_best, size_t best_index,
+                               std::ostream& s);
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -177,21 +193,6 @@ protected:
   /// Safely resize the best response array to newsize taking into
   /// account the envelope-letter design pattern and any recasting.
   void resize_best_resp_array(size_t newsize);
-
-  /// return weighted sum of squared residuals
-  Real sum_squared_residuals(size_t num_pri_fns, const RealVector& residuals, 
-			     const RealVector& weights);
-
-  /// print num_terms residuals and misfit for final results
-  void print_residuals(size_t num_terms, const RealVector& best_terms, 
-		       const RealVector& weights, 
-		       size_t num_best, size_t best_index,
-		       std::ostream& s);
-
-  /// print the original user model resp in the case of data transformations
-  void print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
-			size_t num_best, size_t best_index,
-			std::ostream& s);
 
   /// infers MOO/NLS solution from the solution of a single-objective optimizer
   void local_recast_retrieve(const Variables& vars, Response& response) const;

@@ -3533,26 +3533,33 @@ Test Number 0 succeeded
 dakota_calibration_configvars.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
                       5.0000000000e+02 X
-                      1.0000000000e+03 Y
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
-                     -7.2725713098e+02
-                     -7.0054064792e+00
-<<<<< Best model responses =
-                      2.3627428690e+03
-                     -6.7354064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
-least_sq_term_1: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9469435990e+07 E
                       2.6335894124e+00 w
@@ -3572,43 +3579,60 @@ least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
                       5.0000000000e+02 X
-                      1.0000000000e+03 Y
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
-                     -7.2725713098e+02
-                     -7.0054064792e+00
-<<<<< Best model responses =
-                      2.3627428690e+03
-                     -6.7354064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
+<<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
+<<<<< Best configuration variables (experiment 1) =
+                      3.0000000000e+00 t
+                      4.2000000000e+04 R
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best model responses (experiment 1) =
+                     -2.2219015580e+03 stress
+                      1.0253776751e-01 displacement
+<<<<< Best configuration variables (experiment 2) =
                       3.0000000000e+00 t
                       4.0000000000e+04 R
                       5.0000000000e+02 X
-                      1.0000000000e+03 Y
+                      1.3000000000e+03 Y
+<<<<< Best model responses (experiment 2) =
+                      7.3787664323e+03 stress
+                      6.1767741155e-01 displacement
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
-                     -7.2725713098e+02
-                     -7.0054064792e+00
-<<<<< Best model responses =
-                      2.3627428690e+03
-                     -6.7354064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
-least_sq_term_1: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 3460 val (3460 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9469435990e+07 E
                       2.6335894124e+00 w
@@ -4477,14 +4501,14 @@ Test Number 8 succeeded
                       4.0000000000e+04 R
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
-<<<<< Best residual terms =
-                     -2.3943602656e-10
-                      2.9442885534e-06
-                      7.0639355476e-10
 <<<<< Best model responses =
                       7.4999999998e+00
                       2.6666666696e+03
                       3.0864943605e-01
+<<<<< Best residual terms =
+                     -2.3943602656e-10
+                      2.9442885534e-06
+                      7.0639355476e-10
 <<<<< Best data captured at function evaluation 17
 dakota_cantilever_queso.in
 Test Number 0 succeeded
@@ -6200,18 +6224,18 @@ least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000030e-01 x1
                       2.0000000000e-01 x2
-<<<<< Best residual terms =
-                      3.2928160199e-11
-                      2.7098584487e-10
-                     -5.8867428293e-11
-                     -1.2479600686e-10
-                      4.3313658216e-11
 <<<<< Best model responses =
                       3.2274897441e-01
                      -2.9210752288e-01
                      -1.6244810428e-02
                       1.3309207635e-01
                      -1.1245429600e-01
+<<<<< Best residual terms =
+                      3.2928160199e-11
+                      2.7098584487e-10
+                     -5.8867428293e-11
+                     -1.2479600686e-10
+                      4.3313658216e-11
 <<<<< Best data captured at function evaluation 19
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
@@ -6223,18 +6247,18 @@ least_sq_term_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999984e-01 x1
                       1.9999999997e-01 x2
-<<<<< Best residual terms =
-                      5.1039283910e-11
-                     -1.7695012122e-10
-                     -3.9503237487e-11
-                      1.2865888910e-10
-                      4.8290552113e-11
 <<<<< Best model responses =
                       3.2274897443e-01
                      -2.9210752333e-01
                      -1.6244810409e-02
                       1.3309207660e-01
                      -1.1245429599e-01
+<<<<< Best residual terms =
+                      5.1039283910e-11
+                     -1.7695012122e-10
+                     -3.9503237487e-11
+                      1.2865888910e-10
+                      4.8290552113e-11
 <<<<< Best data captured at function evaluation 22
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
@@ -6246,18 +6270,18 @@ Test Number 2 succeeded
 <<<<< Best parameters          =
                       2.9999999984e-01 x1
                       1.9999999997e-01 x2
-<<<<< Best residual terms =
-                      5.1039283910e-11
-                     -1.7695012122e-10
-                     -3.9503237487e-11
-                      1.2865888910e-10
-                      4.8290552113e-11
 <<<<< Best model responses =
                       3.2274897443e-01
                      -2.9210752333e-01
                      -1.6244810409e-02
                       1.3309207660e-01
                      -1.1245429599e-01
+<<<<< Best residual terms =
+                      5.1039283910e-11
+                     -1.7695012122e-10
+                     -3.9503237487e-11
+                      1.2865888910e-10
+                      4.8290552113e-11
 <<<<< Best data captured at function evaluation 22
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
@@ -6269,18 +6293,18 @@ Test Number 3 succeeded
 <<<<< Best parameters          =
                       3.0000000000e-01 x1
                       1.9999999999e-01 x2
-<<<<< Best residual terms =
-                      9.8903107926e-12
-                     -2.1411761253e-12
-                     -2.8633657945e-11
-                     -4.4148018574e-13
-                      1.8203411001e-11
 <<<<< Best model responses =
                       3.2274897439e-01
                      -2.9210752315e-01
                      -1.6244810398e-02
                       1.3309207647e-01
                      -1.1245429602e-01
+<<<<< Best residual terms =
+                      9.8903107926e-12
+                     -2.1411761253e-12
+                     -2.8633657945e-11
+                     -4.4148018574e-13
+                      1.8203411001e-11
 <<<<< Best data captured at function evaluation 19
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
@@ -6344,12 +6368,6 @@ Test Number 5 succeeded
 <<<<< Best parameters          =
                       3.0306964388e-01 x1
                       2.0341048946e-01 x2
-<<<<< Best residual terms =
-                     -2.8052478271e-03
-                      8.7860164540e-03
-                     -4.2224739431e-03
-                      4.6654016346e-03
-                      3.7532921933e-03
 <<<<< Best model responses =
                       4.9322876144e-01
                       4.7798351121e-01
@@ -6401,6 +6419,12 @@ Test Number 5 succeeded
                      -6.2126911659e-02
                      -9.7308134209e-02
                      -1.1534237448e-01
+<<<<< Best residual terms =
+                     -2.8052478271e-03
+                      8.7860164540e-03
+                     -4.2224739431e-03
+                      4.6654016346e-03
+                      3.7532921933e-03
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
@@ -6457,15 +6481,6 @@ Test Number 6 succeeded
 <<<<< Best parameters          =
                       3.0161285108e-01 x1
                       2.0141903737e-01 x2
-<<<<< Best residual terms =
-                     -1.3995781820e-03
-                      1.2879516945e-02
-                     -1.8286888973e-03
-                      1.8728638282e-03
-                      1.3762999060e-03
-                     -7.1204830551e-03
-                     -9.5599962382e-04
-                      2.5606160694e-03
 <<<<< Best model responses =
                       4.9330358107e-01
                       4.7826338516e-01
@@ -6517,6 +6532,15 @@ Test Number 6 succeeded
                      -6.0092621493e-02
                      -9.5387976463e-02
                      -1.1362492249e-01
+<<<<< Best residual terms =
+                     -1.3995781820e-03
+                      1.2879516945e-02
+                     -1.8286888973e-03
+                      1.8728638282e-03
+                      1.3762999060e-03
+                     -7.1204830551e-03
+                     -9.5599962382e-04
+                      2.5606160694e-03
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
@@ -6528,18 +6552,18 @@ Test Number 7 succeeded
 <<<<< Best parameters          =
                       2.9999999958e-01 x1
                       1.9999999983e-01 x2
-<<<<< Best residual terms =
-                      3.7169561873e-10
-                     -2.2178486825e-10
-                     -1.9624570372e-10
-                      2.6753252391e-10
-                      3.6325031871e-10
 <<<<< Best model responses =
                       3.2274897475e-01
                      -2.9210752337e-01
                      -1.6244810565e-02
                       1.3309207674e-01
                      -1.1245429568e-01
+<<<<< Best residual terms =
+                      3.7169561873e-10
+                     -2.2178486825e-10
+                     -1.9624570372e-10
+                      2.6753252391e-10
+                      3.6325031871e-10
 <<<<< Best data captured at function evaluation 22
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
@@ -6553,14 +6577,6 @@ Test Number 8 succeeded
 <<<<< Best parameters          =
                       3.0000000026e-01 x1
                       2.0000000000e-01 x2
-<<<<< Best residual terms =
-                      2.1720181209e-11
-                      1.0814797322e-10
-                      2.3414545303e-10
-                     -9.0174898798e-12
-                     -1.0512227894e-10
-                     -1.1111012110e-10
-                      3.9877823266e-11
 <<<<< Best model responses =
                       4.1049160390e-01
                      -1.7343827817e-02
@@ -6569,6 +6585,14 @@ Test Number 8 succeeded
                      -5.4913571420e-02
                       1.6649056510e-01
                      -1.1245429600e-01
+<<<<< Best residual terms =
+                      2.1720181209e-11
+                      1.0814797322e-10
+                      2.3414545303e-10
+                     -9.0174898798e-12
+                     -1.0512227894e-10
+                     -1.1111012110e-10
+                      3.9877823266e-11
 <<<<< Best data captured at function evaluation 19
 dakota_field.in
 Test Number 0 succeeded
@@ -24867,70 +24891,70 @@ Test Number 0 succeeded
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
-<<<<< Best residual terms =
-                      3.5018717821e-02
-                     -4.7902545262e-01
-                     -9.3585810555e-02
 <<<<< Best model responses =
                       8.2035018718e+01
                       1.5020974547e+01
                       1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
-<<<<< Best residual terms =
-                      3.5018717821e-02
-                     -4.7902545262e-01
-                     -9.3585810555e-02
 <<<<< Best model responses =
                       8.2035018718e+01
                       1.5020974547e+01
                       1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0011599489e+00 x1
                       1.9766102262e+00 x2
-<<<<< Best residual terms =
-                      3.5019659870e-02
-                     -4.7902417675e-01
-                     -9.3591988246e-02
 <<<<< Best model responses =
                       8.2035019660e+01
                       1.5020975823e+01
                       1.9064080118e+00
+<<<<< Best residual terms =
+                      3.5019659870e-02
+                     -4.7902417675e-01
+                     -9.3591988246e-02
 <<<<< Best data captured at function evaluation 61
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 22 total (21 new, 1 duplicate)
 <<<<< Best parameters          =
                       4.0011599457e+00 x1
                       1.9766102667e+00 x2
-<<<<< Best residual terms =
-                      3.5019473472e-02
-                     -4.7902422196e-01
-                     -9.3591826598e-02
 <<<<< Best model responses =
                       8.2035019473e+01
                       1.5020975778e+01
                       1.9064081734e+00
+<<<<< Best residual terms =
+                      3.5019473472e-02
+                     -4.7902422196e-01
+                     -9.3591826598e-02
 <<<<< Best data captured at function evaluation 21
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 10046 total (10046 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0037492937e+00 x1
                       2.0402639744e+00 x2
-<<<<< Best residual terms =
-                      5.7673019410e-01
-                     -4.9012358041e-01
-                      1.6080243822e-01
 <<<<< Best model responses =
                       8.2576730194e+01
                       1.5009876420e+01
                       2.1608024382e+00
+<<<<< Best residual terms =
+                      5.7673019410e-01
+                     -4.9012358041e-01
+                      1.6080243822e-01
 <<<<< Best data captured at function evaluation 4163
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 12 total (12 new, 0 duplicate)
@@ -24938,14 +24962,14 @@ Test Number 5 succeeded
 <<<<< Best parameters          =
                       4.0011629409e+00 x1
                       1.9766151032e+00 x2
-<<<<< Best residual terms =
-                      3.5017686360e-02
-                     -4.7900267188e-01
-                     -9.3574204338e-02
 <<<<< Best model responses =
                       8.2035017686e+01
                       1.5020997328e+01
                       1.9064257957e+00
+<<<<< Best residual terms =
+                      3.5017686360e-02
+                     -4.7900267188e-01
+                     -9.3574204338e-02
 <<<<< Best data not found in evaluation cache
 dakota_textbook_nips.in
 Test Number 0 succeeded
@@ -25030,34 +25054,38 @@ Test Number 7 succeeded
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
-<<<<< Best residual terms =
-                      3.5018717821e-02
-                     -4.7902545262e-01
-                     -9.3585810555e-02
 <<<<< Best model responses =
                       8.2035018718e+01
                       1.5020974547e+01
                       1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
-<<<<< Best residual terms =
-                      3.5018717821e-02
-                     -4.7902545262e-01
-                     -9.3585810555e-02
 <<<<< Best model responses =
                       8.2035018718e+01
                       1.5020974547e+01
                       1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 12 total (10 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0017301996e+00 x1
                       2.0807347873e+00 x2
+<<<<< Best model responses =
+                      8.2551218500e+01
+                      1.4973477197e+01
+                      2.3285921553e+00
 <<<<< Best residual terms =
                       4.5121849971e-01
                      -5.2652280288e-01
@@ -25071,16 +25099,16 @@ Test Number 9 succeeded
                      -3.4878150029e-01
                      -9.2652280288e-01
                      -5.7140784474e-01
-<<<<< Best model responses =
-                      8.2551218500e+01
-                      1.4973477197e+01
-                      2.3285921553e+00
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.9883073503e+00 x1
                       2.2233004907e+00 x2
+<<<<< Best model responses =
+                      8.1983962218e+01
+                      1.4794945275e+01
+                      2.9489113967e+00
 <<<<< Best residual terms =
                      -1.1603778181e-01
                      -7.0505472481e-01
@@ -25094,10 +25122,6 @@ Test Number 10 succeeded
                      -9.1603778181e-01
                      -1.1050547248e+00
                       4.8911396698e-02
-<<<<< Best model responses =
-                      8.1983962218e+01
-                      1.4794945275e+01
-                      2.9489113967e+00
 <<<<< Best data captured at function evaluation 113
 dakota_textbook_num_derivs.in
 Test Number 0 succeeded
@@ -58930,117 +58954,117 @@ Partial Rank Correlation Matrix between input and output:
           u6 -9.32396e-02 -8.51740e-02  2.76551e-02 
 Test Number 6 succeeded
 Surrogate quality metrics for response_fn_1:
-         sum_squared    3.2143429217e+11
-        mean_squared    3.2143429217e+09
-   root_mean_squared    5.6695175471e+04
-             sum_abs    5.6283696896e+06
-            mean_abs    5.6283696896e+04
-             max_abs    7.1118929906e+04
-            rsquared    1.7405682951e+02
+         sum_squared    1.7810590786e+09
+        mean_squared    1.7810590786e+07
+   root_mean_squared    4.2202595639e+03
+             sum_abs    3.4446949027e+05
+            mean_abs    3.4446949027e+03
+             max_abs    1.1656949283e+04
+            rsquared    2.9050707467e-02
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_1:
-         sum_squared    6.6555510170e+36
-        mean_squared    6.6555510170e+34
-   root_mean_squared    2.5798354632e+17
-             sum_abs    1.5636497906e+19
-            mean_abs    1.5636497906e+17
-             max_abs    1.1529215046e+18
+         sum_squared    2.2851559756e+09
+        mean_squared    2.2851559756e+07
+   root_mean_squared    4.7803305069e+03
+             sum_abs    3.8656904223e+05
+            mean_abs    3.8656904223e+03
+             max_abs    1.3958755161e+04
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_1:
-         sum_squared    3.2143429217e+11
-        mean_squared    3.2143429217e+09
-   root_mean_squared    5.6695175471e+04
-             sum_abs    5.6283696896e+06
-            mean_abs    5.6283696896e+04
-             max_abs    7.1118929906e+04
-            rsquared    1.7405682951e+02
+         sum_squared    1.7810590786e+09
+        mean_squared    1.7810590786e+07
+   root_mean_squared    4.2202595639e+03
+             sum_abs    3.4446949027e+05
+            mean_abs    3.4446949027e+03
+             max_abs    1.1656949283e+04
+            rsquared    2.9050707467e-02
 Surrogate quality metrics for response_fn_2:
-         sum_squared    4.3866180422e+03
-        mean_squared    4.3866180422e+01
-   root_mean_squared    6.6231548692e+00
-             sum_abs    6.4433598552e+02
-            mean_abs    6.4433598552e+00
-             max_abs    1.0191998463e+01
-            rsquared    1.3562572751e+02
+         sum_squared    2.0820066921e-17
+        mean_squared    2.0820066921e-19
+   root_mean_squared    4.5629011518e-10
+             sum_abs    2.9407383762e-08
+            mean_abs    2.9407383762e-10
+             max_abs    1.5533070385e-09
+            rsquared    1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    2.2880317706e+11
-        mean_squared    2.2880317706e+09
-   root_mean_squared    4.7833375070e+04
-             sum_abs    3.0539618894e+06
-            mean_abs    3.0539618894e+04
-             max_abs    1.9660873479e+05
+         sum_squared    2.7650659643e-17
+        mean_squared    2.7650659643e-19
+   root_mean_squared    5.2583894534e-10
+             sum_abs    3.3479318719e-08
+            mean_abs    3.3479318719e-10
+             max_abs    1.9199717372e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_2:
-         sum_squared    4.3866180422e+03
-        mean_squared    4.3866180422e+01
-   root_mean_squared    6.6231548692e+00
-             sum_abs    6.4433598552e+02
-            mean_abs    6.4433598552e+00
-             max_abs    1.0191998463e+01
-            rsquared    1.3562572751e+02
+         sum_squared    2.0820066921e-17
+        mean_squared    2.0820066921e-19
+   root_mean_squared    4.5629011518e-10
+             sum_abs    2.9407383762e-08
+            mean_abs    2.9407383762e-10
+             max_abs    1.5533070385e-09
+            rsquared    1.0000000000e+00
 Surrogate quality metrics for response_fn_3:
-         sum_squared    1.0768437203e+04
-        mean_squared    1.0768437203e+02
-   root_mean_squared    1.0377108076e+01
-             sum_abs    9.9577543077e+02
-            mean_abs    9.9577543077e+00
-             max_abs    1.6689437455e+01
-            rsquared    2.6531447144e+02
+         sum_squared    2.5963068589e-17
+        mean_squared    2.5963068589e-19
+   root_mean_squared    5.0953968039e-10
+             sum_abs    3.3757729028e-08
+            mean_abs    3.3757729028e-10
+             max_abs    1.4914547375e-09
+            rsquared    1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    6.4213177513e+10
-        mean_squared    6.4213177513e+08
-   root_mean_squared    2.5340319160e+04
-             sum_abs    1.4217796605e+06
-            mean_abs    1.4217796605e+04
-             max_abs    9.8305748368e+04
+         sum_squared    3.3954678183e-17
+        mean_squared    3.3954678183e-19
+   root_mean_squared    5.8270642851e-10
+             sum_abs    3.8182922588e-08
+            mean_abs    3.8182922588e-10
+             max_abs    1.8605192942e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics (challenge data) for response_fn_3:
-         sum_squared    1.0768437203e+04
-        mean_squared    1.0768437203e+02
-   root_mean_squared    1.0377108076e+01
-             sum_abs    9.9577543077e+02
-            mean_abs    9.9577543077e+00
-             max_abs    1.6689437455e+01
-            rsquared    2.6531447144e+02
+         sum_squared    2.5963068589e-17
+        mean_squared    2.5963068589e-19
+   root_mean_squared    5.0953968039e-10
+             sum_abs    3.3757729028e-08
+            mean_abs    3.3757729028e-10
+             max_abs    1.4914547375e-09
+            rsquared    1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.7802990002e+04  1.2526538712e+04 -2.5117353588e+00  9.3067859455e+00
- response_fn_2  6.7707692584e+00  2.1841495374e+00  2.2786637109e-01 -1.0512097118e+00
- response_fn_3  1.0422584513e+01  3.3371303337e+00  6.3820974174e-01 -2.9652068906e-01
+ response_fn_1  6.3210550149e+03  7.6473590215e+02 -8.2740288993e-01 -9.6271759685e-02
+ response_fn_2  3.0966768930e-01  6.0204792228e-01  4.1223452333e-01 -9.3440549185e-01
+ response_fn_3  5.2976953829e-01  6.6966570329e-01  3.2931433497e-01 -1.2197548316e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  5.5317452956e+04  6.0288527048e+04  1.0998386738e+04  1.4551770056e+04
- response_fn_2  6.3373866047e+00  7.2041519121e+00  1.9176982452e+00  2.5372724715e+00
- response_fn_3  9.7604254556e+00  1.1084743571e+01  2.9300232770e+00  3.8766617324e+00
+ response_fn_1  6.1693148208e+03  6.4727952089e+03  6.7144335701e+02  8.8837477436e+02
+ response_fn_2  1.9020831999e-01  4.2912705861e-01  5.2860219703e-01  6.9938417382e-01
+ response_fn_3  3.9689333426e-01  6.6264574233e-01  5.8797107162e-01  7.7793407683e-01
 Simple Correlation Matrix among all inputs and outputs:
                        u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
           u4  1.00000e+00 
           u5 -6.18220e-02  1.00000e+00 
           u6  1.91742e-02 -1.46653e-02  1.00000e+00 
-response_fn_1  2.48250e-01  1.78236e-01 -7.33163e-01  1.00000e+00 
-response_fn_2  9.45448e-01 -3.60434e-01  8.97470e-02  1.32619e-01  1.00000e+00 
-response_fn_3  2.77205e-01  8.96738e-01 -2.01745e-01  3.69967e-01 -4.68728e-02  1.00000e+00 
+response_fn_1 -7.18853e-01  1.66554e-01 -5.39756e-02  1.00000e+00 
+response_fn_2  9.42240e-01 -3.40854e-01  1.06779e-02 -8.01905e-01  1.00000e+00 
+response_fn_3 -3.14734e-01  9.53102e-01 -3.86292e-02  3.70265e-01 -5.66762e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          u4  4.14481e-01  9.94177e-01  8.41223e-01 
-          u5  2.93272e-01 -9.49099e-01  9.73020e-01 
-          u6 -7.74967e-01  5.59380e-01 -6.68824e-01 
+          u4 -7.20119e-01  9.81794e-01 -8.48329e-01 
+          u5  1.75527e-01 -8.45944e-01  9.85725e-01 
+          u6 -5.63346e-02 -6.26860e-02 -1.24049e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        u4           u5           u6 response_fn_1 response_fn_2 response_fn_3 
           u4  1.00000e+00 
           u5 -6.24302e-02  1.00000e+00 
           u6  2.24329e-02 -2.34325e-02  1.00000e+00 
-response_fn_1  2.87477e-01  3.42622e-01 -7.16081e-01  1.00000e+00 
-response_fn_2  9.47819e-01 -3.59160e-01  8.70885e-02  1.17468e-01  1.00000e+00 
-response_fn_3  2.20222e-01  9.24200e-01 -1.95371e-01  5.14791e-01 -8.97690e-02  1.00000e+00 
+response_fn_1 -6.77348e-01  1.68473e-01 -8.55247e-02  1.00000e+00 
+response_fn_2  9.44230e-01 -3.63828e-01  1.74594e-02 -7.09463e-01  1.00000e+00 
+response_fn_3 -3.37030e-01  9.51767e-01 -2.45671e-02  3.65053e-01 -5.96100e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          u4  5.25602e-01  9.95487e-01  8.29718e-01 
-          u5  5.49541e-01 -9.59147e-01  9.80030e-01 
-          u6 -8.05950e-01  5.57221e-01 -6.87370e-01 
+          u4 -6.78560e-01  9.91315e-01 -9.06634e-01 
+          u5  1.70574e-01 -9.28228e-01  9.90500e-01 
+          u6 -9.32396e-02 -8.51740e-02  2.76551e-02 
 dakota_surrogate_refine.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1 total (1 new, 0 duplicate)

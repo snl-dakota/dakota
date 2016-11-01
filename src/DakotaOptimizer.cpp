@@ -206,9 +206,10 @@ void Optimizer::print_results(std::ostream& s)
   // -------------------------------------
   for (i=0; i<num_best; ++i) { 
     // output best variables
+    const Variables& best_vars = bestVariablesArray[i];
     s << "<<<<< Best parameters          "; 
     if (num_best > 1) s << "(set " << i+1 << ") "; 
-    s << "=\n" << bestVariablesArray[i]; 
+    s << "=\n" << best_vars;
     
     // output best response
     // TODO: based on local_nls_recast due to SurrBasedMinimizer?
@@ -222,24 +223,12 @@ void Optimizer::print_results(std::ostream& s)
     }
     else {
       if (calibrationDataFlag) {
-        // first use the data difference model to print data differenced
-        // residuals, perhaps most useful to the user
-        Response residual_resp = dataTransformModel.current_response();
+        // TODO: approximate models with interpolation of field data may
+        // not have recovered the correct best residuals
         DataTransformModel* dt_model_rep = 
           static_cast<DataTransformModel*>(dataTransformModel.model_rep());
-        dt_model_rep->data_transform_response(bestVariablesArray[i], 
-                                              bestResponseArray[i], 
-                                              residual_resp);
-        const RealVector& resid_fns = residual_resp.function_values(); 
-        
-        // must use the expanded weight set from the data difference model
-        const RealVector& lsq_weights = 
-          dataTransformModel.primary_response_fn_weights();
-        print_residuals(numTotalCalibTerms, resid_fns, lsq_weights, 
-                        num_best, i, s);
-
-        // then print the original userModel Responses
-        print_model_resp(numUserPrimaryFns, best_fns, num_best, i, s);
+        dt_model_rep->print_best_responses(s, best_vars, bestResponseArray[i],
+                                           num_best, i);
       }
       else {
         // the original model had least squares terms
@@ -261,7 +250,7 @@ void Optimizer::print_results(std::ostream& s)
     // return the best results after iteration completion.  Therfore, perform a
     // search in data_pairs to extract the evalId for the best fn eval.
     PRPCacheHIter cache_it = lookup_by_val(data_pairs, interface_id,
-                                           bestVariablesArray[i], search_set);
+                                           best_vars, search_set);
     if (cache_it == data_pairs.get<hashed>().end())
       s << "<<<<< Best data not found in evaluation cache\n\n";
     else {
@@ -276,7 +265,7 @@ void Optimizer::print_results(std::ostream& s)
     }
 
     // pass data to the results archive
-    archive_best(i, bestVariablesArray[i], bestResponseArray[i]);
+    archive_best(i, best_vars, bestResponseArray[i]);
   }
 }
 
