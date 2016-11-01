@@ -168,9 +168,6 @@ void NomadOptimizer::core_run()
   p.set_LOWER_BOUND(this->lowerBound);
   p.set_UPPER_BOUND(this->upperBound);
      
-  // Set Rnd Seed
-  NOMAD::RNG::set_seed(randomSeed);
-     
   // Set Max # of BB Evaluations
   p.set_MAX_BB_EVAL (maxBlackBoxEvals);
 
@@ -200,10 +197,19 @@ void NomadOptimizer::core_run()
   // Set method control parameters.
   p.set_EPSILON(epsilon);
   p.set_MAX_ITERATIONS(maxIterations);
+  p.set_SEED(randomSeed);
+
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
-  if(vns>0.0)
-    p.set_VNS_SEARCH( NOMAD::Double(vns) );
+  if(vns>0.0) {
+    if (vns <= 1.0)
+      p.set_VNS_SEARCH( NOMAD::Double(vns) );
+    else {
+      Cerr << "\nWarning: variable_neighborhood_search outside acceptable "
+	   << "range of (0,1].\nUsing default value of 0.75.\n\n";
+      p.set_VNS_SEARCH(0.75);
+    }
+  }
      
   // Set the History File, which will contain all the evaluations history
   p.set_HISTORY_FILE( historyFile );
