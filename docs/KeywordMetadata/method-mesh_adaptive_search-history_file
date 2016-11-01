@@ -10,7 +10,8 @@ points.
 
 By default, mesh adaptive direct search will write the list of
 evaluation points in a file named mads_history.xxxx, where xxxx
-corresponds to a randomly generated number.
+corresponds to a randomly generated number. Dakota's output level
+controls the method's level of output to file.
 
 Topics::	
 

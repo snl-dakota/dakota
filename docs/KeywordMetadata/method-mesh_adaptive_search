@@ -22,8 +22,9 @@ Categorical variables, however, must be limited to design variables.
 The best objective function value achieved and associated parameter
 and constraint values can be found at the end of the %Dakota output.
 The method's internally summarized iteration history will appear in
-the screen output.  It also generates a history file containing a list
-of all function evaluations done.
+the screen output by default, with the option to control the method's
+output through Dakota's output level.  It also generates a history
+file containing a list of all function evaluations done.
 
 <b> Additional Discussion </b>
 

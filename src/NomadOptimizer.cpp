@@ -109,12 +109,42 @@ void NomadOptimizer::core_run()
      
   // Create parameters
   NOMAD::Parameters p (out);
+
+  // Verify that user has requested surrogate model construction
+  // when use_surrogate is defined.
+  if ((iteratedModel.model_type() != "surrogate") && 
+    ((useSurrogate.compare("inform_search") == 0) || (useSurrogate.compare("optimize") == 0))) {
+  Cerr << "Error: Specified use_surrogate without requesting surrogate model "
+    << "construction." << std::endl;
+    abort_handler(-1);
+  }
+
+  // Overwriting dummy default needed for error catching
+  if (useSurrogate.compare("none") == 0){
+    useSurrogate = "optimize";
+  }
      
-  // If model is a surrogate, build it and tell NOMAD to make use of
-  // it.
+  // If model is a surrogate, build it. Subsequently, tell NOMAD to make
+  // use of it if use_surrogate is set to inform_search
   if (iteratedModel.model_type() == "surrogate") {
     iteratedModel.build_approximation();
+
+    if (useSurrogate.compare("inform_search") == 0){
     p.set_HAS_SGTE(true);
+    }
+  }
+
+  // Map dakota output levels to NOMAD's four different levels
+  // of display. Default is set to normal NOMAD output level
+  // (see NORMAL_DISPLAY setting in NOMAD manual)
+  switch (outputLevel)
+  {
+      case SILENT_OUTPUT: p.set_DISPLAY_DEGREE ( 0 ); break;
+      case QUIET_OUTPUT: p.set_DISPLAY_DEGREE ( 1 ); break;
+      case NORMAL_OUTPUT: p.set_DISPLAY_DEGREE ( 2  ); break;
+      case DEBUG_OUTPUT: p.set_DISPLAY_DEGREE ( 3  ); break;
+      case VERBOSE_OUTPUT: p.set_DISPLAY_DEGREE ( 3  ); break;
+      default: p.set_DISPLAY_DEGREE ( 1  );
   }
 
   // Load Input Parameters
