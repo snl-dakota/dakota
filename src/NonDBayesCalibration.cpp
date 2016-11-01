@@ -701,7 +701,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
     // EVALUATE STOPPING CRITERIA
     // check relative MI change
-    if (num_hifi != 0) {
+    if (num_hifi == 1)
+      prev_MI = max_MI;
+    else if (num_hifi > 1) {
       MIdiff = prev_MI - max_MI;
       MIrel = fabs(MIdiff/prev_MI);
       if (MIrel < 0.05) {
