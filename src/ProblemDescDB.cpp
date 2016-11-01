@@ -2456,6 +2456,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"jega.fitness_limit", P fitnessLimit},
 	{"jega.percent_change", P convergenceTolerance},
 	{"jega.shrinkage_percentage", P shrinkagePercent},
+	{"mesh_adaptive_search.initial_delta", P initMeshSize},
+	{"mesh_adaptive_search.threshold_delta", P minMeshSize},
 	{"mesh_adaptive_search.variable_neighborhood_search", P vns},
 	{"min_boxsize_limit", P minBoxSize},
 	{"mutation_rate", P mutationRate},

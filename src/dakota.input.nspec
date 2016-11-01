@@ -379,6 +379,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( mesh_adaptive_search {N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}
+      [ initial_delta REAL {N_mdm(Real,initMeshSize)} ]
+      [ threshold_delta REAL {N_mdm(Real,minMeshSize)} ]
       [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ history_file STRING {N_mdm(str,historyFile)} ]

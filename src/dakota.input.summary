@@ -362,6 +362,8 @@ KEYWORD12 method
 	  )
 	|
 	( mesh_adaptive_search
+	  [ initial_delta REAL ]
+	  [ threshold_delta REAL ]
 	  [ function_precision REAL ]
 	  [ seed INTEGER > 0 ]
 	  [ history_file STRING ]

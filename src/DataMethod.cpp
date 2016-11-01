@@ -100,6 +100,7 @@ DataMethodRep::DataMethodRep():
   //mutationType(""), replacementType(""), fitnessType(""),
   populationSize(50), //flatFile(),
   // NOMAD
+  initMeshSize(1.0), minMeshSize(1.e-6),
   historyFile("mads_history"), displayFormat("bbe obj"), 
   vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),

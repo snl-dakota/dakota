@@ -1350,19 +1350,21 @@ static KeyWord
 		{"inform_search",8,0,1,1,0,0.,0.,0,N_mdm(lit,useSurrogate_inform_search)},
 		{"optimize",8,0,1,1,0,0.,0.,0,N_mdm(lit,useSurrogate_optimize)}
 		},
-	kw_227[12] = {
+	kw_227[14] = {
 		{0,0,1,0,0,kw_27},
-		{"display_all_evaluations",8,0,7,0,0,0.,0.,0,N_mdm(true,showAllEval)},
-		{"display_format",11,0,4,0,0,0.,0.,0,N_mdm(str,displayFormat)},
-		{"function_precision",10,0,1,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
-		{"history_file",11,0,3,0,0,0.,0.,0,N_mdm(str,historyFile)},
-		{"max_function_evaluations",0x29,0,10,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
-		{"max_iterations",0x29,0,9,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
-		{"neighbor_order",0x19,0,6,0,0,0.,0.,0,N_mdm(pint,neighborOrder)},
-		{"scaling",8,0,11,0,0,0.,0.,0,N_mdm(true,methodScaling)},
-		{"seed",0x19,0,2,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
-		{"use_surrogate",8,2,8,0,kw_226},
-		{"variable_neighborhood_search",10,0,5,0,0,0.,0.,0,N_mdm(Real,vns)}
+		{"display_all_evaluations",8,0,9,0,0,0.,0.,0,N_mdm(true,showAllEval)},
+		{"display_format",11,0,6,0,0,0.,0.,0,N_mdm(str,displayFormat)},
+		{"function_precision",10,0,3,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
+		{"history_file",11,0,5,0,0,0.,0.,0,N_mdm(str,historyFile)},
+		{"initial_delta",10,0,1,0,0,0.,0.,0,N_mdm(Real,initMeshSize)},
+		{"max_function_evaluations",0x29,0,12,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
+		{"max_iterations",0x29,0,11,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
+		{"neighbor_order",0x19,0,8,0,0,0.,0.,0,N_mdm(pint,neighborOrder)},
+		{"scaling",8,0,13,0,0,0.,0.,0,N_mdm(true,methodScaling)},
+		{"seed",0x19,0,4,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
+		{"threshold_delta",10,0,2,0,0,0.,0.,0,N_mdm(Real,minMeshSize)},
+		{"use_surrogate",8,2,10,0,kw_226},
+		{"variable_neighborhood_search",10,0,7,0,0,0.,0.,0,N_mdm(Real,vns)}
 		},
 	kw_228[2] = {
 		{"num_offspring",0x19,0,2,0,0,0.,0.,0,N_mdm(pintz,numOffspring)},
@@ -2142,7 +2144,7 @@ static KeyWord
 		{"local_evidence",8,6,4,1,kw_216,0.,0.,0,N_mdm(utype,methodName_LOCAL_EVIDENCE)},
 		{"local_interval_est",8,3,4,1,kw_217,0.,0.,0,N_mdm(utype,methodName_LOCAL_INTERVAL_EST)},
 		{"local_reliability",8,5,4,1,kw_225,0.,0.,0,N_mdm(utype,methodName_LOCAL_RELIABILITY)},
-		{"mesh_adaptive_search",8,11,4,1,kw_227,0.,0.,0,N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)},
+		{"mesh_adaptive_search",8,13,4,1,kw_227,0.,0.,0,N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)},
 		{"moga",8,8,4,1,kw_241,0.,0.,0,N_mdm(utype,methodName_MOGA)},
 		{"multi_start",8,4,4,1,kw_244,0.,0.,0,N_mdm(utype,methodName_MULTI_START)},
 		{"multidim_parameter_study",8,1,4,1,kw_245,0.,0.,0,N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)},

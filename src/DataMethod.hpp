@@ -727,6 +727,10 @@ public:
   int randomSeed;
 
   // MADS
+  /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
+  Real initMeshSize;
+  /// the \c minMeshSize choice for NOMAD in \ref MethodNOMADDC
+  Real minMeshSize;
   /// the \c HISTORY_FILE specification for NOMAD
   String historyFile;
   /// the \c DISPLAY_STATS specification for NOMAD

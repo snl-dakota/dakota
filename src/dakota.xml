@@ -738,6 +738,12 @@
               &default_scaling;
             </keyword>
             <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search" help="" minOccurs="1" >
+              <keyword  id="initial_delta2" name="initial_delta" code="{N_mdm(Real,initMeshSize)}" label="Initial mesh size" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="threshold_delta2" name="threshold_delta" code="{N_mdm(Real,minMeshSize)}" label="Minimum mesh size" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-6" >
+                <param type="REAL" />
+              </keyword>
               <keyword  id="function_precision1" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Function Evaluation Precision" help="MethodCommands.html#MethodNOMADDC" minOccurs="0" default="1.0e-10" >
                 <param type="REAL" />
               </keyword>

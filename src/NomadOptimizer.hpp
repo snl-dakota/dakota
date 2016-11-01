@@ -101,7 +101,7 @@ private:
 	       
   /// Algorithm control parameters passed to NOMAD
   int randomSeed, maxBlackBoxEvals, maxIterations;
-  Real epsilon, vns;
+  Real initMesh, minMesh, epsilon, vns;
 
   /// Output control parameters passed to NOMAD
   std::string outputFormat, historyFile;

@@ -31,6 +31,12 @@ namespace Dakota {
 NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model)
 {     
+  // Set initial mesh size
+  initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
+
+  // Set minimum mesh size
+  minMesh = probDescDB.get_real("method.mesh_adaptive_search.threshold_delta");
+
   // Set Rnd Seed
   randomSeed = probDescDB.get_int("method.random_seed");
           
@@ -195,6 +201,8 @@ void NomadOptimizer::core_run()
   p.set_DISPLAY_ALL_EVAL(displayAll);
 
   // Set method control parameters.
+  p.set_INITIAL_MESH_SIZE(initMesh);
+  p.set_MIN_MESH_SIZE(minMesh);
   p.set_EPSILON(epsilon);
   p.set_MAX_ITERATIONS(maxIterations);
   p.set_SEED(randomSeed);
