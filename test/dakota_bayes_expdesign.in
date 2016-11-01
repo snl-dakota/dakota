@@ -2,21 +2,22 @@
 #@ *: DakotaConfig=HAVE_QUESO
 #@ s1: ReqFiles=dakota_bayes_expdesign.dat
 #@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
+#@ s2: UserMan=bayes_experimental_design
 
 environment
         tabular_graphics_data
 
 method,
        bayes_calibration queso
-          #output debug
+#          #output debug 						#s2
           dram
 	  seed = 34785				
           chain_samples = 500
           experimental_design
           initial_samples = 2
 	  num_candidates = 2
-##	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
-##		freeform						#s2
+#	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
+#		freeform						#s2
 	  max_hifi_evaluations = 1
           model_pointer = 'HIERARCH'
  
