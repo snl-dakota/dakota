@@ -28,7 +28,7 @@ my $exitcode = 0;
 # numerical field in exponential notation
 $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
 # invalid numerical field
-$nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND)";
+$nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND|1\\.#QNAN(?:0+e\\+000))";
 $infre = "-?(?:1\\.#)?[Ii][Nn][Ff]";
 $naninf = "(?:$nanre|$infre)";
 

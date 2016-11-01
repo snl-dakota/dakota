@@ -58,7 +58,7 @@ my $summary_exitcode = 0;
 
 # regular expressions for matching and extracting test results
 # invalid numerical field
-my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff]|1\\.#INF|1\\.#IND)";
+my $naninf = "-?(?:[Nn][Aa][Nn]|[Ii][Nn][Ff]|1\\.#INF|1\\.#IND|1\\.#QNAN(?:0+e\\+000))";
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
 my $i = "-?\\d+";                     # numerical field: integer notation
@@ -1372,7 +1372,7 @@ sub parse_test_output {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
-      while (/^\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
+      while (/^\s*${s}\s*($e|$naninf).*/) {  # may contain nan/inf
         print;
         print TEST_OUT;
         $_ = <OUTPUT>; # grab next line
