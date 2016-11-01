@@ -133,9 +133,6 @@ private:
 
   /// defines use of surrogate in NOMAD
   std::string useSurrogate;
-
-  /// defines level of NOMAD display
-  short dakLev;
 };
 
 ///  NOMAD-based Evaluator class.

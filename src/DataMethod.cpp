@@ -102,7 +102,7 @@ DataMethodRep::DataMethodRep():
   // NOMAD
   historyFile("mads_history"), displayFormat("bbe obj"), 
   vns(0.0), neighborOrder(1), showAllEval(false),
-  useSurrogate("optimize"),
+  useSurrogate("none"),
   // NCSU 
   volBoxSize(-1.),
   // DDACE

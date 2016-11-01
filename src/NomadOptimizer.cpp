@@ -88,9 +88,6 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
 
   // Definition for how to use surrogate model.
   useSurrogate = probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
-
-  dakLev = probDescDB.get_short("method.output");
-
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
@@ -113,7 +110,6 @@ void NomadOptimizer::core_run()
   // Create parameters
   NOMAD::Parameters p (out);
 
-
   // Verify that user has requested surrogate model construction
   // when use_surrogate is defined.
   if ((iteratedModel.model_type() != "surrogate") && 
@@ -121,6 +117,11 @@ void NomadOptimizer::core_run()
   Cerr << "Error: Specified use_surrogate without requesting surrogate model "
     << "construction." << std::endl;
     abort_handler(-1);
+  }
+
+  // Overwriting dummy default needed for error catching
+  if (useSurrogate.compare("none") == 0){
+    useSurrogate = "optimize";
   }
      
   // If model is a surrogate, build it. Subsequently, tell NOMAD to make
@@ -136,7 +137,7 @@ void NomadOptimizer::core_run()
   // Map dakota output levels to NOMAD's four different levels
   // of display. Default is set to normal NOMAD output level
   // (see NORMAL_DISPLAY setting in NOMAD manual)
-  switch (dakLev)
+  switch (outputLevel)
   {
       case SILENT_OUTPUT: p.set_DISPLAY_DEGREE ( 0 ); break;
       case QUIET_OUTPUT: p.set_DISPLAY_DEGREE ( 1 ); break;
