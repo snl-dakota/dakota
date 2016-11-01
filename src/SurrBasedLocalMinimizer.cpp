@@ -33,6 +33,8 @@ static const char rcsId[]="@(#) $Id: SurrBasedLocalMinimizer.cpp 7031 2010-10-22
 
 namespace Dakota {
 
+extern PRPCache data_pairs;
+
 // initialization of statics
 SurrBasedLocalMinimizer* SurrBasedLocalMinimizer::sblmInstance(NULL);
 
@@ -1082,7 +1084,6 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 bool SurrBasedLocalMinimizer::
 find_approx_response(const Variables& search_vars, Response& search_resp)
 {
-  extern PRPCache data_pairs;
   bool found = false;
 
   // search for fn vals, grads, and Hessians separately since they may
