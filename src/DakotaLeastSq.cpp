@@ -274,6 +274,11 @@ void LeastSq::print_results(std::ostream& s)
   // Currently there is no weighting matrix, but that can be added. 
 
   if (!confBoundsLower.empty() && !confBoundsUpper.empty()) {
+    if (expData.num_experiments() > 1) {
+      s << "Warning: Confidence intervals may be inaccurate when "
+        << "num_experiments > 1\n";
+    }
+
     StringMultiArrayConstView cv_labels
       = iteratedModel.continuous_variable_labels();
     for (size_t i = 0; i < numContinuousVars; i++)

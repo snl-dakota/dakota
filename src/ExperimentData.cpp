@@ -310,9 +310,12 @@ void ExperimentData::load_data(const std::string& context_message)
     catch(std::runtime_error & e)
     {
       if( numConfigVars > 0 )
-        throw std::runtime_error("Expected "+convert_to_string(numConfigVars)+" experiment "
-            + "config variables but the required file \""+config_vars_basepath.string()
-            +"\" does not exist.");
+        throw
+          std::runtime_error("Expected to read " +
+                             convert_to_string(numConfigVars) +
+                             " experiment config variables, but required file(s) \"" +
+                             config_vars_basepath.string() +
+                             ".*.config\" not found.");
     }
   }
 
