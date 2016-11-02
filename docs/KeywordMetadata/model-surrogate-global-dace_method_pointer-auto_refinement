@@ -12,9 +12,6 @@ The amount of new training data that is incorporated each iteration is specified
 in the DACE method that is referred to by the model's \c dace_method_pointer.
 See \ref method-sampling-refinement_samples for more information.
 
-<b> Default Behavior </b>
-By default, the surrogate will not be iteratively refined.
-
 Topics::
 surrogate_models
 Examples::
