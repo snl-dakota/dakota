@@ -10442,6 +10442,15 @@ Test Number 17 succeeded
 <<<<< Best objective function  =
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 12
+dakota_nonlinear_cg.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0062158629e+00 x1
+                      9.7212181131e-01 x2
+<<<<< Best objective function  =
+                      6.0552240218e-07
+<<<<< Best data captured at function evaluation 40
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
