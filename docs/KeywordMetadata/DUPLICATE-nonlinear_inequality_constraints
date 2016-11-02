@@ -27,6 +27,7 @@ The \c scale_types and \c scales keywords are related to scaling of
 \f$ g \left( x \right) \f$.  See \ref method-scaling for details.
 
 Topics::
+nonlinear_constraints
 Examples::
 Theory::
 Faq::

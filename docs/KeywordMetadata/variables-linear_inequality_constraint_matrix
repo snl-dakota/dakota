@@ -1,20 +1,63 @@
 Blurb::
 Define coefficients of the linear inequality constraints
 Description::
-In the inequality case, the
-constraint matrix \f$A\f$ provides coefficients for the variables in the
-two-sided formulation:
+In the inequality case, the constraint matrix \f$A\f$ provides 
+coefficients for the variables in the two-sided formulation:
 \f[a_l \leq Ax \leq a_u\f]
 
 Where the bounds are optionally specified by \c linear_inequality_lower_bounds, 
 and \c linear_inequality_upper_bounds.
 The bounds, if not specified, will default to -infinity, and 0, respectively,
-resulting in 
-one-sided inequalities of the form
+resulting in one-sided inequalities of the form
 \f[Ax \leq 0.0\f].
+
+The linear_constraints topics page (linked above) outlines a few additional
+things to consider when using linear constraints.
 
 Topics::	linear_constraints
 Examples::
+
+An optimization involving two variables, \c x1 and \c x2, is to be performed. These
+variables must satisfy two constraints:
+
+\f[ 1.5 \cdot x1 + 1.0 \cdot x2 \leq 5.0 \f]
+\f[ x1 \leq x2 \Longrightarrow x1 - x2 \leq 0.0 \f]
+
+The pair of constraints can be written in matrix form as:
+
+\f[\begin{bmatrix}
+  1.5 & 1.0 \\
+  1.0 & -1.0 
+\end{bmatrix}
+  
+\begin{bmatrix}
+  x1 \\
+  x2
+\end{bmatrix}
+\leq
+\begin{bmatrix}
+  5.0 \\
+  0.0
+\end{bmatrix}
+
+\f]
+
+The coefficient matrix and right hand side of this matrix inequality are expressed
+to Dakota in the variables section of the input file:
+
+\verbatim
+
+variables
+  continuous_design 2
+    descriptors 'x1' 'x2'
+  linear_inequality_constraint_matrix = 1.5   1.0
+                                        1.0  -1.0
+  linear_inequality_upper_bounds = 5.0
+                                   0.0
+
+\endverbatim
+
+
 Theory::
 Faq::
 See_Also::	

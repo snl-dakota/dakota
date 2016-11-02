@@ -18,6 +18,7 @@ The \c scale_types and \c scales keywords are related to scaling of
 
 
 Topics::
+nonlinear_constraints
 Examples::
 Theory::
 Faq::

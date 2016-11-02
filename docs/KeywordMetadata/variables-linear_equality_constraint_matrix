@@ -5,8 +5,14 @@ In the equality case, the constraint matrix \f$A\f$
 provides coefficients for the variables on the left hand side of:
 \f[Ax = a_t\f]
 
+The linear_constraints topics page (linked above) outlines a few additional
+things to consider when using linear constraints.
+
 Topics::	linear_constraints
 Examples::
+
+See the \ref variables-linear_inequality_constraint_matrix page for an example.
+
 Theory::
 Faq::
 See_Also::	

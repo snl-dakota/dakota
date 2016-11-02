@@ -1,0 +1,4 @@
+Nonlinear constraints are supported by many of Dakota's optimizers. For a 
+discussion of the difference between nonlinear and linear constraints,
+see the \ref topic-linear_constraints topic page. The Constraint Considerations
+section of the \ref topic-optimization_and_calibration page may also be of interest.

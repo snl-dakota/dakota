@@ -10,7 +10,6 @@ dakota_IO
  file_formats
 dakota_concepts
  method_independent_controls
-  linear_constraints
  block
   block_identifier
   block_pointer
@@ -34,6 +33,7 @@ variables
  variable_domain
   continuous_variables
   discrete_variables
+ linear_constraints
  variable_type
   design_variables
   aleatory_uncertain_variables
@@ -41,6 +41,7 @@ variables
   state_variables
 responses
  response_types
+ nonlinear_constraints
 interface
  simulation_file_management
  workflow_management
