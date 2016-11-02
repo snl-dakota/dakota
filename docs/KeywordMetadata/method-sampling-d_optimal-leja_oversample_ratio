@@ -7,7 +7,8 @@ which the D-Optimal points are chosen.
 
 <b> Default Behavior </b>
 
-The default oversampling ratio is 10.0.
+The default when not specified is to perform candidate-based sample
+design selection (non-Leja)
 
 Topics::	
 Examples::

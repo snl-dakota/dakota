@@ -1,0 +1,23 @@
+Blurb:: Maximum number of expansion refinement iterations
+
+Description::
+Limits the number of times the expansion can be refined under various
+refinement strategies.
+
+Topics::
+
+Examples::
+
+\verbatim
+method,
+  polynomial_chaos		
+    dimension_adaptive generalized
+    p_refinement
+      max_refinement_iterations = 20	
+      convergence_tol = 1.e-4
+    sparse_grid_level = 1
+\endverbatim
+
+Theory::
+Faq::
+See_Also::
