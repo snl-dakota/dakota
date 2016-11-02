@@ -1531,6 +1531,26 @@ catalogued within {\tt Dakota/examples/script\_interfaces} and
 distributions) that are intended to provide guidance for individual
 machine idiosyncrasies.
 
+Dakota relies on hints from the runtime environment and command
+line arguments to detect when it has been launched in parallel. Due to 
+the large number of HPC vendors and MPI implementations, parallel launch
+is not always detected properly. A parallel launch is indicated
+by the status message 
+\begin{small}
+\begin{verbatim}
+  Running MPI Dakota executable in parallel on N processors. 
+\end{verbatim}
+\end{small}
+
+which is written to the console near the beginning of the Dakota run.
+
+Beginning with release 6.5, if Dakota incorrectly detects a parallel launch, 
+automatic detection can be overriden by setting the environment variable 
+\texttt{DAKOTA\_RUN\_PARALLEL}. If the first character is set to \texttt{1}, 
+\texttt{t}, or \texttt{T}, Dakota will configure itself to run in parallel.
+If the variable exists but is set to anything else, Dakota will configure 
+itself to run in serial mode.
+
 \section{Specifying Parallelism}\label{parallel:spec}
 
 Given an allotment of processors, Dakota contains logic based on the
