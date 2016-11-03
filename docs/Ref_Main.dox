@@ -513,7 +513,7 @@ Resulting in
 ...
 \endverbatim
 
-Finally, <tt>\--output_precision <int></tt> will generate tabular
+Finally, <tt>\--output_precision integer</tt> will generate tabular
 output with the specified integer digits of precision.
 
 \section dakota_restart_utility-concat Concatenation of Multiple Restart Files

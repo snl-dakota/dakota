@@ -3,7 +3,7 @@ Active (variable) subspace model
 
 Description::
 A model that transforms the original model (given by \ref
-model-subspace-actual_model_pointer) to one with a reduced set of variables.  This
+model-active_subspace-actual_model_pointer) to one with a reduced set of variables.  This
 reduced model is identified by iteratively sampling the gradient of
 the original model and performing a singular value decomposition of
 the gradient matrix.
@@ -16,12 +16,12 @@ identify an active subspace using one of the truncation methods.
 <b> Usage Tips </b>
 
 If the desired subspace size is not identified, consider using the explicit
-\ref model-subspace-dimension truncation option or one of the other truncation methods.
+\ref model-active_subspace-dimension truncation option or one of the other truncation methods.
 
 Topics::
 
 Examples::
-Perform an initial 100 gradient samples and use the \ref model-subspace-truncation_method-bing_li
+Perform an initial 100 gradient samples and use the \ref model-active_subspace-truncation_method-bing_li
 truncation method to identify an active subspace. The truncation method uses 150 bootstrap samples
 to compute the Bing Li truncation metric.
 
@@ -50,8 +50,8 @@ the input variables, this method can allow significant dimension reduction. Belo
     \f$\hat{\mathbf{\Lambda}} = \text{diag}(\hat{\lambda}_1,\:\ldots\:,\hat{\lambda}_N)\f$
     contains eigenvalues, and \f$N\f$ is the total number of parameters.
 
-3. Using a \ref model-subspace-truncation_method or specifying a
-    \ref model-subspace-dimension to estimate the active subspace size, 
+3. Using a \ref model-active_subspace-truncation_method or specifying a
+    \ref model-active_subspace-dimension to estimate the active subspace size, 
     split the eigenvectors into active and inactive directions,
     \f[\hat{\mathbf{W}} = \left[\hat{\mathbf{W}}_1\quad\hat{\mathbf{W}}_2\right].\f]
     These eigenvectors are used to rotate the input variables.

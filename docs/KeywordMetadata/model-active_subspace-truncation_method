@@ -13,7 +13,7 @@ model-active_subspace-truncation_method-constantine diagnostic.
 <b> Usage Tips </b>
 
 If the automated subspace identification methods do not yield desirable results,
-consider using the explicit \ref model-subspace-dimension truncation option.
+consider using the explicit \ref model-active_subspace-dimension truncation option.
 
 Topics::
 

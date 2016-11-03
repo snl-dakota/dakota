@@ -7,7 +7,8 @@ functions strings indicating the scaling type for each response value
 in methods that support scaling, when scaling is enabled.  If only one
 type is specified, it will apply to each prinary response function.
 
-See \ref method-scaling for details on how to use this keyword.  
+See the scaling information under specific methods, e.g.,
+method-*-scaling for details on how to use this keyword.
 
 Note that primary response functions (objective, calibration, or
 response functions) cannot be automaticaly scaled due to lack of

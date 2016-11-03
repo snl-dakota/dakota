@@ -7,7 +7,8 @@ Type of scaling to apply to nonlinear constraints: \c 'none', \c
 will apply to all components of the relevant nonlinear constraint
 vector.
 
-See \ref method-scaling for details on how to use this keyword.
+See the scaling information under specific methods, e.g.,
+method-*-scaling for details on how to use this keyword.
 
 Topics::	
 Examples::
