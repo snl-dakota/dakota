@@ -36,13 +36,15 @@
 ##############################################################################
 
 ##############################################################################
-# Set BLAS, LAPACK library paths ONLY if in non-standard locations
+# Set BLAS, LAPACK library paths ONLY if in non-standard locations. For MKL,
+# set both BLAS_LIBS and LAPACK_LIBS to the appropriate link line. (If any
+# C++ compiler options are needed by MKL, use CMAKE_CXX_FLAGS.)
 ##############################################################################
 #set( BLAS_LIBS 
-#      "/usr/lib64"
+#      "/usr/lib64/libblas.so"
 #      CACHE FILEPATH "Use non-standard BLAS library path" FORCE )
 #set( LAPACK_LIBS 
-#      "/usr/lib64"
+#      "/usr/lib64/liblapack.so"
 #      CACHE FILEPATH "Use non-standard BLAS library path" FORCE )
 
 ##############################################################################
