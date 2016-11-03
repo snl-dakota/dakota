@@ -1,91 +1,178 @@
-Blurb::
-Supply calibration data in the case of field data or mixed data (both scalar and field data).
+Blurb:: Supply field or mixed field/scalar calibration data
 
 Description::
 
-\c calibration_data specifies a keyword block that indicates that Dakota 
-should read in various types of experimental data. 
-This block is primarily to support the reading of field calibration data. 
+\c calibration_data specifies a keyword block that indicates that
+Dakota should read in experimental data for calibration.  This block
+is primarily to support the reading of field calibration data.  The
+user will typically specify the number of experiments, \c
+num_experiments.  If this is not specified, it is assumed there is
+only one experiment.
 
-The user will specify the number of experiments, \c num_experiments. 
-If this is not specified, it is assumed there is only one experiment. 
+Up to four types of data may be read.  They are read from a collection
+of files, one per response descriptor, per experiment.  In this
+discussion, DESC refers to the response descriptor and NUM to the
+experiment number.
 
-For each experiment, there are four main types of data related to fields: 
-<ul>
-   <li> values.  
+<ol>
+<li> <b>Values:</b> The scalar or field-valued response function values,
+     e.g., temperature values, voltage levels.  These are read from
+     files named \c DESC.NUM.dat (one per response descriptor, per
+     experiment), e.g, \c volts.1.dat, \c volts.2.dat.  Scalar files
+     will contain a single value, while field files will each contain
+     a column of field reponse values with length indicated in \ref
+     responses-calibration_terms-field_calibration_terms-lengths. 
+</li>
+<li> <b>Coordinates:</b> Field coordinates specify independent variables
+     (e.g., spatial or temporal coordinates) upon which the field
+     depends.  For example, the voltage might be a function of time,
+     so time is the field coordinate.  These are read from files named
+     \c DESC.NUM.coords, each containing \ref
+     responses-calibration_terms-field_calibration_terms-num_coordinates_per_field
+     columns and 1 (scalar) or field length (\ref
+     responses-calibration_terms-field_calibration_terms-lengths).
+</li>
+<li> <b>Variances:</b> If \ref
+     responses-calibration_terms-calibration_data-variance_type is
+     specified, variance values are read from files \c DESC.NUM.sigma.
+     Note that a single \c variance_type may be specified, or a unique
+     \c variance_type per response descriptor (per scalar or field).
+     If the \c variance_type is:
+     <ul>
+     <li> 'scalar': a single variance value will be read from the file.
+     </li>
+     <li> 'diagonal' (field responses only): a column vector of
+          variance values (length equal to length of the field) will
+          be read from the file. The values are the variances of each
+          field value for this descriptor.
+     </li>
+     <li> 'matrix' (field responses only): a matrix of covariance
+          values (square with size the length of the field) will be
+          read from the file. The matrix is a full covariance matrix
+          for the components of this field response.  While covariance among entries in a field response may be specified, covariance among experiments is not permitted.
+     </li>
+     </ul>
+</li>
+<li> <b>Configuration variables:</b> specify the conditions
+     corresponding to different experiments.  When
+     responses-calibration_terms-calibration_data-num_config_variables
+     is specified, the configuration variable values for each
+     experiment should be placed in a file named \c
+     experiment.NUM.config, where the number of items in that config
+     file are the \c num_config_variables.  These variables are used
+     as auxilliary state variables for the simulation (for example)
+     and are not calibrated.
+</li>
+</ol>
 
-   These are the values of the experiment field (e.g. temperature values, voltage levels, etc.) 
-   These MUST be specified in a file named response_descriptor.NUM.dat, where NUM is replaced 
-   by the number of the experiment (1, 2, ...) and response_descriptor is replaced by the actual 
-   \c response_descriptor the user has specified.  For example, if \c response_descriptor = voltage, 
-   then the voltage field values for experiment 1 should be in a file labeled 
-   voltage.1.dat. The field values should be in a column (e.g. one field value per row).
-  
-   </li>
-   <li> field coordinates.  
+<b>Aggregating scalar data:</b> The above description is primarily
+relevant for field data (with files for field values, field
+coordinates, field variances).  If the user also has scalar
+experimental data, it may be entered as described above, i.e., one
+file named DESC.NUM.dat per scalar response.  However, an alternative
+is to provde the data for all scalar responses in aggregate in the
+simpler \ref
+responses-calibration_terms-calibration_data-scalar_data_file format,
+with the number of rows of that file equal to the number of
+experiments.  The scalar data file may be used in combination with the
+the separate field files described above.
 
-   Field coordinates specify independent variables (e.g. spatial or temporal coordinates) upon which 
-   the field depends.  For example, the voltage level above might be a function of time, so time is 
-   the field coordinate.  For the calibration data, the 
-   field coordinates are read from a file named 
-   response_descriptor.NUM.coords, similar to the pattern for field values.  The number of columns 
-   in the coords file should be equal to the number of field coordinates.  
+<b>Interpolation:</b> One important feature of field data is the
+capability to interpolate between points in the field.  For example,
+we may have simulation data at a set of responses \f$ y \f$ at time
+points \f$ t \f$: (\f$ t_{s1}, y_{s1} \f$), (\f$ t_{s2}, y_{s2} \f$),
+etc.  In this example, \f$ t \f$ is the independent coordinate for the
+simulation, and the simulation time and response points are denoted
+with subscripts \f$ s1, s2, s3, \f$.  If the user has experimental
+data that is taken at different time points: (\f$ t_{e1}, y_{e1} \f$),
+(\f$ t_{e2}, y_{e2} \f$), ..., it is necessary to interpolate the
+simulation data to provide estimates of the simulation response at the
+experimental time points to construct the residual terms (model -
+experiment) at the experimental time points.  Dakota can perform 1-D
+interpolation.  The user must specify the keyword \c interpolate, and
+also provide the field coordinates as well as field values for the
+experiment data.
 
-   </li>
-   <li> variance terms.  
+If the \c interpolate keyword is not specified, Dakota will assume
+that the simulation field data and the experiment field data is taken
+at the same set of independent coordinate values and simply construct
+the difference between these field terms to create the set of
+residuals for the sum-of-squares calculation.  When \c interpolate is
+specified, the simulation coordinates are assumed fixed and the same
+for each simulation.  These simulation coordinates are provided in
+DESC.NUM.coords.  However, the experiment coordinates for each
+experiment can be different, and are provided in the files numbered by
+experiment with the file names given by DESC.NUM.coords, as indicated
+above.
 
-   The user needs to specify \c variance_type, which defines the type of experimental measurement 
-   error.  This is a string list, with one variance type specified for each scalar and each field.  
-   The available types are 'none' (no variance is specified), 'scalar' (one scalar value is specified 
-   which is applicable to all of the measurements in the field), 'diagonal' (a column vector is 
-   provided which contains the number of elements of the experimental data field.  Each element of the    vector contains the experimental measurement variance corresponding to that particular field 
-   measurement.  For example, for the fifth term in the field, the fifth term in the diagonal 
-   vector would have the variance of that measurement), and 'matrix'.  In the matrix case, a 
-   full covariance matrix is provided, which contains the pairwise correlations between each element 
-   in the field.  For each field, if the \c variance_type is not 'none', a data file must be provided 
-   with the name response_descriptor.NUM.sigma, which contains the appropriate variance data for 
-   that field. 
-  
-   </li>
-   <li> configuration variables.  
+Examples::
 
-   Configuration variables specify the conditions corresponding to different experiments.  
-   This is used when there is more than one experiment.  If \c num_config_variables is positive, 
-   the configuration variables for each experiment should be placed in a file named 
-   experiment.NUM.config, where the number of items in that config file are the 
-   \c num_config_variables.  Currently, configuration variables are not being used.  However, the intent is that 
-   they will be used as state variables for the simulation (for example) and not as variables that would be calibrated.
+Consider this mixed scalar/field example with 3 scalar responses
+(max_temp, min_power, size) and two field-valued responses (volts as a
+function of 27 time points and amps as a function of 5 time points).
+The experiments were conducted given values of two configuration
+variables.
 
-   </li>
-</ul>
+\verbatim
+responses
+  descriptors = 'max_temp' 'min_power' 'size' 'volts' 'amps'
+  calibration_terms = 5
 
-The above description is relevant for field data (with files for field values, field coordinates, 
-field variances).  If the user also has scalar experimental data, it may be entered in the same way (e.g. 
-one file for a scalar experimental value named scalar_response_descriptor.NUM.dat, etc.) 
-However, the user can choose to enter the scalar data in the format that we offer for pure scalar 
-data, where we have just one file, with the number of rows of that file equal to the number 
-of experiments.  In that case, the scalar data is in the file given by the name \c scalar_data_file, 
-and the format of that file is the same as discussed in \ref responses-calibration_terms-calibration_data_file.
+    # define the scalar and field terms
+    scalar_calibration_terms = 3
+    field_calibration_terms = 2
+      lengths = 27 5
+      num_coordinates_per_field = 1 1
+      read_field_coordinates
 
-One important feature of field data is the capability to interpolate 
-between points in the field.  For example, we may have simulation data 
-at a set of responses \f$ y \f$ at time points \f$ t \f$: 
-(\f$ t_{s1}, y_{s1} \f$), (\f$ t_{s2}, y_{s2} \f$), etc. 
-In this example, \f$ t \f$ is the independent coordinate for the simulation, and the simulation time and response points are denoted with subscripts \f$ s1, s2, s3, \f$.  If the user has experimental data that is taken at different time points:   
-(\f$ t_{e1}, y_{e1} \f$), (\f$ t_{e2}, y_{e2} \f$), ..., 
-it is necessary to interpolate the simulation data to provide estimates 
-of the simulation response at the experimental time points to 
-construct the residual terms (model - experiment) 
-at the experimental time points.  Dakota can perform this interpolation 
-now.  The user must specify the keyword \c interpolate, and also 
-provide the field coordinates as well as field values for the 
-experiment data.  If the \c interpolate keyword is not specified, 
-Dakota will assume that the simulation field data and the experiment
-field data is taken at the same set of independent coordinate values and 
-simply construct the difference between these field terms to create the set of residuals for the sum-of-squares calculation.
-When \c interpolate is specified, the simulation coordinates are assumed fixed and the same for each simulation.  
-These simulation coordinates are provided in response_descriptor.coords.  
-However, the experiment coordinates 
-for each experiment can be different, and are provided in the files numbered by experiment with the file names given by 
-response_descriptor.NUM.coords, as indicated above. 
+    # specify the data
+    calibration_data
+      num_experiments = 4
+      num_config_variables = 2
+      variance_type 'scalar' 'scalar' 'scalar' 'matrix' 'diagonal'
+      scalar_data_file 'circuit.dat'
+        annotated
+\endverbatim
 
+All of the scalar data will be read from a single data file \c
+circuit.dat.  Per \ref
+responses-calibration_terms-calibration_data_file, it must have 4
+rows, and a total of 6 columns, with no variance information:
+
+\verbatim
+%exp_id | configuration xvars | max_temp min_pow size
+1         7.8  7                21.9372  1.8687  0.6551
+2         8.6  2                19.0779  4.8976  0.1626
+3         8.4  8                38.2758  4.4559  0.1190
+4         4.2  1                39.7600  6.4631  0.4984
+\endverbatim
+   
+The field data will be read from separate files:   
+<ol>
+
+<li> <b>Values:</b> 27 values for voltage as a function of time will
+        be read from \c volts.1.dat ... \c volts.4.dat, while the 5
+        values of amps from \c amps.1.dat, ..., \c amps.4.dat.
+</li>
+
+<li> <b>Coordinates:</b> The time values will be read from a single
+     column vector in each of the files volts.*.coords and
+     amps.*.coords.
+</li>
+
+<li> <b>Variances:</b> Will be read per-experiment (no covariance
+     among experiments is permitted)
+      <ul>
+     <li> Volts specifies 'matrix' covariance, so a square 27 x 27
+          covariance matrix will be read from each of \c volts.1.sigma,
+          ..., \c volts.4.sigma.
+     </li>
+     <li> Amps specifies 'diagonal' covariance, so a column vector of length 5 with the diagonal variances will be read from each of \c amps.1.sigma,
+          ..., \c amps.4.sigma.
+     </li>
+     </ul>
+</li>
+<li> <b>Configuration variables:</b> Will be read from a set of files named \c
+     \c experiment.1.config, ..., \c experiment.5.config.
+</li>
+</ol>
