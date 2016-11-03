@@ -3,24 +3,23 @@ Number of samples for random sampling using Wilks statistics
 
 Description::
 
-The \c wilks keyword is used to compute the number of samples to execute
-for a random sampling study using Wilks statistics. In contrast to most 
-sampling studies where the user specifies the number of samples in advance, 
-Wilks determines the number of samples to run to achieve a particular 
-objective.  Specifically,  Wilks statistics
-specify a probability level, alpha, and confidence level, beta, and determines
-the minimum number of samples required such that there is beta% confidence
-that the alpha*100 percentile
-of the uncertain distribution on model output will fall below the actual
-alpha*100 percentile given by the sample 
-when outputs are ordered from smallest to largest.
-Statistics can also be either one_side or two_sided with the former
-reflecting a statement about uppermost sample output and the latter
-reflecting both the smallest and largest sample outputs.  Finally, the
-order of the statistics can be increased to higher order such that the
-statement concerning probability level and confidence level applies to
-the uppermost M outputs (for one-sided M-order Wilks) or the lowest M
-and uppermost M outputs (for two-sided M-order Wilks).
+The \c wilks keyword is used to compute the number of samples to
+execute for a random sampling study using Wilks statistics \cite Wilks
+and \cite Nutt04. In contrast to most sampling studies where the user
+specifies the number of samples in advance, Wilks determines the number
+of samples to run to achieve a particular objective.  Specifically,
+Wilks statistics specify a probability level, alpha, and confidence
+level, beta, and determines the minimum number of samples required
+such that there is beta% confidence that the alpha*100 percentile of
+the uncertain distribution on model output will fall below the actual
+alpha*100 percentile given by the sample when outputs are ordered from
+smallest to largest.  Statistics can also be either one_side or two_sided
+with the former reflecting a statement about uppermost sample output
+and the latter reflecting both the smallest and largest sample outputs.
+Finally, the order of the statistics can be increased to higher order
+such that the statement concerning probability level and confidence
+level applies to the uppermost M outputs (for one-sided M-order Wilks)
+or the lowest M and uppermost M outputs (for two-sided M-order Wilks).
 
 <b> Default Behavior </b>
 
@@ -34,8 +33,8 @@ Wilks sample sizes apply to model outputs considered one-at-a-time.
 Joint variation among multiple outputs requires a generalization of the
 Wilks approach and is not supported in Dakota at this time.
 
-When more than one probability level is specified, the largest sample
-size will be used.
+When more than one probability level is specified, the largest sample size
+will be performed and used to subsample for the lower probability levels.
 
 Topics::
 

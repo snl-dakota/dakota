@@ -1,5 +1,5 @@
 Blurb::
-Specifies one-sided order lower portion statistics to be used when
+Specifies one-sided lower portion order statistics to be used when
 determining sample sizes for random sampling using Wilks order statistics.
 
 Description::
