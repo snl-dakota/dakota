@@ -173,14 +173,10 @@ set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/"
 # Only internal full (developer version) has these things
 if(DAKOTA_DISTRO LESS ${DAKOTA_InternalFull})
   list(APPEND CPACK_SOURCE_IGNORE_FILES
-    "^${Dakota_SOURCE_DIR}/local/buildscripts/"
+    "^${Dakota_SOURCE_DIR}/local/cmake/"
     "^${Dakota_SOURCE_DIR}/local/examples/"
-    "^${Dakota_SOURCE_DIR}/local/jenkins/"
-    "^${Dakota_SOURCE_DIR}/local/miscscripts/"
-    "^${Dakota_SOURCE_DIR}/local/project_management/"
-    "^${Dakota_SOURCE_DIR}/local/sqa/"
-    "^${Dakota_SOURCE_DIR}/local/tracking/"
-    "^${Dakota_SOURCE_DIR}/local/www.sandia.gov/"
+    "^${Dakota_SOURCE_DIR}/local/scripts/"
+    "^${Dakota_SOURCE_DIR}/local/snl/"
   )
 endif()
 
@@ -188,8 +184,7 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalSupervised})
   message(STATUS "Removing DOT for less than InternalSupervised build")
   # When building InternalWeb, don't want DOT in the binaries
   # Be aggressive and remove from source tree
-  execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory
-    ${Dakota_SOURCE_DIR}/local/packages/DOT/)
+  file(REMOVE_RECURSE ${Dakota_SOURCE_DIR}/local/packages/DOT/)
 endif()
 
 if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
@@ -199,12 +194,8 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
   message(STATUS "Removing NPSOL, NLPQL for less than InternalWeb build")
   # When building InternalWeb, don't want NLPQL, NPSOL in the binaries
   # Be aggressive and remove from source tree
-  execute_process(
-    COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/local/packages/NLPQL"
-    COMMAND "${CMAKE_COMMAND}" -E remove_directory
-      "${Dakota_SOURCE_DIR}/local/packages/NPSOL"
-    )
+  file(REMOVE_RECURSE "${Dakota_SOURCE_DIR}/local/packages/NLPQL"
+    "${Dakota_SOURCE_DIR}/local/packages/NPSOL")
 endif()
 
 
