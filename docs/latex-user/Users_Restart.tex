@@ -147,12 +147,16 @@ Usage:
     dakota_restart_util from_neutral <neutral_file> <restart_file>
     dakota_restart_util to_tabular <restart_file> <text_file>
       [--custom_annotated [header] [eval_id] [interface_id]]
+      [--output_precision <int>]
     dakota_restart_util remove <double> <old_restart_file> <new_restart_file>
     dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file> <new_restart_file>
     dakota_restart_util cat <restart_file_1> ... <restart_file_n> <new_restart_file>
 options:
-  --help                 show dakota_restart_util help message
-  --custom_annotated arg tabular file options: header, eval_id, interface_id
+  --help                       show dakota_restart_util help message
+  --custom_annotated arg       tabular file options: header, eval_id, 
+                               interface_id
+  --freeform                   tabular file: freeform format
+  --output_precision arg (=10) set tabular output precision
 \end{verbatim}
 \end{footnotesize}
 
@@ -336,9 +340,12 @@ compact tabular format):
  \end{verbatim}
 \end{footnotesize}
 
-\textbf{Controlling tabular format:} The command-line option
-\texttt{--custom\_annotated} gives control of headers in the resulting
-tabular file.  It supports options:
+\textbf{Controlling tabular format:} The command-line options
+\texttt{--freeform} and \texttt{--custom\_annotated} give control of
+headers in the resulting tabular file.  give control of headers in the
+resulting tabular file.  Freeform will generate a tabular file with no
+leading row nor columns (variable and response values only).  Custom
+annotated format accepts any or all of the options:
 \begin{itemize}
 \item {\tt header}: include \%-commented header row with labels
 \item {\tt eval\_id}: include leading column with evaluation ID
@@ -361,6 +368,9 @@ Resulting in
 ...
 \end{verbatim}
 \end{footnotesize}
+
+Finally, \texttt{--output\_precision <int>} will generate tabular
+output with the specified integer digits of precision.
 
 \subsection{Concatenation of Multiple Restart Files}\label{restart:utility:concatenation}
 

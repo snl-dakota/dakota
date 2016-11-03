@@ -1,0 +1,13 @@
+Blurb:: Select subspace to minimize cross-validation error
+
+Description::
+Select the subspace dimension that mimimizes the cross-validation
+error across sizes considered.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

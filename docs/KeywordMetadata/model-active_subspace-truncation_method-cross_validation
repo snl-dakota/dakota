@@ -1,0 +1,14 @@
+Blurb:: Truncate the subspace to minimize surrogate cross-validation error
+
+Description::
+Select the subspace dimension that minimizes the 10-fold
+cross-validation error when constructing a moving least squares
+surrogate model.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

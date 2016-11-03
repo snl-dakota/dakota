@@ -1,0 +1,14 @@
+Blurb:: Assess all admissible subspace dimensions
+
+Description::
+Assess cross-validation error for all admissible subspace dimensions,
+even if a particular dimension meets specified cross-validation
+tolerance(s).
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

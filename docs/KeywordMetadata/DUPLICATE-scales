@@ -2,7 +2,8 @@ Blurb::
 Characteristic values for scaling
 
 Description::
-See \ref method-scaling for details on how to use this keyword.
+See the scaling information under specific methods, e.g.,
+method-*-scaling for details on how to use this keyword.
 
 Topics::	
 Examples::

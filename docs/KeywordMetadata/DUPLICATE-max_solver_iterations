@@ -1,0 +1,15 @@
+Blurb:: Maximum iterations in determining polynomial coefficients
+
+Description::
+
+When using an iterative polynomial coefficient estimation approach,
+e.g., cross-validation-based solvers, limits the maximum iterations in
+the coefficient solver.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

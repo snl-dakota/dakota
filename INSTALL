@@ -1,5 +1,5 @@
 ==============
-DAKOTA INSTALL
+Dakota INSTALL
 ==============
 
 Dakota is a framework which provides access to a broad variety of
@@ -10,10 +10,8 @@ simplest routes to access Dakota.
 For more experienced users, building Dakota from source (either
 downloaded or checked out) allows customization with additional
 packages and porting to additional platforms or operating systems.
-This INSTALL file, in conjunction with platform-specific 
-BuildSetup<platform>.cmake files in Dakota/examples/platforms, 
-describe how to install pre-built binaries and setup the environment, 
-as well as how to compile from source code.
+This INSTALL file describes how to install pre-built binaries and setup 
+the environment, as well as how to compile from source code.
 
 NOTE: The most up to date installation guidance and tips can be found
 alongside the downloads on the Dakota website.

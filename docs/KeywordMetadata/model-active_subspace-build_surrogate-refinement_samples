@@ -1,0 +1,14 @@
+Blurb:: Number of supplementary surrogate build samples
+
+Description::
+Augment the function value data collected during subspace
+identification with the specified number of \c refinement_samples to
+build the surrogate model.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

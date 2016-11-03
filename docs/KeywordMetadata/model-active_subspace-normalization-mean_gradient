@@ -1,0 +1,16 @@
+Blurb:: Normalize by sample mean of gradient norms
+
+Description::
+For each reponse function \f$f_i\f$, normalize its gradient data by
+the mean \f$m_i\f$ of the gradient two-norms taken across samples \f$
+j=1,...,J \f$:
+
+\f[ m_i = \frac{1}{J} \sum_{j=1}^{J}{\| \nabla^j f_i \|_2} \f]
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

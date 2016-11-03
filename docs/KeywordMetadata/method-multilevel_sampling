@@ -81,8 +81,10 @@ identifier that controls these levels using \c solution_level_control.
 Associated relative costs also need to be supplied using \c
 solution_level_cost.
 
-<!-- <b> Additional Discussion </b> -->
+<b> Additional Discussion </b>
 
+There is also a multilevel regression capability in \ref
+method-polynomial_chaos
 
 Topics::
 
@@ -125,4 +127,4 @@ additional examples.
 
 Theory::
 Faq::
-See_Also:: multilevel regression in \ref method-polynomial_chaos
+See_Also::

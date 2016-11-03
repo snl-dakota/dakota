@@ -3409,26 +3409,26 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.2419918309e+01  3.6355550960e+00  8.1977231020e-01 -6.1629141969e-02
 Test Number 2 succeeded
-<<<<< Function evaluation summary (lofi_IF): 4931 total (4910 new, 21 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 4973 total (4952 new, 21 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 1 total (1 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.6367977857e-02 uuv_1
-                     -3.9272680731e+00 uuv_2
-                      1.3190008620e+02 uuv_3
+                      3.6266033218e-02 uuv_1
+                     -3.8162060566e+00 uuv_2
+                      1.2769752746e+02 uuv_3
 <<<<< Best misfit              =
-                      2.8330000449e-02
+                      8.4210017007e+00
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
-                     -7.6118580560e+00
+                     -1.6004529756e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
-         uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874846e+00  5.1704189202e-01
+         uuv_1  3.8919425298e-02  7.4300424657e-03  1.3957887360e+00  4.6194696392e-01
+         uuv_2 -4.0157758575e+00  5.5116517185e-01 -1.4084926250e+00  4.8172002983e-01
+         uuv_3  1.2924939824e+02  7.0900886893e+00  1.4029960722e+00  4.7386018939e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528992e+00 -1.0776342386e+00  1.8268667477e-01
+least_sq_term_1  3.0889444419e+01  3.0978571322e+00 -1.4120408131e+00  4.9928505993e-01
 dakota_bayes_linear.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
@@ -10442,6 +10442,15 @@ Test Number 17 succeeded
 <<<<< Best objective function  =
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 12
+dakota_nonlinear_cg.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0062158629e+00 x1
+                      9.7212181131e-01 x2
+<<<<< Best objective function  =
+                      6.0552240218e-07
+<<<<< Best data captured at function evaluation 40
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)

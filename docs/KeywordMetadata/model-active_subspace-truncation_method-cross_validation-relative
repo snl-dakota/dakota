@@ -1,0 +1,14 @@
+Blurb:: Choose subspace with cross-validation error less than tolerance
+
+Description::
+Select smallest subspace with cross-validation error less than
+specified tolerance.
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

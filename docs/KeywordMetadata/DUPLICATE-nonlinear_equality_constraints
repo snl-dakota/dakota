@@ -13,7 +13,9 @@ for each constraint
 \f[h(x) = 0.0\f]
 
 The \c scale_types and \c scales keywords are related to scaling of
-\f$ h \left( x \right) \f$. See \ref method-scaling for details.
+\f$ h \left( x \right) \f$. See the scaling information under specific
+methods, e.g., method-*-scaling for details on how to use this
+keyword.
 
 
 
