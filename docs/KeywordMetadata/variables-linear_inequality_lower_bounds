@@ -28,6 +28,8 @@ default lower bounds drop out since \c -DBL_MAX < \c
 
 Topics::	linear_constraints
 Examples::
+Examples of specifying linear inequality constraints to Dakota are
+provided on the \ref variables-linear_inequality_constraint_matrix page.
 Theory::
 Faq::
 See_Also::	
