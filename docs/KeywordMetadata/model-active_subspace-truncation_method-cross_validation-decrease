@@ -1,0 +1,13 @@
+Blurb:: Choose subspace where cross-validation error stabilizes
+
+Description::
+Select smallest subspace where change in cross-validation error to
+next larger subspace falls below specified tolerance.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

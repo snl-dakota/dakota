@@ -1,0 +1,13 @@
+Blurb:: Tolerance for cross-validation error stabilization
+
+Description::
+Select smallest subspace where change in cross-validation error falls
+below specified tolerance.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

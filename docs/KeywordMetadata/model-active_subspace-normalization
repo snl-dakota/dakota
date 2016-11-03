@@ -1,0 +1,16 @@
+Blurb:: Normalize gradient samples
+
+Description::
+Normalize the matrix of sampled gradients before identifying subspace.
+
+<b> Default Behavior </b>
+
+The default is \ref model-active_subspace-normalization-local_gradient
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

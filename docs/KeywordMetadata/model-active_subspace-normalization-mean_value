@@ -1,0 +1,18 @@
+Blurb:: Normalize by sample mean of function values
+
+Description::
+
+For each reponse function \f$f_i\f$, normalize its gradient data by
+the mean \f$m_i\f$ of the function values taken across samples \f$
+j=1,...,J \f$:
+
+\f[ m_i = \frac{1}{J} \sum_{j=1}^{J}{f_i^j} \f]
+
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::
