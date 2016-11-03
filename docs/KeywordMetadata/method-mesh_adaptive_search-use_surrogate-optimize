@@ -1,10 +1,22 @@
 Blurb::
-use surrogate in lieu of true model for adaptive mesh-based search
-
+Surrogate is used in lieu of true model for mesh adaptive search
 
 Description::
-NOMAD to use a surrogate in lieu of the true model and thus the
-true function is never invoked.
+When \c optimize is specified with \c use_surrogate, \c
+mesh_adaptive_search will use the surrogate in lieu of the true model
+and thus the true function is never invoked except to construct the
+surrogate.
+
+<b> Default Behavior </b>
+
+\c optimize is the default surrogate usage mode.
+
+<b> Expected Output </b>
+
+The user can expect to see both the number of true model evaluations
+and the number of approximation (i.e., surrogate) evaluations reported
+in the Dakota screen output.  The former should equal the number of
+truth evaluations done for the surrogate construction.
 
 Examples::
 
@@ -64,6 +76,16 @@ responses,
 	objective_functions = 1
 	no_gradients
 	no_hessians
+\endverbatim
+
+The following will appear toward the end of the screen output when
+Dakota is run on this example.  The number of true function
+evaluations includes only the 55 evaluations that were done to
+construct the surrogate (as specified in the SAMPLING method block).
+
+\verbatim
+<<<<< Function evaluation summary (APPROX_INTERFACE): 221 total (221 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 \endverbatim
 
 Theory::

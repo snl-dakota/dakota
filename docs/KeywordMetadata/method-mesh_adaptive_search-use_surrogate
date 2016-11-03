@@ -1,25 +1,24 @@
 Blurb::
-Select the usage of surrogate models by adaptive mesh-based search
+Surrogate model usage mode for mesh adaptive search
 
 Description::
-There are two approaches available: \c inform_search allows the users
-to use a static surrogate which adaptive mesh-based search (NOMAD)
-uses to evaluate the neighbors during the extended poll descent.
-Essentially NOMAD uses the surrogate to sort list of trial points and
-subsequently the true function is evaluated only on the most
-promising points. Both true function and surrogate are used
-interchangeably via a NOMAD built-in capability. \c optimize forces
-NOMAD to use a surrogate in lieu of the true model for both steps and
-thus the true function is never invoked.
+The \c use_surrogate keyword is used to define how a surrogate model
+(if one is provided) is to be used by \c mesh_adaptive_search.  There
+are two approaches available: \c inform_search uses the surrogate to
+sort list of trial points and subsequently the true function is
+evaluated on the most promising points first.  Both true function and
+surrogate are used interchangeably within the method.  \c optimize
+forces the use of a surrogate in lieu of the true model and thus the
+true function is never invoked except to construct the surrogate.
 
 <b> Default Behavior </b>
 
-By default, NOMAD follows behaviour provided by \c optimize option.
+By default, \c mesh_adaptive_search follows behaviour provided by \c
+optimize option.
 
 Examples::
 
-The following example shows the syntax used to set \c
-use_surrogate.
+The following example shows the syntax used to set \c use_surrogate.
 
 \verbatim
 method,

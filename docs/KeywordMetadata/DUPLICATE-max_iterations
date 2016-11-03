@@ -1,7 +1,16 @@
-Blurb:: Stopping criterion based on number of iterations
+Blurb::
+Number of iterations allowed for optimizers and adaptive UQ methods
 
 Description::
-The maximum number of iterations (default: 100).  See also \c max_function_evaluations.
+The maximum number of iterations is used as a stopping criterion for
+optimizers and some adaptive UQ methods.  If it has not reached any
+other stopping criteria first, the method will stop after it has
+performed \c max_iterations iterations.  See also \c
+max_function_evaluations.
+
+<b> Default Behavior </b>
+
+Default value is 100.
 
 Topics::	method_independent_controls
 Examples::

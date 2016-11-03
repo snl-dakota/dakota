@@ -20,7 +20,7 @@ the added cost is of little or no value, so the recommendation is not
 to use it.  If the desired result is the best local minimum possible
 within a computational budget, then there is value in setting this
 parameter.  Note that the higher the value, the greater the
-computational cost.
+computational cost.  The value should be no greater than 1.0.
 
 Topics::
 

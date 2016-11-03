@@ -381,7 +381,9 @@ search structure is that of a mesh.  The
 \texttt{mesh\_adaptive\_search} also provides a unique optimization
 capability in Dakota in that it can explicitly treat categorical
 variables, i.e., non-relaxable discrete variables as described in
-Section~\ref{variables:design:ddv}.
+Section~\ref{variables:design:ddv}.  Furthermore, it provides the
+ability to use a surrogate model to inform the priority of function
+evaluations with the goal of reducing the number needed.
 
 {\bf Simplex} methods for nonlinear optimization problem are similar
 to pattern search methods, but their search directions are defined by

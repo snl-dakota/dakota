@@ -1,7 +1,15 @@
 Blurb::
-Stopping criteria based on number of function evaluations
+Number of function evaluations allowed for optimizers
+
 Description::
-The maximum number of function evaluations (default: 1000).  See also \c max_iterations.
+The maximum number of function evaluations is used as a stopping
+criterion for optimizers.  If it has not reached any other stopping
+criteria first, the optimizer will stop after it has performed \c
+max_function_evalutions evaluations.  See also \c max_iterations.
+
+<b> Default Behavior </b>
+
+Default value is 1000.
 
 Topics::	method_independent_controls
 Examples::

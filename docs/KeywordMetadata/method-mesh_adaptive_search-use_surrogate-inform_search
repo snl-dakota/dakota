@@ -1,18 +1,39 @@
 Blurb::
-use surrogate to evaluate trial points for adaptive mesh-based search
-
+Surrogate informs evaluation order in mesh adaptive search
 
 Description::
-NOMAD to use a static surrogate to sort list
-of trial points and subsequently the true function is evaluated only on
-the most promising points. Both true function and surrogate are used
-interchangeably via a NOMAD built-in capability.
+When \c inform_search is specified with \c use_surrogate, \c
+mesh_adaptive_search uses the surrogate to sort list of trial points
+and subsequently the true function is evaluated on the most promising
+points first.  Both true function and surrogate are used
+interchangeably within the method.
 
+<b> Default Behavior </b>
+
+\c inform_search is not the default surrogate usage mode.
+
+<b> Expected Output </b>
+
+The user can expect to see both the number of true model evaluations
+and the number of approximation (i.e., surrogate) evaluations reported
+in the Dakota screen output.  The former captures the sum of truth
+evaluations done for the surrogate construction and for the
+optimization.
+
+<b> Usage Tips </b>
+
+When \c inform_search is specified, the \c
+maximum_function_evaluations keyword applies to only the optimization
+method and does not account for evaluations needed to construct the
+surrogate.  If the user has a strict evaluation budget, they should
+set \c maximum_function_evaluations such that evaluation budget =
+number of evaluations to construct surrogate + \c
+maximum_function_evaluations.
 
 Examples::
 
-The following example shows the syntax used to set \c
-use_surrogate to \c optimize.
+The following example shows the syntax used to set \c use_surrogate to
+\c optimize.
 
 \verbatim
 method,
@@ -67,6 +88,17 @@ responses,
 	objective_functions = 1
 	no_gradients
 	no_hessians
+\endverbatim
+
+The following will appear toward the end of the screen output when
+Dakota is run on this example.  The number of true function
+evaluations includes the 55 evaluations that were done to construct
+the surrogate (as specified in the SAMPLING method block) plus the
+number of truth evaluations done by \c mesh_adaptive_search.
+
+\verbatim
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1660 total (1660 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 795 total (795 new, 0 duplicate)
 \endverbatim
 
 Theory::
