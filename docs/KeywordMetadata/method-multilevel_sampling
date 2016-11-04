@@ -14,11 +14,11 @@ three approaches below.
 <b> Multilevel Monte Carlo </b>
 
 The Monte Carlo estimator for the mean is defined as
-\f[ \mathbf{E}[Q] \equiv \hat{Q}^{MC} = \frac{1}{N} \sum_{i=1}^N Q^{(i)} \f]
+\f[ \mathbb{E}[Q] \equiv \hat{Q}^{MC} = \frac{1}{N} \sum_{i=1}^N Q^{(i)} \f]
 
 In a multilevel method with \f$L\f$ levels, we replace this estimator
 with a telescoping sum:
-\f[ \mathbf{E}[Q] \equiv \hat{Q}^{ML}
+\f[ \mathbb{E}[Q] \equiv \hat{Q}^{ML}
  = \sum_{l=0}^L \frac{1}{N_l} \sum_{i=1}^{N_l} (Q_l^{(i)} - Q_{l-1}^{(i)}) 
  \equiv \sum_{l=0}^L \hat{Y}^{MC}_l \f]
 
@@ -35,10 +35,10 @@ In the case of two model fidelities (low fidelity denoted as LF and
 high fidelity denoted as HF), we employ a control variate approach:
 
 \f[ \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
-- \beta (\hat{Q}_{LF}^{MC} - \mathbf{E}[Q_{LF}]) \f]
+- \beta (\hat{Q}_{LF}^{MC} - \mathbb{E}[Q_{LF}]) \f]
 
 As opposed to the traditional control variate approach, we do not know
-\f$\mathbf{E}[Q_{LF}]\f$ precisely, but rather estimate it more
+\f$\mathbb{E}[Q_{LF}]\f$ precisely, but rather estimate it more
 accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
 applied to the LF model.  This sampling increment is based again on
 a total cost minimization procedure that incorporates the relative LF
