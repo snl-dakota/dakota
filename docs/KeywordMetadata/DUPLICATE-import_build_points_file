@@ -14,7 +14,7 @@ data.
 
 <b> Default Behavior </b>
 
-Be default, methods do not import points from a file.
+By default, methods do not import points from a file.
 
 <b> Usage Tips </b>
 

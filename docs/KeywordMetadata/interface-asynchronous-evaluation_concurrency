@@ -4,7 +4,7 @@ Description::
 
 When \c asynchronous execution is enabled, the default behavior is to
 launch all available evaluations simultaneously. The \c evaluation_concurrency
-keywrod can be used to limit the number of concurrent evaluations.
+keyword can be used to limit the number of concurrent evaluations.
 
 Topics::  concurrency_and_parallelism
 Examples::
