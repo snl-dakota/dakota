@@ -1,18 +1,24 @@
 \chapter{Sampling Methods}\label{uq:sampling}
 
 
-This chapter introduces the fundamental concepts related to sampling methods. In
-particular the statistical properties of the Monte Carlo (MC) estimator
-are discussed and the multilevel and multifidelity ideas are introduced 
-in this context. Hereinafter multilevel refers to the possibility of exploiting
-distinct discretization levels (i.e. space/time resolution) within a single
-model form, whereas multifidelity involves the use of more than one model form.
-The two approaches can be combined together obtaining the so-called multilevel
-multifidelity approaches.
+This chapter introduces several fundamental concepts related to
+sampling methods. In particular, the statistical properties of the
+Monte Carlo estimator are discussed
+(\S\ref{uq:sampling:montecarlo}) and strategies for multilevel and
+multifidelity sampling are introduced within this context. Hereafter,
+multilevel refers to the possibility of exploiting distinct
+discretization levels (i.e. space/time resolution) within a single
+model form, whereas multifidelity involves the use of more than one
+model form.  In \S\ref{uq:sampling:controlvariate}, we describe the
+control variate Monte Carlo algorithm that we align with multifidelity
+sampling, and in \S\ref{uq:sampling:multilevel}, we describe the
+multilevel Monte Carlo algorithm that we align with multilevel
+sampling.  In \S\ref{uq:sampling:mlmf}, we show that these two
+approaches can be combined to create multilevel-multifidelity sampling
+approaches.
 
-\section{Monte Carlo} \label{uq:sampling:montecarlo}
-Monte Carlo is definitely the most popular algorithm for stochastic simulations. The reasons of its use are its
-extreme flexibility and its simplicity, flexibility and the provable convergent behavior that is independent 
+\section{Monte Carlo (MC)} \label{uq:sampling:montecarlo}
+Monte Carlo is a popular algorithm for stochastic simulations due to its simplicity, flexibility, and the provably convergent behavior that is independent 
 of the number of input uncertainties. A quantity of interest $Q: \Xi \rightarrow \mathbb{R}$, represented as a random variable (RV), 
 can be introduced as a function of a random vector $\boldsymbol{\xi} \in \Xi \subset \mathbb{R}^d$. The goal of any MC simulation is computing 
 statistics for $Q$, e.g. the expected value $\mathbb{E}\left[Q\right]$. The MC estimator $\hat{Q}_N^{MC}$ for 
@@ -30,20 +36,20 @@ of any estimator is its own variance:
             = \dfrac{\mathbb{V}ar\left(Q\right) }{N}.
 \end{equation}
 Furthermore, it is possible to show that the error $\left( \mathbb{E}\left[Q\right] - \hat{Q}_N^{MC} \right)/\sqrt{ \mathbb{V}ar\left( \hat{Q}_N^{MC} \right) }$ is proportional to 
-a standardized normal distributed RV $\mathcal{N}(0,1)$. As a consequence, it is possible to define a confidence
+a standard normal RV $\mathcal{N}(0,1)$. As a consequence, it is possible to define a confidence
 interval for the MC estimator which has an amplitude proportional to the standard deviation of the estimator.
 Indeed, the variance of the estimator plays a fundamental role in the quality of the
 numerical results: the reduction of the variance (for a fixed computational cost) 
 is a very effective way of improving the quality of the MC prediction. 
 
-\section{Control variate} \label{uq:sampling:montecarlo:controlvariate}
+\section{Control variate Monte Carlo} \label{uq:sampling:controlvariate}
 A closer inspection of Eq.~\ref{EQ: variance MC} indicates that only an increase in the number of simulations $N$ 
 might reduce the overall variance, since $\mathbb{V}ar\left({Q}\right)$ is an intrinsic property of the model under analysis. However, 
 more sophisticated  techniques have been proposed to accelerate the convergence of a MC simulation. For instance, an incomplete list 
 of these techniques can include stratified sampling, importance sampling, Latin hypercube, deterministic Sobol' 
-sequences and control variate. In particular, the control variate approach, is based on the idea of replacing
+sequences and control variates. In particular, the control variate approach, is based on the idea of replacing
 the RV $Q$ with a different one which has the same expected value, but with a smaller variance.
-The goal is to reduce the numerator in Eq.~\ref{EQ: variance MC}, and hence the value of the variance without
+The goal is to reduce the numerator in Eq.~\ref{EQ: variance MC}, and hence the value of the estimator variance without
 requiring a larger number of simulations.
 In a practical setting, the control variate makes use of an auxiliary functional $G=G(\boldsymbol{\xi})$ for which the 
 expected value is known. Indeed, the alternative estimator can be defined as
@@ -60,11 +66,11 @@ The parameter $\beta$ can be used to minimize the overall variance leading to
 \begin{equation}
 \beta = \dfrac{ \mathrm{Cov}\left(Q,G\right) }{ \mathbb{V}ar\left( G \right) }, 
 \end{equation}
-for which the variance follows as
+for which the estimator variance follows as
 \begin{equation}
- \mathbb{V}ar\left({\hat{Q}_N^{MCCV}}\right) = \mathbb{V}ar\left({\hat{Q}_N^{MC}}\right)\left( 1-\rho^2 \right),
+ \mathbb{V}ar\left({\hat{Q}_N^{MCCV}}\right) = \mathbb{V}ar\left({\hat{Q}_N^{MC}}\right)\left( 1-\rho^2 \right).
 \end{equation}
-for the estimator. Therefore, the overall variance of the estimator $\hat{Q}_N^{MCCV}$ is proportional to the variance of the standard
+Therefore, the overall variance of the estimator $\hat{Q}_N^{MCCV}$ is proportional to the variance of the standard
 MC estimator $\hat{Q}_N^{MC}$ through a factor $1-\rho^2$ where $\rho = \dfrac{ \mathrm{Cov}\left(Q,G\right) }{\sqrt{\mathbb{V}ar\left(Q\right)\mathbb{V}ar\left(G\right)}}$ is the Pearson
 correlation coefficient between $Q$ and $G$. Since $0<\rho^2<1$, the variance $\mathbb{V}ar\left( \hat{Q}_N^{MCCV} \right)$ is always less than
 the corresponding $\mathbb{V}ar\left({\hat{Q}_N^{MC}}\right)$. The control variate technique can be seen as a very general approach
@@ -74,14 +80,14 @@ from a more crude physical/engineering approximation of the problem. A viable wa
 rely on a low-fidelity model (i.e. a crude approximation of the model of interest) to estimate the control variate using estimated 
 control means (see \cite{Pasupathy2014}). This technique has been introduced in the context of optimization under uncertainty in \cite{Ng2014}.
 
-\section{Multilevel MC technique} \label{uq:sampling:multilevel}
-In general engineering applications the quantity of interest $Q$, introduced in the previous section, is obtained
-as the result of the numerical solution of a partial partial differential equation (possibly a system of them), 
-therefore the dependence on the 
+\section{Multilevel Monte Carlo} \label{uq:sampling:multilevel}
+In general engineering applications, the quantity of interest $Q$
+%, introduced in the previous section, 
+is obtained as the result of the numerical solution of a partial partial differential equation (possibly a system of them).  Therefore, the dependence on the 
 physical $\mathbf{x} \in \Omega\subset\mathbb{R}^n$ and/or temporal $t \in T\subset\mathbb{R^+}$ coordinates should be included, 
-hence $Q=Q(\mathbf{x}, \boldsymbol{\xi}, t)$. A finite spatial/temporal resolution is always employed to solve numerically a PDE, implying
-the presence of a discretization error in addition to the stochastic error. The term discretization is used with reference 
-to the spatial tessellation here but for generality it applies to the temporal step too. For a generic tessellation with $M$ 
+hence $Q=Q(\mathbf{x}, \boldsymbol{\xi}, t)$. A finite spatial/temporal resolution is always employed to numerically solve a PDE, implying
+the presence of a discretization error in addition to the stochastic error. The term discretization is applied generically with reference 
+to either the spatial tessellation, the temporal resolution, or both (commonly, they are linked). For a generic tessellation with $M$ 
 degrees-of-freedom, the PDE solution of $Q$ is referred to as $Q_M$. Since $Q_M \rightarrow Q$ for $M\rightarrow\infty$, 
 then $\mathbb{E}\left[{Q_M}\right] \rightarrow \mathbb{E}\left[{Q}\right]$ for $M\rightarrow\infty$ with a prescribed order of convergence. 
 A MC estimator in presence of a finite spatial resolution and finite sampling is
@@ -148,11 +154,11 @@ N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \mathbb{V}ar\le
 \end{equation}
 
 
-\section{A multifidelity approach for MLMC} \label{uq:sampling:multifidelity}
+\section{A multilevel-multifidelity MC approach} \label{uq:sampling:mlmf}
 The MLMC (refer to Section~\ref{uq:sampling:multilevel}) can be considered as a recursive control variate technique 
 since it aims at reducing the variance of the target function as an effective way of limiting the sampling at high 
 resolution. Nonetheless, at each level the difference function $Y_\ell$ can itself be the object of an additional 
-control variate (refer to Section~\ref{uq:sampling:montecarlo:controlvariate}). A practical scenario is when not only 
+control variate (refer to Section~\ref{uq:sampling:controlvariate}). A practical scenario is when not only 
 different resolution levels are available (multilevel part), but also a cheaper computational model can be used 
 (multifidelity/control variate part). The name of the combined approach is multilevel-multifidelity.
 
@@ -208,7 +214,7 @@ function of the ratio $r_\ell$:
 \end{split}
 \end{equation}
 Note that $\Lambda_{\ell}(r_\ell)$ represents a penalty with respect to the classical 
-control variate approach presented in Section~\ref{uq:sampling:montecarlo:controlvariate}, which stems from 
+control variate approach presented in Section~\ref{uq:sampling:controlvariate}, which stems from 
 the need to evaluate the unknown function $\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$. However, the ratio $r_\ell/(r_\ell+1)$ is dependent 
 on the additional number of LF evaluations $\Delta_{\ell}^{\mathrm{LF}}$, hence it is fair to assume that it 
 can be made very close to the unity by choosing an affordable large $r_\ell$, i.e., $\Delta_{\ell}^{\mathrm{LF}} >> N_{\ell}^{\mathrm{HF}}$.
