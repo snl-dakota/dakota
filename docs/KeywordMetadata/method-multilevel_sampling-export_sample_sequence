@@ -30,7 +30,7 @@ method,
 	  export_sample_sequence
 \endverbatim
 
-results in enabling the sample output on file with the defauls \c annotated format.
+results in enabling the sample output on file with the defaults \c annotated format.
 
 The following variables block 
 \verbatim

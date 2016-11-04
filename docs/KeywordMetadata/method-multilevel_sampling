@@ -38,7 +38,7 @@ high fidelity denoted as HF), we employ a control variate approach:
 - \beta (\hat{Q}_{LF}^{MC} - \mathbf{E}[Q_{LF}]) \f]
 
 As opposed to the traditional control variate approach, we do not know
-\f$\mathbf{E}[Q_{LF}]\f$ precisely, but rather etimate it more
+\f$\mathbf{E}[Q_{LF}]\f$ precisely, but rather estimate it more
 accurately than \f$\hat{Q}_{LF}^{MC}\f$ based on a sampling increment
 applied to the LF model.  This sampling increment is based again on
 a total cost minimization procedure that incorporates the relative LF
@@ -66,7 +66,7 @@ and the optimal allocation \f$N_\ell\f$ (per level) is finally obtained from it.
 <b> Default Behavior </b> 
 
 The multilevel sampling method employs Monte Carlo sampling be
-default, but this default can be overriden to use Latin hypercube
+default, but this default can be overridden to use Latin hypercube
 sampling using \c sample_type \c lhs.
 
 <b> Expected Output </b> 
@@ -86,7 +86,9 @@ identifier that controls these levels using \c solution_level_control.
 Associated relative costs also need to be supplied using \c
 solution_level_cost.
 
-<!-- <b> Additional Discussion </b> -->
+<b> Additional Discussion </b>
+
+Also see multilevel regression in \ref method-polynomial_chaos.
 
 
 Topics::
@@ -130,4 +132,4 @@ additional examples.
 
 Theory::
 Faq::
-See_Also:: multilevel regression in \ref method-polynomial_chaos
+See_Also:: method-polynomial_chaos
