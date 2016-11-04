@@ -1,0 +1,20 @@
+Blurb::
+Specify text file containing candidate design points
+
+Description::
+Enables text file import of user-specified design points (i.e. configuration
+variables). No model responses should be included. Each row should correspond 
+to a single design or configuration.
+
+<b> Default Behavior </b>
+
+Be default, methods do not import points from a file.
+
+<b> Usage Tips </b>
+
+Dakota parses input files without regard to whitespace, but the
+import_build_points_file must be in one of three formats:
+\li \c annotated (default)
+\li \c custom_annotated
+\li \c freeform
+

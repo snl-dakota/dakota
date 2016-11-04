@@ -1,0 +1,24 @@
+Blurb::
+Maximum number of high-fidelity model runs to be used
+
+Description::
+There are three stopping criteria by which the Bayesian experimental design
+algorithm will be terminated:
+\li The high-fidelity model has been run \c max_hifi_evaluations times
+\li The set of candidate design points have been exhausted
+\li The relative change in the mutual information from one iteration to the
+next is sufficiently small
+The first criterion is controlled by this keyword specification
+
+<b> Default Behavior </b>
+
+If no maximum number of high-fidelity model runs is specified, only the last
+two stopping criteria listed above will be evaluated.
+
+<b> Usage Tips </b>
+
+Be wary that \c max_hifi_evaluations does not include any high-fidelity model
+evaluations that need to be run to produce the data set for the initial 
+Bayesian calibration. This number only includes those evaluations performed
+on the sequentially chosen optimal design points
+

@@ -1,0 +1,10 @@
+Blurb::
+Number of candidate design points considered
+
+Description::
+After the initial Bayesian calibration, a set of candidate design points is
+created, from which the optimal design(s) will be chosen. This set is of size
+\c num_candidates. These candidate points may be specified by the user
+through \c import_candidate_points_file, from an LHS sample of the design
+space, or both.
+

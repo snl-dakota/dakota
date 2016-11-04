@@ -9,7 +9,7 @@ environment
 
 method,
        bayes_calibration queso
-#          #output debug 						#s2
+#          #output debug						#s1
           dram
 	  seed = 34785				
           chain_samples = 500

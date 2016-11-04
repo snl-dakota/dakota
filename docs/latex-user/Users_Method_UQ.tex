@@ -2522,11 +2522,24 @@ probability. Further details can be found in \cite{Smith2013}. If
 \texttt{probability\_levels} is specified, credible intervals will always be 
 calculated. Prediction intervals will only be calculated if 
 \texttt{variance\_type} is also specified in the \texttt{response} block. 
+By specifying \texttt{posterior\_stats}, information-theoretic metrics may be 
+calculated using the posterior distribution of parameters. If the 
+\texttt{kl\_divergence} option is selected, the Kullback-Leibler Divergence
+will be calculated between the posterior and the prior distributions such that
+\begin{equation}
+D_{KL} = \int {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) 
+\log \frac{ {f_{\boldsymbol{\Theta |D}}}\left( \boldsymbol{\theta |d} \right) }
+{{f_{\boldsymbol{\Theta}}}\left( \boldsymbol{\theta}  \right)} 
+d\boldsymbol{\theta}.
+\end{equation} 
+This quantity represents the amount of information gained about the parameters
+during the Bayesian update. Further details regarding the calculation and use
+of $D_{KL}$ can be found in~\cite{TheoMan}.
 
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
-\texttt{chains} specification.  The total number of generations per chain in DREAM is
-the number of samples divided by the number of chains.
+\texttt{chains} specification.  The total number of generations per chain in i
+DREAM is the number of samples divided by the number of chains.
 %The minimum number of chains is three.
 The number of chains randomly selected to be used in the crossover
 each time a crossover occurs is \texttt{crossover\_chain\_pairs}.
@@ -2542,7 +2555,9 @@ process.  The integer \texttt{jump\_step} forces a long jump every
 \texttt{jump\_step} generations.
 For more details about these parameters, refer to \cite{Vrugt}. 
 Credible and prediction intervals can be calculated by specifying
-\texttt{probability\_levels}, as described in Section \ref{uq:bayesian:queso}. 
+\texttt{probability\_levels}, and statistics regarding the posterior may be
+calculated by specifying \texttt{posterior\_stats}, as described in 
+Section~\ref{uq:bayesian:queso}. 
 
 \subsection{GPMSA}
 For the GPMSA capability, a key part of the algorithm involves the 
@@ -2749,6 +2764,136 @@ deviation approximately 0.1.
     both..}
   \label{fig:uq:obs_err_mult}
 \end{figure}
+
+\subsection{Bayesian Experimental Design}
+%KAM
+
+The goal of experimental design is to add observational data to the Bayesian
+update that informs model parameters and reduces their uncertainties. In 
+Bayesian approaches, data from physical experiments is typically used to 
+calibrate a model. However, another common practice is to use responses or
+output from a high-fidelity model as ``truth data" in place of experimental 
+data in a low-fidelity model calibration. This can be done in with a single
+Bayesian calibration, or it can be done iteratively with the use of 
+experimental design, where an initial set of high-fidelity runs is 
+augmented sequentially to find the next ``best" high-fidelity design point at
+which to run the high-fidelity model to add to the calibration data. The low-
+fidelity posterior parameter distribution is then updated again using Bayesian
+calibration. The mutual information is used as the selection criterion to guide
+the process of high-fidelity data acquisition.
+
+In Dakota, design conditions, such as temperature or spatial location, can be 
+specified using so-called configuration
+variables. The design selection algorithm implemented in Dakota uses a 
+user-specified high-fidelity code to produce the ``experimental" or 
+observational data that is used in the calibration of the desired low-fidelity 
+model. The high-fidelity model is dependent only upon the design or 
+configuration variables while the low-fidelity model depends on both the 
+design variables and uncertain model parameters. 
+
+An example Dakota input file that implements this Bayesian experimental design 
+algorithm is shown in 
+Figures~\ref{figure:uq_expdesign1}-\ref{figure:uq_expdesign2}. Note that there 
+are three \texttt{model} blocks, one describing the model hierarchy and one 
+each for the high-fidelity and low-fidelity models. There are two 
+\texttt{variables}, \texttt{interface}, and \texttt{responses} blocks such that 
+each model has its own specifications. The low-fidelity \texttt{variables} 
+block contains information about both the design variables, which are specified 
+with \texttt{continuous\_state}, and the parameters to be updated via Bayes' 
+Theorem~\ref{eq:BayesThm}, which are specified using one of the aleatory 
+uncertain variable types discussed in Section~\ref{variables:uncertain:cauv}. 
+In the high-fidelity \texttt{variables} block, only the 
+\texttt{continuous\_state} parameters are included. The specifications of the 
+design variables should be consistent in both blocks. Each \texttt{interface} 
+block should point to the appropriate high- or low-fidelity code, and the 
+\texttt{responses} blocks should contain consistent details about the responses 
+from each code. For example, both of the models should return the same number 
+of \texttt{calibration\_terms}.  
+
+The mutual information experimental design algorithm is selected by specifying 
+\texttt{bayesian\_calibration}, \texttt{queso}, and 
+\texttt{experimental\_design} within the \texttt{method} block of the input 
+file, and the first \texttt{model} block should contain the 
+\texttt{hierarchical} specification of the \texttt{surrogate} keyword. The 
+algorithm starts by performing a Bayesian calibration using a number of data
+points, specified in Dakota by \texttt{initial\_samples}. These initial data
+points can be pulled from external data using the 
+\texttt{calibration\_data\_file} keyword in the high-fidelity \texttt{response}
+block. In this case, \texttt{num\_config\_variables} should be specified and 
+set to the number of configuration variables captured in the \texttt{variables} 
+blocks. Furthermore, for use in Bayesian experimental design, 
+\texttt{calibration\_data\_file} should contain the configuration variables 
+and the corresponding high-fidelity model responses; variance information is
+not yet supported. If the number of points taken from this file is less than 
+\texttt{initial\_samples}, or if no such file is provided, Latin Hypercube 
+Sampling is used to draw samples of the design space, and the high-fidelity 
+model is run at these points to supplement the user-specified data. After this 
+initial calibration, a set of design conditions (i.e.\ configuration 
+variables) of size \texttt{num\_candidates} is proposed. Users may specify 
+these candidate points through the \texttt{import\_candidate\_points\_file} 
+command. Again, if the number of points in this file is less than 
+\texttt{num\_candidates}, or if no such file is provided, Latin Hypercube 
+Sampling is used to draw samples of the design space.  
+
+From these candidate designs, that which maximizes the mutual information with
+respect to the low-fidelity model parameters is deemed ``optimal." The mutual
+information is approximated using the low-fidelity model and the $k$-nearest
+neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed in~\cite{Lew16}
+and the Dakota Theory Manual~\cite{TheoMan}. This optimal design is used in the
+high-fidelity model to create a new observation, which is appended to the 
+initial data. This updated data is used to recalculate the Bayesian posterior,
+and the process repeats until one of three stopping criteria are met.
+
+There are three criteria by which this algorithm is considered complete. 
+The user may specify \texttt{max\_hifi\_evaluations}, which limits the number 
+of high-fidelity model simulations Dakota will run. Note that this does not 
+include any simulations needed to perform the initial Bayesian calibration of 
+the low-fidelity model parameters. Alternatively, if the change in the mutual 
+information from one iteration to the next is sufficiently small or if all 
+candidate points have been exhausted, the algorithm will terminate. 
+
+%Further theoretical and implementation details of this algorithm may be found 
+%in~\cite{TheoMan}.
+%From these candidate designs, that which maximizes the mutual information with 
+%respect to the current state of the low-fidelity model parameters is deemed 
+%``optimal." The mutual information between low-fidelity model parameters 
+%$\boldsymbol{\theta}$ and the high-fidelity data $\textbf{d}(\xi)$, gathered at 
+%design conditions $\xi$, is given by
+%\begin{equation}
+%I(\boldsymbol{\theta}, \textbf{d}(\xi)) = \iint p(\boldsymbol{\theta}, 
+	%\textbf{d}(\xi)) \log \frac{ p(\boldsymbol{\theta}, \textbf{d}(\xi)) }
+	%{p(\boldsymbol{\theta}) p(\textbf{d}(\xi))} d\boldsymbol{\theta}
+	%d\textbf{d}.
+%\end{equation}
+%This quantity is approximated using the low-fidelity model and the $k$-nearest
+%neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed 
+%in~\cite{Lew16}. %and the Dakota Theory Manual \ref{}.
+
+\stepcounter{figure}
+\renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
+\lstinputlisting
+[
+float=htbp,
+lastline=53,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign1},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
+\stepcounter{figure}
+\lstinputlisting
+[
+float=htbp,
+firstline=54,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign2},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
 
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 
