@@ -34,6 +34,7 @@ my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
 my $using_aprun = 0;
+my $run_valgrind = 0;        # boolean for whether to run valgrind
 
 # Use default extension .exe on Windows and Cygwin
 if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
@@ -309,7 +310,7 @@ foreach my $file (@test_inputs) {
     }
 
     my $test_command = 
-        form_test_command($num_proc, $dakota_command, $dakota_args,
+        form_test_command($cnt, $num_proc, $dakota_command, $dakota_args,
 			  $restart_command, $dakota_input, $output, $error);
 
     my $pt_code = protected_test($test_command, $output, $delay, $timeout);
@@ -445,6 +446,7 @@ sub process_command_line {
   my $opt_save_output = 0;
   my $opt_man = 0;
   my $opt_parallel = 0;
+  my $opt_valgrind = 0;
 
   # Process long options
   GetOptions('base'           => \$opt_base,
@@ -460,7 +462,8 @@ sub process_command_line {
   	     'man'            => \$opt_man,
   	     'output-dir=s'   => \$output_dir,
   	     'parallel'       => \$opt_parallel,
-	     'test-properties=s' => \$test_props_dir
+	     'test-properties=s' => \$test_props_dir,
+	     'valgrind'       => \$opt_valgrind
 	     ) || pod2usage(1);
   pod2usage(0) if $opt_help;
   pod2usage(-exitstatus => 0, -verbose => 2) if $opt_man;
@@ -514,6 +517,13 @@ sub process_command_line {
   }
   if ($output_dir) {
     $output_dir .= "/";
+  }
+
+  if (${opt_valgrind} || $ENV{'DAKOTA_TEST_VALGRIND'}) {
+    $run_valgrind = 1;
+    if (${opt_parallel} || ${using_aprun}) {
+      die "Error: cannot use valgrind in parallel or aprun mode";
+    }
   }
   
   # parse any remaining command-line arguments
@@ -1001,7 +1011,7 @@ sub parse_restart_command() {
 # relies on global $parallelism 
 sub form_test_command {
 
-  my ($num_proc, $dakota_command, $dakota_args, $restart_command,
+  my ($cnt, $num_proc, $dakota_command, $dakota_args, $restart_command,
       $dakota_input, $output, $error) = @_;
   
   my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} ${dakota_args} $restart_command $dakota_input";
@@ -1010,6 +1020,15 @@ sub form_test_command {
 
   # default serial command
   my $test_command = "$fulldakota $redir";
+  # prepend a valgrind command
+  # TODO: $cnt
+  if ($run_valgrind) {
+    my $vg_log = basename(${dakota_input}, ".in_") . ".${cnt}.vg.log";
+    my $vg_xml = basename(${dakota_input}, ".in_") . ".${cnt}.vg.xml";
+    my $vg_cmd = "valgrind --log-file=${vg_log} --xml=yes --xml-file=${vg_xml} "
+	. " --leak-check=full --child-silent-after-fork=yes" ;
+    $test_command = "${vg_cmd} ${test_command}";
+  }
 
   # If testing within a Cray XC job, aprun the test and force Dakota into serial mode
   if( $using_aprun && $parallelism eq "serial") {
