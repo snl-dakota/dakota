@@ -3,7 +3,7 @@
     <!-- Reusable definition for a method's approximation data import format -->
     <!ENTITY method_import_build_format
         "<optional>
-          <oneOf label='tabular format' >
+          <oneOf label='Tabular Format' >
             <keyword  id='annotated' name='annotated' code='{N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
@@ -19,7 +19,7 @@
     >
     <!ENTITY method_import_approx_format
         "<optional>
-          <oneOf label='tabular format' >
+          <oneOf label='Tabular Format' >
             <keyword  id='annotated' name='annotated' code='{N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
@@ -35,7 +35,7 @@
     >
     <!ENTITY method_export_approx_format
         "<optional>
-          <oneOf label='tabular format' >
+          <oneOf label='Tabular Format' >
             <keyword  id='annotated' name='annotated' code='{N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}' label='annotated' help='' default='annotated format' />
 	    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 	    <required>
@@ -52,7 +52,7 @@
     <!-- Legacy scalar data format supports exp_id and header options -->
     <!ENTITY response_scalar_data_format
         "<optional>
-          <oneOf label='tabular format' >
+          <oneOf label='Tabular Format' >
             <keyword  id='annotated' name='annotated' code='{N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}' label='annotated' help='' default='annotated format' />
             <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
             <required>
@@ -1692,7 +1692,7 @@
 		  </keyword>
 		  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence" help="" minOccurs="0" >
 		    <optional>
-		      <oneOf label="tabular format" >
+		      <oneOf label="Tabular Format" >
 			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 			<required>
 			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
@@ -2148,7 +2148,7 @@
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 			<param type="OUTPUT_FILE" />
 			<optional>
-			  <oneOf label="tabular format" >
+			  <oneOf label="Tabular Format" >
 			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 			    <required>
@@ -2430,7 +2430,7 @@
 		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 		    <param type="OUTPUT_FILE" />
 		    <optional>
-		      <oneOf label="tabular format" >
+		      <oneOf label="Tabular Format" >
 			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 			<!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 			<required>
@@ -3118,7 +3118,7 @@
               <keyword  id="import_approx_points_file2" name="import_approx_points_file" code="{N_mom(str,importApproxPtsFile)}" label="File import of samples for evaluation on global surrogate" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point import from a file" >
 		<param type="INPUT_FILE" />
 		<optional>
-		  <oneOf label="tabular format" >
+		  <oneOf label="Tabular Format" >
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
 		    <required>
 		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
@@ -3185,7 +3185,7 @@
                 <alias name="challenge_points_file"/>
                 <param type="STRING" />
 		<optional>
-		  <oneOf label="tabular format" >
+		  <oneOf label="Tabular Format" >
 					    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
 		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
 		    <required>
@@ -3295,7 +3295,7 @@
 	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="Random" help=""  />
 	    </oneOf>
 	  </keyword>
-	  <keyword id="truncation_method" name="truncation_method" label="Truncation Method" code="{0}" minOccurs="0">
+	  <keyword id="truncation_method" name="truncation_method" label="Truncation Method" code="{0}" minOccurs="0" default="constantine">
 	    <keyword id="bing_li" name="bing_li" label="'Bing Li' Ladle Diagnostic" code="{N_mom(true,subspaceIdBingLi)}" minOccurs="0" />
 	    <keyword id="constantine" name="constantine" label="Constantine Diagnostic" code="{N_mom(true,subspaceIdConstantine)}" minOccurs="0" />
 	    <keyword id="energy" name="energy" label="Eigenvalue Energy" code="{N_mom(true,subspaceIdEnergy)}" minOccurs="0">
@@ -3305,19 +3305,19 @@
 	    </keyword>
 	    <keyword id="cross_validation" name="cross_validation" label="Cross Validation" code="{N_mom(true,subspaceIdCV)}" minOccurs="0" default="relative" >
         <optional>
-          <oneOf>
+          <oneOf label="CV Selection Criterion">
             <keyword id="minimum" name="minimum" label="Minimum" code="{N_mom(utype,subspaceIdCVMethod_MINIMUM_METRIC)}" />
             <keyword id="relative" name="relative" label="Relative" code="{N_mom(utype,subspaceIdCVMethod_RELATIVE_TOLERANCE)}" />
             <keyword id="decrease" name="decrease" label="Decrease" code="{N_mom(utype,subspaceIdCVMethod_DECREASE_TOLERANCE)}" />
           </oneOf>
         </optional>
-        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="Relative Tolerance" help="" minOccurs="0" >
+        <keyword  id="relative_tolerance" name="relative_tolerance" code="{N_mom(Real,relTolerance)}" label="Relative Tolerance" help="" minOccurs="0" default="1.0e-6" >
           <param type="REAL" />
         </keyword>
-        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance" help="" minOccurs="0" >
+        <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance" help="" minOccurs="0" default="1.0e-6">
           <param type="REAL" />
         </keyword>
-        <keyword  id='max_rank' name='max_rank' label="Max Rank" code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0'>
+        <keyword  id='max_rank' name='max_rank' label="Max Rank" code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0' default="number fullspace vars">
           <param type='INTEGER' />
 	      </keyword>
 	      <keyword id="exhaustive" name="exhaustive" label="Exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
@@ -3330,7 +3330,7 @@
             <param type='INTEGER' />
 	  </keyword>
 	  <keyword id="build_surrogate" name="build_surrogate" label="Build Surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
-            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples" help="" minOccurs="0" > 
+            <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples" help="" minOccurs="0" default="0"> 
               <param type="INTEGERLIST" />
             </keyword>
 	  </keyword>
@@ -4468,7 +4468,7 @@
                #  	    ( 
            -->
 	  <optional>
-	    <oneOf>
+	    <oneOf label="Calibration Data">
               <keyword  id="calibration_data1" name="calibration_data" code="{N_rem(true,calibrationDataFlag)}" label="calibration data" help="" >
 		<keyword  id="num_experiments" name="num_experiments" code="{N_rem(sizet,numExperiments)}" label="Experiments in file" help="RespCommands.html#RespFnLS" minOccurs="0" default="1" >
                   <param type="INTEGER" constraint=">= 0" />
