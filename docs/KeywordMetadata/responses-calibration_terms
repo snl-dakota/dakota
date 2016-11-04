@@ -12,15 +12,14 @@ between the model and the data:
 
 There are two use cases:
 
-\li If \ref responses-calibration_terms-calibration_data_file is NOT
-  specified, then each of the calibration terms returned to Dakota
-  through the \ref interface is a residual \f$ R_{i} \f$ to be driven
-  toward zero.
+\li If calibration data <em>is not specified</em>, then each of the
+  calibration terms returned to Dakota through the \ref interface is a
+  residual \f$ R_{i} \f$ to be driven toward zero.
 
-\li If \ref responses-calibration_terms-calibration_data_file IS
-  specified, then each of the calibration terms returned to Dakota
-  must be a response \f$ y^{Model}_i(\theta) \f$, which Dakota will
-  difference with the data in the specified data file.
+\li If calibration data <em>is specified</em>, then each of the
+  calibration terms returned to Dakota must be a response \f$
+  y^{Model}_i(\theta) \f$, which Dakota will difference with the data
+  in the specified data file.
 
 <b> Constraints </b>
 

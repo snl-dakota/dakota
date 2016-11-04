@@ -4,10 +4,11 @@ Description::
 
 \c calibration_data specifies a keyword block that indicates that
 Dakota should read in experimental data for calibration.  This block
-is primarily to support the reading of field calibration data.  The
-user will typically specify the number of experiments, \c
-num_experiments.  If this is not specified, it is assumed there is
-only one experiment.
+is primarily to support the reading of field calibration data.  For
+simpler, scalar-only response cases, see \ref
+responses-calibration_terms-calibration_data_file.  The user will
+typically specify the number of experiments, \c num_experiments.  If
+this is not specified, it is assumed there is only one experiment.
 
 Up to four types of data may be read.  They are read from a collection
 of files, one per response descriptor, per experiment.  In this
@@ -107,29 +108,29 @@ above.
 
 Examples::
 
-Consider this mixed scalar/field example with 3 scalar responses
-(max_temp, min_power, size) and two field-valued responses (volts as a
-function of 27 time points and amps as a function of 5 time points).
-The experiments were conducted given values of two configuration
-variables.
+Consider this mixed scalar/field example with 2 scalar responses
+(max_temp, size) and two field-valued responses (volts as a function
+of 7 time points, amps as a function of 3 time points, and power as a
+function of 5 time points).  The experiments were conducted given
+values of two configuration variables.
 
 \verbatim
 responses
-  descriptors = 'max_temp' 'min_power' 'size' 'volts' 'amps'
+  descriptors = 'max_temp' 'size' 'volts' 'amps' 'power'
   calibration_terms = 5
 
     # define the scalar and field terms
-    scalar_calibration_terms = 3
-    field_calibration_terms = 2
-      lengths = 27 5
-      num_coordinates_per_field = 1 1
+    scalar_calibration_terms = 2
+    field_calibration_terms = 3
+      lengths = 7 3 5
+      num_coordinates_per_field = 1 1 1
       read_field_coordinates
 
     # specify the data
     calibration_data
       num_experiments = 4
       num_config_variables = 2
-      variance_type 'scalar' 'scalar' 'scalar' 'matrix' 'diagonal'
+      variance_type 'scalar' 'scalar' 'diagonal' 'scalar' 'matrix' 
       scalar_data_file 'circuit.dat'
         annotated
 \endverbatim
@@ -137,42 +138,52 @@ responses
 All of the scalar data will be read from a single data file \c
 circuit.dat.  Per \ref
 responses-calibration_terms-calibration_data_file, it must have 4
-rows, and a total of 6 columns, with no variance information:
+rows, and a total of 5 columns, with scalar variance information:
 
 \verbatim
-%exp_id | configuration xvars | max_temp min_pow size
-1         7.8  7                21.9372  1.8687  0.6551
-2         8.6  2                19.0779  4.8976  0.1626
-3         8.4  8                38.2758  4.4559  0.1190
-4         4.2  1                39.7600  6.4631  0.4984
+%exp_id | configuration xvars | max_temp size    | y data variances
+1         7.8  7                21.9372  1.8687    0.25  0.04
+2         8.6  2                19.0779  4.8976    0.25  0.04
+3         8.4  8                38.2758  4.4559    0.25  0.04
+4         4.2  1                39.7600  6.4631    0.25  0.04
 \endverbatim
    
 The field data will be read from separate files:   
 <ol>
 
-<li> <b>Values:</b> 27 values for voltage as a function of time will
-        be read from \c volts.1.dat ... \c volts.4.dat, while the 5
-        values of amps from \c amps.1.dat, ..., \c amps.4.dat.
+<li> <b>Values:</b> 7 values for voltage as a function of time will be
+        read from each of \c volts.1.dat ... \c volts.4.dat, while the 3
+        values of amperage come from \c amps.1.dat, ..., \c amps.4.dat and
+        the 5 values of power will come from \c power.1.dat, ..., \c
+        power.4.dat.
 </li>
 
-<li> <b>Coordinates:</b> The time values will be read from a single
-     column vector in each of the files volts.*.coords and
-     amps.*.coords.
+<li> <b>Coordinates:</b> The corresponding time values will be read
+     from a single column vector in each of the files volts.*.coords,
+     amps.*.coords, and power.*.coords.
 </li>
-
 <li> <b>Variances:</b> Will be read per-experiment (no covariance
-     among experiments is permitted)
-      <ul>
-     <li> Volts specifies 'matrix' covariance, so a square 27 x 27
-          covariance matrix will be read from each of \c volts.1.sigma,
-          ..., \c volts.4.sigma.
+     among experiments is permitted).  The variance information is depicted 
+     graphically in \ref 
+     responses-calibration_terms-calibration_data-variance_type
+     <ul>
+     <li> Volts specifies 'diagonal' covariance, so a column vector of
+          length 7 with the diagonal variances will be read from each
+          of \c volts.1.sigma, ..., \c volts.4.sigma.  
      </li>
-     <li> Amps specifies 'diagonal' covariance, so a column vector of length 5 with the diagonal variances will be read from each of \c amps.1.sigma,
-          ..., \c amps.4.sigma.
+     <li> Amps specifies 'scalar' covariance, so a single variance
+          value will read from each of \c amps.1.sigma, ..., \c
+          amps.4.sigma.  
+     </li>
+     <li> Power specifies 'matrix' covariance, so a square 5 x 5
+          covariance matrix will be read from each of \c power.1.sigma,
+          ..., \c power.4.sigma.
      </li>
      </ul>
 </li>
 <li> <b>Configuration variables:</b> Will be read from a set of files named \c
-     \c experiment.1.config, ..., \c experiment.5.config.
+     \c experiment.1.config, ..., \c experiment.4.config.
 </li>
 </ol>
+
+See Also:: responses-calibration_terms-calibration_data_file

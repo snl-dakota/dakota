@@ -1,5 +1,5 @@
 Blurb::
-Specify a text file containing calibration data for scalar responses
+Supply scalar calibration data only
 
 Description::
 
@@ -7,7 +7,9 @@ Enables text file import of experimental observations for use in
 calibration, for scalar responses only, with optional scalar variance
 information.  For more complex data import cases see \ref
 responses-calibration_terms-calibration_data  Dakota will calibrate
-model variables to best match these data.  Key options include:
+model variables to best match these data.  
+
+Key options include:
   \li format: whether the data file is in \c annotated, \c
     custom_annotated, or \c freeform format
   \li content: where \c num_experiments, \c
@@ -59,13 +61,13 @@ annotated format:
 
 Each row in the file corresponds to an experiment or replicate
 observation of an experiment to be compared to the model output.  This
-example shows 4 experiments, governed by two configuration variables,
-one real-valued and one integer-values, two responses (QOIs), and
+example shows 4 experiments, governed by two configuration variables
+(one real-valued and one integer-valued), two responses (QOIs), and
 corresponding observation errors with standard deviation 0.5 and 0.2.
 
 <b> Usage Tips </b>
 
-\li The \c calibration_data_file keyword is used when ONLY scalar
+\li The \c calibration_data_file keyword is used when \em only scalar
 calibration terms are present.  If there are field calibration terms,
 instead use \ref responses-calibration_terms-calibration_data.  For
 mixed scalar and field calibration terms, one may use the \ref
@@ -76,7 +78,7 @@ Topics::
 
 Examples::
 
-<b>Simple Case:</b>In the simplest case, no data content descriptors
+<b>Simple Case:</b> In the simplest case, no data content descriptors
 are specified:
 
 \verbatim
@@ -87,12 +89,12 @@ responses
       annotated
 \endverbatim
 
-And the data file must contain only the \f$ y^{Data} \f$ observations
-which represent a single experimental observation.  In this case, the
-data file should have \f$ N_{terms} = 2 \f$ columns (for volts, amps)
-and 1 row, where \f$ N_{terms} \f$ is the value of \ref
-responses-calibration_terms.  The data file is shown here in annotated
-format:
+And the data file \c circuit.dat must contain only the \f$ y^{Data}
+\f$ observations which represent a single experimental observation.
+In this case, the data file should have \f$ N_{terms} = 2 \f$ columns
+(for volts, amps) and 1 row, where \f$ N_{terms} \f$ is the value of
+\ref responses-calibration_terms.  The data file is shown here in
+annotated format:
 
 \verbatim
 %exp_id | y data observations

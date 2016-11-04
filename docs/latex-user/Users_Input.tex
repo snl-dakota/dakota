@@ -137,60 +137,72 @@ Section~\ref{input:tabularformat}.
 
 \subsection{Calibration data import}\label{input:calib_data}
 
-%Deterministic least squares and Bayesian Calibration methods allow
-%specification of experimental observations to difference with
-%responses in calculating a model misfit metric (such as a sum of
-%squared residuals). 
-
-By default, deterministic least squares and Bayesian calibration methods rely 
-on the processes in the \texttt{response} block to provide estimates of the 
-residuals,
+Calibration methods (deterministic least squares and Bayesian) require
+residuals, or differences between model predictions
+$\mathbf{q}(\mathbf{\theta})$ and data $\mathbf{d}$:
 \begin{equation}
-\boldsymbol{r}(\boldsymbol{\theta}) = \boldsymbol{d} - 
-	\boldsymbol{q}(\boldsymbol{\theta}),
+  \mathbf{r}(\mathbf{\theta}) =  
+  \mathbf{q}(\mathbf{\theta}) - \mathbf{d},
 \end{equation}
-between the data $\boldsymbol{d}$ and the model predictions 
-$\boldsymbol{q}(\boldsymbol{\theta})$. However, if \texttt{response} instead 
-provides the model predictions $\boldsymbol{q}(\boldsymbol{\theta})$ themselves, 
-experimental data $\boldsymbol{d}$ may be specified directly in a separate 
-text file through the \texttt{calibration\_data\_file} command. This indicates 
-that the residuals need to be calculated outside of the user-specified 
-\texttt{response}. The data file containing experimental observations, if 
-provided, must agree with the following guidelines. 
 
-For scalar responses, a simple tabular format is allowed.  The default
-file format is {\tt annotated}, but the {\tt freeform} option is
-supported.  The data file is comprised of one or more experiments,
-each with one or more replicates, one row per replicate.  The columns
-of the data file contain, in sequence,
+By default, if a Dakota input file specifies \texttt{responses},
+\texttt{calibration\_terms}, the simulation interface is required to
+return a vector of residuals to Dakota.  If in addition the input file
+includes \texttt{calibration\_data} or
+\texttt{calibration\_data\_file}, Dakota assumes the interface will
+return the model predictions $\mathbf{q}(\mathbf{\theta})$ themselves
+and Dakota will compute residuals based on the provided data.
+
+There are two calibration data import mechanisms:
+\begin{enumerate}
+\item Scalar responses only with \texttt{calibration\_data\_file}: This
+  uses a single tabular text file to import data values and
+  (optionally) experiment numbers, configurations, and observation
+  variances.  Each row of the data file expresses this information for
+  a single experiment.
+
+\item Field and/or scalar responses with \texttt{calibration\_data}:
+  In order to accommodate the richer structure of field-valued
+  responses, this specification requires separate data files per
+  response group (descriptor) {\tt DESC}, per experiment {\tt NUM}.
+  The files are named \texttt{DESC.NUM.*} and must each be in a
+  tabular text format.
+\end{enumerate}
+The tabular data files may be specified to be {\tt annotated}
+(default), {\tt custom\_annotated}, or {\tt freeform} format.
+
+Calibration data imports include the following information:
 \begin{itemize}
-\item {\bf configuration variables (optional):} state variable values
+\item {\bf Configuration variables (optional):} state variable values
   indicating the configuration at which this experiment was conducted;
   length must agree with the number of state variables active in the
   study.
-\item {\bf experimental observations (required):} experimental data
-  values to difference with model responses; length equal to the number 
-  of responses.
-\item {\bf experimental standard deviations (optional):} measurement
-  errors (standard deviations) associated with the experimental observations; 
-  one scalar value may be specified for each of the responses.
+\item {\bf Experimental observations (required):} experimental data
+  values to difference with model responses; length equal to the total
+  response length (number of scalars + sum(field lengths)).
+\item {\bf Experimental variances (optional):} measurement errors
+  (variances/covariances) associated with the experimental
+  observations
 \end{itemize}
 
-Data-informing field-valued responses are input using a separate file
-per response group, per experiment.  Field responses may optionally
-have scalar, diagonal, or matrix-valued error covariance information.
-See~\ref{nls:examples} and the Dakota Reference Manual Responses
-section for further details.
+For specifics on specifying calibration data imports,
+see~\ref{nls:examples} and the \texttt{responses} \textgreater 
+\texttt{calibration\_terms} keyword in the Dakota Reference
+Manual~\cite{RefMan}.
 
-As an example, Figure~\ref{fig:input:obs_err_cov} shows an observation
+{\bf Note on variance:} Field responses may optionally have scalar,
+diagonal, or matrix-valued error covariance information.  As an
+example, Figure~\ref{fig:input:obs_err_cov} shows an observation
 vector with 5 responses; 2 scalar + 3 field (each field of length
 \textgreater 1).  The corresponding covariance matrix has scalar
-variance for each of the scalars, diagonal covariance for field 1,
-scalar covariance for field 2, and full matrix covariance for field 3.
-In total, Dakota supports block diagonal covariance $\Sigma$ across
-the responses, with blocks $\Sigma_i$, which could be fully dense
-within a given field response group.  Covariance across the
-highest-level responses (off-diagonal blocks) is not supported.
+variances $\sigma_1^2, \sigma_2^2$ for each of the scalars $s1, s2$,
+diagonal covariance $D_3$ for field $f3$, scalar covariance
+$\sigma_4^2$ for field $f4$, and full matrix covariance $C_5$ for
+field $f5$.  In total, Dakota supports block diagonal covariance
+$\Sigma$ across the responses, with blocks $\Sigma_i$, which could be
+fully dense within a given field response group.  Covariance across
+the highest-level responses (off-diagonal blocks) is not supported,
+nor is covariance between experiments.
 \begin{figure}[htbp!]
   \centering
   \includegraphics[scale=0.5]{images/ObsErrorCovariance}
@@ -253,4 +265,5 @@ in the input file instead of at the command-line, and provide a format
 option.
 
 % LocalWords:  WordPad pre num whitespace freeform TPLs SCOLIB JEGA AMPL nl GAs
-% LocalWords:  PCE multi dakota dat varsresponses Surfpack
+% LocalWords:  PCE multi dakota dat varsresponses Surfpack eval DESC covariance
+% LocalWords:  covariances
