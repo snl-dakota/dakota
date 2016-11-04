@@ -1,0 +1,52 @@
+Blurb:: 
+Enable exporting output sample sequences on files
+
+Description:: 
+If present, separate output files are written for each model form and discretization level.
+For the multilevel technique, separate files are written for the samples used at each
+iteration (pilot samples are denoted by iteration 0).
+
+<b> Default Behavior </b>
+
+If not specified, the \c annotated format is assumed.
+
+<b> Expected Output </b>
+
+Separate output files are generated according to the following format: 
+\c {ml/cv}_{interface_id}_{iteration_number}_{level_number}_{number_of_samples}.dat.
+
+If one single model form is present the first field of the file name is 
+\c ml_, otherwise \c ml_ is used for the HF model and \c cv_ is used for the LF one.
+
+Examples::
+The following method block 
+\verbatim
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  convergence_tolerance = .01
+	  output silent
+	  export_sample_sequence
+\endverbatim
+
+results in enabling the sample output on file with the defauls \c annotated format.
+
+The following variables block 
+\verbatim
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 5 15 30 60 # number of spatial coords
+	    	       	 3 	    # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+\endverbatim
+
+illustrates how to define descriptors for a model form. For instance, in this case the descriptors 
+\c N_x and \c N_mod are reported in the sample sequences files for all the format.
