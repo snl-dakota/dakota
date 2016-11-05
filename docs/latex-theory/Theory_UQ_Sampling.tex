@@ -88,25 +88,26 @@ physical $\mathbf{x} \in \Omega\subset\mathbb{R}^n$ and/or temporal $t \in T\sub
 hence $Q=Q(\mathbf{x}, \boldsymbol{\xi}, t)$. A finite spatial/temporal resolution is always employed to numerically solve a PDE, implying
 the presence of a discretization error in addition to the stochastic error. The term discretization is applied generically with reference 
 to either the spatial tessellation, the temporal resolution, or both (commonly, they are linked). For a generic tessellation with $M$ 
-degrees-of-freedom, the PDE solution of $Q$ is referred to as $Q_M$. Since $Q_M \rightarrow Q$ for $M\rightarrow\infty$, 
+degrees-of-freedom (DOFs), the PDE solution of $Q$ is referred to as $Q_M$. Since $Q_M \rightarrow Q$ for $M\rightarrow\infty$, 
 then $\mathbb{E}\left[{Q_M}\right] \rightarrow \mathbb{E}\left[{Q}\right]$ for $M\rightarrow\infty$ with a prescribed order of convergence. 
 A MC estimator in presence of a finite spatial resolution and finite sampling is
 \begin{equation}
 \hat{Q}^{MC}_{M,N} = \frac{1}{N} \sum_{i=1}^N Q_M^{(i)}
 \end{equation}
-at which it corresponds a mean square error MSE  
+which corresponds to the following mean square error (MSE)
 \begin{equation}
 \mathbb{E}\left[ (\hat{Q}^{MC}_{M,N}-\mathbb{E}\left[ Q \right] )^2 \right]
        = N^{-1} \mathbb{V}ar\left({Q_M}\right) + \left( \mathbb{E}\left[{ Q_M-Q }\right] \right)^2,
 \end{equation}
-where the first term represents the variance of the estimator, whereas $\left( \mathbb{E}\left[ Q_M-Q \right] \right)^2$ is the bias
-introduced by the (finite) spatial discretization. The two contributions appear to be independent of each other; an accurate
-result of a MC simulation can be obtained by only drawing the required $N$ number of simulations of $Q_M( \boldsymbol{\xi} )$ at 
-a fine enough resolution $M$. Since the numerical cost of a PDE is related to the number of DOFs of the tessellation,
-the total cost of a MC simulation for a PDE can easily become intractable for complex multi-physics computationally 
-intensive applications.
-The multilevel idea has been introduced as an extension of the control variate approach when an additional (with
-respect to the stochastic space) discretization space is present. The basic idea, borrowed from the multigrid approach,
+where the first term represents the variance of the estimator, and the second term $\left( \mathbb{E}\left[ Q_M-Q \right] \right)^2$ reflects the bias
+introduced by the (finite) spatial discretization. The two contributions appear to be independent of each other; accurate MC estimates can only be obtained by drawing the required $N$ number of simulations of $Q_M( \boldsymbol{\xi} )$ at 
+a sufficiently fine resolution $M$. Since the numerical cost of a PDE is related to the number of DOFs of the tessellation,
+the total cost of a MC simulation for a PDE can easily become intractable for complex multi-physics applications that are computationally 
+intensive.
+
+The multilevel Monte Carlo (MLMC) algorithm has been introduced as an extension of the control variate approach when an additional 
+%(with respect to the stochastic space) 
+discretization space can be utilized. The basic idea, borrowed from the multigrid approach,
 is to replace the evaluation of the statistics of $Q_M$ with a sequence of evaluations at coarser levels. If it is 
 possible to define a sequence of discretization levels $\left\{ M_\ell: \ell = 0, \dots, L \right\}$ with 
 $M_0 < M_1 < \dots < M_L \stackrel{\mathrm{def}}{=} M$, the expected value $\mathbb{E}\left[{Q_M}\right]$ can be decomposed, 
@@ -129,41 +130,49 @@ written at each level for $Y_\ell$, obtaining the following multilevel MC estima
  \hat{Q}_M^{\mathrm{ML}} = \, \sum_{\ell = 0}^L \hat{Y}_{\ell, N_\ell}^{\mathrm{MC}} 
  = \sum_{\ell = 0}^L \frac{1}{N_\ell} \sum_{i=1}^{N_\ell} Y_\ell^{(i)}.
 \end{equation}
-Since it is unbiased, the advantage of using this estimator is in its reduced variance 
+Since it is unbiased, the advantage of using this formulation is in its reduced estimator variance 
 $\sum_{\ell=0}^{L} N_\ell^{-1} \mathbb{V}ar\left({Y_\ell}\right)$: since $Q_M \rightarrow Q$, 
 the difference function $Y_\ell \rightarrow 0$. Indeed, the corresponding number of
-samples $N_\ell$ required to decrease the variance associated with the $\ell$th level is expected 
+samples $N_\ell$ required to resolve the variance associated with the $\ell$th level is expected 
 to decrease with $\ell$.
  
-The MLMC algorithm can be interpreted as a strategy to optimally allocate resources. If the total cost of the
-MLMC algorithm is written as  
+The MLMC algorithm can be interpreted as a strategy to optimally allocate 
+resources. If the total cost of the MLMC algorithm is written as  
 \begin{equation}\label{EQ: MLMC cost}
 \mathcal{C}(\hat{Q}^{ML}_{M}) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell},
 \end{equation}
-with $\mathcal{C}_{\ell}$ being the cost of the evaluation of $Y_\ell$, fixing an accuracy equal to $\varepsilon^2/2$ 
-for the MSE related to the stochastic error, a constrained minimization 
-problem is formulated by using of a Lagrange multiplier $\lambda$
+with $\mathcal{C}_{\ell}$ being the cost of the evaluation of $Y_\ell$ (involving either one or two discretization evaluations), then the following constrained minimization problem can be formulated where an equality constraint enforces a stochastic error (from MLMC estimator variance) equal to the residual bias error ($\varepsilon^2/2$)
 \begin{equation}\label{EQ:mlmc_optimization}
  f(N_\ell,\lambda) = \sum_{\ell=0}^{L} N_\ell \, \mathcal{C}_{\ell} 
                    + \lambda \left( \sum_{\ell=0}^{L} N_\ell^{-1} \mathbb{V}ar\left({Y_\ell}\right) - \varepsilon^2/2 \right). 
 \end{equation}
-The result of the minimization is
+using Lagrange multiplier $\lambda$.  This equality constraint reflects a balance between the two contributions to MSE, reflecting the goal to not over-resolve one or the other.  The result of the minimization is
 \begin{equation}\label{EQ: MLMC nl}
 N_{\ell} = \frac{2}{\varepsilon^2} \left[ \, \sum_{k=0}^L \left( \mathbb{V}ar\left(Y_k\right) \mathcal{C}_k \right)^{1/2} \right] 
-               \sqrt{\frac{ \mathbb{V}ar\left({Y_\ell}\right) }{\mathcal{C}_{\ell}}}.
+               \sqrt{\frac{ \mathbb{V}ar\left({Y_\ell}\right) }{\mathcal{C}_{\ell}}},
 \end{equation}
+defining an optimal sample allocation per discretization level.
 
 
-\section{A multilevel-multifidelity MC approach} \label{uq:sampling:mlmf}
-The MLMC (refer to Section~\ref{uq:sampling:multilevel}) can be considered as a recursive control variate technique 
-since it aims at reducing the variance of the target function as an effective way of limiting the sampling at high 
-resolution. Nonetheless, at each level the difference function $Y_\ell$ can itself be the object of an additional 
-control variate (refer to Section~\ref{uq:sampling:controlvariate}). A practical scenario is when not only 
-different resolution levels are available (multilevel part), but also a cheaper computational model can be used 
-(multifidelity/control variate part). The name of the combined approach is multilevel-multifidelity.
+\section{A multilevel-multifidelity approach} \label{uq:sampling:mlmf}
 
-If the target QoI is considered to come from a high-fidelity (HF) model and a low-fidelity (LF) cheaper but possibly biased
-model is available, it is possible to write the following estimator
+The MLMC approach in \S\ref{uq:sampling:multilevel} can be considered
+to be a recursive control variate technique in that it seeks to reduce
+the variance of the target function in order to limit the sampling at
+high resolution. In addition, the difference function $Y_\ell$ for
+each level can itself be the target of an additional control variate
+(refer to \S\ref{uq:sampling:controlvariate}). A practical scenario is
+when not only different resolution levels are available (multilevel
+part), but also a cheaper computational model can be used
+(multifidelity part). The combined approach is a
+multilevel-multifidelity algorithm, and in particular, a
+multilevel-control variate Monte Carlo sampling approach.
+
+\subsection{$Y_l$ correlations} \label{uq:sampling:mlmf:Ycorr}
+
+If the target QoI can be generated from both a high-fidelity (HF) model 
+and a cheaper, possibly biased low-fidelity (LF) model, it is possible 
+to write the following estimator
 \begin{equation}\label{EQ: MLMF estimator}
  \mathbb{E}\left[Q_M^{\mathrm{HF}}\right] = \sum_{l=0}^{L_{\mathrm{HF}}} \mathbb{E}\left[Y^{\mathrm{HF}}_{\ell}\right] 
                                           = \sum_{l=0}^{L_{\mathrm{HF}}} \hat{Y}^{\mathrm{HF}}_{\ell} = \sum_{l=0}^{L_{\mathrm{HF}}} Y^{{\mathrm{HF}},\star}_{\ell},
@@ -175,12 +184,11 @@ where
 
 The estimator $Y^{\mathrm{HF},\star}_{\ell}$ is unbiased with respect to $\hat{Y}^{\mathrm{HF}}_{\ell}$, hence with 
 respect to the true value $\mathbb{E}\left[Y^{\mathrm{HF}}_{\ell}\right]$.
-The control variate is obtained by means of the LF realizations of the model for which the expected value can be 
+The control variate is obtained by means of the LF model realizations for which the expected value can be 
 computed in two different ways: $\hat{Y}^{\mathrm{LF}}_{\ell}$ and $\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$. 
-A MC estimator is employed for each term such that the estimation of $\hat{Y}^{\mathrm{LF}}_{\ell}$ and 
-$\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$ are different. This task is accomplished by choosing the number of 
-LF realizations to be equal to the sum of an affordable number of HF realizations, $N_{\ell}^{\mathrm{HF}}$, and 
-an additional and independent set of realizations $\Delta_{\ell}^{\mathrm{LF}}$, 
+A MC estimator is employed for each term but the estimation of $\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$ is more resolved than $\hat{Y}^{\mathrm{LF}}_{\ell}$. For $\hat{Y}^{\mathrm{LF}}_{\ell}$, we choose the number of 
+LF realizations to be equal to the number of HF realizations, $N_{\ell}^{\mathrm{HF}}$.  For the more resolved $\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$, we
+augment with an additional and independent set of realizations $\Delta_{\ell}^{\mathrm{LF}}$, 
 hence $N_{\ell}^{\mathrm{LF}} = N_{\ell}^{\mathrm{HF}} + \Delta_{\ell}^{\mathrm{LF}}$. The set $\Delta_{\ell}^{\mathrm{LF}}$ is
 written, for convenience, as proportional to $N_{\ell}^{\mathrm{HF}}$ by means of a parameter $r_{\ell} \in \mathbb{R}^+_0$
 \begin{equation}
@@ -214,10 +222,10 @@ function of the ratio $r_\ell$:
 \end{split}
 \end{equation}
 Note that $\Lambda_{\ell}(r_\ell)$ represents a penalty with respect to the classical 
-control variate approach presented in Section~\ref{uq:sampling:controlvariate}, which stems from 
+control variate approach presented in \S\ref{uq:sampling:controlvariate}, which stems from 
 the need to evaluate the unknown function $\mathbb{E}\left[Y^{\mathrm{LF}}_{\ell}\right]$. However, the ratio $r_\ell/(r_\ell+1)$ is dependent 
 on the additional number of LF evaluations $\Delta_{\ell}^{\mathrm{LF}}$, hence it is fair to assume that it 
-can be made very close to the unity by choosing an affordable large $r_\ell$, i.e., $\Delta_{\ell}^{\mathrm{LF}} >> N_{\ell}^{\mathrm{HF}}$.
+can be made very close to unity by choosing an affordably large $r_\ell$, i.e., $\Delta_{\ell}^{\mathrm{LF}} >> N_{\ell}^{\mathrm{HF}}$.
 
 The optimal sample allocation is determined taking into account the relative cost between the HF and LF models and their correlation (per level).
 In particular the optimization problem introduced in Eq.~\ref{EQ:mlmc_optimization} is replaced by
@@ -246,12 +254,15 @@ the optimal allocation is
                
 It is clear that the efficiency of the algorithm is related not only to the efficiency of the LF model, i.e. how fast a simulation runs with respect
 to the HF model, but also to the correlation between the LF and HF model.
+
+\subsection{$Q_l$ correlations} \label{uq:sampling:mlmf:Ycorr}
+
 A potential refinement of the previous approach consists in exploiting the QoI on each pair of levels, $\ell$ and $\ell-1$, to 
 build a more correlated LF function. For instance, it is possible to use
 \begin{equation}
  \mathring{Y}^{\mathrm{LF}}_{\ell} =  \gamma_\ell Q_\ell^{\mathrm{LF}} - Q_\ell^{\mathrm{HF}}
 \end{equation}
-and maximize the correlation between $Y_\ell^{\mathrm{HF}}$ and $\mathring{Y}^{\mathrm{LF}}_{\ell}$ (through the coefficient $\gamma_\ell$).
+and maximize the correlation between $Y_\ell^{\mathrm{HF}}$ and $\mathring{Y}^{\mathrm{LF}}_{\ell}$ through the coefficient $\gamma_\ell$.
 
 Formally the two formulations are completely equivalent if $Y_\ell^{\mathrm{HF}}$ is replaced with $\mathring{Y}^{\mathrm{LF}}_{\ell}$ in 
 Equation~\eqref{EQ: MLMF estimator} and they can be linked through the two ratios
@@ -274,11 +285,11 @@ parameter $\gamma_\ell$. It is possible to solve analytically this maximization 
 \gamma_\ell^\star= \dfrac{ \mathrm{Cov}\left(  Y^{\mathrm{HF}}_{\ell},Q_{\ell-1}^{\mathrm{LF}} \right) \mathrm{Cov}\left( Q_{\ell}^{\mathrm{LF}},Q_{\ell-1}^{\mathrm{LF}} \right) 
                    - \mathbb{V}ar\left(Q_{\ell-1}^{\mathrm{LF}}\right) \mathrm{Cov}\left(  Y^{\mathrm{HF}}_{\ell},Q_{\ell}^{\mathrm{LF}} \right) }
             { \mathbb{V}ar\left(Q_{\ell}^{\mathrm{LF}}\right) \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Q_{\ell-1}^{\mathrm{LF}} \right) 
-            - \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Q_{\ell}^{\mathrm{LF}} \right) \mathrm{Cov}\left( Q_{\ell}^{\mathrm{LF}},Q_{\ell-1}^{\mathrm{LF}} \right) },
+            - \mathrm{Cov}\left( Y^{\mathrm{HF}}_{\ell},Q_{\ell}^{\mathrm{LF}} \right) \mathrm{Cov}\left( Q_{\ell}^{\mathrm{LF}},Q_{\ell-1}^{\mathrm{LF}} \right) }.
 \end{equation}
-to which correspond the optimal ratio $\dfrac{\theta_\ell^2}{\tau_\ell} = \dfrac{\theta_\ell^2}{\tau_\ell} (\gamma_\ell^\star )$.
+%to which correspond the optimal ratio $\dfrac{\theta_\ell^2}{\tau_\ell} = \dfrac{\theta_\ell^2}{\tau_\ell} (\gamma_\ell^\star )$.
 
-Indeed, the optimal allocation of samples across levels and model forms will be given by
+The resulting optimal allocation of samples across levels and model forms is given by
  \begin{equation*}
  \begin{split}
   r_\ell^{\star} &= -1 + \sqrt{ \dfrac{\rho_l^2 \dfrac{\theta_\ell^2}{\tau_\ell} }{1-\rho_\ell^2 \dfrac{\theta_\ell^2}{\tau_\ell}} w_{\ell}}, \quad \mathrm{where} \quad w_{\ell} 
