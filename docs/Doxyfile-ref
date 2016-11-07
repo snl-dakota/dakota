@@ -34,7 +34,7 @@ PROJECT_NAME           = "Dakota Reference Manual"
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = "Version 6.3"
+PROJECT_NUMBER         = "Version 6.4+"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer
@@ -47,7 +47,7 @@ PROJECT_BRIEF          = "Large-Scale Engineering Optimization and Uncertainty A
 # exceed 55 pixels and the maximum width should not exceed 200 pixels.
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = images/dakota-logo.png
+PROJECT_LOGO           = /home/jasteph/Dakota/git/dakota/docs/images/dakota-logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -592,7 +592,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = Dakota.bib
+CITE_BIB_FILES         = /home/jasteph/Dakota/git/dakota/docs/Dakota.bib
 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
@@ -734,9 +734,10 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             =  images \
-		          latex-user/images \
-		          latex-theory/images
+IMAGE_PATH             =  /home/jasteph/Dakota/git/dakota/docs/images \
+		          /home/jasteph/Dakota/git/dakota/docs/latex-user/images \
+		          /home/jasteph/Dakota/git/dakota/docs/latex-theory/images
+
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -908,13 +909,13 @@ HTML_FILE_EXTENSION    = .html
 # have to redo this when upgrading to a newer version of doxygen or when
 # changing the value of configuration settings such as GENERATE_TREEVIEW!
 
-HTML_HEADER            = common/dox-header.html
+HTML_HEADER            = /home/jasteph/Dakota/git/dakota/docs/common/dox-header.html
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for
 # each generated HTML page. If it is left blank doxygen will generate a
 # standard footer.
 
-HTML_FOOTER            = common/dox-footer.html
+HTML_FOOTER            = /home/jasteph/Dakota/git/dakota/docs/common/dox-footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading
 # style sheet that is used by each HTML page. It can be used to
@@ -923,7 +924,7 @@ HTML_FOOTER            = common/dox-footer.html
 # HTML_EXTRA_STYLESHEET instead of this one, as it is more robust and this
 # tag will in the future become obsolete.
 
-HTML_STYLESHEET        = common/stylesheet.css
+HTML_STYLESHEET        = /home/jasteph/Dakota/git/dakota/docs/common/stylesheet.css
 
 # The HTML_EXTRA_STYLESHEET tag can be used to specify an additional
 # user-defined cascading style sheet that is included after the standard
@@ -933,7 +934,7 @@ HTML_STYLESHEET        = common/stylesheet.css
 # robust against future updates. Doxygen will copy the style sheet file to
 # the output directory.
 
-HTML_EXTRA_STYLESHEET  = common/dox-stylesheet.css
+HTML_EXTRA_STYLESHEET  = /home/jasteph/Dakota/git/dakota/docs/common/dox-stylesheet.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1347,7 +1348,7 @@ EXTRA_PACKAGES         = amsmath amsfonts
 # the first chapter. If it is left blank doxygen will generate a
 # standard header. Notice: only use this tag if you know what you are doing!
 
-LATEX_HEADER           = header-ref.tex
+LATEX_HEADER           = /home/jasteph/Dakota/git/dakota/docs/header-ref.tex
 
 # The LATEX_FOOTER tag can be used to specify a personal LaTeX footer for
 # the generated latex document. The footer should contain everything after
