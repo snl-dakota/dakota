@@ -399,8 +399,8 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
     aggregate_acceptance_chain(update_cntr);
     
     // retain best or accumulate unique samples from current MCMC chain
-    std::cout << "######" << adaptPosteriorRefine << std::endl;
-    std::cout << emulatorType << "," << PCE_EMULATOR << std::endl;
+    //std::cout << "######" << adaptPosteriorRefine << std::endl;
+    //std::cout << emulatorType << "," << PCE_EMULATOR << std::endl;
     if (adaptPosteriorRefine && emulatorType == PCE_EMULATOR)
       filter_chain_by_conditioning(update_cntr, batch_size);
     else

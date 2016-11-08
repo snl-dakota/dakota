@@ -1352,28 +1352,16 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   unsigned short sample_type = SUBMETHOD_LHS;
   short sample_ranks_mode = 0; //IGNORE RANKS
   Pecos::LHSDriver lhsDriver; // the C++ wrapper for the F90 LHS library
-  int n = 0;
+  size_t e, s, r, cntr = 0;
   lhsDriver.seed(randomSeed);
   lhsDriver.initialize("lhs", sample_ranks_mode, true);
-  for(size_t i = 0; i < num_exp; ++i){
+  for (e=0; e<num_exp; ++e) {
     //int lhs_seed = (randomSeed > 0) ? randomSeed : generate_system_seed();
-    lhsDriver.generate_normal_samples(means_vec, std_deviations[i], lower_bnds,
-              upper_bnds, num_filtered, correl_matrices[i],lhs_normal_samples);
-    for(int j = 0; j < num_filtered; ++j){
-      const RealVector& FnVal_colj = Teuchos::getCol(Teuchos::View, 
-     			        filtered_fn_vals, j);
-      const RealVector& lhs_colj = Teuchos::getCol(Teuchos::View, 
-   				lhs_normal_samples, j);
-      RealVector col_vec(numFunctions);
-      for(size_t k = 0; k < numFunctions;++k){
-        col_vec[k] = FnVal_colj[k] + lhs_colj[k];	
-      }	
-      //const RealVector& col_vec = Teuchos::getCol(Teuchos::View, 
-      //filtered_fn_vals, j) + 
-      //Teuchos::getCol(Teuchos::View, lhs_normal_samples, j);
-      Teuchos::setCol(col_vec, n, predVals);
-      n++; 
-    }
+    lhsDriver.generate_normal_samples(means_vec, std_deviations[e], lower_bnds,
+              upper_bnds, num_filtered, correl_matrices[e],lhs_normal_samples);
+    for (s=0; s<num_filtered; ++s, ++cntr)
+      for (r=0; r<numFunctions; ++r)
+	predVals(r,cntr) = filtered_fn_vals(r,s) + lhs_normal_samples(r,s);
   }
 }
 
