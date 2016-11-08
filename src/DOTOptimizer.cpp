@@ -48,7 +48,9 @@ DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, Model& model):
 
   if (outputLevel > NORMAL_OUTPUT) {
     printControl = 7;
-    Cout << "DOT Method = " << dotMethod << std::endl;
+    // BMA 20161107: dotMethod not initialized based on constraints
+    // until initialize_run()
+    //Cout << "DOT Method = " << dotMethod << std::endl;
     Cout << "DOT print control = " << printControl << std::endl;
   }
   else
