@@ -20,10 +20,10 @@
 
 % Need to manually break line or Eldred gets incorrectly split
 \newcommand{\DakotaAuthorSAND}{
-Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey, John~P.~Eddy,\\
-Mohamed~S.~Ebeida, Michael~S.~Eldred, Russell~W.~Hooper,\\
-Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, Kathryn~A.~Maupin,\\
-Jason~A.~Monschke, Elliott~M.~Ridgway, Ahmad~Rushdi,Laura~P.~Swiler,\\
+Brian~M.~Adams, Lara~E.~Bauman, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
+John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci, \\
+Russell~W.~Hooper, Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, \\
+Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~Rushdi, Laura~P.~Swiler, \\
 J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
 }
 
@@ -31,9 +31,9 @@ J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
 \newcommand{\authvskip}{0.25cm}
 
 \newcommand{\DakotaAuthorLong}{
-{Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, John~D.~Jakeman,}\\
-{Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler, J.~Adam~Stephens,}\\
-{Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci,}\\
+{John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,}\\
+{J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
 {William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
 {John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
@@ -46,16 +46,16 @@ J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
 Sandia National Laboratories\\
 P.O. Box 5800\\
 Albuquerque, NM 87185 \vspace*{\authvskip} \\
-{Ahmad~Rushdi,} {\sl Institute for Computational and Engineering Sciences} \vspace*{\authvskip} \\
-The University of Texas at Austin\\
-P.O. Box 4.102\\
-Austin, TX 78712\\
+{Ahmad~Rushdi,} {\sl Electrical and Computer Engineering} \vspace*{\authvskip} \\
+University of California\\
+One Shields Avenue\\
+Davis, CA 95616-5294\\
 }
 
 \newcommand{\DakotaAuthorFormatted}{
-{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, John D. Jakeman,\\
-Kathryn~A.~Maupin, Jason~A.~Monschke, Laura P. Swiler, J. Adam Stephens,\\
-Dena M. Vigil, Timothy M. Wildey}\\ 
+{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, Gianluca~Geraci,\\ 
+John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,\\
+J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{\authvskip}
 {\large \bf William J. Bohnhoff}\\
@@ -84,11 +84,11 @@ Dena M. Vigil, Timothy M. Wildey}\\
 {\large Albuquerque, New Mexico 87185}\\
 \vspace*{\authvskip}
 {\large \bf Ahmad Rushdi}\\
-{\large Institute for Computational and Engineering Sciences}\\
+{\large Electrical and Computer Engineering}\\
 \vspace*{\authvskip}
-{\large The University of Texas at Austin}\\
-{\large P.O. Box 4.102}\\
-{\large Austin, TX 78712}\\
+{\large University of California}\\
+{\large One Shields Avenue}\\
+{\large Davis, CA 95616-5294}\\
 }
 
 

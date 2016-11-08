@@ -117,7 +117,7 @@ another analysis tool.
   \item Assuming Dakota ran successfully, skim the three text files (restart files are in a binary format). These are described further in 
 Section~\ref{tutorial:quickstart:output}.
   \item This example used a parameter study method, and the 
-\texttt{Rosenbrock} test problem. More details about the example are in
+\texttt{rosenbrock} test problem. More details about the example are in
 Section~\ref{tutorial:examples:param_study} and the test problem is 
 described in Sections~\ref{tutorial:examples:rosenbrock} and~\ref{additional:rosenbrock}.
   \item Explore the many methods available in Dakota in
@@ -180,17 +180,19 @@ For this example, the default name for the tabular output file
 \texttt{rosen\_multidim.dat}. This tab-delimited text file
 (Figure \ref{tutorial:quickstart:rosenbrock_multidim:dat})
 summarizes the inputs and outputs to the function evaluator.
-The first line contains the names of the variables and responses: 
-\newline
-\begin{tabular}{llll}
-\%eval\_id           &  x1  &           x2&  response\_fn\_1 \\
-\end{tabular}
-\newline
+The first line contains the names of the variables and responses,
+as well as headers for the evaluation id and interface columns.
+\begin{verbatim}
+   %eval_id   interface   x1   x2   response_fn_1 
+\end{verbatim}
 The number of function evaluations will match the number of 
 evaluations listed in the summary part of the output file for
-single method approaches; the
-names of inputs and outputs will match the descriptors 
-specified in the input file. This file is ideal for import into
+single method approaches; the names of inputs and outputs will match 
+the descriptors specified in the input file. The \texttt{interface} 
+column is useful when a Dakota input file contains more than one 
+simulation interface. In this instance, there is only one, and
+it has no \texttt{id\_interface} specified, so Dakota has supplied
+a default value of \texttt{NO\_ID}. This file is ideal for import into
 other data analysis packages.
 
 

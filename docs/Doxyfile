@@ -31,7 +31,7 @@ PROJECT_NAME           = Dakota
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = "Version 6.3"
+PROJECT_NUMBER         = "Version 6.4+"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -495,7 +495,7 @@ LAYOUT_FILE            =
 # feature you need bibtex and perl available in the search path. Do not use
 # file names with spaces, bibtex cannot handle them.
 
-CITE_BIB_FILES         = Dakota.bib
+CITE_BIB_FILES         = /home/jasteph/Dakota/git/dakota/docs/Dakota.bib
 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
@@ -557,14 +557,14 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = Dev_Main.dox \
-                         Dev_Style_Conventions.dox \
-                         Dev_Spec_Change.dox \
-                         Dev_Iterator_Flow.dox \
-                         Dev_Library.dox \
-                         Dev_Fn_Evals.dox \
-                         Dev_Vars_ContViews.dox \
-                         ../src
+INPUT                  = /home/jasteph/Dakota/git/dakota/docs/Dev_Main.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Style_Conventions.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Spec_Change.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Iterator_Flow.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Library.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Fn_Evals.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/Dev_Vars_ContViews.dox \
+                         /home/jasteph/Dakota/git/dakota/docs/../src
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -595,10 +595,10 @@ RECURSIVE              = NO
 # excluded from the INPUT source files. This way you can easily exclude a
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../src/rSQPOptimizer.C \
-                         ../src/rSQPOptimizer.H \
-                         ../src/NonDUnilevelRBDO.C \
-                         ../src/NonDUnilevelRBDO.H
+EXCLUDE                = /home/jasteph/Dakota/git/dakota/docs/../src/rSQPOptimizer.C \
+                         /home/jasteph/Dakota/git/dakota/docs/../src/rSQPOptimizer.H \
+                         /home/jasteph/Dakota/git/dakota/docs/../src/NonDUnilevelRBDO.C \
+                         /home/jasteph/Dakota/git/dakota/docs/../src/NonDUnilevelRBDO.H
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded
@@ -646,7 +646,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             = images
+IMAGE_PATH             = /home/jasteph/Dakota/git/dakota/docs/images
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -780,7 +780,7 @@ HTML_FILE_EXTENSION    = .html
 # each generated HTML page. If it is left blank doxygen will generate a
 # standard header.
 
-HTML_HEADER            = header-dev.html
+HTML_HEADER            = /home/jasteph/Dakota/git/dakota/docs/header-dev.html
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for
 # each generated HTML page. If it is left blank doxygen will generate a
@@ -1019,7 +1019,7 @@ EXTRA_PACKAGES         =
 # the first chapter. If it is left blank doxygen will generate a
 # standard header. Notice: only use this tag if you know what you are doing!
 
-LATEX_HEADER           = header-dev.tex
+LATEX_HEADER           = /home/jasteph/Dakota/git/dakota/docs/header-dev.tex
 
 # If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated
 # is prepared for conversion to pdf (using ps2pdf). The pdf file will
