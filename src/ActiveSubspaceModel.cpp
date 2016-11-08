@@ -805,8 +805,8 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
     // Create a local active subspace model using the light-weight constructor:
     Model asm_model_tmp;
     asm_model_tmp.assign_rep(new ActiveSubspaceModel(subModel, ii,
-                             leftSingularVectors,
-                             QUIET_OUTPUT));
+						     leftSingularVectors,
+						     QUIET_OUTPUT), false);
 
     String sample_reuse = "", approx_type = "global_moving_least_squares";
     ActiveSet surr_set = current_response().active_set(); // copy

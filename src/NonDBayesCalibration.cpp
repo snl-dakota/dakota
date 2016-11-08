@@ -253,7 +253,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
-    stochExpIterator.assign_rep(se_rep);
+    stochExpIterator.assign_rep(se_rep, false);
     // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
     se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,

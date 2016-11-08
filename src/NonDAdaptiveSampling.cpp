@@ -1765,7 +1765,7 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
   }
 
   u_space_sampler.assign_rep(new FSUDesignCompExp(u_model, num_samples, seed, 
-    sample_type));
+						  sample_type), false);
 }
 
 // Mohamed and Laura
