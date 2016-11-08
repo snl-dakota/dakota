@@ -44,6 +44,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
+  refinementSamples(0),
   subspaceNormalization(
     probDescDB.get_ushort("model.active_subspace.normalization")),
   cvIncremental(probDescDB.get_bool("model.active_subspace.cv.incremental")),
