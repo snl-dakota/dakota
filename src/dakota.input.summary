@@ -151,7 +151,7 @@ KEYWORD12 method
 	  [ soft_convergence_limit INTEGER ]
 	  [ truth_surrogate_bypass ]
 	  [ trust_region
-	    [ initial_size REAL ]
+	    [ initial_size REALLIST ]
 	    [ minimum_size REAL ]
 	    [ contract_threshold REAL ]
 	    [ expand_threshold REAL ]

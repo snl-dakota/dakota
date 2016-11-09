@@ -168,10 +168,8 @@ protected:
   /// for adaptive_penalty merit functions
   int penaltyIterOffset;
 
-  // the +/- offsets for each of the variables in the current trust region
-  //RealVector trustRegionOffset;
-  /// original user specification for trustRegionFactor
-  Real origTrustRegionFactor;
+  /// original user specification for trust region initial_size
+  RealVector origTrustRegionFactor;
   /// a soft convergence control: stop SBLM when the trust region
   /// factor is reduced below the value of minTrustRegionFactor
   Real minTrustRegionFactor;
@@ -237,6 +235,9 @@ inline void SurrBasedLocalMinimizer::reset()
   alphaEta          = 0.1;
   betaEta           = 0.9;
   etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
+
+  //lagrangeMult    = 0.; // not necessary since redefined each time
+  augLagrangeMult   = 0.; // necessary since += used
 }
 
 } // namespace Dakota

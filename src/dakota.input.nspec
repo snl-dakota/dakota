@@ -165,7 +165,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
     [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
     [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
-      [ initial_size REAL {N_mdm(Real,surrBasedLocalTRInitSize)} ]
+      [ initial_size REALLIST {N_mdm(RealDL,surrBasedLocalTRInitSize)} ]
       [ minimum_size REAL {N_mdm(Real,surrBasedLocalTRMinSize)} ]
       [ contract_threshold REAL {N_mdm(Real,surrBasedLocalTRContractTrigger)} ]
       [ expand_threshold REAL {N_mdm(Real,surrBasedLocalTRExpandTrigger)} ]

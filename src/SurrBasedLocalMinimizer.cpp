@@ -49,7 +49,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
   penaltyIterOffset(-200), 
   origTrustRegionFactor(
-    probDescDB.get_real("method.sbl.trust_region.initial_size")),
+    probDescDB.get_rv("method.sbl.trust_region.initial_size")),
   minTrustRegionFactor(
     probDescDB.get_real("method.sbl.trust_region.minimum_size")),
   trRatioContractValue(
@@ -383,9 +383,10 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       cv_center = parent_l_bnds[i]; cv_truncation = true;
       tr_data.c_var_center(cv_center, i);
     }
-    // compute 1-sided trust region offset
+    // compute 1-sided trust region offset: scale is always relative to the
+    // global bounds, not the parent bounds
     Real tr_offset = tr_data.trust_region_factor() / 2. * 
-      ( parent_u_bnds[i] - parent_l_bnds[i] );
+      ( globalUpperBnds[i] - globalLowerBnds[i] );
     Real up_bound = cv_center + tr_offset, lo_bound = cv_center - tr_offset;
     if ( up_bound <= parent_u_bnds[i] )
       tr_data.tr_upper_bound(up_bound, i);

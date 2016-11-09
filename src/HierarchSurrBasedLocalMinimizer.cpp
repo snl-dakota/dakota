@@ -54,8 +54,9 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     if (numLev[i] > 1) multiLev = true;
   }
 
-  // TODO: Only 1D for multifidelity -- need to support MLMF
-  trustRegions.resize(numFid-1); // no TR for highest fidelity; uses global bnds
+  // TODO: Only 1D for multifidelity -- need to support ML & MLMF
+  size_t num_tr = numFid - 1; // no TR for truth model (valid for global bnds)
+  trustRegions.resize(num_tr);
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
     // size the trust region bounds to allow individual updates
     trustRegions[i].initialize_bounds(numContinuousVars);
@@ -77,6 +78,29 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     approxSetRequest |= 2;
   if (corr_order == 2)
     { truthSetRequest |= 4; approxSetRequest |= 4; }
+
+  // if needed, reshape origTrustRegionFactor and assign defaults
+  // Note: user should specify ordered profile consistent with ordered models
+  // from LF to HF-1, e.g. initial_size = .125 .25 .5
+  size_t num_factors = origTrustRegionFactor.length();
+  if (num_factors != num_tr) {
+    if (num_factors <= 1) {
+      // apply tr_0 factor recursively, from largest at HF-1 to smallest at LF:
+      Real tr_0 = (num_factors) ? origTrustRegionFactor[0] : 0.5;
+      Real tr_factor = tr_0;
+      origTrustRegionFactor.sizeUninitialized(num_tr);
+      for (int i=num_tr-1; i>=0; --i) {
+	origTrustRegionFactor[i] = tr_factor;
+	tr_factor *= tr_0;
+      }
+    }
+    else {
+      Cerr << "Error: wrong length for trust region initial_size ("
+	   << num_factors << " specified, " << num_tr << " expected)"
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
@@ -100,23 +124,20 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 
   // initialize the trust region factors top-down with HF at origTRFactor
   // and lower fidelities nested and reduced by 2x each level.
-  Real shaped_factor = origTrustRegionFactor;
-  for (int i=numFid-2; i>=0; --i) {
+  size_t i, num_tr = numFid - 1;
+  for (i=0; i<num_tr; ++i) {
     SurrBasedLevelData& sbl_data = trustRegions[i];
 
     //sbl_data.new_center(true); // vars_center() now sets newCenterFlag
     sbl_data.vars_center(iteratedModel.current_variables());
     sbl_data.tr_lower_bounds(globalLowerBnds);
     sbl_data.tr_upper_bounds(globalLowerBnds);
-    sbl_data.trust_region_factor(shaped_factor);
+    sbl_data.trust_region_factor(origTrustRegionFactor[i]);
 
     sbl_data.active_set_star(1, APPROX_RESPONSE);
     sbl_data.active_set_star(1,  TRUTH_RESPONSE);
     sbl_data.active_set_center(approxSetRequest, APPROX_RESPONSE);
     sbl_data.active_set_center(truthSetRequest,   TRUTH_RESPONSE);
-
-    //shaped_factor = origTrustRegionFactor * std::pow(0.5, numFid-2-i));
-    shaped_factor *= .5;
   }
 }
 
@@ -137,12 +158,6 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
 
   SurrBasedLocalMinimizer::post_run(s);
 }
-
-
-//void HierarchSurrBasedLocalMinimizer::reset()
-//{
-//  SurrBasedLocalMinimizer::reset();
-//}
 
 
 /** Step 1 in SurrBasedLocalMinimizer::core_run(). */

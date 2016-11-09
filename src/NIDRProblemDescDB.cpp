@@ -1959,27 +1959,36 @@ method_tr_final(const char *keyname, Values *val, void **g, void *v)
   DataMethodRep &data_method = *(*(Meth_Info**)g)->dme;
 
   // sanity checks on trust region user-defined values
-  if ( data_method.surrBasedLocalTRInitSize <= 0.0 ||
-       data_method.surrBasedLocalTRInitSize >  1.0 )
-    botch("initial_size must be in (0,1]");
-  if ( data_method.surrBasedLocalTRMinSize <= 0.0 ||
-       data_method.surrBasedLocalTRMinSize >  1.0 ||
-       data_method.surrBasedLocalTRMinSize >
-       data_method.surrBasedLocalTRInitSize )
-    botch("minimum_size must be in (0,1]");
-  if( data_method.surrBasedLocalTRContractTrigger <= 0.0 ||
+  size_t i, num_init = data_method.surrBasedLocalTRInitSize.length();
+  Real min_init_size = 1.;
+  for (i=0; i<num_init; ++i) {
+    Real init_size_i = data_method.surrBasedLocalTRInitSize[i];
+    if ( init_size_i <= 0. || init_size_i > 1. )
+      botch("specified initial TR size must be in (0,1]");
+    if (init_size_i < min_init_size)
+      min_init_size = init_size_i;
+  }
+  if ( data_method.surrBasedLocalTRMinSize > min_init_size ) {
+    if (num_init) botch("specified initial TR size less than minimum TR size");
+    else          botch("minimum TR size must be <= 1.");
+  }
+  // allow 0 for min size spec (conv control becomes inactive)
+  if ( data_method.surrBasedLocalTRMinSize < 0. ||
+       data_method.surrBasedLocalTRMinSize > 1. )
+    botch("specified minimum TR size must be in [0,1]");
+  if( data_method.surrBasedLocalTRContractTrigger <= 0. ||
       data_method.surrBasedLocalTRContractTrigger >
-      data_method.surrBasedLocalTRExpandTrigger        ||
-      data_method.surrBasedLocalTRExpandTrigger   >  1.0 )
+      data_method.surrBasedLocalTRExpandTrigger         ||
+      data_method.surrBasedLocalTRExpandTrigger   >  1. )
     botch("expand/contract threshold values must satisfy\n\t"
-	  "0 < contract_threshold <= expand_threshold < 1");
-  if ( data_method.surrBasedLocalTRContract == 1.0 )
-    warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
-	 "to assure convergence of the surrrogate_based_opt method");
-  if ( data_method.surrBasedLocalTRContract <= 0.0 ||
-       data_method.surrBasedLocalTRContract >  1.0 )
+	  "0 < contract_threshold <= expand_threshold <= 1");
+  if ( data_method.surrBasedLocalTRContract <= 0. ||
+       data_method.surrBasedLocalTRContract >  1. )
     botch("contraction_factor must be in (0,1]");
-  if (data_method.surrBasedLocalTRExpand < 1.0)
+  else if ( data_method.surrBasedLocalTRContract == 1. )
+    warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
+	 "to assure convergence of the surrogate_based_opt method");
+  if ( data_method.surrBasedLocalTRExpand < 1. )
     botch("expansion_factor must be >= 1");
 }
 
@@ -6684,7 +6693,6 @@ static Real
 	MP_(surrBasedLocalTRContractTrigger),
 	MP_(surrBasedLocalTRExpand),
 	MP_(surrBasedLocalTRExpandTrigger),
-	MP_(surrBasedLocalTRInitSize),
 	MP_(surrBasedLocalTRMinSize),
 	MP_(threshDelta),
 	MP_(threshStepLength),
@@ -6705,7 +6713,8 @@ static RealVector
 	MP_(listOfPoints),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-	MP_(stepVector);
+        MP_(stepVector),
+	MP_(surrBasedLocalTRInitSize);
 
 static RealVectorArray
 	MP_(genReliabilityLevels),

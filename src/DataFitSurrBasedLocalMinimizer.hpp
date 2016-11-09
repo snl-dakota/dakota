@@ -54,8 +54,6 @@ protected:
 
   void post_run(std::ostream& s);
 
-  void reset();
-
   //
   //- Heading: Virtual functions
   //

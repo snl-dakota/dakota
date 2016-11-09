@@ -23,7 +23,7 @@ namespace Dakota {
 DataMethodRep::DataMethodRep():
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
-  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false), 
+  maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
   methodUseDerivsFlag(false), convergenceTolerance(1.e-4), 
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   // Meta-iterators
@@ -33,7 +33,7 @@ DataMethodRep::DataMethodRep():
   concurrentRandomJobs(0),
   // Local surrogate-based opt/NLS
   softConvLimit(0), // dummy value -> method-specific default
-  surrBasedLocalLayerBypass(false),      surrBasedLocalTRInitSize(0.4),
+  surrBasedLocalLayerBypass(false),    //surrBasedLocalTRInitSize(0.4),
   surrBasedLocalTRMinSize(1.0e-6),       surrBasedLocalTRContractTrigger(0.25),
   surrBasedLocalTRExpandTrigger(0.75),   surrBasedLocalTRContract(0.25),
   surrBasedLocalTRExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),

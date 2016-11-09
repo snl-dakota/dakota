@@ -52,8 +52,6 @@ protected:
   void pre_run();
   void post_run(std::ostream& s);
 
-  //void reset();
-
   SurrBasedLevelData& trust_region();
 
   void update_trust_region();
