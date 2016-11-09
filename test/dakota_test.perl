@@ -35,6 +35,7 @@ my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
 my $using_aprun = 0;
 my $run_valgrind = 0;        # boolean for whether to run valgrind
+my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
 
 # Use default extension .exe on Windows and Cygwin
 if ( $Config{osname} =~ /MSWin/ || $Config{osname} =~ /cygwin/ ) {
@@ -523,6 +524,9 @@ sub process_command_line {
     $run_valgrind = 1;
     if (${opt_parallel} || ${using_aprun}) {
       die "Error: cannot use valgrind in parallel or aprun mode";
+    }
+    if ($ENV{'DAKOTA_TEST_VALGRIND'}) {
+      $vg_extra_args = $ENV{'DAKOTA_TEST_VALGRIND_EXTRA_ARGS'};
     }
   }
   
@@ -1023,10 +1027,18 @@ sub form_test_command {
   # prepend a valgrind command
   # TODO: $cnt
   if ($run_valgrind) {
-    my $vg_log = basename(${dakota_input}, ".in_") . ".${cnt}.vg.log";
-    my $vg_xml = basename(${dakota_input}, ".in_") . ".${cnt}.vg.xml";
-    my $vg_cmd = "valgrind --log-file=${vg_log} --xml=yes --xml-file=${vg_xml} "
-	. " --leak-check=full --child-silent-after-fork=yes" ;
+    my $vg_file = basename(${dakota_input}, ".in_") . ".${cnt}.vg";
+    # Default output is for XML to integrate with build system
+    # Default is to check for memory errors and leaks, but not track origins
+    # Use DAKOTA_TEST_VALGRIND_EXTRA_OPTS to override any of these settings
+    # These are one per line to facilitate comment/uncomment:
+    my $vg_cmd = "valgrind --tool=memcheck "
+	. "--log-file=${vg_file}.log "
+	. "--xml=yes --xml-file=${vg_file}.xml "
+	. "--child-silent-after-fork=yes "
+	. "--leak-check=full "
+##	. "--track-origins=yes "
+	. "${vg_extra_args}";
     $test_command = "${vg_cmd} ${test_command}";
   }
 
@@ -1540,6 +1552,13 @@ or set environment variable DAKOTA_TEST_SAVE_OUTPUT
 write dakota_tests.props and dakota_usersexamples.props for specified
 tests to specified directory; short circuits any other modes or
 requests
+
+=item B<--valgrind>
+
+prepend Dakota command with valgrind executable and default options;
+alternately set environment variable DAKOTA_TEST_VALGRIND.
+DAKOTA_TEST_VALGRIND_EXTRA_ARGS will append args to valgrind,
+overriding the defaults.
 
 =back
 

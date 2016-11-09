@@ -197,7 +197,7 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
   size_t num_nln_cons = 
     num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints();
   if (secondaryRespScaleFlag || 
-      need_resp_trans_byvars(asv, num_functions(), num_nln_cons)) {
+      need_resp_trans_byvars(asv, num_primary_fns(), num_nln_cons)) {
     // scale all functions, but only copy constraints
     copy_data_partial
       (modify_s2n(scaled_nln_cons, responseScaleTypes, responseScaleMultipliers,
