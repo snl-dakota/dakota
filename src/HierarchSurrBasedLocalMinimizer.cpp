@@ -281,9 +281,10 @@ void HierarchSurrBasedLocalMinimizer::build()
     SurrBasedLevelData& tr_data = trustRegions[i];
     Variables& center_vars = tr_data.vars_center();
     // Compute responseCenterApproxCorrected
-    Cout << "\nApplying corrections to trust region center response for "
-	 << "surrogate model (form "  << tr_data.approx_model_form()
-	 << ", level " << tr_data.approx_model_level() << ')' << std::endl;
+    Cout << "\nRecursively correcting surrogate model response (form "
+	 << tr_data.approx_model_form() << ", level "
+	 << tr_data.approx_model_level() << ") for trust region center."
+	 << std::endl;
     // correct approximation across all levels above i
     Response resp_center_approx_tmp
       = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
@@ -297,6 +298,10 @@ void HierarchSurrBasedLocalMinimizer::build()
     Response& resp_center_truth
       = tr_data.response_center(UNCORR_TRUTH_RESPONSE);
     if (i+1 < num_tr) {
+      Cout << "\nRecursively correcting truth model response (form "
+	   << tr_data.truth_model_form() << ", level "
+	   << tr_data.truth_model_level() << ") for trust region center."
+	   << std::endl;
       Response resp_center_truth_tmp = resp_center_truth.copy();
       for (j=i+1; j<num_tr; ++j) {
 	set_model_states(j); // activate deltaCorr[indices]
