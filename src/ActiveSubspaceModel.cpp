@@ -44,6 +44,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   gradientScaleFactors(RealArray(numFunctions, 1.0)),
   truncationTolerance(probDescDB.get_real("model.active_subspace.truncation_method.energy.truncation_tolerance")),
   buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
+  refinementSamples(0),
   subspaceNormalization(
     probDescDB.get_ushort("model.active_subspace.normalization")),
   cvIncremental(probDescDB.get_bool("model.active_subspace.cv.incremental")),
@@ -805,8 +806,8 @@ unsigned int ActiveSubspaceModel::computeCrossValidationMetric()
     // Create a local active subspace model using the light-weight constructor:
     Model asm_model_tmp;
     asm_model_tmp.assign_rep(new ActiveSubspaceModel(subModel, ii,
-                             leftSingularVectors,
-                             QUIET_OUTPUT));
+						     leftSingularVectors,
+						     QUIET_OUTPUT), false);
 
     String sample_reuse = "", approx_type = "global_moving_least_squares";
     ActiveSet surr_set = current_response().active_set(); // copy
