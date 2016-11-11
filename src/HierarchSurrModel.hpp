@@ -204,6 +204,10 @@ private:
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
+  /// helper function for applying a single deltaCorr correction
+  /// corresponding to indices
+  void single_apply(const Variables& vars, Response& resp,
+		    const SizetSizet2DPair& indices);
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);

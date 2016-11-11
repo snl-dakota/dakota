@@ -519,12 +519,6 @@ void HierarchSurrModel::derived_evaluate(const ActiveSet& set)
     case AUTO_CORRECTED_SURROGATE: {
       // LF resp should not be corrected directly (see derived_synchronize())
       lo_fi_response = lf_model.current_response().copy();
-      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-      SizetSizet2DPair indices = get_indices();
-      if (!deltaCorr[indices].computed())
-        deltaCorr[indices].compute(currentVariables,
-                                   truthResponseRef[highFidelityIndices],
-                                   lo_fi_response, quiet_flag);
       recursive_apply(currentVariables, lo_fi_response);
       if (!mixed_eval) {
         currentResponse.active_set(lo_fi_set);
@@ -701,17 +695,10 @@ void HierarchSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     lf_model.evaluate(lo_fi_set);
     Response lo_fi_response(lf_model.current_response().copy());
     // correct LF response prior to caching
-    if (responseMode == AUTO_CORRECTED_SURROGATE) {
-      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-      SizetSizet2DPair indices = get_indices();
-      if (!deltaCorr[indices].computed())
-        deltaCorr[indices].compute(currentVariables,
-                                   truthResponseRef[highFidelityIndices],
-                                   lo_fi_response, quiet_flag);
+    if (responseMode == AUTO_CORRECTED_SURROGATE)
       // correct synch cases now (asynch cases get corrected in
       // derived_synchronize_aggregate*)
       recursive_apply(currentVariables, lo_fi_response);
-    }
     // cache corrected LF response for retrieval during synchronization.
     // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
     cachedApproxRespMap[surrModelEvalCntr] = lo_fi_response;// deep copied above
@@ -1052,20 +1039,32 @@ void HierarchSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 }
 
 
-void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
+void HierarchSurrModel::
+single_apply(const Variables& vars, Response& resp,
+	     const SizetSizet2DPair& indices)
 {
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  if (!deltaCorr[indices].computed())
+    deltaCorr[indices].compute(vars, truthResponseRef[indices.second], resp,
+			       quiet_flag);
+  deltaCorr[indices].apply(vars, resp, quiet_flag);
+}
 
+
+void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
+{
   switch (correctionMode) {
-  case SINGLE_CORRECTION: case DEFAULT_CORRECTION:
-    deltaCorr[get_indices()].apply(vars, resp, quiet_flag);
+  case SINGLE_CORRECTION: case DEFAULT_CORRECTION: {
+    SizetSizet2DPair corr_index(lowFidelityIndices, highFidelityIndices);
+    single_apply(vars, resp, corr_index);
     break;
+  }
   case FULL_MODEL_FORM_CORRECTION: {
     size_t ii, num_models = orderedModels.size();
     SizetSizet2DPair corr_index(lowFidelityIndices, highFidelityIndices);
     for (ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
       corr_index.first.first = ii; corr_index.second.first = ii+1;
-      deltaCorr[corr_index].apply(vars, resp, quiet_flag);
+      single_apply(vars, resp, corr_index);
     }
     break;
   }
@@ -1075,16 +1074,13 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     SizetSizet2DPair corr_index(lowFidelityIndices, lowFidelityIndices);
     for (ii = lowFidelityIndices.second; ii < num_levels - 1; ii++) {
       corr_index.first.second = ii; corr_index.second.second = ii+1;
-      deltaCorr[corr_index].apply(vars, resp, quiet_flag);
+      single_apply(vars, resp, corr_index);
     }
     break;
   }
-  case SEQUENCE_CORRECTION:
-    // Apply sequence of discrepancy corrections
-    // TODO: Check to make sure they've been initialized.
-
+  case SEQUENCE_CORRECTION: // Apply sequence of discrepancy corrections
     for (size_t ii = 0; ii < corrSequence.size(); ++ii)
-      deltaCorr[corrSequence[ii]].apply(vars, resp, quiet_flag);
+      single_apply(vars, resp, corrSequence[ii]);
     break;
   }
 }

@@ -327,7 +327,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_model_states(minimizeIndex);
 
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
-  correction_mode(FULL_MODEL_FORM_CORRECTION);
+    correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
   iteratedModel.component_parallel_mode(SURROGATE_MODEL);
@@ -656,7 +656,7 @@ optimize(const RealVector &x, int max_iter, int index)
   set_model_states(index);
 
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
-  correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
+    correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
   iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
