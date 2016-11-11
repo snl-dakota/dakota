@@ -1585,6 +1585,12 @@
 			&method_export_approx_format;
 		      </keyword>
 		    </keyword>
+		    <keyword  id="c3_function_train" name="c3_function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="Nondeterministic method for low rank approximation" help="MethodCommands.html#MethodNonDFnTrain" minOccurs="1" group="Uncertainty Quantification" >
+		      <alias name="function_train"/>
+		      <!-- TO DO -->
+		      &default_max_iterations;
+		      &default_convergence_tolerance;
+		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_sampling"/>
 		      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='(initial) samples' help='' minOccurs='0' default='0'>
