@@ -128,18 +128,19 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   trustRegionData.active_set_center(approxSetRequest, APPROX_RESPONSE, false);
   trustRegionData.active_set_star(1,  TRUTH_RESPONSE, false);
   trustRegionData.active_set_star(1, APPROX_RESPONSE, false);
-  // initialize TR factor
-  trustRegionData.trust_region_factor(origTrustRegionFactor);
+
+  minTrustRegionFactor = 
+    (approx_type == "global_kriging") ? 1.e-3 : minTrustRegionFactor;
 
   // Set the minimum trust region size.  For kriging, the minimum trust region
   // must be set to O(10^-2 10^-3).  Otherwise, the correlation matrix becomes
   // ill-conditioned and the maximum likelihood operations crash with floating
   // point errors.
-  minTrustRegionFactor = 
-    (approx_type == "global_kriging") ? 1.e-3 : minTrustRegionFactor;
-  if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
-    trustRegionData.trust_region_factor(minTrustRegionFactor);
-  //trustRegionOffset.reshape(numContinuousVars);
+  size_t num_factors = origTrustRegionFactor.length();
+  Real tr_factor     = (num_factors) ? origTrustRegionFactor[0] : 0.5;
+  if (num_factors != 1) origTrustRegionFactor.sizeUninitialized(1);
+  origTrustRegionFactor[0]
+    = (tr_factor < minTrustRegionFactor) ? minTrustRegionFactor : tr_factor;
 }
 
 
@@ -147,8 +148,10 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 {
   SurrBasedLocalMinimizer::pre_run();
 
-  // initialize TR center from current Model state
+  // initialize TR center from current Model state (sets newCenterFlag)
   trustRegionData.vars_center(iteratedModel.current_variables());
+  // initialize TR factor
+  trustRegionData.trust_region_factor(origTrustRegionFactor[0]);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();
@@ -203,18 +206,6 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
     trustRegionData.response_center(CORR_TRUTH_RESPONSE).function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
-}
-
-
-void DataFitSurrBasedLocalMinimizer::reset()
-{
-  SurrBasedLocalMinimizer::reset();
-
-  trustRegionData.new_center(true);
-  trustRegionData.trust_region_factor(origTrustRegionFactor);
-
-  //lagrangeMult    = 0.; // not necessary since redefined each time
-  augLagrangeMult   = 0.; // necessary since += used
 }
 
 

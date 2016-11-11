@@ -131,8 +131,10 @@ void NOWPACOptimizer::initialize()
   // Therefore, it is advisable to present a scaled problem to NOWPAC in terms 
   // of these optional inputs, and then perform a descaling to user-space within
   // the BBEvaluator (scaling data can be passed by the "void* params").
-  nowpacSolver.set_trustregion(
-    probDescDB.get_real("method.sbl.trust_region.initial_size"),
+  const RealVector& tr_init
+    = probDescDB.get_rv("method.sbl.trust_region.initial_size");
+  Real tr_init0 = (tr_init.empty()) ? 0.5 : tr_init[0];
+  nowpacSolver.set_trustregion(tr_init0,
     probDescDB.get_real("method.sbl.trust_region.minimum_size"));
   nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
 

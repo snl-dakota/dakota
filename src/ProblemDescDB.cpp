@@ -1425,7 +1425,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
 	{"parameter_study.list_of_points", P listOfPoints},
-	{"parameter_study.step_vector", P stepVector}};
+	{"parameter_study.step_vector", P stepVector},
+	{"sbl.trust_region.initial_size", P surrBasedLocalTRInitSize}};
     #undef P
 
     KW<RealVector, DataMethodRep> *kw;
@@ -2482,7 +2483,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"sbl.trust_region.contraction_factor", P surrBasedLocalTRContract},
 	{"sbl.trust_region.expand_threshold", P surrBasedLocalTRExpandTrigger},
 	{"sbl.trust_region.expansion_factor", P surrBasedLocalTRExpand},
-	{"sbl.trust_region.initial_size", P surrBasedLocalTRInitSize},
 	{"sbl.trust_region.minimum_size", P surrBasedLocalTRMinSize},
 	{"solution_target", P solnTarget},
 	{"vbd_drop_tolerance", P vbdDropTolerance},

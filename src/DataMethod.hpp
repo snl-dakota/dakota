@@ -364,11 +364,12 @@ public:
   /// flag to indicate user-specification of a bypass of any/all
   /// layerings in evaluating truth response values in SBL.
   bool surrBasedLocalLayerBypass;
-  /// initial trust region size in the surrogate-based local method
-  /// (from the \c initial_size specification in \ref MethodSBL) note:
-  /// this is a relative value, e.g., 0.1 = 10% of global bounds
-  /// distance (upper bound - lower bound) for each variable
-  Real surrBasedLocalTRInitSize;
+  /// initial trust region sizes in the surrogate-based local method
+  /// (from the \c initial_size specification in \ref MethodSBL), one
+  /// size per surrogate model (notes: no trust region for the truth
+  /// model; sizes are relative values, e.g., 0.1 = 10% of range of
+  /// global bounds for each variable
+  RealVector surrBasedLocalTRInitSize;
   /// minimum trust region size in the surrogate-based local method
   /// (from the \c minimum_size specification in \ref MethodSBL), if
   /// the trust region size falls below this threshold the SBL
