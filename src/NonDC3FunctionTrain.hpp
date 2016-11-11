@@ -74,8 +74,8 @@ private:
   /// functions in order to avoid the need for static data
   static NonDC3FunctionTrain* c3Instance;
 
-  /// sample data
-  Real foo;
+  // other data ...
+
 };
 
 } // namespace Dakota

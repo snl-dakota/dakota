@@ -104,8 +104,8 @@ void NonDC3FunctionTrain::core_run()
 int NonDC3FunctionTrain::
 qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
 {
-  size_t num_cv = c3Instance->numContinuousVars,
-    num_fns = 1; //c3Instance->numFunctions;
+  size_t num_cv  = c3Instance->numContinuousVars,
+         num_fns = c3Instance->numFunctions;
 
   bool asynch_flag = c3Instance->iteratedModel.asynch_flag();
 
@@ -117,7 +117,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
       c3Instance->iteratedModel.evaluate_nowait();
     else {
       c3Instance->iteratedModel.evaluate();
-    // pack Dakota resp data into qoi_sets...
+      // pack Dakota resp data into qoi_sets...
       const RealVector& fns_i
 	= c3Instance->iteratedModel.current_response().function_values();
       copy_data(fns_i, qoi_sets+num_fns*i, num_fns);
