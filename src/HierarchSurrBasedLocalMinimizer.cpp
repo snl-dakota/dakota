@@ -247,20 +247,20 @@ void HierarchSurrBasedLocalMinimizer::build()
       // TODO: code from DFSBLM case does lookup, which makes sense if last HF
       // eval was a rejected validation, but if find_center w/i HSBLM always
       // follows build_approximation, then this lookup is not necessary...
-      find_center_truth(i);
+      find_center_truth(i); // uncorrected center truth
 
       // TODO: recursive logic must detect hard convergence on corrected resp
       // (correction applied recursively).  When detected, you don't stop until 
       // hard conv at top level, so this must proliferate up the TR hierarchy to
       // update and recenter one or more TR --> refer to animation for logic.
-      hard_convergence_check(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+      hard_convergence_check(tr_data.response_center(UNCORR_TRUTH_RESPONSE),//TODO
 			     tr_data.c_vars_center(), globalLowerBnds,
 			     globalUpperBnds);
 
       if (!convergenceFlag) {
 
 	// Find approx response.  If not found, evaluate approx model.
-	find_center_approx(i);
+	find_center_approx(i); // uncorrected center approx
 
         // ******************************************
         // Compute additive/multiplicative correction
@@ -326,6 +326,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   // Set truth and surrogate models for optimization to be performed on:
   set_model_states(minimizeIndex);
 
+  // set up recursive corrections across all model forms
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
     correction_mode(FULL_MODEL_FORM_CORRECTION);
 
@@ -335,7 +336,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
   Cout << "\n<<<<< Approximate optimization cycle completed.\n";
-  sbIterNum++; // full iteration performed: increment the counter
+  ++sbIterNum; // full iteration performed: increment the counter
 
   // Retrieve vars_star and responseStarCorrected[lf_model_form]
   // Corrections are applied recursively during the minimization, so this
@@ -382,18 +383,20 @@ void HierarchSurrBasedLocalMinimizer::verify()
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
   const Response& truth_resp = truth_model.current_response();
 
+  // Does not appear to be required:
+  //tr_data.response_star(truth_resp, UNCORR_TRUTH_RESPONSE);
+
   // Apply correction recursively so that this truth response is consistent
   // with the highest fidelity level.
   size_t j, num_tr = trustRegions.size();
   if (num_tr > 1) {
-    tr_data.response_star(truth_resp, UNCORR_TRUTH_RESPONSE); // TODO: not needed for num_tr=1?
-    Response resp_center_truth_tmp = truth_resp.copy();
+    Response resp_star_truth_tmp = truth_resp.copy();
     for (j=1; j<num_tr; ++j) {
       set_model_states(j); // activate deltaCorr[indices]
-      iteratedModel.discrepancy_correction().
-	apply(vars_star/*TODO*/, resp_center_truth_tmp);
+      iteratedModel.discrepancy_correction().apply(vars_star,
+						   resp_star_truth_tmp);
     }
-    tr_data.response_star(resp_center_truth_tmp, CORR_TRUTH_RESPONSE);
+    tr_data.response_star(resp_star_truth_tmp, CORR_TRUTH_RESPONSE);
   }
   else
     tr_data.response_star(truth_resp, CORR_TRUTH_RESPONSE);
@@ -406,10 +409,12 @@ void HierarchSurrBasedLocalMinimizer::verify()
   // center variables and response data.
   if (tr_data.new_center()) {
     tr_data.vars_center(vars_star);
-    if (num_tr > 1) // TODO: not needed for num_tr=1?
-      tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
-			      UNCORR_TRUTH_RESPONSE);
-    /*TODO: re-eval for new corr is handled later?*/
+
+    // Does not appear to be required:
+    //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
+    //			      UNCORR_TRUTH_RESPONSE);
+
+    /* TODO: re-eval for new corr is handled later? */
     tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
 			    CORR_TRUTH_RESPONSE);
   }
@@ -655,6 +660,7 @@ optimize(const RealVector &x, int max_iter, int index)
   // Set truth and surrogate models for optimization to be performed on:
   set_model_states(index);
 
+  // set up recursive corrections across all solution levels
   ((HierarchSurrModel*)(iteratedModel.model_rep()))->
     correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 

@@ -147,7 +147,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     BoolDequeArray nonlinear_resp_map(num_recast_primary+num_recast_secondary);
     if (approxSubProbObj == ORIGINAL_PRIMARY) {
-      for (i=0; i<num_recast_primary; i++) {
+      for (i=0; i<num_recast_primary; ++i) {
 	recast_primary_resp_map[i].resize(1);
 	recast_primary_resp_map[i][0] = i;
 	nonlinear_resp_map[i].resize(1);
@@ -157,7 +157,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     else if (approxSubProbObj == SINGLE_OBJECTIVE) {
       recast_primary_resp_map[0].resize(numUserPrimaryFns);
       nonlinear_resp_map[0].resize(numUserPrimaryFns);
-      for (i=0; i<numUserPrimaryFns; i++) {
+      for (i=0; i<numUserPrimaryFns; ++i) {
 	recast_primary_resp_map[0][i] = i;
 	nonlinear_resp_map[0][i] = !optimizationFlag; // nonlinear if NLS->Opt
       }
@@ -165,7 +165,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     else { // LAGRANGIAN_OBJECTIVE or AUGMENTED_LAGRANGIAN_OBJECTIVE
       recast_primary_resp_map[0].resize(numFunctions);
       nonlinear_resp_map[0].resize(numFunctions);
-      for (i=0; i<numFunctions; i++) {
+      for (i=0; i<numFunctions; ++i) {
 	recast_primary_resp_map[0][i] = i;
 	nonlinear_resp_map[0][i]
 	  = (approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE &&
@@ -173,7 +173,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
       }
     }
     if (approxSubProbCon != NO_CONSTRAINTS) {
-      for (i=0; i<num_recast_secondary; i++) {
+      for (i=0; i<num_recast_secondary; ++i) {
 	recast_secondary_resp_map[i].resize(1);
 	recast_secondary_resp_map[i][0] = i + numUserPrimaryFns;
 	nonlinear_resp_map[i+num_recast_primary].resize(1);
@@ -265,7 +265,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 {
   // initialize Lagrange multipliers
   size_t num_multipliers = numNonlinearEqConstraints;
-  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+  for (size_t i=0; i<numNonlinearIneqConstraints; ++i) {
     if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
       ++num_multipliers;
     if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
@@ -372,7 +372,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   size_t i;
   bool cv_truncation = false, tr_lower_truncation = false,
     tr_upper_truncation = false;
-  for (i=0; i<numContinuousVars; i++) {
+  for (i=0; i<numContinuousVars; ++i) {
     // verify that varsCenter is within global bounds
     Real cv_center = tr_data.c_var_center(i);
     if ( cv_center > parent_u_bnds[i] ) {
@@ -434,7 +434,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   Cout << '\n';
   StringMultiArrayConstView c_vars_labels
     = iteratedModel.continuous_variable_labels();
-  for (i=0; i<numContinuousVars; i++)
+  for (i=0; i<numContinuousVars; ++i)
     Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
 	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]
 	 << std::setw(wpp9) << tr_upper_bnds[i] << '\n';
@@ -624,7 +624,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 	const RealVector& c_vars_star   = tr_data.c_vars_star();
 	const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
 	const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
-	for (size_t i=0; i<numContinuousVars; i++)
+	for (size_t i=0; i<numContinuousVars; ++i)
 	  if ( c_vars_star[i] > tr_upper_bnds[i] - constraintTol ||
 	       c_vars_star[i] < tr_lower_bnds[i] + constraintTol )
 	    boundary_pt_flag = true;
@@ -775,7 +775,7 @@ hard_convergence_check(const Response& response_truth,
 
   // Compute norm of projected merit function gradient
   Real merit_fn_grad_norm = 0.0;
-  for (size_t i=0; i<numContinuousVars; i++) {
+  for (size_t i=0; i<numContinuousVars; ++i) {
     Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
     // Determine if the calculated gradient component dp/dx_i is directed into
     // an active bound constraint.  If not, include it in the gradient norm.
@@ -929,7 +929,7 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
   const RealMatrix& surrogate_grads = surrogate_response.function_gradients();
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (sblmInstance->approxSubProbObj == ORIGINAL_PRIMARY) {
-    for (size_t i=0; i<sblmInstance->numUserPrimaryFns; i++) {
+    for (size_t i=0; i<sblmInstance->numUserPrimaryFns; ++i) {
       if (recast_asv[i] & 1)
 	recast_response.function_value(surrogate_fns[i], i);
       if (recast_asv[i] & 2)
@@ -1024,7 +1024,7 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
     //
     // Note: constraints are NOT converted to std form as done within merit fns
     //
-    for (i=0; i<num_recast_cons; i++) {
+    for (i=0; i<num_recast_cons; ++i) {
       size_t recast_i = i + num_recast_primary,
 	     surr_i   = i + sblmInstance->numUserPrimaryFns;
       if (recast_asv[recast_i] & 1)
@@ -1054,12 +1054,12 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 
     size_t j, num_recast_vars
       = recast_response.active_set_derivative_vector().size();
-    for (i=0; i<num_recast_cons; i++) {
+    for (i=0; i<num_recast_cons; ++i) {
       size_t recast_i = i + num_recast_primary,
 	     surr_i   = i + sblmInstance->numUserPrimaryFns;
       if (recast_asv[recast_i] & 1) {
 	Real sum = center_approx_fns[surr_i];
-	for (j=0; j<num_recast_vars; j++)
+	for (j=0; j<num_recast_vars; ++j)
 	  sum += center_approx_grads(j,surr_i) * (c_vars[j] - center_c_vars[j]);
 	recast_response.function_value(sum, recast_i);
       }
@@ -1147,7 +1147,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
       nonlinIneqLowerBndsSlack = 0.;
       nonlinIneqUpperBndsSlack.sizeUninitialized(numNonlinearIneqConstraints);
       nonlinIneqUpperBndsSlack = 0.;
-      for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+      for (size_t i=0; i<numNonlinearIneqConstraints; ++i) {
 	const Real& nln_ineq_con = fns_center_truth[numUserPrimaryFns+i];
 	const Real& l_bnd = origNonlinIneqLowerBnds[i];
 	const Real& u_bnd = origNonlinIneqUpperBnds[i];
@@ -1168,7 +1168,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     if (numNonlinearEqConstraints) {
       nonlinEqTargetsSlack.sizeUninitialized(numNonlinearEqConstraints);
       nonlinEqTargetsSlack = 0.;
-      for (size_t i=0; i<numNonlinearEqConstraints; i++) {
+      for (size_t i=0; i<numNonlinearEqConstraints; ++i) {
 	const Real& nln_eq_con
 	  = fns_center_truth[numUserPrimaryFns+numNonlinearIneqConstraints+i];
 	const Real& tgt = origNonlinEqTargets[i];
@@ -1251,7 +1251,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	           nln_ineq_u_bnds(origNonlinIneqUpperBnds);
 
 	// update constraint bounds to be used with SBLM iteration
-	for(size_t i=0; i<numNonlinearIneqConstraints; i++) {
+	for(size_t i=0; i<numNonlinearIneqConstraints; ++i) {
 	  nln_ineq_l_bnds[i] += (1.-tau)*nonlinIneqLowerBndsSlack[i];
 	  nln_ineq_u_bnds[i] += (1.-tau)*nonlinIneqUpperBndsSlack[i];
 	}
@@ -1267,7 +1267,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	RealVector nln_eq_targets(origNonlinEqTargets);
       
 	// update constraint bounds to be used with SBLM iteration
-	for(size_t i=0; i<numNonlinearEqConstraints; i++)
+	for(size_t i=0; i<numNonlinearEqConstraints; ++i)
 	  nln_eq_targets[i] += (1.-tau)*nonlinEqTargetsSlack[i];
        	approxSubProbModel.nonlinear_eq_constraint_targets(nln_eq_targets);
       }
@@ -1305,10 +1305,10 @@ hom_objective_eval(int& mode, int& n, double* tau_and_x, double& f,
   }
   if (asv_request & 2) {
     grad_f[0] = -1.;   // d(-tau)/dtau
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n; ++i)
       grad_f[i] = 0.;  // d(-tau)/dx = 0 (tau does not depend on other vars)
 #ifdef DEBUG
-    for (int i=0; i<n; i++)
+    for (int i=0; i<n; ++i)
       Cout << "grad_f[" << i << "] = " << grad_f[i] << std::endl;
 #endif // DEBUG
   }
@@ -1341,7 +1341,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   size_t num_fns = sblmInstance->approxSubProbModel.num_functions(),
      num_obj_fns = num_fns - ncnln; // 1 if recast, numUserPrimaryFns if not
   ShortArray local_asv(num_fns, 0);
-  for (int i=0; i<ncnln; i++)
+  for (int i=0; i<ncnln; ++i)
     local_asv[num_obj_fns+i] = (needc[i] > 0) ? asv_request : 0;
   ActiveSet local_set
     = sblmInstance->approxSubProbModel.current_response().active_set();
@@ -1377,16 +1377,16 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
     const RealVector& resp_fn = resp.function_values();
 
     // nonlinear constraints (based on tau parameter)
-    for (i=0; i<num_nli_constr; i++)
+    for (i=0; i<num_nli_constr; ++i)
       c[i] = resp_fn[nli_offset+i]
 	- (1.-tau)*(nli_lower_slack[i] + nli_upper_slack[i]);
   
     // equality targets (based on tau parameter)
-    for (i=0; i<num_nle_constr; i++)
+    for (i=0; i<num_nle_constr; ++i)
       c[num_nli_constr+i] = resp_fn[nle_offset+i]
 	- (1.-tau)*nle_targets_slack[i];
 #ifdef DEBUG
-    for (i=0; i<ncnln; i++)
+    for (i=0; i<ncnln; ++i)
       Cout << "c[" << i << "] = " << c[i] << std::endl;
 #endif // DEBUG
   } // function value computation
@@ -1396,18 +1396,18 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   
     // gradients of constraints
     size_t cntr = 0;
-    for (j=0; j<n; j++) {
+    for (j=0; j<n; ++j) {
       // nonlinear inequality constraints
-      for(i=0; i<num_nli_constr; i++)
+      for(i=0; i<num_nli_constr; ++i)
 	cjac[cntr++] = (j == 0) ? nli_lower_slack[i] + nli_upper_slack[i]
 	                        : resp_grad(j-1,nli_offset+i);
       // nonlinear equality constraints
-      for(i=0; i<num_nle_constr; i++)
+      for(i=0; i<num_nle_constr; ++i)
 	cjac[cntr++] = (j == 0) ? nle_targets_slack[i]
 	                        : resp_grad(j-1,nle_offset+i);
     }
 #ifdef DEBUG
-    for (i=0; i<cntr; i++)
+    for (i=0; i<cntr; ++i)
       Cout << "cjac[" << i << "] = " << cjac[i] << std::endl;
 #endif // DEBUG
   } // gradient computation

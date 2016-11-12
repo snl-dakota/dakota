@@ -346,7 +346,7 @@ void HierarchSurrModel::build_approximation()
   //deltaCorr[indices].compute(..., truthResponseRef, lo_fi_response);
 
   Cout << "\n<<<<< Hierarchical approximation build completed.\n";
-  approxBuilds++;
+  ++approxBuilds;
 }
 
 
@@ -1060,8 +1060,9 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     break;
   }
   case FULL_MODEL_FORM_CORRECTION: {
+    // assume a consistent level index from lowFidelityIndices.second
     size_t ii, num_models = orderedModels.size();
-    SizetSizet2DPair corr_index(lowFidelityIndices, highFidelityIndices);
+    SizetSizet2DPair corr_index(lowFidelityIndices, lowFidelityIndices);
     for (ii = lowFidelityIndices.first; ii < num_models - 1; ii++) {
       corr_index.first.first = ii; corr_index.second.first = ii+1;
       single_apply(vars, resp, corr_index);
@@ -1069,6 +1070,7 @@ void HierarchSurrModel::recursive_apply(const Variables& vars, Response& resp)
     break;
   }
   case FULL_SOLUTION_LEVEL_CORRECTION: {
+    // assume a consistent model index from lowFidelityIndices.first
     size_t ii, num_levels
       = orderedModels[lowFidelityIndices.first].solution_levels();
     SizetSizet2DPair corr_index(lowFidelityIndices, lowFidelityIndices);
