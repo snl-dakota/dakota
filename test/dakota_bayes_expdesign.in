@@ -60,13 +60,13 @@ variables,
 interface,
         fork
         analysis_driver = 'expdesign_high'
-        analysis_servers = 1
+        asynchronous evaluation_concurrency=2              #s0
         id_interface = 'hifi_IF'
 
 interface,
         fork 
         analysis_driver = 'expdesign_low'
-        analysis_servers = 1
+        asynchronous evaluation_concurrency=4              #s0
         id_interface = 'lofi_IF'
 
 responses,
