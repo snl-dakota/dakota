@@ -288,11 +288,9 @@ void HierarchSurrBasedLocalMinimizer::build()
     // correct approximation across all levels above i
     Response resp_center_approx_tmp
       = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
-    for (j=i; j<num_tr; ++j) {
-      set_model_states(j); // activate deltaCorr[indices]
-      iteratedModel.discrepancy_correction().
-	apply(center_vars, resp_center_approx_tmp);
-    }
+    for (j=i; j<num_tr; ++j)
+      iteratedModel.single_apply(center_vars, resp_center_approx_tmp,
+				 trustRegions[j].indices());
     tr_data.response_center(resp_center_approx_tmp, CORR_APPROX_RESPONSE);
     // correct truth across all levels above, excepting current level
     Response& resp_center_truth
@@ -303,11 +301,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 	   << tr_data.truth_model_level() << ") for trust region center."
 	   << std::endl;
       Response resp_center_truth_tmp = resp_center_truth.copy();
-      for (j=i+1; j<num_tr; ++j) {
-	set_model_states(j); // activate deltaCorr[indices]
-	iteratedModel.discrepancy_correction().
-	  apply(center_vars, resp_center_truth_tmp);
-      }
+      for (j=i+1; j<num_tr; ++j)
+	iteratedModel.single_apply(center_vars, resp_center_truth_tmp,
+				   trustRegions[j].indices());
       tr_data.response_center(resp_center_truth_tmp, CORR_TRUTH_RESPONSE);
     }
     else
@@ -351,7 +347,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
     find_star_approx(minimizeIndex); // -> uncorrected resp_star_approx
     // apply correction and store
     Response corr_resp(tr_min.response_star(UNCORR_APPROX_RESPONSE).copy());
-    iteratedModel.discrepancy_correction().apply(v_star, corr_resp);
+    iteratedModel.recursive_apply(v_star, corr_resp);
     tr_min.response_star(corr_resp, CORR_APPROX_RESPONSE);
   }
   else // retrieve corrected final results
@@ -391,11 +387,9 @@ void HierarchSurrBasedLocalMinimizer::verify()
   size_t j, num_tr = trustRegions.size();
   if (num_tr > 1) {
     Response resp_star_truth_tmp = truth_resp.copy();
-    for (j=1; j<num_tr; ++j) {
-      set_model_states(j); // activate deltaCorr[indices]
-      iteratedModel.discrepancy_correction().apply(vars_star,
-						   resp_star_truth_tmp);
-    }
+    for (j=1; j<num_tr; ++j)
+      iteratedModel.single_apply(vars_star, resp_star_truth_tmp,
+				 trustRegions[j].indices());
     tr_data.response_star(resp_star_truth_tmp, CORR_TRUTH_RESPONSE);
   }
   else

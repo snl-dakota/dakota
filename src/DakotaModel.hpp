@@ -302,6 +302,13 @@ public:
 
   /// return the DiscrepancyCorrection object used by SurrogateModels
   virtual DiscrepancyCorrection& discrepancy_correction();
+  /// apply the DiscrepancyCorrection object to correct an approximation
+  /// within a SurrogateModel
+  virtual void single_apply(const Variables& vars, Response& resp,
+			    const SizetSizet2DPair& indices);
+  /// apply the DiscrepancyCorrection object to recursively correct an 
+  /// approximation within a HierarchSurrModel
+  virtual void recursive_apply(const Variables& vars, Response& resp);
 
   /// update component parallel mode for supporting parallelism in a model's
   /// interface component, sub-model component, or neither component

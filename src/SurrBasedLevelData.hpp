@@ -102,6 +102,8 @@ public:
   size_t truth_model_form();
   size_t truth_model_level();
 
+  SizetSizet2DPair indices();
+
   const RealVector& tr_lower_bounds() const;
   Real tr_lower_bound(size_t i) const;
   void tr_lower_bounds(const RealVector& bounds);
@@ -295,6 +297,10 @@ inline size_t SurrBasedLevelData::approx_model_level()
 
 inline size_t SurrBasedLevelData::truth_model_level()
 { return truthModelIndices.second; }
+
+
+inline SizetSizet2DPair SurrBasedLevelData::indices()
+{ return std::make_pair(approxModelIndices, truthModelIndices); }
 
 
 inline Real SurrBasedLevelData::trust_region_factor()
