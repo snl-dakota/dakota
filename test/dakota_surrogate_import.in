@@ -22,9 +22,9 @@ method,
 model,                                         
         id_model = 'SURR'                        
         surrogate global,                        
-        import_points_file = 'surrogate_build_pts.dat' annotated        #s0,#s2,#s4,#s5
-#        import_points_file = 'surrogate_build_pts_ff.dat' freeform     #s1,#s3
-#        import_points_file = 'surrogate_build_pts_unc.dat' annotated   #s6
+        import_build_points_file = 'surrogate_build_pts.dat' annotated        #s0,#s2,#s4,#s5
+#        import_build_points_file = 'surrogate_build_pts_ff.dat' freeform     #s1,#s3
+#        import_build_points_file = 'surrogate_build_pts_unc.dat' annotated   #s6
 #          active_only                                                  #s6
         polynomial quadratic                   
         challenge_points_file = 'surrogate_build_pts_ff.dat' freeform        #s0,#s3

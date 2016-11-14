@@ -211,12 +211,19 @@ private:
   /// cubature integrand
   unsigned short cubIntSpec;
 
-  /// user specified import approx. points file
+  /// user specified import build points file
   String importBuildPointsFile;
-  /// user specified import file format
+  /// user specified import build file format
   unsigned short importBuildFormat;
   /// user specified import build active only
   bool importBuildActiveOnly;
+
+  /// user specified import approx. points file
+  String importApproxPointsFile;
+  /// user specified import approx. file format
+  unsigned short importApproxFormat;
+  /// user specified import approx. active only
+  bool importApproxActiveOnly;
 
   /// local flag to signal a resizing occurred
   bool resizedFlag;

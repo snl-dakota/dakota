@@ -486,8 +486,8 @@ void NonDExpansion::initialize_u_space_model()
 
 void NonDExpansion::
 construct_expansion_sampler(const String& import_approx_file,
-			    unsigned short import_build_format,
-			    bool import_build_active_only)
+			    unsigned short import_approx_format,
+			    bool import_approx_active_only)
 {
   bool import_pts = false, exp_sampling = false; size_t i;
   if (!import_approx_file.empty())
@@ -510,7 +510,7 @@ construct_expansion_sampler(const String& import_approx_file,
     // number of rows; import_build_active_only not currently used
     TabularIO::read_data_tabular(import_approx_file, 
       "imported approx samples file", x_samples, numContinuousVars,
-      import_build_format); //, import_build_active_only);
+      import_approx_format); //, import_build_active_only);
     numSamplesOnExpansion = x_samples.numCols();
     // transform to u space must follow initialize_random_variable_parameters(),
     // so pass x_samples for now and transform at runtime

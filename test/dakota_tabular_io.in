@@ -80,8 +80,8 @@ method,					#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
 #	surrogate global					#s4,#s9
 #	  dace_method_pointer = 'DACE'				#s4,#s9
 # 	  gaussian_process surfpack				  #s4,#s9
-#	  import_points_file = 'dakota_tabular_io.3.dat'	#s4
-#	  import_points_file = 'dakota_tabular_io.8.dat'	#s9
+#	  import_build_points_file = 'dakota_tabular_io.3.dat'	#s4
+#	  import_build_points_file = 'dakota_tabular_io.8.dat'	#s9
 #	    custom_annotated eval_id interface_id		#s9
 
 model,

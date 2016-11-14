@@ -158,8 +158,8 @@ protected:
 
   /// construct the expansionSampler for evaluating samples on uSpaceModel
   void construct_expansion_sampler(const String& import_approx_file,
-    unsigned short import_build_format = TABULAR_ANNOTATED,
-    bool import_build_active_only = false);
+    unsigned short import_approx_format = TABULAR_ANNOTATED,
+    bool import_approx_active_only = false);
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
