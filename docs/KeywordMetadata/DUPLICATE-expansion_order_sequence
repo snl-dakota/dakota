@@ -1,7 +1,9 @@
-Blurb::The (initial) order of a polynomial expansion
+Blurb:: The (initial) order of a polynomial expansion
 
-Description::When the expansion_order for a a polynomial chaos expansion 
-is specified, the coefficients may be computed by integration based on
+Description::
+
+When the expansion_order for a a polynomial chaos expansion is
+specified, the coefficients may be computed by integration based on
 random samples or by regression using either random or sub-sampled
 tensor product quadrature points.
 
@@ -73,6 +75,12 @@ noise_tolerance, will be returned. If cross validation is active,
 internally by the regression method across the set of expansion orders
 (1,...,\c expansion_order) and the set of specified noise tolerances and
 return the one with the lowest cross validation error indicator.
+
+<b> Usage Tips </b>
+
+For most use cases, this keyword will specify a single integer order.
+In more advanced UQ studies with hierarchical models, the list of
+integers can apply to different models and/or model levels
 
 Topics::
 Examples::
