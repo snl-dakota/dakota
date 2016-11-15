@@ -58,12 +58,16 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   problem_db.set_db_model_nodes(model_index); // restore
 
   // default index values, to be overridden at run time
-  lowFidelityIndices.first  = lowFidelityIndices.second = 0;
-  highFidelityIndices.first = num_models - 1;
-  if (num_models == 1)
-    { sameModelInstance = true;  highFidelityIndices.second = 1; }
-  else
-    { sameModelInstance = false; highFidelityIndices.second = 0; }
+  lowFidelityIndices.first = 0; highFidelityIndices.first = num_models - 1;
+  if (num_models == 1) { // first and last solution level (1 model)
+    sameModelInstance = true;
+    lowFidelityIndices.second  = 0;
+    highFidelityIndices.second = orderedModels[0].solution_levels() - 1;
+  }
+  else { // first and last model form (solution levels ignored)
+    sameModelInstance = false;
+    lowFidelityIndices.second = highFidelityIndices.second = _NPOS;
+  }
   check_interface_instance();
 
   // Correction is required in HierarchSurrModel for some responseModes.

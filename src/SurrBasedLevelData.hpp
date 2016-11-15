@@ -43,8 +43,9 @@ public:
   void initialize_responses(const Response& approx_resp,
 			    const Response& truth_resp, bool uncorr = true);
   /// initialize model forms and discretization levels
-  void initialize_indices(size_t approx_form,      size_t truth_form,
-			  size_t approx_level = 0, size_t truth_level = 0);
+  void initialize_indices(size_t approx_form, size_t truth_form,
+			  size_t approx_level = _NPOS,
+			  size_t truth_level  = _NPOS);
 
   bool new_center();
   void new_center(bool flag);
@@ -160,7 +161,7 @@ private:
 
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), newCenterFlag(true),
-  approxModelIndices(0,0), truthModelIndices(0,0)
+  approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
 { responseCenterTruthCorrected.first = 0; }
 
 
