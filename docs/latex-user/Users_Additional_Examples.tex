@@ -1583,3 +1583,15 @@ deterministic error is approximately $1.00\times10^{-4}$.
 
 Dakota returns the population of each species $u_i(T)$ at the final
 time $T$. The final time and the number of time-steps can be changed.
+
+\subsection{Bayes linear}\label{sec:bayes_linear}
+This is a simple model that is only available by using the {\tt direct} interface 
+with the {\tt analysis\_driver='bayes\_linear'}.  The model is discussed extensively in 
+~\cite{CASL2014} both on pages 93--102 and in Appendix A.  The model is simply the 
+sum of the d input parameters: 
+\begin{equation}
+y = \sum\limits_{i=1}^d x_i
+\end{equation}
+where the input varaibles $x_i$ can be any uncertain variable type but are typically 
+considered as uniform or normal uncertain inputs. 
+
