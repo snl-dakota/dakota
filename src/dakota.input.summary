@@ -1035,6 +1035,43 @@ KEYWORD12 method
 	  [ model_pointer STRING ]
 	  )
 	|
+	( c3_function_train ALIAS function_train
+	  [ max_iterations INTEGER >= 0 ]
+	  [ convergence_tolerance REAL ]
+	  [ samples_on_emulator INTEGER ]
+	  [ max_rank INTEGER >= 0 ]
+	  [ reliability_levels REALLIST
+	    [ num_reliability_levels INTEGERLIST ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | reliabilities
+	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ model_pointer STRING ]
+	  )
+	|
 	( sampling ALIAS nond_sampling
 	  [ samples ALIAS initial_samples INTEGER ]
 	  [ seed INTEGER > 0 ]

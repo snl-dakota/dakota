@@ -56,6 +56,8 @@ protected:
   //
 
   void resolve_inputs(short& u_space_type, short& data_order);
+  void initialize(short u_space_type);
+    
 
 private:
 
@@ -75,6 +77,11 @@ private:
   static NonDC3FunctionTrain* c3Instance;
 
   // other data ...
+  /// The number of samples used to evaluate the emulator
+  int numSamplesOnEmulator;
+
+  /// The maximum rank of the function train
+  size_t maxRank;
 
 };
 

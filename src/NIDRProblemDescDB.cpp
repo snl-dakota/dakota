@@ -6863,6 +6863,7 @@ static int
 
 static size_t
 	MP_(maxHifiEvals),
+        MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
         MP_(numDesigns),

@@ -602,6 +602,11 @@ if(HAVE_ADAPTIVE_SAMPLING)
   endif()
 endif()
 
+if(HAVE_FUNCTION_TRAIN)
+  list(APPEND iterator_src NonDC3FunctionTrain.cpp)
+  add_definitions("-DHAVE_FUNCTION_TRAIN")
+endif()
+
 # Can't do CheckPackage because queso isn't built in CMake and
 # therefore can't be in EXPORT_TARGETS.
 #CheckPackage(QUESO)

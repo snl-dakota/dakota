@@ -989,6 +989,8 @@ public:
   /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
   //experimental design
   size_t maxHifiEvals;
+  /// maximum rank
+  size_t maxRank;
 
   // DREAM sub-specification
 

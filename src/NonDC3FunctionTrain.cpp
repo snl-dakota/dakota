@@ -28,7 +28,8 @@ NonDC3FunctionTrain* NonDC3FunctionTrain::c3Instance(NULL);
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model)
+  NonD(problem_db, model), numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
+  maxRank(probDescDB.get_sizet("method.c3function_train.max_rank"))
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -45,19 +46,31 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   transform_model(iteratedModel, g_u_model); // retain distribution bounds
 
   // ...
+  // follow construct_expansion_sampler from NonDExpansion.cpp which is called in NonDPolynomialChaos.cpp
 }
 
 
 NonDC3FunctionTrain::~NonDC3FunctionTrain()
 { }
 
-
+    
 void NonDC3FunctionTrain::
 resolve_inputs(short& u_space_type, short& data_order)
 {
   // May want this eventually to manage different transformation options...
-
+    
   data_order = 1; // no deriv enhancement for now...
+}
+
+void NonDC3FunctionTrain::initialize(short u_space_type)
+{
+  // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
+  initialize_random_variable_transformation();
+  initialize_random_variable_types(u_space_type); // need x/u_types below
+  initialize_random_variable_correlations();
+  // for lightweight ctor, defer until call to requested_levels()
+  //initialize_final_statistics();
+  verify_correlation_support(u_space_type); // correlation warping factors
 }
 
 
@@ -76,6 +89,11 @@ void NonDC3FunctionTrain::core_run()
 {
   c3Instance = this;
 
+  std::cout << "Hello" << std::endl;
+  std::cout <<  maxIterations << std::endl;
+  std::cout <<  convergenceTol << std::endl;
+  std::cout <<  numSamplesOnEmulator << std::endl;
+  std::cout <<  maxRank << std::endl;
   /* Sample switching logic among algorithm options... (or from input spec)
   size_t model_form = 0, soln_level = 0, num_mf = NLev.size();
   if (num_mf > 1) {
@@ -110,7 +128,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
   bool asynch_flag = c3Instance->iteratedModel.asynch_flag();
 
   RealVector cv_i(num_cv, false);
-  for (i=0; i<num_samp; ++i) {
+  for (size_t i=0; i<num_samp; ++i) {
     copy_data(var_sets+num_cv*i, num_cv, cv_i);
     c3Instance->iteratedModel.continuous_variables(cv_i);
     if (asynch_flag)
@@ -129,7 +147,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
     // pack Dakota resp data into qoi_sets...
     IntRespMCIter r_cit; size_t i;
     for (r_cit=resp_map.begin(), i=0; r_cit!=resp_map.end(); ++r_cit, ++i) {
-      const RealVector& fns_i = r_it->second.function_values();
+      const RealVector& fns_i = r_cit->second.function_values();
       copy_data(fns_i, qoi_sets+num_fns*i, num_fns);
     }
   }
