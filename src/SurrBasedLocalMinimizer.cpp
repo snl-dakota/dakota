@@ -410,21 +410,15 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   //daceCenterPtFlag
   //  = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
 
-  const RealVector&     cv_center = tr_data.c_vars_center();
-  const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
-  const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
-  // Set the trust region center and bounds for approxSubProbOptimizer
-  approxSubProbModel.continuous_variables(cv_center);
-  approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
-  approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
-
   // Output the trust region bounds
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
        << "************\nBegin SBLM Iteration Number " << sbIterNum+1
        << "\n\nCurrent Trust Region for surrogate model (form "
-       << tr_data.approx_model_form() << ", level "
-       << tr_data.approx_model_level() << ")\n                 ";
+       << tr_data.approx_model_form();
+  if (tr_data.approx_model_level() != _NPOS)
+    Cout << ", level " << tr_data.approx_model_level();
+  Cout << ")\n                 ";
   if (tr_lower_truncation) Cout << std::setw(wpp9) << "Lower (truncated)";
   else                     Cout << std::setw(wpp9) << "Lower";
   if (cv_truncation)       Cout << std::setw(wpp9) << "Center (truncated)";
@@ -432,6 +426,9 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   if (tr_upper_truncation) Cout << std::setw(wpp9) << "Upper (truncated)";
   else                     Cout << std::setw(wpp9) << "Upper";
   Cout << '\n';
+  const RealVector&     cv_center = tr_data.c_vars_center();
+  const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
+  const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   StringMultiArrayConstView c_vars_labels
     = iteratedModel.continuous_variable_labels();
   for (i=0; i<numContinuousVars; ++i)
@@ -440,6 +437,32 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
 	 << std::setw(wpp9) << tr_upper_bnds[i] << '\n';
   Cout << "****************************************************************"
        << "**********\n";
+}
+
+
+void SurrBasedLocalMinimizer::
+update_approx_sub_problem(SurrBasedLevelData& tr_data)
+{
+  approxSubProbModel.active_variables(tr_data.vars_center());
+  approxSubProbModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
+  approxSubProbModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+
+  if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
+    relax_constraints(tr_data);
+}
+
+
+void SurrBasedLocalMinimizer::minimize()
+{
+  Cout << "\n>>>>> Starting approximate optimization cycle.\n";
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL);
+  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
+
+  Cout << "\n<<<<< Approximate optimization cycle completed.\n";
+  ++sbIterNum; // full iteration performed: increment the counter
 }
 
 

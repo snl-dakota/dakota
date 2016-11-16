@@ -26,12 +26,7 @@
 
 static const char rcsId[]="@(#) $Id: SurrBasedGlobalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
 
-
 namespace Dakota {
-
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
 
 
 SurrBasedGlobalMinimizer::

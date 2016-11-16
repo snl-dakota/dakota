@@ -74,7 +74,7 @@ protected:
   /// build the approximation over the current trust region
   virtual void build() = 0;
   /// solve the approximate subproblem
-  virtual void minimize() = 0;
+  virtual void minimize();
   /// verify the approximate iterate and update the trust region for
   /// the next approximate optimization cycle
   virtual void verify() = 0;
@@ -94,6 +94,9 @@ protected:
   void update_trust_region_data(SurrBasedLevelData& tr_data,
 				const RealVector& parent_l_bnds,
 				const RealVector& parent_u_bnds);
+
+  /// update variables and bounds within approxSubProbModel
+  void update_approx_sub_problem(SurrBasedLevelData& tr_data);
 
   /// compute trust region ratio (for SBLM iterate acceptance and trust
   /// region resizing) and check for soft convergence (diminishing returns)

@@ -310,11 +310,8 @@ public:
   /// approximation within a HierarchSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
-  /// update component parallel mode for supporting parallelism in a model's
-  /// interface component, sub-model component, or neither component
-  /// [componentParallelMode = 0 (none), 1
-  /// (INTERFACE/APPROX_INTERFACE/OPTIONAL_INTERFACE/LF_MODEL/SURROGATE_MODEL),
-  /// or 2 (SUB_MODEL/ACTUAL_MODEL/HF_MODEL/TRUTH_MODEL)].
+  /// update componentParallelMode for supporting parallelism in model
+  /// sub-components
   virtual void component_parallel_mode(short mode);
 
   /// estimate the minimum and maximum partition sizes that can be
@@ -1313,8 +1310,9 @@ protected:
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
-  /// the component parallelism mode: 0 (none), 1 (INTERFACE/LF_MODEL), or 2
-  /// (SUB_MODEL/HF_MODEL/TRUTH_MODEL)
+  /// the component parallelism mode: 0 (none),
+  /// 1 (INTERFACE/OPTIONAL_INTERFACE/SURROGATE_MODEL), or
+  /// 2 (SUB_MODEL/TRUTH_MODEL)
   short componentParallelMode;
 
   /// flags asynch evaluations (local or distributed)

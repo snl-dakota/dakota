@@ -29,10 +29,6 @@ namespace Dakota {
 
 extern PRPCache data_pairs; // global container
 
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
-
 
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
@@ -337,17 +333,12 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // If hard convergence not achieved in truth values, perform approximate
   // optimization followed by additional (soft) convergence checks.
 
+  update_approx_sub_problem(trustRegionData);
+
   // *******************************************************
   // Run iterator on approximation (with correction applied)
   // *******************************************************
-  Cout << "\n>>>>> Starting approximate optimization cycle.\n";
-  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
-  if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
-    relax_constraints(trustRegionData);
-  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
-  Cout << "\n<<<<< Approximate optimization cycle completed.\n";
-  sbIterNum++; // full iteration performed: increment the counter
+  SurrBasedLocalMinimizer::minimize();
 
   // *******************************************
   // Retrieve varsStar and responseStarApprox
