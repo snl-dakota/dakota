@@ -866,6 +866,15 @@ void SNLLOptimizer::finalize_run()
   // reset in case of recursion
   theOptimizer->reset();
 
+  // Compound constraint doesn't get managed in an Optpp::SmartPtr;
+  // mirror the alloc in snll_initialize_run() with this delete in
+  // finalize_run()
+  OPTPP::CompoundConstraint* cc = nlfObjective->getConstraints();
+  if (cc) {
+    delete cc;
+    nlfObjective->setConstraints(NULL);
+  }
+
   // restore in case of recursion
   optLSqInstance  = prevMinInstance;
   snllOptInstance = prevSnllOptInstance;

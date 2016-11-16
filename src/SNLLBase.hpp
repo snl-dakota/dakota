@@ -167,8 +167,12 @@ protected:
 };
 
 
-inline SNLLBase::SNLLBase(): meritFn(OPTPP::ArgaezTapia), maxStep(1000.),
-  stepLenToBndry(0.99995), centeringParam(0.2) // leave searchMethod empty
+inline SNLLBase::SNLLBase():
+  // leave searchMethod empty
+  meritFn(OPTPP::ArgaezTapia), maxStep(1000.), stepLenToBndry(0.99995),
+  centeringParam(0.2),
+  // TODO: set this flag in lightweight ctors, by pulling Model's ASV status
+  constantASVFlag(false)
 { }
 
 

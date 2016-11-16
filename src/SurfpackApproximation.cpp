@@ -465,6 +465,10 @@ void SurfpackApproximation::build()
       factory->add("upper_bounds", fromVec<Real>(ub));
     }
 
+    if (model) {
+      delete model;
+      model = NULL;
+    }
     model = factory->Build(*surfData); 
     // TO DO: extract coefficients array
   }
