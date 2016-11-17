@@ -227,6 +227,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   // > if new center at current level, build new approximation
   // > if new center at or above current level, update corrected responses.
 
+  // Loop TRs top-down so that correction logic detects new centers at/above
   size_t j, num_tr = trustRegions.size();
   bool update_corr = false;
   for (int i=num_tr-1; i>=0; --i) {
@@ -276,47 +277,67 @@ void HierarchSurrBasedLocalMinimizer::build()
       else
 	tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 				CORR_TRUTH_RESPONSE);
+    }
+  }
 
-      // TODO: don't stop until hard conv at top level, so this must proliferate
-      //       up the TR hierarchy to update and recenter one or more TR
-      // --> refer to animation for logic.
-      hard_convergence_check(tr_data.response_center(CORR_TRUTH_RESPONSE),
-			     center_vars.continuous_variables(),
-			     globalLowerBnds, globalUpperBnds);
+  // TODO: don't stop until hard conv at top level, so this must proliferate
+  //       up the TR hierarchy to update and recenter one or more TR
+  // TODO: RECURSIVE ASSESSMENT NEEDS TO BE BOTTOM-UP I/O TOP-DOWN !!
+
+  SurrBasedLevelData& tr_min = trustRegions[minimizeIndex];
+  size_t min_p1 = minimizeIndex + 1;
+  const RealVector& parent_l_bnds = (num_tr > min_p1) ?
+    trustRegions[min_p1].tr_lower_bounds() : globalLowerBnds;
+  const RealVector& parent_u_bnds = (num_tr > min_p1) ?
+    trustRegions[min_p1].tr_upper_bounds() : globalUpperBnds;
+  hard_convergence_check(tr_min.response_center(CORR_TRUTH_RESPONSE),
+			 tr_min.c_vars_center(), parent_l_bnds,
+			 parent_u_bnds);
+
+  if (convergenceFlag) // TODO: finalConvFlag?  convFlag per TR?
+    return;
+
+  // Loop TRs top-down so that correction logic detects new centers at/above
+  update_corr = false;
+  for (int i=num_tr-1; i>=0; --i) {
+
+    SurrBasedLevelData& tr_data = trustRegions[i];
+    bool new_level_center  = tr_data.new_center();
+    Variables& center_vars = tr_data.vars_center();
+
+    if (new_level_center) {
+
+      // all levels at or below this level must update corrected responses
+      update_corr = true;
+
+      // Find approx response.  If not found, evaluate approx model.
+      find_center_approx(i); // find/eval *uncorrected* center approx
+
+      // Compute additive/multiplicative correction
+      DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+      delta.compute(center_vars,
+		    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+		    tr_data.response_center(UNCORR_APPROX_RESPONSE));
     }
 
-    if (!convergenceFlag) { // TODO: finalConvFlag?  convFlag per TR?
-
-      if (new_level_center) {
-	// Find approx response.  If not found, evaluate approx model.
-	find_center_approx(i); // find/eval *uncorrected* center approx
-
-        // Compute additive/multiplicative correction
-        DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-        delta.compute(center_vars,
-                      tr_data.response_center(UNCORR_TRUTH_RESPONSE),
-                      tr_data.response_center(UNCORR_APPROX_RESPONSE));
-      }
-
-      if (update_corr) {
-	// Recursively correct approx response and store in tr_data
-	Cout << "\nRecursively correcting surrogate model response (form "
-	     << tr_data.approx_model_form();
-	if (tr_data.approx_model_level() != _NPOS)
-	  Cout << ", level " << tr_data.approx_model_level();
-	Cout << ") for trust region center.\n";
-	// correct approximation across all levels above i
-	Response corrected_resp
-	  = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
-	for (j=i; j<num_tr; ++j)
-	  iteratedModel.single_apply(center_vars, corrected_resp,
-				     trustRegions[j].indices());
-	tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
-      }
-
-      // new center now computed, deactivate flag
-      if (new_level_center) tr_data.new_center(false);
+    if (update_corr) {
+      // Recursively correct approx response and store in tr_data
+      Cout << "\nRecursively correcting surrogate model response (form "
+	   << tr_data.approx_model_form();
+      if (tr_data.approx_model_level() != _NPOS)
+	Cout << ", level " << tr_data.approx_model_level();
+      Cout << ") for trust region center.\n";
+      // correct approximation across all levels above i
+      Response corrected_resp
+	= tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
+      for (j=i; j<num_tr; ++j)
+	iteratedModel.single_apply(center_vars, corrected_resp,
+				   trustRegions[j].indices());
+      tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
     }
+
+    // new center now computed, deactivate flag
+    if (new_level_center) tr_data.new_center(false);
   }
 }
 
