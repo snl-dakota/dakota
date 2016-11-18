@@ -401,8 +401,8 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       tr_lower_truncation = true;
     }
   }
-  if (cv_truncation)
-    tr_data.new_center(true);
+  if (cv_truncation) tr_data.new_center(true); // rare case
+  tr_data.new_factor(false);  // TR updates applied; reset flag
 
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the

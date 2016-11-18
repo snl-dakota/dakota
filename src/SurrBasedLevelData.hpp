@@ -86,6 +86,9 @@ public:
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
 
+  Real new_factor();
+  void new_factor(bool val);
+
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
 			 bool uncorr = true);
@@ -142,6 +145,9 @@ private:
   /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
   /// actual size of the trust region will be 10% of the global bounds.
   Real trustRegionFactor;
+  /// flag indicating that the trustRegionFactor has been updated, requiring
+  /// a corresponding update to the tr{Lower,Upper}Bounds
+  bool newTRFactor;
 
   /// flags the acceptance of a candidate point and the existence of
   /// a new trust region center
@@ -160,7 +166,7 @@ private:
 
 
 inline SurrBasedLevelData::SurrBasedLevelData():
-  trustRegionFactor(1.), newCenterFlag(true),
+  trustRegionFactor(1.), newTRFactor(true), newCenterFlag(true),
   approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
 { responseCenterTruthCorrected.first = 0; }
 
@@ -309,11 +315,19 @@ inline Real SurrBasedLevelData::trust_region_factor()
 
 
 inline void SurrBasedLevelData::trust_region_factor(Real val)
-{ trustRegionFactor = val; }
+{ trustRegionFactor = val; newTRFactor = true; }
 
 
 inline void SurrBasedLevelData::scale_trust_region_factor(Real val)
-{ trustRegionFactor *= val; }
+{ trustRegionFactor *= val; newTRFactor = true; }
+
+
+inline Real SurrBasedLevelData::new_factor()
+{ return newTRFactor; }
+
+
+inline void SurrBasedLevelData::new_factor(bool val)
+{ newTRFactor = val; }
 
 
 inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const
