@@ -1,39 +1,45 @@
-# Helper function to process DAKOTA specification maintenance options:
-# * whether to build NIDR-generated files into the source tree
-# * whether to build options JAGUAR-related files like nidrgen
-function(DakotaEnableSpecMaint)
+# Helper functions to process Dakota specification maintenance options:
 
-  if (ENABLE_SPEC_MAINT)
-    
-    get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
+# Command to translate dakota.xml to dakota.input.nspec
+# (We still generate the .nspec to the source tree and commit to repo
+# since the process requires Java.)
+function(DakotaXml2Nspec)
 
-    # xml2nidr: dakota.xml --> dakota.input.nspec
-    add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
-      COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
-        gov.sandia.dart.dakota.XMLToNIDRTranslator
-        ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
-        ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-      )
+  get_target_property(xml2nidr_jar xml2nidr JAR_FILE)
 
-    # nidrgen: dakota.input.nspec --> dakota.input.summary
-    add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary"
-      DEPENDS nidrgen 
-              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-      COMMAND ${NIDR_BINARY_DIR}/nidrgen
-      ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      )
-  
+  # xml2nidr: dakota.xml --> dakota.input.nspec
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
+    COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
+    gov.sandia.dart.dakota.XMLToNIDRTranslator
+    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    )
+
+endfunction()
+
+# Commands to translate dakota.input.nspec to dakota.input.summary and
+# NIDR_keywds.hpp into build tree
+function(DakotaNidrgen)
+
+  # nidrgen: dakota.input.nspec --> dakota.input.summary
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary"
+    DEPENDS nidrgen
+    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    COMMAND $<TARGET_FILE:nidrgen>
+    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
+#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
 ## DISABLED GUI METADATA
 ##    # generate dakota.input.desc (depends on dakota.tags.desc)
 ##    find_package(Perl REQUIRED)
 ##    file(GLOB ref_dox_files ${Dakota_SOURCE_DIR}/docs/oldref Ref_*.dox)
 ##    add_custom_command(
 ##      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc"
-##      DEPENDS nidrgen 
+##      DEPENDS nidrgen
 ##              ${CMAKE_CURRENT_SOURCE_DIR}/generate_desc.pl
 ##  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
 ##  	    ${ref_dox_files}
@@ -45,13 +51,13 @@ function(DakotaEnableSpecMaint)
 ##      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 ##      )
 ## DISABLED GUI METADATA
-  
+
 ## DISABLED GUI METADATA
 ##    # generate NIDR_guikeywds.h: could move to jaguar-files target once
 ##    # not checked in
 ##    add_custom_command(
 ##      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h"
-##      DEPENDS nidrgen 
+##      DEPENDS nidrgen
 ##              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
 ##  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
 ##      COMMAND ${NIDR_BINARY_DIR}/nidrgen
@@ -59,26 +65,26 @@ function(DakotaEnableSpecMaint)
 ##      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 ##      )
 ## DISABLED GUI METADATA
-  
-    # nidrgen: dakota.input.nspec --> NIDR_keywds.hpp
-    add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp"
-      DEPENDS nidrgen 
-              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-	      # Artifical dependence to force generation
-	      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
-##  	          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-      COMMAND ${NIDR_BINARY_DIR}/nidrgen
-      ARGS    dakota.input.nspec > NIDR_keywds.hpp
-##      # Can't seem to suppress NIDR_initdefs.h with . or -
-##      # Just remove it after generation
-##      COMMAND "${CMAKE_COMMAND}"
-##      ARGS    -E remove "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      )
-  
+
+# nidrgen: dakota.input.nspec --> NIDR_keywds.hpp
+add_custom_command(
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp"
+  DEPENDS nidrgen
+  ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+  # Artifical dependence to force generation
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
+  ##  	          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+  COMMAND $<TARGET_FILE:nidrgen>
+  ARGS    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > NIDR_keywds.hpp
+  ##      # Can't seem to suppress NIDR_initdefs.h with . or -
+  ##      # Just remove it after generation
+  ##      COMMAND "${CMAKE_COMMAND}"
+  ##      ARGS    -E remove "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h"
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
     # create a special target and add to "all" target
-#    add_custom_target(dakota-spec-files 
+#    add_custom_target(dakota-spec-files
 #      ALL
 #      DEPENDS ##nidrgen
 #              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
@@ -89,7 +95,7 @@ function(DakotaEnableSpecMaint)
 ### DISABLED GUI METADATA
 #      VERBATIM
 #      )
-  
+
 ## DISABLED GUI METADATA
 ##    # Target jaguar-files builds targets needed for jaguar that are not
 ##    # built as part of the all target
@@ -102,14 +108,14 @@ function(DakotaEnableSpecMaint)
 ##    # (1) generate NIDR_keywds0.h.tmp
 ##    # nidrgen generates the initial version of the file
 ##    # Dt -8 generateds YYYMMDD for the newest file
-##    set(dakreorder_date_files 
-##      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec 
-##      ${CMAKE_CURRENT_SOURCE_DIR}/dakreorder.c 
-##      ${NIDR_SOURCE_DIR}/nidr.c 
-##      ${NIDR_SOURCE_DIR}/nidr-parser.c 
+##    set(dakreorder_date_files
+##      ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+##      ${CMAKE_CURRENT_SOURCE_DIR}/dakreorder.c
+##      ${NIDR_SOURCE_DIR}/nidr.c
+##      ${NIDR_SOURCE_DIR}/nidr-parser.c
 ##      ${NIDR_SOURCE_DIR}/nidr-scanner.c
-##      ${NIDR_SOURCE_DIR}/avltree.c 
-##      ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp 
+##      ${NIDR_SOURCE_DIR}/avltree.c
+##      ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp
 ##      )
 ##    ADD_CUSTOM_COMMAND(
 ##      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp"
@@ -133,26 +139,24 @@ function(DakotaEnableSpecMaint)
 ##        -P ${Dakota_SOURCE_DIR}/cmake/finish_keywds0.cmake
 ##      VERBATIM)
 ## DISABLED GUI METADATA
-  
+
 ## DISABLED GUI METADATA
 ##    # TODO: make -ldl optional if possible
 ##    set(dakreorder_libs nidr)
-##    find_library(libdl dl) 
+##    find_library(libdl dl)
 ##    if(libdl)
 ##      list(APPEND dakreorder_libs ${libdl})
 ##    endif()
-##  
+##
 ##    add_executable(dakreorder EXCLUDE_FROM_ALL dakreorder.c NIDR_keywds0.h)
 ##    target_link_libraries(dakreorder ${dakreorder_libs})
-##  
+##
 ##    add_executable(dakreord EXCLUDE_FROM_ALL dakreorder.c)
 ##    set_target_properties(dakreord PROPERTIES
 ##      COMPILE_DEFINITIONS NO_NIDR_keywds0)
 ##    target_link_libraries(dakreord ${dakreorder_libs})
 ## DISABLED GUI METADATA
-  
-    # TODO: Ensure DAKOTA sources depend on NIDR_keywds.hpp
-  
-  endif()
+
+# TODO: Ensure DAKOTA sources depend on NIDR_keywds.hpp
 
 endfunction()

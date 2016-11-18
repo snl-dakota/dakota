@@ -44,8 +44,11 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
   # (dakota.input.nspec) translation and/or reference manual generation.
   add_subdirectory(java_utils)
 endif()
-include(DakotaEnableSpecMaint)
-DakotaEnableSpecMaint()
+include(DakotaSpecMaint)
+if(ENABLE_SPEC_MAINT)
+  DakotaXml2Nspec()
+endif()
+DakotaNidrgen()
 
 # Use TPL_LIBS for libraries built as part of this project
 list(APPEND DAKOTA_PKG_LIBS nidr)
@@ -970,9 +973,12 @@ install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.hpp *.h)
-install(FILES ${Dakota_hdr} DESTINATION include)
-file(GLOB Dakota_spec_files dakota.input.*)
-install(FILES ${Dakota_spec_files} DESTINATION bin)
+install(FILES ${Dakota_hdr} ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp
+  DESTINATION include)
+install(FILES dakota.xsd dakota.xml dakota.input.nspec
+  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
+  DESTINATION bin
+  )
 
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
