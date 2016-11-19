@@ -94,6 +94,39 @@ void NonDC3FunctionTrain::core_run()
   std::cout <<  convergenceTol << std::endl;
   std::cout <<  numSamplesOnEmulator << std::endl;
   std::cout <<  maxRank << std::endl;
+
+  size_t dim  = c3Instance->numContinuousVars;
+  struct Fwrap * fw = fwrap_create(dim,"general-vec");
+  fwrap_set_fvec(fw,qoi_eval,NULL);
+  
+  struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
+  ope_opts_set_lb(opts,-2.0);
+  ope_opts_set_ub(opts,2.0);
+  struct OneApproxOpts * qmopts = one_approx_opts_alloc(POLYNOMIAL,opts);    
+  struct C3Approx * c3a = c3approx_create(CROSS,dim);
+
+  int verbose = 0;
+  size_t init_rank = 3;
+  double ** start = malloc_dd(dim);
+  for (size_t ii = 0; ii < dim; ii++){
+      c3approx_set_approx_opts_dim(c3a,ii,qmopts);
+      start[ii] = linspace(-2.0,2.0,init_rank);
+  }
+  c3approx_init_cross(c3a,init_rank,verbose,start);
+  c3approx_set_cross_tol(c3a,1e-3);
+
+  int adapt = 0;
+  struct FunctionTrain * ft = c3approx_do_cross(c3a,fw,adapt);
+
+  double mean = function_train_integrate(ft);
+  std::cout << "Mean is " << mean << std::endl;
+  
+  function_train_free(ft);
+  c3approx_destroy(c3a);
+  one_approx_opts_free_deep(&qmopts);
+  free_dd(dim, start);
+  fwrap_destroy(fw);
+                                   
   /* Sample switching logic among algorithm options... (or from input spec)
   size_t model_form = 0, soln_level = 0, num_mf = NLev.size();
   if (num_mf > 1) {

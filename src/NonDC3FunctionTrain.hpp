@@ -14,6 +14,71 @@
 #define NOND_C3_FUNCTION_TRAIN_H
 
 #include "DakotaNonD.hpp"
+// #include "c3/lib_funcs.h"
+// #include "c3/lib_linalg.h"
+// #include "c3/lib_clinalg.h"
+
+extern "C"
+{
+    // utilities
+    double * linspace(double,double,size_t);
+    double ** malloc_dd(size_t);
+    void free_dd(size_t, double **);
+
+    // function wrapping
+    struct Fwrap;
+    struct Fwrap * fwrap_create(size_t, const char *);
+    void fwrap_set_fvec(struct Fwrap*,int(*)(size_t,const double*,double*,void*),void*);
+    void fwrap_destroy(struct Fwrap *);
+
+    // polynomial approximation options
+    struct OpeOpts;
+    enum poly_type {LEGENDRE, CHEBYSHEV, HERMITE, STANDARD};
+    struct OpeOpts * ope_opts_alloc(enum poly_type);
+    void ope_opts_set_lb(struct OpeOpts *, double);
+    double ope_opts_get_lb(const struct OpeOpts *);
+    void ope_opts_set_ub(struct OpeOpts *, double);
+    double ope_opts_get_ub(const struct OpeOpts *);
+
+    
+    // One dimensional approximation options
+    enum function_class {CONSTANT,PIECEWISE, POLYNOMIAL,
+                         LINELM, RATIONAL, KERNEL};
+    struct OneApproxOpts;
+    struct OneApproxOpts * one_approx_opts_alloc(enum function_class, void *);
+    void one_approx_opts_free_deep(struct OneApproxOpts **);
+
+
+    // Function Train and analysis
+    struct FunctionTrain;
+    void function_train_free(struct FunctionTrain *);
+    double function_train_eval(struct FunctionTrain *, const double *);
+    double function_train_integrate(const struct FunctionTrain *);
+    double function_train_inner(const struct FunctionTrain *, 
+                                const struct FunctionTrain * );
+
+    
+    // General approximation options
+    enum C3ATYPE { CROSS, REGRESS };
+    struct C3Approx;
+    struct C3Approx * c3approx_create(enum C3ATYPE, size_t);
+    void c3approx_destroy(struct C3Approx *);
+    void c3approx_set_approx_opts_dim(struct C3Approx *,size_t,
+                                  struct OneApproxOpts *);
+    //setting cross approximation arguments
+    void c3approx_init_cross(struct C3Approx * c3a, size_t, int,
+                             double **);
+    void c3approx_set_round_tol(struct C3Approx *, double);
+    void c3approx_set_cross_tol(struct C3Approx *, double);
+    void c3approx_set_verbose(struct C3Approx *, int);
+    void c3approx_set_adapt_kickrank(struct C3Approx *, size_t);
+    void c3approx_set_adapt_maxrank_all(struct C3Approx *, size_t);
+    //void c3approx_set_adapt_maxiter(struct C3Approx *, size_t);
+    void c3approx_set_cross_maxiter(struct C3Approx *, size_t);
+
+    void c3approx_init_cross(struct C3Approx * c3a,size_t,int,double **);
+    struct FunctionTrain * c3approx_do_cross(struct C3Approx *,struct Fwrap *,int);
+}
 
 
 namespace Dakota {
