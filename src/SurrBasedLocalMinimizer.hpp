@@ -105,10 +105,10 @@ protected:
 
   /// check for hard convergence (norm of projected gradient of
   /// merit function near zero)
-  void hard_convergence_check(const Response& response_truth,
-			      const RealVector& c_vars,
-			      const RealVector& lower_bnds,
-			      const RealVector& upper_bnds);
+  short hard_convergence_check(const Response& response_truth,
+			       const RealVector& c_vars,
+			       const RealVector& lower_bnds,
+			       const RealVector& upper_bnds);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
@@ -186,7 +186,7 @@ protected:
   Real gammaExpand;
 
   /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceFlag;
+  short convergenceCode;
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
   unsigned short softConvCount;
@@ -230,7 +230,7 @@ protected:
 
 inline void SurrBasedLocalMinimizer::reset()
 {
-  convergenceFlag = softConvCount = sbIterNum = 0;
+  convergenceCode = softConvCount = sbIterNum = 0;
 
   penaltyIterOffset = -200; penaltyParameter  = 5.;
 

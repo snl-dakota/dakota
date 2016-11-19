@@ -222,7 +222,7 @@ void DataFitSurrBasedLocalMinimizer::build()
       iteratedModel.truth_model().interface_id(),
       trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
-  if (!convergenceFlag)
+  if (!convergenceCode)
     compute_center_correction(embed_correction);
 }
 
@@ -241,14 +241,15 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
 
   // Assess hard convergence prior to global surrogate construction
   if (trustRegionData.new_center())
-    hard_convergence_check(resp_center_truth.second,
-			   vars_center.continuous_variables(),
-			   globalLowerBnds, globalUpperBnds);
+    convergenceCode
+      = hard_convergence_check(resp_center_truth.second,
+			       vars_center.continuous_variables(),
+			       globalLowerBnds, globalUpperBnds);
 
   bool embed_correction = false;
 
   // Perform the sampling and the surface fitting
-  if (!convergenceFlag)
+  if (!convergenceCode)
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction
       = iteratedModel.build_approximation(vars_center, resp_center_truth);
@@ -279,9 +280,10 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
 		    iteratedModel.truth_model());
 
   // Assess hard convergence following build/retrieve
-  hard_convergence_check(trustRegionData.response_center(CORR_TRUTH_RESPONSE),
-			 trustRegionData.c_vars_center(),
-			 globalLowerBnds, globalUpperBnds);
+  convergenceCode = 
+    hard_convergence_check(trustRegionData.response_center(CORR_TRUTH_RESPONSE),
+			   trustRegionData.c_vars_center(),
+			   globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
   return ( localApproxFlag || (multiptApproxFlag && !(approxSetRequest & 4)) );
@@ -328,7 +330,7 @@ compute_center_correction(bool embed_correction)
 
 void DataFitSurrBasedLocalMinimizer::minimize()
 {
-  //if (convergenceFlag) return;
+  //if (convergenceCode) return;
 
   // If hard convergence not achieved in truth values, perform approximate
   // optimization followed by additional (soft) convergence checks.
@@ -363,7 +365,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
 
 void DataFitSurrBasedLocalMinimizer::verify()
 {
-  //if (convergenceFlag) return;
+  //if (convergenceCode) return;
 
   // ****************************
   // Evaluate responseStarTruth 
@@ -420,15 +422,15 @@ void DataFitSurrBasedLocalMinimizer::verify()
   // This part of the algorithm is critical, since it is more common to
   // utilize soft convergence in real-world engineering applications
   // where accurate gradients are unavailable.
-  if (!convergenceFlag) {
+  if (!convergenceCode) {
     if (softConvCount >= softConvLimit)
-      convergenceFlag = 3; // soft convergence
+      convergenceCode = 3; // soft convergence
     // terminate SBLM if trustRegionFactor is less than its minimum value
     else if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
-      convergenceFlag = 1;
+      convergenceCode = 1;
     // terminate SBLM if the maximum number of iterations has been reached
     else if (sbIterNum >= maxIterations)
-      convergenceFlag = 2;
+      convergenceCode = 2;
   }
 }
 

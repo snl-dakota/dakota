@@ -59,7 +59,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   gammaContract(
     probDescDB.get_real("method.sbl.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.sbl.trust_region.expansion_factor")),
-  convergenceFlag(0), softConvCount(0),
+  convergenceCode(0), softConvCount(0),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {
@@ -287,7 +287,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 void SurrBasedLocalMinimizer::pre_run()
 {
   // reset convergence controls in case of multiple executions
-  if (convergenceFlag)
+  if (convergenceCode)
     reset();
 
   // need copies of initial point and initial global bounds, since iteratedModel
@@ -312,7 +312,7 @@ void SurrBasedLocalMinimizer::core_run()
   // --> longer term, lower priority: defer for now
 
   sblmInstance = this;
-  while (!convergenceFlag) {
+  while (!convergenceCode) {
 
     // Compute trust region bounds.  If the trust region extends outside
     // the global bounds, then truncate to the global bounds.
@@ -325,7 +325,7 @@ void SurrBasedLocalMinimizer::core_run()
     // > Perform hard convergence check
     build();
 
-    if (!convergenceFlag) { // check for hard convergence within build()
+    if (!convergenceCode) { // check for hard convergence within build()
       minimize(); // run approxSubProbMinimizer and update responseStarApprox
       verify();   // evaluate responseStarTruth and update trust region
     }
@@ -338,18 +338,18 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   // SBLM is complete: write out the convergence condition and final results
   // from the center point of the last trust region.
   Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceFlag == 1 )
+  if ( convergenceCode == 1 )
     Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceFlag == 2 )
+  else if ( convergenceCode == 2 )
     Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceFlag == 3 )  
+  else if ( convergenceCode == 3 )  
     Cout << "Soft Convergence Tolerance Reached\nProgress Between "
 	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceFlag == 4 )
+  else if ( convergenceCode == 4 )
     Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
 	 << "<= Convergence Tolerance\n";
   else {
-    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
+    Cout << "\nError: bad convergenceCode in SurrBasedLocalMinimizer."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -730,7 +730,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     active bound constraints (removing any gradient component directed
     into an active bound), and signals convergence if the 2-norm of
     this projected gradient is less than convergenceTol. */
-void SurrBasedLocalMinimizer::
+short SurrBasedLocalMinimizer::
 hard_convergence_check(const Response& response_truth,
 		       const RealVector& c_vars,
 		       const RealVector& lower_bnds,
@@ -756,7 +756,7 @@ hard_convergence_check(const Response& response_truth,
 
   // hard convergence assessment requires gradients
   if ( !(truthSetRequest & 2) )
-    return;
+    return 0;
 
   // update standard Lagrangian multipliers
   if (numNonlinearConstraints) {
@@ -767,7 +767,7 @@ hard_convergence_check(const Response& response_truth,
       update_lagrange_multipliers(fns_truth, grads_truth);
     // avoid merit fn gradient calculations if constraints are violated
     if (constraint_viol > 0.)
-      return;
+      return 0;
   }
 
   // -----------------------------------
@@ -814,13 +814,13 @@ hard_convergence_check(const Response& response_truth,
   // Terminate SBLM if the norm of the projected merit function gradient
   // at x_c is less than convTol (hard convergence).
   merit_fn_grad_norm = std::sqrt( merit_fn_grad_norm );
-  if ( merit_fn_grad_norm < convergenceTol ) 
-    convergenceFlag = 4; // hard convergence
-
 #ifdef DEBUG
   Cout << "In hard convergence check: merit_fn_grad_norm =  "
        << merit_fn_grad_norm << '\n';
 #endif
+  short converge_code = ( merit_fn_grad_norm < convergenceTol ) ?
+    4  /*hard convergence*/ : 0;
+  return converge_code;
 }
 
 
