@@ -39,6 +39,7 @@ method
 #  model_pointer = 'SURROGATE'		        #s2
 #  surrogate_based_local		              #s2
 #    approx_method_pointer = 'NLP'	      #s2
+#    trust_region initial_size = .4	      #s2
 
 method
   id_method = 'NLP'
