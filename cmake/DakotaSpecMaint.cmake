@@ -25,11 +25,11 @@ function(DakotaNidrgen)
 
   # nidrgen: dakota.input.nspec --> dakota.input.summary
   add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary"
+    OUTPUT "${Dakota_BINARY_DIR}/generated/src/dakota.input.summary"
     DEPENDS nidrgen
     ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     COMMAND $<TARGET_FILE:nidrgen>
-    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
+    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
 #    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
@@ -72,7 +72,7 @@ add_custom_command(
   DEPENDS nidrgen
   ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
   # Artifical dependence to force generation
-  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
+  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
   ##  	          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
   COMMAND $<TARGET_FILE:nidrgen>
   ARGS    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > NIDR_keywds.hpp
