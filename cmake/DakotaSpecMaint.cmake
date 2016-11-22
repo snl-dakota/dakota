@@ -28,6 +28,8 @@ function(DakotaNidrgen)
     OUTPUT "${Dakota_BINARY_DIR}/generated/src/dakota.input.summary"
     DEPENDS nidrgen
     ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E make_directory ${Dakota_BINARY_DIR}/generated/src/
     COMMAND $<TARGET_FILE:nidrgen>
     ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
 #    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

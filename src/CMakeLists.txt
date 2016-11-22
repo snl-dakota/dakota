@@ -976,9 +976,8 @@ file(GLOB Dakota_hdr *.hpp *.h)
 install(FILES ${Dakota_hdr} ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp
   DESTINATION include)
 install(FILES dakota.xsd dakota.xml dakota.input.nspec
-  ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.summary
-  DESTINATION bin
-  )
+  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+  DESTINATION bin)
 
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
