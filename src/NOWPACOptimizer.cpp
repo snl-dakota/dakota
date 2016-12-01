@@ -18,8 +18,6 @@
 
 static const char rcsId[]="@(#) $Id: NOWPACOptimizer.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
-#if 0
-
 namespace Dakota {
 
 
@@ -328,5 +326,3 @@ NOWPACOptimizer* new_NOWPACOptimizer(Model& model)
 #endif // HAVE_DYNLIB_FACTORIES
 
 } // namespace Dakota
-
-#endif
