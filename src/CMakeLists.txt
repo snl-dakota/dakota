@@ -29,6 +29,10 @@ set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
+set(C3_FUNCTION_TRAIN_LIBS)
+list(APPEND EXT_TPL_INCDIRS ${C3_INCLUDE_DIR})
+
+
 list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/generated ${Dakota_BINARY_DIR}/src
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
 
@@ -605,6 +609,11 @@ if(HAVE_ADAPTIVE_SAMPLING)
   endif()
 endif()
 
+if(HAVE_FUNCTION_TRAIN)
+  list(APPEND iterator_src NonDC3FunctionTrain.cpp)
+  add_definitions("-DHAVE_FUNCTION_TRAIN")
+endif()
+
 # Can't do CheckPackage because queso isn't built in CMake and
 # therefore can't be in EXPORT_TARGETS.
 #CheckPackage(QUESO)
@@ -851,6 +860,8 @@ if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_LIBS ${QUESO_TPL_LIBS})
 endif(DAKOTA_HAVE_GSL)
 
+
+list(APPEND EXT_TPL_LIBS ${C3_FUNCTION_TRAIN_LIBS})
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 
 # Now that packages and TPLs are processed, set include/link directories

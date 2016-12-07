@@ -22,6 +22,9 @@
 #include "RichExtrapVerification.hpp"
 #include "NonDPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
+#ifdef HAVE_FUNCTION_TRAIN 
+#include "NonDC3FunctionTrain.hpp"
+#endif
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -411,6 +414,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDPolynomialChaos(problem_db, model);  break;
   case STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
+#ifdef HAVE_FUNCTION_TRAIN
+  case C3_FUNCTION_TRAIN:
+    return new NonDC3FunctionTrain(problem_db, model); break;
+#endif
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
@@ -793,6 +800,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
   case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
   case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
+  case C3_FUNCTION_TRAIN:       return String("c3_function_train"); break;
   case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
   case CUBATURE_INTEGRATION:    return String("cubature"); break;
   case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
@@ -883,6 +891,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
   else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
   else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
+  else if (method_name == "c3_function_train")     return C3_FUNCTION_TRAIN;
   else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
   else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
   else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;

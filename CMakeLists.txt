@@ -1,4 +1,4 @@
-## Dakota requires CMake 2.8.9 or newer; some TPLs may require even newer
+# Dakota requires CMake 2.8.9 or newer; some TPLs may require even newer
 cmake_minimum_required(VERSION 2.8.9)
 
 set(CMAKE_MODULE_PATH
@@ -33,6 +33,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
+
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
 
 # Dakota version to use in source/docs (could use for tarball names?)
