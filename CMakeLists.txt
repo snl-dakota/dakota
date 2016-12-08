@@ -45,6 +45,10 @@ else()
     "${Dakota_VERSION_PAIR}${Dakota_VERSION_APPEND_STABLE}")
 endif()
 
+# Location for generated files
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
+  "${Dakota_BINARY_DIR}/generated")
+
 # Buiding in an SVN checkout or a source package? 
 set(DAKOTA_VERSION_file_path)
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
