@@ -86,8 +86,8 @@ public:
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
 
-  Real new_factor();
-  void new_factor(bool val);
+  bool new_factor();
+  void new_factor(bool flag);
 
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
@@ -315,19 +315,19 @@ inline Real SurrBasedLevelData::trust_region_factor()
 
 
 inline void SurrBasedLevelData::trust_region_factor(Real val)
-{ trustRegionFactor = val; newTRFactor = true; }
+{ trustRegionFactor  = val; newTRFactor = true; }
 
 
 inline void SurrBasedLevelData::scale_trust_region_factor(Real val)
 { trustRegionFactor *= val; newTRFactor = true; }
 
 
-inline Real SurrBasedLevelData::new_factor()
+inline bool SurrBasedLevelData::new_factor()
 { return newTRFactor; }
 
 
-inline void SurrBasedLevelData::new_factor(bool val)
-{ newTRFactor = val; }
+inline void SurrBasedLevelData::new_factor(bool flag)
+{ newTRFactor = flag; }
 
 
 inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const

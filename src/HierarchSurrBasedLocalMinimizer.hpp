@@ -79,9 +79,9 @@ private:
 
   // MG/Opt functions:
 
-  RealVector MG_Opt(const RealVector &xk, int k);
+  RealVector multigrid_recursion(const RealVector &xk, int k);
 
-  void MG_Opt_driver(const Variables &x0);
+  void multigrid_driver(const Variables &x0);
 
   RealVector optimize(const RealVector &x, int max_iter, int index);
 
@@ -134,6 +134,10 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
       trustRegions[tr_index].truth_model_form());
   }
 }
+
+
+inline short HierarchSurrBasedLocalMinimizer::verify()
+{ return verify(minimizeIndex); }
 
 } // namespace Dakota
 

@@ -402,7 +402,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
     }
   }
   if (cv_truncation) tr_data.new_center(true); // rare case
-  tr_data.new_factor(false);  // TR updates applied; reset flag
+  tr_data.new_factor(false); // TR updates applied; reset flag
 
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
@@ -474,8 +474,21 @@ void SurrBasedLocalMinimizer::minimize()
 void SurrBasedLocalMinimizer::
 compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 {
-  // TO DO: see correction notes (all levels vs. 1 level) in 
-  // HierarchSurrBasedLocalMinimizer::compute_trust_region_ratio()
+  /*
+  // We need both data sets consistently corrected, but for > 2 levels, do
+  // we want both sets corrected all the way to HF, or the approx corrected
+  // 1 level only for consistency with uncorrected truth?
+  const RealVector& fns_center_truth
+    = tr_data.response_center(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_star_truth
+    = tr_data.response_star(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_center_approx
+    = tr_data.response_center(CORR_APPROX_RESPONSE).function_values();
+  const RealVector& fns_star_approx
+    = tr_data.response_star(CORR_APPROX_RESPONSE).function_values();
+  */
+
+  // Current approach corrects all the way to the top of the hierarchy:
   const RealVector& fns_center_truth
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
   const RealVector& fns_star_truth
