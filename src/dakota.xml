@@ -141,6 +141,25 @@
 	 Global interval, evidence: 10000 LHS, numVars^2 for EGO
 	 DACE, sampling: minimum required
       -->
+
+    <!-- Options shared by all coliny solvers (depends on previous ENTITYs) -->
+    <!ENTITY coliny_common_opts
+      "<keyword  id='solution_target1' name='solution_target' code='{N_mdm(Real,solnTarget)}' label='solution_target' help='' minOccurs='0' default='-DBL_MAX'>
+        <alias name='solution_accuracy'/>
+        <param type='REAL' />
+      </keyword>
+      <keyword  id='seed4' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
+        <param type='INTEGER' constraint='> 0' />
+      </keyword>
+      <keyword  id='show_misc_options' name='show_misc_options' code='{N_mdm(true,showMiscOptions)}' label='show_misc_options' help='' minOccurs='0' default='no dump of specification options' />
+      <keyword  id='misc_options' name='misc_options' code='{N_mdm(strL,miscOptions)}' label='misc_options' help='' minOccurs='0' default='no misc options' >
+        <param type='STRINGLIST' />
+      </keyword>
+      &default_max_iterations;
+      &default_convergence_tolerance;
+      &default_max_function_evaluations;
+      &default_scaling;"
+      >
 ]>
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
@@ -941,187 +960,190 @@
               &default_convergence_tolerance;
             </required>
             <!-- End group for linear ineq/eq constraints? -->
-            <required>
-              <oneOf>
-                <required>
-                  <oneOf>
-                    <required>
-                      <!-- Begin groupings for coliny keywords? -->
-                      <oneOf>
-                        <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
-                          <keyword  id="constant_penalty" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
-                          <keyword  id="no_expansion" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="algorithm may expand pattern size" />
-                          <keyword  id="expand_after_success" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="5" >
-                            <param type="INTEGER" />
-                          </keyword>
-                          <keyword  id="pattern_basis" name="pattern_basis" code="{0}" label="Pattern basis selection" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="coordinate" >
-                            <oneOf>
-                              <keyword  id="coordinate" name="coordinate" code="{N_mdm(lit,patternBasis_coordinate)}" label="coordinate" help=""  />
-                              <keyword  id="simplex" name="simplex" code="{N_mdm(lit,patternBasis_simplex)}" label="simplex" help=""  />
-                            </oneOf>
-                          </keyword>
-                          <keyword  id="stochastic" name="stochastic" code="{N_mdm(true,randomizeOrderFlag)}" label="Stochastic pattern search" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" />
-                          <keyword  id="total_pattern_size" name="total_pattern_size" code="{N_mdm(int,totalPatternSize)}" label="Total number of points in pattern" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="no augmentation of basic pattern" >
-                            <param type="INTEGER" />
-                          </keyword>
-                          <keyword  id="exploratory_moves" name="exploratory_moves" code="{0}" label="Exploratory moves selection" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="basic_pattern" >
-                            <oneOf>
-                              <keyword  id="multi_step" name="multi_step" code="{N_mdm(lit,exploratoryMoves_multi_step)}" label="multi_step" help=""  />
-                              <keyword  id="adaptive_pattern" name="adaptive_pattern" code="{N_mdm(lit,exploratoryMoves_adaptive)}" label="adaptive_pattern" help=""  />
-                              <keyword  id="basic_pattern" name="basic_pattern" code="{N_mdm(lit,exploratoryMoves_simple)}" label="basic_pattern" help=""  />
-                            </oneOf>
-                          </keyword>
-                          <keyword  id="synchronization1" name="synchronization" code="{0}" label="Evaluation synchronization" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="nonblocking" >
-                            <oneOf>
-                              <keyword  id="blocking1" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking" help=""  />
-                              <keyword  id="nonblocking1" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking" help=""  />
-                            </oneOf>
-                          </keyword>
-                        </keyword>
-                        <keyword  id="coliny_solis_wets" name="coliny_solis_wets" code="{N_mdm(utype,methodName_COLINY_SOLIS_WETS)}" label="coliny_solis_wets" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
-                          <keyword  id="contract_after_failure" name="contract_after_failure" code="{N_mdm(int,contractAfterFail)}" label="Number of consecutive failures before contraction" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="4*number of variables" >
-                            <param type="INTEGER" />
-                          </keyword>
-                          <keyword  id="no_expansion1" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="algorithm may expand pattern size" />
-                          <keyword  id="expand_after_success1" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="5" >
-                            <param type="INTEGER" />
-                          </keyword>
-                          <keyword  id="constant_penalty1" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
-                        </keyword>
-                      </oneOf>
-                      <keyword  id="contraction_factor2" name="contraction_factor" code="{N_mdm(Real,contractFactor)}" label="contraction_factor" help="" minOccurs="0" default="0.5" >
-                        <param type="REAL" />
-                      </keyword>
-                      <keyword  id="constraint_penalty2" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" default="1.0" >
-                        <param type="REAL" />
-                      </keyword>
-                    </required>
-                    <keyword  id="coliny_cobyla" name="coliny_cobyla" code="{N_mdm(utype,methodName_COLINY_COBYLA)}" label="coliny_cobyla" help=""  group="Optimization: Local, Derivative-free" />
-                  </oneOf>
-                  <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta" help="" minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta" help="" minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
-                    <param type="REAL" />
-                  </keyword>
-                </required>
-                <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct" help="" minOccurs="1" group="Optimization: Global" >
-                  <keyword  id="division" name="division" code="{0}" label="Box subdivision approach" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="major_dimension" >
-                    <oneOf>
-                      <keyword  id="major_dimension" name="major_dimension" code="{N_mdm(lit,boxDivision_major_dimension)}" label="major_dimension" help=""  />
-                      <keyword  id="all_dimensions" name="all_dimensions" code="{N_mdm(lit,boxDivision_all_dimensions)}" label="all_dimensions" help=""  />
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="global_balance_parameter" name="global_balance_parameter" code="{N_mdm(Real,globalBalanceParam)}" label="Global search balancing parameter" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="0.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="local_balance_parameter" name="local_balance_parameter" code="{N_mdm(Real,localBalanceParam)}" label="Local search balancing parameter" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1.e-8" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="max_boxsize_limit" name="max_boxsize_limit" code="{N_mdm(Real,maxBoxSize)}" label="Maximum boxsize limit" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="0.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="min_boxsize_limit" name="min_boxsize_limit" code="{N_mdm(Real,minBoxSize)}" label="Minimum boxsize limit" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1.0e-4" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="constraint_penalty3" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1000.0" >
-                    <param type="REAL" />
-                  </keyword>
-                </keyword>
-                <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea" help="" minOccurs="1" group="Optimization: Global" >
-                  <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="50" >
-                    <param type="INTEGER" constraint="> 0" />
-                  </keyword>
-                  <keyword  id="initialization_type1" name="initialization_type" code="{0}" label="Initialization type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="unique_random" >
-                    <oneOf>
-                      <keyword  id="simple_random1" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
-                      <keyword  id="unique_random1" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
-                      <keyword  id="flat_file1" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
-                        <!-- store init type AND incoming STRING -->
-                        <param type="STRING" />
-                      </keyword>
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="fitness_type2" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="linear_rank" >
-                    <oneOf>
-                      <keyword  id="linear_rank" name="linear_rank" code="{N_mdm(lit,fitnessType_linear_rank)}" label="linear_rank" help=""  />
-                      <keyword  id="merit_function4" name="merit_function" code="{N_mdm(lit,fitnessType_proportional)}" label="merit_function" help=""  />
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="replacement_type2" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="elitist=1" >
-                    <oneOf>
-                      <keyword  id="random" name="random" code="{N_mdm(ilit2,TYPE_DATA_replacementType_random)}" label="Random replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
-                        <param type="INTEGER" />
-                      </keyword>
-                      <keyword  id="chc" name="chc" code="{N_mdm(ilit2,TYPE_DATA_replacementType_chc)}" label="CHC replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
-                        <param type="INTEGER" />
-                      </keyword>
-                      <keyword  id="elitist2" name="elitist" code="{N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}" label="Elitist replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
-                        <param type="INTEGER" />
-                      </keyword>
-                    </oneOf>
-                    <keyword  id="new_solutions_generated" name="new_solutions_generated" code="{N_mdm(int,newSolnsGenerated)}" label="New solutions generated" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="population_size - replacement_size" >
-                      <param type="INTEGER" />
-                    </keyword>
-                  </keyword>
-                  <keyword  id="crossover_rate1" name="crossover_rate" code="{N_mdm(Real,crossoverRate)}" label="Crossover rate" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="0.8" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="crossover_type1" name="crossover_type" code="{0}" label="Crossover type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="two_point">
-                    <oneOf>
-                      <keyword  id="two_point" name="two_point" code="{N_mdm(lit,crossoverType_two_point)}" label="two_point" help=""  />
-                      <keyword  id="blend" name="blend" code="{N_mdm(lit,crossoverType_blend)}" label="blend" help=""  />
-                      <keyword  id="uniform" name="uniform" code="{N_mdm(lit,crossoverType_uniform)}" label="uniform" help=""  />
-                    </oneOf>
-                  </keyword>
-                  <keyword  id="mutation_rate1" name="mutation_rate" code="{N_mdm(Real,mutationRate)}" label="Mutation rate" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="1.0" >
-                    <param type="REAL" />
-                  </keyword>
-                  <keyword  id="mutation_type1" name="mutation_type" code="{0}" label="Mutation type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="offset_normal" >
-                    <oneOf>
-                      <keyword  id="replace_uniform1" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
-                      <required>
-                        <oneOf>
-                          <keyword  id="offset_normal1" name="offset_normal" code="{N_mdm(lit,mutationType_offset_normal)}" label="offset_normal" help=""  />
-                          <keyword  id="offset_cauchy1" name="offset_cauchy" code="{N_mdm(lit,mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
-                          <keyword  id="offset_uniform1" name="offset_uniform" code="{N_mdm(lit,mutationType_offset_uniform)}" label="offset_uniform" help=""  />
-                        </oneOf>
-                        <keyword  id="mutation_scale1" name="mutation_scale" code="{N_mdm(Real,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.1" >
-                          <param type="REAL" />
-                        </keyword>
-                        <keyword  id="mutation_range" name="mutation_range" code="{N_mdm(int,mutationRange)}" label="mutation_range" help="" minOccurs="0" default="1" >
-                          <param type="INTEGER" />
-                        </keyword>
-                      </required>
-                    </oneOf>
-                    <keyword  id="non_adaptive" name="non_adaptive" code="{N_mdm(false,mutationAdaptive)}" label="Non-adaptive mutation flag" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="Adaptive mutation" />
-                  </keyword>
-                  <keyword  id="constraint_penalty4" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" >
-                    <param type="REAL" />
-                  </keyword>
-                </keyword>
-                <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta" help="" minOccurs="1" group="Optimization: Other" >
-                  <keyword  id="beta_solver_name" name="beta_solver_name" code="{N_mdm(str,betaSolverName)}" label="beta_solver_name" help=""  >
-                    <param type="STRING" />
-                  </keyword>
-                </keyword>
-              </oneOf>
-              <keyword  id="solution_target1" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="solution_target" help="" minOccurs="0" default="-DBL_MAX">
-                <alias name="solution_accuracy"/>
+
+	    <!-- Begin coliny methods -->
+            <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
+              <keyword  id="constant_penalty" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
+              <keyword  id="no_expansion" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="algorithm may expand pattern size" />
+              <keyword  id="expand_after_success" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="5" >
+                <param type="INTEGER" />
+              </keyword>
+              <keyword  id="pattern_basis" name="pattern_basis" code="{0}" label="Pattern basis selection" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="coordinate" >
+                <oneOf>
+                  <keyword  id="coordinate" name="coordinate" code="{N_mdm(lit,patternBasis_coordinate)}" label="coordinate" help=""  />
+                  <keyword  id="simplex" name="simplex" code="{N_mdm(lit,patternBasis_simplex)}" label="simplex" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="stochastic" name="stochastic" code="{N_mdm(true,randomizeOrderFlag)}" label="Stochastic pattern search" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" />
+              <keyword  id="total_pattern_size" name="total_pattern_size" code="{N_mdm(int,totalPatternSize)}" label="Total number of points in pattern" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="no augmentation of basic pattern" >
+                <param type="INTEGER" />
+              </keyword>
+              <keyword  id="exploratory_moves" name="exploratory_moves" code="{0}" label="Exploratory moves selection" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="basic_pattern" >
+                <oneOf>
+                  <keyword  id="multi_step" name="multi_step" code="{N_mdm(lit,exploratoryMoves_multi_step)}" label="multi_step" help=""  />
+                  <keyword  id="adaptive_pattern" name="adaptive_pattern" code="{N_mdm(lit,exploratoryMoves_adaptive)}" label="adaptive_pattern" help=""  />
+                  <keyword  id="basic_pattern" name="basic_pattern" code="{N_mdm(lit,exploratoryMoves_simple)}" label="basic_pattern" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="synchronization1" name="synchronization" code="{0}" label="Evaluation synchronization" help="MethodCommands.html#MethodSCOLIBPS" minOccurs="0" default="nonblocking" >
+                <oneOf>
+                  <keyword  id="blocking1" name="blocking" code="{N_mdm(lit,evalSynchronize_blocking)}" label="blocking" help=""  />
+                  <keyword  id="nonblocking1" name="nonblocking" code="{N_mdm(lit,evalSynchronize_nonblocking)}" label="nonblocking" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="contraction_factor2" name="contraction_factor" code="{N_mdm(Real,contractFactor)}" label="contraction_factor" help="" minOccurs="0" default="0.5" >
                 <param type="REAL" />
               </keyword>
-              <keyword  id="seed4" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+              <keyword  id="constraint_penalty2" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+
+              <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta" help="" minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta" help="" minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+                <param type="REAL" />
+              </keyword>
+	      &coliny_common_opts;
+            </keyword>
+            <keyword  id="coliny_solis_wets" name="coliny_solis_wets" code="{N_mdm(utype,methodName_COLINY_SOLIS_WETS)}" label="coliny_solis_wets" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
+              <keyword  id="contract_after_failure" name="contract_after_failure" code="{N_mdm(int,contractAfterFail)}" label="Number of consecutive failures before contraction" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="4*number of variables" >
+                <param type="INTEGER" />
+              </keyword>
+              <keyword  id="no_expansion1" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="algorithm may expand pattern size" />
+              <keyword  id="expand_after_success1" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="5" >
+                <param type="INTEGER" />
+              </keyword>
+              <keyword  id="constant_penalty1" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
+              <keyword  id="contraction_factor2" name="contraction_factor" code="{N_mdm(Real,contractFactor)}" label="contraction_factor" help="" minOccurs="0" default="0.5" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="constraint_penalty2" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+
+              <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta" help="" minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta" help="" minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+                <param type="REAL" />
+	      </keyword>
+	      &coliny_common_opts;
+            </keyword>
+            <keyword  id="coliny_cobyla" name="coliny_cobyla" code="{N_mdm(utype,methodName_COLINY_COBYLA)}" label="coliny_cobyla" help=""  group="Optimization: Local, Derivative-free">
+              <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta" help="" minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="threshold_delta1" name="threshold_delta" code="{N_mdm(Real,threshDelta)}" label="threshold_delta" help="" minOccurs="0" default="1.0e-4 (COBYLA), 1.0e-5 (PS), 1.0e-6 (SW)">
+                <param type="REAL" />
+              </keyword>
+	      &coliny_common_opts;
+            </keyword>
+            <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct" help="" minOccurs="1" group="Optimization: Global" >
+              <keyword  id="division" name="division" code="{0}" label="Box subdivision approach" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="major_dimension" >
+                <oneOf>
+                  <keyword  id="major_dimension" name="major_dimension" code="{N_mdm(lit,boxDivision_major_dimension)}" label="major_dimension" help=""  />
+                  <keyword  id="all_dimensions" name="all_dimensions" code="{N_mdm(lit,boxDivision_all_dimensions)}" label="all_dimensions" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="global_balance_parameter" name="global_balance_parameter" code="{N_mdm(Real,globalBalanceParam)}" label="Global search balancing parameter" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="0.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="local_balance_parameter" name="local_balance_parameter" code="{N_mdm(Real,localBalanceParam)}" label="Local search balancing parameter" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1.e-8" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="max_boxsize_limit" name="max_boxsize_limit" code="{N_mdm(Real,maxBoxSize)}" label="Maximum boxsize limit" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="0.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="min_boxsize_limit" name="min_boxsize_limit" code="{N_mdm(Real,minBoxSize)}" label="Minimum boxsize limit" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1.0e-4" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="constraint_penalty3" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="Constraint penalty" help="MethodCommands.html#MethodSCOLIBDIR" minOccurs="0" default="1000.0" >
+                <param type="REAL" />
+              </keyword>
+	      &coliny_common_opts;
+            </keyword>
+            <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea" help="" minOccurs="1" group="Optimization: Global" >
+              <keyword  id="population_size1" name="population_size" code="{N_mdm(pint,populationSize)}" label="Number of population members" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="50" >
                 <param type="INTEGER" constraint="> 0" />
               </keyword>
-              <keyword  id="show_misc_options" name="show_misc_options" code="{N_mdm(true,showMiscOptions)}" label="show_misc_options" help="" minOccurs="0" default="no dump of specification options" />
-              <keyword  id="misc_options" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options" help="" minOccurs="0" default="no misc options" >
-                <param type="STRINGLIST" />
+              <keyword  id="initialization_type1" name="initialization_type" code="{0}" label="Initialization type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="unique_random" >
+                <oneOf>
+                  <keyword  id="simple_random1" name="simple_random" code="{N_mdm(lit,initializationType_random)}" label="simple_random" help=""  />
+                  <keyword  id="unique_random1" name="unique_random" code="{N_mdm(lit,initializationType_unique_random)}" label="unique_random" help=""  />
+                  <keyword  id="flat_file1" name="flat_file" code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" label="flat_file" help=""  >
+                    <!-- store init type AND incoming STRING -->
+                    <param type="STRING" />
+                  </keyword>
+                </oneOf>
               </keyword>
-              &default_max_iterations;
-              &default_convergence_tolerance;
-              &default_max_function_evaluations;
-              &default_scaling;
-            </required>
+              <keyword  id="fitness_type2" name="fitness_type" code="{0}" label="Fitness type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="linear_rank" >
+                <oneOf>
+                  <keyword  id="linear_rank" name="linear_rank" code="{N_mdm(lit,fitnessType_linear_rank)}" label="linear_rank" help=""  />
+                  <keyword  id="merit_function4" name="merit_function" code="{N_mdm(lit,fitnessType_proportional)}" label="merit_function" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="replacement_type2" name="replacement_type" code="{0}" label="Replacement type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="elitist=1" >
+                <oneOf>
+                  <keyword  id="random" name="random" code="{N_mdm(ilit2,TYPE_DATA_replacementType_random)}" label="Random replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
+                    <param type="INTEGER" />
+                  </keyword>
+                  <keyword  id="chc" name="chc" code="{N_mdm(ilit2,TYPE_DATA_replacementType_chc)}" label="CHC replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
+                    <param type="INTEGER" />
+                  </keyword>
+                  <keyword  id="elitist2" name="elitist" code="{N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}" label="Elitist replacement type" help="MethodCommands.html#MethodSCOLIBEA"  >
+                    <param type="INTEGER" />
+                  </keyword>
+                </oneOf>
+                <keyword  id="new_solutions_generated" name="new_solutions_generated" code="{N_mdm(int,newSolnsGenerated)}" label="New solutions generated" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="population_size - replacement_size" >
+                  <param type="INTEGER" />
+                </keyword>
+              </keyword>
+              <keyword  id="crossover_rate1" name="crossover_rate" code="{N_mdm(Real,crossoverRate)}" label="Crossover rate" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="0.8" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="crossover_type1" name="crossover_type" code="{0}" label="Crossover type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="two_point">
+                <oneOf>
+                  <keyword  id="two_point" name="two_point" code="{N_mdm(lit,crossoverType_two_point)}" label="two_point" help=""  />
+                  <keyword  id="blend" name="blend" code="{N_mdm(lit,crossoverType_blend)}" label="blend" help=""  />
+                  <keyword  id="uniform" name="uniform" code="{N_mdm(lit,crossoverType_uniform)}" label="uniform" help=""  />
+                </oneOf>
+              </keyword>
+              <keyword  id="mutation_rate1" name="mutation_rate" code="{N_mdm(Real,mutationRate)}" label="Mutation rate" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="1.0" >
+                <param type="REAL" />
+              </keyword>
+              <keyword  id="mutation_type1" name="mutation_type" code="{0}" label="Mutation type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="offset_normal" >
+                <oneOf>
+                  <keyword  id="replace_uniform1" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
+                  <required>
+                    <oneOf>
+                      <keyword  id="offset_normal1" name="offset_normal" code="{N_mdm(lit,mutationType_offset_normal)}" label="offset_normal" help=""  />
+                      <keyword  id="offset_cauchy1" name="offset_cauchy" code="{N_mdm(lit,mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
+                      <keyword  id="offset_uniform1" name="offset_uniform" code="{N_mdm(lit,mutationType_offset_uniform)}" label="offset_uniform" help=""  />
+                    </oneOf>
+                    <keyword  id="mutation_scale1" name="mutation_scale" code="{N_mdm(Real,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.1" >
+                      <param type="REAL" />
+                    </keyword>
+                    <keyword  id="mutation_range" name="mutation_range" code="{N_mdm(int,mutationRange)}" label="mutation_range" help="" minOccurs="0" default="1" >
+                      <param type="INTEGER" />
+                    </keyword>
+                  </required>
+                </oneOf>
+                <keyword  id="non_adaptive" name="non_adaptive" code="{N_mdm(false,mutationAdaptive)}" label="Non-adaptive mutation flag" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="Adaptive mutation" />
+              </keyword>
+              <keyword  id="constraint_penalty4" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" >
+                <param type="REAL" />
+              </keyword>
+	      &coliny_common_opts;
+            </keyword>
+            <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta" help="" minOccurs="1" group="Optimization: Other" >
+              <keyword  id="beta_solver_name" name="beta_solver_name" code="{N_mdm(str,betaSolverName)}" label="beta_solver_name" help=""  >
+                <param type="STRING" />
+              </keyword>
+	      &coliny_common_opts;
+            </keyword>
+	    <!-- END coliny methods -->
+
             <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol" help="" minOccurs="1" group="Calibration" >
               <keyword  id="function_precision2" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Relative precision in least squares terms" help="MethodCommands.html#MethodLSNL2SOL" minOccurs="0" default="1.0e-10" >
                 <param type="REAL" />

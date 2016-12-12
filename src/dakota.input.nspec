@@ -509,113 +509,154 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
-    ( 
-      ( 
-        ( 
-          ( coliny_pattern_search {N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}
-            [ constant_penalty {N_mdm(true,constantPenalty)} ]
-            [ no_expansion {N_mdm(false,expansionFlag)} ]
-            [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
-            [ pattern_basis {0}
-              coordinate {N_mdm(lit,patternBasis_coordinate)}
-              |
-              simplex {N_mdm(lit,patternBasis_simplex)}
-             ]
-            [ stochastic {N_mdm(true,randomizeOrderFlag)} ]
-            [ total_pattern_size INTEGER {N_mdm(int,totalPatternSize)} ]
-            [ exploratory_moves {0}
-              multi_step {N_mdm(lit,exploratoryMoves_multi_step)}
-              |
-              adaptive_pattern {N_mdm(lit,exploratoryMoves_adaptive)}
-              |
-              basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
-             ]
-            [ synchronization {0}
-              blocking {N_mdm(lit,evalSynchronize_blocking)}
-              |
-              nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
-             ]
-           )
-          |
-          ( coliny_solis_wets {N_mdm(utype,methodName_COLINY_SOLIS_WETS)}
-            [ contract_after_failure INTEGER {N_mdm(int,contractAfterFail)} ]
-            [ no_expansion {N_mdm(false,expansionFlag)} ]
-            [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
-            [ constant_penalty {N_mdm(true,constantPenalty)} ]
-           )
-          [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
-          [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-         )
+    ( coliny_pattern_search {N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}
+      [ constant_penalty {N_mdm(true,constantPenalty)} ]
+      [ no_expansion {N_mdm(false,expansionFlag)} ]
+      [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+      [ pattern_basis {0}
+        coordinate {N_mdm(lit,patternBasis_coordinate)}
         |
-        coliny_cobyla {N_mdm(utype,methodName_COLINY_COBYLA)}
-        [ initial_delta REAL {N_mdm(Real,initDelta)} ]
-        [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
-       )
-      |
-      ( coliny_direct {N_mdm(utype,methodName_COLINY_DIRECT)}
-        [ division {0}
-          major_dimension {N_mdm(lit,boxDivision_major_dimension)}
+        simplex {N_mdm(lit,patternBasis_simplex)}
+       ]
+      [ stochastic {N_mdm(true,randomizeOrderFlag)} ]
+      [ total_pattern_size INTEGER {N_mdm(int,totalPatternSize)} ]
+      [ exploratory_moves {0}
+        multi_step {N_mdm(lit,exploratoryMoves_multi_step)}
+        |
+        adaptive_pattern {N_mdm(lit,exploratoryMoves_adaptive)}
+        |
+        basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
+       ]
+      [ synchronization {0}
+        blocking {N_mdm(lit,evalSynchronize_blocking)}
+        |
+        nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+       ]
+      [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_solis_wets {N_mdm(utype,methodName_COLINY_SOLIS_WETS)}
+      [ contract_after_failure INTEGER {N_mdm(int,contractAfterFail)} ]
+      [ no_expansion {N_mdm(false,expansionFlag)} ]
+      [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+      [ constant_penalty {N_mdm(true,constantPenalty)} ]
+      [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_cobyla {N_mdm(utype,methodName_COLINY_COBYLA)}
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_direct {N_mdm(utype,methodName_COLINY_DIRECT)}
+      [ division {0}
+        major_dimension {N_mdm(lit,boxDivision_major_dimension)}
+        |
+        all_dimensions {N_mdm(lit,boxDivision_all_dimensions)}
+       ]
+      [ global_balance_parameter REAL {N_mdm(Real,globalBalanceParam)} ]
+      [ local_balance_parameter REAL {N_mdm(Real,localBalanceParam)} ]
+      [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
+      [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
+      [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
+      [ initialization_type {0}
+        simple_random {N_mdm(lit,initializationType_random)}
+        |
+        unique_random {N_mdm(lit,initializationType_unique_random)}
+        |
+        flat_file STRING {N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}
+       ]
+      [ fitness_type {0}
+        linear_rank {N_mdm(lit,fitnessType_linear_rank)}
+        |
+        merit_function {N_mdm(lit,fitnessType_proportional)}
+       ]
+      [ replacement_type {0}
+        random INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_random)}
+        |
+        chc INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_chc)}
+        |
+        elitist INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}
+        [ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
+       ]
+      [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
+      [ crossover_type {0}
+        two_point {N_mdm(lit,crossoverType_two_point)}
+        |
+        blend {N_mdm(lit,crossoverType_blend)}
+        |
+        uniform {N_mdm(lit,crossoverType_uniform)}
+       ]
+      [ mutation_rate REAL {N_mdm(Real,mutationRate)} ]
+      [ mutation_type {0}
+        replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
+        |
+        ( 
+          offset_normal {N_mdm(lit,mutationType_offset_normal)}
           |
-          all_dimensions {N_mdm(lit,boxDivision_all_dimensions)}
-         ]
-        [ global_balance_parameter REAL {N_mdm(Real,globalBalanceParam)} ]
-        [ local_balance_parameter REAL {N_mdm(Real,localBalanceParam)} ]
-        [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
-        [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
-        [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-       )
-      |
-      ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
-        [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
-        [ initialization_type {0}
-          simple_random {N_mdm(lit,initializationType_random)}
+          offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
           |
-          unique_random {N_mdm(lit,initializationType_unique_random)}
-          |
-          flat_file STRING {N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}
-         ]
-        [ fitness_type {0}
-          linear_rank {N_mdm(lit,fitnessType_linear_rank)}
-          |
-          merit_function {N_mdm(lit,fitnessType_proportional)}
-         ]
-        [ replacement_type {0}
-          random INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_random)}
-          |
-          chc INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_chc)}
-          |
-          elitist INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}
-          [ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
-         ]
-        [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
-        [ crossover_type {0}
-          two_point {N_mdm(lit,crossoverType_two_point)}
-          |
-          blend {N_mdm(lit,crossoverType_blend)}
-          |
-          uniform {N_mdm(lit,crossoverType_uniform)}
-         ]
-        [ mutation_rate REAL {N_mdm(Real,mutationRate)} ]
-        [ mutation_type {0}
-          replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
-          |
-          ( 
-            offset_normal {N_mdm(lit,mutationType_offset_normal)}
-            |
-            offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
-            |
-            offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
-            [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
-            [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
-           )
-          [ non_adaptive {N_mdm(false,mutationAdaptive)} ]
-         ]
-        [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-       )
-      |
-      ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
-        beta_solver_name STRING {N_mdm(str,betaSolverName)}
-       )
+          offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
+          [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
+          [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
+         )
+        [ non_adaptive {N_mdm(false,mutationAdaptive)} ]
+       ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
+      beta_solver_name STRING {N_mdm(str,betaSolverName)}
       [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ show_misc_options {N_mdm(true,showMiscOptions)} ]
