@@ -5,11 +5,11 @@ method
   sampling sample_type lhs
   samples 400 
   seed 1337
-  num_probability_levels 0 15 15
+  response_levels  1.e5 1e-3
+    num_response_levels 0 1 1
   probability_levels 0.01 0.025 0.05 0.1:0.1:0.9 0.95 0.975 0.99
                      0.01 0.025 0.05 0.1:0.1:0.9 0.95 0.975 0.99
-  num_response_levels 0 1 1
-  response_levels  1.e5 1e-3
+    num_probability_levels 0 15 15
 
 variables
   normal_uncertain 3
@@ -22,13 +22,13 @@ variables
 
 responses
   response_functions 3
-    descriptors 'mass' 'stress' 'displacement'
-    no_gradients
-    no_hessians
+  descriptors 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians
 
 interface
-  fork
-    analysis_drivers 'driver.sh'
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory 
+        link_files 'cantilever' 'cantilever.template'
   asynchronous evaluation_concurrency 4
-  work_directory 
-  link_files 'cantilever' 'cantilever.template'

@@ -15,8 +15,8 @@ variables
     descriptors    'w'  't'  'L'   'p'    'E'   'X'  'Y'
 
 interface
-  fork
-    analysis_drivers = 'driver.sh'
+  analysis_drivers = 'driver.sh'
+    fork
 
 responses
   response_functions = 3

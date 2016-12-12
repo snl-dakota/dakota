@@ -4,7 +4,7 @@ environment
 
 method
   multidim_parameter_study
-   partitions 8 5
+    partitions 8 5
 
 variables
   active design
@@ -18,8 +18,8 @@ variables
     descriptors     = 'L'   'p'   'E'   'X' 'Y'
 
 interface
-  fork
-    analysis_drivers = 'driver.sh'
+  analysis_drivers = 'driver.sh'
+    fork
 
 responses
   response_functions = 3

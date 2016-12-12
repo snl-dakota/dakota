@@ -3,15 +3,15 @@ environment
 
 method
   sampling
-   seed 1337
-   samples 50
-   response_levels 0.10 0.3
+    seed 1337
+    samples 50
+    response_levels 0.10 0.3
 
 variables
   uniform_uncertain 2
-   descriptors 'x1' 'x2'
-   lower_bounds = -0.8 -0.8
-   upper_bounds =  0.8  0.8
+    descriptors 'x1' 'x2'
+    lower_bounds = -0.8 -0.8
+    upper_bounds =  0.8  0.8
 
 #  triangular_uncertain 2
 #   descriptors 'x1' 'x2'
@@ -21,12 +21,10 @@ variables
 
 responses
   response_functions 1
-   no_gradients
-   no_hessians
+  no_gradients
+  no_hessians
 
 interface
- fork 
-   asynchronous evaluation_concurrency 20
-   analysis_drivers 'quasi_sine_fcn'
-   
- 
+  analysis_drivers 'quasi_sine_fcn'
+    fork 
+  asynchronous evaluation_concurrency 20

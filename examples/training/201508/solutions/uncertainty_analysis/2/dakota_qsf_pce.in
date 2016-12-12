@@ -3,8 +3,8 @@ environment
 
 method
     polynomial_chaos
-     sparse_grid_level 3
-     samples 5e5
+     sparse_grid_level_sequence 3
+     samples_on_emulator 5e5
      response_levels 0.11 0.3
      seed = 12347 rng rnum2
 
@@ -22,12 +22,10 @@ variables
 
 responses
   response_functions 1
-   analytic_gradients
-   no_hessians
+  analytic_gradients
+  no_hessians
 
 interface
- fork 
-   asynchronous evaluation_concurrency 4
-   analysis_drivers 'quasi_sine_fcn'
-   
- 
+  analysis_drivers 'quasi_sine_fcn'
+    fork 
+  asynchronous evaluation_concurrency 4
