@@ -1,0 +1,57 @@
+environment
+  tabular_data
+
+method
+  id_method = 'UQ_on_surrogate'
+  model_pointer = 'surr_model'
+	sampling
+	  samples = 1000 seed = 6347
+	  sample_type lhs
+  output verbose
+
+model
+	id_model = 'surr_model'
+	surrogate global
+	  dace_method_pointer = 'DACE'
+	  polynomial quadratic		
+# 	  neural_network		
+#	  gaussian_process surfpack
+#	  mars				
+
+method
+	id_method = 'DACE'
+	sampling
+    samples = 50
+	  model_pointer = 'cantilever_model'
+
+model
+  id_model = 'cantilever_model'
+  single
+  interface_pointer = 'cant_interface'
+	
+variables
+  active uncertain
+  uniform_uncertain 3 
+    descriptors    'w' 't'  'L'  
+    lower_bounds   1.0  1.0  5.0
+    upper_bounds   2.0  2.0  10.0
+
+  continuous_state 4
+    descriptors    'p'    'E'  'X' 'Y'
+    initial_state  500.0 2.9e7 5.0 5.0
+
+responses
+  response_functions 3
+  descriptors 'mass' 'stress' 'displacement'
+  no_gradients no_hessians
+
+interface
+  id_interface  = 'cant_interface'
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+  asynchronous evaluation_concurrency 16

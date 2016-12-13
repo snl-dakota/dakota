@@ -142,21 +142,52 @@ add_custom_command(
 ##      VERBATIM)
 ## DISABLED GUI METADATA
 
+
+# -----
+# Simplified process to build/install dakreorder (dakota_order_input)
+# -----
+
+set(rel_date "${Dakota_RELEASE_DATE}")
+if (NOT rel_date)
+  # When we require CMake 2.8.11 or newer...
+  #string(TIMESTAMP rel_date "%Y-%m-%d")
+  set(rel_date "(unknown)")
+endif()
+
+ADD_CUSTOM_COMMAND(
+  OUTPUT "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
+  DEPENDS nidrgen ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+  # generate initial version
+  COMMAND $<TARGET_FILE:nidrgen>
+  ARGS -ftn- "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec" > "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
+  # append the version information
+  COMMAND ${CMAKE_COMMAND}
+  ARGS
+    -Dappend_file:FILEPATH="${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
+    -Ddakota_version:STRING="${Dakota_VERSION_SRC}"
+    -Drelease_date:STRING="${rel_date}"
+# This doesn't work due to escaping of spaces
+#    -Dnspec_date:STRING="${Dakota_VERSION_SRC} released ${rel_date}."
+    -P "${Dakota_SOURCE_DIR}/cmake/append_nspec_date.cmake"
+  )
+
+# TODO: make -ldl optional if possible
+set(dakreorder_libs nidr)
+find_library(libdl dl)
+if(libdl)
+  list(APPEND dakreorder_libs ${libdl})
+endif()
+
+add_executable(dakota_order_input "${NIDR_SOURCE_DIR}/dakreorder.c"
+  "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h")
+target_link_libraries(dakota_order_input ${dakreorder_libs})
+install(TARGETS dakota_order_input DESTINATION bin)
+
 ## DISABLED GUI METADATA
-##    # TODO: make -ldl optional if possible
-##    set(dakreorder_libs nidr)
-##    find_library(libdl dl)
-##    if(libdl)
-##      list(APPEND dakreorder_libs ${libdl})
-##    endif()
-##
-##    add_executable(dakreorder EXCLUDE_FROM_ALL dakreorder.c NIDR_keywds0.h)
-##    target_link_libraries(dakreorder ${dakreorder_libs})
-##
-##    add_executable(dakreord EXCLUDE_FROM_ALL dakreorder.c)
-##    set_target_properties(dakreord PROPERTIES
-##      COMPILE_DEFINITIONS NO_NIDR_keywds0)
-##    target_link_libraries(dakreord ${dakreorder_libs})
+## add_executable(dakreord EXCLUDE_FROM_ALL dakreorder.c)
+## set_target_properties(dakreord PROPERTIES
+##   COMPILE_DEFINITIONS NO_NIDR_keywds0)
+## target_link_libraries(dakreord ${dakreorder_libs})
 ## DISABLED GUI METADATA
 
 # TODO: Ensure DAKOTA sources depend on NIDR_keywds.hpp

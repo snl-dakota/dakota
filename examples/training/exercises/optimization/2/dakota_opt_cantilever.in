@@ -1,0 +1,38 @@
+# Constrained optimization of cantilever beam
+
+environment
+  tabular_data
+    tabular_data_file 'opt_cantilever.dat'
+
+method
+  # Choose an appropriate method and controls and add necessary keywords
+
+
+variables
+  # Update the variables specification and add variables as needed
+
+  continuous_design 2
+    descriptors    'w'   't'   
+    initial_point  1.25  1.5 
+
+  continuous_state 2
+    descriptors    'p'    'E'  
+    initial_state  500.0  2.9e7
+
+interface
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+    deactivate active_set_vector
+  asynchronous evaluation_concurrency 4
+
+responses
+  # Complete the responses section by adding needed keywords
+
+  descriptors 'mass' 'stress' 'displacement'
+  numerical_gradients
+  no_hessians

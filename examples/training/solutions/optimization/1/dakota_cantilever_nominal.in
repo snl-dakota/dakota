@@ -1,0 +1,35 @@
+# single evaluation of cantilever at nominal
+
+environment
+  tabular_data
+    tabular_data_file 'cantilever_nominal.dat'
+  output_precision 16
+
+method
+  centered_parameter_study
+    steps_per_variable 0
+    step_vector 7*0.0
+
+variables
+  continuous_design 3 
+    descriptors    'w' 't'  'L'
+    initial_point  1.25 1.5  5.0
+
+  continuous_state 4
+    descriptors    'p'    'E'  'X' 'Y'
+    initial_state   500.0 2.9e7 350.0 500.0
+
+responses
+  response_functions 3
+  descriptors 'mass' 'stress' 'displacement'
+  no_gradients no_hessians
+
+interface
+  analysis_drivers 'driver.sh'
+  fork
+   work_directory named 'workdir/run'
+     directory_tag directory_save
+     link_files 'cantilever.template' 'cantilever'
+   parameters_file 'params.in'
+   results_file 'results.out'
+   asynchronous evaluation_concurrency 16

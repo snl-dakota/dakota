@@ -1372,10 +1372,19 @@ void NonDQUESOBayesCalibration::set_mh_options()
     // probability or point spacing / linear system conditioning
     calIpMhOptionsValues->m_filteredChainGenerate         = false;
 
-  // logit transform addresses high rejection rates in corners of bounded
-  // domains.  It is hardwired on at this time, although potentially redundant
-  // in some cases (e.g., WIENER u-space type).
-  calIpMhOptionsValues->m_doLogitTransform = logitTransform;
+  // Logit transform addresses high rejection rates in corners of
+  // bounded domains.  It is potentially redundant in some cases,
+  // e.g., WIENER u-space type.
+  if (logitTransform) {
+    calIpMhOptionsValues->m_algorithm = "logit_random_walk";
+    calIpMhOptionsValues->m_tk = "logit_random_walk";
+    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+  }
+  else {
+    calIpMhOptionsValues->m_algorithm = "random_walk";
+    calIpMhOptionsValues->m_tk = "random_walk";
+    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+  }
 }
 
 

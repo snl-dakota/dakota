@@ -45,6 +45,10 @@ else()
     "${Dakota_VERSION_PAIR}${Dakota_VERSION_APPEND_STABLE}")
 endif()
 
+# Location for generated files
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
+  "${Dakota_BINARY_DIR}/generated")
+
 # Buiding in an SVN checkout or a source package? 
 set(DAKOTA_VERSION_file_path)
 if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
@@ -197,6 +201,16 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
   file(REMOVE_RECURSE "${Dakota_SOURCE_DIR}/local/packages/NLPQL"
     "${Dakota_SOURCE_DIR}/local/packages/NPSOL")
 endif()
+
+# RPATH settings 
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib" 
+    CACHE STRING "Set the RPATH in Dakota executables and libraries")
+elseif(UNIX)
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib")
+endif()
+
 
 
 # Manage developer convenience options (experimental)
@@ -520,7 +534,6 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS OR DAKOTA_API_JAVA)
   endif()
   include(UseJava)
 endif()
-
 
 add_subdirectory(src)
 # Build the executables in the test directory even if BUILD_TESTING is OFF

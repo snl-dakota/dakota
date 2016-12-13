@@ -1,0 +1,25 @@
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_moat_tabular.dat'
+
+method
+  psuade_moat
+    partitions = 3
+    samples = 96
+    seed = 925294
+ 
+variables
+  uniform_uncertain = 7
+    upper_bounds = 1.5  1.5  15.0  550.0  3.4e7 10.0 15.0
+    lower_bounds = 0.5  0.5   5.0  450.0  2.4e7  1.0  5.0
+    descriptors    'w'  't'  'L'   'p'    'E'   'X'  'Y'
+
+interface
+  analysis_drivers = 'driver.sh'
+    fork
+
+responses
+  response_functions = 3
+  descriptors      = 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians

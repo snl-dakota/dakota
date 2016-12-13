@@ -1,0 +1,25 @@
+environment
+  tabular_data
+    tabular_data_file = 'quasi-sine_centered_tabular.dat'
+
+method
+  centered_parameter_study
+    steps_per_variable = 10
+    step_vector        = 0.2 0.2
+
+variables
+  continuous_design = 2
+    initial_point   =  0.0      0.0
+    lower_bounds    = -2.0     -2.0
+    upper_bounds    =  2.0      2.0
+    descriptors     = 'x1'     'x2'
+
+interface
+  analysis_drivers = 'quasi_sine_fcn'
+    fork
+
+responses
+  response_functions = 1
+  descriptors      = 'f1'
+  no_gradients
+  no_hessians
