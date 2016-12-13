@@ -187,11 +187,8 @@ protected:
 
   /// code indicating satisfaction of hard or soft convergence conditions
   short convergenceCode;
-  /// number of consecutive candidate point rejections.  If the
-  /// count reaches softConvLimit, stop SBLM.
-  unsigned short softConvCount;
-  /// the limit on consecutive candidate point rejections.  If
-  /// exceeded by softConvCount, stop SBLM.
+  /// convergence control limiting the number of consecutive iterations that
+  /// fail to achieve sufficient decrease.  If exceeded by softConvCount, stop.
   unsigned short softConvLimit;
 
   /// derivative order of truth data used within the SBLM process
@@ -230,9 +227,10 @@ protected:
 
 inline void SurrBasedLocalMinimizer::reset()
 {
-  convergenceCode = softConvCount = sbIterNum = 0;
+  convergenceCode = sbIterNum = 0;
 
-  penaltyIterOffset = -200; penaltyParameter  = 5.;
+  penaltyIterOffset = -200;
+  penaltyParameter  = 5.;
 
   eta               = 1.;
   alphaEta          = 0.1;

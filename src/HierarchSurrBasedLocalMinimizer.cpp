@@ -31,7 +31,7 @@ namespace Dakota {
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedLocalMinimizer(problem_db, model), minimizeIndex(0),
-  nestedTrustRegions(true), multiLev(false)//, multiFid(false)
+  nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel.surrogate_type() != "hierarchical") {
@@ -43,7 +43,6 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // Get number of model fidelities and number of levels for each fidelity:
   ModelList& models = iteratedModel.subordinate_models(false);
   numFid = models.size(); numLev.resize(numFid);
-  //if (numFid > 1) multiFid = true;
   ModelLIter ml_iter; size_t i;
   for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i) {
     numLev[i] = ml_iter->solution_levels();
@@ -126,9 +125,12 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 
     //sbl_data.new_center(true); // vars_center() now sets newCenterFlag
     sbl_data.vars_center(iteratedModel.current_variables());
+
     //sbl_data.tr_lower_bounds(globalLowerBnds);// rely on update_trust_region()
     //sbl_data.tr_upper_bounds(globalLowerBnds);// rely on update_trust_region()
     sbl_data.trust_region_factor(origTrustRegionFactor[i]);
+
+    sbl_data.reset_soft_convergence_count();
 
     sbl_data.active_set_star(1, APPROX_RESPONSE);
     sbl_data.active_set_star(1,  TRUTH_RESPONSE);
@@ -280,6 +282,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 	// corrections managed top-down).  When one level has hard converged,
 	// must update and recenter level above.
 	// TODO: need to manage soft convergence as well...
+	int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
 	const RealVector& parent_l_bnds = (last_tr) ? globalLowerBnds :
 	  trustRegions[ip1].tr_lower_bounds();
 	const RealVector& parent_u_bnds = (last_tr) ? globalUpperBnds :
@@ -457,16 +460,16 @@ short HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
 			    CORR_TRUTH_RESPONSE);
   }
 
-  // Check for soft convergence:
+  // Check for convergence in order of precedence:
   short conv_code = 0;
-  if (softConvCount >= softConvLimit) // *** TO DO: count per level
-    conv_code = 3; // soft convergence
   // terminate SBLM if trustRegionFactor is less than its minimum value
-  else if (tr_data.trust_region_factor() < minTrustRegionFactor)
+  if (tr_data.trust_region_factor() < minTrustRegionFactor)
     conv_code = 1;
   // terminate SBLM if the maximum number of iterations has been reached
   else if (sbIterNum >= maxIterations)
     conv_code = 2;
+  else if (tr_data.soft_convergence_count() >= softConvLimit)
+    conv_code = 3; // soft convergence
 
   return conv_code;
 }
@@ -508,7 +511,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
   // > Hard convergence is assessed based on new UNCORR_TRUTH_RESPONSE
   //   combined with previous corrections for all levels above.
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  int ip1 = tr_index + 1, num_tr = trustRegions.size();
+  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
   if (ip1 == num_tr) // last trust region
     tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 			    CORR_TRUTH_RESPONSE);
@@ -563,7 +566,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
   // > Hard convergence is assessed based on new UNCORR_TRUTH_RESPONSE
   //   combined with previous corrections for all levels above.
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  int ip1 = tr_index + 1, num_tr = trustRegions.size();
+  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
   if (ip1 == num_tr) // last trust region
     tr_data.response_star(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
 			    CORR_TRUTH_RESPONSE);
@@ -573,6 +576,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
     if (tr_data.truth_model_level() != _NPOS)
       Cout << ", level " << tr_data.truth_model_level();
     Cout << ") for trust region candidate.\n";
+    Variables& star_vars = tr_data.vars_star();
     Response corrected_resp
       = tr_data.response_star(UNCORR_TRUTH_RESPONSE).copy();
     for (j=ip1; j<num_tr; ++j)

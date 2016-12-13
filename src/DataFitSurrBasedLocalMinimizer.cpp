@@ -148,6 +148,8 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   trustRegionData.vars_center(iteratedModel.current_variables());
   // initialize TR factor
   trustRegionData.trust_region_factor(origTrustRegionFactor[0]);
+  // reset softConvCount to 0
+  trustRegionData.reset_soft_convergence_count();
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();
@@ -365,8 +367,6 @@ void DataFitSurrBasedLocalMinimizer::minimize()
 
 void DataFitSurrBasedLocalMinimizer::verify()
 {
-  //if (convergenceCode) return;
-
   // ****************************
   // Evaluate responseStarTruth 
   // ****************************
@@ -415,23 +415,23 @@ void DataFitSurrBasedLocalMinimizer::verify()
     truth_model.interface_id(),
     trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
+  if (convergenceCode) return;
+
+  // Check for convergence in order of precedence
+  // (multiple conv types are _not_ recorded):
+  //
+  // terminate SBLM if trustRegionFactor is less than its minimum value
+  if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
+    convergenceCode = 1;
+  // terminate SBLM if the maximum number of iterations has been reached
+  else if (sbIterNum >= maxIterations)
+    convergenceCode = 2;
   // If the soft convergence criterion is satisfied for a user-specified
   // number of iterations (softConvLimit), then SBLM is deemed converged.
   // Note: this assessment is independent of step acceptance, and "soft
   // convergence" can occur even when a very small improving step is made.
-  // This part of the algorithm is critical, since it is more common to
-  // utilize soft convergence in real-world engineering applications
-  // where accurate gradients are unavailable.
-  if (!convergenceCode) {
-    if (softConvCount >= softConvLimit)
-      convergenceCode = 3; // soft convergence
-    // terminate SBLM if trustRegionFactor is less than its minimum value
-    else if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
-      convergenceCode = 1;
-    // terminate SBLM if the maximum number of iterations has been reached
-    else if (sbIterNum >= maxIterations)
-      convergenceCode = 2;
-  }
+  else if (trustRegionData.soft_convergence_count() >= softConvLimit)
+    convergenceCode = 3; // soft convergence
 }
 
 

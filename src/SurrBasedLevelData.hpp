@@ -47,9 +47,6 @@ public:
 			  size_t approx_level = _NPOS,
 			  size_t truth_level  = _NPOS);
 
-  bool new_center();
-  void new_center(bool flag);
-
   const Variables& vars_center() const;
   Variables& vars_center();
   void vars_center(const Variables& vars);
@@ -58,6 +55,9 @@ public:
   Real c_var_center(size_t i) const;
   void c_vars_center(const RealVector& c_vars);
   void c_var_center(Real c_var, size_t i);
+
+  bool new_center();
+  void new_center(bool flag);
 
   const Variables& vars_star() const;
   Variables& vars_star();
@@ -88,6 +88,10 @@ public:
 
   bool new_factor();
   void new_factor(bool flag);
+
+  unsigned short soft_convergence_count();
+  void reset_soft_convergence_count();
+  void increment_soft_convergence_count();
 
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
@@ -153,6 +157,10 @@ private:
   /// a new trust region center
   bool newCenterFlag;
 
+  /// number of consecutive candidate point rejections.  If the
+  /// count reaches softConvLimit, stop SBLM.
+  unsigned short softConvCount;
+
   /// model form and discretization level indices for the approximate model
   SizetSizetPair approxModelIndices;
   /// model form and discretization level indices for the truth model
@@ -167,7 +175,7 @@ private:
 
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), newTRFactor(true), newCenterFlag(true),
-  approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
+  softConvCount(0), approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
 { responseCenterTruthCorrected.first = 0; }
 
 
@@ -180,14 +188,6 @@ inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
   trLowerBounds.sizeUninitialized(num_c_vars); // assign -DBL_MAX?
   trUpperBounds.sizeUninitialized(num_c_vars); // assign +DBL_MAX?
 }
-
-
-inline bool SurrBasedLevelData::new_center()
-{ return newCenterFlag; }
-
-
-inline void SurrBasedLevelData::new_center(bool flag)
-{ newCenterFlag = flag; }
 
 
 inline const Variables& SurrBasedLevelData::vars_center() const
@@ -205,6 +205,15 @@ inline void SurrBasedLevelData::vars_center(const Variables& vars)
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   newCenterFlag = true;
 }
+
+
+inline bool SurrBasedLevelData::new_center()
+{ return newCenterFlag; }
+
+
+inline void SurrBasedLevelData::new_center(bool flag)
+{ newCenterFlag = flag; }
+
 
 inline const Variables& SurrBasedLevelData::vars_star() const
 { return varsStar; }
@@ -328,6 +337,18 @@ inline bool SurrBasedLevelData::new_factor()
 
 inline void SurrBasedLevelData::new_factor(bool flag)
 { newTRFactor = flag; }
+
+
+inline unsigned short SurrBasedLevelData::soft_convergence_count()
+{ return softConvCount; }
+
+
+inline void SurrBasedLevelData::reset_soft_convergence_count()
+{ softConvCount = 0; }
+
+
+inline void SurrBasedLevelData::increment_soft_convergence_count()
+{ ++softConvCount; }
 
 
 inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const

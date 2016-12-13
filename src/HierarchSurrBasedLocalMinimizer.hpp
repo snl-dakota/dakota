@@ -70,12 +70,24 @@ private:
   void find_center_truth(size_t tr_index);
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterApproxUncorrected
   void find_center_approx(size_t tr_index);
+  /// Retrieve or evaluate SurrBasedLevelData::responseStarTruthUncorrected
+  void find_star_truth(size_t tr_index);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarApproxUncorrected
   void find_star_approx(size_t tr_index);
+
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseCenterTruthUncorrected
+  void correct_center_truth(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseStarTruthUncorrected
+  void correct_star_truth(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]
   void set_model_states(size_t tr_index);
+
+  /// Verify approximate step with truth model for trust region level tr_index
+  short verify(size_t tr_index);
 
   // MG/Opt functions:
 
@@ -95,7 +107,6 @@ private:
   /// number of ordered model fidelities within iteratedModel
   /// (a HierarchSurrModel)
   size_t numFid;
-  //bool multiFid;
 
   /// number of discretization levels per ordered model fidelity
   SizetArray numLev;
@@ -136,8 +147,8 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 }
 
 
-inline short HierarchSurrBasedLocalMinimizer::verify()
-{ return verify(minimizeIndex); }
+inline void HierarchSurrBasedLocalMinimizer::verify()
+{ convergenceCode = verify(minimizeIndex); }
 
 } // namespace Dakota
 

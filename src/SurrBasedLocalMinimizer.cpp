@@ -59,7 +59,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   gammaContract(
     probDescDB.get_real("method.sbl.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.sbl.trust_region.expansion_factor")),
-  convergenceCode(0), softConvCount(0),
+  convergenceCode(0),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {
@@ -327,7 +327,7 @@ void SurrBasedLocalMinimizer::core_run()
 
     if (!convergenceCode) { // check for hard convergence within build()
       minimize(); // run approxSubProbMinimizer and update responseStarApprox
-      verify();   // evaluate responseStarTruth and update trust region
+      verify();   // evaluate responseStarTruth and update TR
     }
   }
 }
@@ -732,9 +732,9 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
   if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
                        denominator <= 0. || rel_denom < convergenceTol )
-    ++softConvCount;
+    tr_data.increment_soft_convergence_count(); // ++counter
   else
-    softConvCount = 0; // reset counter to zero
+    tr_data.reset_soft_convergence_count(); // reset counter to zero
 }
 
 
