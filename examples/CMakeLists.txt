@@ -11,7 +11,7 @@ if(DAKOTA_ENABLE_TESTS)
   if(WIN32)
     message(WARNING "Training examples solutions cannot be built on Windows")
   else()
-    add_subdirectory(training/201508/solutions)
+    add_subdirectory(training/solutions)
   endif()
 else()
   message(WARNING 
