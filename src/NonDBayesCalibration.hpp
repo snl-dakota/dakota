@@ -117,6 +117,9 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  
+  /// calculate model discrepancy with respect to experimental data
+  void build_model_discrepancy();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
@@ -210,6 +213,13 @@ protected:
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
   bool adaptExpDesign;
+  /*
+  /// flag whether to calculate model discrepancy
+  bool calModelDiscrepancy;
+  /// Discrepancy Function Approximation
+  Approximation modelDiscApprox;
+  */
+
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;
   /// initial high-fidelity model samples
