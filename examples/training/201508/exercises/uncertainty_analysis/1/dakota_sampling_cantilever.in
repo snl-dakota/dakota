@@ -14,13 +14,13 @@ variables
 
 responses
   response_functions 3
-    descriptors 'mass' 'stress' 'displacement'
-    no_gradients
-    no_hessians
+  descriptors 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians
 
 interface
-  fork
-    analysis_drivers 'driver.sh'
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory 
+        link_files 'cantilever' 'cantilever.template'
   asynchronous evaluation_concurrency 4
-  work_directory 
-  link_files 'cantilever' 'cantilever.template'

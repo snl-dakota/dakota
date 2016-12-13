@@ -22,17 +22,17 @@ variables
 
 interface
   analysis_drivers 'driver.sh'
-  fork
-   asynchronous evaluation_concurrency 4
-   work_directory named 'workdir/run'
-   directory_tag directory_save
-   parameters_file 'params.in'
-   results_file 'results.out'
-   link_files 'cantilever.template' 'cantilever'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+  asynchronous evaluation_concurrency 4
 
 responses
+  descriptors 'mass' 'stress' 'displacement'
   calibration_terms 3
-    descriptors 'mass' 'stress' 'displacement'
 
     # Specify the calibration data file and its format
 

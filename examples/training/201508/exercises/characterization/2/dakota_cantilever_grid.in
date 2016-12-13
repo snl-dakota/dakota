@@ -20,13 +20,14 @@ variables
     descriptors     = 'p'   'E'   'X'  'Y'
 
 interface
-  fork asynchronous evaluation_concurrency = 4
-    analysis_drivers = 'driver.sh'
-    work_directory named = 'workdir'
-    link_files = 'cantilever.template' 'cantilever'
+  analysis_drivers = 'driver.sh'
+    fork
+      work_directory named = 'workdir'
+        link_files = 'cantilever.template' 'cantilever'
+  asynchronous evaluation_concurrency = 4
 
 responses
   response_functions = 3
-    descriptors      = 'mass' 'stress' 'displacement'
+  descriptors      = 'mass' 'stress' 'displacement'
   no_gradients
   no_hessians

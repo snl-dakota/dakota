@@ -9,10 +9,10 @@ variables
     descriptors 'x1' 'x2' 'xc_mult' 'yc_upper'
 
 interface
-  fork
-	  analysis_driver = '/bin/true'
-    parameters_file = 'params.in'
-    results_file = 'results.out'
+  analysis_drivers = '/bin/true'
+    fork
+      parameters_file = 'params.in'
+      results_file = 'results.out'
       allow_existing_results
       file_save
 

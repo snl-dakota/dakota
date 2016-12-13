@@ -22,11 +22,11 @@ variables
     descriptors     = 'p'   'E'   'X'  'Y'
 
 interface
-  fork
-    analysis_drivers = 'driver.sh'
+  analysis_drivers = 'driver.sh'
+    fork
 
 responses
   response_functions = 3
-    descriptors      = 'mass' 'stress' 'displacement'
+  descriptors      = 'mass' 'stress' 'displacement'
   no_gradients
   no_hessians

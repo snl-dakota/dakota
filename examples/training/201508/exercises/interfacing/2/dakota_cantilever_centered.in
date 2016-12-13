@@ -17,10 +17,10 @@ variables
     descriptors    'p'   'E'   'X'  'Y'
 
 interface
-  fork
-    analysis_driver = 'driver.sh'
-    parameters_file = 'params.in'
-    results_file    = 'results.out'
+  analysis_drivers = 'driver.sh'
+    fork
+      parameters_file = 'params.in'
+      results_file    = 'results.out'
 
 responses
   response_functions = 3
@@ -28,4 +28,3 @@ responses
                 'stress'
                 'displacement'
   no_gradients no_hessians
-

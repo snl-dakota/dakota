@@ -12,8 +12,9 @@ variables
     descriptors      'x1'     'x2'
 
 interface
-  fork asynchronous evaluation_concurrency 4
-    analysis_driver = 'quasi_sine_fcn'
+  analysis_drivers = 'quasi_sine_fcn'
+    fork 
+  asynchronous evaluation_concurrency 4
 
 responses
   objective_functions = 1
