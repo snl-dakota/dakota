@@ -85,6 +85,9 @@ private:
   NOWPAC<> nowpacSolver;
 
   NOWPACBlackBoxEvaluator nowpacEvaluator;
+
+  /// aggregate unsupported constraint types as nonlinear inequalities
+  int numNowpacIneqConstr;
 };
 
 
