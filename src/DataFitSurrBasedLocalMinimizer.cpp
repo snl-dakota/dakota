@@ -209,7 +209,7 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
 
 void DataFitSurrBasedLocalMinimizer::build()
 {
-  if (!globalApproxFlag && !trustRegionData.new_center()) {
+  if (!globalApproxFlag && !trustRegionData.status(NEW_CENTER)) {
     Cout << "\n>>>>> Reusing previous approximation.\n";
     return;
   }
@@ -242,7 +242,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
     = trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE);
 
   // Assess hard convergence prior to global surrogate construction
-  if (trustRegionData.new_center())
+  if (trustRegionData.status(NEW_CENTER))
     convergenceCode
       = hard_convergence_check(resp_center_truth.second,
 			       vars_center.continuous_variables(),
@@ -395,7 +395,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
 
   // If the candidate optimum (varsStar) is accepted, then update the
   // center variables and response data.
-  if (trustRegionData.new_center()) {
+  if (trustRegionData.status(NEW_CENTER)) {
     trustRegionData.c_vars_center(trustRegionData.c_vars_star());
     trustRegionData.response_center_pair(truth_model.evaluation_id(),
 					 truth_resp, CORR_TRUTH_RESPONSE);

@@ -26,6 +26,8 @@ enum { APPROX_RESPONSE=1, TRUTH_RESPONSE };
 // values for corrected response type
 enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
        CORR_TRUTH_RESPONSE,    UNCORR_TRUTH_RESPONSE };
+// bits for trust region status
+enum { NEW_CENTER=1, NEW_TR_FACTOR=2, HARD_CONVERGED=4, SOFT_CONVERGED=8 };
 
 
 class SurrBasedLevelData
@@ -47,6 +49,15 @@ public:
 			  size_t approx_level = _NPOS,
 			  size_t truth_level  = _NPOS);
 
+  /// return full status (all bits)
+  unsigned short status();
+  /// return status of a single bit field
+  bool status(unsigned short bit);
+  /// activate a status bit
+  void set_status_bits(unsigned short bits);
+  /// deactivate a status bit
+  void reset_status_bits(unsigned short bits);
+  
   const Variables& vars_center() const;
   Variables& vars_center();
   void vars_center(const Variables& vars);
@@ -55,9 +66,6 @@ public:
   Real c_var_center(size_t i) const;
   void c_vars_center(const RealVector& c_vars);
   void c_var_center(Real c_var, size_t i);
-
-  bool new_center();
-  void new_center(bool flag);
 
   const Variables& vars_star() const;
   Variables& vars_star();
@@ -85,9 +93,6 @@ public:
   Real trust_region_factor();
   void trust_region_factor(Real val);
   void scale_trust_region_factor(Real val);
-
-  bool new_factor();
-  void new_factor(bool flag);
 
   unsigned short soft_convergence_count();
   void reset_soft_convergence_count();
@@ -149,13 +154,20 @@ private:
   /// region -- it is a percentage, e.g. for trustRegionFactor = 0.1, the
   /// actual size of the trust region will be 10% of the global bounds.
   Real trustRegionFactor;
-  /// flag indicating that the trustRegionFactor has been updated, requiring
-  /// a corresponding update to the tr{Lower,Upper}Bounds
-  bool newTRFactor;
 
-  /// flags the acceptance of a candidate point and the existence of
-  /// a new trust region center
-  bool newCenterFlag;
+  // flags 
+  //bool newCenterFlag;
+
+  /// collection of status bits:
+  /// NEW_CENTER:     indicates the acceptance of a candidate point and the
+  ///                 existence of a new trust region center
+  /// NEW_TR_FACTOR:  indicates that trustRegionFactor has been updated,
+  ///                 requiring a corresponding update to tr{Lower,Upper}Bounds
+  /// HARD_CONVERGED: indicates that iteration at this level has hard converged
+  ///                 (norm of projected gradient < tol)
+  /// SOFT_CONVERGED: indicates that iteration at this level has soft converged
+  ///                 (number of unsuccessful consecutive iterations >= limit)
+  unsigned short trustRegionStatus; // or use BitArray
 
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
@@ -174,7 +186,7 @@ private:
 
 
 inline SurrBasedLevelData::SurrBasedLevelData():
-  trustRegionFactor(1.), newTRFactor(true), newCenterFlag(true),
+  trustRegionFactor(1.), trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
   softConvCount(0), approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
 { responseCenterTruthCorrected.first = 0; }
 
@@ -190,6 +202,22 @@ inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
 }
 
 
+inline unsigned short SurrBasedLevelData::status()
+{ return trustRegionStatus; }
+
+
+inline bool SurrBasedLevelData::status(unsigned short bits)
+{ return (trustRegionStatus & bits) == bits; }
+
+  
+inline void SurrBasedLevelData::set_status_bits(unsigned short bits)
+{ trustRegionStatus |= bits; }
+
+
+inline void SurrBasedLevelData::reset_status_bits(unsigned short bits)
+{ trustRegionStatus &= ~bits; }
+
+
 inline const Variables& SurrBasedLevelData::vars_center() const
 { return varsCenter; }
 
@@ -203,16 +231,8 @@ inline void SurrBasedLevelData::vars_center(const Variables& vars)
   varsCenter = vars.copy();
 
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  newCenterFlag = true;
+  set_status_bits(NEW_CENTER);
 }
-
-
-inline bool SurrBasedLevelData::new_center()
-{ return newCenterFlag; }
-
-
-inline void SurrBasedLevelData::new_center(bool flag)
-{ newCenterFlag = flag; }
 
 
 inline const Variables& SurrBasedLevelData::vars_star() const
@@ -324,19 +344,11 @@ inline Real SurrBasedLevelData::trust_region_factor()
 
 
 inline void SurrBasedLevelData::trust_region_factor(Real val)
-{ trustRegionFactor  = val; newTRFactor = true; }
+{ trustRegionFactor  = val; set_status_bits(NEW_TR_FACTOR); }
 
 
 inline void SurrBasedLevelData::scale_trust_region_factor(Real val)
-{ trustRegionFactor *= val; newTRFactor = true; }
-
-
-inline bool SurrBasedLevelData::new_factor()
-{ return newTRFactor; }
-
-
-inline void SurrBasedLevelData::new_factor(bool flag)
-{ newTRFactor = flag; }
+{ trustRegionFactor *= val; set_status_bits(NEW_TR_FACTOR); }
 
 
 inline unsigned short SurrBasedLevelData::soft_convergence_count()

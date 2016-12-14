@@ -121,21 +121,19 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   // and lower fidelities nested and reduced by 2x each level.
   size_t i, num_tr = numFid - 1;
   for (i=0; i<num_tr; ++i) {
-    SurrBasedLevelData& sbl_data = trustRegions[i];
+    SurrBasedLevelData& tr_data = trustRegions[i];
 
-    //sbl_data.new_center(true); // vars_center() now sets newCenterFlag
-    sbl_data.vars_center(iteratedModel.current_variables());
+    tr_data.vars_center(iteratedModel.current_variables());//sets newCenterFlag
 
-    //sbl_data.tr_lower_bounds(globalLowerBnds);// rely on update_trust_region()
-    //sbl_data.tr_upper_bounds(globalLowerBnds);// rely on update_trust_region()
-    sbl_data.trust_region_factor(origTrustRegionFactor[i]);
+    // set TR factor (actual bounds defined during update_trust_region())
+    tr_data.trust_region_factor(origTrustRegionFactor[i]);
 
-    sbl_data.reset_soft_convergence_count();
+    tr_data.reset_soft_convergence_count();
 
-    sbl_data.active_set_star(1, APPROX_RESPONSE);
-    sbl_data.active_set_star(1,  TRUTH_RESPONSE);
-    sbl_data.active_set_center(approxSetRequest, APPROX_RESPONSE);
-    sbl_data.active_set_center(truthSetRequest,   TRUTH_RESPONSE);
+    tr_data.active_set_star(1, APPROX_RESPONSE);
+    tr_data.active_set_star(1,  TRUTH_RESPONSE);
+    tr_data.active_set_center(approxSetRequest, APPROX_RESPONSE);
+    tr_data.active_set_center(truthSetRequest,   TRUTH_RESPONSE);
   }
 }
 
@@ -168,7 +166,7 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   //   independently based on the accuracy of their individual discrepancies.
 
   int index, j, k, num_tr_m1 = trustRegions.size() - 1;
-  bool new_tr_factor = trustRegions[num_tr_m1].new_factor(),
+  bool new_tr_factor = trustRegions[num_tr_m1].status(NEW_TR_FACTOR),
        parent_update = new_tr_factor;
   // Highest fidelity valid over global bnds: parent bnds for top TR = global
   if (new_tr_factor)
@@ -177,7 +175,7 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   // Loop over all subordinate levels
   for (index=num_tr_m1-1; index>=minimizeIndex; --index) {
 
-    new_tr_factor = trustRegions[index].new_factor();
+    new_tr_factor = trustRegions[index].status(NEW_TR_FACTOR);
     if (new_tr_factor)// nested levels at / below this level must update TR bnds
       parent_update = true;
 
@@ -247,7 +245,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     SurrBasedLevelData& tr_data = trustRegions[i];
 
     // build approximation at level i and retrieve center truth response
-    if (tr_data.new_center()) {// TO DO: new_candidate() [both] or new_star() ?
+    if (tr_data.status(NEW_CENTER)) {
 
       // If new center indicated for a level, then:
       // > build the approximation
@@ -309,7 +307,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   for (i=num_tr-1; i>=minimizeIndex; --i) {
 
     SurrBasedLevelData& tr_data = trustRegions[i];
-    bool new_level_center  = tr_data.new_center();
+    bool new_level_center  = tr_data.status(NEW_CENTER);
     Variables& center_vars = tr_data.vars_center();
 
     if (new_level_center) {
@@ -365,7 +363,7 @@ void HierarchSurrBasedLocalMinimizer::build()
     }
 
     // new center now computed, deactivate flag
-    if (new_level_center) tr_data.new_center(false);
+    if (new_level_center) tr_data.reset_status_bits(NEW_CENTER);
   }
 }
 
@@ -419,24 +417,20 @@ short HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   // Validate candidate point
   // ****************************
 
-  Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  Variables& vars_star = tr_data.vars_star(); // candidate iterate
 
   set_model_states(tr_index);
+  Model& truth_model = iteratedModel.truth_model();
 
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
-  SurrBasedLevelData& tr_data = trustRegions[tr_index];
-
-  // Candidate iterate:
-  Variables& vars_star = tr_data.vars_star();
-
+  Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
   iteratedModel.component_parallel_mode(TRUTH_MODEL);
   truth_model.active_variables(vars_star);
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
-  tr_data.response_star(truth_model.current_response(), UNCORR_TRUTH_RESPONSE);
 
   // Apply correction recursively so that this truth response is consistent
-  // with the highest fidelity level.
+  // with the highest fidelity level:
+  tr_data.response_star(truth_model.current_response(), UNCORR_TRUTH_RESPONSE);
   correct_star_truth(tr_index);
 
   // For accept/reject of opt subproblem step within verify(), we only
@@ -448,14 +442,14 @@ short HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
    
   // If the candidate optimum (vars_star) is accepted, then update the
   // center variables and response data.
-  if (tr_data.new_center()) {
+  if (tr_data.status(NEW_CENTER)) {
     tr_data.vars_center(vars_star);
 
     // Does not appear to be required:
     //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
     //			      UNCORR_TRUTH_RESPONSE);
 
-    /* TODO: re-eval for new corr is handled later? */
+    // Note: re-eval for derivative consistency occurs in build()
     tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
 			    CORR_TRUTH_RESPONSE);
   }

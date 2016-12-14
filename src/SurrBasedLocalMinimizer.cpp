@@ -401,8 +401,8 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       tr_lower_truncation = true;
     }
   }
-  if (cv_truncation) tr_data.new_center(true); // rare case
-  tr_data.new_factor(false); // TR updates applied; reset flag
+  if (cv_truncation) tr_data.set_status_bits(NEW_CENTER); // rare case
+  tr_data.reset_status_bits(NEW_TR_FACTOR); // TR updates applied; reset bit
 
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
@@ -628,7 +628,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // ------------------------------------------
 
   if (accept_step) {
-    tr_data.new_center(true);
+    tr_data.set_status_bits(NEW_CENTER);
 
     // Update the trust region size depending on the accuracy of the approximate
     // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
@@ -681,7 +681,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    tr_data.new_center(false);
+    tr_data.reset_status_bits(NEW_CENTER);
     tr_data.scale_trust_region_factor(gammaContract);
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "
