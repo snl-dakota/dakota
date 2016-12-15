@@ -29,7 +29,8 @@ enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
 // bits for trust region status
 enum { NEW_CANDIDATE=1,  NEW_CENTER=2,      NEW_TR_FACTOR=4,
        HARD_CONVERGED=8, SOFT_CONVERGED=16, MIN_TR_CONVERGED=32,
-       CONVERGED=(HARD_CONVERGED|SOFT_CONVERGED|MIN_TR_CONVERGED) };
+       MAX_ITER_CONVERGED=64, CONVERGED=(HARD_CONVERGED|SOFT_CONVERGED|
+					 MIN_TR_CONVERGED|MAX_ITER_CONVERGED) };
 
 
 class SurrBasedLevelData
@@ -61,7 +62,7 @@ public:
   void reset_status_bits(unsigned short bits);
 
   /// test for any of the CONVERGED bits
-  bool converged();
+  unsigned short converged();
 
   const Variables& vars_center() const;
   Variables& vars_center();
@@ -173,6 +174,8 @@ private:
   ///                 (number of unsuccessful consecutive iterations >= limit)
   /// MIN_TR_CONVERGED: indicates that TR size at this level has reached the
   ///                   minimum allowable
+  /// MAX_ITER_CONVERGED: indicates that he number of iterations at this level
+  ///                     has reached the maximum allowable
   unsigned short trustRegionStatus; // or use BitArray
 
   /// number of consecutive candidate point rejections.  If the
@@ -224,7 +227,7 @@ inline void SurrBasedLevelData::reset_status_bits(unsigned short bits)
 { trustRegionStatus &= ~bits; }
 
 
-inline bool SurrBasedLevelData::converged()
+inline unsigned short SurrBasedLevelData::converged()
 { return (trustRegionStatus & CONVERGED); }
 
   

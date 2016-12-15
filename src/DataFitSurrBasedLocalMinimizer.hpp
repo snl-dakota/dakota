@@ -70,6 +70,8 @@ protected:
   bool build_local();
   void compute_center_correction(bool embed_correction);
 
+  unsigned short converged();
+
   //
   //- Heading: Convenience member functions
   //
@@ -132,6 +134,10 @@ inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
     iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
   }
 }
+
+
+inline unsigned short DataFitSurrBasedLocalMinimizer::converged()
+{ return trustRegionData.converged(); }
 
 } // namespace Dakota
 

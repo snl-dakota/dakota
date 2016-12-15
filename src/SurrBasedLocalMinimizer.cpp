@@ -59,7 +59,6 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   gammaContract(
     probDescDB.get_real("method.sbl.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get_real("method.sbl.trust_region.expansion_factor")),
-  convergenceCode(0),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {
@@ -287,7 +286,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 void SurrBasedLocalMinimizer::pre_run()
 {
   // reset convergence controls in case of multiple executions
-  if (convergenceCode)
+  if (converged())
     reset();
 
   // need copies of initial point and initial global bounds, since iteratedModel
@@ -312,7 +311,7 @@ void SurrBasedLocalMinimizer::core_run()
   // --> longer term, lower priority: defer for now
 
   sblmInstance = this;
-  while (!convergenceCode) {
+  while (!converged()) {
 
     // Compute trust region bounds.  If the trust region extends outside
     // the global bounds, then truncate to the global bounds.
@@ -320,14 +319,11 @@ void SurrBasedLocalMinimizer::core_run()
 
     // Build new approximations and compute corrections for use within
     // approxSubProbMinimizer.run() (unless previous build can be reused)
-    // > Build the approximation
-    // > Evaluate/retrieve responseCenterTruth
-    // > Perform hard convergence check
-    build();
+    build(); // Build the approximation and perform hard convergence check
 
-    if (!convergenceCode) { // check for hard convergence within build()
+    if (!converged()) {
       minimize(); // run approxSubProbMinimizer and update responseStarApprox
-      verify();   // evaluate responseStarTruth and update TR
+      verify(); // eval responseStarTruth, update TR, perform other conv checks
     }
   }
 }
@@ -337,23 +333,20 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // SBLM is complete: write out the convergence condition and final results
   // from the center point of the last trust region.
+  unsigned short code = converged();
   Cout << "\nSurrogate-Based Optimization Complete - ";
-  switch (convergenceCode) {
-  case 1: Cout << "Minimum Trust Region Bounds Reached\n";   break;
-  case 2: Cout << "Exceeded Maximum Number of Iterations\n"; break;
-  case 3:
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-    break;
-  case 4:
+  // these can be overlaid:
+  if (code & MIN_TR_CONVERGED)
+    Cout << "Minimum Trust Region Bounds Reached\n";
+  if (code & MAX_ITER_CONVERGED)
+    Cout << "Exceeded Maximum Number of Iterations\n";
+  // these two are exclusive:
+  if (code & HARD_CONVERGED)
     Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
 	 << "<= Convergence Tolerance\n";
-    break;
-  default:
-    Cout << "\nError: bad convergenceCode in SurrBasedLocalMinimizer."
-	 << std::endl;
-    abort_handler(METHOD_ERROR); break;
-  }
+  else if (code & SOFT_CONVERGED)
+    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
+	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
   Cout << "Total Number of Iterations = " << sbIterNum << '\n';
 
   Minimizer::post_run(s);

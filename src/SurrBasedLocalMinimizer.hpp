@@ -79,6 +79,10 @@ protected:
   /// the next approximate optimization cycle
   virtual void verify() = 0;
 
+  /// return the convergence code for the truth level of the trust
+  /// region hierarchy
+  virtual unsigned short converged() = 0;
+
   //
   //- Heading: Member functions
   //
@@ -184,8 +188,6 @@ protected:
   /// trust region expansion factor
   Real gammaExpand;
 
-  /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceCode;
   /// convergence control limiting the number of consecutive iterations that
   /// fail to achieve sufficient decrease.  If exceeded by softConvCount, stop.
   unsigned short softConvLimit;
@@ -226,7 +228,7 @@ protected:
 
 inline void SurrBasedLocalMinimizer::reset()
 {
-  convergenceCode = sbIterNum = 0;
+  sbIterNum         = 0;
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;

@@ -60,6 +60,8 @@ protected:
   void minimize();
   void verify();
 
+  unsigned short converged();
+
 private:
 
   //
@@ -149,6 +151,13 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 
 inline void HierarchSurrBasedLocalMinimizer::verify()
 { verify(minimizeIndex); }
+
+
+inline unsigned short HierarchSurrBasedLocalMinimizer::converged()
+{
+  size_t last_tr = trustRegions.size() - 1;
+  return trustRegions[last_tr].converged(); // TR state at truth level
+}
 
 } // namespace Dakota
 

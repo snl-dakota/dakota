@@ -294,7 +294,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 	hard_convergence_check(tr_data, trustRegions[ip1].tr_lower_bounds(),
 			       trustRegions[ip1].tr_upper_bounds());
       if (tr_data.converged()) {
-	if (last_tr) convergenceCode = 4; // TODO
+	if (last_tr) return;
 	else {
 	  trustRegions[ip1].vars_star(center_vars); // trigger build for next TR
 	  tr_data.reset_status_bits(CONVERGED);
@@ -305,9 +305,6 @@ void HierarchSurrBasedLocalMinimizer::build()
     //else {
     //}
   }
-
-  if (convergenceCode)
-    return;
 
   // Loop TRs top-down so that correction logic detects new centers at/above
   bool update_corr = false; 
@@ -447,9 +444,9 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   // when iterations at a lower level are complete and the next higher level
   // TR needs to be recentered --> this occurs within build().
    
-  // Check for convergence globally (max SBLM iterations)
-  if (sbIterNum >= maxIterations)
-    convergenceCode = 2;
+  // Check for convergence at top level (max SBLM iterations)
+  if (sbIterNum >= maxIterations && tr_index == trustRegions.size() - 1)
+    tr_data.set_status_bits(MAX_ITER_CONVERGED);
   // Check for convergence metrics for this TR:
   if (tr_data.trust_region_factor() < minTrustRegionFactor)
     tr_data.set_status_bits(MIN_TR_CONVERGED);
@@ -618,7 +615,7 @@ void HierarchSurrBasedLocalMinimizer::multigrid_driver(const Variables &x0)
   RealVector vars_star = x0.continuous_variables();
 
   int max_iter = 10, iter = 0;
-  while (!convergenceCode && iter < max_iter) {
+  while (!converged() && iter < max_iter) {
     // Perform one complete V cycle:
     // recursively applied MG/Opt to all levels w/ line search
     // (no prolongation/restriction at this pt)

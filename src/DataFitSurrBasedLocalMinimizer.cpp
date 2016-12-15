@@ -408,10 +408,9 @@ void DataFitSurrBasedLocalMinimizer::verify()
     truth_model.interface_id(),
     trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
-  // Check for convergence globally (max SBLM iterations):
+  // test if max SBLM iterations exceeded
   if (sbIterNum >= maxIterations)
-    convergenceCode = 2;
-  // Check for convergence metrics for this TR:
+    trustRegionData.set_status_bits(MAX_ITER_CONVERGED);
   // test if trustRegionFactor is less than its minimum value
   if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
     trustRegionData.set_status_bits(MIN_TR_CONVERGED);
