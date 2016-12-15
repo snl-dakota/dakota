@@ -27,7 +27,9 @@ enum { APPROX_RESPONSE=1, TRUTH_RESPONSE };
 enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
        CORR_TRUTH_RESPONSE,    UNCORR_TRUTH_RESPONSE };
 // bits for trust region status
-enum { NEW_CENTER=1, NEW_TR_FACTOR=2, HARD_CONVERGED=4, SOFT_CONVERGED=8 };
+enum { NEW_CANDIDATE=1,  NEW_CENTER=2,      NEW_TR_FACTOR=4,
+       HARD_CONVERGED=8, SOFT_CONVERGED=16, MIN_TR_CONVERGED=32,
+       CONVERGED=(HARD_CONVERGED|SOFT_CONVERGED|MIN_TR_CONVERGED) };
 
 
 class SurrBasedLevelData
@@ -57,7 +59,10 @@ public:
   void set_status_bits(unsigned short bits);
   /// deactivate a status bit
   void reset_status_bits(unsigned short bits);
-  
+
+  /// test for any of the CONVERGED bits
+  bool converged();
+
   const Variables& vars_center() const;
   Variables& vars_center();
   void vars_center(const Variables& vars);
@@ -155,18 +160,19 @@ private:
   /// actual size of the trust region will be 10% of the global bounds.
   Real trustRegionFactor;
 
-  // flags 
-  //bool newCenterFlag;
-
   /// collection of status bits:
-  /// NEW_CENTER:     indicates the acceptance of a candidate point and the
-  ///                 existence of a new trust region center
-  /// NEW_TR_FACTOR:  indicates that trustRegionFactor has been updated,
-  ///                 requiring a corresponding update to tr{Lower,Upper}Bounds
+  /// NEW_CANDIDATE: indicates the availability of a candidate point that, 
+  ///                once verified, can be accepted as a NEW_CENTER.
+  /// NEW_CENTER:    indicates the acceptance of a candidate point and the
+  ///                existence of a new trust region center
+  /// NEW_TR_FACTOR: indicates that trustRegionFactor has been updated,
+  ///                requiring a corresponding update to tr{Lower,Upper}Bounds
   /// HARD_CONVERGED: indicates that iteration at this level has hard converged
   ///                 (norm of projected gradient < tol)
   /// SOFT_CONVERGED: indicates that iteration at this level has soft converged
   ///                 (number of unsuccessful consecutive iterations >= limit)
+  /// MIN_TR_CONVERGED: indicates that TR size at this level has reached the
+  ///                   minimum allowable
   unsigned short trustRegionStatus; // or use BitArray
 
   /// number of consecutive candidate point rejections.  If the
@@ -218,6 +224,10 @@ inline void SurrBasedLevelData::reset_status_bits(unsigned short bits)
 { trustRegionStatus &= ~bits; }
 
 
+inline bool SurrBasedLevelData::converged()
+{ return (trustRegionStatus & CONVERGED); }
+
+  
 inline const Variables& SurrBasedLevelData::vars_center() const
 { return varsCenter; }
 
@@ -228,10 +238,31 @@ inline Variables& SurrBasedLevelData::vars_center()
 
 inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
-  varsCenter = vars.copy();
-
+  varsCenter.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CENTER);
+  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
+}
+
+
+inline const RealVector& SurrBasedLevelData::c_vars_center() const
+{ return varsCenter.continuous_variables(); }
+
+
+inline Real SurrBasedLevelData::c_var_center(size_t i) const
+{ return varsCenter.continuous_variable(i); }
+
+
+inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars)
+{
+  varsCenter.continuous_variables(c_vars);
+  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
+}
+
+
+inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i)
+{
+  varsCenter.continuous_variable(c_var, i);
+  set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
 }
 
 
@@ -244,23 +275,12 @@ inline Variables& SurrBasedLevelData::vars_star()
 
 
 inline void SurrBasedLevelData::vars_star(const Variables& vars)
-{ varsStar = vars.copy(); }
-
-
-inline const RealVector& SurrBasedLevelData::c_vars_center() const
-{ return varsCenter.continuous_variables(); }
-
-
-inline Real SurrBasedLevelData::c_var_center(size_t i) const
-{ return varsCenter.continuous_variable(i); }
-
-
-inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars)
-{ varsCenter.continuous_variables(c_vars); }
-
-
-inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i)
-{ varsCenter.continuous_variable(c_var, i); }
+{
+  varsStar.active_variables(vars);
+  // TODO: check for change in point? (DFSBLM manages update in TR center...)
+  set_status_bits(NEW_CANDIDATE);
+  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+}
 
 
 inline const RealVector& SurrBasedLevelData::c_vars_star() const
@@ -272,11 +292,19 @@ inline Real SurrBasedLevelData::c_var_star(size_t i) const
 
 
 inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
-{ varsStar.continuous_variables(c_vars); }
+{
+  varsStar.continuous_variables(c_vars);
+  set_status_bits(NEW_CANDIDATE);
+  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+}
 
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
-{ varsStar.continuous_variable(c_var, i); }
+{
+  varsStar.continuous_variable(c_var, i);
+  set_status_bits(NEW_CANDIDATE);
+  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+}
 
 
 inline const ActiveSet& SurrBasedLevelData::

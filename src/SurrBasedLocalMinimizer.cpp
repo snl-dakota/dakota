@@ -338,20 +338,21 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   // SBLM is complete: write out the convergence condition and final results
   // from the center point of the last trust region.
   Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceCode == 1 )
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceCode == 2 )
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceCode == 3 )  
+  switch (convergenceCode) {
+  case 1: Cout << "Minimum Trust Region Bounds Reached\n";   break;
+  case 2: Cout << "Exceeded Maximum Number of Iterations\n"; break;
+  case 3:
     Cout << "Soft Convergence Tolerance Reached\nProgress Between "
 	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceCode == 4 )
+    break;
+  case 4:
     Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
 	 << "<= Convergence Tolerance\n";
-  else {
+    break;
+  default:
     Cout << "\nError: bad convergenceCode in SurrBasedLocalMinimizer."
 	 << std::endl;
-    abort_handler(METHOD_ERROR);
+    abort_handler(METHOD_ERROR); break;
   }
   Cout << "Total Number of Iterations = " << sbIterNum << '\n';
 
@@ -628,8 +629,6 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // ------------------------------------------
 
   if (accept_step) {
-    tr_data.set_status_bits(NEW_CENTER);
-
     // Update the trust region size depending on the accuracy of the approximate
     // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
     // change where eta_1 = trRatioContractValue and eta_2 = trRatioExpandValue
@@ -677,6 +676,14 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     }
     else // accept optimum, retain current TR
       Cout <<"Satisfactory Accuracy, ACCEPT Step, RETAIN Trust Region Size\n\n";
+
+    // update center vars, set NEW_CENTER, unset NEW_CANDIDATE
+    tr_data.vars_center(tr_data.vars_star());
+    // response_center updated later in build() for full ActiveSet (w/ derivs)
+    //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
+    //			      UNCORR_TRUTH_RESPONSE);
+    //tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
+    //			      CORR_TRUTH_RESPONSE);    
   }
   else {
     // If the step is rejected, then retain the current design variables
@@ -743,14 +750,15 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     active bound constraints (removing any gradient component directed
     into an active bound), and signals convergence if the 2-norm of
     this projected gradient is less than convergenceTol. */
-short SurrBasedLocalMinimizer::
-hard_convergence_check(const Response& response_truth,
-		       const RealVector& c_vars,
+void SurrBasedLocalMinimizer::
+hard_convergence_check(SurrBasedLevelData& tr_data,
 		       const RealVector& lower_bnds,
 		       const RealVector& upper_bnds)
 {
-  const RealVector& fns_truth   = response_truth.function_values();
-  const RealMatrix& grads_truth = response_truth.function_gradients();
+  const RealVector&       c_vars = tr_data.c_vars_center();       
+  const Response& response_truth = tr_data.response_center(CORR_TRUTH_RESPONSE);
+  const RealVector&    fns_truth = response_truth.function_values();
+  const RealMatrix&  grads_truth = response_truth.function_gradients();
 
   // -------------------------------------------------
   // Initialize/update Lagrange multipliers and filter
@@ -769,7 +777,7 @@ hard_convergence_check(const Response& response_truth,
 
   // hard convergence assessment requires gradients
   if ( !(truthSetRequest & 2) )
-    return 0;
+    return;
 
   // update standard Lagrangian multipliers
   if (numNonlinearConstraints) {
@@ -780,7 +788,7 @@ hard_convergence_check(const Response& response_truth,
       update_lagrange_multipliers(fns_truth, grads_truth);
     // avoid merit fn gradient calculations if constraints are violated
     if (constraint_viol > 0.)
-      return 0;
+      return;
   }
 
   // -----------------------------------
@@ -831,9 +839,8 @@ hard_convergence_check(const Response& response_truth,
   Cout << "In hard convergence check: merit_fn_grad_norm =  "
        << merit_fn_grad_norm << '\n';
 #endif
-  short converge_code = ( merit_fn_grad_norm < convergenceTol ) ?
-    4  /*hard convergence*/ : 0;
-  return converge_code;
+  if (merit_fn_grad_norm < convergenceTol)
+    tr_data.set_status_bits(HARD_CONVERGED);
 }
 
 

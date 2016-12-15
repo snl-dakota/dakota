@@ -103,12 +103,11 @@ protected:
   void compute_trust_region_ratio(SurrBasedLevelData& tr_data,
 				  bool check_interior = false);
 
-  /// check for hard convergence (norm of projected gradient of
-  /// merit function near zero)
-  short hard_convergence_check(const Response& response_truth,
-			       const RealVector& c_vars,
-			       const RealVector& lower_bnds,
-			       const RealVector& upper_bnds);
+  /// check for hard convergence (norm of projected gradient of merit
+  /// function < tolerance)
+  void hard_convergence_check(SurrBasedLevelData& tr_data,
+			      const RealVector& lower_bnds,
+			      const RealVector& upper_bnds);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,

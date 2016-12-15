@@ -123,10 +123,10 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   for (i=0; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
 
-    tr_data.vars_center(iteratedModel.current_variables());//sets newCenterFlag
+    tr_data.vars_center(iteratedModel.current_variables());// sets NEW_CENTER
 
-    // set TR factor (actual bounds defined during update_trust_region())
-    tr_data.trust_region_factor(origTrustRegionFactor[i]);
+    // set TR factor (TR bounds defined during update_trust_region())
+    tr_data.trust_region_factor(origTrustRegionFactor[i]); // sets NEW_TR_FACTOR
 
     tr_data.reset_soft_convergence_count();
 
@@ -240,25 +240,34 @@ void HierarchSurrBasedLocalMinimizer::build()
   // > if new center at or above current level, update corrected responses.
 
   size_t j, num_tr = trustRegions.size(); int i;
-  short lev_conv_code = 1; // force check at first level
   for (i=minimizeIndex; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
+    int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
 
-    // build approximation at level i and retrieve center truth response
-    if (tr_data.status(NEW_CENTER)) {
+    // If new candidate indicated for a level, then:
+    // > compute response_star_truth (values only)
+    // > evaluate TR ratio for improvement for this level at new point
+    // > accept/reject step and update TR factor / bounds
+    if (tr_data.status(NEW_CANDIDATE)) { // verification needed
 
-      // If new center indicated for a level, then:
-      // > build the approximation
-      // > evaluate TR ratio for improvement for this level at new point
-      // > accept/reject step and update TR factor / bounds
-      //   >> see Monschke diagram for reject
-      //   >> if accept then promote star to center
-      
-      if (i > minimizeIndex) { // verification not yet performed
-	// TO DO: assign to star?
-	/*lev_conv_code =*/ verify(i);
-	//update_trust_region_data(tr_data, ...); // TODO ?
+      // Evaluate truth_model for TR_i (vals only, +derivs later in build),
+      // computes TR ratio, accepts/rejects step, scales TR, and updates
+      // vars/resp center if accepted
+      verify(i); // updates center vars
+
+      if (tr_data.status(NEW_CENTER)) {
+	if (last_tr || !nestedTrustRegions)
+	  update_trust_region_data(tr_data, globalLowerBnds, globalUpperBnds);
+	else
+	  update_trust_region_data(tr_data, trustRegions[ip1].tr_lower_bounds(),
+				   trustRegions[ip1].tr_upper_bounds());
       }
+    }
+
+    // If new center accepted for a level, then promote star to center,
+    // build new approx w/ derivs (response_center_truth)
+    if (tr_data.status(NEW_CENTER)) {
+      // build approximation at level i and retrieve center truth response
 
       set_model_states(i); // only HF model is evaluated
       Variables& center_vars = tr_data.vars_center();
@@ -275,28 +284,26 @@ void HierarchSurrBasedLocalMinimizer::build()
       // apply recursive correction to top level truth, if needed
       correct_center_truth(i);
       
-      if (lev_conv_code) {
-	// Recursive assessment of hard convergence is bottom up (TR bounds and 
-	// corrections managed top-down).  When one level has hard converged,
-	// must update and recenter level above.
-	// TODO: need to manage soft convergence as well...
-	int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
-	const RealVector& parent_l_bnds = (last_tr) ? globalLowerBnds :
-	  trustRegions[ip1].tr_lower_bounds();
-	const RealVector& parent_u_bnds = (last_tr) ? globalUpperBnds :
-	  trustRegions[ip1].tr_upper_bounds();
-	SurrBasedLevelData& tr_data = trustRegions[i];
-	lev_conv_code =
-	  hard_convergence_check(tr_data.response_center(CORR_TRUTH_RESPONSE),
-				 tr_data.c_vars_center(), parent_l_bnds,
-				 parent_u_bnds);
-	if (lev_conv_code) {
-	  if (last_tr) convergenceCode = lev_conv_code;
-	  else // update center to trigger build on next pass through loop:
-	    trustRegions[ip1].vars_star(center_vars); // sets newCenterFlag
+      // Recursive assessment of hard convergence is bottom up (TR bounds and 
+      // corrections managed top-down).  When one level has hard converged,
+      // must update and recenter level above.
+      // TODO: need to manage soft convergence as well...
+      if (last_tr)
+	hard_convergence_check(tr_data, globalLowerBnds, globalUpperBnds);
+      else
+	hard_convergence_check(tr_data, trustRegions[ip1].tr_lower_bounds(),
+			       trustRegions[ip1].tr_upper_bounds());
+      if (tr_data.converged()) {
+	if (last_tr) convergenceCode = 4; // TODO
+	else {
+	  trustRegions[ip1].vars_star(center_vars); // trigger build for next TR
+	  tr_data.reset_status_bits(CONVERGED);
 	}
       }
     }
+    // TO DO: anything additional for reject? (see Monschke diagram)
+    //else {
+    //}
   }
 
   if (convergenceCode)
@@ -411,7 +418,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
 
 
 /** Step 4 in SurrBasedLocalMinimizer::core_run(). */
-short HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
+void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
 {
   // ****************************
   // Validate candidate point
@@ -440,32 +447,14 @@ short HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   // when iterations at a lower level are complete and the next higher level
   // TR needs to be recentered --> this occurs within build().
    
-  // If the candidate optimum (vars_star) is accepted, then update the
-  // center variables and response data.
-  if (tr_data.status(NEW_CENTER)) {
-    tr_data.vars_center(vars_star);
-
-    // Does not appear to be required:
-    //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
-    //			      UNCORR_TRUTH_RESPONSE);
-
-    // Note: re-eval for derivative consistency occurs in build()
-    tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
-			    CORR_TRUTH_RESPONSE);
-  }
-
-  // Check for convergence in order of precedence:
-  short conv_code = 0;
-  // terminate SBLM if trustRegionFactor is less than its minimum value
+  // Check for convergence globally (max SBLM iterations)
+  if (sbIterNum >= maxIterations)
+    convergenceCode = 2;
+  // Check for convergence metrics for this TR:
   if (tr_data.trust_region_factor() < minTrustRegionFactor)
-    conv_code = 1;
-  // terminate SBLM if the maximum number of iterations has been reached
-  else if (sbIterNum >= maxIterations)
-    conv_code = 2;
-  else if (tr_data.soft_convergence_count() >= softConvLimit)
-    conv_code = 3; // soft convergence
-
-  return conv_code;
+    tr_data.set_status_bits(MIN_TR_CONVERGED);
+  if (tr_data.soft_convergence_count() >= softConvLimit)
+    tr_data.set_status_bits(SOFT_CONVERGED);
 }
 
 // Note: find() implies a DB lookup and DB entries are uncorrected, so employ

@@ -224,7 +224,7 @@ void DataFitSurrBasedLocalMinimizer::build()
       iteratedModel.truth_model().interface_id(),
       trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
-  if (!convergenceCode)
+  if (!trustRegionData.converged())
     compute_center_correction(embed_correction);
 }
 
@@ -243,15 +243,12 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
 
   // Assess hard convergence prior to global surrogate construction
   if (trustRegionData.status(NEW_CENTER))
-    convergenceCode
-      = hard_convergence_check(resp_center_truth.second,
-			       vars_center.continuous_variables(),
-			       globalLowerBnds, globalUpperBnds);
+    hard_convergence_check(trustRegionData, globalLowerBnds, globalUpperBnds);
 
   bool embed_correction = false;
 
   // Perform the sampling and the surface fitting
-  if (!convergenceCode)
+  if (!trustRegionData.converged())
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction
       = iteratedModel.build_approximation(vars_center, resp_center_truth);
@@ -282,10 +279,7 @@ bool DataFitSurrBasedLocalMinimizer::build_local()
 		    iteratedModel.truth_model());
 
   // Assess hard convergence following build/retrieve
-  convergenceCode = 
-    hard_convergence_check(trustRegionData.response_center(CORR_TRUTH_RESPONSE),
-			   trustRegionData.c_vars_center(),
-			   globalLowerBnds, globalUpperBnds);
+  hard_convergence_check(trustRegionData, globalLowerBnds, globalUpperBnds);
 
   // embedded correction:
   return ( localApproxFlag || (multiptApproxFlag && !(approxSetRequest & 4)) );
@@ -332,8 +326,6 @@ compute_center_correction(bool embed_correction)
 
 void DataFitSurrBasedLocalMinimizer::minimize()
 {
-  //if (convergenceCode) return;
-
   // If hard convergence not achieved in truth values, perform approximate
   // optimization followed by additional (soft) convergence checks.
 
@@ -393,10 +385,10 @@ void DataFitSurrBasedLocalMinimizer::verify()
   // compute the trust region ratio and update soft convergence counters
   compute_trust_region_ratio(trustRegionData, globalApproxFlag);
 
+  /* Deactivated on 12/14/16 as this is replaced during build()
   // If the candidate optimum (varsStar) is accepted, then update the
   // center variables and response data.
   if (trustRegionData.status(NEW_CENTER)) {
-    trustRegionData.c_vars_center(trustRegionData.c_vars_star());
     trustRegionData.response_center_pair(truth_model.evaluation_id(),
 					 truth_resp, CORR_TRUTH_RESPONSE);
     // update responseCenterApprox in the hierarchical case only if the
@@ -407,6 +399,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
     //    trustRegionData.response_star(CORR_APPROX_RESPONSE),
     //    CORR_APPROX_RESPONSE);
   }
+  */
 
   // record the iteration results (irregardless of new center)
   iteratedModel.active_variables(trustRegionData.vars_center());
@@ -415,23 +408,19 @@ void DataFitSurrBasedLocalMinimizer::verify()
     truth_model.interface_id(),
     trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
-  if (convergenceCode) return;
-
-  // Check for convergence in order of precedence
-  // (multiple conv types are _not_ recorded):
-  //
-  // terminate SBLM if trustRegionFactor is less than its minimum value
-  if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
-    convergenceCode = 1;
-  // terminate SBLM if the maximum number of iterations has been reached
-  else if (sbIterNum >= maxIterations)
+  // Check for convergence globally (max SBLM iterations):
+  if (sbIterNum >= maxIterations)
     convergenceCode = 2;
+  // Check for convergence metrics for this TR:
+  // test if trustRegionFactor is less than its minimum value
+  if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
+    trustRegionData.set_status_bits(MIN_TR_CONVERGED);
   // If the soft convergence criterion is satisfied for a user-specified
   // number of iterations (softConvLimit), then SBLM is deemed converged.
   // Note: this assessment is independent of step acceptance, and "soft
   // convergence" can occur even when a very small improving step is made.
-  else if (trustRegionData.soft_convergence_count() >= softConvLimit)
-    convergenceCode = 3; // soft convergence
+  if (trustRegionData.soft_convergence_count() >= softConvLimit)
+    trustRegionData.set_status_bits(SOFT_CONVERGED);
 }
 
 

@@ -87,7 +87,7 @@ private:
   void set_model_states(size_t tr_index);
 
   /// Verify approximate step with truth model for trust region level tr_index
-  short verify(size_t tr_index);
+  void verify(size_t tr_index);
 
   // MG/Opt functions:
 
@@ -148,7 +148,7 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
 
 
 inline void HierarchSurrBasedLocalMinimizer::verify()
-{ convergenceCode = verify(minimizeIndex); }
+{ verify(minimizeIndex); }
 
 } // namespace Dakota
 
