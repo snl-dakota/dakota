@@ -113,9 +113,10 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
 
   // size the trust region bounds to allow individual updates
   trustRegionData.initialize_bounds(numContinuousVars);
-  // Initialize response results objects (approx/truth and center/star)
-  trustRegionData.initialize_responses(approx_model.current_response(),
-				       truth_model.current_response(), false);
+  // Initialize variable/response objects (approx/truth and center/star)
+  trustRegionData.initialize_data(iteratedModel.current_variables(),
+				  approx_model.current_response(),
+				  truth_model.current_response(), false);
   // responseCenterTruth is an IntResponsePair: init the eval_id
   trustRegionData.response_center_id(truth_model.evaluation_id(),
 				     CORR_TRUTH_RESPONSE);

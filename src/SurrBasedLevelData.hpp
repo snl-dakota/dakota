@@ -45,8 +45,8 @@ public:
   /// size the trsut region bound arrays to allow individual updates
   void initialize_bounds(size_t num_c_vars);
   /// initialize response objects via copy
-  void initialize_responses(const Response& approx_resp,
-			    const Response& truth_resp, bool uncorr = true);
+  void initialize_data(const Variables& vars, const Response& approx_resp,
+		       const Response& truth_resp, bool uncorr = true);
   /// initialize model forms and discretization levels
   void initialize_indices(size_t approx_form, size_t truth_form,
 			  size_t approx_level = _NPOS,

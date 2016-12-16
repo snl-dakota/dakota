@@ -55,9 +55,10 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   for (ml_iter=models.begin(), i=0; i<numFid-1; ++i) {
     // size the trust region bounds to allow individual updates
     trustRegions[i].initialize_bounds(numContinuousVars);
-    // assign approx and truth for this level
-    trustRegions[i].initialize_responses(ml_iter->current_response(),
-					 (++ml_iter)->current_response());
+    // assign variable/response objects (approx/truth and center/star)
+    trustRegions[i].initialize_data(iteratedModel.current_variables(),
+				    ml_iter->current_response(),
+				    (++ml_iter)->current_response());
     // assign the approx / truth model forms
     trustRegions[i].initialize_indices(i, i+1);
   }
@@ -165,29 +166,24 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   //   constrained by global bounds; intermediate levels can evolve
   //   independently based on the accuracy of their individual discrepancies.
 
-  int index, j, k, num_tr_m1 = trustRegions.size() - 1;
-  bool new_tr_factor = trustRegions[num_tr_m1].status(NEW_TR_FACTOR),
-       parent_update = new_tr_factor;
-  // Highest fidelity valid over global bnds: parent bnds for top TR = global
-  if (new_tr_factor)
-    update_trust_region_data(trustRegions[num_tr_m1], globalLowerBnds,
-			     globalUpperBnds);
-  // Loop over all subordinate levels
-  for (index=num_tr_m1-1; index>=minimizeIndex; --index) {
+  int num_tr_m1 = trustRegions.size() - 1, index, min = minimizeIndex;
+  bool new_tr_factor, parent_update = false;
+  // Loop over all trust region levels
+  for (index=num_tr_m1; index>=min; --index) {
 
     new_tr_factor = trustRegions[index].status(NEW_TR_FACTOR);
     if (new_tr_factor)// nested levels at / below this level must update TR bnds
       parent_update = true;
 
     // if nested at all levels, only need to constraint from one level above:
-    if (nestedTrustRegions) {
+    if (nestedTrustRegions && index < num_tr_m1) {
       if (parent_update) // update if any TR factors at/above level have changed
 	update_trust_region_data(trustRegions[index],
 				 trustRegions[index+1].tr_lower_bounds(),
 				 trustRegions[index+1].tr_upper_bounds());
     }
     // if !nested and !minimizeIndex, then no parent constraints, only global
-    else if (index != minimizeIndex) {
+    else if (index > minimizeIndex || num_tr_m1 == 0) {
       if (new_tr_factor) // update only if this level's TR factor has changed
 	update_trust_region_data(trustRegions[index], globalLowerBnds,
 				 globalUpperBnds);
@@ -199,6 +195,7 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     else if (parent_update) {
       RealVector parent_upper_bnds(numContinuousVars, false),
 	         parent_lower_bnds(numContinuousVars, false);
+      size_t j; int k;
       for (j=0; j<numContinuousVars; ++j) {
         Real min_up_bnd = globalUpperBnds[j], max_lo_bnd = globalLowerBnds[j];
         for (k=index+1; k<num_tr_m1; ++k) {
@@ -239,8 +236,8 @@ void HierarchSurrBasedLocalMinimizer::build()
   // > if new center at current level, build new approximation
   // > if new center at or above current level, update corrected responses.
 
-  size_t j, num_tr = trustRegions.size(); int i;
-  for (i=minimizeIndex; i<num_tr; ++i) {
+  int i, j, num_tr = trustRegions.size(), min = minimizeIndex;
+  for (i=min; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
     int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
 
@@ -308,7 +305,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 
   // Loop TRs top-down so that correction logic detects new centers at/above
   bool update_corr = false; 
-  for (i=num_tr-1; i>=minimizeIndex; --i) {
+  for (i=num_tr-1; i>=min; --i) {
 
     SurrBasedLevelData& tr_data = trustRegions[i];
     bool new_level_center  = tr_data.status(NEW_CENTER);
@@ -333,9 +330,9 @@ void HierarchSurrBasedLocalMinimizer::build()
       // current level) and store in tr_data
       if (i+1 < num_tr) {
 	Cout << "\nRecursively correcting truth model response (form "
-	     << tr_data.truth_model_form();
+	     << tr_data.truth_model_form() + 1;
 	if (tr_data.truth_model_level() != _NPOS)
-	  Cout << ", level " << tr_data.truth_model_level();
+	  Cout << ", level " << tr_data.truth_model_level() + 1;
 	Cout << ") for trust region center.\n";
 	Response corrected_resp
 	  = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
@@ -353,9 +350,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 
       // Recursively correct approx response and store in tr_data
       Cout << "\nRecursively correcting surrogate model response (form "
-	   << tr_data.approx_model_form();
+	   << tr_data.approx_model_form() + 1;
       if (tr_data.approx_model_level() != _NPOS)
-	Cout << ", level " << tr_data.approx_model_level();
+	Cout << ", level " << tr_data.approx_model_level() + 1;
       Cout << ") for trust region center.\n";
       // correct approximation across all levels above i
       Response corrected_resp
@@ -497,9 +494,9 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
 			    CORR_TRUTH_RESPONSE);
   else {
     Cout << "\nRecursively correcting truth model response (form "
-	 << tr_data.truth_model_form();
+	 << tr_data.truth_model_form() + 1;
     if (tr_data.truth_model_level() != _NPOS)
-      Cout << ", level " << tr_data.truth_model_level();
+      Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region center.\n";
     Variables& center_vars = tr_data.vars_center();
     Response corrected_resp
@@ -552,9 +549,9 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
 			    CORR_TRUTH_RESPONSE);
   else {
     Cout << "\nRecursively correcting truth model response (form "
-	 << tr_data.truth_model_form();
+	 << tr_data.truth_model_form() + 1;
     if (tr_data.truth_model_level() != _NPOS)
-      Cout << ", level " << tr_data.truth_model_level();
+      Cout << ", level " << tr_data.truth_model_level() + 1;
     Cout << ") for trust region candidate.\n";
     Variables& star_vars = tr_data.vars_star();
     Response corrected_resp

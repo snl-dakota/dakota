@@ -17,10 +17,15 @@ namespace Dakota {
 
 
 void SurrBasedLevelData::
-initialize_responses(const Response& approx_resp, const Response& truth_resp,
-		     bool uncorr)
+initialize_data(const Variables& vars, const Response& approx_resp,
+		const Response& truth_resp, bool uncorr)
 {
-  // Initialize with deep response copies to avoid representation sharing;
+  // Initialize with deep Variables copies to avoid representation sharing;
+  // Variables::active_variables() is then used for run time assignments.
+  varsCenter = vars.copy();
+  varsStar   = vars.copy();
+
+  // Initialize with deep Response copies to avoid representation sharing;
   // Response::update() is then used for run time assignments.
 
   responseStarApproxCorrected   = approx_resp.copy();
