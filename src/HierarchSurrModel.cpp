@@ -1028,10 +1028,17 @@ single_apply(const Variables& vars, Response& resp,
 	     const SizetSizet2DPair& indices)
 {
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  if (!deltaCorr[indices].computed())
-    deltaCorr[indices].compute(vars, truthResponseRef[indices.second], resp,
-			       quiet_flag);
-  deltaCorr[indices].apply(vars, resp, quiet_flag);
+  bool apply_corr = true;
+  if (!deltaCorr[indices].computed()) {
+    std::map<SizetSizetPair,Response>::iterator it
+      = truthResponseRef.find(indices.second);
+    if (it == truthResponseRef.end()) apply_corr = false; // not found
+    else
+      deltaCorr[indices].compute(vars, truthResponseRef[indices.second],
+				 resp, quiet_flag);
+  }
+  if (apply_corr)
+    deltaCorr[indices].apply(vars, resp, quiet_flag);
 }
 
 

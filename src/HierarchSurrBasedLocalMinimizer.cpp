@@ -241,6 +241,8 @@ void HierarchSurrBasedLocalMinimizer::build()
     SurrBasedLevelData& tr_data = trustRegions[i];
     int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
 
+    set_model_states(i); // only HF model is evaluated
+
     // If new candidate indicated for a level, then:
     // > compute response_star_truth (values only)
     // > evaluate TR ratio for improvement for this level at new point
@@ -266,7 +268,6 @@ void HierarchSurrBasedLocalMinimizer::build()
     if (tr_data.status(NEW_CENTER)) {
       // build approximation at level i and retrieve center truth response
 
-      set_model_states(i); // only HF model is evaluated
       Variables& center_vars = tr_data.vars_center();
       iteratedModel.active_variables(center_vars);
       //iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
@@ -310,6 +311,8 @@ void HierarchSurrBasedLocalMinimizer::build()
     SurrBasedLevelData& tr_data = trustRegions[i];
     bool new_level_center  = tr_data.status(NEW_CENTER);
     Variables& center_vars = tr_data.vars_center();
+
+    set_model_states(i); // only LF model is evaluated
 
     if (new_level_center) {
       // all levels at or below this level must update corrected responses

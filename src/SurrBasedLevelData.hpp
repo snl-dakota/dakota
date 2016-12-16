@@ -241,7 +241,7 @@ inline Variables& SurrBasedLevelData::vars_center()
 
 inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
-  varsCenter.active_variables(vars);
+  varsCenter.all_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
 }
@@ -279,10 +279,9 @@ inline Variables& SurrBasedLevelData::vars_star()
 
 inline void SurrBasedLevelData::vars_star(const Variables& vars)
 {
-  varsStar.active_variables(vars);
+  varsStar.all_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CANDIDATE);
-  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
 }
 
 
@@ -297,16 +296,14 @@ inline Real SurrBasedLevelData::c_var_star(size_t i) const
 inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
 {
   varsStar.continuous_variables(c_vars);
-  set_status_bits(NEW_CANDIDATE);
-  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
 }
 
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
 {
   varsStar.continuous_variable(c_var, i);
-  set_status_bits(NEW_CANDIDATE);
-  reset_status_bits(NEW_CENTER); // likely redundant, included for completeness
+  set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
 }
 
 
