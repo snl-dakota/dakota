@@ -3,11 +3,197 @@ Pointer to interface that provides non-nested responses
 Description::
 \c optional_interface_pointer is used to specify an optional inferface (using 
 that interface block's \ref interface-id_interface label) to provide non-nested 
-responses, which will be combined with respones from the nested sub-iterator. The
-\c primary_response_mapping and \c secondary_response_mapping keywords control 
-how responses are combined.
+responses to the nested model.
+
+To generate the complete set of primary responses (response functions, 
+objective functions, and calibration terms) expected by the nested model, 
+primary responses from the optional interface may be combined (by addition) 
+with responses derived from sub-iterator results, or they may be presented 
+unchanged to the nested model. The way that Dakota treats primary responses
+from these two sources depends on the number of rows of and entries in the
+\c primary_response_mapping matrix.
+
+To understand how, it is helpful to consider the following expression.
+Nested model primary responses \f$r\f$ are computed from 
+the column vector of optional interface responses \f$f\f$, the 
+\c primary_response_mapping matrix \f$W\f$, and the column vector of results 
+from the sub-iterator \f$s\f$.
+
+\f[ 
+
+ \left\{r\right\} = 
+ 
+   \left\{ 
+     \begin{array}{c}
+                      f \\ 
+                     \hline 
+                      0 
+   \end{array}
+  \right\} 
+ 
+ + 
+ 
+ \left\{
+  \begin{array}{c}
+    \left[ W \right] \left\{s\right\} \\
+     \hline
+      0
+  \end{array}
+  \right\}
+
+\f]
+
+The number of rows in \f$f\f$ is equal to the number of primary responses
+returned by the optional interface, and in \f$r\f$, the number of primary 
+responses expected by the nested model. In this expression, \f$0\f$ represents 
+"padding" that may be needed by either the optional interface vector or the 
+sub-iterator vector to make them the same dimension as \f$r\f$. One or the other
+of these quantities may be padded, but not both. In terms of the Dakota input, 
+this means that the number of nested model primary responses must equal the 
+larger of these two quantities: the number of optional interface 
+responses or the number of rows in the \c primary_response_mapping.
+
+The nested model's secondary responses (nonlinear constraints) are the 
+secondary responses from the optional interface augmented by the secondary 
+responses constructed from sub-iterator results. Unlike primary responses from 
+these two sources, which may be combined by adding, it is not possible 
+presently to combine secondary responses. For this reason, the number of nested 
+model's secondary responses must equal the number of secondary responses 
+provided by the optional interface, plus the number provided by the sub-iterator 
+(i.e. the  number of rows in the \c secondary_response_mapping). Secondary 
+responses from the optional interface are inserted first into the nested model's 
+nonlinear constraints; those from the sub-iterator come after. If the nested 
+model has secondary responses and an optional interface is used, it is necessary 
+to specify a separate response block for the optional interface using the \c 
+optional_interface_response_pointer. Targets and upper and lower bounds for
+the nonlinear constraints are taken from the nested model's response block.
+
 Topics::	block_pointer
 Examples::
+The first example illustrates the use of an optional interface and primary 
+response mapping. No secondary responses are present. Assume that the inner 
+method returns two results (suppose its the mean and standard deviation of a 
+single response), so that the dimensions of \c primary_response_mapping will be 
+interpreted by Dakota as 1x2, just as they are written here.
+
+The nested model (\c nested) expects two primary responses 
+(\c outer_resp block), and the optional interface returns two 
+(\c opt_resp block). 
+  
+
+\verbatim
+model
+  id_model 'nested'
+  nested
+    optional_interface_pointer 'opt_intf'
+      optional_interface_response_pointer 'opt_resp'
+    sub_method_pointer 'inner_method'
+      primary_response_mapping   1.0 2.0 
+    
+    responses_pointer 'outer_resp'
+    variables_pointer 'outer_vars'
+
+responses
+  id_responses 'opt_resp'
+  response_functions 2
+    descriptors 'opt1' 'opt2'
+  no_gradients
+  no_hessians
+
+responses
+  id_responses 'outer_resp'
+  response_functions 2
+    descriptors 'out1' 'out2'
+  no_gradients
+  no_hessians
+\endverbatim
+
+The first nested model response, \f$out1\f$
+will be computed \f$ out1 = opt1 + 1.0*mean + 2.0*stddev \f$, and the second
+response \f$out2\f$ will be equal to simply \f$opt2\f$. In the matrix form
+introduced above, including the implicit padding:
+
+\f[
+\left\{
+ \begin{array}{c}
+    out1 \\
+    out2
+ \end{array} 
+\right\}
+=
+  \left\{
+  \begin{array}{c}
+    opt1 \\
+    opt2
+  \end{array}
+  \right\}
++
+
+  \left\{
+  \begin{array}{c}
+    1.0 \cdot mean + 2.0 \cdot stddev \\
+     0
+  \end{array}
+  \right\}
+\f]
+
+The \c optional_interface_response_pointer was not strictly needed. Because the 
+number of responses returned by the optional interface and expected by the 
+nested model is the same (and no secondary responses are present), the nested 
+model's response specification alone would have sufficed.
+
+If it were desired to combine \f$opt2\f$ with the sub-iterator's results and
+set \f$out1\f$ to \f$ opt1 \f$ with no combination, then the \c primary_response_mapping
+matrix could be changed to:
+
+\verbatim
+      primary_response_mapping   0.0 0.0
+                                 1.0 2.0 
+\endverbatim
+
+
+
+<hr>
+Secondary responses will be demonstrated in the second example.
+
+\verbatim
+model
+  id_model 'nested'
+  nested
+    optional_interface_pointer 'opt_intf'
+      optional_interface_response_pointer 'opt_resp'
+    sub_method_pointer 'inner_method'
+      primary_response_mapping   1.0 2.0 
+      secondary_response_mapping 1.0 0.0
+    responses_pointer 'outer_resp'
+    variables_pointer 'outer_vars'
+
+responses
+  id_responses 'opt_resp'
+  objective_functions 2
+    descriptors 'opt1' 'opt2'
+  nonlinear_inequality_constraints 1
+    descriptors 'optc'
+  no_gradients
+  no_hessians
+
+responses
+  id_responses 'outer_resp'
+  objective_functions 2
+    descriptors 'out1' 'out2'
+  nonlinear_inequality_constraints 2
+    descriptors 'outc1' 'outc2'
+  no_gradients
+  no_hessians
+\endverbatim
+
+The nested model expects a total of two constraints. Because the 
+\c secondary_response_mapping has one row, one of these constraints will be
+supplied from the sub-iterator. The other is provided by the optional 
+interface. Secondary responses from the optional iterator come first, and
+so \c optc is placed in \c outc1. \c outc2 takes the value computed
+from the sub-iterator results.
+
 Theory::
 Faq::
 See_Also::	
