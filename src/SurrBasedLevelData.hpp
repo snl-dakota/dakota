@@ -29,8 +29,10 @@ enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
 // bits for trust region status
 enum { NEW_CANDIDATE=1,  NEW_CENTER=2,      NEW_TR_FACTOR=4,
        HARD_CONVERGED=8, SOFT_CONVERGED=16, MIN_TR_CONVERGED=32,
-       MAX_ITER_CONVERGED=64, CONVERGED=(HARD_CONVERGED|SOFT_CONVERGED|
-					 MIN_TR_CONVERGED|MAX_ITER_CONVERGED) };
+       MAX_ITER_CONVERGED=64,
+       NEW_TRUST_REGION=(NEW_CENTER | NEW_TR_FACTOR),
+       CONVERGED=(HARD_CONVERGED    | SOFT_CONVERGED |
+		  MIN_TR_CONVERGED  | MAX_ITER_CONVERGED) };
 
 
 class SurrBasedLevelData
@@ -241,7 +243,7 @@ inline Variables& SurrBasedLevelData::vars_center()
 
 inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
-  varsCenter.all_variables(vars);
+  varsCenter.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   set_status_bits(NEW_CENTER);  reset_status_bits(NEW_CANDIDATE);
 }
@@ -279,7 +281,7 @@ inline Variables& SurrBasedLevelData::vars_star()
 
 inline void SurrBasedLevelData::vars_star(const Variables& vars)
 {
-  varsStar.all_variables(vars);
+  varsStar.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   set_status_bits(NEW_CANDIDATE);  reset_status_bits(NEW_CENTER);
 }

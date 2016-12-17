@@ -88,6 +88,8 @@ private:
   /// the HierarchSurrModel associated with trustRegions[tr_index]
   void set_model_states(size_t tr_index);
 
+  /// update trust region bounds, recurring top-down from tr_index_start
+  void update_trust_region(size_t tr_index_start);
   /// Verify approximate step with truth model for trust region level tr_index
   void verify(size_t tr_index);
 
@@ -147,6 +149,10 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
       trustRegions[tr_index].truth_model_form());
   }
 }
+
+
+inline void HierarchSurrBasedLocalMinimizer::update_trust_region()
+{ update_trust_region(trustRegions.size() - 1); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::verify()

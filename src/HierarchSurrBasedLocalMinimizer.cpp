@@ -56,7 +56,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
     // size the trust region bounds to allow individual updates
     trustRegions[i].initialize_bounds(numContinuousVars);
     // assign variable/response objects (approx/truth and center/star)
-    trustRegions[i].initialize_data(iteratedModel.current_variables(),
+    trustRegions[i].initialize_data(ml_iter->current_variables(),
 				    ml_iter->current_response(),
 				    (++ml_iter)->current_response());
     // assign the approx / truth model forms
@@ -158,7 +158,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
 
 
 /** Step 1 in SurrBasedLocalMinimizer::core_run(). */
-void HierarchSurrBasedLocalMinimizer::update_trust_region()
+void HierarchSurrBasedLocalMinimizer::update_trust_region(size_t tr_index_start)
 {
   // recur top down to enforce strict bound inter-relationships:
   // > Nested case: all levels are strict subsets of previous
@@ -167,12 +167,13 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
   //   independently based on the accuracy of their individual discrepancies.
 
   int num_tr_m1 = trustRegions.size() - 1, index, min = minimizeIndex;
-  bool new_tr_factor, parent_update = false;
+  bool new_trust_region, parent_update = false;
   // Loop over all trust region levels
-  for (index=num_tr_m1; index>=min; --index) {
+  for (index=tr_index_start; index>=min; --index) {
 
-    new_tr_factor = trustRegions[index].status(NEW_TR_FACTOR);
-    if (new_tr_factor)// nested levels at / below this level must update TR bnds
+    // require any of the constitutive bits, not all bits
+    new_trust_region = (trustRegions[index].status() & NEW_TRUST_REGION);
+    if (new_trust_region)//nested levels at/below this level must update TR bnds
       parent_update = true;
 
     // if nested at all levels, only need to constraint from one level above:
@@ -184,7 +185,7 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region()
     }
     // if !nested and !minimizeIndex, then no parent constraints, only global
     else if (index > minimizeIndex || num_tr_m1 == 0) {
-      if (new_tr_factor) // update only if this level's TR factor has changed
+      if (new_trust_region) // update only if this level's TR factor has changed
 	update_trust_region_data(trustRegions[index], globalLowerBnds,
 				 globalUpperBnds);
     }
@@ -236,7 +237,11 @@ void HierarchSurrBasedLocalMinimizer::build()
   // > if new center at current level, build new approximation
   // > if new center at or above current level, update corrected responses.
 
-  int i, j, num_tr = trustRegions.size(), min = minimizeIndex;
+  // --------------
+  // BOTTOM UP PASS: verify, build, hard convergence
+  // --------------
+  int i, j, num_tr = trustRegions.size(), min = minimizeIndex,
+    index_tr_start = 0;
   for (i=min; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
     int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
@@ -255,6 +260,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       verify(i); // updates center vars
 
       if (tr_data.status(NEW_CENTER)) {
+	index_tr_start = i; // for subsequent top-down pass
 	if (last_tr || !nestedTrustRegions)
 	  update_trust_region_data(tr_data, globalLowerBnds, globalUpperBnds);
 	else
@@ -304,6 +310,13 @@ void HierarchSurrBasedLocalMinimizer::build()
     //}
   }
 
+  // If needed, propagate TR updates down the hierarchy
+  if (index_tr_start) // 0 index already covered (no additional recursion reqd)
+    update_trust_region(index_tr_start);
+
+  // -------------
+  // TOP DOWN PASS: update computed and applied corrections
+  // -------------
   // Loop TRs top-down so that correction logic detects new centers at/above
   bool update_corr = false; 
   for (i=num_tr-1; i>=min; --i) {
@@ -347,9 +360,6 @@ void HierarchSurrBasedLocalMinimizer::build()
       else
 	tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 				CORR_TRUTH_RESPONSE);
-
-    //}
-    //if (update_corr) {
 
       // Recursively correct approx response and store in tr_data
       Cout << "\nRecursively correcting surrogate model response (form "
