@@ -2859,16 +2859,18 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<size_t, DataMethodRep> Szdmo[] = { 
       // must be sorted by string (key)
+        {"c3function_train.max_num", P maxNum},
       	{"c3function_train.max_rank", P maxRank},
-	{"final_solutions", P numFinalSolutions},
-	{"jega.num_cross_points", P numCrossPoints},
-	{"jega.num_designs", P numDesigns},
-	{"jega.num_generations", P numGenerations},
-	{"jega.num_offspring", P numOffspring},
-	{"jega.num_parents", P numParents},
-	{"max_hifi_evaluations", P maxHifiEvals},
-	{"num_candidate_designs", P numCandidateDesigns},
-	{"num_candidates", P numCandidates}
+        {"c3function_train.start_order", P startOrder},
+        {"final_solutions", P numFinalSolutions},
+        {"jega.num_cross_points", P numCrossPoints},
+        {"jega.num_designs", P numDesigns},
+        {"jega.num_generations", P numGenerations},
+        {"jega.num_offspring", P numOffspring},
+        {"jega.num_parents", P numParents},
+        {"max_hifi_evaluations", P maxHifiEvals},
+        {"num_candidate_designs", P numCandidateDesigns},
+        {"num_candidates", P numCandidates}
     };
     #undef P
 

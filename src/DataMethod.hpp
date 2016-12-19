@@ -991,6 +991,10 @@ public:
   size_t maxHifiEvals;
   /// maximum rank
   size_t maxRank;
+  /// starting polynomial order
+  size_t startOrder;
+  /// maximum number of samples
+  size_t maxNum;
 
   // DREAM sub-specification
 

@@ -6863,14 +6863,16 @@ static int
 
 static size_t
 	MP_(maxHifiEvals),
-        MP_(maxRank),
+    MP_(maxNum),        
+    MP_(maxRank),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
         MP_(numDesigns),
         MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
-	MP_(numParents);
+	MP_(numParents),
+    MP_(startOrder);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),

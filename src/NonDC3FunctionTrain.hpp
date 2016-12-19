@@ -13,7 +13,8 @@
 #ifndef NOND_C3_FUNCTION_TRAIN_H
 #define NOND_C3_FUNCTION_TRAIN_H
 
-#include "DakotaNonD.hpp"
+// #include "DakotaNonD.hpp
+#include "NonDExpansion.hpp"
 // #include "c3/lib_funcs.h"
 // #include "c3/lib_linalg.h"
 // #include "c3/lib_clinalg.h"
@@ -39,7 +40,8 @@ extern "C"
     double ope_opts_get_lb(const struct OpeOpts *);
     void ope_opts_set_ub(struct OpeOpts *, double);
     double ope_opts_get_ub(const struct OpeOpts *);
-
+    void ope_opts_set_start(struct OpeOpts *, size_t);
+    void ope_opts_set_maxnum(struct OpeOpts *,size_t);
     
     // One dimensional approximation options
     enum function_class {CONSTANT,PIECEWISE, POLYNOMIAL,
@@ -88,7 +90,7 @@ namespace Dakota {
 
 /** The NonDC3FunctionTrain class uses ... */
 
-class NonDC3FunctionTrain: public NonD
+class NonDC3FunctionTrain: public NonDExpansion
 {
 public:
 
@@ -147,6 +149,8 @@ private:
 
   /// The maximum rank of the function train
   size_t maxRank;
+  size_t maxNum;
+  size_t startOrder;
 
 };
 

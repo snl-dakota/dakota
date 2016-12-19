@@ -1015,7 +1015,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
           [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
+          [ start_order INTEGER >= 0 {N_mdm(sizet,startOrder)} ]
           [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
+          [ max_num INTEGER >= 0 {N_mdm(sizet,maxNum)} ]
          )
         |
         ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}

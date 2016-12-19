@@ -15,7 +15,8 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
-
+#include "dakota_data_io.hpp"
+#include "dakota_tabular_io.hpp"
 //#define DEBUG
 
 
@@ -28,25 +29,37 @@ NonDC3FunctionTrain* NonDC3FunctionTrain::c3Instance(NULL);
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
-  NonD(problem_db, model), numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
-  maxRank(probDescDB.get_sizet("method.c3function_train.max_rank"))
+  NonDExpansion(problem_db, model),
+  // numSamplesOnEmulator(probDescDB.get_int("method.nond.samples_on_emulator")),
+  maxNum(probDescDB.get_sizet("method.c3function_train.max_num")),
+  maxRank(probDescDB.get_sizet("method.c3function_train.max_rank")),
+  startOrder(probDescDB.get_sizet("method.c3function_train.start_order"))
+  // importApproxPointsFile(
+  //   probDescDB.get_string("method.import_approx_points_file")),
+  // importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
+  // exportPointsFile(
+  //   problem_db.get_string("model.export_approx_points_file"))
+  // exportPointsFile(
+  //   problem_db.get_string("model.surrogate.export_approx_points_file")),
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
-  short data_order,
-    u_space_type = ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
+  short data_order;
+  short u_space_type = ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+
+  transform_model(iteratedModel, uSpaceModel); // retain distribution bounds
 
   // ...
   // follow construct_expansion_sampler from NonDExpansion.cpp which is called in NonDPolynomialChaos.cpp
+  // construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
+  //                             importApproxActiveOnly);
 }
 
 
@@ -94,36 +107,60 @@ void NonDC3FunctionTrain::core_run()
   std::cout <<  convergenceTol << std::endl;
   std::cout <<  numSamplesOnEmulator << std::endl;
   std::cout <<  maxRank << std::endl;
+  std::cout <<  maxNum << std::endl;
+  std::cout <<  startOrder << std::endl;
 
-  size_t dim  = c3Instance->numContinuousVars;
+  size_t dim = numContinuousVars;
   struct Fwrap * fw = fwrap_create(dim,"general-vec");
   fwrap_set_fvec(fw,qoi_eval,NULL);
-  
-  struct OpeOpts * opts = ope_opts_alloc(LEGENDRE);
-  ope_opts_set_lb(opts,-2.0);
-  ope_opts_set_ub(opts,2.0);
-  struct OneApproxOpts * qmopts = one_approx_opts_alloc(POLYNOMIAL,opts);    
-  struct C3Approx * c3a = c3approx_create(CROSS,dim);
 
+  // const RealVector& lb = uSpaceModel.continuous_lower_bounds();
+  // const RealVector& ub = uSpaceModel.continuous_upper_bounds();
+
+  const RealVector& lb = iteratedModel.continuous_lower_bounds();
+  const RealVector& ub = iteratedModel.continuous_upper_bounds();
+      
+  struct OpeOpts ** opts = (struct OpeOpts **) malloc( dim * sizeof(struct OpeOpts *));
+  assert (opts != NULL);
+  struct OneApproxOpts ** qmopts = (struct OneApproxOpts **) malloc( dim * sizeof(struct OneApproxOpts *));
+
+  double norm_for_expectation = 1.0;
+  for (size_t ii = 0; ii < dim; ii++){
+      std::cout << "Dimension: " << ii << " (lb,ub) " << lb[ii] << "," << ub[ii] << std::endl;
+      opts[ii] = ope_opts_alloc(LEGENDRE);
+      ope_opts_set_lb(opts[ii],lb[ii]);
+      ope_opts_set_ub(opts[ii],ub[ii]);
+      ope_opts_set_start(opts[ii],startOrder);
+      ope_opts_set_maxnum(opts[ii],maxNum);
+      qmopts[ii] = one_approx_opts_alloc(POLYNOMIAL,opts[ii]);
+
+      norm_for_expectation *= (ub[ii]-lb[ii]);
+  }
+  struct C3Approx * c3a = c3approx_create(CROSS,dim);
   int verbose = 0;
   size_t init_rank = 3;
   double ** start = malloc_dd(dim);
   for (size_t ii = 0; ii < dim; ii++){
-      c3approx_set_approx_opts_dim(c3a,ii,qmopts);
-      start[ii] = linspace(-2.0,2.0,init_rank);
+      c3approx_set_approx_opts_dim(c3a,ii,qmopts[ii]);
+      start[ii] = linspace(lb[ii],ub[ii],init_rank);
   }
   c3approx_init_cross(c3a,init_rank,verbose,start);
   c3approx_set_cross_tol(c3a,1e-3);
+  c3approx_set_cross_maxiter(c3a,1);
 
   int adapt = 0;
   struct FunctionTrain * ft = c3approx_do_cross(c3a,fw,adapt);
 
-  double mean = function_train_integrate(ft);
+  double mean = function_train_integrate(ft) / norm_for_expectation;
   std::cout << "Mean is " << mean << std::endl;
   
   function_train_free(ft);
   c3approx_destroy(c3a);
-  one_approx_opts_free_deep(&qmopts);
+  for (size_t ii = 0; ii < dim; ii++){
+      one_approx_opts_free_deep(&(qmopts[ii]));
+  }
+  free(qmopts);
+  free(opts);
   free_dd(dim, start);
   fwrap_destroy(fw);
                                    
@@ -169,8 +206,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
     else {
       c3Instance->iteratedModel.evaluate();
       // pack Dakota resp data into qoi_sets...
-      const RealVector& fns_i
-	= c3Instance->iteratedModel.current_response().function_values();
+      const RealVector& fns_i = c3Instance->iteratedModel.current_response().function_values();
       copy_data(fns_i, qoi_sets+num_fns*i, num_fns);
     }
   }
@@ -192,8 +228,8 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
 void NonDC3FunctionTrain::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in print_results() below
-  //if (statsFlag) // calculate statistics on allResponses
-  //  compute_statistics(allSamples, allResponses);
+  // if (statsFlag) // calculate statistics on allResponses
+  //     compute_statistics(allSamples, allResponses);
 
   Analyzer::post_run(s);
 }

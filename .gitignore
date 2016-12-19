@@ -4,4 +4,5 @@ local
 *.swp
 cscope*
 tags
+build/*
 

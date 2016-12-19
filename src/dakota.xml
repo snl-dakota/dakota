@@ -1592,9 +1592,15 @@
 		      &default_convergence_tolerance;
 		      <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" default="10000">
     		      <param type="INTEGER" />
+    		  </keyword>
+              <keyword  id="start_order" name="start_order" code="{N_mdm(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
+		          <param type="INTEGER" constraint=">= 0" />
     		      </keyword>
 		      <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
-		      <param type="INTEGER" constraint=">= 0" />
+		          <param type="INTEGER" constraint=">= 0" />
+    		      </keyword>
+              <keyword  id="max_num" name="max_num" code="{N_mdm(sizet,maxNum)}" label="Maximum number of polynomials" help="" minOccurs="0" default="5">
+		          <param type="INTEGER" constraint=">= 0" />
     		      </keyword>
 		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
