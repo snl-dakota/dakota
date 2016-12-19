@@ -1,0 +1,56 @@
+# Constrained optimization of cantilever beam
+
+# GOAL of exercise: start with a thin, long beam that displaces too much
+# Find a lighter one that displaces less: stubby beam
+
+# For initial design 1.25, 1.5, 5.0
+#                      2.7126736100000000e+00 mass
+#                      1.9626666699999999e+05 stress
+#                      2.9014185099999999e-03 displacement
+
+# For example target design 1.5 2.0 5.0
+#                      4.3402777800000001e+00 mass
+#                      9.6666666700000002e+04 stress
+#                      1.1468726099999999e-03 displacement  0.001
+
+# Require stress < 1.0e5 displacement < 0.001
+
+environment
+  tabular_data
+    tabular_data_file 'opt_cons_cantilever.dat'
+
+method
+  coliny_direct
+    convergence_tolerance 1.0e-6
+    min_boxsize_limit 1.0e-12
+
+variables
+  continuous_design 2
+    descriptors    'w'   't'
+    upper_bounds   4.0   4.0
+    initial_point  1.25  1.5
+    lower_bounds   0.5   0.5
+
+  continuous_state 5
+    descriptors    'L'  'p'    'E'    'X'    'Y'
+    initial_state  5.0  500.0  2.9e7  350.0  500.0
+
+interface
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+    deactivate active_set_vector
+  asynchronous evaluation_concurrency 16
+
+responses
+  descriptors 'mass' 'stress' 'displacement'
+  objective_functions 1
+    nonlinear_inequality_constraints 2
+      upper_bounds 1.0e5 0.001
+  numerical_gradients
+  no_hessians
+

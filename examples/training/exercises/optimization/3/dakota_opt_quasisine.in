@@ -1,0 +1,22 @@
+environment
+  top_method_pointer = 'top'
+  tabular_data
+
+method
+  id_method = 'top'
+
+variables
+  continuous_design = 2
+    lower_bounds    -1.0     -1.0
+    upper_bounds     1.0      1.0
+    descriptors      'x1'     'x2'
+
+interface
+  analysis_drivers = 'quasi_sine_fcn'
+    fork 
+  asynchronous evaluation_concurrency 4
+
+responses
+  objective_functions = 1
+  analytic_gradients
+  no_hessians

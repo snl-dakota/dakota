@@ -34,7 +34,7 @@ evaluate(std::vector<double> const &x, std::vector<double> &vals, void *param)
   // TO DO: apply constraint mapping...
 }
 
-// TO DO: asnchronous evaluate() + synchronize() ???
+// TO DO: asynchronous evaluate() + synchronize() ???
 
 NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model),

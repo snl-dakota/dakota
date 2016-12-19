@@ -1,0 +1,25 @@
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_pce_vbd_tabular.dat'
+
+method
+  polynomial_chaos
+    expansion_order_sequence 7
+      collocation_points_sequence 0
+        orthogonal_matching_pursuit
+        cross_validation 
+       import_build_points_file 'cantilever_sampling_tabular.dat'
+     variance_based_decomp
+
+variables
+  # TODO
+
+interface
+  analysis_drivers = 'driver.sh'
+    fork
+
+responses
+  response_functions = 3
+  descriptors      = 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians

@@ -1,0 +1,28 @@
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_centered_tabular.dat'
+
+method
+  centered_parameter_study
+  steps_per_variable = 4
+  step_vector        = 0.2  0.2 2.0 
+                       10.0 1e6 1.0 1.0
+
+variables
+  active all
+  continuous_design = 3 
+    initial_point   = 1.0 1.0  10.0
+    descriptors     = 'w' 't'  'L'  
+  continuous_state  = 4
+    initial_state   = 500.0 2.9e7 5.0 10.0
+    descriptors     = 'p'   'E'   'X' 'Y'
+
+interface
+  analysis_drivers = 'driver.sh'
+    fork
+
+responses
+  response_functions = 3
+  descriptors      = 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians

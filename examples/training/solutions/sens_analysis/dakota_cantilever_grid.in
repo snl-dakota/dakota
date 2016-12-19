@@ -1,0 +1,28 @@
+environment
+  tabular_data
+    tabular_data_file = 'cantilever_grid_tabular.dat'
+
+method
+  multidim_parameter_study
+    partitions 8 5
+
+variables
+  active design
+  continuous_design = 2 
+    initial_point   = 1.0 1.0 
+    descriptors     = 'w' 't'  
+    lower_bounds    = 0.5 0.5
+    upper_bounds    = 1.5 1.5
+  continuous_state  = 5
+    initial_state   = 10.0 500.0 2.9e7 5.0 10.0
+    descriptors     = 'L'   'p'   'E'   'X' 'Y'
+
+interface
+  analysis_drivers = 'driver.sh'
+    fork
+
+responses
+  response_functions = 3
+    descriptors      = 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians

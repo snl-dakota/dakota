@@ -621,12 +621,6 @@ if(HAVE_QUESO)
 
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DHAVE_QUESO")
-  add_definitions("-DQUESO_HAVE_BOOST_SCOPED_PTR_HPP")
-  add_definitions("-DQUESO_HAVE_BOOST_SHARED_PTR_HPP")
-  add_definitions("-DQUESO_HAVE_BOOST_MATH_SPECIAL_FUNCTIONS_HPP")
-  if(DAKOTA_HAVE_MPI)
-    add_definitions("-DQUESO_HAVE_MPI")
-  endif()
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
@@ -759,8 +753,8 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
-  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT})
-  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ...) # cmake external package
+  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
+  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
   #list(APPEND EXPORT_TARGETS nowpac nlopt)

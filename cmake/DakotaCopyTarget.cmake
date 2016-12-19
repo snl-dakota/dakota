@@ -14,6 +14,13 @@ macro(DakotaCopyTarget target_name deplist_varname)
   )
   list(APPEND ${deplist_varname}
     ${CMAKE_CURRENT_BINARY_DIR}/${executable_name})
+  # Create test-specific dakota.sh for Mac to circumvent the SIP
+  if(APPLE)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.sh" 
+         "#!/bin/bash\nexport DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}\n${CMAKE_CURRENT_BINARY_DIR}/${target_name} $@")
+    execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.sh)
+  endif()
+ 
 endmacro()
 
 

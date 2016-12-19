@@ -1,0 +1,30 @@
+environment
+  tabular_data output_precision 1e-16
+
+method
+  centered_parameter_study
+    step_vector 0.1 0.1 2.0
+                10 1.e5 5. 10.
+    steps_per_variable 2
+
+variables
+  active all						
+  continuous_design = 3					
+    initial_point  2*1.0  20.0
+    descriptors    "w"     "t"     "L"
+  continuous_state = 4
+    initial_state  500. 29.E+6 50. 100.
+    descriptors    'p'   'E'   'X'  'Y'
+
+interface
+  analysis_drivers = 'driver.sh'
+    fork
+      parameters_file = 'params.in'
+      results_file    = 'results.out'
+
+responses
+  response_functions = 3
+  descriptors = 'mass' 
+                'stress'
+                'displacement'
+  no_gradients no_hessians

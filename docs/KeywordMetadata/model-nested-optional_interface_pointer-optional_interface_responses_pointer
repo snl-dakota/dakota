@@ -3,9 +3,10 @@ Pointer to responses block that defines non-nested responses
 Description::
 \c optional_interface_responses_pointer points to the reponses block (specifically, 
 its \ref responses-id_responses label) that defines the non-nested response to return
-to the nested model. The \c primary_response_mapping and \c secondary_response_mapping 
-keywords control how these non-nested respones are combined with responses from the nested
-sub-iterator. If \c optional_interface_responses_pointer is not provided, the top-level
+to the nested model. The \c primary_response_mapping keywords control how these 
+non-nested respones are combined with responses from the nested sub-iterator. See the
+entry for \c optional_interface_pointer for a full description. If 
+\c optional_interface_responses_pointer is not provided, the top-level.
 responses specification is reused.
 Topics::	block_pointer
 Examples::

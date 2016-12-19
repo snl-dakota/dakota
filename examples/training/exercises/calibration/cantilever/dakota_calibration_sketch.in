@@ -1,0 +1,43 @@
+# Sketch of Dakota input for cantilever parameter calibration. 
+# Try other solvers and various initial guesses...
+
+environment
+  tabular_data
+
+method
+  nl2sol
+    convergence_tolerance 1.0e-8
+  # To see the data difference transformation
+  output verbose
+
+variables
+  # Be sure to give the variables the exact descriptors specified here
+
+  # Estimate L, p, X from data...
+  # Add design variables for L in [90, 110], p in [400, 570], X in [200, 425]
+
+
+  # Fix parameters w = 2.5, t = 3.0, E = 2.9e7, Y = 500.0 using state variables
+
+
+interface
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+  asynchronous evaluation_concurrency 4
+
+responses
+  descriptors 'mass' 'stress' 'displacement'
+  calibration_terms 3
+
+    # Specify the calibration data file and its format
+
+
+    # Add a finite difference derivative specification for NL2SOL
+
+
+    no_hessians

@@ -19,11 +19,11 @@ The remainder of the model is specified under that keyword.
 A \b \c optional_interface_pointer points
 to the interface specification and \c
 optional_interface_responses_pointer points to a responses
-specification describing the data to be returned by this interface).
+specification describing the data to be returned by this interface.
 This interface is used to provide non-nested data, which is then
 combined with data from the nested iterator using the \c
-primary_response_mapping and \c secondary_response_mapping inputs (see
-mapping discussion below).
+primary_response_mapping. (See the discussions for the 
+\c sub_method_pointer and \c optional_interface_pointer keywords.)
 
 Topics::
 Examples::

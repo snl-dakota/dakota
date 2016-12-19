@@ -1,0 +1,31 @@
+environment
+  tabular_data
+
+method
+  global_reliability
+   x_gaussian_process
+   seed 1337
+   response_levels 0.11 0.3
+
+variables
+  uniform_uncertain 2
+   descriptors 'x1' 'x2'
+   lower_bounds = -0.8 -0.8
+   upper_bounds =  0.8  0.8
+
+#  triangular_uncertain 2
+#   descriptors 'x1' 'x2'
+#   lower_bounds = -0.8 -0.8
+#   upper_bounds =  0.8  0.8
+#   modes        =  0.0  0.0
+
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+
+interface
+  analysis_drivers 'quasi_sine_fcn'
+    fork 
+  asynchronous evaluation_concurrency 4
+
