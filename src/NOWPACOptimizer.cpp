@@ -13,6 +13,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NOWPACOptimizer.hpp"
+#include "PostProcessModels.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
@@ -22,11 +23,11 @@ namespace Dakota {
 
 
 void NOWPACBlackBoxEvaluator::
-evaluate(std::vector<double> const &x, std::vector<double> &vals, void *param)
+evaluate(RealArray const &x, RealArray &vals, void *param)
 {
-  RealVector c_vars = iteratedModel.continuous_variables_view();
-  copy_data(x, c_vars);
-  iteratedModel.compute_response(); // no ASV control, use default
+  RealVector c_vars; copy_data(x, c_vars);
+  iteratedModel.continuous_variables(c_vars);
+  iteratedModel.evaluate(); // no ASV control, use default
   copy_data(iteratedModel.current_response().function_values(), vals);
 
   // TO DO: apply optimization sense mapping...
@@ -38,12 +39,14 @@ evaluate(std::vector<double> const &x, std::vector<double> &vals, void *param)
 
 NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model),
-  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat")
+  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
+  nowpacEvaluator(iteratedModel)
 { initialize(); }
 
 
 NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(NOWPAC_OPT, model),
-  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat")
+  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
+  nowpacEvaluator(iteratedModel)
 { initialize(); }
 
 
@@ -93,7 +96,7 @@ void NOWPACOptimizer::initialize()
   //  nowpacSolver.set_option("eps_b"                       , 1e1  );
 
   // NOWPAC output verbosity is 0 (least) to 3 (most)
-  nowpacSolver.set_option("verbose", std::min(outputLevel,3) );
+  nowpacSolver.set_option("verbose", std::min(outputLevel, (short)3) );
 
   //nowpacSolver.set_max_trustregion( 1e0 ); // scale dependent
 
@@ -240,56 +243,53 @@ void NOWPACOptimizer::core_run()
 
   //////////////////////////////////////////////////////////////////////
 
-  // start optimization
-  nowpacSolver.optimize(x_star, obj_star);
+  // allocate arrays passed to optimization solver
+  RealArray x_star; Real obj_star;
+  copy_data(iteratedModel.continuous_variables(), x_star);
+  // create data object for nowpac output ( required for warm start )
+  BlackBoxData bb_data(numFunctions, numContinuousVars);
 
+  // start optimization (on output: bbdata contains data that allows warmstart
+  // and enables post-processing to get model values, gradients and hessians)
+  nowpacSolver.optimize(x_star, obj_star, bb_data);
   // output ...
-  std::cout << "optimal value = " << obj_star << std::endl;
-  std::cout << "optimal point = [" << x_star << "]" << std::endl;
+  Cout <<   "optimal value = " << obj_star
+       << "\noptimal point =\n" <<  x_star << std::endl;
     
-  double                             trustregion;
-  double                             c;
-  std::vector<double>                g(dim);
-  std::vector< std::vector<double> > H(dim);
-  for ( int i = 0; i < dim; ++i )    H[i].resize(dim);
-    
-  trustregion = nowpacSolver.get_trustregion();
-  std::cout << std::endl << "----------------------------------------" << std::endl;
-  std::cout << "tr size = " << trustregion << std::endl;
-  std::cout << "----------------------------------------" << std::endl;
-  // model = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
-  for ( int i = 0; i < numFunctions; ++i) {
-    fn   = nowpacSolver.get_c(i, x_star); // get model value at x_star
-    grad = nowpacSolver.get_g(i, x_star); // get model gradient at x_star (center of final TR) = g + H (x-x_c)
-    Hess = nowpacSolver.get_H(i);    // get model Hessian = H
-    std::cout << "model number " << i << std::endl;
-    std::cout << "value   = " << c << std::endl;
-    std::cout << "grad    = [" << g[0] << ", " << g[1] << "]" << std::endl;
-    std::cout << "hess    = [" << H[0][0] << ", " << H[0][1] << std::endl;
-    std::cout << "           " << H[1][0] << ", " << H[1][1] << "]" <<std::endl;
-  }
+  // create post-processing object to compute surrogate models
+  PostProcessModels<> PPD( bb_data );
+  Cout << "\n----------------------------------------"
+       << "\ntr size = " << PPD.get_trustregion()
+       << "\n----------------------------------------\n";
+  // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
+  // model gradient = g + H (x-x_c)
+  // model Hessian  = H
+  for ( int i = 0; i < numFunctions; ++i)
+    Cout << "model number " << i << "\nvalue   = " << PPD.get_c(i, x_star)
+	 << "\ngrad = [\n"  << PPD.get_g(i, x_star)
+	 << "]\nhess = [\n" << PPD.get_H(i) << "]\n";
 
   //////////////////////////////////////////
-
   // Publish optimal solution
-  RealVector local_cdv(N, false);
-  copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
+
+  RealVector local_cdv; copy_data(x_star, local_cdv);
   bestVariablesArray.front().continuous_variables(local_cdv);
+
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = (max_flag) ? -F[0] : F[0];
+    best_fns[0] = (max_flag) ? -obj_star : obj_star;
 
-    StLIter i_iter;
-    RLIter  m_iter, o_iter;
-    size_t  cntr = numEqConstraints;
+    StLIter i_iter; RLIter m_iter, o_iter;
+    size_t  cntr = 0;//numEqConstraints;
     for (i_iter  = nonlinIneqConMappingIndices.begin(),
 	 m_iter  = nonlinIneqConMappingMultipliers.begin(),
 	 o_iter  = nonlinIneqConMappingOffsets.begin();
 	 i_iter != nonlinIneqConMappingIndices.end();
-	 i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-      best_fns[(*i_iter)+1] = (G[cntr++] - (*o_iter))/(*m_iter);
+	 ++i_iter, ++m_iter, ++o_iter)
+      best_fns[(*i_iter)+1] = (PPD.get_c(++cntr, x_star) - (*o_iter))/(*m_iter);
 
+    /*
     size_t i, 
       num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
       num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
@@ -297,6 +297,7 @@ void NOWPACOptimizer::core_run()
       = iteratedModel.nonlinear_eq_constraint_targets();
     for (i=0; i<num_nln_eq; i++)
       best_fns[i+num_nln_ineq+1] = G[i] + nln_eq_targets[i];
+    */
 
     bestResponseArray.front().function_values(best_fns);
   }
