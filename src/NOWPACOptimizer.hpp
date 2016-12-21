@@ -140,8 +140,6 @@ private:
 
   void initialize_options();   ///< Shared constructor code
 
-  void allocate_constraints(); ///< Allocates constraint mappings
-
   //
   //- Heading: Data
   //
