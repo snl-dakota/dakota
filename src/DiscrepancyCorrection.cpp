@@ -80,7 +80,10 @@ void DiscrepancyCorrection::initialize_corrections()
   }
 
   ISIter it;
-  sharedData = SharedApproxData("local_taylor", approx_order, numVars,
+  //sharedData = SharedApproxData("local_taylor", approx_order, numVars,
+  int num_configvars = surrModel.icv() + surrModel.idiv() + surrModel.idrv(); 
+  numVars = num_configvars;
+  sharedData = SharedApproxData("global_kriging", approx_order, num_configvars,
 				dataOrder, NORMAL_OUTPUT);
   if (computeAdditive) {
     addCorrections.resize(numFns);
@@ -93,6 +96,7 @@ void DiscrepancyCorrection::initialize_corrections()
       multCorrections[*it] = Approximation(sharedData);
   }
   correctionPrevCenterPt = surrModel.current_variables().copy();
+  Cout << " test print = " << correctionPrevCenterPt << '\n';
 }
 
 
@@ -328,6 +332,154 @@ compute(//const Variables& vars,
   //if (correctionType == COMBINED_CORRECTION && correctionComputed &&
   //    !badScalingFlag)
   //  compute_combine_factors(add_discrep_response, mult_discrep_response);
+}
+
+void DiscrepancyCorrection::
+compute(const VariablesArray& vars_array, const ResponseArray& 
+        truth_response_array, const ResponseArray& approx_response_array, 
+	bool quiet_flag)
+{
+  // The incoming approx_response is assumed to be uncorrected (i.e.,
+  // correction has not been applied to it previously).  In this case,
+  // it is not necessary to back out a previous correction, and the
+  // computation of the new correction is straightforward.
+
+  // update previous center data arrays for combined corrections
+  // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
+  // require additional fn evaluation of previous pt on current surrogate.
+  // This could combine with DB lookups within apply_multiplicative()
+  // (approx re-evaluated if not found in DB search).
+  int index; size_t j, k; ISIter it;
+  /*
+  if (correctionType == COMBINED_CORRECTION && correctionComputed) {
+    approxFnsPrevCenter = approxFnsCenter;
+    truthFnsPrevCenter  = truthFnsCenter;
+    it = surrogateFnIndices.begin();
+    const Pecos::SurrogateDataVars& anchor_sdv
+      = (computeAdditive || badScalingFlag) ?
+      addCorrections[*it].approximation_data().anchor_variables() :
+      multCorrections[*it].approximation_data().anchor_variables();
+    correctionPrevCenterPt.continuous_variables(
+      anchor_sdv.continuous_variables());
+    correctionPrevCenterPt.discrete_int_variables(
+      anchor_sdv.discrete_int_variables());
+    correctionPrevCenterPt.discrete_real_variables(
+      anchor_sdv.discrete_real_variables());
+  }
+  */
+
+  for (j = 0; j < vars_array.size(); j++) {
+    const Variables& vars = vars_array[j]; 
+    const Response& truth_response = truth_response_array[j];
+    const Response& approx_response = approx_response_array[j]; 
+
+    // update current center data arrays
+    const RealVector&  truth_fns =  truth_response.function_values();
+    const RealVector& approx_fns = approx_response.function_values();
+    // KAM: is this what we actually want to pass in the case of multiple 
+    // responses? Or should we take each response one at a time and build a
+    // GP for each response function?
+    
+      /*
+    bool fall_back
+      = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
+    if (correctionType == COMBINED_CORRECTION) truthFnsCenter = truth_fns;
+    if (correctionType == COMBINED_CORRECTION || fall_back)
+      approxFnsCenter = approx_fns;
+    if (fall_back) approxGradsCenter = approx_response.function_gradients();
+    */
+  
+    // detect numerical issues with multiplicative scaling
+    badScalingFlag
+      = (computeMultiplicative) ? check_scaling(truth_fns, approx_fns) : false;
+    if (badScalingFlag && addCorrections.empty()) {
+      addCorrections.resize(numFns);
+      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+        addCorrections[*it] = Approximation(sharedData);
+    }
+  
+    Pecos::SurrogateDataVars sdv(vars.continuous_variables(),
+      vars.discrete_int_variables(), vars.discrete_real_variables(),
+      Pecos::DEEP_COPY);
+  /*
+  if (computeAdditive || badScalingFlag) {
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+      index = *it;
+      Pecos::SurrogateDataResp sdr(dataOrder, numVars);
+      RealVector    discrep_grad = sdr.response_gradient_view();
+      RealSymMatrix discrep_hess = sdr.response_hessian_view();
+      compute_additive(truth_response, approx_response, index,
+		       sdr.response_function_view(), discrep_grad,
+		       discrep_hess);
+      if (!quiet_flag)
+	Cout << "\nAdditive correction computed:\n" << sdr;
+
+      // update anchor data
+      addCorrections[index].add(sdv, true); // shallow copy into SurrogateData
+      addCorrections[index].add(sdr, true); // shallow copy into SurrogateData
+    }
+  }
+
+  if (computeMultiplicative && !badScalingFlag) {
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+      index = *it;
+      Pecos::SurrogateDataResp sdr(dataOrder, numVars);
+      RealVector    discrep_grad = sdr.response_gradient_view();
+      RealSymMatrix discrep_hess = sdr.response_hessian_view();
+      compute_multiplicative(truth_response, approx_response, index,
+			     sdr.response_function_view(), discrep_grad,
+			     discrep_hess);
+      if (!quiet_flag)
+	Cout << "\nMultiplicative correction computed:\n" << sdr;
+
+      // update anchor data
+      multCorrections[index].add(sdv, true); // shallow copy into SurrogateData
+      multCorrections[index].add(sdr, true); // shallow copy into SurrogateData
+    }
+  }
+
+  // Compute combination factors once for each new correction.  combineFactors =
+  // [f_hi(x_pp) - f_hi_beta(x_pp)]/[f_hi_alpha(x_pp) - f_hi_beta(x_pp)].  This
+  // ratio goes -> 1 (use additive alone) if f_hi_alpha(x_pp) -> f_hi(x_pp) and
+  // it goes -> 0 (use multiplicative alone) if f_hi_beta(x_pp) -> f_hi(x_pp).
+  if (correctionType == COMBINED_CORRECTION && correctionComputed &&
+      !badScalingFlag) {
+    RealVector alpha_corr_fns(approxFnsPrevCenter),
+                beta_corr_fns(approxFnsPrevCenter);
+    apply_additive(correctionPrevCenterPt, alpha_corr_fns);
+    apply_multiplicative(correctionPrevCenterPt, beta_corr_fns);
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+      index = *it;
+      Real numer = truthFnsPrevCenter[index] - beta_corr_fns[index];
+      Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
+      combineFactors[index] = (std::fabs(denom) > Pecos::SMALL_NUMBER) ?
+	numer/denom : 1.;
+#ifdef DEBUG
+      Cout << "truth prev = " << truthFnsPrevCenter[index]
+	   << " additive prev = " << alpha_corr_fns[index]
+	   << " multiplicative prev = " << beta_corr_fns[index]
+	   << "\nnumer = " << numer << " denom = " << denom << '\n';
+#endif
+    }
+    if (!quiet_flag)
+      Cout << "\nCombined correction computed: combination factors =\n"
+	   << combineFactors << '\n';
+
+#ifdef DEBUG
+    Cout << "Testing final match at previous point\n";
+    Response approx_copy = approx_response.copy();
+    ActiveSet fns_set = approx_response.active_set(); // copy
+    fns_set.request_values(1); // correct fn values only
+    approx_copy.active_set(fns_set);
+    approx_copy.function_values(approxFnsPrevCenter);
+    apply(correctionPrevCenterPt, approx_copy);
+#endif
+  }
+
+  if (computeAdditive || computeMultiplicative)
+    correctionComputed = true;
+  */
+  }
 }
 
 

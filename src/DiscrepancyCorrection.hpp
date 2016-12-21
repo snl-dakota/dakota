@@ -68,6 +68,12 @@ public:
   void compute(//const Variables& vars,
 	       const Response& truth_response, const Response& approx_response,
 	       Response& discrepancy_response, bool quiet_flag = false);
+  /// compute the correction required to bring approx_response into
+  /// agreement with truth_response as a function of the variables
+  /// and store in {add,mult}Corrections
+  void compute(const VariablesArray& vars_array, const ResponseArray& 
+               truth_response_array, const ResponseArray& approx_response, 
+	       bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const Variables& vars, Response& approx_response,

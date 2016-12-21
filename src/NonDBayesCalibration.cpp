@@ -477,7 +477,7 @@ void NonDBayesCalibration::core_run()
   nonDBayesInstance = this;
 
   //bool calModelDiscrepancy = true;
-  //bool calModelDiscrepancy = false;
+  bool calModelDiscrepancy = false;
   if (adaptExpDesign)
     // use meta-iteration in this class
     calibrate_to_hifi();
@@ -986,6 +986,10 @@ void NonDBayesCalibration::build_model_discrepancy()
     Teuchos::setCol(config, i, new_configs);
   }
   Cout << "\npred matrix = " << new_configs << '\n';
+  Real gp_var;
+  RealVector pred_interval(2);
+  RealMatrix gp_predinterval(2, num_pred);
+  RealVector var_vec(num_pred);
   
   // GP Predictions
   Real gp_val;
@@ -994,9 +998,11 @@ void NonDBayesCalibration::build_model_discrepancy()
   for (int i = 0; i < num_pred; i++) {
     RealVector config_vec = Teuchos::getCol(Teuchos::View, new_configs, i);
     gp_val = modelDiscApprox.value(config_vec);
+    gp_var = modelDiscApprox.prediction_variance(config_vec);
     // currently only one response fcn => dim matches gp_val
     // will need careful consideration for field responses
     Model::inactive_variables(config_vec, mcmcModel);
+    mcmcModel.evaluate();
     RealVector sim_response = mcmcModel.current_response().function_values();
     // still need to save responses?
     //RealVector sim_response = Teuchos::getCol(Teuchos::View, sim_matrix, i);
@@ -1004,11 +1010,50 @@ void NonDBayesCalibration::build_model_discrepancy()
       gp_pred[j] = sim_response[j] + gp_val;
     }
     Teuchos::setCol(gp_pred, i, pred_matrix);
+
+    // More hardcode
+    var_vec[i] = gp_var;
+    pred_interval[0] = gp_pred[0] + 2*std::sqrt(gp_var);
+    pred_interval[1] = gp_pred[0] - 2*std::sqrt(gp_var);
+    Teuchos::setCol(pred_interval, i, gp_predinterval);
   }
   if (outputLevel == DEBUG_OUTPUT) {
     Cout << "\nPrediction including model discrepancy term = " << 
       pred_matrix << '\n';
+    Cout << "Prediction variance = " << var_vec << '\n';
+    //Cout << "GP prediction intervals = " << gp_predinterval << '\n';
   }
+
+
+
+
+  //KAM
+  IntSet fn_indices;
+  for (int i = 0; i < numFunctions; ++i)
+    fn_indices.insert(i);
+  // Hardcode for now, call id_surrogates eventually? See SurrogateModel.cpp 
+  DiscrepancyCorrection modelDisc;
+  short corr_type = ADDITIVE_CORRECTION; 
+  short corr_order = 0; 
+  modelDisc.initialize(mcmcModel, fn_indices, corr_type, corr_order);
+  Variables config_i;
+  for (int i = 1; i < num_exp; i++){
+    RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    Model::inactive_variables(config_vec, mcmcModel, config_i);
+    RealVector exp_response = expData.all_data(i);
+    RealVector sim_response = Teuchos::getCol(Teuchos::View, sim_matrix, i);
+    //modelDisc.compute(config_i, exp_response, sim_response); // check LHS
+    // is this building a gp for each experiment? Need std::vector<Var, resp>?
+  }
+  /*
+  for (size_t i = 1; i < num_pred; i++)
+    modelDisc.apply(...);
+    */
+
+
+
+
 }
 
 void NonDBayesCalibration::
