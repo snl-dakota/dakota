@@ -1,6 +1,6 @@
 # Helper functions to process Dakota specification maintenance options:
 
-# Command to translate dakota.xml to dakota.input.nspec
+# Translate dakota.xml to dakota.input.nspec
 # (We still generate the .nspec to the source tree and commit to repo
 # since the process requires Java.)
 function(DakotaXml2Nspec)
@@ -12,28 +12,99 @@ function(DakotaXml2Nspec)
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml xml2nidr
     COMMAND ${Java_JAVA_EXECUTABLE} -classpath ${xml2nidr_jar}
-    gov.sandia.dart.dakota.XMLToNIDRTranslator
-    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
-    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+            gov.sandia.dart.dakota.XMLToNIDRTranslator
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.xml
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     )
 
 endfunction()
 
-# Commands to translate dakota.input.nspec to dakota.input.summary and
-# NIDR_keywds.hpp into build tree
+
+# nidrgen: dakota.input.nspec --> dakota.input.summary
 function(DakotaNidrgen)
+
+  # create a special target since the following two commands both
+  # depend on the generated .nspec
+  add_custom_target(dakota-spec-files
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    )
 
   # nidrgen: dakota.input.nspec --> dakota.input.summary
   add_custom_command(
-    OUTPUT "${Dakota_BINARY_DIR}/generated/src/dakota.input.summary"
-    DEPENDS nidrgen
-    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    OUTPUT ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+    DEPENDS nidrgen dakota-spec-files
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
     COMMAND ${CMAKE_COMMAND}
     ARGS -E make_directory ${Dakota_BINARY_DIR}/generated/src/
     COMMAND $<TARGET_FILE:nidrgen>
-    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
-#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec >
+            ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
     )
+
+  # nidrgen: dakota.input.nspec --> NIDR_keywds.hpp
+  add_custom_command(
+    OUTPUT ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
+    DEPENDS nidrgen dakota-spec-files
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+            # Artifical dependence to force generation
+	    ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+    COMMAND $<TARGET_FILE:nidrgen>
+    ARGS    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec >
+            ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
+    )
+
+
+  # -----
+  # Simplified process to build/install dakreorder (dakota_order_input)
+  # -----
+
+  set(rel_date "${Dakota_RELEASE_DATE}")
+  if (NOT rel_date)
+    string(TIMESTAMP rel_date "%Y-%m-%d")
+  endif()
+
+  add_custom_command(
+    OUTPUT "${Dakota_BINARY_DIR}/generated/src/NIDR_keywds0.h"
+    DEPENDS nidrgen dakota-spec-files
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    # generate initial version
+    COMMAND $<TARGET_FILE:nidrgen>
+    ARGS -ftn- "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec" >
+         "${Dakota_BINARY_DIR}/generated/src/NIDR_keywds0.h"
+    # append the version information
+    COMMAND ${CMAKE_COMMAND}
+    ARGS
+      -Dappend_file:FILEPATH="${Dakota_BINARY_DIR}/generated/src/NIDR_keywds0.h"
+      -Ddakota_version:STRING="${Dakota_VERSION_SRC}"
+      -Drelease_date:STRING="${rel_date}"
+  # This doesn't work due to escaping of spaces
+  #    -Dnspec_date:STRING="${Dakota_VERSION_SRC} released ${rel_date}."
+      -P "${Dakota_SOURCE_DIR}/cmake/append_nspec_date.cmake"
+    )
+
+  # TODO: make -ldl optional if possible
+  set(dakreorder_libs nidr)
+  find_library(libdl dl)
+  if(libdl)
+    list(APPEND dakreorder_libs ${libdl})
+  endif()
+
+  include_directories("${Dakota_BINARY_DIR}/generated/src")
+  add_executable(dakota_order_input "${NIDR_SOURCE_DIR}/dakreorder.c"
+    "${Dakota_BINARY_DIR}/generated/src/NIDR_keywds0.h")
+  add_dependencies(dakota_order_input dakota-spec-files)
+  # This shouldn't be necessary, but the line above doesn't seem to suffice
+  set_source_files_properties("${NIDR_SOURCE_DIR}/dakreorder.c" PROPERTIES
+    OBJECT_DEPENDS "${Dakota_BINARY_DIR}/generated/src/NIDR_keywds0.h")
+  target_link_libraries(dakota_order_input ${dakreorder_libs})
+  install(TARGETS dakota_order_input DESTINATION bin)
+
+endfunction()
+
+
+# -----
+# Historical GUI-related command/targets
+# -----
 
 ## DISABLED GUI METADATA
 ##    # generate dakota.input.desc (depends on dakota.tags.desc)
@@ -67,36 +138,6 @@ function(DakotaNidrgen)
 ##      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 ##      )
 ## DISABLED GUI METADATA
-
-# nidrgen: dakota.input.nspec --> NIDR_keywds.hpp
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp"
-  DEPENDS nidrgen
-  ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-  # Artifical dependence to force generation
-  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
-  ##  	          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-  COMMAND $<TARGET_FILE:nidrgen>
-  ARGS    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > NIDR_keywds.hpp
-  ##      # Can't seem to suppress NIDR_initdefs.h with . or -
-  ##      # Just remove it after generation
-  ##      COMMAND "${CMAKE_COMMAND}"
-  ##      ARGS    -E remove "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h"
-#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-
-    # create a special target and add to "all" target
-#    add_custom_target(dakota-spec-files
-#      ALL
-#      DEPENDS ##nidrgen
-#              ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
-#              ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.hpp
-### DISABLED GUI METADATA
-###  	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
-###  	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
-### DISABLED GUI METADATA
-#      VERBATIM
-#      )
 
 ## DISABLED GUI METADATA
 ##    # Target jaguar-files builds targets needed for jaguar that are not
@@ -143,46 +184,6 @@ add_custom_command(
 ## DISABLED GUI METADATA
 
 
-# -----
-# Simplified process to build/install dakreorder (dakota_order_input)
-# -----
-
-set(rel_date "${Dakota_RELEASE_DATE}")
-if (NOT rel_date)
-  # When we require CMake 2.8.11 or newer...
-  #string(TIMESTAMP rel_date "%Y-%m-%d")
-  set(rel_date "(unknown)")
-endif()
-
-ADD_CUSTOM_COMMAND(
-  OUTPUT "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
-  DEPENDS nidrgen ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
-  # generate initial version
-  COMMAND $<TARGET_FILE:nidrgen>
-  ARGS -ftn- "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec" > "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
-  # append the version information
-  COMMAND ${CMAKE_COMMAND}
-  ARGS
-    -Dappend_file:FILEPATH="${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h"
-    -Ddakota_version:STRING="${Dakota_VERSION_SRC}"
-    -Drelease_date:STRING="${rel_date}"
-# This doesn't work due to escaping of spaces
-#    -Dnspec_date:STRING="${Dakota_VERSION_SRC} released ${rel_date}."
-    -P "${Dakota_SOURCE_DIR}/cmake/append_nspec_date.cmake"
-  )
-
-# TODO: make -ldl optional if possible
-set(dakreorder_libs nidr)
-find_library(libdl dl)
-if(libdl)
-  list(APPEND dakreorder_libs ${libdl})
-endif()
-
-add_executable(dakota_order_input "${NIDR_SOURCE_DIR}/dakreorder.c"
-  "${Dakota_BINARY_DIR}/generated/NIDR_keywds0.h")
-target_link_libraries(dakota_order_input ${dakreorder_libs})
-install(TARGETS dakota_order_input DESTINATION bin)
-
 ## DISABLED GUI METADATA
 ## add_executable(dakreord EXCLUDE_FROM_ALL dakreorder.c)
 ## set_target_properties(dakreord PROPERTIES
@@ -190,6 +191,3 @@ install(TARGETS dakota_order_input DESTINATION bin)
 ## target_link_libraries(dakreord ${dakreorder_libs})
 ## DISABLED GUI METADATA
 
-# TODO: Ensure DAKOTA sources depend on NIDR_keywds.hpp
-
-endfunction()

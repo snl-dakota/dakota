@@ -29,8 +29,11 @@ set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
-list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/generated ${Dakota_BINARY_DIR}/src
-  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
+list(APPEND DAKOTA_INCDIRS 
+  ${Dakota_BINARY_DIR} 
+  ${Dakota_BINARY_DIR}/generated/src
+  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
+  )
 
 list(APPEND EXT_TPL_INCDIRS
   ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
@@ -46,6 +49,7 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
 endif()
 include(DakotaSpecMaint)
 if(ENABLE_SPEC_MAINT)
+  # dakota.xml to dakota.input.nspec is conditional as it requires Java
   DakotaXml2Nspec()
 endif()
 DakotaNidrgen()
@@ -431,7 +435,8 @@ endif(HAVE_PECOS)
 
 
 ## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
-set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp NIDR_keywds.hpp)
+set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp 
+  ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -968,7 +973,8 @@ install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.hpp *.h)
-install(FILES ${Dakota_hdr} ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp
+# We don't install NIDR_keywds0.hpp as is not needed by clients
+install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
   DESTINATION include)
 install(FILES dakota.xsd dakota.xml dakota.input.nspec
   ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
