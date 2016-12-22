@@ -3382,7 +3382,7 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
-      <oneOf "Normalize By..."> 
+      <oneOf label="Normalize By..."> 
         <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
         <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
         <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
