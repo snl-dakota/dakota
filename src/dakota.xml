@@ -2495,8 +2495,8 @@
 	      </oneOf>
 		<keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design" help="" minOccurs="0" >
 		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Hi-fi Samples" help="" default="method-dependent">
-		    <param type="INTEGER" />
 		    <alias name="samples" />
+		    <param type="INTEGER" />
 		  </keyword>
 		  <!--&default_max_function_evaluations;-->
                   <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="0" >
