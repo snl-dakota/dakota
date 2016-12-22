@@ -33,13 +33,13 @@ DataMethodRep::DataMethodRep():
   concurrentRandomJobs(0),
   // Local surrogate-based opt/NLS
   softConvLimit(0), // dummy value -> method-specific default
-  surrBasedLocalLayerBypass(false),    //surrBasedLocalTRInitSize(0.4),
-  surrBasedLocalTRMinSize(1.0e-6),       surrBasedLocalTRContractTrigger(0.25),
-  surrBasedLocalTRExpandTrigger(0.75),   surrBasedLocalTRContract(0.25),
-  surrBasedLocalTRExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
+  surrBasedLocalLayerBypass(false),  //trustRegionInitSize(0.4),
+  trustRegionMinSize(1.0e-6),        trustRegionContractTrigger(0.25),
+  trustRegionExpandTrigger(0.75),    trustRegionContract(0.25),
+  trustRegionExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
   surrBasedLocalSubProbCon(ORIGINAL_CONSTRAINTS),
   surrBasedLocalMeritFn(AUGMENTED_LAGRANGIAN_MERIT),
-  surrBasedLocalAcceptLogic(FILTER),     surrBasedLocalConstrRelax(NO_RELAX),
+  surrBasedLocalAcceptLogic(FILTER), surrBasedLocalConstrRelax(NO_RELAX),
   // Global surrogate-based opt/NLS
   surrBasedGlobalReplacePts(false),
   // Branch and bound
@@ -180,9 +180,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Surrogate-based
   s << softConvLimit << surrBasedLocalLayerBypass
-    << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
-    << surrBasedLocalTRContractTrigger << surrBasedLocalTRExpandTrigger
-    << surrBasedLocalTRContract << surrBasedLocalTRExpand
+    << trustRegionInitSize << trustRegionMinSize
+    << trustRegionContractTrigger << trustRegionExpandTrigger
+    << trustRegionContract << trustRegionExpand
     << surrBasedLocalSubProbObj << surrBasedLocalSubProbCon
     << surrBasedLocalMeritFn << surrBasedLocalAcceptLogic
     << surrBasedLocalConstrRelax << surrBasedGlobalReplacePts;
@@ -322,9 +322,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Surrogate-based
   s >> softConvLimit >> surrBasedLocalLayerBypass
-    >> surrBasedLocalTRInitSize >> surrBasedLocalTRMinSize
-    >> surrBasedLocalTRContractTrigger >> surrBasedLocalTRExpandTrigger
-    >> surrBasedLocalTRContract >> surrBasedLocalTRExpand
+    >> trustRegionInitSize >> trustRegionMinSize
+    >> trustRegionContractTrigger >> trustRegionExpandTrigger
+    >> trustRegionContract >> trustRegionExpand
     >> surrBasedLocalSubProbObj >> surrBasedLocalSubProbCon
     >> surrBasedLocalMeritFn >> surrBasedLocalAcceptLogic
     >> surrBasedLocalConstrRelax >> surrBasedGlobalReplacePts;
@@ -465,9 +465,9 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Surrogate-based
   s << softConvLimit << surrBasedLocalLayerBypass
-    << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
-    << surrBasedLocalTRContractTrigger << surrBasedLocalTRExpandTrigger
-    << surrBasedLocalTRContract << surrBasedLocalTRExpand
+    << trustRegionInitSize << trustRegionMinSize
+    << trustRegionContractTrigger << trustRegionExpandTrigger
+    << trustRegionContract << trustRegionExpand
     << surrBasedLocalSubProbObj << surrBasedLocalSubProbCon
     << surrBasedLocalMeritFn << surrBasedLocalAcceptLogic
     << surrBasedLocalConstrRelax << surrBasedGlobalReplacePts;

@@ -165,12 +165,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
     [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
     [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
-      [ initial_size REALLIST {N_mdm(RealDL,surrBasedLocalTRInitSize)} ]
-      [ minimum_size REAL {N_mdm(Real,surrBasedLocalTRMinSize)} ]
-      [ contract_threshold REAL {N_mdm(Real,surrBasedLocalTRContractTrigger)} ]
-      [ expand_threshold REAL {N_mdm(Real,surrBasedLocalTRExpandTrigger)} ]
-      [ contraction_factor REAL {N_mdm(Real,surrBasedLocalTRContract)} ]
-      [ expansion_factor REAL {N_mdm(Real,surrBasedLocalTRExpand)} ]
+      [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+      [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+      [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+      [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+      [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+      [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
     [ approx_subproblem {0}
       original_primary {N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
@@ -392,6 +392,20 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         inform_search {N_mdm(lit,useSurrogate_inform_search)}
         |
         optimize {N_mdm(lit,useSurrogate_optimize)}
+       ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( nowpac {N_mdm(utype,methodName_MIT_NOWPAC)}
+      [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+        [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+        [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+        [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+        [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+        [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+        [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
        ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]

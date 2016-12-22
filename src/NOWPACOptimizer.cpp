@@ -58,18 +58,18 @@ void NOWPACOptimizer::initialize_options()
   // Optional: note that we are overridding NOWPAC defaults with Dakota defaults
   // May want to leave NOWPAC defaults in place if there is no user spec.
   nowpacSolver.set_option("eta_0",
-    probDescDB.get_real("method.sbl.trust_region.contract_threshold") );
+    probDescDB.get_real("method.trust_region.contract_threshold") );
   nowpacSolver.set_option("eta_1",
-    probDescDB.get_real("method.sbl.trust_region.expand_threshold") );
+    probDescDB.get_real("method.trust_region.expand_threshold") );
   // Criticality measures:
   //nowpacSolver.set_option("eps_c"                         , 1e-6 );
   //nowpacSolver.set_option("mu"                            , 1e1  );
   // Upper bound on poisedness constant augmented with distance penalty:
   //nowpacSolver.set_option("geometry_threshold"            , 5e2  );
   nowpacSolver.set_option("gamma_inc",
-    probDescDB.get_real("method.sbl.trust_region.expansion_factor") );
+    probDescDB.get_real("method.trust_region.expansion_factor") );
   nowpacSolver.set_option("gamma",
-    probDescDB.get_real("method.sbl.trust_region.contraction_factor") );
+    probDescDB.get_real("method.trust_region.contraction_factor") );
   // Reduction factors:
   //nowpacSolver.set_option("omega"                         , 0.8  );
   //nowpacSolver.set_option("theta"                         , 0.8  );
@@ -87,10 +87,10 @@ void NOWPACOptimizer::initialize_options()
   // (b) feasibility restoration (on but not active in deterministic mode)
   // (c) outer Gaussian process approximation (smooths noisy evaluations)
   nowpacSolver.set_option("stochastic_optimization"       , false);
-  // This is tied to the other BlackBoxBaseClass::evaluate() function redefinition.
+  // This is tied to the other BlackBoxBaseClass::evaluate() fn redefinition.
 
   // Maximum number of total accepted steps
-  nowpacSolver.set_option("max_nb_accepted_steps", maxIterations); // default is +inf
+  nowpacSolver.set_option("max_nb_accepted_steps", maxIterations);// inf default
   // Within special context of meta-iteration like MG/Opt, ensure that we
   // have at least 2 successful steps
   //if (subIteratorFlag && ...)
@@ -115,10 +115,10 @@ void NOWPACOptimizer::initialize_options()
   // of these optional inputs, and then perform a descaling to user-space within
   // the BBEvaluator (scaling data can be passed by the "void* params").
   const RealVector& tr_init
-    = probDescDB.get_rv("method.sbl.trust_region.initial_size");
+    = probDescDB.get_rv("method.trust_region.initial_size");
   Real tr_init0 = (tr_init.empty()) ? 0.5 : tr_init[0];
   nowpacSolver.set_trustregion(tr_init0,
-    probDescDB.get_real("method.sbl.trust_region.minimum_size"));
+    probDescDB.get_real("method.trust_region.minimum_size"));
   nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
 
   // NOTES from 7/29/15 discussion:
