@@ -2941,7 +2941,7 @@
       <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="method use of last model parsed" complexity="0">
         <param type="STRING" taglist="model" />
       </keyword>
-      <oneOf>
+      <oneOf label="Model Type">
         <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single" help="" minOccurs="1" default="N/A ( single if no model specification)" complexity="0">
           <alias name="simulation"/>
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
@@ -2958,16 +2958,16 @@
           <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs" help="ModelCommands.html#ModelSurrogate" minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
-          <oneOf>
+          <oneOf label="Surrogate Category">
             <keyword  id="global" name="global" code="{0}" label="Global Approximation" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-              <oneOf>
+              <oneOf label="Global Surrogate Type">
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <alias name="kriging"/>
-                  <oneOf>
+                  <oneOf label="GP Implementation">
                     <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="Dakota" help="" minOccurs="1" >
                       <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="Point Selection" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point selection" />
                       <keyword  id="trend" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
-                        <oneOf>
+                        <oneOf label="Trend Order">
                           <keyword  id="constant" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
                           <keyword  id="linear" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
                           <keyword  id="reduced_quadratic" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
@@ -2976,7 +2976,7 @@
                     </keyword>
                     <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="Surfpack" help="" minOccurs="1" >
                       <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
-                        <oneOf>
+                        <oneOf label="Trend Order">
                           <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
                           <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
                           <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
@@ -3015,7 +3015,7 @@
                     <param type="INTEGER" />
                   </keyword>
                   <keyword  id="interpolation" name="interpolation" code="{0}" label="Interpolation Type" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
-                    <oneOf>
+                    <oneOf label="Interpolation Order">
                       <keyword  id="linear2" name="linear" code="{N_mom(lit,marsInterpolation_linear)}" label="Linear" help=""  />
                       <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="Cubic" help=""  />
                     </oneOf>
@@ -3083,7 +3083,7 @@
 		  <param type="INTEGER" />
 		</keyword>
 				<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable Discontinuity Detection" help="" minOccurs="0">
-		  <oneOf>
+		  <oneOf label="Threshold Mode">
 				    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute Function Jump Threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
@@ -3135,7 +3135,7 @@
 	      </optional>
           <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="Re-use Points" help="" minOccurs="0" default="all for import; none otherwise">
                 <alias name="reuse_samples"/>
-                <oneOf>
+                <oneOf label="Reuse Domain">
               <keyword  id="all" name="all" code="{N_mom(lit,approxPointReuse_all)}" label="All" help=""  />
               <keyword  id="region" name="region" code="{N_mom(lit,approxPointReuse_region)}" label="Region" help=""  />
               <keyword  id="none" name="none" code="{N_mom(lit,approxPointReuse_none)}" label="None" help=""  />
@@ -3216,7 +3216,7 @@
                 <param type="STRINGLIST" />
                 <keyword  id="cross_validation4" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
                   <optional>
-                    <oneOf>
+                    <oneOf label="Partition Control">
                       <keyword  id="folds" name="folds" code="{N_mom(int,numFolds)}" label="Number Cross Validation Folds" help="ModelCommands.html#ModelSurrG"  default="10" >
                         <param type="INTEGER" />
                       </keyword>
@@ -3274,12 +3274,12 @@
 		</keyword>
 	      -->
               <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach" help="ModelCommands.html#ModelSurrH" minOccurs="0" default="no surrogate correction" >
-                <oneOf label="correction order">
+                <oneOf label="Correction Order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order" help=""  />
                   <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order" help=""  />
                   <keyword  id="second_order2" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order" help=""  />
                 </oneOf>
-                <oneOf label="correction type">
+                <oneOf label="Correction Type">
                   <keyword  id="additive1" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive" help=""  />
                   <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative" help=""  />
                   <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined" help=""  />
@@ -3301,7 +3301,7 @@
               <param type="INTEGER" constraint="> 0" />
             </keyword>
             <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="Iterator Scheduling" help="" minOccurs="0" >
-              <oneOf>
+              <oneOf label="Server Mode">
                 <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="Master" help=""  />
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer" help=""  />
 				<!-- #	      | ( peer {0}
@@ -3337,7 +3337,7 @@
 	    <param type='INTEGER' />
 	  </keyword>
 	  <keyword  id="sample_type" name="sample_type" code="{0}" label="Sample Type" help="" minOccurs="0" default="random" >
-	    <oneOf>
+	    <oneOf label="Sample Type">
 	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="LHS" help=""  />
 	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="Random" help=""  />
 	    </oneOf>
@@ -3382,7 +3382,7 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
-      <oneOf> 
+      <oneOf "Normalize By..."> 
         <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
         <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
         <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
@@ -3393,7 +3393,7 @@
 	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-	  <oneOf>
+	  <oneOf label="Expansion Basis Control">
 	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
 	    </keyword>
@@ -3408,7 +3408,7 @@
 	</keyword>
 	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field" help="" minOccurs="1" complexity="1">
 	      <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
-	    <oneOf>
+	    <oneOf label="Build Data Source">
 	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
               </keyword>
@@ -3416,7 +3416,7 @@
                 <param type="STRING" in_taglist="method" />
               </keyword>
 	          <keyword id="analytic_covariance" name="analytic_covariance" label="Analytic Covariance" code="{0}" >
-	        <oneOf>
+	        <oneOf label="Covariance Kernel Form">
 	              <keyword id="squared_exponential" name="squared_exponential" label="Squared Covariance" code="{N_mom(utype,analyticCovIdForm_EXP_L2)}" />
 	              <keyword id="exponential" name="exponential" label="Exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L1)}" />
 	        </oneOf>
@@ -3424,7 +3424,7 @@
 	    </oneOf>
           </keyword>
 	      <keyword id="expansion_form" name="expansion_form" label="Expansion Form" code="{0}" minOccurs="0">
-	    <oneOf>
+	    <oneOf label="Reduced Basis Type">
 	          <keyword id="karhunen_loeve" name="karhunen_loeve" label="Karhunen-Loeve" code="{N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}" />
 	          <keyword id="principal_components" name="principal_components" label="Principal Components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
 	    </oneOf>
