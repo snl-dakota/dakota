@@ -1,0 +1,38 @@
+# Generate cartoons of centered, grid, and LHS (uniform, normal) studies
+
+environment
+  tabular_data
+    tabular_data_file 'centered_pstudy.dat'   #s0
+#    tabular_data_file 'grid_pstudy.dat'      #s1
+#    tabular_data_file 'lhs_uniform.dat'      #s2
+#    tabular_data_file 'lhs_normal.dat'       #s3
+      custom_annotated header eval_id
+
+method
+	centered_parameter_study                    #s0
+	  step_vector = 0.10 0.50                   #s0
+	  steps_per_variable = 5 2                  #s0
+#  multidim_parameter_study                   #s1
+#    partitions = 2 3                         #s1
+#   sampling sample_type lhs                  #s2,#s3
+#     samples = 10                            #s2,#s3
+#     seed = 2025                             #s2,#s3
+
+variables
+	continuous_design 2                         #s0,#s1,#s2
+    upper_bounds     1.5  3.0                 #s0,#s1,#s2
+	  initial_point    1.0  2.0                 #s0,#s1,#s2
+    lower_bounds     0.5  1.0                 #s0,#s1,#s2
+# active design                               #s2
+#  normal_uncertain  2                        #s3
+#    means           1.0  2.0                 #s3
+#    std_deviations 0.10 0.50                 #s3
+
+interface
+  analysis_drivers = 'text_book'
+    direct
+
+responses
+	response_functions = 3
+	no_gradients
+	no_hessians

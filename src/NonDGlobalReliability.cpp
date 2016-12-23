@@ -617,7 +617,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	}
     
 	// Check for convergence based on max EIF/EFF
-	convergenceTol = .001;
+	// BMA: was previously hard-wired: convergenceTol = .001;
         if (maxIterations < 0) 
           maxIterations  = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)

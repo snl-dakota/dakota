@@ -29,8 +29,11 @@ set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
-list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/generated ${Dakota_BINARY_DIR}/src
-  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
+list(APPEND DAKOTA_INCDIRS 
+  ${Dakota_BINARY_DIR} 
+  ${Dakota_BINARY_DIR}/generated/src
+  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
+  )
 
 list(APPEND EXT_TPL_INCDIRS
   ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
@@ -44,8 +47,12 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
   # (dakota.input.nspec) translation and/or reference manual generation.
   add_subdirectory(java_utils)
 endif()
-include(DakotaEnableSpecMaint)
-DakotaEnableSpecMaint()
+include(DakotaSpecMaint)
+if(ENABLE_SPEC_MAINT)
+  # dakota.xml to dakota.input.nspec is conditional as it requires Java
+  DakotaXml2Nspec()
+endif()
+DakotaNidrgen()
 
 # Use TPL_LIBS for libraries built as part of this project
 list(APPEND DAKOTA_PKG_LIBS nidr)
@@ -428,7 +435,8 @@ endif(HAVE_PECOS)
 
 
 ## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
-set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp NIDR_keywds.hpp)
+set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp 
+  ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -609,11 +617,6 @@ if(HAVE_QUESO)
 
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
   add_definitions("-DHAVE_QUESO")
-  add_definitions("-DQUESO_HAVE_BOOST_SCOPED_PTR_HPP")
-  add_definitions("-DQUESO_HAVE_BOOST_SHARED_PTR_HPP")
-  if(DAKOTA_HAVE_MPI)
-    add_definitions("-DQUESO_HAVE_MPI")
-  endif()
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
@@ -746,8 +749,8 @@ endif(HAVE_NOMAD)
 
 if(HAVE_NOWPAC)
   add_definitions("-DHAVE_NOWPAC")
-  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT})
-  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ...) # cmake external package
+  list(APPEND DAKOTA_INCDIRS ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include ${DAKOTA_NOWPAC_EIGEN_ROOT}/include/eigen3)
+  link_directories(${DAKOTA_NOWPAC_ROOT_DIR}/lib ${DAKOTA_NOWPAC_NLOPT_ROOT}/lib) # ${DAKOTA_NOWPAC_ROOT_DIR}/include ${DAKOTA_NOWPAC_NLOPT_ROOT}/include
   set(iterator_src ${iterator_src} NOWPACOptimizer.cpp)
   list(APPEND DAKOTA_PKG_LIBS nowpac nlopt)
   #list(APPEND EXPORT_TARGETS nowpac nlopt)
@@ -970,9 +973,12 @@ install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.hpp *.h)
-install(FILES ${Dakota_hdr} DESTINATION include)
-file(GLOB Dakota_spec_files dakota.input.*)
-install(FILES ${Dakota_spec_files} DESTINATION bin)
+# We don't install NIDR_keywds0.hpp as is not needed by clients
+install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
+  DESTINATION include)
+install(FILES dakota.xsd dakota.xml dakota.input.nspec
+  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+  DESTINATION bin)
 
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)

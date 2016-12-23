@@ -1,5 +1,5 @@
 Blurb::
-Use trust region search method
+Specification group for trust region model management
 Description::
 The \c trust_region optional group specification can be used to
 specify the initial size of the trust region (using \c initial_size)
@@ -19,6 +19,9 @@ region ratio, i.e., values below this threshold cause the trust region
 to shrink for the next surrogate_based_local iteration. The command \c
 expand_threshold determines the trust region value above which the
 trust region will expand for the next surrogate_based_local iteration.
+
+Each of these specifications are \c REAL scalars, with the exception of
+\c initial_size, which is a \c REALLIST.
 
 Topics::
 Examples::

@@ -1,11 +1,46 @@
-Blurb:: Set the sparse grid level to be used when peforming sparse grid integration or sparse grid interpolation
+Blurb:: Level to use in sparse grid integration or interpolation
 
 Description::
-Multi-dimensional integration by the Smolyak sparse grid method (specified with sparse_grid_level and, optionally, dimension_preference). The underlying one-dimensional integration rules are the same as for the tensor-product quadrature case; however, the default rule selection is nested for sparse grids (Genz-Keister for normals/transformed normals and Gauss-Patterson for uniforms/transformed uniforms). This default can be overridden with an explicit non_nested specification (resulting in Gauss-Hermite for normals/transformed normals and Gauss-Legendre for uniforms/transformed uniforms). As for tensor quadrature, the dimension_preference specification enables the use of anisotropic sparse grids (refer to the PCE description in the User's Manual for the anisotropic index set constraint definition). Similar to anisotropic tensor grids, the dimension with greatest preference will have resolution at the full sparse_grid_level and all other dimension resolutions will be reduced in proportion to their reduced preference. For PCE with either isotropic or anisotropic sparse grids, a summation of tensor-product expansions is used, where each anisotropic tensor-product quadrature rule underlying the sparse grid construction results in its own anisotropic tensor-product expansion as described in case 1. These anisotropic tensor-product expansions are summed into a sparse PCE using the standard Smolyak summation (again, refer to the User's Manual for additional details). As for quadrature_order, the sparse_grid_level specification admits an array input for enabling specification of multiple grid resolutions used by certain advanced solution methodologies.
 
-This keyword can be used when using
-   sparse grid integration to calculate PCE coefficients or when	
-   generating samples for sparse grid collocation. 
+Multi-dimensional integration by the Smolyak sparse grid method
+(specified with sparse_grid_level and, optionally,
+dimension_preference). The underlying one-dimensional integration
+rules are the same as for the tensor-product quadrature case; however,
+the default rule selection is nested for sparse grids (Genz-Keister
+for normals/transformed normals and Gauss-Patterson for
+uniforms/transformed uniforms). This default can be overridden with an
+explicit non_nested specification (resulting in Gauss-Hermite for
+normals/transformed normals and Gauss-Legendre for
+uniforms/transformed uniforms). As for tensor quadrature, the
+dimension_preference specification enables the use of anisotropic
+sparse grids (refer to the PCE description in the User's Manual for
+the anisotropic index set constraint definition). Similar to
+anisotropic tensor grids, the dimension with greatest preference will
+have resolution at the full sparse_grid_level and all other dimension
+resolutions will be reduced in proportion to their reduced
+preference. For PCE with either isotropic or anisotropic sparse grids,
+a summation of tensor-product expansions is used, where each
+anisotropic tensor-product quadrature rule underlying the sparse grid
+construction results in its own anisotropic tensor-product expansion
+as described in case 1. These anisotropic tensor-product expansions
+are summed into a sparse PCE using the standard Smolyak summation
+(again, refer to the User's Manual for additional details). As for
+quadrature_order, the sparse_grid_level specification admits an array
+input for enabling specification of multiple grid resolutions used by
+certain advanced solution methodologies.
+
+<b> Usage Tips </b>
+
+This keyword can be used when using sparse grid integration to
+calculate PCE coefficients or when generating samples for sparse grid
+collocation.
+
+For most use cases, this keyword will specify a single integer level.
+In more advanced UQ studies with hierarchical models, the list of
+integers can apply to different models and/or model levels
+
+
+
 Topics::
 Examples::
 Theory::

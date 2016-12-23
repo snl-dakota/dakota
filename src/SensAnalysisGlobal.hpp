@@ -123,7 +123,9 @@ private:
                     const RealMatrix& simple_corr_mat,
                     RealMatrix& corr_matrix, bool& numerical_issues);
 
-  //
+  /// Return true if there are any NaN or Inf entries in the matrix
+  bool has_nan_or_inf(const RealMatrix &corr) const;
+
   //- Heading: Data
   //
 

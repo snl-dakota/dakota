@@ -1,0 +1,38 @@
+# Unconstrained optimization of cantilever beam
+
+environment
+  tabular_data
+    tabular_data_file 'ps_cantilever.dat'
+
+method
+  asynch_pattern_search
+    max_function_evaluations 200
+
+variables
+  continuous_design 2
+    descriptors    'w'   't'
+    upper_bounds   20.0  20.0
+    initial_point  1.25  1.5
+    lower_bounds   1.0   1.0
+
+  continuous_state 5
+    descriptors    'L'  'p'    'E'    'X'    'Y'
+    initial_state  90.0  500.0  2.9e7 400.0  500.0
+
+interface
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory named 'workdir/run'
+        directory_tag directory_save
+        link_files 'cantilever.template' 'cantilever'
+      parameters_file 'params.in'
+      results_file 'results.out'
+    deactivate active_set_vector
+  asynchronous evaluation_concurrency 16
+
+responses
+  descriptors 'mass'
+  objective_functions 1
+  no_gradients
+  no_hessians
+

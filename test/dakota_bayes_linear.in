@@ -1,6 +1,18 @@
 #@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_QUESO
 
+# The analysis_driver 'bayes_linear' is an analytic 
+# test function that equals the sum of the input 
+# variables.  That is, the response Y = sum(X1:Xd), 
+# where d is the number of inputs.  Brian Williams 
+# has several examples assuming different types of 
+# distributions on the inputs and different measurement
+# errors in pages 93-102 and Appendix A of the CASL Report
+# "User Guidelines and Best Practices for CASL VUQ 
+# Analysis using Dakota."  CASL-U-2014-0038-00. 
+# By Brian Adams et al.  
+
+  
 environment
         tabular_graphics_data
 

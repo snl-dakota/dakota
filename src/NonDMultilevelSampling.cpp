@@ -1874,8 +1874,14 @@ lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
     else
       return false;
   }
-  else
+  else {
+    Cout << "\nNo CVMC LF sample increment";
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " from avg LF = " << average(N_lf) << ", avg HF = "
+	   << average(N_hf) << ", avg eval_ratio = " << avg_eval_ratio;
+    Cout << std::endl;
     return false;
+  }
 }
 
 

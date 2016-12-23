@@ -46,13 +46,13 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
   int work_size = -1;         // special code for workspace query
   double* work = new Real[1]; // temporary work array
   la.GESVD(JOBU, JOBVT, M, N, matrix[0], LDA, &singular_vals[0],
-	   U, LDU, v_trans[0], LDVT, work, work_size, RWORK, &info);
+	   U, LDU, v_trans.values(), LDVT, work, work_size, RWORK, &info);
   work_size = (int)work[0];   // optimal work array size returned by query
   delete [] work;
 
   work = new Real[work_size];
   la.GESVD(JOBU, JOBVT, M, N, matrix[0], LDA, &singular_vals[0],
-	   U, LDU, v_trans[0], LDVT, work, work_size, RWORK, &info);
+	   U, LDU, v_trans.values(), LDVT, work, work_size, RWORK, &info);
   delete [] work;
 
   if (info < 0) {

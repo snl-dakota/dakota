@@ -1426,7 +1426,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"parameter_study.final_point", P finalPoint},
 	{"parameter_study.list_of_points", P listOfPoints},
 	{"parameter_study.step_vector", P stepVector},
-	{"sbl.trust_region.initial_size", P surrBasedLocalTRInitSize}};
+	{"trust_region.initial_size", P trustRegionInitSize}};
     #undef P
 
     KW<RealVector, DataMethodRep> *kw;
@@ -2478,13 +2478,12 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"optpp.max_step", P maxStep},
 	{"optpp.steplength_to_boundary", P stepLenToBoundary},
 	{"percent_variance_explained", P percentVarianceExplained},
-	{"sbl.trust_region.contract_threshold",
-	 P surrBasedLocalTRContractTrigger},
-	{"sbl.trust_region.contraction_factor", P surrBasedLocalTRContract},
-	{"sbl.trust_region.expand_threshold", P surrBasedLocalTRExpandTrigger},
-	{"sbl.trust_region.expansion_factor", P surrBasedLocalTRExpand},
-	{"sbl.trust_region.minimum_size", P surrBasedLocalTRMinSize},
 	{"solution_target", P solnTarget},
+	{"trust_region.contract_threshold", P trustRegionContractTrigger},
+	{"trust_region.contraction_factor", P trustRegionContract},
+	{"trust_region.expand_threshold", P trustRegionExpandTrigger},
+	{"trust_region.expansion_factor", P trustRegionExpand},
+	{"trust_region.minimum_size", P trustRegionMinSize},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
 	{"volume_boxsize_limit", P volBoxSize}};

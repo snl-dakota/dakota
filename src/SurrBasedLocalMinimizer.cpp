@@ -49,16 +49,16 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
   penaltyIterOffset(-200), 
   origTrustRegionFactor(
-    probDescDB.get_rv("method.sbl.trust_region.initial_size")),
+    probDescDB.get_rv("method.trust_region.initial_size")),
   minTrustRegionFactor(
-    probDescDB.get_real("method.sbl.trust_region.minimum_size")),
+    probDescDB.get_real("method.trust_region.minimum_size")),
   trRatioContractValue(
-    probDescDB.get_real("method.sbl.trust_region.contract_threshold")),
+    probDescDB.get_real("method.trust_region.contract_threshold")),
   trRatioExpandValue(
-    probDescDB.get_real("method.sbl.trust_region.expand_threshold")),
+    probDescDB.get_real("method.trust_region.expand_threshold")),
   gammaContract(
-    probDescDB.get_real("method.sbl.trust_region.contraction_factor")),
-  gammaExpand(probDescDB.get_real("method.sbl.trust_region.expansion_factor")),
+    probDescDB.get_real("method.trust_region.contraction_factor")),
+  gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {

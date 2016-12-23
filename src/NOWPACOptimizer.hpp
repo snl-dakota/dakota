@@ -24,15 +24,79 @@ namespace Dakota {
 
 class NOWPACBlackBoxEvaluator: public BlackBoxBaseClass
 {
+public:
+
+  /// constructor
+  NOWPACBlackBoxEvaluator(Model& model);
+
   void evaluate(std::vector<double> const &x, // incoming params in user space
 		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
 		void *param); // general pass through from NOWPAC
-
   // alternate evaluate requires an estimate of noise in 1 obj + len-1
   // nonlin ineq constr (this is tied to SNOWPAC stochastic_optimization)
 
   // TO DO: queue() + synchronize()
+
+  void allocate_constraints();
+
+  int num_ineq_constraints() const;
+
+  const SizetList& nonlinear_inequality_mapping_indices()     const;
+  const RealList&  nonlinear_inequality_mapping_multipliers() const;
+  const RealList&  nonlinear_inequality_mapping_offsets()     const;
+
+private:
+
+  /// cache a local copy of the Model
+  Model iteratedModel;
+
+  /// aggregate unsupported constraint types as nonlinear inequalities
+  int numNowpacIneqConstr;
+
+  /// a list of indices for referencing the DAKOTA nonlinear inequality
+  /// constraints used in computing the corresponding NOWPAC constraints.
+  SizetList nonlinIneqConMappingIndices;
+  /// a list of multipliers for mapping the DAKOTA nonlinear inequality
+  /// constraints to the corresponding NOWPAC constraints.
+  RealList nonlinIneqConMappingMultipliers;
+  /// a list of offsets for mapping the DAKOTA nonlinear inequality
+  /// constraints to the corresponding NOWPAC constraints.
+  RealList nonlinIneqConMappingOffsets;
+
+  /// a list of indices for referencing the DAKOTA linear inequality
+  /// constraints used in computing the corresponding NOWPAC constraints.
+  SizetList linIneqConMappingIndices;
+  /// a list of multipliers for mapping the DAKOTA linear inequality
+  /// constraints to the corresponding NOWPAC constraints.
+  RealList linIneqConMappingMultipliers;
+  /// a list of offsets for mapping the DAKOTA linear inequality
+  /// constraints to the corresponding NOWPAC constraints.
+  RealList linIneqConMappingOffsets;
 };
+
+
+inline NOWPACBlackBoxEvaluator::NOWPACBlackBoxEvaluator(Model& model):
+  iteratedModel(model)
+{ }
+
+
+inline int NOWPACBlackBoxEvaluator::num_ineq_constraints() const
+{ return numNowpacIneqConstr; }
+
+
+inline const SizetList& NOWPACBlackBoxEvaluator::
+nonlinear_inequality_mapping_indices() const
+{ return nonlinIneqConMappingIndices; }
+
+
+inline const RealList& NOWPACBlackBoxEvaluator::
+nonlinear_inequality_mapping_multipliers() const
+{ return nonlinIneqConMappingMultipliers; }
+
+
+inline const RealList& NOWPACBlackBoxEvaluator::
+nonlinear_inequality_mapping_offsets() const
+{ return nonlinIneqConMappingOffsets; }
 
 
 /// Wrapper class for the (S)NOWPAC optimization algorithms from
@@ -65,8 +129,8 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  /// performs run-time set up
-  void initialize_run();
+  // performs run-time set up
+  //void initialize_run();
 
 private:
 
@@ -74,9 +138,7 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void initialize();           ///< Shared constructor code
-
-  void allocate_constraints(); ///< Allocates constraint mappings
+  void initialize_options();   ///< Shared constructor code
 
   //
   //- Heading: Data

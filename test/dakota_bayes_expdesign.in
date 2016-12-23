@@ -4,6 +4,14 @@
 #@ s2: ReqFiles=dakota_bayes_expdesign.dat,dakota_bayes_expdesign.cand.dat
 #@ s2: UserMan=bayes_experimental_design
 
+# This example tests the Bayesian experimental_design algorithm. The 
+# high-fidelity model is a steady-state heat equation example, which the
+# low-fidelity model attempts to approximate with a quadratic function,
+# Ax^2+Bx+C. The coefficients A, B, and C are the calibration parameters,
+# while x is the configuration variable. See Section 4.1 of the JCP paper
+# "An information theoretic approach to use high-fidelity codes to
+# calibration low-fidelity codes" by Lewis, et al, published in 2016.  
+
 environment
         tabular_graphics_data
 
@@ -60,13 +68,13 @@ variables,
 interface,
         fork
         analysis_driver = 'expdesign_high'
-        analysis_servers = 1
+        asynchronous evaluation_concurrency=2              #s0
         id_interface = 'hifi_IF'
 
 interface,
         fork 
         analysis_driver = 'expdesign_low'
-        analysis_servers = 1
+        asynchronous evaluation_concurrency=4              #s0
         id_interface = 'lofi_IF'
 
 responses,

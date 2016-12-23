@@ -1,40 +1,45 @@
-Blurb::
-Cubature using tensor-products of Gaussian quadrature rules
+Blurb:: Order for tensor-products of Gaussian quadrature rules
+
 Description::
+
 Multidimensional integration by a tensor-product of Gaussian
-   quadrature rules (specified with \c quadrature_order, and, 
-   optionally, \c dimension_preference). The default rule
-   selection is to employ \c non_nested Gauss rules including
-   Gauss-Hermite (for normals or transformed normals),
-   Gauss-Legendre (for uniforms or transformed uniforms),
-   Gauss-Jacobi (for betas), Gauss-Laguerre (for exponentials),
-   generalized Gauss-Laguerre (for gammas), and
-   numerically-generated Gauss rules (for other distributions when
-   using an Extended basis). For the case of \c p_refinement or the
-   case of an explicit \c nested override, Gauss-Hermite rules are
-   replaced with Genz-Keister nested rules and Gauss-Legendre rules
-   are replaced with Gauss-Patterson nested rules, both of which
-   exchange lower integrand precision for greater point reuse. 
-   By specifying a \c dimension_preference, where higher preference
-   leads to higher order polynomial resolution, the tensor grid may
-   be rendered anisotropic. The dimension specified to have 
-   highest preference will be set to the specified \c quadrature_order
-   and all other dimensions will be reduced in proportion to their
-   reduced preference; any non-integral portion is truncated.
-   To synchronize with tensor-product integration, a tensor-product
-   expansion is used, where the order \f$p_i\f$ of the expansion in
-   each dimension is selected to be half of the integrand precision
-   available from the rule in use, rounded down. In the case of
-   non-nested Gauss rules with integrand precision \f$2m_i-1\f$,
-   \f$p_i\f$ is one less than the quadrature order \f$m_i\f$ in each
-   dimension (a one-dimensional expansion contains the same number 
-   of terms, \f$p+1\f$, as the number of Gauss points). The 
-   total number of terms, \e N, in a tensor-product expansion 
-   involving \e n uncertain input variables is 
-   \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1)\f]
-   In some advanced use cases (e.g., multifidelity UQ), multiple
-   grid resolutions can be employed; for this reason, the \c 
-   quadrature_order specification supports an array input.
+quadrature rules (specified with \c quadrature_order, and, optionally,
+\c dimension_preference). The default rule selection is to employ \c
+non_nested Gauss rules including Gauss-Hermite (for normals or
+transformed normals), Gauss-Legendre (for uniforms or transformed
+uniforms), Gauss-Jacobi (for betas), Gauss-Laguerre (for
+exponentials), generalized Gauss-Laguerre (for gammas), and
+numerically-generated Gauss rules (for other distributions when using
+an Extended basis). For the case of \c p_refinement or the case of an
+explicit \c nested override, Gauss-Hermite rules are replaced with
+Genz-Keister nested rules and Gauss-Legendre rules are replaced with
+Gauss-Patterson nested rules, both of which exchange lower integrand
+precision for greater point reuse.  By specifying a \c
+dimension_preference, where higher preference leads to higher order
+polynomial resolution, the tensor grid may be rendered
+anisotropic. The dimension specified to have highest preference will
+be set to the specified \c quadrature_order and all other dimensions
+will be reduced in proportion to their reduced preference; any
+non-integral portion is truncated.  To synchronize with tensor-product
+integration, a tensor-product expansion is used, where the order
+\f$p_i\f$ of the expansion in each dimension is selected to be half of
+the integrand precision available from the rule in use, rounded
+down. In the case of non-nested Gauss rules with integrand precision
+\f$2m_i-1\f$, \f$p_i\f$ is one less than the quadrature order
+\f$m_i\f$ in each dimension (a one-dimensional expansion contains the
+same number of terms, \f$p+1\f$, as the number of Gauss points). The
+total number of terms, \e N, in a tensor-product expansion involving
+\e n uncertain input variables is \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n}
+(p_i + 1)\f] In some advanced use cases (e.g., multifidelity UQ),
+multiple grid resolutions can be employed; for this reason, the \c
+quadrature_order specification supports an array input.
+
+<b> Usage Tips </b>
+
+For most use cases, this keyword will specify a single integer order.
+In more advanced UQ studies with hierarchical models, the list of
+integers can apply to different models and/or model levels
+
 Topics::
 Examples::
 Theory::

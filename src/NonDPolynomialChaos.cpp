@@ -59,9 +59,14 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    probDescDB.get_string("method.import_approx_points_file")),
+    probDescDB.get_string("method.import_build_points_file")),
   importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
   importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
+  importApproxPointsFile(
+    probDescDB.get_string("method.import_approx_points_file")),
+  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
+  importApproxActiveOnly(
+    probDescDB.get_bool("method.import_approx_active_only")),
   resizedFlag(false), callResize(false)
 {
   // -------------------
@@ -79,9 +84,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // --------------------
   // Data import settings
   // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse"),
-    import_pts_file = probDescDB.get_string("method.import_build_points_file");
-  if (!import_pts_file.empty() && pt_reuse.empty())
+  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
   // -------------------
@@ -296,7 +300,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_order, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_pts_file, importBuildFormat,
+    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
     importBuildActiveOnly,
     probDescDB.get_string("method.export_approx_points_file"),
     probDescDB.get_ushort("method.export_approx_format")), false);
@@ -305,8 +309,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importBuildPointsFile, importBuildFormat,
-			      importBuildActiveOnly);
+  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
+			      importApproxActiveOnly);
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -645,8 +649,8 @@ bool NonDPolynomialChaos::resize()
   // -------------------------------------
   // (Re)Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(importBuildPointsFile, importBuildFormat,
-			      importBuildActiveOnly);
+  construct_expansion_sampler(importApproxPointsFile, importApproxFormat,
+			      importApproxActiveOnly);
 
   return true; // Always need to re-initialize communicators
 }
@@ -726,6 +730,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // construct it for the former and (conditionally) pass it in to the latter.
   shared_data_rep->construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
+
   // If the model is not yet fully initialized, skip grid initialization.
   if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||
@@ -736,9 +741,8 @@ void NonDPolynomialChaos::initialize_u_space_model()
         (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
       u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
     }
-    else {
+    else
       callResize = true;
-    }
   }
 
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and

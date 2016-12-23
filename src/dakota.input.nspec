@@ -165,12 +165,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
     [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
     [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
-      [ initial_size REALLIST {N_mdm(RealDL,surrBasedLocalTRInitSize)} ]
-      [ minimum_size REAL {N_mdm(Real,surrBasedLocalTRMinSize)} ]
-      [ contract_threshold REAL {N_mdm(Real,surrBasedLocalTRContractTrigger)} ]
-      [ expand_threshold REAL {N_mdm(Real,surrBasedLocalTRExpandTrigger)} ]
-      [ contraction_factor REAL {N_mdm(Real,surrBasedLocalTRContract)} ]
-      [ expansion_factor REAL {N_mdm(Real,surrBasedLocalTRExpand)} ]
+      [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+      [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+      [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+      [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+      [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+      [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
     [ approx_subproblem {0}
       original_primary {N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
@@ -398,6 +398,20 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ scaling {N_mdm(true,methodScaling)} ]
      )
     |
+    ( nowpac {N_mdm(utype,methodName_MIT_NOWPAC)}
+      [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+        [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+        [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+        [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+        [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+        [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+        [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
+       ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
     ( 
       ( moga {N_mdm(utype,methodName_MOGA)}
         [ fitness_type {0}
@@ -509,113 +523,154 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
      )
     |
-    ( 
-      ( 
-        ( 
-          ( coliny_pattern_search {N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}
-            [ constant_penalty {N_mdm(true,constantPenalty)} ]
-            [ no_expansion {N_mdm(false,expansionFlag)} ]
-            [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
-            [ pattern_basis {0}
-              coordinate {N_mdm(lit,patternBasis_coordinate)}
-              |
-              simplex {N_mdm(lit,patternBasis_simplex)}
-             ]
-            [ stochastic {N_mdm(true,randomizeOrderFlag)} ]
-            [ total_pattern_size INTEGER {N_mdm(int,totalPatternSize)} ]
-            [ exploratory_moves {0}
-              multi_step {N_mdm(lit,exploratoryMoves_multi_step)}
-              |
-              adaptive_pattern {N_mdm(lit,exploratoryMoves_adaptive)}
-              |
-              basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
-             ]
-            [ synchronization {0}
-              blocking {N_mdm(lit,evalSynchronize_blocking)}
-              |
-              nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
-             ]
-           )
-          |
-          ( coliny_solis_wets {N_mdm(utype,methodName_COLINY_SOLIS_WETS)}
-            [ contract_after_failure INTEGER {N_mdm(int,contractAfterFail)} ]
-            [ no_expansion {N_mdm(false,expansionFlag)} ]
-            [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
-            [ constant_penalty {N_mdm(true,constantPenalty)} ]
-           )
-          [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
-          [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-         )
+    ( coliny_pattern_search {N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}
+      [ constant_penalty {N_mdm(true,constantPenalty)} ]
+      [ no_expansion {N_mdm(false,expansionFlag)} ]
+      [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+      [ pattern_basis {0}
+        coordinate {N_mdm(lit,patternBasis_coordinate)}
         |
-        coliny_cobyla {N_mdm(utype,methodName_COLINY_COBYLA)}
-        [ initial_delta REAL {N_mdm(Real,initDelta)} ]
-        [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
-       )
-      |
-      ( coliny_direct {N_mdm(utype,methodName_COLINY_DIRECT)}
-        [ division {0}
-          major_dimension {N_mdm(lit,boxDivision_major_dimension)}
+        simplex {N_mdm(lit,patternBasis_simplex)}
+       ]
+      [ stochastic {N_mdm(true,randomizeOrderFlag)} ]
+      [ total_pattern_size INTEGER {N_mdm(int,totalPatternSize)} ]
+      [ exploratory_moves {0}
+        multi_step {N_mdm(lit,exploratoryMoves_multi_step)}
+        |
+        adaptive_pattern {N_mdm(lit,exploratoryMoves_adaptive)}
+        |
+        basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
+       ]
+      [ synchronization {0}
+        blocking {N_mdm(lit,evalSynchronize_blocking)}
+        |
+        nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+       ]
+      [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_solis_wets {N_mdm(utype,methodName_COLINY_SOLIS_WETS)}
+      [ contract_after_failure INTEGER {N_mdm(int,contractAfterFail)} ]
+      [ no_expansion {N_mdm(false,expansionFlag)} ]
+      [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+      [ constant_penalty {N_mdm(true,constantPenalty)} ]
+      [ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_cobyla {N_mdm(utype,methodName_COLINY_COBYLA)}
+      [ initial_delta REAL {N_mdm(Real,initDelta)} ]
+      [ threshold_delta REAL {N_mdm(Real,threshDelta)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_direct {N_mdm(utype,methodName_COLINY_DIRECT)}
+      [ division {0}
+        major_dimension {N_mdm(lit,boxDivision_major_dimension)}
+        |
+        all_dimensions {N_mdm(lit,boxDivision_all_dimensions)}
+       ]
+      [ global_balance_parameter REAL {N_mdm(Real,globalBalanceParam)} ]
+      [ local_balance_parameter REAL {N_mdm(Real,localBalanceParam)} ]
+      [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
+      [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
+      [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
+      [ initialization_type {0}
+        simple_random {N_mdm(lit,initializationType_random)}
+        |
+        unique_random {N_mdm(lit,initializationType_unique_random)}
+        |
+        flat_file STRING {N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}
+       ]
+      [ fitness_type {0}
+        linear_rank {N_mdm(lit,fitnessType_linear_rank)}
+        |
+        merit_function {N_mdm(lit,fitnessType_proportional)}
+       ]
+      [ replacement_type {0}
+        random INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_random)}
+        |
+        chc INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_chc)}
+        |
+        elitist INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}
+        [ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
+       ]
+      [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
+      [ crossover_type {0}
+        two_point {N_mdm(lit,crossoverType_two_point)}
+        |
+        blend {N_mdm(lit,crossoverType_blend)}
+        |
+        uniform {N_mdm(lit,crossoverType_uniform)}
+       ]
+      [ mutation_rate REAL {N_mdm(Real,mutationRate)} ]
+      [ mutation_type {0}
+        replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
+        |
+        ( 
+          offset_normal {N_mdm(lit,mutationType_offset_normal)}
           |
-          all_dimensions {N_mdm(lit,boxDivision_all_dimensions)}
-         ]
-        [ global_balance_parameter REAL {N_mdm(Real,globalBalanceParam)} ]
-        [ local_balance_parameter REAL {N_mdm(Real,localBalanceParam)} ]
-        [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
-        [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
-        [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-       )
-      |
-      ( coliny_ea {N_mdm(utype,methodName_COLINY_EA)}
-        [ population_size INTEGER > 0 {N_mdm(pint,populationSize)} ]
-        [ initialization_type {0}
-          simple_random {N_mdm(lit,initializationType_random)}
+          offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
           |
-          unique_random {N_mdm(lit,initializationType_unique_random)}
-          |
-          flat_file STRING {N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}
-         ]
-        [ fitness_type {0}
-          linear_rank {N_mdm(lit,fitnessType_linear_rank)}
-          |
-          merit_function {N_mdm(lit,fitnessType_proportional)}
-         ]
-        [ replacement_type {0}
-          random INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_random)}
-          |
-          chc INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_chc)}
-          |
-          elitist INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}
-          [ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
-         ]
-        [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
-        [ crossover_type {0}
-          two_point {N_mdm(lit,crossoverType_two_point)}
-          |
-          blend {N_mdm(lit,crossoverType_blend)}
-          |
-          uniform {N_mdm(lit,crossoverType_uniform)}
-         ]
-        [ mutation_rate REAL {N_mdm(Real,mutationRate)} ]
-        [ mutation_type {0}
-          replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
-          |
-          ( 
-            offset_normal {N_mdm(lit,mutationType_offset_normal)}
-            |
-            offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
-            |
-            offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
-            [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
-            [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
-           )
-          [ non_adaptive {N_mdm(false,mutationAdaptive)} ]
-         ]
-        [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
-       )
-      |
-      ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
-        beta_solver_name STRING {N_mdm(str,betaSolverName)}
-       )
+          offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
+          [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
+          [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
+         )
+        [ non_adaptive {N_mdm(false,mutationAdaptive)} ]
+       ]
+      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+      [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( coliny_beta {N_mdm(utype,methodName_COLINY_BETA)}
+      beta_solver_name STRING {N_mdm(str,betaSolverName)}
       [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ show_misc_options {N_mdm(true,showMiscOptions)} ]
@@ -2822,23 +2877,16 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 
 KEYWORD12 interface {N_ifm3(start,0,stop)}
   [ id_interface STRING {N_ifm(str,idInterface)} ]
-  [ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]
   [ analysis_drivers STRINGLIST {N_ifm(strL,analysisDrivers)}
-    [ analysis_components STRINGLIST {N_ifm(str2D,analysisComponents)} ]
     [ input_filter STRING {N_ifm(str,inputFilter)} ]
     [ output_filter STRING {N_ifm(str,outputFilter)} ]
-    ( 
-      system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
-      |
-      fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
+    ( system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
-      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
-      [ verbatim {N_ifm(true,verbatimFlag)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
+      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
+      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
@@ -2847,6 +2895,27 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
         [ copy_files STRINGLIST {N_ifm(strL,copyFiles)} ]
         [ replace {N_ifm(true,templateReplace)} ]
        ]
+      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
+      [ verbatim {N_ifm(true,verbatimFlag)} ]
+     )
+    |
+    ( fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
+      [ parameters_file STRING {N_ifm(str,parametersFile)} ]
+      [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ file_tag {N_ifm(true,fileTagFlag)} ]
+      [ file_save {N_ifm(true,fileSaveFlag)} ]
+      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
+      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
+      [ work_directory {N_ifm(true,useWorkdir)}
+        [ named STRING {N_ifm(str,workDir)} ]
+        [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
+        [ directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
+        [ link_files STRINGLIST {N_ifm(strL,linkFiles)} ]
+        [ copy_files STRINGLIST {N_ifm(strL,copyFiles)} ]
+        [ replace {N_ifm(true,templateReplace)} ]
+       ]
+      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
+      [ verbatim {N_ifm(true,verbatimFlag)} ]
      )
     |
     ( direct {N_ifm(type,interfaceType_TEST_INTERFACE)}
@@ -2862,23 +2931,25 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
     scilab {N_ifm(type,interfaceType_SCILAB_INTERFACE)}
     |
     grid {N_ifm(type,interfaceType_GRID_INTERFACE)}
-    [ failure_capture {0}
-      abort {N_ifm(lit,failAction_abort)}
-      |
-      retry INTEGER {N_ifm(ilit,TYPE_DATA_failAction_retry)}
-      |
-      recover REALLIST {N_ifm(Rlit,TYPE_DATA_failAction_recover)}
-      |
-      continuation {N_ifm(lit,failAction_continuation)}
+    [ analysis_components STRINGLIST {N_ifm(str2D,analysisComponents)} ]
+   ]
+  [ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]
+  [ failure_capture {0}
+    abort {N_ifm(lit,failAction_abort)}
+    |
+    retry INTEGER {N_ifm(ilit,TYPE_DATA_failAction_retry)}
+    |
+    recover REALLIST {N_ifm(Rlit,TYPE_DATA_failAction_recover)}
+    |
+    continuation {N_ifm(lit,failAction_continuation)}
+   ]
+  [ deactivate {0}
+    [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
+    [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
+    [ strict_cache_equality {N_ifm(true,nearbyEvalCacheFlag)}
+      [ cache_tolerance REAL {N_ifm(Real,nearbyEvalCacheTol)} ]
      ]
-    [ deactivate {0}
-      [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
-      [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
-      [ strict_cache_equality {N_ifm(true,nearbyEvalCacheFlag)}
-        [ cache_tolerance REAL {N_ifm(Real,nearbyEvalCacheTol)} ]
-       ]
-      [ restart_file {N_ifm(false,restartFileFlag)} ]
-     ]
+    [ restart_file {N_ifm(false,restartFileFlag)} ]
    ]
   [ asynchronous {N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}
     [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]

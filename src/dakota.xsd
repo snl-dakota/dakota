@@ -7,7 +7,8 @@
 				<element name='ref' type='dak:refType'></element>		
 				<element name='oneOf' type='dak:oneOfType' minOccurs='0' maxOccurs='unbounded'></element>
 				<element name='required' type='dak:requiredType' minOccurs='0' maxOccurs='unbounded'></element>
-                <element name='optional' type='dak:optionalType' minOccurs='0' maxOccurs='unbounded'></element>                
+                <element name='optional' type='dak:optionalType' minOccurs='0' maxOccurs='unbounded'></element>
+                <element name='group' type='dak:groupType' minOccurs='0' maxOccurs='unbounded'></element>
 			</choice>"
     >
 ]>
@@ -52,6 +53,13 @@
 			&content;
 		</sequence>
         <attribute name="label" type="string" use="optional" ></attribute>               
+	</complexType>
+
+	<complexType name="groupType">
+		<sequence minOccurs="0" maxOccurs="unbounded">
+			&content;
+		</sequence>
+        <attribute name="label" type="string" use="optional" ></attribute>
 	</complexType>
 	
 	<complexType name="requiredType">

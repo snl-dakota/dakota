@@ -1,0 +1,26 @@
+environment
+  tabular_data
+
+method
+  sampling sample_type lhs
+  samples 400 
+  seed 1337
+  ### TODO: Add keywords to generate data for CDFs and to estimate the 
+  ###       probabilities that stress will exceed 1e5 psi and displacement 
+  ###       will exceed 0.001 in. 
+
+variables
+  ### TODO: Specify uncertain and state variables
+
+responses
+  response_functions 3
+  descriptors 'mass' 'stress' 'displacement'
+  no_gradients
+  no_hessians
+
+interface
+  analysis_drivers 'driver.sh'
+    fork
+      work_directory 
+        link_files 'cantilever' 'cantilever.template'
+  asynchronous evaluation_concurrency 4

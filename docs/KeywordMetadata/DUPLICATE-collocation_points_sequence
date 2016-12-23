@@ -1,7 +1,15 @@
-Blurb::
-Specify the number of collocation points used to estimate PCE coefficients using regression or orthogonal-least-interpolation.
+Blurb:: Number of collocation points to estimate PCE coefficients
+
 Description::
-Specify the number of collocation points used to estimate PCE coefficients using regression or orthogonal-least-interpolation.
+Specify the number of collocation points used to estimate PCE
+coefficients using regression or orthogonal-least-interpolation.
+
+<b> Usage Tips </b>
+
+For most use cases, this keyword will specify a single integer number
+of points.  In more advanced UQ studies with hierarchical models, the
+list of integers can apply to different models and/or model levels
+
 Topics::
 Examples::
 Theory::

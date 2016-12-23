@@ -1959,36 +1959,36 @@ method_tr_final(const char *keyname, Values *val, void **g, void *v)
   DataMethodRep &data_method = *(*(Meth_Info**)g)->dme;
 
   // sanity checks on trust region user-defined values
-  size_t i, num_init = data_method.surrBasedLocalTRInitSize.length();
+  size_t i, num_init = data_method.trustRegionInitSize.length();
   Real min_init_size = 1.;
   for (i=0; i<num_init; ++i) {
-    Real init_size_i = data_method.surrBasedLocalTRInitSize[i];
+    Real init_size_i = data_method.trustRegionInitSize[i];
     if ( init_size_i <= 0. || init_size_i > 1. )
       botch("specified initial TR size must be in (0,1]");
     if (init_size_i < min_init_size)
       min_init_size = init_size_i;
   }
-  if ( data_method.surrBasedLocalTRMinSize > min_init_size ) {
+  if ( data_method.trustRegionMinSize > min_init_size ) {
     if (num_init) botch("specified initial TR size less than minimum TR size");
     else          botch("minimum TR size must be <= 1.");
   }
   // allow 0 for min size spec (conv control becomes inactive)
-  if ( data_method.surrBasedLocalTRMinSize < 0. ||
-       data_method.surrBasedLocalTRMinSize > 1. )
+  if ( data_method.trustRegionMinSize < 0. ||
+       data_method.trustRegionMinSize > 1. )
     botch("specified minimum TR size must be in [0,1]");
-  if( data_method.surrBasedLocalTRContractTrigger <= 0. ||
-      data_method.surrBasedLocalTRContractTrigger >
-      data_method.surrBasedLocalTRExpandTrigger         ||
-      data_method.surrBasedLocalTRExpandTrigger   >  1. )
+  if( data_method.trustRegionContractTrigger <= 0. ||
+      data_method.trustRegionContractTrigger >
+      data_method.trustRegionExpandTrigger         ||
+      data_method.trustRegionExpandTrigger   >  1. )
     botch("expand/contract threshold values must satisfy\n\t"
 	  "0 < contract_threshold <= expand_threshold <= 1");
-  if ( data_method.surrBasedLocalTRContract <= 0. ||
-       data_method.surrBasedLocalTRContract >  1. )
+  if ( data_method.trustRegionContract <= 0. ||
+       data_method.trustRegionContract >  1. )
     botch("contraction_factor must be in (0,1]");
-  else if ( data_method.surrBasedLocalTRContract == 1. )
+  else if ( data_method.trustRegionContract == 1. )
     warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
 	 "to assure convergence of the surrogate_based_opt method");
-  if ( data_method.surrBasedLocalTRExpand < 1. )
+  if ( data_method.trustRegionExpand < 1. )
     botch("expansion_factor must be >= 1");
 }
 
@@ -6689,13 +6689,13 @@ static Real
         MP_(smoothFactor),
  	MP_(solnTarget),
 	MP_(stepLenToBoundary),
-	MP_(surrBasedLocalTRContract),
-	MP_(surrBasedLocalTRContractTrigger),
-	MP_(surrBasedLocalTRExpand),
-	MP_(surrBasedLocalTRExpandTrigger),
-	MP_(surrBasedLocalTRMinSize),
 	MP_(threshDelta),
 	MP_(threshStepLength),
+	MP_(trustRegionContract),
+	MP_(trustRegionContractTrigger),
+	MP_(trustRegionExpand),
+	MP_(trustRegionExpandTrigger),
+	MP_(trustRegionMinSize),
 	MP_(vbdDropTolerance),
 	MP_(volBoxSize),
 	MP_(vns),
@@ -6714,7 +6714,7 @@ static RealVector
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
         MP_(stepVector),
-	MP_(surrBasedLocalTRInitSize);
+	MP_(trustRegionInitSize);
 
 static RealVectorArray
 	MP_(genReliabilityLevels),
@@ -7007,6 +7007,7 @@ static Method_mp_utype
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
+	MP2s(methodName,MIT_NOWPAC),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
 	MP2s(methodName,GENIE_DIRECT),

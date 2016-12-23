@@ -71,7 +71,7 @@ enum { DEFAULT_METHOD=0,
        ASYNCH_PATTERN_SEARCH=(MINIMIZER_BIT | OPTIMIZER_BIT), OPTPP_PDS,
        COLINY_BETA, COLINY_COBYLA,         COLINY_DIRECT, COLINY_MULTI_START,
        COLINY_EA,   COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS,
-       MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, NOWPAC_OPT, SNOWPAC_OPT,
+       MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, MIT_NOWPAC, MIT_SNOWPAC,
        GENIE_OPT_DARTS, GENIE_DIRECT,
        // Gradient-based Optimizers / Minimizers:
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
@@ -369,7 +369,7 @@ public:
   /// size per surrogate model (notes: no trust region for the truth
   /// model; sizes are relative values, e.g., 0.1 = 10% of range of
   /// global bounds for each variable
-  RealVector surrBasedLocalTRInitSize;
+  RealVector trustRegionInitSize;
   /// minimum trust region size in the surrogate-based local method
   /// (from the \c minimum_size specification in \ref MethodSBL), if
   /// the trust region size falls below this threshold the SBL
@@ -377,25 +377,25 @@ public:
   /// the min trust region size is set to 1.0e-3 in attempt to avoid
   /// ill-conditioned matrixes that arise in kriging over small trust
   /// regions)
-  Real surrBasedLocalTRMinSize;
+  Real trustRegionMinSize;
   /// trust region minimum improvement level (ratio of actual to predicted
   /// decrease in objective fcn) in the surrogate-based local method
   /// (from the \c contract_threshold specification in \ref MethodSBL),
   /// the trust region shrinks or is rejected if the ratio is below
   /// this value ("eta_1" in the Conn-Gould-Toint trust region book)
-  Real surrBasedLocalTRContractTrigger;
+  Real trustRegionContractTrigger;
   /// trust region sufficient improvement level (ratio of actual to
   /// predicted decrease in objective fn) in the surrogate-based local
   /// method (from the \c expand_threshold specification in \ref
   /// MethodSBL), the trust region expands if the ratio is above this
   /// value ("eta_2" in the Conn-Gould-Toint trust region book)
-  Real surrBasedLocalTRExpandTrigger;
+  Real trustRegionExpandTrigger;
   /// trust region contraction factor in the surrogate-based local method
   /// (from the \c contraction_factor specification in \ref MethodSBL)
-  Real surrBasedLocalTRContract;
+  Real trustRegionContract;
   /// trust region expansion factor in the surrogate-based local method
   /// (from the \c expansion_factor specification in \ref MethodSBL)
-  Real surrBasedLocalTRExpand;
+  Real trustRegionExpand;
   /// SBL approximate subproblem objective: ORIGINAL_PRIMARY, SINGLE_OBJECTIVE,
   /// LAGRANGIAN_OBJECTIVE, or AUGMENTED_LAGRANGIAN_OBJECTIVE
   short surrBasedLocalSubProbObj;

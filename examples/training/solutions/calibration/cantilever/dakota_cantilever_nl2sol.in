@@ -1,0 +1,48 @@
+environment
+  tabular_data
+
+method
+  nl2sol
+    convergence_tolerance 1.0e-8
+  # To see the data difference transformation
+  output verbose
+
+variables
+  # Be sure to give the variables the exact descriptors specified here
+
+  # Estimate L, p, X from data...
+  # Add design variables for L in [90, 110], p in [400, 570], X in [200, 425]
+  continuous_design 3
+    descriptors    'L'    'p'    'X'
+    upper_bounds   110.0  570.0  425.0
+    initial_point  100.0  550.0  390.0
+    lower_bounds   90.0   400.0  200.0
+ 
+  # Fix parameters w = 2.5, t = 3.0, E = 2.9e7, Y = 500.0 using state variables
+  continuous_state 4
+    descriptors    'w'   't'  'E'    'Y'
+    initial_state  2.5  3.0  2.9e7  500.0
+
+interface
+  analysis_drivers 'driver.sh'
+  fork
+   work_directory named 'workdir/run'
+     directory_tag directory_save
+     link_files 'cantilever.template' 'cantilever'
+   parameters_file 'params.in'
+   results_file 'results.out'
+  asynchronous evaluation_concurrency 4
+
+responses
+  descriptors 'mass' 'stress' 'displacement'
+  calibration_terms 3
+
+    # Specify the calibration data file and its format
+    calibration_data_file 'cant_exp_data.5perc.50.dat'
+      num_experiments = 50
+      freeform
+
+    # Add a finite difference derivative specification for NL2SOL
+    numerical_gradients
+
+    no_hessians
