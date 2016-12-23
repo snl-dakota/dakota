@@ -165,10 +165,8 @@ void HierarchSurrBasedLocalMinimizer::update_trust_region(size_t tr_index_start)
   // > Non-nested case: only the bottom (LF) level is nested; other levels
   //   constrained by global bounds; intermediate levels can evolve
   //   independently based on the accuracy of their individual discrepancies.
-
   int num_tr_m1 = trustRegions.size() - 1, index, min = minimizeIndex;
   bool new_trust_region, parent_update = false;
-  // Loop over all trust region levels
   for (index=tr_index_start; index>=min; --index) {
 
     // require any of the constitutive bits, not all bits
@@ -241,7 +239,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   // BOTTOM UP PASS: verify, build, hard convergence
   // --------------
   int i, j, num_tr = trustRegions.size(), min = minimizeIndex,
-    index_tr_start = 0;
+    tr_update_max_index = min;
   for (i=min; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
     int ip1 = i + 1; bool last_tr = (ip1 == num_tr);
@@ -259,13 +257,16 @@ void HierarchSurrBasedLocalMinimizer::build()
       // vars/resp center if accepted
       verify(i); // updates center vars
 
-      if (tr_data.status(NEW_CENTER)) {
-	index_tr_start = i; // for subsequent top-down pass
+      // Test for new center || contraction (should always be one or the other)
+      if (tr_data.status() & NEW_TRUST_REGION) {
+	tr_update_max_index = i; // for subsequent top-down pass
+	/* Hard conv check uses bnds from level above; can defer TR update
 	if (last_tr || !nestedTrustRegions)
 	  update_trust_region_data(tr_data, globalLowerBnds, globalUpperBnds);
 	else
 	  update_trust_region_data(tr_data, trustRegions[ip1].tr_lower_bounds(),
 				   trustRegions[ip1].tr_upper_bounds());
+	*/
       }
     }
 
@@ -311,8 +312,10 @@ void HierarchSurrBasedLocalMinimizer::build()
   }
 
   // If needed, propagate TR updates down the hierarchy
-  if (index_tr_start) // 0 index already covered (no additional recursion reqd)
-    update_trust_region(index_tr_start);
+  if (tr_update_max_index > minimizeIndex) {// requires new recursive update
+    //trustRegions[tr_update_max_index-1].set_status_bits(NEW_TR_FACTOR);
+    update_trust_region(tr_update_max_index);//-1);
+  }
 
   // -------------
   // TOP DOWN PASS: update computed and applied corrections
@@ -341,6 +344,8 @@ void HierarchSurrBasedLocalMinimizer::build()
 		    tr_data.response_center(UNCORR_APPROX_RESPONSE));
     }
 
+    // TO DO: some consolidation may be possible, since
+    // UNCORR_APPROX^{i+1} = UNCORR_TRUTH^i for same x_c
     if (update_corr) {
       // Recursively correct truth response (all levels above, excepting
       // current level) and store in tr_data
