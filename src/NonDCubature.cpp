@@ -44,6 +44,7 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
   cubDriver->initialize_grid(u_types, cubIntOrderRef, cubIntRule);
+  //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
@@ -72,6 +73,7 @@ void NonDCubature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   cubDriver->initialize_grid(poly_basis);
+  //cubDriver->precompute_rules(); // not implemented
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 

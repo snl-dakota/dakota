@@ -68,6 +68,9 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   tpqDriver->initialize_grid(natafTransform.u_types(), ec_options, bc_options);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
+
+  tpqDriver->precompute_rules(); // efficiency optimization
+
   maxEvalConcurrency *= tpqDriver->grid_size();
 }
 
@@ -148,6 +151,7 @@ void NonDQuadrature::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
+
   switch (quadMode) {
   case FULL_TENSOR:
     // infer nestedRules
@@ -179,7 +183,11 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
     update(); // enforce min quad order constraints
     maxEvalConcurrency *= numSamples;
     break;
- }
+  }
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  tpqDriver->precompute_rules(); // efficiency optimization
 }
 
 

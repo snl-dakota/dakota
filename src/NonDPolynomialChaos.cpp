@@ -731,11 +731,6 @@ void NonDPolynomialChaos::initialize_u_space_model()
   shared_data_rep->construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
 
-  // TO DO: this would be a good place to precompute rules if multiIndex / approxOrder were defined...
-  // Current thinking:
-  // > TPQ and SSG will have to precompute with calls to polynomialBasis using access to growth rules: max level -> max order
-  // > Regression will use max candidate basis order called from SharedOrthogPolyApproxData::allocate_data()
-
   // If the model is not yet fully initialized, skip grid initialization.
   if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||

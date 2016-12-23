@@ -307,9 +307,6 @@ void NonDStochCollocation::initialize_u_space_model()
   Pecos::SharedInterpPolyApproxData::construct_basis(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters(), bc_options, driver_basis);
 
-  // TO DO: this would be a good place to precompute rules if multiIndex / approxOrder were defined...
-  // Current thinking: TPQ and SSG will have to precompute with calls to polynomialBasis using access to growth rules: max level -> max order
-
   // set the polynomial basis within the NonDIntegration instance
   NonDIntegration* u_space_sampler_rep
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
