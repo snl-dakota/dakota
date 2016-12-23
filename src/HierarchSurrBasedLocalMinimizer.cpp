@@ -252,6 +252,10 @@ void HierarchSurrBasedLocalMinimizer::build()
     // > accept/reject step and update TR factor / bounds
     if (tr_data.status(NEW_CANDIDATE)) { // verification needed
 
+      // TODO:
+      //find_star_approx();
+      //correct_star_approx();
+
       // Evaluate truth_model for TR_i (vals only, +derivs later in build),
       // computes TR ratio, accepts/rejects step, scales TR, and updates
       // vars/resp center if accepted
@@ -288,7 +292,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       find_center_truth(i); // find/eval *uncorrected* center truth
       // apply recursive correction to top level truth, if needed
       correct_center_truth(i);
-      
+
       // Recursive assessment of hard convergence is bottom up (TR bounds and 
       // corrections managed top-down).  When one level has hard converged,
       // must update and recenter level above.
@@ -302,6 +306,13 @@ void HierarchSurrBasedLocalMinimizer::build()
 	if (last_tr) return;
 	else {
 	  trustRegions[ip1].vars_star(center_vars); // trigger build for next TR
+
+	  /* TODO: or use find_star_approx + correct_star_approx above?
+	  trustRegions[ip1].response_star(
+	    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+	    UNCORR_APPROX_RESPONSE);
+	  */
+
 	  tr_data.reset_status_bits(CONVERGED);
 	}
       }
