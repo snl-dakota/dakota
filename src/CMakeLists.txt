@@ -30,8 +30,10 @@ set(QUESO_EXTPROJ_LIBS)
 set(QUESO_TPL_LIBS)
 
 list(APPEND DAKOTA_INCDIRS 
-  ${Dakota_BINARY_DIR} 
   ${Dakota_BINARY_DIR}/generated/src
+  # Consider removing these two paths and moving to generated...
+  ${Dakota_BINARY_DIR}
+  ${Dakota_BINARY_DIR}/src
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
   )
 
