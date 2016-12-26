@@ -78,11 +78,21 @@ private:
   void find_star_approx(size_t tr_index);
 
   /// apply recursive corrections to SurrBasedLevelData::
-  /// responseCenterTruthUncorrected
+  /// responseCenterTruthUncorrected and store in SurrBasedLevelData::
+  /// responseCenterTruthCorrected
   void correct_center_truth(size_t tr_index);
   /// apply recursive corrections to SurrBasedLevelData::
-  /// responseStarTruthUncorrected
+  /// responseStarTruthUncorrected and store in SurrBasedLevelData::
+  /// responseStarTruthCorrected
   void correct_star_truth(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseCenterApproxUncorrected and store in SurrBasedLevelData::
+  /// responseCenterApproxCorrected
+  void correct_center_approx(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseStarApproxUncorrected and store in SurrBasedLevelData::
+  /// responseStarApproxCorrected
+  void correct_star_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]

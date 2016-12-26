@@ -252,26 +252,14 @@ void HierarchSurrBasedLocalMinimizer::build()
     // > accept/reject step and update TR factor / bounds
     if (tr_data.status(NEW_CANDIDATE)) { // verification needed
 
-      // TODO:
-      //find_star_approx();
-      //correct_star_approx();
-
       // Evaluate truth_model for TR_i (vals only, +derivs later in build),
       // computes TR ratio, accepts/rejects step, scales TR, and updates
       // vars/resp center if accepted
       verify(i); // updates center vars
 
       // Test for new center || contraction (should always be one or the other)
-      if (tr_data.status() & NEW_TRUST_REGION) {
+      if (tr_data.status() & NEW_TRUST_REGION)
 	tr_update_max_index = i; // for subsequent top-down pass
-	/* Hard conv check uses bnds from level above; can defer TR update
-	if (last_tr || !nestedTrustRegions)
-	  update_trust_region_data(tr_data, globalLowerBnds, globalUpperBnds);
-	else
-	  update_trust_region_data(tr_data, trustRegions[ip1].tr_lower_bounds(),
-				   trustRegions[ip1].tr_upper_bounds());
-	*/
-      }
     }
 
     // If new center accepted for a level, then promote star to center,
@@ -290,7 +278,13 @@ void HierarchSurrBasedLocalMinimizer::build()
       // eval was a rejected validation, but if find_center_truth() always
       // follows build_approximation(), then this lookup is not necessary.
       find_center_truth(i); // find/eval *uncorrected* center truth
-      // apply recursive correction to top level truth, if needed
+      // Must perform hard conv assessment on corrected truth, as consistent
+      // with subproblem optimization.  However, this correction is dependent
+      // on the hierarchical state of truth resp above, to be updated later in
+      // this loop.  We therefore require a final pass (bottom of build()) to
+      // update all corrected responses once all recursive builds are completed.
+      // Thus, hard convergence is assessed from _new_ UNCORR_TRUTH_RESPONSE
+      // combined with _previous_ corrections for all levels above.
       correct_center_truth(i);
 
       // Recursive assessment of hard convergence is bottom up (TR bounds and 
@@ -305,95 +299,60 @@ void HierarchSurrBasedLocalMinimizer::build()
       if (tr_data.converged()) {
 	if (last_tr) return;
 	else {
-	  trustRegions[ip1].vars_star(center_vars); // trigger build for next TR
-
-	  /* TODO: or use find_star_approx + correct_star_approx above?
+	  // set NEW_CANDIDATE and transfer data for verify(i) on next pass
+	  trustRegions[ip1].vars_star(center_vars);
 	  trustRegions[ip1].response_star(
 	    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 	    UNCORR_APPROX_RESPONSE);
-	  */
-
+	  correct_star_approx(ip1);	  
+          // reset convergence bits
 	  tr_data.reset_status_bits(CONVERGED);
 	}
       }
     }
-    // TO DO: anything additional for reject? (see Monschke diagram)
-    //else {
-    //}
+    //else if candidate rejected, TR bounds to be contracted below
   }
 
   // If needed, propagate TR updates down the hierarchy
-  if (tr_update_max_index > minimizeIndex) {// requires new recursive update
-    //trustRegions[tr_update_max_index-1].set_status_bits(NEW_TR_FACTOR);
-    update_trust_region(tr_update_max_index);//-1);
-  }
+  if (tr_update_max_index > minimizeIndex) // min updated in virtual verify()
+    update_trust_region(tr_update_max_index);
 
   // -------------
   // TOP DOWN PASS: update computed and applied corrections
   // -------------
   // Loop TRs top-down so that correction logic detects new centers at/above
-  bool update_corr = false; 
+  bool update_corr = false;
   for (i=num_tr-1; i>=min; --i) {
 
     SurrBasedLevelData& tr_data = trustRegions[i];
-    bool new_level_center  = tr_data.status(NEW_CENTER);
-    Variables& center_vars = tr_data.vars_center();
-
-    set_model_states(i); // only LF model is evaluated
+    bool new_level_center = tr_data.status(NEW_CENTER);
 
     if (new_level_center) {
       // all levels at or below this level must update corrected responses
       update_corr = true;
 
       // Find approx response.  If not found, evaluate approx model.
+      set_model_states(i);   // only LF model to be evaluated
       find_center_approx(i); // find/eval *uncorrected* center approx
 
       // Compute additive/multiplicative correction
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-      delta.compute(center_vars,
+      delta.compute(tr_data.vars_center(),
 		    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 		    tr_data.response_center(UNCORR_APPROX_RESPONSE));
+
+      // build completed, deactivate flag
+      tr_data.reset_status_bits(NEW_CENTER);
     }
 
     // TO DO: some consolidation may be possible, since
     // UNCORR_APPROX^{i+1} = UNCORR_TRUTH^i for same x_c
     if (update_corr) {
-      // Recursively correct truth response (all levels above, excepting
-      // current level) and store in tr_data
-      if (i+1 < num_tr) {
-	Cout << "\nRecursively correcting truth model response (form "
-	     << tr_data.truth_model_form() + 1;
-	if (tr_data.truth_model_level() != _NPOS)
-	  Cout << ", level " << tr_data.truth_model_level() + 1;
-	Cout << ") for trust region center.\n";
-	Response corrected_resp
-	  = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
-	for (j=i+1; j<num_tr; ++j)
-	  iteratedModel.single_apply(center_vars, corrected_resp,
-				     trustRegions[j].indices());
-	tr_data.response_center(corrected_resp, CORR_TRUTH_RESPONSE);
-      }
-      else
-	tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
-				CORR_TRUTH_RESPONSE);
-
+      // Recursively correct truth response and store in tr_data
+      correct_center_truth(i);
       // Recursively correct approx response and store in tr_data
-      Cout << "\nRecursively correcting surrogate model response (form "
-	   << tr_data.approx_model_form() + 1;
-      if (tr_data.approx_model_level() != _NPOS)
-	Cout << ", level " << tr_data.approx_model_level() + 1;
-      Cout << ") for trust region center.\n";
-      // correct approximation across all levels above i
-      Response corrected_resp
-	= tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
-      for (j=i; j<num_tr; ++j)
-	iteratedModel.single_apply(center_vars, corrected_resp,
-				   trustRegions[j].indices());
-      tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
+      correct_center_approx(i);
     }
-
-    // new center now computed, deactivate flag
-    if (new_level_center) tr_data.reset_status_bits(NEW_CENTER);
   }
 }
 
@@ -401,9 +360,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 /** Step 3 in SurrBasedLocalMinimizer::core_run(). */
 void HierarchSurrBasedLocalMinimizer::minimize()
 {
-  // *********************************
+  // ***************************************************
   // Optimize at (fully corrected) lowest fidelity only:
-  // *********************************
+  // ***************************************************
 
   // Set truth and surrogate models for optimization to be performed on:
   set_model_states(minimizeIndex);
@@ -453,7 +412,7 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   set_model_states(tr_index);
   Model& truth_model = iteratedModel.truth_model();
 
-  Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
+  Cout << "\n>>>>> Evaluating approximate solution with truth model.\n";
   iteratedModel.component_parallel_mode(TRUTH_MODEL);
   truth_model.active_variables(vars_star);
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
@@ -493,7 +452,7 @@ void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
   bool truth_found = true;
 
   if (!truth_found) {
-    Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
+    Cout << "\n>>>>> Evaluating truth model at trust region center.\n";
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
@@ -503,37 +462,6 @@ void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
 
     tr_data.response_center(truth_model.current_response(),
                             UNCORR_TRUTH_RESPONSE);
-  }
-}
-
-
-void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
-{
-  // Must perform hard conv assessment on corrected truth, as consistent with
-  // subproblem optimization.  However, this correction is dependent on the
-  // hierarchical state of truth resp above, to be updated later in this loop.
-  // We therefore require a final pass (bottom of build()) to update all
-  // corrected responses once all recursive builds are completed.
-  // > Hard convergence is assessed based on new UNCORR_TRUTH_RESPONSE
-  //   combined with previous corrections for all levels above.
-  SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
-  if (ip1 == num_tr) // last trust region
-    tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
-			    CORR_TRUTH_RESPONSE);
-  else {
-    Cout << "\nRecursively correcting truth model response (form "
-	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != _NPOS)
-      Cout << ", level " << tr_data.truth_model_level() + 1;
-    Cout << ") for trust region center.\n";
-    Variables& center_vars = tr_data.vars_center();
-    Response corrected_resp
-      = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
-    for (j=ip1; j<num_tr; ++j)
-      iteratedModel.single_apply(center_vars, corrected_resp,
-				 trustRegions[j].indices());
-    tr_data.response_center(corrected_resp, CORR_TRUTH_RESPONSE);
   }
 }
 
@@ -548,47 +476,16 @@ void HierarchSurrBasedLocalMinimizer::find_star_truth(size_t tr_index)
   bool truth_found = true;
 
   if (!truth_found) {
-    Cout << "\n>>>>> Verifying actual model at trust region candidate.\n";
+    Cout << "\n>>>>> Verifying trust region candidate with truth model.\n";
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.active_variables(tr_data.vars_star());
-    truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE)); // *** verifyset, not build set
+    truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE)); // vals only
 
     tr_data.response_star(truth_model.current_response(),
 			  UNCORR_TRUTH_RESPONSE);
-  }
-}
-
-
-void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
-{
-  // Must perform hard conv assessment on corrected truth, as consistent with
-  // subproblem optimization.  However, this correction is dependent on the
-  // hierarchical state of truth resp above, to be updated later in this loop.
-  // We therefore require a final pass (bottom of build()) to update all
-  // corrected responses once all recursive builds are completed.
-  // > Hard convergence is assessed based on new UNCORR_TRUTH_RESPONSE
-  //   combined with previous corrections for all levels above.
-  SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
-  if (ip1 == num_tr) // last trust region
-    tr_data.response_star(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
-			    CORR_TRUTH_RESPONSE);
-  else {
-    Cout << "\nRecursively correcting truth model response (form "
-	 << tr_data.truth_model_form() + 1;
-    if (tr_data.truth_model_level() != _NPOS)
-      Cout << ", level " << tr_data.truth_model_level() + 1;
-    Cout << ") for trust region candidate.\n";
-    Variables& star_vars = tr_data.vars_star();
-    Response corrected_resp
-      = tr_data.response_star(UNCORR_TRUTH_RESPONSE).copy();
-    for (j=ip1; j<num_tr; ++j)
-      iteratedModel.single_apply(star_vars, corrected_resp,
-				 trustRegions[j].indices());
-    tr_data.response_star(corrected_resp, CORR_TRUTH_RESPONSE);
   }
 }
 
@@ -632,6 +529,94 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
     tr_data.response_star(iteratedModel.current_response(),
 			  UNCORR_APPROX_RESPONSE);
   }
+}
+
+
+void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
+{
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
+  if (ip1 == num_tr) // last trust region
+    tr_data.response_center(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+			    CORR_TRUTH_RESPONSE);
+  else {
+    Cout << "\nRecursively correcting truth model response (form "
+	 << tr_data.truth_model_form() + 1;
+    if (tr_data.truth_model_level() != _NPOS)
+      Cout << ", level " << tr_data.truth_model_level() + 1;
+    Cout << ") for trust region center.\n";
+    Variables& center_vars = tr_data.vars_center();
+    Response corrected_resp
+      = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
+    for (j=ip1; j<num_tr; ++j)
+      iteratedModel.single_apply(center_vars, corrected_resp,
+				 trustRegions[j].indices());
+    tr_data.response_center(corrected_resp, CORR_TRUTH_RESPONSE);
+  }
+}
+
+
+void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
+{
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  size_t j, ip1 = tr_index + 1, num_tr = trustRegions.size();
+  if (ip1 == num_tr) // last trust region
+    tr_data.response_star(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
+			    CORR_TRUTH_RESPONSE);
+  else {
+    Cout << "\nRecursively correcting truth model response (form "
+	 << tr_data.truth_model_form() + 1;
+    if (tr_data.truth_model_level() != _NPOS)
+      Cout << ", level " << tr_data.truth_model_level() + 1;
+    Cout << ") for trust region candidate.\n";
+    Variables& star_vars = tr_data.vars_star();
+    Response corrected_resp
+      = tr_data.response_star(UNCORR_TRUTH_RESPONSE).copy();
+    for (j=ip1; j<num_tr; ++j)
+      iteratedModel.single_apply(star_vars, corrected_resp,
+				 trustRegions[j].indices());
+    tr_data.response_star(corrected_resp, CORR_TRUTH_RESPONSE);
+  }
+}
+
+
+void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
+{
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  size_t j, num_tr = trustRegions.size();
+  Cout << "\nRecursively correcting surrogate model response (form "
+       << tr_data.approx_model_form() + 1;
+  if (tr_data.approx_model_level() != _NPOS)
+    Cout << ", level " << tr_data.approx_model_level() + 1;
+  Cout << ") for trust region center.\n";
+  // correct approximation across all levels above i
+  Variables& center_vars = tr_data.vars_center();
+  Response corrected_resp
+    = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
+  for (j=tr_index; j<num_tr; ++j)
+    iteratedModel.single_apply(center_vars, corrected_resp,
+			       trustRegions[j].indices());
+  tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
+}
+
+
+void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
+{
+  SurrBasedLevelData& tr_data = trustRegions[tr_index];
+  size_t j, num_tr = trustRegions.size();
+  Cout << "\nRecursively correcting surrogate model response (form "
+       << tr_data.approx_model_form() + 1;
+  if (tr_data.approx_model_level() != _NPOS)
+    Cout << ", level " << tr_data.approx_model_level() + 1;
+  Cout << ") for trust region candidate.\n";
+  // correct approximation across all levels above i
+  Variables& star_vars = tr_data.vars_star();
+  Response corrected_resp
+    = tr_data.response_star(UNCORR_APPROX_RESPONSE).copy();
+  for (j=tr_index; j<num_tr; ++j)
+    iteratedModel.single_apply(star_vars, corrected_resp,
+			       trustRegions[j].indices());
+  tr_data.response_star(corrected_resp, CORR_APPROX_RESPONSE);
 }
 
 
