@@ -46,8 +46,13 @@ else()
 endif()
 
 # Location for generated files
-execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
   "${Dakota_BINARY_DIR}/generated")
+# TODO: Consistent generated file locations and directory creation.  For now:
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
+  "${Dakota_BINARY_DIR}/generated/src")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
+  "${Dakota_BINARY_DIR}/generated/VERSION")
 
 # Buiding in an SVN checkout or a source package? 
 set(DAKOTA_VERSION_file_path)
