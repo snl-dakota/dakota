@@ -34,7 +34,7 @@ NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(NOWPAC_OPT, model),
+NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(MIT_NOWPAC, model),
   nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
   nowpacEvaluator(iteratedModel)
 {
