@@ -14,6 +14,7 @@ method,
 	  expand_threshold   = 0.75
 	  contraction_factor = 0.50
 	  expansion_factor   = 1.50
+	output debug
 
 method,
 	id_method = 'NLP'

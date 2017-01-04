@@ -71,14 +71,12 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // alert user to constraint settings
-#ifdef DEBUG
-  if (numNonlinearConstraints)
+  if (outputLevel >= DEBUG_OUTPUT && numNonlinearConstraints)
     Cout << "\n<<<<< approxSubProbObj  = " << approxSubProbObj
 	 << "\n<<<<< approxSubProbCon  = " << approxSubProbCon
 	 << "\n<<<<< meritFnType       = " << meritFnType
 	 << "\n<<<<< acceptLogic       = " << acceptLogic
 	 << "\n<<<<< trConstraintRelax = " << trConstraintRelax << "\n\n";
-#endif
   // sanity checks
   if ( (approxSubProbCon == NO_CONSTRAINTS || !numNonlinearConstraints) &&
        trConstraintRelax != NO_RELAX) {
@@ -579,17 +577,16 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     merit_fn_star_approx   = penalty_merit(fns_star_approx, sense, wts);
   }
 
-#ifdef DEBUG
-  Cout << "Response truth:\ncenter = "
-       << tr_data.response_center(CORR_TRUTH_RESPONSE) << "star = "
-       << tr_data.response_star(CORR_TRUTH_RESPONSE)
-       << "Response approx:\ncenter = "
-       << tr_data.response_center(CORR_APPROX_RESPONSE) << "star = "
-       << tr_data.response_star(CORR_APPROX_RESPONSE);
-  Cout << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
-       << merit_fn_star_truth << "\nMerit fn approx: center = "
-       << merit_fn_center_approx << " star = " << merit_fn_star_approx << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Response truth:\ncenter = "
+	 << tr_data.response_center(CORR_TRUTH_RESPONSE) << "star = "
+	 << tr_data.response_star(CORR_TRUTH_RESPONSE)
+	 << "Response approx:\ncenter = "
+	 << tr_data.response_center(CORR_APPROX_RESPONSE) << "star = "
+	 << tr_data.response_star(CORR_APPROX_RESPONSE)
+	 << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
+	 << merit_fn_star_truth << "\nMerit fn approx: center = "
+	 << merit_fn_center_approx << " star = " << merit_fn_star_approx <<'\n';
 
   // Compute numerator/denominator for the TR ratio using merit fn values.
   // NOTE 1: this formulation generalizes to the case where correction is not
@@ -828,10 +825,9 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   // Terminate SBLM if the norm of the projected merit function gradient
   // at x_c is less than convTol (hard convergence).
   merit_fn_grad_norm = std::sqrt( merit_fn_grad_norm );
-#ifdef DEBUG
-  Cout << "In hard convergence check: merit_fn_grad_norm =  "
-       << merit_fn_grad_norm << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In hard convergence check: merit_fn_grad_norm =  "
+	 << merit_fn_grad_norm << '\n';
   if (merit_fn_grad_norm < convergenceTol)
     tr_data.set_status_bits(HARD_CONVERGED);
 }
@@ -943,12 +939,12 @@ update_penalty(const RealVector& fns_center_truth,
     etaSequence = eta*std::pow(mu, alphaEta);
   }
 
-#ifdef DEBUG
-  Cout << "Penalty updated: " << penaltyParameter << '\n';
-  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
-    Cout << "eta updated: " << etaSequence << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Penalty updated: " << penaltyParameter << '\n';
+    if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
+      Cout << "eta updated: " << etaSequence << '\n';
+  }
 }
 
 

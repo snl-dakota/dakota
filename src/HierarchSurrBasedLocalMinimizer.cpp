@@ -296,18 +296,35 @@ void HierarchSurrBasedLocalMinimizer::build()
       else
 	hard_convergence_check(tr_data, trustRegions[ip1].tr_lower_bounds(),
 			       trustRegions[ip1].tr_upper_bounds());
+      size_t lev_i = tr_data.truth_model_level();
       if (tr_data.converged()) {
-	if (last_tr) return;
+	Cout << "\n<<<<< Trust region iteration converged for form " << ip1;
+	if (lev_i != _NPOS) Cout << ", level " << lev_i + 1;
+	Cout << '\n';
+	if (last_tr) {
+	  Cout << "<<<<< Optimal solution reached for truth model\n\n";
+	  return;
+	}
 	else {
+	  SurrBasedLevelData& tr_ip1 = trustRegions[ip1];
+	  size_t lev_ip1 = tr_ip1.truth_model_level();
+	  Cout << "<<<<< Promoting candidate iterate for validation by form "
+	       << ip1 + 1;
+	  if (lev_ip1 != _NPOS) Cout << ", level " << lev_ip1 + 1;
+	  Cout << "\n\n";
 	  // set NEW_CANDIDATE and transfer data for verify(i) on next pass
-	  trustRegions[ip1].vars_star(center_vars);
-	  trustRegions[ip1].response_star(
-	    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+	  tr_ip1.vars_star(center_vars);
+	  tr_ip1.response_star(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 	    UNCORR_APPROX_RESPONSE);
 	  correct_star_approx(ip1);	  
           // reset convergence bits
 	  tr_data.reset_status_bits(CONVERGED);
 	}
+      }
+      else {
+	Cout << "\n<<<<< Trust region iteration not converged for form " << ip1;
+	if (lev_i != _NPOS) Cout << ", level " << lev_i + 1;
+	Cout << "\n<<<<< Continuing iteration\n";
       }
     }
     //else if candidate rejected, TR bounds to be contracted below
