@@ -197,15 +197,9 @@ protected:
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
 
-private:
 
-  //
-  // - Heading: Data
-  // 
-  
-  /// Pointer to current class instance for use in static callback functions
-  static NonDQUESOBayesCalibration* nonDQUESOInstance;
-  
+
+
   // the following QUESO objects listed in order of construction;
   // scoped_ptr more appropriate, but don't want to include QUESO
   // headers here (would be needed for checked delete on scoped_ptr)
@@ -245,6 +239,16 @@ private:
 
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
+
+private:
+
+  //
+  // - Heading: Data
+  // 
+  
+  /// Pointer to current class instance for use in static callback functions
+  static NonDQUESOBayesCalibration* nonDQUESOInstance;
+  
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;

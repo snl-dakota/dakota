@@ -113,6 +113,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
   exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format"))
 {
+  // BMA ERROR! Random seed should be set before using it!
+
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
     // iteratedModel

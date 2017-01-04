@@ -21,20 +21,11 @@
 #include "NonDLHSSampling.hpp"
 #include "dakota_data_io.hpp"
 // then list QUESO headers
+#include "queso/GPMSA.h"
 #include "queso/StatisticalInverseProblem.h"
-#include "queso/StatisticalInverseProblemOptions.h"
 #include "queso/GslVector.h"
 #include "queso/GslMatrix.h"
-#include "queso/Environment.h"
-#include "queso/EnvironmentOptions.h"
-#include "queso/Defines.h"
-#include "queso/ValidationCycle.h"
-#include "queso/VectorSpace.h" 
-#include "queso/GaussianJointPdf.h" 
-#include "queso/GpmsaComputerModel.h"
-#include "queso/SimulationModelOptions.h"
 
-#define CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -49,23 +40,49 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
-  NonDBayesCalibration(problem_db, model),
+  NonDQUESOBayesCalibration(problem_db, model),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  buildSamples(probDescDB.get_int("method.build_samples"))
+  buildSamples(0)
 {   
+  init_queso_environment();
+
+  bool found_error = false;
+
+  // For now, don't allow wrapping the inbound modeli na surrogate model
+  if (emulatorType != NO_EMULATOR) {
+    Cerr << "\nError: Dakota emulators not supported with GPMSA\n";
+    found_error = true;
+  }
+
+  // REQUIRE experiment data
+  if (expData.num_experiments() < 1) {
+    Cerr << "\nError: GPMSA requires experimental data\n";
+    found_error = true;
+  }
+
+  if (found_error)
+    abort_handler(-1);
+
+  // TODO: use base class to manage any problem transformations and
+  // probably the surrogate build data management
+
+  // TODO: conditionally enable sampler only if needed to augment
+  // samples and allow both to be specified
+  if (approxImportFile.empty())
+    buildSamples = probDescDB.get_int("method.build_samples");
+  // else buildSamples will get set after reading the file at run-time
+
+  // BMA TODO: should we always instantiate this or not?
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter.assign_rep(new
-    NonDLHSSampling(mcmcModel, sample_type, buildSamples, randomSeed, rng),
-    false);
+		     NonDLHSSampling(mcmcModel, sample_type, buildSamples, randomSeed, rng),
+		     false);
 
-  Cerr << "Error: NonDGPMSABayesCalibration requires the user to update the vectors and parameters "
-       << "governing this model manually in the NonDGPMSABayesianCalibration class "
-       << "and then recompile.  For further instructions, contact a Dakota developer." << std::endl;
-  abort_handler(METHOD_ERROR);
+
 }
 
 
@@ -103,6 +120,290 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 /** Perform the uncertainty quantification */
 void NonDGPMSABayesCalibration::calibrate()
 {
+  nonDGPMSAInstance = this;
+
+  //  Don't want to generate samples on an emulator, but that could
+  //  happen with this delegation to the base class
+
+
+  // Read the build data early so we know buildSamples
+  if (!approxImportFile.empty()) {
+    ;
+    //    buildSamples = numRows;
+  }
+   
+
+  // Data needed for factory 
+
+  // Step 2: Set up prior for calibration parameters
+
+  // Use from base class
+  //   paramSpace      init_param_domain()
+  //   paramDomain     init_param_domain()
+  //   paramInitials   init_param_domain()
+  //   priorRv         init_queso_solver() -- not called until calibrate()
+
+  // BMA TODO: reimplement init_queso_solver since we don't need a
+  // likelihood and need a different kind of inverse problem...
+  //  init_queso_solver();
+
+  // BMA TODO: the priorRV needs to be initialized at base since not
+  // called init_queso_solver...
+  // priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+  //  		("prior_", *paramDomain, nonDQUESOInstance));
+
+  // QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> paramSpace(quesoEnv,
+  //     "param_", numUncertainVars, NULL);
+
+  // Note: The priorRV is only defined over the calibration parameters
+
+
+  // BMA: In the following a scenario is a configuration
+
+  // BMA TODO: expData.num_config_vars()
+  unsigned int numExperiments = expData.num_experiments();
+  unsigned int numUncertainVars = paramSpace->dimGlobal();
+  // Not known until read...
+  unsigned int numSimulations = buildSamples;
+  unsigned int numConfigVars = expData.config_vars()[0].length();
+
+
+  // BMA TODO: each experiment need not have the same size
+  unsigned int experimentSize = expData.all_data(0).length();
+
+  // BMA TODO: Would be helpful for user to be unaware of the eta
+  // space.  Can it be sized differently than experiment size?  I
+  // suppose for field data.
+  unsigned int numEta = experimentSize;
+
+
+  // Step 3: Instantiate the 'scenario' and 'output' spaces for simulation
+  QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> 
+    configSpace(*quesoEnv, "scenario_", numConfigVars, NULL);
+
+  QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> 
+    nEtaSpace(*quesoEnv, "output_", numEta, NULL);
+
+  // Step 4: Instantiate the 'output' space for the experiments
+  QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> 
+    experimentSpace(*quesoEnv,"experimentspace_", experimentSize, NULL);
+
+  QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> 
+    totalExperimentSpace(*quesoEnv, "experimentspace_", 
+			 experimentSize * numExperiments, NULL);
+  // Step 5: Instantiate the Gaussian process emulator object
+  //
+  // Regarding simulation scenario input values, the user should standardise
+  // them so that they exist inside a hypercube.
+  //
+  // Regarding simulation output data, the user should transform it so that the
+  // mean is zero and the variance is one.
+  //
+  // Regarding experimental scenario input values, the user should standardize
+  // them so that they exist inside a hypercube.
+  //
+  // Regarding experimental data, the user should transformed it so that it has
+  // zero mean and variance one.
+
+  // GPMSA stores all the information about our simulation
+  // data and experimental data.  It also stores default information about the
+  // hyperparameter distributions.
+  QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix>
+    gpmsaFactory(*quesoEnv,
+		 NULL,
+		 *priorRv,
+		 configSpace,
+		 *paramSpace,
+		 nEtaSpace,
+		 experimentSpace,
+		 numSimulations,
+		 numExperiments);
+
+  // Load the simulation build data
+
+  // simulations are described by configuration, parameters, output values
+
+  // std::vector containing all the points in scenario space where we have
+  // simulations
+  std::vector<QUESO::GslVector *> simulationScenarios(numSimulations,
+      (QUESO::GslVector *) NULL);
+
+  // std::vector containing all the points in parameter space where we have
+  // simulations
+  std::vector<QUESO::GslVector *> paramVecs(numSimulations,
+      (QUESO::GslVector *) NULL);
+
+
+  // std::vector containing all the simulation output data
+  std::vector<QUESO::GslVector *> outputVecs(numSimulations,
+      (QUESO::GslVector *) NULL);
+
+
+
+  // std::vector containing all the points in scenario space where we have
+  // experiments
+  std::vector<QUESO::GslVector *> experimentScenarios(numExperiments,
+      (QUESO::GslVector *) NULL);
+
+  // std::vector containing all the experimental output data
+  std::vector<QUESO::GslVector *> experimentVecs(numExperiments,
+      (QUESO::GslVector *) NULL);
+  
+
+  // Allocate the vectors for simulations and experiments
+
+  // BMA: Why is outputVecs based on nEtaSpace?  Is simulation allowed
+  // to be differently sized from experiments?
+
+  // Instantiate each of the simulation points/outputs
+  for (unsigned int i = 0; i < numSimulations; i++) {
+    simulationScenarios[i] = new QUESO::GslVector(configSpace.zeroVector());  // 'x_{i+1}^*' in paper
+    paramVecs          [i] = new QUESO::GslVector(paramSpace->zeroVector());  // 't_{i+1}^*' in paper
+    outputVecs         [i] = new QUESO::GslVector(nEtaSpace.zeroVector());  // 'eta_{i+1}' in paper
+  }
+
+  // Populate simulation data  (generate or load build data)
+  if (approxImportFile.empty()) {
+
+    lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
+    const RealMatrix&  all_samples = lhsIter.all_samples();
+    const IntResponseMap& all_resp = lhsIter.all_responses();
+
+    
+
+
+  }
+  else {
+    // load the build data and differentiate calibration from
+    // configuration variables
+    //    load_build_data()
+    
+    // could consider using the DataTransformModel to manage this
+    
+    // for now, assume theta are followed by config vars and no string variables?
+
+    // might be able to read using residualModel's vars/resp
+
+    // need to convert strings to indices?
+    //    residualModel
+    
+    // if reading active_only, have to assume all simulations
+    // conducted at the nominal state variable values...
+    ;
+  }
+
+
+  // Load the information on the experiments (scenarios and data)
+  const RealVectorArray& exp_config_vars = expData.config_vars();
+
+  for (unsigned int i = 0; i < numExperiments; i++) {
+
+    experimentScenarios[i] = new QUESO::GslVector(configSpace.zeroVector()); // 'x_{i+1}' in paper
+    experimentVecs[i] = new QUESO::GslVector(experimentSpace.zeroVector());
+
+    copy_gsl(exp_config_vars[i], *(experimentScenarios[i]));
+    copy_gsl(expData.all_data(i), *(experimentVecs[i]));
+
+  }
+
+
+  // Observation error covariance
+
+  // BMA TODO: populate actual experiment covariance
+  // TODO: do we want correlation or covariance?
+
+  // The experimental output data observation error covariance matrix
+  // BMA: initialized to 1.0 for now
+  QUESO::GslMatrix experimentMat(totalExperimentSpace.zeroVector(), 1.0);
+
+  for (unsigned int i = 0; i < numExperiments; i++) {
+    for (unsigned int j = 0; j < experimentSize; j++) {
+      // Passing in error of experiments (standardised).
+      // The "magic number" here will in practice be an estimate
+      // of experimental error.  In this test example it is pulled
+      // from our posterior.
+      // experimentMat(experimentSize*i+j, experimentSize*i+j) =
+      // 	(0.025 / stdsim[j]) * (0.025 / stdsim[j]);
+      ;
+    }
+  }
+
+  // Add simulation and experimental data
+  gpmsaFactory.addSimulations(simulationScenarios, paramVecs, outputVecs);
+  gpmsaFactory.addExperiments(experimentScenarios, experimentVecs, &experimentMat);
+
+  // BMA TODO: is this postRv the whole space or the size of the parameter space?
+  QUESO::GenericVectorRV<QUESO::GslVector, QUESO::GslMatrix>
+    loc_postRv("post_", gpmsaFactory.prior().imageSet().vectorSpace());
+
+  set_ip_options();
+
+  QUESO::StatisticalInverseProblem<QUESO::GslVector, QUESO::GslMatrix>
+    ip("", calIpOptionsValues.get(), gpmsaFactory, loc_postRv);
+
+
+  // Override only the calibration parameter values with the ones the
+  // user specified (or TODO the map point)
+  QUESO::GslVector loc_paramInitials(
+      gpmsaFactory.prior().imageSet().vectorSpace().zeroVector());
+
+
+  // BMA TODO: disallow calibration of hyper-parameters, the the
+  // following just becomes numContinuousVars
+
+  unsigned int num_calib_params = paramSpace->dimGlobal();
+ 
+ // Initial condition of the chain
+
+  // Start with the mean of the prior
+  gpmsaFactory.prior().pdf().distributionMean(loc_paramInitials);
+
+  // But override whatever we want.
+ 
+  for (unsigned int i=0; i<num_calib_params; ++i)
+    loc_paramInitials[i] = (*paramInitials)[i];
+
+  // paramInitials[5]  = 0;   // Emulator mean, unused but don't leave it NaN!
+
+  // The rest of these we'll override, not because we have to, but
+  // because the regression gold standard predates distributionMean()
+  // paramInitials[6]  = 0.4; // emulator precision
+  // paramInitials[7]  = 0.4; // weights0 precision
+  // paramInitials[8]  = 0.4; // weights1 precision
+  // paramInitials[9]  = 0.97; // emulator corr str
+  // paramInitials[10] = 0.97; // emulator corr str
+  // paramInitials[11] = 0.97; // emulator corr str
+  // paramInitials[12]  = 0.97; // emulator corr str
+  // paramInitials[13]  = 0.20; // emulator corr str
+  // paramInitials[14]  = 0.80; // emulator corr str
+  // paramInitials[15]  = 10.0; // discrepancy precision
+  // paramInitials[16]  = 0.97; // discrepancy corr str
+  // paramInitials[17]  = 8000.0; // emulator data precision
+  // // paramInitials[18]  = 1.0;  // observation error precision
+
+  QUESO::GslMatrix loc_proposalCovMatrix(
+    gpmsaFactory.prior().imageSet().vectorSpace().zeroVector());
+
+  // Start with the covariance matrix for the prior.
+  gpmsaFactory.prior().pdf().distributionVariance(loc_proposalCovMatrix);
+
+  // Now override with user (or iterative algorithm-updated values)
+  for (unsigned int i=0; i<num_calib_params; ++i)
+    for (unsigned int j=0; j<num_calib_params; ++j)
+      loc_proposalCovMatrix(i,j) = (*proposalCovMatrix)(i,j);
+
+  set_mh_options();
+
+  ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
+				      loc_paramInitials,
+				      &loc_proposalCovMatrix);
+}
+
+
+#ifdef DAKOTA_OLD_GPMSA 
+
+void NonDGPMSABayesCalibration::old_calibrate()
+{
   // initialize the mcmcModel (including emulator construction) if needed
   initialize_model();
  
@@ -118,36 +419,7 @@ void NonDGPMSABayesCalibration::calibrate()
   // For now, set calcSigmaFlag to true: this should be read from input
   calibrateSigmaFlag = true;
 
-  ////////////////////////////////////////////////////////
-  // Step 0: Instantiate the QUESO environment 
-  ////////////////////////////////////////////////////////
-  // NOTE:  for now we are assuming that DAKOTA will be run with 
-  // mpiexec to call MPI_Init.  Eventually we need to generalize this 
-  // and send QUESO the proper MPI subenvironments.
-
-  QUESO::EnvOptionsValues* envOptionsValues = NULL;
-  envOptionsValues = new QUESO::EnvOptionsValues();
-  envOptionsValues->m_subDisplayFileName   = "GpmsaDiagnostics/display";
-  envOptionsValues->m_subDisplayAllowedSet.insert(0);
-  envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity     = 3;
-  envOptionsValues->m_seed = -1;
-  envOptionsValues->m_identifyingString="CASLexample";
-  //if (randomSeed) 
-  //  envOptionsValues->m_seed                 = randomSeed;
-  //else
-  //  envOptionsValues->m_seed                 = 1 + (int)clock(); 
-      
-  QUESO::FullEnvironment* env = NULL;
-#ifdef DAKOTA_HAVE_MPI
-  // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
-  if (parallelLib.mpirun_flag())
-    env = new QUESO::FullEnvironment(MPI_COMM_SELF,"mlhydra.inp","",NULL);
-  else
-    env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
-#else
-  env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
-#endif
+  // env = new QUESO::FullEnvironment(MPI_COMM_SELF,"mlhydra.inp","",NULL);
  
   //***********************************************************************
   //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv
@@ -1278,6 +1550,8 @@ void NonDGPMSABayesCalibration::calibrate()
   return;
 
 }
+
+#endif
 
 //void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 //{

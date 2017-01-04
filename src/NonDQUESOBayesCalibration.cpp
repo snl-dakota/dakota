@@ -436,8 +436,10 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity = 2;
+  envOptionsValues->m_displayVerbosity = 2;  
+  // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
   envOptionsValues->m_seed = randomSeed; 
+  // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -490,23 +492,12 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
 
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
-  ////////////////////////////////////////////////////////
-  // Step 3 of 5: Instantiate the likelihood function object
-  ////////////////////////////////////////////////////////
-  // routine computes [ln(function)]
+  // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj.reset(new
     QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>("like_",
     *paramDomain, &dakotaLogLikelihood, (void *)NULL, true));
 
-  ////////////////////////////////////////////////////////
-  // Step 4 of 5: Instantiate the inverse problem
-  ////////////////////////////////////////////////////////
-  // initial approach was restricted to uniform priors
-  //priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-  //		  ("prior_", *paramDomain));
-  // new approach supports arbitrary priors:
-  priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-   		("prior_", *paramDomain, nonDQUESOInstance));
+  // Instantiate the inverse problem
 
   postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
 	       ("post_", *paramSpace));
@@ -1151,6 +1142,14 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
 	 << *paramInitials << "\nParameter bounds sent to QUESO (may be scaled)"
 	 << ":\nparamMins " << paramMins << "\nparamMaxs " << paramMaxs << '\n';
+
+  // initial approach was restricted to uniform priors
+  //priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+  //		  ("prior_", *paramDomain));
+  // new approach supports arbitrary priors:
+  priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+   		("prior_", *paramDomain, nonDQUESOInstance));
+
 }
 
 

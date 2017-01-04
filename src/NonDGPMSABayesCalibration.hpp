@@ -16,7 +16,7 @@
 #ifndef NOND_GPMSA_BAYES_CALIBRATION_H
 #define NOND_GPMSA_BAYES_CALIBRATION_H
 
-#include "NonDBayesCalibration.hpp"
+#include "NonDQUESOBayesCalibration.hpp"
 
 
 namespace Dakota {
@@ -42,7 +42,7 @@ namespace Dakota {
     structures need to be specified and initialized in DAKOTA and sent 
     to GPM/SA, and what data structures will be returned.  */
 
-class NonDGPMSABayesCalibration: public NonDBayesCalibration
+class NonDGPMSABayesCalibration: public NonDQUESOBayesCalibration
 {
 public:
 
@@ -80,11 +80,14 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
+  // BMA TODO: new calibrate function
+  void calibrate();
+
   /// performs a forward uncertainty propagation by using GPM/SA to 
   /// generate a posterior distribution on parameters given a set of 
   /// simulation parameter/response data, a set of experimental data, and 
   /// additional variables to be specified here. 
-  void calibrate();
+  void old_calibrate();
 
   // print the final statistics
   //void print_results(std::ostream& s);
