@@ -548,7 +548,7 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
     iteratedModel.component_parallel_mode(SURROGATE_MODEL);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.active_variables(v_star);
-    iteratedModel.evaluate(); // fn values only
+    iteratedModel.evaluate(tr_data.active_set_star(APPROX_RESPONSE));
     tr_data.response_star(iteratedModel.current_response(),
 			  UNCORR_APPROX_RESPONSE);
   }

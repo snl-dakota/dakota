@@ -238,10 +238,6 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   find_center_truth(iteratedModel.subordinate_iterator(),
 		    iteratedModel.truth_model());
 
-  Variables& vars_center = trustRegionData.vars_center();
-  IntResponsePair& resp_center_truth
-    = trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE);
-
   // Assess hard convergence prior to global surrogate construction
   if (trustRegionData.status(NEW_CENTER))
     hard_convergence_check(trustRegionData, globalLowerBnds, globalUpperBnds);
@@ -249,17 +245,20 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   bool embed_correction = false;
 
   // Perform the sampling and the surface fitting
-  if (!trustRegionData.converged())
+  if (!trustRegionData.converged()) {
+
     // embed_correction is true if surrogate supports anchor constraints
-    embed_correction
-      = iteratedModel.build_approximation(vars_center, resp_center_truth);
+    embed_correction = iteratedModel.build_approximation(
+      trustRegionData.vars_center(),
+      trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE));
     // TO DO: problem with CCD/BB duplication!
 
-  /*
-  if ( !multiLayerBypassFlag && !daceCenterPtFlag )
-    // Can augment the global approximation with new center point data
-    iteratedModel.update_approximation(vars_center, resp_center_truth, true);
-  */
+    /*
+    if ( !multiLayerBypassFlag && !daceCenterPtFlag )
+      // Can augment the global approximation with new center point data
+      iteratedModel.update_approximation(vars_center, resp_center_truth, true);
+    */
+  }
 
   return embed_correction;
 }
@@ -348,7 +347,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
 	 << "recasting.\n";
     iteratedModel.active_variables(trustRegionData.vars_star());
     // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-    iteratedModel.evaluate(); // fn values only
+    iteratedModel.evaluate(trustRegionData.active_set_star(APPROX_RESPONSE));
     trustRegionData.response_star(iteratedModel.current_response(),
 				  CORR_APPROX_RESPONSE);
   }
@@ -367,7 +366,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   // since we're bypassing iteratedModel, iteratedModel.serve()
   // must be in the correct server mode.
   iteratedModel.component_parallel_mode(TRUTH_MODEL);
-  Model& truth_model  = iteratedModel.truth_model();
+  Model& truth_model = iteratedModel.truth_model();
   truth_model.active_variables(trustRegionData.vars_star());
   // In all cases (including gradient mode), we only need the truth fn
   // values to validate the predicted optimum.  For gradient mode, we will
@@ -375,11 +374,11 @@ void DataFitSurrBasedLocalMinimizer::verify()
   if (multiLayerBypassFlag) {
     short mode = truth_model.surrogate_response_mode();
     truth_model.surrogate_response_mode(BYPASS_SURROGATE);
-    truth_model.evaluate(); // fn values only
+    truth_model.evaluate(trustRegionData.active_set_star(TRUTH_RESPONSE));
     truth_model.surrogate_response_mode(mode); // restore
   }
   else
-    truth_model.evaluate(); // fn values only
+    truth_model.evaluate(trustRegionData.active_set_star(TRUTH_RESPONSE));
   const Response& truth_resp = truth_model.current_response();
   trustRegionData.response_star(truth_resp, CORR_TRUTH_RESPONSE);
 
@@ -436,45 +435,58 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
   // -->> local/multipt/hierarchical: don't replace truth response w/i surrogate
   // -->> global CCD/BB: don't replace data in fit (apples/oranges).
   // -->> global with other DACE: don't add to fit (apples/oranges).
-  bool found = false, truth_grads = (truthSetRequest & 2);
-  if (sbIterNum && !truth_grads)
-    // responseCenterTruth updated from responseStarTruth
-    // (responseStarTruth has surrogate bypass; build_approx() does not)
-    found = true;
-  else if (!multiLayerBypassFlag && !globalApproxFlag) {
-    // single layer local/multipoint/hierarchical: retrieve from build_approx.
-    trustRegionData.response_center_pair(truth_model.evaluation_id(),
-					 truth_model.current_response(),
-					 CORR_TRUTH_RESPONSE);
-    found = true;
-  }
-  /*
-  // This test no longer valid now that find_center_truth() precedes
-  // build_approximation()
-  else if (!multiLayerBypassFlag && daceCenterPtFlag) {
-    // single layer untruncated CCD/BB DOE: retrieve from all_responses
-    const RealVectorArray& all_vars      = dace_iterator.all_variables();
-    const IntResponseMap&  all_responses = dace_iterator.all_responses();
-    size_t i, j, num_samples = all_vars.length();
-    IntRespMCIter r_it = all_responses.begin();
-    for (i=0; i<num_samples; ++i, ++r_it) { // center should be first one
-      if (all_vars[i].continuous_variables() ==
-          trustRegionData.c_vars_center()) {
-	const ShortArray& asv = r_it->active_set_request_vector();
-	bool incomplete = false;
-	for (j=0; j<numFunctions; j++)
-	  if ( !(asv[j] & 1) || ( truth_grads           && !(asv[j] & 2) )
-	                     || ( (truthSetRequest & 4) && !(asv[j] & 4) ) )
-	    incomplete = true;
-	if (!incomplete) {
-	  trustRegionData.response_center_pair(*r_it, CORR_TRUTH_RESPONSE);
-	  found = true;
-	}
-	break; // out of for loop
+
+  bool found = false, truth_derivs = (truthSetRequest & 6);
+  if (globalApproxFlag) { // this fn precedes build_approximation()
+    if (sbIterNum && trustRegionData.status(NEW_CENTER) && !truth_derivs) {
+      // update responseCenterTruth from responseStarTruth (Note:
+      // responseStarTruth has surrogate bypass; build_approximation() does not)
+      //trustRegionData.response_center_pair(
+      //  trustRegionData.response_star_pair(CORR_TRUTH_RESPONSE), // ***
+      //  CORR_TRUTH_RESPONSE);
+
+      // This approach ensures consistent eval id
+      trustRegionData.response_center_pair(truth_model.evaluation_id(),
+					   truth_model.current_response(),
+					   CORR_TRUTH_RESPONSE);
+      found = true;
+    }
+
+    /*
+    // This test no longer valid since this fn precedes build_approximation():
+    if (!multiLayerBypassFlag && daceCenterPtFlag) {
+      // single layer untruncated CCD/BB DOE: retrieve from all_responses
+      const RealVectorArray& all_vars      = dace_iterator.all_variables();
+      const IntResponseMap&  all_responses = dace_iterator.all_responses();
+      size_t i, j, num_samples = all_vars.length();
+      IntRespMCIter r_it = all_responses.begin();
+      for (i=0; i<num_samples; ++i, ++r_it) { // center should be first one
+        if (all_vars[i].continuous_variables() ==
+            trustRegionData.c_vars_center()) {
+	  const ShortArray& asv = r_it->active_set_request_vector();
+	  bool incomplete = false;
+	  for (j=0; j<numFunctions; j++)
+	    if ( !(asv[j] & 1) || ( truth_grads           && !(asv[j] & 2) )
+	                       || ( (truthSetRequest & 4) && !(asv[j] & 4) ) )
+	      incomplete = true;
+	  if (!incomplete) {
+	    trustRegionData.response_center_pair(*r_it, CORR_TRUTH_RESPONSE);
+	    found = true;
+	  }
+	  break; // out of for loop
+        }
       }
     }
+    */
   }
-  */
+  else { // local/multipoint: this fn follows build_approximation()
+    if (!multiLayerBypassFlag) { // single layer: retrieve from build_approx.
+      trustRegionData.response_center_pair(truth_model.evaluation_id(),
+					   truth_model.current_response(),
+					   CORR_TRUTH_RESPONSE);
+      found = true;
+    }
+  }
 
   if (!found) {
     Cout << "\n>>>>> Evaluating actual model at trust region center.\n";

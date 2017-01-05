@@ -673,7 +673,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
     //			      UNCORR_TRUTH_RESPONSE);
     //tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
-    //			      CORR_TRUTH_RESPONSE);    
+    //			      CORR_TRUTH_RESPONSE);
   }
   else {
     // If the step is rejected, then retain the current design variables
