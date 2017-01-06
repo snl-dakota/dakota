@@ -58,6 +58,10 @@ public:
   /// initialize the DiscrepancyCorrection data
   void initialize(const IntSet& surr_fn_indices, size_t num_fns,
 		  size_t num_vars, short corr_type, short corr_order);
+  /// initialize the DiscrepancyCorrection data
+  void initialize(const IntSet& surr_fn_indices, size_t num_fns,
+		  size_t num_vars, short corr_type, short corr_order,
+		  const String& approx_type);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
@@ -131,7 +135,7 @@ private:
 
   /// internal convenience function shared by overloaded initialize() variants
   void initialize_corrections();
-
+  
   /// define badScalingFlag
   bool check_scaling(const RealVector& truth_fns, const RealVector& approx_fns);
 
@@ -178,6 +182,9 @@ private:
   bool computeAdditive;
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
+
+  /// string indicating the discrepancy approximation type
+  String approxType;
 
   /// data that is shared among all correction Approximations
   SharedApproxData sharedData;
