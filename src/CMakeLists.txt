@@ -59,8 +59,6 @@ DakotaNidrgen()
 # Use TPL_LIBS for libraries built as part of this project
 list(APPEND DAKOTA_PKG_LIBS nidr)
 
-# WJB - ToDo:  convince myself that dakota_src_fortran should have a
-#              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src nidr)
 
 # We don't want to export Teuchos libs unless we're building in our
@@ -261,7 +259,6 @@ if(DAKOTA_DL_SOLVER)
   check_include_file(dlfcn.h DAKOTA_HAVE_DLFCN_H)
 
   if(DAKOTA_HAVE_DLFCN_H)
-    # WJB - ToDo:  Test/debug on cygwin ("lgdi32" vs "" ?)
     message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
     add_definitions("-DDAKOTA_DL_SOLVER")
     add_definitions("-DDAKOTA_HAVE_DLFCN_H")
@@ -815,10 +812,6 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${env_src}
     ${iterator_src})
 
-if(MSVC)
-  list(APPEND Dakota_src dirent.h dirent.c)
-endif()
-
 # Experiment with moving AMPL here; if cross-platform link errors, revert
 if(HAVE_AMPL)
   add_definitions("-DHAVE_AMPL")
@@ -902,17 +895,6 @@ endif()
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
 if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
-endif()
-
-if(MSVC)
-  # Create "Native Windows dirent" source files in the binary tree so they
-  # will only be seen by Native Windows builds.
-
-  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.c.in
-                 ${Dakota_BINARY_DIR}/src/dirent.c COPYONLY)
-
-  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.h.in
-                 ${Dakota_BINARY_DIR}/src/dirent.h COPYONLY)
 endif()
 
 
