@@ -31,7 +31,7 @@ initialize_data(const Variables& vars, const Response& approx_resp,
   responseStarApproxCorrected   = approx_resp.copy();
   responseCenterApproxCorrected = approx_resp.copy();
 
-  responseStarTruthCorrected          = truth_resp.copy();
+  responseStarTruthCorrected.second   = truth_resp.copy();
   responseCenterTruthCorrected.second = truth_resp.copy();
 
   if (uncorr) {
@@ -77,7 +77,7 @@ active_set_star(const ActiveSet& set, short response_type, bool uncorr)
 {
   switch (response_type) {
   case TRUTH_RESPONSE:
-    responseStarTruthCorrected.active_set(set);
+    responseStarTruthCorrected.second.active_set(set);
     if (uncorr) responseStarTruthUncorrected.active_set(set);
     break;
   case APPROX_RESPONSE:
@@ -93,10 +93,10 @@ const Response& SurrBasedLevelData::
 response_star(short corr_response_type) const
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected.second; break;
+  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;      break;
+  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;       break;
+  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected;     break;
   }
 }
 
@@ -118,10 +118,10 @@ Response& SurrBasedLevelData::
 response_star(short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected;    break;
-  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;  break;
-  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected; break;
+  case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected.second; break;
+  case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;      break;
+  case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;       break;
+  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected;     break;
   }
 }
 
@@ -143,7 +143,8 @@ void SurrBasedLevelData::
 response_star(const Response& resp, short corr_response_type)
 {
   switch (corr_response_type) {
-  case CORR_TRUTH_RESPONSE:   responseStarTruthCorrected.update(resp);   break;
+  case CORR_TRUTH_RESPONSE:
+    responseStarTruthCorrected.second.update(resp);                      break;
   case UNCORR_TRUTH_RESPONSE: responseStarTruthUncorrected.update(resp); break;
   case CORR_APPROX_RESPONSE:  responseStarApproxCorrected.update(resp);  break;
   case UNCORR_APPROX_RESPONSE:
@@ -157,12 +158,25 @@ response_center(const Response& resp, short corr_response_type)
 {
   switch (corr_response_type) {
   case CORR_TRUTH_RESPONSE:
-    responseCenterTruthCorrected.second.update(resp);  break;
+    responseCenterTruthCorrected.second.update(resp);                     break;
   case UNCORR_TRUTH_RESPONSE: responseCenterTruthUncorrected.update(resp);break;
   case CORR_APPROX_RESPONSE:  responseCenterApproxCorrected.update(resp); break;
   case UNCORR_APPROX_RESPONSE:
-    responseCenterApproxUncorrected.update(resp); break;
+    responseCenterApproxUncorrected.update(resp);                         break;
   }
+}
+
+
+IntResponsePair& SurrBasedLevelData::
+response_star_pair(short corr_response_type)
+{
+  if (corr_response_type != CORR_TRUTH_RESPONSE) {
+    Cerr << "Error: IntResponsePair return not supported in SurrBasedLevelData "
+	 << "for this response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return responseStarTruthCorrected;
 }
 
 
@@ -176,6 +190,20 @@ response_center_pair(short corr_response_type)
   }
 
   return responseCenterTruthCorrected;
+}
+
+
+void SurrBasedLevelData::
+response_star_id(int eval_id, short corr_response_type)
+{
+  switch (corr_response_type) {
+  case CORR_TRUTH_RESPONSE: responseStarTruthCorrected.first = eval_id; break;
+  default:
+    Cerr << "Error: eval_id assignment not supported in SurrBasedLevelData for "
+	 << "this response type" << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
 }
 
 
@@ -194,16 +222,16 @@ response_center_id(int eval_id, short corr_response_type)
 
 
 void SurrBasedLevelData::
-response_center_pair(IntResponsePair& pair, short corr_response_type)
+response_star_pair(int eval_id, const Response& resp, short corr_response_type)
 {
   if (corr_response_type != CORR_TRUTH_RESPONSE) {
-    Cerr << "Error: IntResponsePair assignment not supported in "
+    Cerr << "Error: eval_id + response assignment not supported in "
 	 << "SurrBasedLevelData for this response type" << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  responseCenterTruthCorrected.first = pair.first;
-  responseCenterTruthCorrected.second.update(pair.second);
+  responseStarTruthCorrected.first = eval_id;
+  responseStarTruthCorrected.second.update(resp);
 }
 
 
@@ -217,7 +245,7 @@ response_center_pair(int eval_id, const Response& resp,
     abort_handler(METHOD_ERROR);
   }
 
-  responseCenterTruthCorrected.first  = eval_id;
+  responseCenterTruthCorrected.first = eval_id;
   responseCenterTruthCorrected.second.update(resp);
 }
 

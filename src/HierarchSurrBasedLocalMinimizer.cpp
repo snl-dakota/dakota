@@ -266,17 +266,18 @@ void HierarchSurrBasedLocalMinimizer::build()
 	tr_update_max_index = index; // for subsequent top-down pass
     }
 
-    // If new center accepted for a level, then promote star to center,
-    // build new approx w/ derivs (response_center_truth)
-    if (tr_data.status(NEW_CENTER)) {
-      // build approximation at level i and retrieve center truth response
-
+    // If new center accepted for a level, then build new approximation
+    // (response center truth), including derivatives
+    // TO DO: special case of no/zeroth order correction could be optimized
+    // to reuse transfer of response fn vals from star->center
+    if (tr_data.status(NEW_CENTER)) { //&& (truthSetRequest & 6)) {
+      
+      // build level approximation and retrieve/correct response center truth
       Variables& center_vars = tr_data.vars_center();
       iteratedModel.active_variables(center_vars);
       //iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
       //iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
       iteratedModel.build_approximation();
-
       // Extract truth model evaluation.
       // Note: code from DFSBLM case does lookup, which makes sense if last HF
       // eval was a rejected validation, but if find_center_truth() always

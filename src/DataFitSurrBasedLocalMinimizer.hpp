@@ -77,8 +77,7 @@ protected:
   //
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
-  void find_center_truth(const Iterator& dace_iterator, Model& truth_model);
-
+  void find_center_truth();
   /// retrieve responseCenter_approx if possible, evaluate it if not
   void find_center_approx();
 

@@ -92,9 +92,17 @@ public:
   void response_star(const Response& resp, short corr_response_type);
   void response_center(const Response& resp, short corr_response_type);
 
+  IntResponsePair& response_star_pair(short corr_response_type);
   IntResponsePair& response_center_pair(short corr_response_type);
+
+  void response_star_id(int eval_id, short corr_response_type);
   void response_center_id(int eval_id, short corr_response_type);
+
+  void response_star_pair(IntResponsePair& pair, short corr_response_type);
   void response_center_pair(IntResponsePair& pair, short corr_response_type);
+
+  void response_star_pair(int eval_id, const Response& resp,
+			  short corr_response_type);
   void response_center_pair(int eval_id, const Response& resp,
 			    short corr_response_type);
 
@@ -152,7 +160,7 @@ private:
   /// uncorrected truth response at trust region center
   Response responseStarTruthUncorrected;
   /// corrected truth response at trust region center
-  Response responseStarTruthCorrected;
+  IntResponsePair responseStarTruthCorrected;
   /// uncorrected truth response at new solution iterate
   Response responseCenterTruthUncorrected;
   /// corrected truth response at new solution iterate
@@ -199,7 +207,7 @@ private:
 inline SurrBasedLevelData::SurrBasedLevelData():
   trustRegionFactor(1.), trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
   softConvCount(0), approxModelIndices(0, _NPOS), truthModelIndices(0, _NPOS)
-{ responseCenterTruthCorrected.first = 0; }
+{ responseStarTruthCorrected.first = responseCenterTruthCorrected.first = 0; }
 
 
 inline SurrBasedLevelData::~SurrBasedLevelData()
@@ -334,8 +342,10 @@ inline const ActiveSet& SurrBasedLevelData::
 active_set_star(short response_type) const
 {
   switch (response_type) {
-  case TRUTH_RESPONSE:  return responseStarTruthCorrected.active_set();  break;
-  case APPROX_RESPONSE: return responseStarApproxCorrected.active_set(); break;
+  case TRUTH_RESPONSE:
+    return responseStarTruthCorrected.second.active_set(); break;
+  case APPROX_RESPONSE:
+    return responseStarApproxCorrected.active_set();       break;
   }
 }
 
@@ -347,6 +357,16 @@ active_set_star(short request, short response_type, bool uncorr)
   new_set.request_values(request);
   active_set_star(new_set, response_type, uncorr);
 }
+
+
+inline void SurrBasedLevelData::
+response_star_pair(IntResponsePair& pair, short corr_response_type)
+{ response_star_pair(pair.first, pair.second, corr_response_type); }
+
+
+inline void SurrBasedLevelData::
+response_center_pair(IntResponsePair& pair, short corr_response_type)
+{ response_center_pair(pair.first, pair.second, corr_response_type); }
 
 
 inline size_t SurrBasedLevelData::approx_model_form()

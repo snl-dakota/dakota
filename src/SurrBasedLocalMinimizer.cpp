@@ -669,11 +669,26 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 
     // update center vars, set NEW_CENTER, unset NEW_CANDIDATE
     tr_data.vars_center(tr_data.vars_star());
-    // response_center updated later in build() for full ActiveSet (w/ derivs)
-    //tr_data.response_center(tr_data.response_star(UNCORR_TRUTH_RESPONSE),
-    //			      UNCORR_TRUTH_RESPONSE);
-    //tr_data.response_center(tr_data.response_star(CORR_TRUTH_RESPONSE),
-    //			      CORR_TRUTH_RESPONSE);
+    // update response center from star, allowing for inconsistent data sets.
+    // Note: we always do this even though build() may supplant with full center
+    // data set on the next iteration, in order to simplify conditional logic,
+    // e.g., iter results to OutputManager, final results to bestResponseArray
+    // at convergence.
+    Response& uncorr_resp_star = tr_data.response_star(UNCORR_TRUTH_RESPONSE);
+    if (!uncorr_resp_star.is_null()) {
+      Response& uncorr_resp_center
+	= tr_data.response_center(UNCORR_TRUTH_RESPONSE);
+      uncorr_resp_center.reset(); // zero out all data
+      uncorr_resp_center.function_values(uncorr_resp_star.function_values());
+    }
+    IntResponsePair& corr_pair_star
+      = tr_data.response_star_pair(CORR_TRUTH_RESPONSE);
+    if (!corr_pair_star.second.is_null()) {
+      tr_data.response_center_id(corr_pair_star.first, CORR_TRUTH_RESPONSE);
+      Response& corr_resp_center = tr_data.response_center(CORR_TRUTH_RESPONSE);
+      corr_resp_center.reset(); // zero out all data
+      corr_resp_center.function_values(corr_pair_star.second.function_values());
+    }
   }
   else {
     // If the step is rejected, then retain the current design variables
