@@ -31,8 +31,9 @@ variables
                    1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
 
 interface
-  fork asynchronous evaluation_concurrency = 5
-    analysis_driver = 'morris'
+  analysis_drivers = 'morris'
+    fork 
+  asynchronous evaluation_concurrency = 5
 
 responses
   objective_functions = 1

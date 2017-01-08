@@ -50,8 +50,8 @@ variables
     descriptors      'x1'   'x2'
 
 interface
-  direct
-    analysis_driver=  'text_book'
+  analysis_drivers = 'text_book'
+    direct
 
 responses
   objective_functions = 3

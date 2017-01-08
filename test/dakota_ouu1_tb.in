@@ -19,25 +19,25 @@
 
 environment
 #  graphics
-  method_pointer = 'OPTIM'
+  top_method_pointer = 'OPTIM'
 
 ###########################
 # begin opt specification #
 ###########################
 method
   id_method = 'OPTIM'
-  model_pointer = 'OPTIM_M'
   npsol_sqp
     convergence_tolerance = 1.e-8
+    model_pointer = 'OPTIM_M'
 
 model
   id_model = 'OPTIM_M'
   nested
-    variables_pointer  = 'OPTIM_V'
     sub_method_pointer = 'UQ'
-    responses_pointer  = 'OPTIM_R'
     primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
     secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+  variables_pointer  = 'OPTIM_V'
+  responses_pointer  = 'OPTIM_R'
 
 variables
   id_variables = 'OPTIM_V'
@@ -55,11 +55,11 @@ responses
   id_responses = 'OPTIM_R'
   objective_functions = 1
   nonlinear_inequality_constraints = 1
-  nonlinear_inequality_upper_bounds = .1
+    upper_bounds = .1
   numerical_gradients
     method_source dakota
     interval_type central
-    fd_gradient_step_size = 1.e-1
+    fd_step_size = 1.e-1
   no_hessians
 
 ##########################
@@ -67,18 +67,18 @@ responses
 ##########################
 method
   id_method = 'UQ'
-  model_pointer = 'UQ_M'
   sampling
     samples = 50 seed = 1 sample_type lhs
     response_levels = 3.6e+11 1.2e+05 3.5e+05
-    complementary distribution
+    distribution complementary
+  model_pointer = 'UQ_M'
 
 model
   id_model = 'UQ_M'
   single
-    variables_pointer = 'UQ_V'
     interface_pointer = 'UQ_I'
-    responses_pointer = 'UQ_R'
+  variables_pointer = 'UQ_V'
+  responses_pointer = 'UQ_R'
 
 variables
   id_variables = 'UQ_V'
@@ -98,9 +98,9 @@ variables
 
 interface
   id_interface = 'UQ_I'
-  direct
-##  fork asynch evaluation_concurrency = 5	#s0
-    analysis_driver = 'text_book_ouu'
+  analysis_drivers = 'text_book_ouu'
+    direct
+##    fork asynch evaluation_concurrency = 5	#s0
 
 responses
   id_responses = 'UQ_R'

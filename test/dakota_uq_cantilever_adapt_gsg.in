@@ -4,18 +4,18 @@ environment,
 method,
 	polynomial_chaos				#s0,#s1,#s2,#s3
 #	stoch_collocation				#s4,#s5,#s6,#s7,#s8
-	  dimension_adaptive p_refinement generalized
+	   p_refinement dimension_adaptive generalized
 #	    max_refinement_iterations  = 10
-#	    convergence_tol = 1.e-6 # published plots
-	    convergence_tol = 1.e-5 # nightly tests
-	  sparse_grid_level = 0
+#	    convergence_tolerance = 1.e-6 # published plots
+	    convergence_tolerance = 1.e-5 # nightly tests
+	  sparse_grid_level_sequence = 0
 #	  non_nested					#s1,#s3,#s5,#s7
-#	  num_response_levels = 0 1 1			#s2,#s3,#s6,#s7,#s8
 #	  response_levels = 0.0 0.0			#s2,#s3,#s6,#s7,#s8
+#	    num_response_levels = 0 1 1			#s2,#s3,#s6,#s7,#s8
 #	  compute reliabilities				#s2,#s3,#s6,#s7,#s8
 #	  compute probabilities
 #	    samples_on_emulator = 100000 seed = 1237 fixed_seed
-#	  complementary distribution			#s2,#s3,#s6,#s7,#s8
+#	  distribution complementary 		#s2,#s3,#s6,#s7,#s8
 #	  output silent
 
 variables,
@@ -32,9 +32,9 @@ variables,
 	  descriptors     = 'w' 't' 			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
 
 interface,
-        direct
-          analysis_driver = 'mod_cantilever'
-	  deactivate restart_file #evaluation_cache
+  analysis_drivers = 'mod_cantilever'
+    direct
+	deactivate restart_file #evaluation_cache
 
 responses,
 	response_functions = 3

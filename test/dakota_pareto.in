@@ -25,10 +25,10 @@ method
   id_method = 'PS'
   pareto_set
 #    iterator_servers = 3
-    opt_method_pointer = 'NLP'            #s0,#s1
-#    opt_method_pointer = 'SBLO'	        #s2
+    method_pointer = 'NLP'                #s0,#s1
+#    method_pointer = 'SBLO'	            #s2
 #    random_weight_sets = 5 seed = 123	  #s1
-    multi_objective_weight_sets = 	      #s0,#s2
+    weight_sets = 	                      #s0,#s2
       1.0    0.0    0.0			              #s0,#s2
       0.0    1.0    0.0			              #s0,#s2
       0.0    0.0    1.0			              #s0,#s2
@@ -71,8 +71,8 @@ variables
     descriptors       'x1'   'x2'
 
 interface
-  direct
-    analysis_driver = 'text_book'
+  analysis_drivers = 'text_book'
+    direct
 
 responses
   objective_functions = 3

@@ -35,9 +35,7 @@ environment
 method
   moga                #s0,#s1,#s2,#s4,#s5,#s6,#s7
 #  soga                                       #s3,#s8
-  output silent 
     seed = 10983
-    final_solutions = 3
   max_function_evaluations = 2500               #s0,#s4,#s5,#s6,#s7
 #  max_function_evaluations = 3000		          #s1,#s3
 #  max_function_evaluations = 2000		          #s2,#s8
@@ -53,7 +51,7 @@ method
 #    mutation_scale = 0.1			                  #s2,#s3
   fitness_type domination_count                 #s0,#s1,#s2,#s4,#s5,#s6,#s7
   replacement_type below_limit = 6              #s0,#s1,#s2,#s4,#s5,#s6,#s7
-    shrinkage_percentage = 0.9                  #s0,#s1,#s2,#s4,#s5,#s6,#s7
+    shrinkage_fraction = 0.9                    #s0,#s1,#s2,#s4,#s5,#s6,#s7
 #  replacement_type favor_feasible              #s3
   convergence_type metric_tracker               #s0,#s1,#s2,#s4,#s5,#s6,#s7
     percent_change = 0.05 num_generations = 40  #s0
@@ -62,6 +60,9 @@ method
 #  niching_type distance 0.02 0.05		          #s6
 #  niching_type max_designs 0.02 0.05	  	      #s7
 #    num_designs = 6	      			              #s7
+  final_solutions = 3
+  output silent 
+
    
 variables
   continuous_design = 3             #s0
@@ -92,19 +93,19 @@ variables
 
 
 interface
-  direct					#s0,#s1,#s2,#s3,#s4,#s6,#s8
+  analysis_drivers = 'mogatest1'		#s0,#s4,#s5,#s6,#s7
+#  analysis_drivers = 'mogatest2'	#s1
+#  analysis_drivers = 'mogatest3'	#s2
+#  analysis_drivers = 'rosenbrock'	#s3
+#  analysis_drivers = 'text_book'      #s8
+    direct					#s0,#s1,#s2,#s3,#s4,#s6,#s8
 # retain some fork tests of external mogatest drivers that have low eval count
-#  fork						#s5,#s7
-    analysis_driver = 'mogatest1'		#s0,#s4,#s5,#s6,#s7
-#    analysis_driver = 'mogatest2'	#s1
-#    analysis_driver = 'mogatest3'	#s2
-#    analysis_driver = 'rosenbrock'	#s3
-#    analysis_driver = 'text_book'      #s8
+#    fork						#s5,#s7
 
 responses
   objective_functions = 2                       #s0,#s1,#s2,#s4,#s5,#s6,#s7
 #  objective_functions = 1                     	#s3,#s8
 #  nonlinear_inequality_constraints = 2  	      #s2
-#  nonlinear_inequality_upper_bounds = 0.0 0.0	#s2
+#    upper_bounds = 0.0 0.0	#s2
   no_gradients
   no_hessians

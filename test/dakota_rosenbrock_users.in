@@ -84,29 +84,33 @@ environment
 #    tabular_data_file = 'rosen_opt_scaled.dat'		      #s9
 
 method
-#  max_iterations = 100               #s2,#s3,#s7,#s8
-#  max_iterations = 100      		      #s5
-#  max_iterations = 1000      		    #s4
-#  max_function_evaluations = 2000  	#s4
-#  max_function_evaluations = 2000  	#s5
-#  convergence_tolerance = 1e-4    	  #s2,#s3,#s7,#s8
   multidim_parameter_study     		    #s0
     partitions = 8 8           		    #s0
 #  vector_parameter_study      		    #s1
 #    final_point = 1.1  1.3     	    #s1
 #    num_steps = 10      		          #s1
 #  conmin_frcg        			          #s2,#s7,#s9
+#    convergence_tolerance = 1e-4    	#s2,#s7
+#    max_iterations = 100             #s2,#s7
 #    scaling        			            #s9
 #    output verbose      		          #s9
 #  optpp_g_newton                     #s3
+#    convergence_tolerance = 1e-4    	#s3
+#    max_iterations = 100             #s3
 #  nl2sol          			              #s8
+#    convergence_tolerance = 1e-4    	#s8
+#    max_iterations = 100             #s8
 #  coliny_pattern_search              #s4
-#    solution_accuracy = 1e-4    	    #s4
+#    max_iterations = 1000      		  #s4
+#    max_function_evaluations = 2000  #s4
+#    solution_target = 1e-4    	      #s4
 #    initial_delta = 0.5      		    #s4
 #    threshold_delta = 1e-4    		    #s4
 #    exploratory_moves basic_pattern  #s4
 #    contraction_factor = 0.75    	  #s4
 #  coliny_ea        	  		          #s5
+#    max_iterations = 100      		    #s5
+#    max_function_evaluations = 2000  #s5
 #    seed = 11011011      		        #s5
 #    population_size = 50      		    #s5
 #    fitness_type merit_function    	#s5
@@ -141,7 +145,7 @@ variables
 #    descriptors         'x1'  'x2'    #s6
 
 interface
-  analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
     direct				#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s8,#s9
 #    system
 #    fork                             #s7
@@ -150,8 +154,8 @@ interface
 
 responses
 #  objective_functions = 1                    #s1,#s2,#s4,#s5,#s7,#s9
-#    objective_function_scale_types = 'value' #s9
-#    objective_function_scales = 50.0  		    #s9
+#    primary_scale_types = 'value' #s9
+#    primary_scales = 50.0  		    #s9
 #  calibration_terms = 2       	 		          #s3,#s8
   response_functions = 1			                #s6,#s0
   no_gradients         				                #s0,#s1,#s4,#s5,#s6
@@ -159,6 +163,6 @@ responses
 #  numerical_gradients      			            #s2,#s7
 #    method_source dakota      			          #s2,#s7
 #    interval_type forward      		          #s2,#s7
-#    fd_gradient_step_size = 1.e-5    		    #s2,#s7
+#    fd_step_size = 1.e-5    		              #s2,#s7
 #  analytic_gradients        			            #s3,#s8,#s9
   no_hessians

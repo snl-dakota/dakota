@@ -68,9 +68,9 @@ variables
   				  0.3 1
 
 interface
-  direct
+  analysis_drivers = 'log_ratio'
+    direct
 ##  fork asynch                                   #s5
-    analysis_driver = 'log_ratio'
 
 responses
   response_functions = 1
@@ -78,5 +78,5 @@ responses
   numerical_gradients
     method_source dakota
     interval_type central
-    fd_gradient_step_size = 1.e-4
+    fd_step_size = 1.e-4
   no_hessians

@@ -48,7 +48,7 @@ variables,
 
 interface,
   direct
-	  analysis_driver=  'cyl_head'
+	  analysis_drivers =  'cyl_head'
 
 responses,
 	objective_functions = 1

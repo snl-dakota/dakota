@@ -70,8 +70,8 @@ variables
 
 
 interface
-  fork #asynchronous
-    analysis_driver = 'quasi_sine_fcn'
+  analysis_drivers = 'quasi_sine_fcn'
+    fork #asynchronous
 
 responses
   objective_functions = 1

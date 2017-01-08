@@ -20,18 +20,20 @@ method,
 #           hyperprior_betas  = 2.34375                       #p5
 	  proposal_covariance
 # diagonal and matrix formats with values
-	    diagonal values 1.0e6 1.0e-1				                    #s0,#s1,#p0,#p4,#p5
-#	    matrix   values 1.0 0.1					                        #p1
-#                  	    0.1 2.0					                      #p1
+	    values 1.0e6 1.0e-1				                    #s0,#s1,#p0,#p4,#p5
+        diagonal                                    #s0,#s1,#p0,#p4,#p5
+#	    values 1.0 0.1					                      #p1
+#          	 0.1 2.0					                      #p1
+#       matrix                                       #p1
 # diagonal and matrix formats from file
-#	    diagonal filename 'dakota_cantilever_queso.diag.dat'	  #p2
-#	    matrix   filename 'dakota_cantilever_queso.matrix.dat'	#p3
+#	    filename 'dakota_cantilever_queso.diag.dat'	diagonal  #p2
+#	    filename 'dakota_cantilever_queso.matrix.dat'	matrix  #p3
 	  logit_transform         # default is off
-	output debug
 #	burn_in_samples 200 						#s1
 #	sub_sampling_period 10 					#s1
 	probability_levels 0.05 0.1  				#s0,#s1
 	 		   0.05 0.1				#s0,#s1
+	output debug
 
 variables,								
         uniform_uncertain 2
@@ -45,8 +47,8 @@ variables,
           descriptors 't' 'R' 'X' 'Y' 
 
 interface,								
-        direct
-          analysis_driver = 'mod_cantilever'
+  analysis_drivers = 'mod_cantilever'
+    direct
 
 responses,								
 	calibration_terms = 2
