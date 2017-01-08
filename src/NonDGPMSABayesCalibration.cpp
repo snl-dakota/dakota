@@ -14,12 +14,12 @@
 
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDGPMSABayesCalibration.hpp"
+#include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
-#include "ProbabilityTransformation.hpp"
-#include "NonDLHSSampling.hpp"
-#include "dakota_data_io.hpp"
+//#include "ProbabilityTransformation.hpp"
+//#include "dakota_data_io.hpp"
 // then list QUESO headers
 #include "queso/GPMSA.h"
 #include "queso/StatisticalInverseProblem.h"
@@ -28,6 +28,56 @@
 
 
 static const char rcsId[]="@(#) $Id$";
+
+
+/* TODO:
+   * Calibration theta vs. config vars
+   * Write tests that use DOE vs import 
+
+   * Implement m_realizer
+
+*/
+
+/*
+
+QUESTIONS:
+ * Can one disable inference of the hyper-parameters?
+
+ * Normalization optional?  It's not clear what normalize means in
+   context of functional data?
+
+ * Functional data
+ * omission of scenarios; set to 0.5?
+ * memory managed container for various simulation/experiment vectors?
+
+ * BJW: How to handle LHS design generation?  Over all variables or
+        just theta?  probably all variables
+
+ * Can't use MAP pre-solve since don't have access to the likelihood?
+
+ * Options logic at GPMSA.C:479 might be wrong per Damon's
+   comment... doesn't allow fall-through to default options...
+
+ * Can't seem to default construct a GPMSAOptions object (file is
+   required, potential logic error)
+
+ * VectorRV is complaining that m_realizer is not populated for our
+   custom joint PDF.  It's because ConcatenatedVectorRV
+   unconditionally accesses the realizer of the component RVs.  Seems
+   ConcatenatedRV should be tolerant of missing realizers the same way
+   VectorRV is?
+
+   We implement only what's need to compute log prior, not realize()
+
+ * Terminate handler might be getting called recursively in serial, at
+   least when run in debugger.  Perhaps because old_terminate_handler
+   is NULL and causing a segfault when called.
+
+ * Emulator mean must be set to something to avoid nan/nan issue.
+   Probably want to be able to omit parameters that aren't being
+   calibrated statistically...
+
+ */
 
 
 namespace Dakota {
@@ -45,9 +95,10 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  buildSamples(0)
+  buildSamples(probDescDB.get_int("method.build_samples"))
 {   
-  init_queso_environment();
+  // Base class handles
+  //init_queso_environment();
 
   bool found_error = false;
 
@@ -71,18 +122,16 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // TODO: conditionally enable sampler only if needed to augment
   // samples and allow both to be specified
-  if (approxImportFile.empty())
-    buildSamples = probDescDB.get_int("method.build_samples");
+  // if (approxImportFile.empty())
+  //   buildSamples = probDescDB.get_int("method.build_samples");
   // else buildSamples will get set after reading the file at run-time
 
   // BMA TODO: should we always instantiate this or not?
+  int samples = approxImportFile.empty() ? buildSamples : 0;
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter.assign_rep(new
-		     NonDLHSSampling(mcmcModel, sample_type, buildSamples, randomSeed, rng),
-		     false);
-
-
+  lhsIter.assign_rep(new NonDLHSSampling(mcmcModel, sample_type, samples, 
+					 randomSeed, rng), false);
 }
 
 
@@ -120,18 +169,14 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 /** Perform the uncertainty quantification */
 void NonDGPMSABayesCalibration::calibrate()
 {
+  // BMA TODO: base class needs runtime update as well
+  nonDQUESOInstance = this;
   nonDGPMSAInstance = this;
 
   //  Don't want to generate samples on an emulator, but that could
   //  happen with this delegation to the base class
 
 
-  // Read the build data early so we know buildSamples
-  if (!approxImportFile.empty()) {
-    ;
-    //    buildSamples = numRows;
-  }
-   
 
   // Data needed for factory 
 
@@ -142,6 +187,9 @@ void NonDGPMSABayesCalibration::calibrate()
   //   paramDomain     init_param_domain()
   //   paramInitials   init_param_domain()
   //   priorRv         init_queso_solver() -- not called until calibrate()
+
+  init_parameter_domain();
+  init_proposal_covariance();
 
   // BMA TODO: reimplement init_queso_solver since we don't need a
   // likelihood and need a different kind of inverse problem...
@@ -163,10 +211,8 @@ void NonDGPMSABayesCalibration::calibrate()
   // BMA TODO: expData.num_config_vars()
   unsigned int numExperiments = expData.num_experiments();
   unsigned int numUncertainVars = paramSpace->dimGlobal();
-  // Not known until read...
   unsigned int numSimulations = buildSamples;
   unsigned int numConfigVars = expData.config_vars()[0].length();
-
 
   // BMA TODO: each experiment need not have the same size
   unsigned int experimentSize = expData.all_data(0).length();
@@ -174,7 +220,9 @@ void NonDGPMSABayesCalibration::calibrate()
   // BMA TODO: Would be helpful for user to be unaware of the eta
   // space.  Can it be sized differently than experiment size?  I
   // suppose for field data.
-  unsigned int numEta = experimentSize;
+
+  // eta appears to be the size of the similation output space (numFunctions)
+  unsigned int numEta = numFunctions;
 
 
   // Step 3: Instantiate the 'scenario' and 'output' spaces for simulation
@@ -208,9 +256,15 @@ void NonDGPMSABayesCalibration::calibrate()
   // GPMSA stores all the information about our simulation
   // data and experimental data.  It also stores default information about the
   // hyperparameter distributions.
+
+  // workaround for possibly bum logic
+  boost::scoped_ptr<QUESO::GPMSAOptions>
+    gp_opts(new QUESO::GPMSAOptions(*quesoEnv));
+
   QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix>
     gpmsaFactory(*quesoEnv,
-		 NULL,
+		 // NULL,
+		 gp_opts.get(),
 		 *priorRv,
 		 configSpace,
 		 *paramSpace,
@@ -220,7 +274,6 @@ void NonDGPMSABayesCalibration::calibrate()
 		 numExperiments);
 
   // Load the simulation build data
-
   // simulations are described by configuration, parameters, output values
 
   // std::vector containing all the points in scenario space where we have
@@ -269,8 +322,21 @@ void NonDGPMSABayesCalibration::calibrate()
     const RealMatrix&  all_samples = lhsIter.all_samples();
     const IntResponseMap& all_resp = lhsIter.all_responses();
 
-    
+    if (all_samples.numCols() != buildSamples ||
+	all_resp.size() != buildSamples) {
+      Cerr << "\nError: GPMSA has insufficient surrogate build data.\n";
+      abort_handler(-1);
+    }
 
+    IntRespMCIter resp_it = all_resp.begin();
+    for (unsigned int i = 0; i < numSimulations; i++, ++resp_it) {
+      int bd_index = 0;
+      for (int j=0; j<numUncertainVars; ++j, ++bd_index)
+	(*paramVecs[i])[j] = all_samples(bd_index, i);
+      for (int j=0; j<numConfigVars; ++j, ++bd_index)
+	(*simulationScenarios[i])[j] = all_samples(bd_index, i);
+      copy_gsl(resp_it->second.function_values(), *outputVecs[i]);
+    }
 
   }
   else {
@@ -289,9 +355,36 @@ void NonDGPMSABayesCalibration::calibrate()
     
     // if reading active_only, have to assume all simulations
     // conducted at the nominal state variable values...
-    ;
-  }
 
+      // Read the build data early so we know buildSamples; would be nice
+
+    // to integrate with populating the data below so we can avoid the
+    // temporary
+
+
+    // read the surrogate build data theta, x, f, assuming in that order
+
+    // TODO: Need to handle string variables and variable types,
+    // probably by loading into a Variables object; as well as active_only
+    RealMatrix build_data;
+    size_t record_len = numUncertainVars + numConfigVars + numFunctions;
+    bool verbose = (outputLevel > NORMAL_OUTPUT);
+    TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
+				 build_data, numSimulations, record_len,
+				 approxImportFormat, verbose);
+
+    for (unsigned int i = 0; i < numSimulations; i++) {
+      int bd_index = 0;
+      for (int j=0; j<numUncertainVars; ++j, ++bd_index)
+	(*paramVecs[i])[j] = build_data(i, bd_index);
+      for (int j=0; j<numConfigVars; ++j, ++bd_index)
+	(*simulationScenarios[i])[j] = build_data(i, bd_index);
+      for (int j=0; j<numFunctions; ++j, ++bd_index)
+	(*outputVecs[i])[j] = build_data(i, bd_index);
+
+    }
+
+  }
 
   // Load the information on the experiments (scenarios and data)
   const RealVectorArray& exp_config_vars = expData.config_vars();
@@ -301,8 +394,9 @@ void NonDGPMSABayesCalibration::calibrate()
     experimentScenarios[i] = new QUESO::GslVector(configSpace.zeroVector()); // 'x_{i+1}' in paper
     experimentVecs[i] = new QUESO::GslVector(experimentSpace.zeroVector());
 
-    copy_gsl(exp_config_vars[i], *(experimentScenarios[i]));
-    copy_gsl(expData.all_data(i), *(experimentVecs[i]));
+    // NOTE: these will resize the target objects rather than erroring...
+    copy_gsl(exp_config_vars[i], *experimentScenarios[i]);
+    copy_gsl(expData.all_data(i), *experimentVecs[i]);
 
   }
 
@@ -313,7 +407,9 @@ void NonDGPMSABayesCalibration::calibrate()
   // TODO: do we want correlation or covariance?
 
   // The experimental output data observation error covariance matrix
-  // BMA: initialized to 1.0 for now
+  // BMA: initialized to identity for now; need accessors to
+  // experiment data cov, probably as element-wise access returning 0
+  // if not defined.
   QUESO::GslMatrix experimentMat(totalExperimentSpace.zeroVector(), 1.0);
 
   for (unsigned int i = 0; i < numExperiments; i++) {
@@ -360,8 +456,12 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // But override whatever we want.
  
+  std::cerr << "LPI:\n" << loc_paramInitials << '\n';
+
   for (unsigned int i=0; i<num_calib_params; ++i)
     loc_paramInitials[i] = (*paramInitials)[i];
+
+  loc_paramInitials[num_calib_params] = 0.4;
 
   // paramInitials[5]  = 0;   // Emulator mean, unused but don't leave it NaN!
 
@@ -388,6 +488,9 @@ void NonDGPMSABayesCalibration::calibrate()
   gpmsaFactory.prior().pdf().distributionVariance(loc_proposalCovMatrix);
 
   // Now override with user (or iterative algorithm-updated values)
+
+  // BMA TODO: make sure the base class proposal update is getting called...
+
   for (unsigned int i=0; i<num_calib_params; ++i)
     for (unsigned int j=0; j<num_calib_params; ++j)
       loc_proposalCovMatrix(i,j) = (*proposalCovMatrix)(i,j);

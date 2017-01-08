@@ -77,7 +77,8 @@ protected:
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
   
-  /// define variables, options, likelihood callback, and inverse problem
+  /// define solver options, likelihood callback, posterior RV, and
+  /// inverse problem
   void init_queso_solver();
 
   /// use derivative information from the emulator to define the proposal
@@ -135,6 +136,8 @@ protected:
 
   /// intialize the QUESO parameter space, min, max, initial, and domain
   void init_parameter_domain();
+
+  void init_proposal_covariance();
 
   /// use covariance of prior distribution for setting proposal covariance
   void prior_proposal_covariance();
@@ -222,6 +225,9 @@ protected:
   /// initial parameter values at which to start chain
   boost::shared_ptr<QUESO::GslVector> paramInitials;
 
+  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+    priorRv;
+
   /// proposal covariance for DRAM
   boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
 
@@ -234,11 +240,11 @@ protected:
   boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
     QUESO::GslMatrix> > likelihoodFunctionObj;
 
-  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
-    priorRv;
-
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
+
+  /// Pointer to current class instance for use in static callback functions
+  static NonDQUESOBayesCalibration* nonDQUESOInstance;
 
 private:
 
@@ -246,8 +252,6 @@ private:
   // - Heading: Data
   // 
   
-  /// Pointer to current class instance for use in static callback functions
-  static NonDQUESOBayesCalibration* nonDQUESOInstance;
   
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,

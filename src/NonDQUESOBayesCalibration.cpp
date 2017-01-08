@@ -72,6 +72,11 @@ public:
   double computeLogOfNormalizationFactor(unsigned int numSamples,
 					 bool m_logOfNormalizationFactor) const;
 
+  //! Mean value of underlying random variable
+  void distributionMean(V & meanVector) const;
+
+  void distributionVariance(M & covMatrix) const;
+
 private:
   using QUESO::BaseScalarFunction<V,M>::m_env;
   using QUESO::BaseScalarFunction<V,M>::m_prefix;
@@ -124,6 +129,23 @@ double QuesoJointPdf<V,M>::
 computeLogOfNormalizationFactor(unsigned int numSamples, 
 				bool m_logOfNormalizationFactor) const
 { }
+
+// Assumes meanVector is sized
+template<class V,class M>
+void QuesoJointPdf<V,M>::
+distributionMean(V & meanVector) const
+{ 
+  nonDQUESOInstance->prior_mean(meanVector);
+}
+
+// Assumes covMatrix is sized
+template<class V,class M>
+void QuesoJointPdf<V,M>::
+distributionVariance(M & covMatrix) const
+{ 
+  nonDQUESOInstance->prior_variance(covMatrix);
+}
+
 
 /// Dakota specialization of QUESO vector-valued random variable
 template <class V, class M>
@@ -212,9 +234,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
-  ////////////////////////////////////////////////////////
-  // Step 1 of 5: Instantiate the QUESO environment 
-  ////////////////////////////////////////////////////////
   init_queso_environment();
  
   // BMA TODO: Want to support these options independently
@@ -249,36 +268,9 @@ void NonDQUESOBayesCalibration::calibrate()
   // BMA TODO: make sure Recast is setup properly to have the right request val
   //  init_residual_response(request_value_needed);
 
-  ////////////////////////////////////////////////////////
-  // Step 2 of 5: Instantiate the parameter domain
-  ////////////////////////////////////////////////////////
   init_parameter_domain();
 
-  // Size our Queso covariance matrix and initialize trailing diagonal if
-  // calibrating error hyperparams
-  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-  if (numHyperparams > 0) {
-    // all hyperparams utilize inverse gamma priors, which may not
-    // have finite variance; use std_dev = 0.05 * mode
-    for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].variance();
-      else
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
-          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
-    }
-  }
-
-  // initialize proposal covariance (must follow parameter domain init)
-  // This is the leading sub-matrix in the case of calibrating sigma terms
-  if (proposalCovarType == "user") // either filename OR data values defined
-    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
-			     proposalCovarFilename);
-  else if (proposalCovarType == "prior")
-    prior_proposal_covariance(); // prior selection or default for no emulator
-  else // misfit Hessian-based proposal with prior preconditioning
-    prior_cholesky_factorization();
+  init_proposal_covariance();
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -430,6 +422,11 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
   // and send QUESO the proper MPI subenvironments.
+
+  // NOTE: To make this function re-entrant, have to free quesoEnv
+  // first, then reset envOptionsValues, since destructor of quesoEnv
+  // needs envOptionsValues:
+  quesoEnv.reset();
 
   // TODO: see if this can be a local, or if the env retains a pointer
   envOptionsValues.reset(new QUESO::EnvOptionsValues());
@@ -1090,6 +1087,8 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 }
 
 
+/** Initialize the calibration parameter domain (space, bounds,
+    domain, initial values, and prior random variable) */
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   // If calibrating error multipliers, the parameter domain is expanded to
@@ -1150,6 +1149,36 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
    		("prior_", *paramDomain, nonDQUESOInstance));
 
+}
+
+
+void NonDQUESOBayesCalibration::init_proposal_covariance()
+{
+  // Size our Queso covariance matrix and initialize trailing diagonal if
+  // calibrating error hyperparams
+  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+  if (numHyperparams > 0) {
+    // all hyperparams utilize inverse gamma priors, which may not
+    // have finite variance; use std_dev = 0.05 * mode
+    for (int i=0; i<numHyperparams; ++i) {
+      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+          invGammaDists[i].variance();
+      else
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
+          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
+    }
+  }
+
+  // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+			     proposalCovarFilename);
+  else if (proposalCovarType == "prior")
+    prior_proposal_covariance(); // prior selection or default for no emulator
+  else // misfit Hessian-based proposal with prior preconditioning
+    prior_cholesky_factorization();
 }
 
 
@@ -1396,12 +1425,12 @@ void NonDQUESOBayesCalibration::set_mh_options()
   if (logitTransform) {
     calIpMhOptionsValues->m_algorithm = "logit_random_walk";
     calIpMhOptionsValues->m_tk = "logit_random_walk";
-    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+    //calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
   }
   else {
     calIpMhOptionsValues->m_algorithm = "random_walk";
     calIpMhOptionsValues->m_tk = "random_walk";
-    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+    //calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
   }
 }
 

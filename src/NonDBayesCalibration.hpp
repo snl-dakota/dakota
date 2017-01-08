@@ -57,6 +57,14 @@ public:
   template <typename Engine>
   void prior_sample(Engine& rng, RealVector& prior_samples);
 
+  /// return the mean of the prior distribution
+  template <typename VectorType>
+  void prior_mean(VectorType& mean_vec) const;
+
+  /// return the covariance of the prior distribution
+  template <typename MatrixType>
+  void prior_variance(MatrixType& var_mat) const;
+
   /**
    * \brief Compute the proposal covariance C based on low-rank approximation
    * to the prior-preconditioned misfit Hessian.
@@ -470,6 +478,55 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
     prior_samples[numContinuousVars + i] = invGammaDists[i].draw_sample(rng);
+}
+
+
+/** Assume the target mean_vec is sized by client */
+template <typename VectorType>
+void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
+{
+  if (standardizedSpace) {
+    // BMA TODO: can we assume means are zero?  Don't think so as
+    // u_type may be same as x_type...
+    Cerr << "\nError: prior_mean not implemented for transformed space.\n";
+    abort_handler(-1);
+    // RealVector u_means = natafTransform.u_means();
+    // for (size_t i=0; i<numContinuousVars; ++i)
+    //   mean_vec[i] = u_means[i];
+  }
+  else {
+    RealVector x_means = natafTransform.x_means();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = x_means[i];
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    mean_vec[numContinuousVars + i] = invGammaDists[i].mean();
+}
+
+
+/** Assumes the target var_mat is sized by client */
+template <typename MatrixType>
+void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
+{
+  // BMA TODO: does not account for correlations
+
+   if (standardizedSpace) {
+    // BMA TODO: can we assume means are 1.0?  Don't think so as
+    // u_type may be same as x_type...
+    Cerr << "\nError: prior_mean not implemented for transformed space.\n";
+    abort_handler(-1);
+    // RealVector u_means = natafTransform.u_means();
+    // for (size_t i=0; i<numContinuousVars; ++i)
+    //   mean_vec[i] = u_means[i];
+  }
+  else {
+    RealVector x_std = natafTransform.x_std_deviations();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      var_mat(i,i) = x_std[i] * x_std[i];
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    var_mat(numContinuousVars + i, numContinuousVars + i) = 
+      invGammaDists[i].variance();
 }
 
 
