@@ -26,7 +26,6 @@ method
 #	  response_levels = 10.		      #s12,#s13
 #	  compute reliabilities		      #s12,#s13
     variance_based_decomp #interaction_order = 1
-    rng rnum2
 
 variables
 #	active all                              #s12

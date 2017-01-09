@@ -69,6 +69,16 @@ method,
 #	  orthogonal_least_interpolation       	  #s12,#s13
 #	  sparse_grid_level = 2 non_nested			  #s8,#s10
 #	  sparse_grid_level = 4 non_nested			  #s9,#s11
+ 	  expansion_order = 2					#s0,#s2,#s4,#s6
+# 	  expansion_order = 4					#s1,#s3,#s5,#s7
+	  collocation_ratio = 2 seed = 12347 		#s0,#s1,#s2,#s3
+#	  collocation_ratio = 0.5 seed = 12347 	#s4,#s5,#s6,#s7
+#	  collocation_points = 70 seed = 12347 	#s12
+#	  collocation_points = 30 seed = 12347 	#s13
+#	  orthogonal_least_interpolation       	   		#s12,#s13
+#	  sparse_grid_level = 2 non_nested			#s8,#s10
+#	  sparse_grid_level = 4 non_nested			#s9,#s11
+	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0
 	    num_response_levels = 0 1 1
 	    compute reliabilities
