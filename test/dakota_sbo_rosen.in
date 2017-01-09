@@ -110,9 +110,8 @@ method
     samples = 10          #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10
 #	  samples = 30		      #s4
 #	  samples =  5		      #s11
-    seed = 531
+    seed = 531 
     sample_type lhs
-    rng rnum2
     model_pointer = 'TRUTH'
 
 model

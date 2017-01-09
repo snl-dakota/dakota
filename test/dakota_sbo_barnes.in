@@ -74,7 +74,7 @@ method,
 	id_method = 'SAMPLING'
 	model_pointer = 'TRUTH'
 	sampling
-	  seed = 12345 rng rnum2 samples = 10
+	  seed = 12345  samples = 10
 
 model,
 	id_model = 'TRUTH'

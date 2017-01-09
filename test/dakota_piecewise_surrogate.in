@@ -9,7 +9,7 @@ method,
         model_pointer = 'SURR'			
 	sampling,
 	  samples = 10				
-	  seed = 98765 rng rnum2
+	  seed = 98765 
 	  response_levels = 0.1 0.2 0.6
 			    0.1 0.2 0.6
 			    0.1 0.2 0.6
@@ -32,7 +32,7 @@ method,
         id_method = 'DACE'			 
         model_pointer = 'DACE_M'		 
         sampling sample_type lhs		 
-        samples = 121 seed = 5034 rng rnum2	 
+        samples = 121 seed = 5034 	 
 
 model,						
         id_model = 'DACE_M'			

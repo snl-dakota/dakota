@@ -91,7 +91,7 @@ method,
 	model_pointer = 'UQ_M_LO_FI'
 	polynomial_chaos					#s0,#s1,#s4,#s5
  	  expansion_order = 4					#s0,#s1
-	  collocation_ratio = 2 seed = 12347 rng rnum2		#s0,#s1
+	  collocation_ratio = 2 seed = 12347 		#s0,#s1
 #	  sparse_grid_level = 4 non_nested			#s4,#s5
 #	local_reliability					#s2,#s3,#s6,#s7
 	  num_response_levels = 0 1 1
@@ -118,7 +118,7 @@ method,
 	model_pointer = 'UQ_M_HI_FI'
 	polynomial_chaos
  	  expansion_order = 2					#s0,#s1,#s2,#s3
-	  collocation_ratio = 2 seed = 12347 rng rnum2		#s0,#s1,#s2,#s3
+	  collocation_ratio = 2 seed = 12347 		#s0,#s1,#s2,#s3
 #	  sparse_grid_level = 2 non_nested			#s4,#s5,#s6,#s7
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0

@@ -14,7 +14,7 @@ method,
 #	  collocation_points = 12			#s2
 #	  export_expansion_file = 'dakota_logratio_pce_tpq.txt'	#s1
 #	  import_expansion_file = 'dakota_logratio_pce.txt'	#s3
-	  samples_on_emulator = 10000 seed = 12347 rng rnum2
+	  samples_on_emulator = 10000 seed = 12347 
 	  sample_type lhs
 	  response_levels = .4 .5 .55 .6 .65 .7
 	   .75 .8 .85 .9 1. 1.05 1.15 1.2 1.25 1.3

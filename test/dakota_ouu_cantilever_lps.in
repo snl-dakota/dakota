@@ -80,7 +80,7 @@ method,
 	model_pointer = 'UQ_M'
         sampling
 	  samples = 50000 sample_type lhs
-	  seed = 12347 rng rnum2 fixed_seed
+	  seed = 12347  fixed_seed
 	  output silent
 
 model,
