@@ -485,14 +485,10 @@ partial_corr(RealMatrix& total_data, const int num_in,
 // Return true if any correlation coefficient is NaN or Inf, false otherwise
 bool SensAnalysisGlobal::has_nan_or_inf(const RealMatrix &corr) const {
   int num_rows = corr.numRows(), num_cols = corr.numCols();
-  for(int j = 0; j < num_cols; ++j) {
-    for(int i = 0; i < num_rows; ++i) {
-      const double e = corr(i,j);
-      // Test for equality will be false if NaN 
-      if( e != e || e > DBL_MAX || e < -DBL_MAX )
+  for(int j = 0; j < num_cols; ++j) 
+    for(int i = 0; i < num_rows; ++i) 
+      if( ! boost::math::isfinite(corr(i,j)))
         return true;
-    }
-  }
   return false;
 }
 
@@ -603,8 +599,8 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
       "commonly occurs when\ndiscrete variables (including histogram " <<
       "variables) are present, a response is\ncompletely insensitive to " <<
       "variables (response variance equal to 0), there are\nfewer samples " <<
-      "samples than variables, or some samples are approximately\n" <<
-      "collinear." << std::endl;
+      "than variables, or some samples are approximately collinear." << 
+      std::endl;
   
   s << std::scientific << std::setprecision(5);
 
