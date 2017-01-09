@@ -55,7 +55,7 @@ method,
 	model_pointer = 'DACE_M'
 	sampling
 	  sample_type lhs #samples = 9
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 #	dace lhs seed = 5
 #	  samples = 50 symbols = 50
 
@@ -84,7 +84,7 @@ method,
 	model_pointer = 'UQ_M'
         sampling
 	  sample_type lhs samples = 50
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 #	  fixed_seed					#s1
 	  output quiet
 

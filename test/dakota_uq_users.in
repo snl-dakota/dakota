@@ -19,7 +19,7 @@ method
     samples = 10			      #s0,#s2,#s3
 #    samples = 5			      #s1
 #    samples = 1000			    #s4
-    seed = 98765 rng rnum2
+    seed = 98765 
     response_levels = 0.1 0.2 0.6
                       0.1 0.2 0.6
                       0.1 0.2 0.6
@@ -39,7 +39,7 @@ method
 #  id_method = 'DACE'                     #s4
 #  model_pointer = 'DACE_M'		 	          #s4
 #  sampling sample_type lhs		 	          #s4
-#    samples = 121 seed = 5034 rng rnum2	#s4
+#    samples = 121 seed = 5034 	#s4
 
 #model						                 #s4
 #  id_model = 'DACE_M'				     #s4

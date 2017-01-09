@@ -102,7 +102,7 @@ method,
 	  samples = 50000 sample_type lhs
 	  response_levels = 4.2e+11 1.6e+05 7.5e+05
 	  complementary distribution
-	  seed = 12347 rng rnum2 fixed_seed
+	  seed = 12347  fixed_seed
 	  output silent
 
 model,

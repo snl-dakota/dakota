@@ -13,7 +13,7 @@ method,
 	  uniform p_refinement					#s0,#s2
 #	  dimension_adaptive p_refinement generalized		#s1,#s3,#s4,#s5
 #	  dimension_adaptive p_refinement sobol
-#	  samples_on_emulator = 10000 seed = 12347 rng rnum2
+#	  samples_on_emulator = 10000 seed = 12347 
 #	  response_levels = .1 1. 50. 100. 500. 1000.		#s4,#s5
 #	    compute reliabilities				#s4,#s5
 #	  variance_based_decomp #interaction_order = 1

@@ -24,7 +24,7 @@ environment,
 #	model_pointer = 'TRUTH'			#s1
 #	sampling      				#s1
 #	  samples = 10 sample_type lhs		#s1
-#	  seed = 531 rng rnum2			#s1
+#	  seed = 531 			#s1
 
 #model,						#s1
 #	id_model = 'TRUTH'			#s1
@@ -38,7 +38,7 @@ method,						#s0
  	  expansion_order   = 4			#s0
 	  collocation_ratio = 8.		#s0
 	  samples_on_emulator = 10000			#s0
-	  seed = 12347 rng rnum2		#s0
+	  seed = 12347 		#s0
 	  response_levels = .1 1. 50. 100. 500. 1000.	#s0
 	  variance_based_decomp #interaction_order = 1	#s0
 
