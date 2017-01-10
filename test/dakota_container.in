@@ -24,7 +24,7 @@ method
 
 variables
   continuous_design = 2
-    descriptors'H' 'D'
+    descriptors   'H' 'D'
     initial_point 4.5 4.5
     lower_bounds  0.0 0.0
 

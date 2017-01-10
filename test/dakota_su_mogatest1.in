@@ -73,7 +73,7 @@ variables
 
 interface
     id_interface = 'TRUE_FN'
-    analysis_driver = 'mogatest1'
+    analysis_drivers = 'mogatest1'
       direct
 
 responses

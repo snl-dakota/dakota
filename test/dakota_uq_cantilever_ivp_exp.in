@@ -51,7 +51,6 @@ method,
         id_method = 'ALEATORY'
 	polynomial_chaos                      #s0,#s1,#s4,#s5
 #	stoch_collocation                     #s2,#s3,#s6,#s7
-    model_pointer = 'ALEAT_M'
 	  sparse_grid_level_sequence = 2			#s0,#s2,#s4,#s6
 #	  sparse_grid_level_sequence = 4			#s1,#s3,#s5,#s7
       non_nested
@@ -59,6 +58,7 @@ method,
       num_response_levels = 0 1 1
       compute reliabilities
     distribution complementary 
+    model_pointer = 'ALEAT_M'
 
 model,
         id_model = 'ALEAT_M'
