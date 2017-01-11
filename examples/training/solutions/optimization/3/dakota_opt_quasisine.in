@@ -36,7 +36,7 @@ variables
     descriptors      'x1'     'x2'
 
 interface
-  analysis_driver = 'quasi_sine_fcn'
+  analysis_drivers = 'quasi_sine_fcn'
     fork
   asynchronous evaluation_concurrency 4
 
