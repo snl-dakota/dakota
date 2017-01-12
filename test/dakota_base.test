@@ -3151,6 +3151,24 @@ Test Number 22 succeeded
                       5.5482851044e-01
                       4.5072865152e-01
 <<<<< Best data captured at function evaluation 60
+Test Number 23 succeeded
+<<<<< Function evaluation summary: 56 total (20 new, 36 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     1 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 16
+Test Number 24 succeeded
+<<<<< Function evaluation summary: 59 total (23 new, 36 duplicate)
+<<<<< Best parameters          =
+                                     0 y1
+                                     0 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best data captured at function evaluation 19
 dakota_bandb.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 197 total (186 new, 11 duplicate)
@@ -9646,7 +9664,88 @@ Test Number 8 succeeded
                                  poker s2
 <<<<< Best objective function  (set 3) =
                       8.8400000324e+02
-<<<<< Best data captured at function evaluation 598
+<<<<< Best data captured at function evaluation 533
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 333 total (333 new, 0 duplicate)
+<<<<< Best parameters          =
+                                     1 y1
+                                     1 y2
+                                     1 y3
+<<<<< Best objective function  =
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 192
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 263 total (263 new, 0 duplicate)
+<<<<< Best parameters          (set 1) =
+                                     0 y1
+                                     0 y2
+                                     0 y3
+<<<<< Best objective functions (set 1) =
+                      6.3212055883e-01
+                      6.3212055883e-01
+<<<<< Best data captured at function evaluation 169
+<<<<< Best parameters          (set 2) =
+                                     0 y1
+                                     0 y2
+                                     1 y3
+<<<<< Best objective functions (set 2) =
+                      5.7057125847e-01
+                      9.5734882853e-01
+<<<<< Best data captured at function evaluation 215
+<<<<< Best parameters          (set 3) =
+                                     0 y1
+                                     1 y2
+                                     0 y3
+<<<<< Best objective functions (set 3) =
+                      5.7057125847e-01
+                      9.5734882853e-01
+<<<<< Best data captured at function evaluation 182
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 1169 total (1169 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.4796418233e-01 x1
+                      4.1568224803e-01 x2
+<<<<< Best objective function  =
+                      2.0944118458e-01
+<<<<< Best constraint values   =
+                     -7.1692153642e-03
+                     -5.1190359836e-02
+<<<<< Best data captured at function evaluation 116
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 1455 total (1455 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -6.2423834047e-01 x1
+                     -6.5577579879e-01 x2
+                     -6.8179735759e-01 x3
+<<<<< Best objective function  =
+                      2.2476257443e+01
+<<<<< Best data captured at function evaluation 1287
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 342 total (342 new, 0 duplicate)
+<<<<< Best parameters          (set 1) =
+                                    -2 y1
+                                    -2 y2
+                                    -1 y3
+<<<<< Best objective functions (set 1) =
+                      9.9999985886e-01
+                      9.8539654754e-01
+<<<<< Best data captured at function evaluation 301
+<<<<< Best parameters          (set 2) =
+                                    -2 y1
+                                    -2 y2
+                                     2 y3
+<<<<< Best objective functions (set 2) =
+                      9.9999977550e-01
+                      9.9997724212e-01
+<<<<< Best data captured at function evaluation 159
+<<<<< Best parameters          (set 3) =
+                                    -3 y1
+                                     0 y2
+                                     2 y3
+<<<<< Best objective functions (set 3) =
+                      9.9999973794e-01
+                      9.9999736150e-01
+<<<<< Best data captured at function evaluation 312
 dakota_multiobj1.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)

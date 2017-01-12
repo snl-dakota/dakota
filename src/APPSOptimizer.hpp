@@ -22,6 +22,7 @@
 #include "HOPSPACK_ParameterList.hpp"
 #include "HOPSPACK_LinConstr.hpp"
 #include "HOPSPACK_Hopspack.hpp"
+#include "HOPSPACK_float.hpp"
 
 
 namespace Dakota {
@@ -61,6 +62,9 @@ public:
 
   /// alternate constructor for on-the-fly instantiation without ProblemDescDB
   APPSOptimizer(Model& model);
+
+  /// alternate constructor for even more rudimentary on-the-fly instantiation
+  APPSOptimizer() { }
 
   /// destructor
   ~APPSOptimizer() {
@@ -111,6 +115,8 @@ protected:
   /// Pointer to the APPS evaluation manager object
   APPSEvalMgr* evalMgr;
 
+//PDH: Don't think we would need these data members anymore.
+
   /// map from Dakota constraint number to APPS constraint number
   std::vector<int> constraintMapIndices;
 
@@ -121,6 +127,49 @@ protected:
   std::vector<double> constraintMapOffsets;
 };
 
-} // namespace Dakota
+// --------------------------------------------------
 
+struct APPSOptimizerAdapter {
+
+  typedef HOPSPACK::Hopspack OptT;
+  typedef HOPSPACK::Vector VecT;
+  typedef HOPSPACK::Matrix MatT;
+
+  static double noValue();
+
+  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
+  static double getBestObj(const OptT &);
+
+  static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
+
+}; // namespace APPSOptimizerAdapter
+
+
+// --------------------------------------------------
+
+inline double APPSOptimizerAdapter::noValue()
+{ return HOPSPACK::dne(); }
+
+
+// --------------------------------------------------
+
+inline void APPSOptimizerAdapter::copy_data(const RealMatrix& source, HOPSPACK::Matrix& target)
+{
+  HOPSPACK::Vector tmp_vector;
+  for (int i=0; i<source.numRows(); ++i) {
+    copy_row_vector(source, i, tmp_vector);
+    target.addRow(tmp_vector);
+  }
+}
+
+// --------------------------------------------------
+
+inline double APPSOptimizerAdapter::getBestObj(const OptT & optimizer)
+{
+  return optimizer.getBestF();
+}
+
+// --------------------------------------------------
+
+} // namespace Dakota
 #endif
