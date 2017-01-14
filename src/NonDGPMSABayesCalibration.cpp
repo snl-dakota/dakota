@@ -55,19 +55,20 @@ QUESTIONS:
 
  * Can't use MAP pre-solve since don't have access to the likelihood?
 
- * Options logic at GPMSA.C:479 might be wrong per Damon's
-   comment... doesn't allow fall-through to default options...
+ * FIXED: Options logic at GPMSA.C:479 might be wrong per Damon's
+   comment... doesn't allow fall-through to default options... Fixed
+   in PR516.
 
- * Can't seem to default construct a GPMSAOptions object (file is
-   required, potential logic error)
+ * FIXED: Can't seem to default construct a GPMSAOptions object (file
+   is required, potential logic error).  Fixed in PR516.
 
- * VectorRV is complaining that m_realizer is not populated for our
+ * FIXED: VectorRV is complaining that m_realizer is not populated for our
    custom joint PDF.  It's because ConcatenatedVectorRV
    unconditionally accesses the realizer of the component RVs.  Seems
    ConcatenatedRV should be tolerant of missing realizers the same way
    VectorRV is?
 
-   We implement only what's need to compute log prior, not realize()
+   TODO: We implement only what's need to compute log prior, not realize()
 
  * Terminate handler might be getting called recursively in serial, at
    least when run in debugger.  Perhaps because old_terminate_handler
@@ -257,9 +258,10 @@ void NonDGPMSABayesCalibration::calibrate()
   // data and experimental data.  It also stores default information about the
   // hyperparameter distributions.
 
-  // workaround for possibly bum logic
+  // default constructed options will have recommended settings, then
+  // we can override via C++ API or input file (.parse())
   boost::scoped_ptr<QUESO::GPMSAOptions>
-    gp_opts(new QUESO::GPMSAOptions(*quesoEnv));
+    gp_opts(new QUESO::GPMSAOptions());
 
   QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix>
     gpmsaFactory(*quesoEnv,
