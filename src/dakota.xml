@@ -2112,77 +2112,71 @@
 	    <keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" >
 	      <alias name="nond_bayes_calibration"/>
 	      <oneOf>
-		<required>
-		  <oneOf>
 		    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
 		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-			<alias name='samples' />
-			<param type='INTEGER' />
+			    <alias name='samples' />
+			    <param type='INTEGER' />
 		      </keyword>
 		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
+			    <param type='INTEGER' constraint='> 0' />
 		      </keyword>
 		      <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-			<oneOf label="emulator type" >
-			  <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			    <alias name="kriging"/>
-			    <oneOf>
-			      <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			      <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			    </oneOf>
-			    <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			      <param type="INTEGER" />
-			    </keyword>
-			    <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
-			  </keyword>
-			  <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			    <oneOf>
-			      <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-				<param type="INTEGERLIST" />
+			  <oneOf label="emulator type" >
+			    <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
+			      <alias name="kriging"/>
+			      <oneOf>
+			        <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+			        <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+			      </oneOf>
+			      <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
+			        <param type="INTEGER" />
 			      </keyword>
-			      <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				<param type="INTEGERLIST" />
-				<oneOf>
-				  <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				    <param type="INTEGERLIST" />
-				  </keyword>
-				  <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				    <param type="REAL" />
-				  </keyword>
-				</oneOf>
-				<keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				  <alias name="import_points_file"/>
-				  <param type="INPUT_FILE" />
-				  &method_import_build_format;
-				  <keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				</keyword>
+			      <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			      <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+			        <alias name="import_points_file"/>
+			        <param type="INPUT_FILE" />
+			        &method_import_build_format;
+			        <keyword  id="active_only8" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 			      </keyword>
-			      <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				<keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				  <param type="INTEGERLIST" />
-				</keyword>
-				<keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				  <alias name="import_points_file"/>
-				  <param type="INPUT_FILE" />
-				  &method_import_build_format;
-				  <keyword  id="active_only10" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				</keyword>
-			      </keyword>
-			    </oneOf>
-			  </keyword>
+			    </keyword>
+			    <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+			      <oneOf>
+			        <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
+				      <param type="INTEGERLIST" />
+			        </keyword>
+			        <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				      <param type="INTEGERLIST" />
+				      <oneOf>
+				        <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+						  <param type="INTEGERLIST" />
+						</keyword>
+						<keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+						  <param type="REAL" />
+						</keyword>
+				      </oneOf>
+					  <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"/>
+					  <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+					  <keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+				        <alias name="import_points_file"/>
+						<param type="INPUT_FILE" />
+						&method_import_build_format;
+						<keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+				      </keyword>
+			        </keyword>
+			        <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				      <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				        <param type="INTEGERLIST" />
+				      </keyword>
+				      <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+					  <keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+				        <alias name="import_points_file"/>
+				        <param type="INPUT_FILE" />
+				        &method_import_build_format;
+				        <keyword  id="active_only10" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+				      </keyword>
+			        </keyword>
+			      </oneOf>
+			    </keyword>
 			  <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
 			    <keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
 			      <param type="INTEGERLIST" />
@@ -2193,22 +2187,68 @@
 		      </keyword>
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-			<param type="OUTPUT_FILE" />
-			<optional>
-			  <oneOf label="Tabular Format" >
-			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-			    <required>
-			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			      </keyword>
-			    </required>
-			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-			  </oneOf>
-			</optional>
+				<param type="OUTPUT_FILE" />
+				<optional>
+				  <oneOf label="Tabular Format" >
+				    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+				    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+				    <required>
+				      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+					<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+					<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+					<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+				      </keyword>
+				    </required>
+				    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+				  </oneOf>
+				</optional>
 		      </keyword>
+		     <optional>
+			    <oneOf label="MCMC algorithm type" >
+			      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+			      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+			      <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+			      <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+			      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+			    </oneOf>
+			 </optional>
+		  <keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
+		    <oneOf>
+		      <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
+		      <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
+		    </oneOf>
+		  </keyword>
+		  <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve" help="" minOccurs="0" default="nip pre-solve for emulators" >
+		    <oneOf>
+		      <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
+		      <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+		      <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none" help=""  />
+		    </oneOf>
+		  </keyword>
+		  <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
+		    <oneOf>
+		      <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
+			<keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+			  <param type="INTEGER" />
+			</keyword>
+		      </keyword>
+		      <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
+		      <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
+			<param type="REALLIST"/>
+			<oneOf>
+			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
+			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			</oneOf>
+		      </keyword>
+		      <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
+			<param type="INPUT_FILE"/>
+			<oneOf>
+			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
+			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			</oneOf>
+		      </keyword>
+		    </oneOf>
+		  </keyword>
 		    </keyword>
 		    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
 		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
@@ -2227,9 +2267,7 @@
 			&method_import_build_format;
 			<keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 		      </keyword>
-		    </keyword>
-		  </oneOf>
-		  <optional>
+		      		  <optional>
 		    <oneOf label="MCMC algorithm type" >
 		      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
 		      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
@@ -2275,7 +2313,7 @@
 		      </keyword>
 		    </oneOf>
 		  </keyword>
-		</required>
+		    </keyword>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
 		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
 		    <param type='INTEGER' constraint='> 0' />
