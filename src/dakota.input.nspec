@@ -1489,16 +1489,42 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(utype,methodName_BAYES_CALIBRATION)}
-      ( 
-        ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
-          chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          [ emulator {0}
-            ( gaussian_process ALIAS kriging {0}
-              surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+      ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
+        chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+        [ emulator {0}
+          ( gaussian_process ALIAS kriging {0}
+            surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+            |
+            dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+            [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
+            [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+              [ 
+                annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+               ]
+              [ active_only {N_mdm(true,importBuildActive)} ]
+             ]
+           )
+          |
+          ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
+            sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+            |
+            ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               |
-              dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-              [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ cross_validation {N_mdm(true,crossValidation)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -1518,99 +1544,113 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
-              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
-              |
-              ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
-                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-                |
-                collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-                [ cross_validation {N_mdm(true,crossValidation)} ]
-                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-                  [ 
-                    annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-                    |
-                    ( 
-                      ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                        [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                        [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                        [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                       )
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+                [ 
+                  annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                  |
+                  ( 
+                    ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
                      )
-                    |
-                    freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                   ]
-                  [ active_only {N_mdm(true,importBuildActive)} ]
+                   )
+                  |
+                  freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                  ]
-               )
-              |
-              ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-                  [ 
-                    annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-                    |
-                    ( 
-                      ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                        [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                        [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                        [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                       )
-                     )
-                    |
-                    freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                   ]
-                  [ active_only {N_mdm(true,importBuildActive)} ]
-                 ]
+                [ active_only {N_mdm(true,importBuildActive)} ]
+               ]
+             )
+           )
+          |
+          ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
+            sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+           )
+          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+         ]
+        [ logit_transform {N_mdm(true,logitTransform)} ]
+        [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
                )
              )
             |
-            ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
-              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ 
+          dram {N_mdm(lit,mcmcType_dram)}
+          |
+          delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+          |
+          adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+          |
+          metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+          |
+          multilevel {N_mdm(lit,mcmcType_multilevel)}
+         ]
+        [ rng {0}
+          mt19937 {N_mdm(lit,rngName_mt19937)}
+          |
+          rnum2 {N_mdm(lit,rngName_rnum2)}
+         ]
+        [ pre_solve {0}
+          sqp {N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
+          |
+          nip {N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}
+          |
+          none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
+         ]
+        [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+          ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+            [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+           )
+          |
+          prior {N_mdm(lit,proposalCovType_prior)}
+          |
+          ( values REALLIST {N_mdm(RealDL,proposalCovData)}
+            diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+            |
+            matrix {N_mdm(lit,proposalCovInputType_matrix)}
+           )
+          |
+          ( filename STRING {N_mdm(str,proposalCovFile)}
+            diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+            |
+            matrix {N_mdm(lit,proposalCovInputType_matrix)}
+           )
+         ]
+       )
+      |
+      ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
+        chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+        build_samples INTEGER {N_mdm(int,buildSamples)}
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
              )
-            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
-          [ logit_transform {N_mdm(true,logitTransform)} ]
-          [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
-            [ 
-              annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-             ]
-           ]
-         )
-        |
-        ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
-          chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          build_samples INTEGER {N_mdm(int,buildSamples)}
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
+          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
         [ 
           dram {N_mdm(lit,mcmcType_dram)}
           |
