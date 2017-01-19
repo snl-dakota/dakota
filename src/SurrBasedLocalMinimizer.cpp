@@ -693,7 +693,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    tr_data.reset_status_bits(NEW_CENTER);
+    tr_data.reset_status_bits(NEW_CENTER | NEW_CANDIDATE);
     tr_data.scale_trust_region_factor(gammaContract);
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "
