@@ -14266,7 +14266,7 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 179 total (179 new, 0 duplicate)
-<<<<< Function evaluation summary (UQ_I): 88 total (67 new, 21 duplicate)
+<<<<< Function evaluation summary (UQ_I): 88 total (68 new, 20 duplicate)
 <<<<< Best parameters          =
                       8.6681831721e+00 b
                       2.5000000000e+01 h
@@ -15592,13 +15592,13 @@ response_fn_1 Sobol' indices:
    1.0000000000e+03   8.5240000000e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 454 total (454 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1200 total (1198 new, 2 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 1199 total (1198 new, 1 duplicate)
 <<<<< Best parameters          =
                       9.9974071325e-01 x1
                       9.9947716827e-01 x2
 <<<<< Best objective function  =
                       6.9100571833e-08
-<<<<< Best data captured at function evaluation 1200
+<<<<< Best data captured at function evaluation 1199
 dakota_rosenbrock_hessians.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
@@ -17179,7 +17179,7 @@ Test Number 1 succeeded
 <<<<< Best data captured at function evaluation 862
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 410 total (410 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 462 total (461 new, 1 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 461 total (461 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       2.8169495679e-01 x2
@@ -17190,7 +17190,7 @@ Test Number 2 succeeded
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759888947e+00
-<<<<< Best data captured at function evaluation 462
+<<<<< Best data captured at function evaluation 461
 dakota_sbo_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2490 total (2490 new, 0 duplicate)
@@ -17284,7 +17284,7 @@ Test Number 9 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 273 total (273 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 109 total (109 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 108 total (108 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000737088e+00 x1
                       1.0001478749e+00 x2
@@ -17293,7 +17293,7 @@ Test Number 10 succeeded
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 486 total (486 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 106 total (106 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 104 total (104 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9989424793e-01 x1
                       9.9978802423e-01 x2

@@ -43,6 +43,11 @@ enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
        SUBSPACE_NORM_MEAN_GRAD, SUBSPACE_NORM_LOCAL_GRAD }; 
 
+/// define special values for componentParallelMode
+/// (active model for parallel scheduling)
+enum { SURROGATE_MODEL=1, TRUTH_MODEL };
+
+
 /// Body class for model specification data.
 
 /** The DataModelRep class is used to contain the data from a model

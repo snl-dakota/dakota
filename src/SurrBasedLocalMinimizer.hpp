@@ -74,10 +74,14 @@ protected:
   /// build the approximation over the current trust region
   virtual void build() = 0;
   /// solve the approximate subproblem
-  virtual void minimize() = 0;
+  virtual void minimize();
   /// verify the approximate iterate and update the trust region for
   /// the next approximate optimization cycle
   virtual void verify() = 0;
+
+  /// return the convergence code for the truth level of the trust
+  /// region hierarchy
+  virtual unsigned short converged() = 0;
 
   //
   //- Heading: Member functions
@@ -95,15 +99,17 @@ protected:
 				const RealVector& parent_l_bnds,
 				const RealVector& parent_u_bnds);
 
+  /// update variables and bounds within approxSubProbModel
+  void update_approx_sub_problem(SurrBasedLevelData& tr_data);
+
   /// compute trust region ratio (for SBLM iterate acceptance and trust
   /// region resizing) and check for soft convergence (diminishing returns)
   void compute_trust_region_ratio(SurrBasedLevelData& tr_data,
 				  bool check_interior = false);
 
-  /// check for hard convergence (norm of projected gradient of
-  /// merit function near zero)
-  void hard_convergence_check(const Response& response_truth,
-			      const RealVector& c_vars,
+  /// check for hard convergence (norm of projected gradient of merit
+  /// function < tolerance)
+  void hard_convergence_check(SurrBasedLevelData& tr_data,
 			      const RealVector& lower_bnds,
 			      const RealVector& upper_bnds);
 
@@ -182,13 +188,8 @@ protected:
   /// trust region expansion factor
   Real gammaExpand;
 
-  /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceFlag;
-  /// number of consecutive candidate point rejections.  If the
-  /// count reaches softConvLimit, stop SBLM.
-  unsigned short softConvCount;
-  /// the limit on consecutive candidate point rejections.  If
-  /// exceeded by softConvCount, stop SBLM.
+  /// convergence control limiting the number of consecutive iterations that
+  /// fail to achieve sufficient decrease.  If exceeded by softConvCount, stop.
   unsigned short softConvLimit;
 
   /// derivative order of truth data used within the SBLM process
@@ -227,9 +228,10 @@ protected:
 
 inline void SurrBasedLocalMinimizer::reset()
 {
-  convergenceFlag = softConvCount = sbIterNum = 0;
+  sbIterNum         = 0;
 
-  penaltyIterOffset = -200; penaltyParameter  = 5.;
+  penaltyIterOffset = -200;
+  penaltyParameter  = 5.;
 
   eta               = 1.;
   alphaEta          = 0.1;

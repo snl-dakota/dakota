@@ -42,13 +42,8 @@ using OPTPP::NLPGradient;
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.cpp 4058 2006-10-25 01:39:40Z mseldre $";
 
 namespace Dakota {
+
 extern PRPCache data_pairs; // global container
-
-
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
-
 
 // initialization of statics
 NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);

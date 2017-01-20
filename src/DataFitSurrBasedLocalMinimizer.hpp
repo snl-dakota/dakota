@@ -70,13 +70,14 @@ protected:
   bool build_local();
   void compute_center_correction(bool embed_correction);
 
+  unsigned short converged();
+
   //
   //- Heading: Convenience member functions
   //
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
-  void find_center_truth(const Iterator& dace_iterator, Model& truth_model);
-
+  void find_center_truth();
   /// retrieve responseCenter_approx if possible, evaluate it if not
   void find_center_approx();
 
@@ -121,17 +122,11 @@ inline SurrBasedLevelData& DataFitSurrBasedLocalMinimizer::trust_region()
 
 
 inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
-{
-  update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds);
+{ update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds); }
 
-  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
-  //if (recastSubProb)
-  //  iteratedModel.continuous_variables(cv_center);
-  if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
-    iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
-  }
-}
+
+inline unsigned short DataFitSurrBasedLocalMinimizer::converged()
+{ return trustRegionData.converged(); }
 
 } // namespace Dakota
 

@@ -3397,6 +3397,31 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 }
 
 
+void Model::single_apply(const Variables& vars, Response& resp,
+			 const SizetSizet2DPair& indices)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->single_apply(vars, resp, indices);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
+	 << "function.\n." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::recursive_apply(const Variables& vars, Response& resp)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->recursive_apply(vars, resp);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual recursive_apply() "
+	 << "function.\n." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 void Model::component_parallel_mode(short mode)
 {
   if (modelRep) // envelope fwd to letter

@@ -34,10 +34,6 @@ namespace Dakota {
 
 EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
-
 
 // This constructor accepts a Model
 EffGlobalMinimizer::

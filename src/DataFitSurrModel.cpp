@@ -28,11 +28,8 @@ static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:
 
 
 namespace Dakota {
-  extern PRPCache data_pairs;
 
-// define special values for componentParallelMode
-#define APPROX_INTERFACE 1
-#define ACTUAL_MODEL     2
+extern PRPCache data_pairs;
 
 
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
@@ -314,7 +311,7 @@ void DataFitSurrModel::build_approximation()
       interface_build_approx();
   }
 
-  approxBuilds++;
+  ++approxBuilds;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 }
@@ -421,7 +418,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
       interface_build_approx();
   }
 
-  approxBuilds++;
+  ++approxBuilds;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 
@@ -461,11 +458,12 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -493,11 +491,12 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -526,11 +525,12 @@ update_approximation(const VariablesArray& vars_array,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -559,11 +559,12 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -595,11 +596,12 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -627,11 +629,12 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -660,11 +663,12 @@ append_approximation(const VariablesArray& vars_array,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -693,18 +697,20 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
 void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
+    Cout << "\n>>>>> Popping data from " << surrogateType
+	 << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.pop_approximation(save_surr_data);
@@ -712,7 +718,7 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -733,7 +739,7 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
   */
 
@@ -754,7 +760,7 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
   */
 
@@ -905,7 +911,7 @@ void DataFitSurrModel::update_global()
 void DataFitSurrModel::build_local_multipoint()
 {
   // set DataFitSurrModel parallelism mode to actualModel
-  component_parallel_mode(ACTUAL_MODEL);
+  component_parallel_mode(TRUTH_MODEL);
 
   // Define the data requests
   short asv_value = 3;
@@ -1031,7 +1037,7 @@ void DataFitSurrModel::build_global()
   else { // else use rst info only (no new data)
 
     // set DataFitSurrModel parallelism mode to actualModel
-    component_parallel_mode(ACTUAL_MODEL);
+    component_parallel_mode(TRUTH_MODEL);
 
     // determine number of points associated with the model specification
     // (min, recommended, or total)
@@ -1270,7 +1276,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   // Compute actual model response
   // -----------------------------
   if (actual_eval) {
-    component_parallel_mode(ACTUAL_MODEL);
+    component_parallel_mode(TRUTH_MODEL);
     update_actual_model(); // update variables/bounds/labels in actualModel
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
@@ -1312,7 +1318,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     }
 
     // compute the approximate response
-    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
     //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     //parallelLib.parallel_configuration_iterator(modelPCIter);
     switch (responseMode) {
@@ -1472,7 +1478,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(ACTUAL_MODEL);
+    component_parallel_mode(TRUTH_MODEL);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1569,7 +1575,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
-    component_parallel_mode(ACTUAL_MODEL);
+    component_parallel_mode(TRUTH_MODEL);
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
@@ -1674,7 +1680,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 {
   bool actual_evals = !truthIdMap.empty();
 
-  //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+  //component_parallel_mode(SURROGATE_MODEL); // does not use parallelism
   //ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
   //parallelLib.parallel_configuration_iterator(modelPCIter);
 
@@ -1840,11 +1846,11 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   //  return; // already in correct parallel mode
 
   /* Moved up a level so that config can be restored after optInterface usage
-  //if (mode == ACTUAL_MODEL) {
+  //if (mode == TRUTH_MODEL) {
     // ParallelLibrary::currPCIter activation delegated to subModel
   //}
   //else 
-  if (mode == APPROX_INTERFACE)
+  if (mode == SURROGATE_MODEL)
     parallelLib.parallel_configuration_iterator(modelPCIter);
   //else if (mode == 0)
   */
