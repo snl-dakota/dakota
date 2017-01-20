@@ -311,7 +311,7 @@ void DataFitSurrModel::build_approximation()
       interface_build_approx();
   }
 
-  approxBuilds++;
+  ++approxBuilds;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 }
@@ -418,7 +418,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
       interface_build_approx();
   }
 
-  approxBuilds++;
+  ++approxBuilds;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 
@@ -458,11 +458,12 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -490,11 +491,12 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -523,11 +525,12 @@ update_approximation(const VariablesArray& vars_array,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -556,11 +559,12 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -592,11 +596,12 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -624,11 +629,12 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -657,11 +663,12 @@ append_approximation(const VariablesArray& vars_array,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
@@ -690,18 +697,20 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+    Cout << "\n<<<<< " << surrogateType
+	 << " approximation updates completed.\n";
 }
 
 
 void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
+    Cout << "\n>>>>> Popping data from " << surrogateType
+	 << " approximations.\n";
 
   // append to the current points for each approximation
   approxInterface.pop_approximation(save_surr_data);
@@ -709,7 +718,7 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
 
   if (outputLevel >= NORMAL_OUTPUT)
@@ -730,7 +739,7 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
   */
 
@@ -751,7 +760,7 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
-    approxBuilds++;
+    ++approxBuilds;
   }
   */
 

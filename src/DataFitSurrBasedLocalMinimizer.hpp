@@ -122,17 +122,7 @@ inline SurrBasedLevelData& DataFitSurrBasedLocalMinimizer::trust_region()
 
 
 inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
-{
-  update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds);
-
-  // TO DO: will propagate in recast evaluate() but are there direct evaluates?
-  //if (recastSubProb)
-  //  iteratedModel.continuous_variables(cv_center);
-  if (globalApproxFlag) { // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
-    iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
-  }
-}
+{ update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds); }
 
 
 inline unsigned short DataFitSurrBasedLocalMinimizer::converged()

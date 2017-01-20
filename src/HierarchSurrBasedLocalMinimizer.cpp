@@ -271,12 +271,14 @@ void HierarchSurrBasedLocalMinimizer::build()
     // TO DO: special case of no/zeroth order correction could be optimized
     // to reuse transfer of response fn vals from star->center
     if (tr_data.status(NEW_CENTER)) { //&& (truthSetRequest & 6)) {
-      
+
       // build level approximation and retrieve/correct response center truth
       Variables& center_vars = tr_data.vars_center();
+      // update (Note: bounds can affect finite differencing)
       iteratedModel.active_variables(center_vars);
-      //iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
-      //iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+      iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
+      iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+      // build
       iteratedModel.build_approximation();
       // Extract truth model evaluation.
       // Note: code from DFSBLM case does lookup, which makes sense if last HF

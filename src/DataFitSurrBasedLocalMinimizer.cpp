@@ -188,7 +188,7 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
   //if (recastSubProb) iteratedModel.continuous_variables(initialPoint);
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
-  if (globalApproxFlag) { // propagate to DFSModel
+  if (recastSubProb) { // propagate to DFSModel
     iteratedModel.continuous_lower_bounds(globalLowerBnds);
     iteratedModel.continuous_upper_bounds(globalUpperBnds);
   }
@@ -246,6 +246,10 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   // Perform the sampling and the surface fitting
   if (!trustRegionData.converged()) {
 
+    // propagate build bounds to DFSModel
+    iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
+    iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
+
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction = iteratedModel.build_approximation(
       trustRegionData.vars_center(),
@@ -266,6 +270,10 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
 bool DataFitSurrBasedLocalMinimizer::build_local()
 {
   // local/multipt/hierarchical with new center
+
+  // propagate build bounds to DFSModel (e.g., for finite difference bounds)
+  iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
+  iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
 
   // Evaluate the truth model at the center of the trust region.
   // Local needs values/grads & may need Hessians depending on order of

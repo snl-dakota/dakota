@@ -422,7 +422,7 @@ inline Real SurrBasedLevelData::tr_lower_bound(size_t i) const
 
 
 inline void SurrBasedLevelData::tr_lower_bounds(const RealVector& bounds)
-{ trLowerBounds = bounds; }
+{ trLowerBounds.assign(bounds); }
 
 
 inline void SurrBasedLevelData::tr_lower_bound(Real bound, size_t i)
@@ -438,7 +438,7 @@ inline Real SurrBasedLevelData::tr_upper_bound(size_t i) const
 
 
 inline void SurrBasedLevelData::tr_upper_bounds(const RealVector& bounds)
-{ trUpperBounds = bounds; }
+{ trUpperBounds.assign(bounds); }
 
 
 inline void SurrBasedLevelData::tr_upper_bound(Real bound, size_t i)
