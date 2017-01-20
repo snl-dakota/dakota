@@ -185,23 +185,14 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //  parallelLib.bcast(responseMode, *pl_iter);
 
     switch (responseMode) {
+
+    // CASES WITH A SINGLE ACTIVE MODEL:
+
     case UNCORRECTED_SURROGATE: {
       Model& lf_model = orderedModels[lowFidelityIndices.first];
       lf_model.set_communicators(pl_iter, max_eval_concurrency);
       asynchEvalFlag     = lf_model.asynch_flag();
       evaluationCapacity = lf_model.evaluation_capacity();
-      break;
-    }
-    case AUTO_CORRECTED_SURROGATE: {
-      Model& lf_model = orderedModels[lowFidelityIndices.first];
-      Model& hf_model = orderedModels[highFidelityIndices.first];
-      lf_model.set_communicators(pl_iter, max_eval_concurrency);
-      int hf_deriv_conc = hf_model.derivative_concurrency();
-      hf_model.set_communicators(pl_iter, hf_deriv_conc);
-      asynchEvalFlag = ( lf_model.asynch_flag() ||
-                         ( hf_deriv_conc > 1 && hf_model.asynch_flag() ) );
-      evaluationCapacity = std::max( lf_model.evaluation_capacity(),
-                                     hf_model.evaluation_capacity() );
       break;
     }
     case BYPASS_SURROGATE: {
@@ -211,20 +202,44 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       evaluationCapacity = hf_model.evaluation_capacity();
       break;
     }
-    case MODEL_DISCREPANCY:
-    case AGGREGATED_MODELS: {
-      Model& lf_model = orderedModels[lowFidelityIndices.first];
-      Model& hf_model = orderedModels[highFidelityIndices.first];
-      lf_model.set_communicators(pl_iter, max_eval_concurrency);
-      if (sameModelInstance) {
-        asynchEvalFlag = lf_model.asynch_flag();
-        evaluationCapacity = lf_model.evaluation_capacity();
+
+    // CASES WHERE ANY/ALL MODELS COULD BE ACTIVE:
+
+    case AUTO_CORRECTED_SURROGATE: {
+      // Lowest fidelity model is interfaced with minimizer:
+      Model& model_0 = orderedModels[0];
+      model_0.set_communicators(pl_iter, max_eval_concurrency);
+      asynchEvalFlag     = model_0.asynch_flag();
+      evaluationCapacity = model_0.evaluation_capacity();
+      // Loop over all higher fidelity models:
+      size_t i, num_models = orderedModels.size(); int cap_i;
+      // TO DO: this will not be true for multigrid optimization:
+      bool use_deriv_conc = true; // only verifications/corrections
+      for (i=1; i<num_models; ++i) {
+	Model& model_i = orderedModels[i];
+	if (use_deriv_conc) {
+	  int deriv_conc_i = model_i.derivative_concurrency();
+	  model_i.set_communicators(pl_iter, deriv_conc_i);
+	  if (deriv_conc_i > 1 && model_i.asynch_flag()) asynchEvalFlag = true;
+	}
+	else {
+	  model_i.set_communicators(pl_iter, max_eval_concurrency);
+	  if (model_i.asynch_flag()) asynchEvalFlag = true;
+	}
+	cap_i = model_i.evaluation_capacity();
+	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
       }
-      else {
-        hf_model.set_communicators(pl_iter, max_eval_concurrency);
-        asynchEvalFlag = ( lf_model.asynch_flag() || hf_model.asynch_flag() );
-        evaluationCapacity = std::max( lf_model.evaluation_capacity(),
-                                       hf_model.evaluation_capacity() );
+      break;
+    }
+    case MODEL_DISCREPANCY: case AGGREGATED_MODELS: {
+      size_t i, num_models = orderedModels.size(); int cap_i;
+      asynchEvalFlag = false; evaluationCapacity = 1;
+      for (i=0; i<num_models; ++i) {
+	Model& model_i = orderedModels[i];
+	model_i.set_communicators(pl_iter, max_eval_concurrency);
+	if (model_i.asynch_flag()) asynchEvalFlag = true;
+	cap_i = model_i.evaluation_capacity();
+	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
       }
       break;
     }
