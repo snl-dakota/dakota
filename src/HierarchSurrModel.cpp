@@ -211,8 +211,6 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       model_0.set_communicators(pl_iter, max_eval_concurrency);
       asynchEvalFlag     = model_0.asynch_flag();
       evaluationCapacity = model_0.evaluation_capacity();
-      // Loop over all higher fidelity models:
-      size_t i, num_models = orderedModels.size(); int cap_i;
 
       // TO DO: this will not be true for multigrid optimization:
       bool use_deriv_conc = true; // only verifications/corrections
@@ -220,6 +218,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       // specialization and just generalize init/set/free to use the max
       // of the two values...
 
+      // Loop over all higher fidelity models:
+      size_t i, num_models = orderedModels.size(); int cap_i;
       for (i=1; i<num_models; ++i) {
 	Model& model_i = orderedModels[i];
 	if (use_deriv_conc) {
