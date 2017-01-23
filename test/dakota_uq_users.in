@@ -18,7 +18,7 @@ method
     samples = 10			      #s0,#s2,#s3
 #    samples = 5			      #s1
 #    samples = 1000			    #s4
-    seed = 98765
+    seed = 98765 
     response_levels = 0.1 0.2 0.6
                       0.1 0.2 0.6
                       0.1 0.2 0.6
