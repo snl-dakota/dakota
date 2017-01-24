@@ -6,7 +6,7 @@ method,
 	  initial_samples = 20
 	  seed = 1234
 	  # rng mt19937
-	  rng rnum2 
+	   
           response_levels =  10.0
           samples_on_emulator = 400
           max_iterations = 50

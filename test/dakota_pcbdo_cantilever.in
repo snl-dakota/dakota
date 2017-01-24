@@ -72,7 +72,6 @@ method,
 	  response_levels = 0.0 0.0
 	    num_response_levels = 0 1 1
 	    compute reliabilities
-    rng rnum2                         #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13
 	  distribution complementary
 	  model_pointer = 'UQ_M'
 

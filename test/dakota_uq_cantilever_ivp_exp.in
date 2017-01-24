@@ -12,7 +12,7 @@ environment,
 method,									 
   id_method = 'EPISTEMIC'
 	global_interval_est		#s0,#s1,#s2,#s3
-	  seed = 1234567 rng rnum2		#s0,#s1,#s2,#s3
+	  seed = 1234567 		#s0,#s1,#s2,#s3
 #	local_interval_est			#s4,#s5,#s6,#s7
     model_pointer = 'EPIST_M'
   output verbose

@@ -76,7 +76,7 @@ method,
 	model_pointer = 'UQ_M'
         sampling
 	  samples = 50 sample_type lhs
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 	  response_levels = 4.2e+11 1.6e+05 7.5e+05
 	  complementary distribution
 #	  fixed_seed					#s1
