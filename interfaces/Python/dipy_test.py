@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import unittest
-import StringIO
+try: # Python 2/3 compatible import of StringIO
+    import StringIO
+except ImportError:
+    import io as StringIO
 import dipy
 
 apreproParams = """                    { DAKOTA_VARS     =                      3 }
@@ -123,7 +126,7 @@ class dipyTestCase(unittest.TestCase):
     def test_ignore_asv(self):
         """Confirm that ASV is ignored."""
         # Test exceptions
-        for i in xrange(1,8):
+        for i in range(1,8):
             sio = StringIO.StringIO(dakotaParams % i)
             p, r = dipy._read_parameters_stream(stream=sio,ignore_asv=True)
             set_function(r) 
@@ -151,6 +154,12 @@ class dipyTestCase(unittest.TestCase):
 [[  1.0000000000000000E+00  2.0000000000000000E+00
     2.0000000000000000E+00  3.0000000000000000E+00 ]]
 """
+        self.assertEqual(rio.getvalue(), expected)
+        # Test simulation failure flag
+        r.fail()
+        rio = StringIO.StringIO()
+        r.write(stream=rio)
+        expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
 
 # todo: test iteration, integer access

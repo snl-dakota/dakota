@@ -77,7 +77,7 @@ class Parameters(object):
 
     @property
     def descriptors(self):
-        return self._variables.keys()
+        return [k for k in self._variables.keys()]
 
     def __getitem__(self,key):
         if type(key) is int:
@@ -100,7 +100,7 @@ class Parameters(object):
         return len(self.an_comps)
 
     def __iter__(self):
-        for index, (name, response) in enumerate(self._variables.iteritems()):
+        for index, (name, response) in enumerate(self._variables.items()):
             yield index, name, response
 
 
@@ -241,11 +241,12 @@ class Results(object):
         self._deriv_vars = deriv_vars[:]
         num_deriv_vars = len(deriv_vars)
         self._responses = collections.OrderedDict()
-        for t, v in responses.iteritems():
+        for t, v in responses.items():
             self._responses[t] = Response(t, num_deriv_vars, ignore_asv, 
                     int(v)) 
         self.results_file = results_file
         self.eval_id = eval_id
+        self._failed = False
 
     def __getitem__(self,key):
         if type(key) is int:
@@ -262,19 +263,23 @@ class Results(object):
         return len(self._responses)
 
     def _write_results(self,stream, ignore_asv):
+        # Write FAIL if set
+        if self._failed:
+            print("FAIL", file=stream)
+            return
         # Write function values
-        for t, v in self._responses.iteritems():
+        for t, v in self._responses.items():
             if (v.asv.function or ignore_asv) and v.function is not None:
                 print("%24.16E %s" %(v.function, t), file=stream)
         # Write gradients
-        for t, v in self._responses.iteritems():
+        for t, v in self._responses.items():
             if (v.asv.gradient or ignore_asv) and v.gradient is not None:
                 print("[ ",file=stream, end="")
                 for e in v.gradient:
                     print("% 24.16E" % e,file=stream,end="")
                 print(" ]",file=stream)
         # Write Hessians
-        for t, v in self._responses.iteritems():
+        for t, v in self._responses.items():
             if (v.asv.hessian or ignore_asv) and v.hessian is not None:
                 print("[[",file=stream,end="")
                 first = True
@@ -307,8 +312,8 @@ class Results(object):
             my_ignore_asv= ignore_asv
 
         ## Confirm that user has provided all info requested by Dakota
-        if not my_ignore_asv:
-            for t, v in self._responses.iteritems():
+        if not my_ignore_asv and not self._failed:
+            for t, v in self._responses.items():
                 if v.asv.function and v.function is None:
                     raise ResponseError("Response '" + t + "' is missing "
                             "requested function result.") 
@@ -331,17 +336,18 @@ class Results(object):
 
     @property
     def descriptors(self):
-        return self._responses.keys()
+        return [k for k in self._responses.keys()]
 
     @property
     def deriv_vars(self):
         return list(self._deriv_vars)
 
     def __iter__(self):
-        for index, (name, response) in enumerate(self._responses.iteritems()):
+        for index, (name, response) in enumerate(self._responses.items()):
             yield index, name, response
 
-
+    def fail(self):
+        self._failed = True
 
 ### Free functions and their helpers for constructing objects
 
@@ -406,7 +412,7 @@ def _extract_block(stream, numRE, dataRE, handle):
 
     line = stream.readline()
     num = int(numRE.match(line).group("value"))
-    for i in xrange(num):
+    for i in range(num):
         line = stream.readline()
         m = dataRE.match(line)
         tag = m.group("tag")
