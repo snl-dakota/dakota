@@ -3693,8 +3693,24 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
       RealRealPairRealMap& Pi = P[i];  // map from an interval to a probability
-      ub = -(lb = dbl_inf);
-      if (!num_p) default_p = 1./nIi; // default = equal probability per cell
+      lb = dbl_inf;
+      ub = -dbl_inf;
+      if (!num_p) 
+        default_p = 1./nIi; // default = equal probability per cell
+      else {
+        double total_prob=0.0; 
+        size_t s = k;
+        for(j=0; j<nIi; ++j, ++s) {  // normalize the probabilities to sum to one
+          total_prob+=(*Ip)[s];
+        }         
+        if (fabs(total_prob-1.0) > 1.E-10) {
+          s = k;
+          {for(j=0; j<nIi; ++j,++s)  // normalize the probabilities to sum to one
+            (*Ip)[s]/=total_prob;
+          }       
+          Warn("Renormalized probability assignments to sum to one for variable %d",i);
+        } 
+      }
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];
 	ubj = (*Iub)[k];
@@ -3704,6 +3720,8 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	  Squawk("Continuous interval [%g, %g] specified more than once for variable %d", interval.first, interval.second, i);
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
+        if (lbj > ubj)
+	  Squawk("Upper bound less than lower bound: [%g, %g] for interval variable %d", lbj, ubj,i);
       }
       if (lb > ub)
 	Squawk("Inconsistent interval uncertain bounds: %g > %g", lb, ub);
