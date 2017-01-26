@@ -151,6 +151,8 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   trustRegionData.trust_region_factor(origTrustRegionFactor[0]);
   // reset softConvCount to 0
   trustRegionData.reset_soft_convergence_count();
+  // reset convergence-related status bits
+  trustRegionData.reset_status_bits(CONVERGED);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
   Iterator& dace_iterator = iteratedModel.subordinate_iterator();

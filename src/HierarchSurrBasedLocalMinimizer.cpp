@@ -130,6 +130,7 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
     tr_data.trust_region_factor(origTrustRegionFactor[i]); // sets NEW_TR_FACTOR
 
     tr_data.reset_soft_convergence_count();
+    tr_data.reset_status_bits(CONVERGED);
 
     tr_data.active_set_star(1, APPROX_RESPONSE);
     tr_data.active_set_star(1,  TRUTH_RESPONSE);
