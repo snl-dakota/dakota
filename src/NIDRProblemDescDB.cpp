@@ -6711,6 +6711,7 @@ static RealVector
 	MP_(hyperPriorAlphas),
 	MP_(hyperPriorBetas),
 	MP_(listOfPoints),
+	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
         MP_(stepVector),
@@ -6761,6 +6762,7 @@ static String
 	MP_(importBuildPtsFile),
 	MP_(importCandPtsFile),
 	MP_(importExpansionFile),
+	MP_(importPredConfigs),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
 	MP_(modelPointer),
@@ -6783,6 +6785,7 @@ static bool
 	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
+	MP_(calModelDiscrepancy),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),
@@ -6869,7 +6872,8 @@ static size_t
         MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
-	MP_(numParents);
+	MP_(numParents),
+  	MP_(numPredConfigs);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -6974,6 +6978,11 @@ static Method_mp_utype
         MP2s(importCandFormat,TABULAR_EVAL_ID),
         MP2s(importCandFormat,TABULAR_IFACE_ID),
         MP2s(importCandFormat,TABULAR_ANNOTATED),
+        MP2s(importPredConfigFormat,TABULAR_NONE),
+        MP2s(importPredConfigFormat,TABULAR_HEADER),
+        MP2s(importPredConfigFormat,TABULAR_EVAL_ID),
+        MP2s(importPredConfigFormat,TABULAR_IFACE_ID),
+        MP2s(importPredConfigFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),

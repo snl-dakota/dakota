@@ -1421,6 +1421,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nond.dimension_preference", P anisoDimPref},
 	{"nond.hyperprior_alphas", P hyperPriorAlphas},
 	{"nond.hyperprior_betas", P hyperPriorBetas},
+	{"nond.prediction_configs", P predictionConfigList},
 	{"nond.proposal_covariance_data", P proposalCovData},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
@@ -2293,6 +2294,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"import_approx_points_file", P importApproxPtsFile},
 	{"import_build_points_file", P importBuildPtsFile},
 	{"import_candidate_points_file", P importCandPtsFile},
+	{"import_prediction_configs", P importPredConfigs},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2867,7 +2869,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_parents", P numParents},
 	{"max_hifi_evaluations", P maxHifiEvals},
 	{"num_candidate_designs", P numCandidateDesigns},
-	{"num_candidates", P numCandidates}
+	{"num_candidates", P numCandidates},
+	{"num_prediction_configs", P numPredConfigs}
     };
     #undef P
 
@@ -3041,6 +3044,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.export_sample_sequence", P exportSampleSeqFlag},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},
 	{"nond.logit_transform", P logitTransform},
+	{"nond.model_discrepancy", P calModelDiscrepancy},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

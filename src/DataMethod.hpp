@@ -977,6 +977,18 @@ public:
   int burnInSamples;
   /// period or skip in post-processing the acceptance chain
   int subSamplingPeriod;
+  /// flag to calculate model discrepancy
+  bool calModelDiscrepancy;
+  /// number of prediction configurations at which to calculate model 
+  /// discrepancy
+  size_t numPredConfigs;
+  /// list of prediction configurations at which to calculate model discrepancy
+  RealVector predictionConfigList;
+  /// whether to import prediction configurations at which to calculate model
+  /// discrepancy
+  String importPredConfigs;
+  /// tabular format for prediction configurations import file
+  unsigned short importPredConfigFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
   /// whether to import candidate design points for adaptive Bayesian experimtal

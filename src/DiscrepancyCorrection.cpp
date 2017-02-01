@@ -367,16 +367,11 @@ compute(const VariablesArray& vars_array, const ResponseArray&
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  // update previous center data arrays for combined corrections
-  // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
-  // require additional fn evaluation of previous pt on current surrogate.
-  // This could combine with DB lookups within apply_multiplicative()
-  // (approx re-evaluated if not found in DB search).
-  
   int index; ISIter it;
   
   for (int i=0; i < vars_array.size(); i++){
-    compute(vars_array[i], truth_response_array[i], approx_response_array[i], quiet_flag);
+    compute(vars_array[i], truth_response_array[i], approx_response_array[i], 
+	    quiet_flag);
   }
 
   // KAM: should this be moved somewhere else?
@@ -384,6 +379,9 @@ compute(const VariablesArray& vars_array, const ResponseArray&
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
       addCorrections[index].build();
+      const String GPstring = "modDiscrep";
+      const String GPPrefix = "950";
+      addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
     }
   }
   
@@ -553,6 +551,11 @@ apply(const Variables& vars, Response& approx_response, bool quiet_flag)
 
   if (!quiet_flag)
     Cout << "\nCorrection applied: corrected response =\n" << approx_response;
+  // KAM
+  Cout << "Prediction variances =\n";
+  for (int i = 0; i < 28; i++) { 
+       Cout << addCorrections[i].prediction_variance(vars) << '\n';
+  }
 }
 
 
@@ -565,10 +568,8 @@ apply_additive(const Variables& vars, Response& approx_response)
     index = *it;
     Approximation& add_corr = addCorrections[index];
     if (asv[index] & 1)
-    {
       approx_response.function_value(approx_response.function_value(index) +
 				     add_corr.value(vars), index);
-    }
     if (correctionOrder >= 1 && asv[index] & 2) {
       // update view (no reassignment):
       RealVector approx_grad = approx_response.function_gradient_view(index);

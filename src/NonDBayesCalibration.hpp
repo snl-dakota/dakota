@@ -213,12 +213,8 @@ protected:
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
   bool adaptExpDesign;
-  /*
   /// flag whether to calculate model discrepancy
   bool calModelDiscrepancy;
-  /// Discrepancy Function Approximation
-  Approximation modelDiscApprox;
-  */
 
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;

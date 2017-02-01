@@ -1891,6 +1891,25 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ kl_divergence {N_mdm(true,posteriorStatsKL)} ]
         [ mutual_info {N_mdm(true,posteriorStatsMutual)} ]
        ]
+      [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
+        [ num_prediction_configs INTEGER >= 0 {N_mdm(sizet,numPredConfigs)} ]
+        [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]
+        [ import_prediction_configs STRING {N_mdm(str,importPredConfigs)}
+          [ 
+            annotated {N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
+           ]
+         ]
+       ]
       [ sub_sampling_period INTEGER {N_mdm(int,subSamplingPeriod)} ]
       [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
         [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]

@@ -67,6 +67,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
+  calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -478,7 +479,7 @@ void NonDBayesCalibration::core_run()
   nonDBayesInstance = this;
 
   //bool calModelDiscrepancy = true;
-  bool calModelDiscrepancy = false;
+  //bool calModelDiscrepancy = false;
   if (adaptExpDesign)
     // use meta-iteration in this class
     calibrate_to_hifi();
@@ -917,119 +918,17 @@ void NonDBayesCalibration::build_model_discrepancy()
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
   mcmcModel.continuous_variables(ave_params);
+  mcmcModel.continuous_variables(1.1005508712058502e+01);
 
+  //KAM 
   int num_exp = expData.num_experiments();
-//  RealVector expSimDiffs(num_exp);
-//  RealMatrix sim_matrix(numFunctions, num_exp);
-//
-//  const std::vector<RealVector>& config_set = expData.config_vars();
   size_t num_configvars = expData.config_vars()[0].length();
   RealMatrix allConfigInputs(num_configvars,num_exp);
   for (int i = 0; i < num_exp; i++) {
-    //RealVector config_vec = config_set[i];
     RealVector config_vec = expData.config_vars()[i];
     Teuchos::setCol(config_vec, i, allConfigInputs);
   } 
 
-  /*
-  for (int i=0; i<num_exp; i++) {
-    /// need to ask Brian about how to manage config vars within 
-    /// continuous variables and also how to run the model 
-      /// RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, int(i));
-      /// Model::inactive_variables(xi_i, mcmcModel);
-    /// concurrently with different configurations 
-    // allConfigInputs[i,:] = expData.get_config_vars[i];
-    // mcmcModel.continuous_variables(map_c_vars|allConfigInputs[i]);
-    // mcmcModel.evaluate();
-    // Response sim_response = mcmcModel.current_response();
-    // // for (int j=0; j<numFunc; j++) {
-       // expSimDiffs(i)=expData.all_data(i)-sim_response();
-    // KAM
-    RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, 
-		 	    i);
-    Model::inactive_variables(config_vec, mcmcModel);
-    mcmcModel.evaluate();
-    RealVector sim_response = mcmcModel.current_response().function_values();
-    RealVector exp_response = expData.all_data(i);
-    expSimDiffs[i] = exp_response[0] - sim_response[0]; 
-    Teuchos::setCol(sim_response, i, sim_matrix);
-    //Cout << "exp_response = " << expData.all_data(i) << '\n';
-  }
-   
-  Cout << "config mat = " <<allConfigInputs << '\n';
-  Cout << "sim matrix = " << sim_matrix << '\n';
-  Cout << "expsimdiff = " << expSimDiffs << '\n';
-  
-  // GP Construction
-  String approx_type;
-  approx_type = "global_kriging";  // Surfpack GP
-  UShortArray approx_order;
-  short data_order = 1;  // assume only function values
-  short output_level = NORMAL_OUTPUT;
-  SharedApproxData sharedData;
-  sharedData = SharedApproxData(approx_type, approx_order, num_configvars,
-                               data_order, output_level);
-  Approximation modelDiscApprox;
-  modelDiscApprox = Approximation(sharedData);
-  modelDiscApprox.add(allConfigInputs,expSimDiffs); //RealMat RealVec
-  modelDiscApprox.build();
-  // check "export_model" keyword
-  const String GPlabel = "modDiscrep";
-  modelDiscApprox.export_model(GPlabel, GPlabel, ALGEBRAIC_FILE);
-
-
-  // How do we define *how many* and *where* predictions will be made? 
-  // User-specified? Evenly spaced over config var space (then how many)?
-  // Hardcode for now
-  int num_pred = 21;
-  RealMatrix new_configs(num_configvars, num_pred);
-  for (int i = 0; i < num_pred; i++) {
-    RealVector config(1);
-    config = 0.2 + 0.5/20*i;
-    Teuchos::setCol(config, i, new_configs);
-  }
-  Cout << "\npred matrix = " << new_configs << '\n';
-  Real gp_var;
-  RealVector pred_interval(2);
-  RealMatrix gp_predinterval(2, num_pred);
-  RealVector var_vec(num_pred);
-  
-  // GP Predictions
-  Real gp_val;
-  RealVector gp_pred(numFunctions); 
-  RealMatrix pred_matrix(numFunctions, num_pred); 
-  for (int i = 0; i < num_pred; i++) {
-    RealVector config_vec = Teuchos::getCol(Teuchos::View, new_configs, i);
-    gp_val = modelDiscApprox.value(config_vec);
-    gp_var = modelDiscApprox.prediction_variance(config_vec);
-    // currently only one response fcn => dim matches gp_val
-    // will need careful consideration for field responses
-    Model::inactive_variables(config_vec, mcmcModel);
-    mcmcModel.evaluate();
-    RealVector sim_response = mcmcModel.current_response().function_values();
-    // still need to save responses?
-    //RealVector sim_response = Teuchos::getCol(Teuchos::View, sim_matrix, i);
-    for (int j = 0; j < numFunctions; j++) {
-      gp_pred[j] = sim_response[j] + gp_val;
-    }
-    Teuchos::setCol(gp_pred, i, pred_matrix);
-
-    // More hardcode
-    var_vec[i] = gp_var;
-    pred_interval[0] = gp_pred[0] + 2*std::sqrt(gp_var);
-    pred_interval[1] = gp_pred[0] - 2*std::sqrt(gp_var);
-    Teuchos::setCol(pred_interval, i, gp_predinterval);
-  }
-  if (outputLevel == DEBUG_OUTPUT) {
-    Cout << "\nPrediction including model discrepancy term = " << 
-      pred_matrix << '\n';
-    Cout << "Prediction variance = " << var_vec << '\n';
-    //Cout << "GP prediction intervals = " << gp_predinterval << '\n';
-  }
-  */
-
-
-  //KAM - take 2
   // Initialize DiscrepancyCorrection class
   IntSet fn_indices;
   // Hardcode for now, call id_surrogates eventually? See SurrogateModel.cpp 
@@ -1038,8 +937,10 @@ void NonDBayesCalibration::build_model_discrepancy()
   DiscrepancyCorrection modelDisc;
   short corr_type = ADDITIVE_CORRECTION; 
   short corr_order = 0; 
+  String approx_type = "global_kriging"; 
+  //String approx_type = "global_polynomial"; 
   modelDisc.initialize(fn_indices, numFunctions, num_configvars, corr_type, 
-       		       corr_order, "global_kriging");
+       		       corr_order, approx_type);
 
   // Construct config var information
   Variables vars_copy = mcmcModel.current_variables().copy();
@@ -1051,7 +952,8 @@ void NonDBayesCalibration::build_model_discrepancy()
   Variables configvars(svd);
   VariablesArray configvar_array(num_exp);
   for (int i=0; i<num_exp; i++) {
-    const RealVector& config_i = Teuchos::getCol(Teuchos::View, allConfigInputs, i);
+    const RealVector& config_i = Teuchos::getCol(Teuchos::View, 
+				 allConfigInputs, i);
     Model::inactive_variables(config_i, mcmcModel, vars_copy);
     configvars.continuous_variables(vars_copy.inactive_continuous_variables());
     configvars.discrete_int_variables(vars_copy.
@@ -1061,7 +963,8 @@ void NonDBayesCalibration::build_model_discrepancy()
     configvar_array[i] = configvars.copy();
   }
 
-  //Response 
+  // KAM - undo later
+  // Construct response information from expData and model 
   ResponseArray simresponse_array(num_exp);
   ResponseArray expresponse_array(num_exp);
   for (int i = 0; i<num_exp; i++){
@@ -1075,16 +978,69 @@ void NonDBayesCalibration::build_model_discrepancy()
   Cout << "sim response array = " << simresponse_array << '\n';
   Cout << "exp response array = " << expresponse_array << '\n';
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  modelDisc.compute(configvar_array, expresponse_array, simresponse_array, quiet_flag);
+  modelDisc.compute(configvar_array, expresponse_array, simresponse_array, 
+      		    quiet_flag);
+  
+  // KAM Hardcode for multiple samples of param post
+  /*
+  int num_post = 950;
+  ResponseArray simresponse_testarray(num_post*num_exp);
+  ResponseArray expresponse_testarray(num_post*num_exp);
+  RealMatrix postsamples(acceptanceChain.numRows(), num_post);
+  int ind_ctr = 0;
+  for (int j = 0; j < num_post; j++){
+    int ind = std::rand() % acceptanceChain.numCols();
+    RealVector param_samp = Teuchos::getCol(Teuchos::View, acceptanceChain, 
+						ind);
+    Teuchos::setCol(param_samp, j, postsamples);
+    mcmcModel.continuous_variables(param_samp);
+    for (int i = 0; i<num_exp; i++){
+      RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, 
+  		 	    i);
+      Model::inactive_variables(config_vec, mcmcModel);
+      mcmcModel.evaluate();
+      simresponse_testarray[ind_ctr] = mcmcModel.current_response().copy();
+      expresponse_testarray[ind_ctr] = expData.response(i);
+      ind_ctr++;
+    }
+  }
+  VariablesArray configvar_testarray(num_post*num_exp);
+  ind_ctr = 0;
+  for (int j = 0; j < num_post; j++) {
+    for (int i=0; i<num_exp; i++) {
+      const RealVector& config_i = Teuchos::getCol(Teuchos::View, 
+  				 allConfigInputs, i);
+      Model::inactive_variables(config_i, mcmcModel, vars_copy);
+      configvars.continuous_variables(vars_copy.inactive_continuous_variables());
+      configvars.discrete_int_variables(vars_copy.
+  				      inactive_discrete_int_variables());
+      configvars.discrete_real_variables(vars_copy.
+  				       inactive_discrete_real_variables());
+      configvar_testarray[ind_ctr] = configvars.copy();
+      Cout << "ind = " << ind_ctr << '\n';
+      ind_ctr++;
+    }
+  }
+  Cout << "sim response array = " << simresponse_testarray << '\n';
+  Cout << "exp response array = " << expresponse_testarray << '\n';
+  Cout << "config var array = " << configvar_testarray << '\n';
+  Cout << "post sample = " << postsamples << '\n';
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  modelDisc.compute(configvar_testarray, expresponse_testarray, 
+      		simresponse_testarray, quiet_flag);
+  */
+    
   // How do we define *how many* and *where* predictions will be made? 
   // User-specified? Evenly spaced over config var space (then how many)?
   // Hardcode for now
-  int num_pred = 21;
+  int num_pred = 31;
   VariablesArray configpred_array(num_pred);
   RealMatrix configpred_mat(num_configvars, num_pred);
   RealVector config(1);
+  Cout << "\n Final Chain " << acceptanceChain << '\n';
   for (int i = 0; i < num_pred; i++) {
-    config = 0.2 + 0.5/20*i;
+    //config = 0.2 + 0.5/20*i;
+    config = 5 + 0.5*i;
     configvars.continuous_variables(config);
     configpred_array[i] = configvars.copy();
     Teuchos::setCol(config, i, configpred_mat);
@@ -1094,15 +1050,12 @@ void NonDBayesCalibration::build_model_discrepancy()
   //int i = 0;
     RealVector config_vec = Teuchos::getCol(Teuchos::View, configpred_mat, i);
     Model::inactive_variables(config_vec, mcmcModel);
+    mcmcModel.continuous_variables(ave_params); //KAM -delete later
     mcmcModel.evaluate();
     Variables configpred = configpred_array[i];
     Response simresponse_pred = mcmcModel.current_response();
     modelDisc.apply(configpred, simresponse_pred, quiet_flag);
   }
-
-
-
-
 }
 
 void NonDBayesCalibration::
@@ -1544,6 +1497,8 @@ void NonDBayesCalibration::compute_intervals()
   if (expData.variance_active())
     write_data(interval_stream, predVals);
 #endif
+  interval_stream << "acceptedVals = " << acceptedFnVals << '\n';
+  interval_stream << "predVals = " << predVals << '\n';
 }
 
 void NonDBayesCalibration::compute_prediction_vals
