@@ -68,6 +68,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
+  numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
+  predictionConfigList(probDescDB.get_rv("method.nond.prediction_configs")),
+  importPredConfigs(probDescDB.get_string("method.import_prediction_configs")),
+  importPredConfigFormat(
+    probDescDB.get_ushort("method.import_prediction_configs_format")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -478,8 +483,6 @@ void NonDBayesCalibration::core_run()
 {
   nonDBayesInstance = this;
 
-  //bool calModelDiscrepancy = true;
-  //bool calModelDiscrepancy = false;
   if (adaptExpDesign)
     // use meta-iteration in this class
     calibrate_to_hifi();
@@ -920,7 +923,6 @@ void NonDBayesCalibration::build_model_discrepancy()
   mcmcModel.continuous_variables(ave_params);
   mcmcModel.continuous_variables(1.1005508712058502e+01);
 
-  //KAM 
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.config_vars()[0].length();
   RealMatrix allConfigInputs(num_configvars,num_exp);
@@ -963,7 +965,7 @@ void NonDBayesCalibration::build_model_discrepancy()
     configvar_array[i] = configvars.copy();
   }
 
-  // KAM - undo later
+  // KAM - undo later(?)
   // Construct response information from expData and model 
   ResponseArray simresponse_array(num_exp);
   ResponseArray expresponse_array(num_exp);
@@ -1030,14 +1032,40 @@ void NonDBayesCalibration::build_model_discrepancy()
       		simresponse_testarray, quiet_flag);
   */
     
-  // How do we define *how many* and *where* predictions will be made? 
-  // User-specified? Evenly spaced over config var space (then how many)?
+  if (!predictionConfigList.empty()) {
+    Cout << "pred list = " << predictionConfigList << '\n';
+  }
+  /*
+  else {
+    Cout << "pred list empty\n";
+  }
+  */
+  else if (!importPredConfigs.empty()) {
+    Cout << "numconfigs = " << num_configvars << '\n';
+    RealMatrix configpred_mat1;
+    TabularIO::read_data_tabular(importPredConfigs,
+				 "user-provided prediction configurations",
+				 configpred_mat1, num_configvars, 
+				 importPredConfigFormat, false);
+    Cout << "pred matrix from file = " << configpred_mat1 << '\n';
+  }
+  /*
+  else {
+    Cout << "pred file empty\n";
+  }
+  */
+  else {
+    int num_pred1 = ( numPredConfigs > 0) ? numPredConfigs : 10;
+    Cout << "number of predictions = " << num_pred1 << '\n';
+
+  }
+  
+  
   // Hardcode for now
   int num_pred = 31;
   VariablesArray configpred_array(num_pred);
   RealMatrix configpred_mat(num_configvars, num_pred);
   RealVector config(1);
-  Cout << "\n Final Chain " << acceptanceChain << '\n';
   for (int i = 0; i < num_pred; i++) {
     //config = 0.2 + 0.5/20*i;
     config = 5 + 0.5*i;

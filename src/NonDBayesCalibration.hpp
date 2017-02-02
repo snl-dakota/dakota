@@ -165,10 +165,6 @@ protected:
   //
   
   String scalarDataFilename;
-  String importCandPtsFile;
-  unsigned short importCandFormat;
-  size_t maxHifiEvals;
-  size_t numCandidates;
 
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
@@ -213,8 +209,31 @@ protected:
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
   bool adaptExpDesign;
+  /// number of candidate designs for adaptive Bayesian experimental design
+  size_t numCandidates;
+  /// whether to import candidate design points for adaptive Bayesian 
+  /// experimental design
+  String importCandPtsFile;
+  /// tabular format for the candidate design points import file
+  unsigned short importCandFormat;
+  /// maximum number of high-fidelity model runs to be used for adaptive
+  /// Bayesian experimental design
+  size_t maxHifiEvals;
+
+  // settings specific to model discrepancy
+
   /// flag whether to calculate model discrepancy
   bool calModelDiscrepancy;
+  /// number of prediction configurations at which to calculate model 
+  /// discrepancy
+  size_t numPredConfigs;
+  /// list of prediction configurations at which to calculate model discrepancy
+  RealVector predictionConfigList;
+  /// whether to import prediction configurations at which to calculate model
+  /// discrepancy
+  String importPredConfigs;
+  /// tabular format for prediction configurations import file
+  unsigned short importPredConfigFormat;
 
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;

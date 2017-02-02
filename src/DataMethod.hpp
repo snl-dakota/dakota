@@ -998,8 +998,8 @@ public:
   unsigned short importCandFormat;
   /// number of candidate designs for adaptive Bayesian experimental design
   size_t numCandidates;
-  /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
-  //experimental design
+  /// maximum number of highfidelity model runs to be used for adaptive Bayesian 
+  /// experimental design
   size_t maxHifiEvals;
 
   // DREAM sub-specification

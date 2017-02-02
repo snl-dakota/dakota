@@ -2774,6 +2774,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_approx_format", P importApproxFormat},
 	{"import_build_format", P importBuildFormat},
 	{"import_candidate_format", P importCandFormat},
+	{"import_prediction_configs_format", P importPredConfigFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
