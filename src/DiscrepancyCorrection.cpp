@@ -380,7 +380,7 @@ compute(const VariablesArray& vars_array, const ResponseArray&
       index = *it;
       addCorrections[index].build();
       const String GPstring = "modDiscrep";
-      const String GPPrefix = "950";
+      const String GPPrefix = "GP";
       addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
     }
   }
@@ -551,11 +551,6 @@ apply(const Variables& vars, Response& approx_response, bool quiet_flag)
 
   if (!quiet_flag)
     Cout << "\nCorrection applied: corrected response =\n" << approx_response;
-  // KAM
-  Cout << "Prediction variances =\n";
-  for (int i = 0; i < 28; i++) { 
-       Cout << addCorrections[i].prediction_variance(vars) << '\n';
-  }
 }
 
 
@@ -704,6 +699,24 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   }
 }
 
+void DiscrepancyCorrection::
+compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
+    		 bool quiet_flag)
+{
+  int index; ISIter it;
+  RealVector pred_var(vars_array.size());
+  Cout << "Vars array size = " << vars_array.size();
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    index = *it;
+    for (int i=0; i < vars_array.size(); i++) {
+      pred_var[i] = addCorrections[index].prediction_variance(vars_array[i]);
+    }
+    Teuchos::setCol(pred_var, index, approx_variance);
+  }
+
+  if (!quiet_flag)
+    Cout << "\nCorrection variances computed:\n" << approx_variance;
+}
 
 const Response& DiscrepancyCorrection::
 search_db(const Variables& search_vars, const ShortArray& search_asv)

@@ -73,6 +73,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   importPredConfigs(probDescDB.get_string("method.import_prediction_configs")),
   importPredConfigFormat(
     probDescDB.get_ushort("method.import_prediction_configs_format")),
+  configLowerBnds(probDescDB.get_rv("variables.continuous_state.lower_bounds")),
+  configUpperBnds(probDescDB.get_rv("variables.continuous_state.upper_bounds")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -1031,51 +1033,53 @@ void NonDBayesCalibration::build_model_discrepancy()
   modelDisc.compute(configvar_testarray, expresponse_testarray, 
       		simresponse_testarray, quiet_flag);
   */
-    
-  if (!predictionConfigList.empty()) {
-    Cout << "pred list = " << predictionConfigList << '\n';
-  }
-  /*
-  else {
-    Cout << "pred list empty\n";
-  }
-  */
-  else if (!importPredConfigs.empty()) {
-    Cout << "numconfigs = " << num_configvars << '\n';
-    RealMatrix configpred_mat1;
+  
+  // Construct config var information for prediction configs   
+  int num_pred;
+  RealMatrix configpred_mat; 
+  RealVector config(1); //currently assume only one config var
+  VariablesArray configpred_array;
+  if (!importPredConfigs.empty()) {
     TabularIO::read_data_tabular(importPredConfigs,
 				 "user-provided prediction configurations",
-				 configpred_mat1, num_configvars, 
+				 configpred_mat, num_configvars, 
 				 importPredConfigFormat, false);
-    Cout << "pred matrix from file = " << configpred_mat1 << '\n';
-  }
-  /*
-  else {
-    Cout << "pred file empty\n";
-  }
-  */
-  else {
-    int num_pred1 = ( numPredConfigs > 0) ? numPredConfigs : 10;
-    Cout << "number of predictions = " << num_pred1 << '\n';
+    num_pred = configpred_mat.numCols();
+    configpred_array.resize(num_pred);
+    for (int i = 0; i < num_pred; i++) {
+      config = Teuchos::getCol(Teuchos::View, configpred_mat, i);
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+    } 
 
   }
-  
-  
-  // Hardcode for now
-  int num_pred = 31;
-  VariablesArray configpred_array(num_pred);
-  RealMatrix configpred_mat(num_configvars, num_pred);
-  RealVector config(1);
-  for (int i = 0; i < num_pred; i++) {
-    //config = 0.2 + 0.5/20*i;
-    config = 5 + 0.5*i;
-    configvars.continuous_variables(config);
-    configpred_array[i] = configvars.copy();
-    Teuchos::setCol(config, i, configpred_mat);
+  else if (!predictionConfigList.empty()) {
+    num_pred = predictionConfigList.length(); 
+    configpred_array.resize(num_pred);
+    configpred_mat.shapeUninitialized(num_configvars, num_pred);
+    for (int i = 0; i < num_pred; i++) {
+      config = predictionConfigList[i];
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+      Teuchos::setCol(config, i, configpred_mat);
+    } 
+  }
+  else {
+    num_pred = ( numPredConfigs > 0) ? numPredConfigs : 10;
+    configpred_array.resize(num_pred);
+    configpred_mat.shapeUninitialized(num_configvars, num_pred);
+    double config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
+    for (int i = 0; i < num_pred; i++){
+      config = configLowerBnds[0] + config_step*i;
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+      Teuchos::setCol(config, i, configpred_mat);
+    }
   }
   Cout << "\npred matrix = " << configpred_mat << '\n';
+
+  // Compute corrected response = model + discrepancy approx
   for (int i = 0; i < num_pred; i++) {
-  //int i = 0;
     RealVector config_vec = Teuchos::getCol(Teuchos::View, configpred_mat, i);
     Model::inactive_variables(config_vec, mcmcModel);
     mcmcModel.continuous_variables(ave_params); //KAM -delete later
@@ -1083,6 +1087,35 @@ void NonDBayesCalibration::build_model_discrepancy()
     Variables configpred = configpred_array[i];
     Response simresponse_pred = mcmcModel.current_response();
     modelDisc.apply(configpred, simresponse_pred, quiet_flag);
+  } 
+  
+  // Compute correction variance 
+  RealMatrix discrep_var(num_pred, numFunctions);
+  modelDisc.compute_variance(configpred_array, discrep_var, quiet_flag);
+  if (expData.variance_active()) {
+    RealVectorArray exp_stddevs(num_exp*numFunctions);
+    expData.cov_std_deviation(exp_stddevs); // one vector per experiment
+    RealMatrix combined_var(num_pred, numFunctions); 
+    RealVector col_vec(num_pred);
+    for (int i = 0; i < numFunctions; i++) {
+      Real& max_var = exp_stddevs[0][i];
+      for (int j = 0; j < num_exp; j++) 
+       if (exp_stddevs[j][i] > max_var)
+	 max_var = exp_stddevs[j][i];
+      RealVector discrep_varvec = Teuchos::getCol(Teuchos::View, discrep_var,i);
+      for (int j = 0; j < num_pred; j++) {
+    	col_vec[j] = discrep_varvec[j] + pow(max_var, 2);
+      }
+      Teuchos::setCol(col_vec, i, combined_var);
+    }
+    // if outputdebug > ? or print to file?
+    Cout << "\nDiscrepancy variances computed\n" << combined_var;
+  }
+  else {
+    Cout << "\nWarning: No variance information was provided in " 
+         << scalarDataFilename << ".\n         Prediction variance computed "
+	 << "contains only variance information\n         from the " 
+	 << "discrepancy model.\n";
   }
 }
 

@@ -83,6 +83,10 @@ public:
   void apply(const Variables& vars, Response& approx_response,
 	     bool quiet_flag = false);
 
+  /// compute the variance of approx_response
+  void compute_variance(const VariablesArray& vars_array, RealMatrix& 
+      			approx_variance, bool quiet_flag = false); 
+
   /// return correctionType
   short correction_type() const;
   /// return correctionOrder

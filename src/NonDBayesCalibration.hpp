@@ -227,6 +227,8 @@ protected:
   /// number of prediction configurations at which to calculate model 
   /// discrepancy
   size_t numPredConfigs;
+  RealVector configLowerBnds;
+  RealVector configUpperBnds;
   /// list of prediction configurations at which to calculate model discrepancy
   RealVector predictionConfigList;
   /// whether to import prediction configurations at which to calculate model
