@@ -229,6 +229,7 @@ protected:
 inline void SurrBasedLocalMinimizer::reset()
 {
   sbIterNum         = 0;
+  reset_filter();
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;

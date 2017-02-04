@@ -777,7 +777,7 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
 	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
       update_augmented_lagrange_multipliers(fns_truth);
     if (acceptLogic == FILTER)
-      update_filter(fns_truth);
+      initialize_filter(fns_truth);
   }
 
   // hard convergence assessment requires gradients
