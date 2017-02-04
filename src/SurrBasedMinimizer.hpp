@@ -61,7 +61,11 @@ protected:
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);
 
-  /// update a filter from a set of function values
+  /// reset iterate filter to empty state
+  bool reset_filter();
+  /// initialize filter from a set of function values
+  bool initialize_filter(const RealVector& fn_vals);
+  /// update filter using a new set of function values
   bool update_filter(const RealVector& fn_vals);
 
   // compute a filter merit function from a set of function values
@@ -126,9 +130,9 @@ protected:
   /// surrogate-based minimization iteration number
   int sbIterNum;
 
-  /// Set of response function vectors defining a filter (objective vs.
-  /// constraint violation) for iterate selection/rejection
-  RealVectorList sbFilter;
+  /// Pareto set of (objective, constraint violation) pairs defining a
+  /// filter for iterate selection/rejection
+  RealRealPairSet sbFilter;
   /// Lagrange multipliers for basic Lagrangian calculations
   RealVector lagrangeMult;
   /// Lagrange multipliers for augmented Lagrangian calculations
