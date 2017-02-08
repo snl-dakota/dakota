@@ -54,6 +54,9 @@ public:
 			  size_t approx_level = _NPOS,
 			  size_t truth_level  = _NPOS);
 
+  /// perform several reset operations to restore initialized state
+  void reset();
+
   /// return full status (all bits)
   unsigned short status();
   /// return status of a single bit field
@@ -93,7 +96,7 @@ public:
   void response_center(const Response& resp, short corr_response_type);
 
   IntResponsePair& response_star_pair(short corr_response_type);
-  IntResponsePair& response_center_pair(short corr_response_type);
+ IntResponsePair& response_center_pair(short corr_response_type);
 
   void response_star_id(int eval_id, short corr_response_type);
   void response_center_id(int eval_id, short corr_response_type);
@@ -105,6 +108,13 @@ public:
 			  short corr_response_type);
   void response_center_pair(int eval_id, const Response& resp,
 			    short corr_response_type);
+
+  void reset_filter();
+  void initialize_filter(Real new_f, Real new_g);
+  void initialize_filter(Real new_f);
+  bool update_filter(Real new_f, Real new_g);
+  bool update_filter(Real new_f);
+  size_t filter_size() const;
 
   Real trust_region_factor();
   void trust_region_factor(Real val);
@@ -187,6 +197,10 @@ private:
   /// MAX_ITER_CONVERGED: indicates that he number of iterations at this level
   ///                     has reached the maximum allowable
   unsigned short trustRegionStatus; // or use BitArray
+
+  /// Pareto set of (objective, constraint violation) pairs defining a
+  /// (slanting) filter for iterate selection/rejection
+  RealRealPairSet paretoFilter;
 
   /// number of consecutive candidate point rejections.  If the
   /// count reaches softConvLimit, stop SBLM.
@@ -389,6 +403,22 @@ inline SizetSizet2DPair SurrBasedLevelData::indices()
 { return std::make_pair(approxModelIndices, truthModelIndices); }
 
 
+inline void SurrBasedLevelData::reset_filter()
+{ paretoFilter.clear(); }
+
+
+inline void SurrBasedLevelData::initialize_filter(Real new_f, Real new_g)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, new_g)); }
+
+
+inline void SurrBasedLevelData::initialize_filter(Real new_f)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, 0.)); }
+
+
+inline size_t SurrBasedLevelData::filter_size() const
+{ return paretoFilter.size(); }
+
+
 inline Real SurrBasedLevelData::trust_region_factor()
 { return trustRegionFactor; }
 
@@ -411,6 +441,14 @@ inline void SurrBasedLevelData::reset_soft_convergence_count()
 
 inline void SurrBasedLevelData::increment_soft_convergence_count()
 { ++softConvCount; }
+
+
+inline void SurrBasedLevelData::reset()
+{
+  reset_soft_convergence_count();
+  reset_status_bits(CONVERGED);
+  reset_filter();
+}
 
 
 inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const

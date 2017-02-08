@@ -21,8 +21,6 @@
 
 namespace Dakota {
 
-class SurrBasedLevelData;
-
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -229,7 +227,6 @@ protected:
 inline void SurrBasedLocalMinimizer::reset()
 {
   sbIterNum         = 0;
-  reset_filter();
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;

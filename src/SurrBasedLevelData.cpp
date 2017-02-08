@@ -249,4 +249,68 @@ response_center_pair(int eval_id, const Response& resp,
   responseCenterTruthCorrected.second.update(resp);
 }
 
+
+bool SurrBasedLevelData::update_filter(Real new_f, Real new_g)
+{
+  // test new point against current filter
+  RRPSIter filt_it = paretoFilter.begin();
+  Real filt_f, filt_g, gamma = 1.e-5, beta = 1. - gamma;
+
+  // we queue dominated pt removals to ensure that iterate rejection by
+  // slanting filter and filter pruning by std filter are exclusive
+  std::list<RRPSIter> rm_queue;
+
+  for (; filt_it != paretoFilter.end(); ++filt_it) {
+    filt_f = filt_it->first; filt_g = filt_it->second;
+
+    // Simple filter (no gamma, beta):
+    //if (new_f >= filt_f && new_g >= filt_g)
+    //  return false;              // new point dominated: reject iterate
+    //else if (new_f < filt_f && new_g < filt_g)
+    //  paretoFilter.erase(filt_it++); // old dominated by new: remove old
+    //else ++filt_it;
+
+    // Slanting filter: Fletcher, Leyffer, and Toint (SIAM J. Optim., 2002).
+    // The slanting logic is applied to new iterate acceptance, but the
+    // simple filter logic is used for the pruning of old points which are
+    // dominated by the new iterate.  This is due to the inclusion property
+    // of the slanting filter (the envelope for an accepted iterate includes
+    // the envelope for any filter point it dominates).
+    if (new_f + gamma*new_g > filt_f && new_g > beta*filt_g) // slanting logic
+      return false;                // new pt unacceptable: reject iterate
+    else if (new_f < filt_f && new_g < filt_g)                 // simple logic
+      rm_queue.push_back(filt_it); // old dominated by new: queue old for rm
+  }
+
+  // iterate is acceptable: process any removals and add new pt to filter
+  // invalidation rules: only iters/refs to erased elements are invalidated
+  for (std::list<RRPSIter>::iterator rm_it=rm_queue.begin();
+       rm_it!=rm_queue.end(); ++rm_it)
+    paretoFilter.erase(*rm_it);
+  paretoFilter.insert(RealRealPair(new_f, new_g));
+#ifdef DEBUG
+  Cout << "Filter:\n";
+  for (filt_it=paretoFilter.begin(); filt_it!=paretoFilter.end(); ++filt_it)
+    Cout << *filt_it << '\n';
+#endif
+  return true;
+}
+
+  
+bool SurrBasedLevelData::update_filter(Real new_f)
+{
+  // retain only one point for unconstrained filter
+  RRPSIter filt_it = paretoFilter.begin();
+  if (filt_it == paretoFilter.end())    // insert first iterate
+    paretoFilter.insert(RealRealPair(new_f, 0.));
+  else if (new_f >= filt_it->first) // new f is dominated: reject iterate
+    return false;             
+  else {                            // old f dominated by new: replace old
+    //filt_it->first = new_f; // not allowed for ordered set
+    paretoFilter.clear();
+    paretoFilter.insert(RealRealPair(new_f, 0.));
+  }
+  return true;
+}
+
 } // namespace Dakota

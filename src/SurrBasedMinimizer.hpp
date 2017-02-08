@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+class SurrBasedLevelData;
+
 
 /// Base class for local/global surrogate-based optimization/least squares.
 
@@ -61,12 +63,11 @@ protected:
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);
 
-  /// reset iterate filter to empty state
-  bool reset_filter();
-  /// initialize filter from a set of function values
-  bool initialize_filter(const RealVector& fn_vals);
+  /// (re-)initialize filter from a set of function values
+  void initialize_filter(SurrBasedLevelData& tr_data,
+			 const RealVector& fn_vals);
   /// update filter using a new set of function values
-  bool update_filter(const RealVector& fn_vals);
+  bool update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals);
 
   // compute a filter merit function from a set of function values
   //Real filter_merit(const RealVector& fns_center, const RealVector& fns_star);
@@ -130,9 +131,6 @@ protected:
   /// surrogate-based minimization iteration number
   int sbIterNum;
 
-  /// Pareto set of (objective, constraint violation) pairs defining a
-  /// filter for iterate selection/rejection
-  RealRealPairSet sbFilter;
   /// Lagrange multipliers for basic Lagrangian calculations
   RealVector lagrangeMult;
   /// Lagrange multipliers for augmented Lagrangian calculations

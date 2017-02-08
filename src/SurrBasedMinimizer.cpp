@@ -12,6 +12,7 @@
 //- Checked by:
 
 #include "SurrBasedMinimizer.hpp"
+#include "SurrBasedLevelData.hpp"
 #include "DakotaGraphics.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -344,82 +345,26 @@ update_augmented_lagrange_multipliers(const RealVector& fn_vals)
 }
 
 
-bool SurrBasedMinimizer::reset_filter()
-{ sbFilter.clear(); }
-
-
-bool SurrBasedMinimizer::initialize_filter(const RealVector& fn_vals)
+void SurrBasedMinimizer::
+initialize_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 {
-  reset_filter();
   Real new_f = objective(fn_vals, iteratedModel.primary_response_fn_sense(),
 			 iteratedModel.primary_response_fn_weights());
   Real new_g = (numNonlinearConstraints)
              ? constraint_violation(fn_vals, 0.) : 0.;
-  sbFilter.insert(RealRealPair(new_f, new_g));
+  tr_data.initialize_filter(new_f, new_g);
 }
 
 
-/** Update the sbFilter with fn_vals if new iterate is non-dominated. */
-bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
+/** Update the paretoFilter with fn_vals if new iterate is non-dominated. */
+bool SurrBasedMinimizer::
+update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 {
-  // test new point against current filter
   Real new_f = objective(fn_vals, iteratedModel.primary_response_fn_sense(),
 			 iteratedModel.primary_response_fn_weights());
-  RRPSIter filt_it = sbFilter.begin();
-  if (numNonlinearConstraints) {
-    Real new_g = constraint_violation(fn_vals, 0.),
-      filt_f, filt_g, gamma = 1.e-5, beta = 1. - gamma;
-
-    // we queue dominated pt removals to ensure that iterate rejection by
-    // slanting filter and filter pruning by std filter are exclusive
-    std::list<RRPSIter> rm_queue;
-
-    for (; filt_it != sbFilter.end(); ++filt_it) {
-      filt_f = filt_it->first; filt_g = filt_it->second;
-
-      // Simple filter (no gamma, beta):
-      //if (new_f >= filt_f && new_g >= filt_g)
-      //  return false;              // new point dominated: reject iterate
-      //else if (new_f < filt_f && new_g < filt_g)
-      //  sbFilter.erase(filt_it++); // old dominated by new: remove old
-      //else ++filt_it;
-
-      // Slanting filter: Fletcher, Leyffer, and Toint (SIAM J. Optim., 2002).
-      // The slanting logic is applied to new iterate acceptance, but the
-      // simple filter logic is used for the pruning of old points which are
-      // dominated by the new iterate.  This is due to the inclusion property
-      // of the slanting filter (the envelope for an accepted iterate includes
-      // the envelope for any filter point it dominates).
-      if (new_f + gamma*new_g > filt_f && new_g > beta*filt_g) // slanting logic
-	return false;                // new pt unacceptable: reject iterate
-      else if (new_f < filt_f && new_g < filt_g)                 // simple logic
-	rm_queue.push_back(filt_it); // old dominated by new: queue old for rm
-    }
-
-    // iterate is acceptable: process any removals and add new pt to filter
-    // invalidation rules: only iters/refs to erased elements are invalidated
-    for (std::list<RRPSIter>::iterator rm_it=rm_queue.begin();
-	 rm_it!=rm_queue.end(); ++rm_it)
-      sbFilter.erase(*rm_it);
-    sbFilter.insert(RealRealPair(new_f, new_g));
-#ifdef DEBUG
-    Cout << "Filter:\n";
-    for (filt_it = sbFilter.begin(); filt_it != sbFilter.end(); ++filt_it)
-      Cout << *filt_it << '\n';
-#endif
-  }
-  else { // retain only one point for unconstrained filter
-    if (filt_it == sbFilter.end())    // insert first iterate
-      sbFilter.insert(RealRealPair(new_f, 0.));
-    else if (new_f >= filt_it->first) // new f is dominated: reject iterate
-      return false;             
-    else {                            // old f dominated by new: replace old
-      //filt_it->first = new_f; // not allowed for ordered set
-      sbFilter.clear();
-      sbFilter.insert(RealRealPair(new_f, 0.));
-    }
-  }
-  return true;
+  return (numNonlinearConstraints) ?
+    tr_data.update_filter(new_f, constraint_violation(fn_vals, 0.)) :
+    tr_data.update_filter(new_f);
 }
 
 
@@ -430,7 +375,7 @@ filter_merit(const RealVector& fns_center, const RealVector& fns_star)
 {
   Real obj_delta = objective(fns_star, sense, wts)
                  - objective(fns_center, sense, wts),
-       cv_delta  = constraint_violation(fns_star,   0.)
+        cv_delta = constraint_violation(fns_star,   0.)
                  - constraint_violation(fns_center, 0.);
 
   // This filter merit can be positive or negative.  The sign is not critical,

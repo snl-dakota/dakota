@@ -568,7 +568,8 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     // change to the constraint violation change at each obj/cv trade-off.
     // For basic penalties and between adaptive trade-offs, penaltyParameter
     // is ramped exponentially using the sbIterNum counter.
-    update_penalty(fns_center_truth, fns_star_truth);
+    if (numNonlinearConstraints)
+      update_penalty(fns_center_truth, fns_star_truth);
 
     // evaluate each merit function with updated/adapted penaltyParameter
     merit_fn_center_truth  = penalty_merit(fns_center_truth, sense, wts);
@@ -605,8 +606,11 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
                                                      : numerator;
 
   bool accept_step;
-  if (acceptLogic == FILTER)
-    accept_step = update_filter(fns_star_truth);
+  if (acceptLogic == FILTER) {
+    if (tr_data.filter_size() == 0) // initialize if needed
+      initialize_filter(tr_data, fns_center_truth);
+    accept_step = update_filter(tr_data, fns_star_truth);
+  }
   else if (acceptLogic == TR_RATIO)
     // Accept the step based on simple decrease in the truth merit functions.
     // This avoids any issues with denominator < 0 in tr_ratio:
@@ -760,41 +764,33 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
 		       const RealVector& lower_bnds,
 		       const RealVector& upper_bnds)
 {
-  const RealVector&       c_vars = tr_data.c_vars_center();       
   const Response& response_truth = tr_data.response_center(CORR_TRUTH_RESPONSE);
   const RealVector&    fns_truth = response_truth.function_values();
-  const RealMatrix&  grads_truth = response_truth.function_gradients();
 
-  // -------------------------------------------------
-  // Initialize/update Lagrange multipliers and filter
-  // -------------------------------------------------
+  // --------------------------------------
+  // Initialize/update Lagrange multipliers
+  // --------------------------------------
   // These updates are only performed for new iterates from accepted steps
   // (hard_convergence_check() invoked only if trustRegionData.new_center()).
 
-  // initialize augmented Lagrangian multipliers and filter
-  if (sbIterNum == 0) {
-    if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
-      update_augmented_lagrange_multipliers(fns_truth);
-    if (acceptLogic == FILTER)
-      initialize_filter(fns_truth);
-  }
+  // initialize augmented Lagrangian multipliers
+  if (sbIterNum == 0 && numNonlinearConstraints &&
+      ( meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
+    update_augmented_lagrange_multipliers(fns_truth);
 
-  // hard convergence assessment requires gradients
+  // hard convergence requires truth gradients and zero constraint violation
   if ( !(truthSetRequest & 2) )
     return;
-
-  // update standard Lagrangian multipliers
-  if (numNonlinearConstraints) {
-    Real constraint_viol = constraint_violation(fns_truth, constraintTol);
-    // solve non-negative/bound-constrained LLS for lagrangeMult
-    if (meritFnType      == LAGRANGIAN_MERIT     ||
-	approxSubProbObj == LAGRANGIAN_OBJECTIVE || constraint_viol < DBL_MIN)
-      update_lagrange_multipliers(fns_truth, grads_truth);
-    // avoid merit fn gradient calculations if constraints are violated
-    if (constraint_viol > 0.)
-      return;
-  }
+  // update standard Lagrangian multipliers: solve non-negative/
+  // bound-constrained LLS for lagrangeMult
+  bool constraint_viol = (constraint_violation(fns_truth, constraintTol) > 0.);
+  if (meritFnType      == LAGRANGIAN_MERIT     ||
+      approxSubProbObj == LAGRANGIAN_OBJECTIVE || !constraint_viol)
+    update_lagrange_multipliers(fns_truth,
+				response_truth.function_gradients());
+  if (constraint_viol)
+    return;
 
   // -----------------------------------
   // Compute the merit function gradient
@@ -808,22 +804,24 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   // updates are computed directly from the objective/constraint gradients at
   // the current iterate.
   RealVector merit_fn_grad(numContinuousVars, true);
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
   //if (meritFnType == LAGRANGIAN_MERIT)
-  lagrangian_gradient(fns_truth, grads_truth, sense, wts,
-    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-    merit_fn_grad);
+  lagrangian_gradient(fns_truth, response_truth.function_gradients(),
+		      iteratedModel.primary_response_fn_sense(),
+		      iteratedModel.primary_response_fn_weights(),
+		      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+		      origNonlinEqTargets, merit_fn_grad);
   //else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT)
-  //  augmented_lagrangian_gradient(fns_truth, grads_truth, wts,
-  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-  //    merit_fn_grad);
+  //  augmented_lagrangian_gradient(fns_truth, grads_truth, sense, wts,
+  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+  //    origNonlinEqTargets, merit_fn_grad);
   //else
-  //  penalty_gradient(fns_truth, grads_truth, wts, origNonlinIneqLowerBnds,
-  //    origNonlinIneqUpperBnds, origNonlinEqTargets, merit_fn_grad);
+  //  penalty_gradient(fns_truth, grads_truth, sense, wts,
+  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+  //    origNonlinEqTargets, merit_fn_grad);
 
   // Compute norm of projected merit function gradient
   Real merit_fn_grad_norm = 0.0;
+  const RealVector& c_vars = tr_data.c_vars_center();
   for (size_t i=0; i<numContinuousVars; ++i) {
     Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
     // Determine if the calculated gradient component dp/dx_i is directed into

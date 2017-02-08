@@ -124,13 +124,12 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
   for (i=0; i<num_tr; ++i) {
     SurrBasedLevelData& tr_data = trustRegions[i];
 
+    tr_data.reset(); // soft conv count, status bits, filter
+
     tr_data.vars_center(iteratedModel.current_variables());// sets NEW_CENTER
 
     // set TR factor (TR bounds defined during update_trust_region())
     tr_data.trust_region_factor(origTrustRegionFactor[i]); // sets NEW_TR_FACTOR
-
-    tr_data.reset_soft_convergence_count();
-    tr_data.reset_status_bits(CONVERGED);
 
     tr_data.active_set_star(1, APPROX_RESPONSE);
     tr_data.active_set_star(1,  TRUTH_RESPONSE);
@@ -326,8 +325,8 @@ void HierarchSurrBasedLocalMinimizer::build()
 	  next_tr.response_star(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 	    UNCORR_APPROX_RESPONSE);
 	  correct_star_approx(next_index);	  
-          // reset convergence bits
-	  tr_data.reset_status_bits(CONVERGED);
+          // reset TR data for current level
+	  tr_data.reset();
 	}
       }
       else {
