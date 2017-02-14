@@ -218,7 +218,8 @@ void NLPQLPOptimizer::allocate_workspace()
   ACTIVE = new  int [LACTIVE];
   // Need to initialize this data to avoid valgrind errors (TPL should do it but doesn't)
   for( int i=0; i<LACTIVE; ++i )
-    ACTIVE[i] = 0;
+    ACTIVE[i] = 1; // It is not clear what value(s) should be used to initialize this data,
+                   // eg what options the NLPQL solver should use by default. - RWH
 }
 
 
