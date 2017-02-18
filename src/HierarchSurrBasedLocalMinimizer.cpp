@@ -308,7 +308,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       if (tr_data.converged()) {
 	Cout << "\n<<<<< Trust region iteration converged for form " << index+1;
 	if (lev_index != _NPOS) Cout << ", level " << lev_index + 1; // id
-	Cout << '\n';
+	print_convergence_code(Cout);
 	if (last_tr) {
 	  Cout << "<<<<< Optimal solution reached for truth model\n\n";
 	  return;
@@ -327,6 +327,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 	  correct_star_approx(next_index);	  
           // reset TR data for current level
 	  tr_data.reset();
+	  // reset penalties/multipliers for all levels
+	  reset_penalties(); reset_multipliers();
+	  // TODO: better management of sbIterNum -- maxIterations exceedance being reset and penaltyIterOffset being reset w/o corresponding sbIterNum reset
 	}
       }
       else {

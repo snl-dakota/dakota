@@ -92,6 +92,12 @@ protected:
   /// initialize lagrangeMult and augLagrangeMult
   void initialize_multipliers();
 
+  /// reset all penalty parameters to their initial values
+  void reset_penalties();
+  /// reset Lagrange multipliers to initial values for cases where
+  /// they are accumulated instead of computed directly
+  void reset_multipliers();
+
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region_data(SurrBasedLevelData& tr_data,
 				const RealVector& parent_l_bnds,
@@ -110,6 +116,9 @@ protected:
   void hard_convergence_check(SurrBasedLevelData& tr_data,
 			      const RealVector& lower_bnds,
 			      const RealVector& upper_bnds);
+
+  /// print out the state corresponding to the code returned by converged()
+  void print_convergence_code(std::ostream& s);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
@@ -224,10 +233,8 @@ protected:
 };
 
 
-inline void SurrBasedLocalMinimizer::reset()
+inline void SurrBasedLocalMinimizer::reset_penalties()
 {
-  sbIterNum         = 0;
-
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;
 
@@ -235,10 +242,18 @@ inline void SurrBasedLocalMinimizer::reset()
   alphaEta          = 0.1;
   betaEta           = 0.9;
   etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
+}
 
+
+inline void SurrBasedLocalMinimizer::reset_multipliers()
+{
   //lagrangeMult    = 0.; // not necessary since redefined each time
   augLagrangeMult   = 0.; // necessary since += used
 }
+
+
+inline void SurrBasedLocalMinimizer::reset()
+{ sbIterNum = 0; reset_penalties(); reset_multipliers(); }
 
 } // namespace Dakota
 
