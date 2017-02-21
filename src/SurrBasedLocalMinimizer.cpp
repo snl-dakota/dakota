@@ -331,27 +331,30 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // SBLM is complete: write out the convergence condition
   // (final results output in derived post_run())
-  s << "\nSurrogate-Based Optimization Complete - ";
-
-  // these can be overlaid:
-  unsigned short code = converged();
-  if (code & MIN_TR_CONVERGED)
-    s << "Minimum Trust Region Bounds Reached\n";
-  if (code & MAX_ITER_CONVERGED)
-    s << "Exceeded Maximum Number of Iterations\n";
-
-  // these two are exclusive:
-  if (code & HARD_CONVERGED)
-    s << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient <= "
-      << "Convergence Tolerance\n";
-  else if (code & SOFT_CONVERGED)
-    s << "Soft Convergence Tolerance Reached\nProgress Between "
-      << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-
+  s << "\nSurrogate-Based Optimization Complete:\n";
+  print_convergence_code(s);
   s << "Total Number of Trust Region Minimizations = " << globalIterCount
     << std::endl;
 
   Minimizer::post_run(s);
+}
+
+
+void SurrBasedLocalMinimizer::print_convergence_code(std::ostream& s)
+{
+  unsigned short code = converged();
+
+  // these can be overlaid:
+  if (code & MIN_TR_CONVERGED)   s << "Minimum Trust Region Bounds Reached\n";
+  if (code & MAX_ITER_CONVERGED) s << "Exceeded Maximum Number of Iterations\n";
+
+  // these two are exclusive:
+  if (code & HARD_CONVERGED)
+    s << "Hard Convergence: Norm of Projected Lagrangian Gradient "
+      << "<= Convergence Tolerance\n";
+  else if (code & SOFT_CONVERGED)
+    s << "Soft Convergence: Progress Between " << softConvLimit
+      << " Successive Iterations <= Convergence Tolerance\n";
 }
 
 

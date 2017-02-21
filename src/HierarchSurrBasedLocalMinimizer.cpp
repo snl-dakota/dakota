@@ -309,6 +309,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       if (tr_data.converged()) {
 	Cout << "\n<<<<< Trust region iteration converged for form " << index+1;
 	if (lev_index != _NPOS) Cout << ", level " << lev_index + 1; // id
+	Cout << "\n<<<<< ";
 	print_convergence_code(Cout);
 	if (last_tr) {
 	  Cout << "<<<<< Optimal solution reached for truth model\n\n";
