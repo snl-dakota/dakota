@@ -177,6 +177,9 @@ protected:
   /// points: NO_RELAX or HOMOTOPY
   short trConstraintRelax;
 
+  /// counter for number of minimization cycles that have accumulated prior
+  /// to convergence at the minimizeIndex level (used for ramping penalties)
+  int minimizeCycles;
   /// iteration offset used to update the scaling of the penalty parameter
   /// for adaptive_penalty merit functions
   int penaltyIterOffset;
@@ -235,25 +238,25 @@ protected:
 
 inline void SurrBasedLocalMinimizer::reset_penalties()
 {
-  penaltyIterOffset = -200;
-  penaltyParameter  = 5.;
+  penaltyIterOffset = -200; penaltyParameter = 5.;
 
-  eta               = 1.;
-  alphaEta          = 0.1;
-  betaEta           = 0.9;
-  etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
+  eta = 1.; alphaEta = 0.1; betaEta = 0.9;
+  etaSequence = eta * std::pow(2.*penaltyParameter, -alphaEta);
 }
 
 
 inline void SurrBasedLocalMinimizer::reset_multipliers()
 {
-  //lagrangeMult    = 0.; // not necessary since redefined each time
-  augLagrangeMult   = 0.; // necessary since += used
+  //lagrangeMult  = 0.; // not necessary since redefined each time
+  augLagrangeMult = 0.; // necessary since += used
 }
 
 
 inline void SurrBasedLocalMinimizer::reset()
-{ sbIterNum = 0; reset_penalties(); reset_multipliers(); }
+{
+  globalIterCount = minimizeCycles = 0;
+  reset_penalties(); reset_multipliers();
+}
 
 } // namespace Dakota
 

@@ -47,7 +47,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
   acceptLogic(probDescDB.get_short("method.sbl.acceptance_logic")),
   trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
-  penaltyIterOffset(-200), 
+  minimizeCycles(0), penaltyIterOffset(-200), 
   origTrustRegionFactor(
     probDescDB.get_rv("method.trust_region.initial_size")),
   minTrustRegionFactor(
@@ -329,32 +329,29 @@ void SurrBasedLocalMinimizer::core_run()
 
 void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  s << "\nSurrogate-Based Optimization Complete";
-  print_convergence_code(s);
-  s << "Total Number of Iterations = " << sbIterNum << '\n';
+  // SBLM is complete: write out the convergence condition
+  // (final results output in derived post_run())
+  s << "\nSurrogate-Based Optimization Complete - ";
 
-  Minimizer::post_run(s);
-}
-
-
-void SurrBasedLocalMinimizer::print_convergence_code(std::ostream& s)
-{
-  unsigned short code = converged();
-  s << ": "; // appending to previous output
   // these can be overlaid:
+  unsigned short code = converged();
   if (code & MIN_TR_CONVERGED)
     s << "Minimum Trust Region Bounds Reached\n";
   if (code & MAX_ITER_CONVERGED)
     s << "Exceeded Maximum Number of Iterations\n";
+
   // these two are exclusive:
   if (code & HARD_CONVERGED)
-    s << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-      << "<= Convergence Tolerance\n";
+    s << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient <= "
+      << "Convergence Tolerance\n";
   else if (code & SOFT_CONVERGED)
     s << "Soft Convergence Tolerance Reached\nProgress Between "
       << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
+
+  s << "Total Number of Trust Region Minimizations = " << globalIterCount
+    << std::endl;
+
+  Minimizer::post_run(s);
 }
 
 
@@ -412,7 +409,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   // Output the trust region bounds
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
-       << "************\nBegin SBLM Iteration Number " << sbIterNum+1
+       << "************\nBegin SBLM Iteration Number " << globalIterCount+1
        << "\n\nCurrent Trust Region for surrogate model (form "
        << tr_data.approx_model_form() + 1;
   if (tr_data.approx_model_level() != _NPOS)
@@ -461,7 +458,8 @@ void SurrBasedLocalMinimizer::minimize()
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
 
   Cout << "\n<<<<< Approximate optimization cycle completed.\n";
-  ++sbIterNum; // full iteration performed: increment the counter
+  ++minimizeCycles;  // number of trust-region minimization cycles
+  ++globalIterCount; // total iterations performed
 }
 
 
@@ -549,9 +547,9 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT) {
 
     // evaluate each merit function with the same augLagrangeMult estimates
-    // (updated from fns_center_truth for sbIterNum == 1 and from
-    // fns_star_truth for accepted steps) and penaltyParameter (updated if
-    // no reduction in constraint violation).
+    // (updated from fns_center_truth on initial iteration and from
+    // fns_star_truth for accepted steps) and penaltyParameter (updated
+    // if no reduction in constraint violation).
     merit_fn_center_truth = augmented_lagrangian_merit(fns_center_truth,
       sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
       origNonlinEqTargets);
@@ -574,7 +572,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     // An adaptive penalty is computed based on the ratio of the objective fn
     // change to the constraint violation change at each obj/cv trade-off.
     // For basic penalties and between adaptive trade-offs, penaltyParameter
-    // is ramped exponentially using the sbIterNum counter.
+    // is ramped exponentially using an iteration counter.
     if (numNonlinearConstraints)
       update_penalty(fns_center_truth, fns_star_truth);
 
@@ -781,9 +779,9 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   // (hard_convergence_check() invoked only if trustRegionData.new_center()).
 
   // initialize augmented Lagrangian multipliers
-  if (sbIterNum == 0 && numNonlinearConstraints &&
-      ( meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
+  if (minimizeCycles == 0 && numNonlinearConstraints &&
+      ( meritFnType       == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj  == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
     update_augmented_lagrange_multipliers(fns_truth);
 
   // hard convergence requires truth gradients and zero constraint violation
@@ -871,7 +869,7 @@ update_penalty(const RealVector& fns_center_truth,
     // Set the value of the penalty parameter in the penalty function.  An
     // offset of e^2.1 is used; this equates to constraint violation reduction
     // initially being ~8 times as important as objective reduction.
-    penaltyParameter = std::exp( 2.1 + (double)sbIterNum/10.0 );
+    penaltyParameter = std::exp( 2.1 + (double)minimizeCycles/10.0 );
     // this penalty schedule can be inconsistent with the final result of the
     // minimizer applied to the surrogate model.  That is, the minimizer should
     // return a large penalty solution (minimal constraint violation) by the end
@@ -919,7 +917,7 @@ update_penalty(const RealVector& fns_center_truth,
       // relative improvement in constraint violation is extremely small (and
       // avoids corrupting the penalty schedule in that case); however, it could
       // cause problems in making it difficult to achieve an offset near 200.
-      int new_offset = min_iter - sbIterNum;
+      int new_offset = min_iter - minimizeCycles;
       //int delta_offset = new_offset - penaltyIterOffset;
       if (new_offset > penaltyIterOffset && new_offset < 200)
 	penaltyIterOffset = new_offset;
@@ -931,10 +929,10 @@ update_penalty(const RealVector& fns_center_truth,
     // approx penalty fn.  This can lead to premature soft convergence.
     // Therefore, increase the penalty beyond the minimum by a small amount
     // (5 iters = half an exponential power = 65% additional penalty).  Both
-    // penaltyIterOffset and sbIterNum are capped at 200 (e^20 =~ 5e8) to
+    // penaltyIterOffset and minimizeCycles are capped at 200 (e^20 =~ 5e8) to
     // reduce problems w/ small infeasibilities and prevent numerical overflow.
-    penaltyParameter = (sbIterNum < 200)
-      ? std::exp((double)(sbIterNum + penaltyIterOffset + 5)/10.)
+    penaltyParameter = (minimizeCycles < 200)
+      ? std::exp((double)(minimizeCycles + penaltyIterOffset + 5)/10.)
       : std::exp(20.5 + (double)penaltyIterOffset/10.);
     //Cout << "penaltyIterOffset = " << penaltyIterOffset
     //     << " penaltyParameter = " << penaltyParameter << '\n';
@@ -1191,7 +1189,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
 
   // initial relaxation data during the first SBLM iteration
-  if (sbIterNum == 0) {
+  if (minimizeCycles == 0) {
 
     // initialize inequality constraint slack vectors
     if (numNonlinearIneqConstraints) {

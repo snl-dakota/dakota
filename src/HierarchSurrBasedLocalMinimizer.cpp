@@ -242,6 +242,7 @@ void HierarchSurrBasedLocalMinimizer::build()
   // --------------
   int num_tr = trustRegions.size(), index, next_index, min = minimizeIndex,
     tr_update_max_index = min;
+  bool reset_lambda_rho = false;
   for (index=min; index<num_tr; ++index) {
     SurrBasedLevelData& tr_data = trustRegions[index];
     next_index = index + 1;
@@ -325,11 +326,8 @@ void HierarchSurrBasedLocalMinimizer::build()
 	  next_tr.response_star(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 	    UNCORR_APPROX_RESPONSE);
 	  correct_star_approx(next_index);	  
-          // reset TR data for current level
-	  tr_data.reset();
-	  // reset penalties/multipliers for all levels
-	  reset_penalties(); reset_multipliers();
-	  // TODO: better management of sbIterNum -- maxIterations exceedance being reset and penaltyIterOffset being reset w/o corresponding sbIterNum reset
+          // reset TR data for current level; reset lambda/rho for all levels
+	  tr_data.reset(); reset_lambda_rho = true;
 	}
       }
       else {
@@ -345,7 +343,11 @@ void HierarchSurrBasedLocalMinimizer::build()
   // If needed, propagate TR updates down the hierarchy
   if (tr_update_max_index > minimizeIndex) // min updated in virtual verify()
     update_trust_region(tr_update_max_index);
-
+  // If convergence at minimizeIndex level, reset the penalties/multipliers
+  // for all levels (don't let them continue to ramp).
+  if (reset_lambda_rho)
+    { reset_penalties(); reset_multipliers(); minimizeCycles = 0; }
+    
   // -------------
   // TOP DOWN PASS: update computed and applied corrections
   // -------------
@@ -458,10 +460,12 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   // when iterations at a lower level are complete and the next higher level
   // TR needs to be recentered --> this occurs within build().
    
-  // Check for convergence at top level (max SBLM iterations)
-  if (sbIterNum >= maxIterations && tr_index == trustRegions.size() - 1)
+  // Check global convergence metrics (globalIterCount tracks minimize()
+  // executions at the minimizeIndex level; maxIters exceedance should
+  // propagate through all levels, forcing validation of final iterate)
+  if (globalIterCount >= maxIterations)
     tr_data.set_status_bits(MAX_ITER_CONVERGED);
-  // Check for convergence metrics for this TR:
+  // Check convergence metrics that are local to this TR:
   if (tr_data.trust_region_factor() < minTrustRegionFactor)
     tr_data.set_status_bits(MIN_TR_CONVERGED);
   if (tr_data.soft_convergence_count() >= softConvLimit)

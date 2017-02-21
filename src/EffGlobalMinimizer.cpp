@@ -237,15 +237,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // Iterate until EGO converges
   unsigned short eif_convergence_cntr = 0, dist_convergence_cntr = 0,
     eif_convergence_limit = 2, dist_convergence_limit = 1;
-  sbIterNum = 0;
-  bool approxConverged = false;
+  globalIterCount = 0;
+  bool approx_converged = false;
   convergenceTol = 1.e-12; Real dist_tol = 1.e-8;
   // Decided for now (10-25-2013) to have EGO take the maxIterations 
   // as the default from minimizer, so it will be initialized as 100
   //  maxIterations  = 25*numContinuousVars;
   RealVector prev_cv_star;
-  while (!approxConverged) {
-    ++sbIterNum;
+  while (!approx_converged) {
+    ++globalIterCount;
 
     // initialize EIF recast model
     Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
@@ -325,15 +325,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     //   be that DIRECT failed and not that EGO converged.
 
 #ifdef DEBUG
-    Cout << "sboIterNum " << sbIterNum << "\neif_star " << eif_star
-	 << "\ndist_cstar " << dist_cstar << "\ndist_convergence_cntr "
+    Cout << "EGO Iteration " << globalIterCount << "\neif_star " << eif_star
+	 << "\ndist_cstar "  << dist_cstar      << "\ndist_convergence_cntr "
 	 << dist_convergence_cntr << '\n';
 #endif //DEBUG
 
     if ( dist_convergence_cntr >= dist_convergence_limit ||
 	 eif_convergence_cntr  >= eif_convergence_limit || 
-	 sbIterNum             >= maxIterations )
-      approxConverged = true;
+	 globalIterCount       >= maxIterations )
+      approx_converged = true;
     else {
       // Evaluate response_star_truth
       fHatModel.component_parallel_mode(TRUTH_MODEL);

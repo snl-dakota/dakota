@@ -301,11 +301,11 @@ void NonDGlobalInterval::core_run()
       }
 
       // Iterate until EGO converges
-      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
+      distanceConvergeCntr = improvementConvergeCntr = globalIterCntr = 0;
       prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
       boundConverged = false;
       while (!boundConverged) {
-	++sbIterNum;
+	++globalIterCntr;
 
 	// determine approxFnStar from minimum among sample data
 	if (eifFlag)
@@ -314,7 +314,7 @@ void NonDGlobalInterval::core_run()
 	// Execute GLOBAL search and retrieve results
 	Cout << "\n>>>>> Initiating global minimization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
-	     << sbIterNum << "\n\n";
+	     << globalIterCntr << "\n\n";
 	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
 	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
@@ -335,11 +335,11 @@ void NonDGlobalInterval::core_run()
       }
 
       // Iterate until EGO converges
-      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
+      distanceConvergeCntr = improvementConvergeCntr = globalIterCntr = 0;
       prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
       boundConverged = false;
       while (!boundConverged) {
-	++sbIterNum;
+	++globalIterCntr;
 
 	// determine approxFnStar from maximum among sample data
 	if (eifFlag)
@@ -348,7 +348,7 @@ void NonDGlobalInterval::core_run()
 	// Execute GLOBAL search
 	Cout << "\n>>>>> Initiating global maximization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
-	     << sbIterNum << "\n\n";
+	     << globalIterCntr << "\n\n";
 	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
 	intervalOptimizer.run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
@@ -444,7 +444,7 @@ void NonDGlobalInterval::post_process_run_results(bool maximize)
 
   // depending on convergence assessment, we may update the GP, converge
   // the iteration and update the GP, or converge without updating the GP.
-  if (sbIterNum >= maxIterations)
+  if (globalIterCntr >= maxIterations)
     { boundConverged = true; evaluate_response_star_truth(); }
   else if (distanceConvergeCntr    >= distanceConvergeLimit ||
 	   improvementConvergeCntr >= improvementConvergeLimit)

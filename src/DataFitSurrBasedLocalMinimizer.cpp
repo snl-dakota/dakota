@@ -220,7 +220,7 @@ void DataFitSurrBasedLocalMinimizer::build()
     build_local();   // local/multipt/hierarch: rebuild if new center
 
   // Update graphics for iteration 0 (initial guess).
-  if (sbIterNum == 0)
+  if (globalIterCount == 0)
     parallelLib.output_manager().add_datapoint(trustRegionData.vars_center(),
       iteratedModel.truth_model().interface_id(),
       trustRegionData.response_center(CORR_TRUTH_RESPONSE));
@@ -342,9 +342,9 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // *******************************************************
   SurrBasedLocalMinimizer::minimize();
 
-  // *******************************************
+  // ****************************************
   // Retrieve varsStar and responseStarApprox
-  // *******************************************
+  // ****************************************
   trustRegionData.vars_star(approxSubProbMinimizer.variables_results());
   if (recastSubProb) { // Can't back out eval from recast data, can't assume
     // last iteratedModel eval was the final solution, and can't use a DB
@@ -401,7 +401,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
     trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
   // test if max SBLM iterations exceeded
-  if (sbIterNum >= maxIterations)
+  if (globalIterCount >= maxIterations)
     trustRegionData.set_status_bits(MAX_ITER_CONVERGED);
   // test if trustRegionFactor is less than its minimum value
   if (trustRegionData.trust_region_factor() < minTrustRegionFactor)
@@ -433,9 +433,10 @@ void DataFitSurrBasedLocalMinimizer::find_center_truth()
     // resp fn vals for center truth updated from star truth in verify() -->
     // compute_trust_region_ratio()
     if (trustRegionData.status(NEW_CENTER))
-      found = (sbIterNum > 0 && truthSetRequest == 1);// star->center sufficient
+      found = ( globalIterCount  > 0 &&
+	        truthSetRequest == 1 ); // star->center sufficient
     else
-      found = (sbIterNum > 0);                     // reuse previous center data
+      found = ( globalIterCount  > 0 );  // reuse previous center data
 
     /*
     // This test no longer valid since this fn precedes build_approximation():
@@ -534,7 +535,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
       CORR_APPROX_RESPONSE);
     found = true;
   }
-  //else if (hierarchApproxFlag && sbIterNum)
+  //else if (hierarchApproxFlag && globalIterCount)
   //  found = find_approx_response(iteratedModel.current_variables(),
   //    trustRegionData.response_center(CORR_APPROX_RESPONSE));
 
