@@ -306,11 +306,12 @@ void HierarchSurrBasedLocalMinimizer::build()
 			       trustRegions[next_index].tr_lower_bounds(),
 			       trustRegions[next_index].tr_upper_bounds());
       size_t lev_index = tr_data.truth_model_level();
-      if (tr_data.converged()) {
+      unsigned short tr_conv_code = tr_data.converged();
+      if (tr_conv_code) {
 	Cout << "\n<<<<< Trust region iteration converged for form " << index+1;
 	if (lev_index != _NPOS) Cout << ", level " << lev_index + 1; // id
 	Cout << "\n<<<<< ";
-	print_convergence_code(Cout);
+	print_convergence_code(Cout, tr_conv_code);
 	if (last_tr) {
 	  Cout << "<<<<< Optimal solution reached for truth model\n\n";
 	  return;
@@ -329,6 +330,10 @@ void HierarchSurrBasedLocalMinimizer::build()
 	  correct_star_approx(next_index);	  
           // reset TR data for current level; reset lambda/rho for all levels
 	  tr_data.reset(); reset_lambda_rho = true;
+	  // assume last TR size is ok if level hard converged, else reset it
+	  // (don't want to carry excessive TR reductions forward)
+	  if (tr_conv_code & (SOFT_CONVERGED | MIN_TR_CONVERGED))
+	    tr_data.trust_region_factor(origTrustRegionFactor[index]);
 	}
       }
       else {

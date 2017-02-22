@@ -118,7 +118,7 @@ protected:
 			      const RealVector& upper_bnds);
 
   /// print out the state corresponding to the code returned by converged()
-  void print_convergence_code(std::ostream& s);
+  void print_convergence_code(std::ostream& s, unsigned short code);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
