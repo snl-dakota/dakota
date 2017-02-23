@@ -274,9 +274,8 @@ void HierarchSurrBasedLocalMinimizer::build()
     if (tr_data.status(NEW_CENTER)) { //&& (truthSetRequest & 6)) {
 
       // build level approximation and retrieve/correct response center truth
-      Variables& center_vars = tr_data.vars_center();
-      // update (Note: bounds can affect finite differencing)
-      iteratedModel.active_variables(center_vars);
+      iteratedModel.active_variables(tr_data.vars_center());
+      // update bounds (can affect finite differencing)
       iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
       iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
       // build
@@ -305,45 +304,48 @@ void HierarchSurrBasedLocalMinimizer::build()
 	hard_convergence_check(tr_data,
 			       trustRegions[next_index].tr_lower_bounds(),
 			       trustRegions[next_index].tr_upper_bounds());
-      size_t lev_index = tr_data.truth_model_level();
-      unsigned short tr_conv_code = tr_data.converged();
-      if (tr_conv_code) {
-	Cout << "\n<<<<< Trust region iteration converged for form " << index+1;
-	if (lev_index != _NPOS) Cout << ", level " << lev_index + 1; // id
-	Cout << "\n<<<<< ";
-	print_convergence_code(Cout, tr_conv_code);
-	if (last_tr) {
-	  Cout << "<<<<< Optimal solution reached for truth model\n\n";
-	  return;
-	}
-	else {
-	  SurrBasedLevelData& next_tr = trustRegions[next_index];
-	  size_t next_lev = next_tr.truth_model_level();
-	  Cout << "<<<<< Promoting candidate iterate for validation by form "
-	       << next_index + 1;                                          // id
-	  if (next_lev != _NPOS) Cout << ", level " << next_lev + 1;       // id
-	  Cout << "\n\n";
-	  // set NEW_CANDIDATE and transfer data for verify(i) on next pass
-	  next_tr.vars_star(center_vars);
-	  next_tr.response_star(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
-	    UNCORR_APPROX_RESPONSE);
-	  correct_star_approx(next_index);	  
-          // reset TR data for current level; reset lambda/rho for all levels
-	  tr_data.reset(); reset_lambda_rho = true;
-	  // assume last TR size is ok if level hard converged, else reset it
-	  // (don't want to carry excessive TR reductions forward)
-	  if (tr_conv_code & (SOFT_CONVERGED | MIN_TR_CONVERGED))
-	    tr_data.trust_region_factor(origTrustRegionFactor[index]);
-	}
-      }
-      else {
-	Cout << "\n<<<<< Trust region iteration not converged for form "
-	     << index + 1;                                           // id
-	if (lev_index != _NPOS) Cout << ", level " << lev_index + 1; // id
-	Cout << "\n<<<<< Continuing iteration\n";
-      }
     }
     //else if candidate rejected, TR bounds to be contracted below
+
+    size_t tr_lev = tr_data.truth_model_level();
+    unsigned short tr_conv_code = tr_data.converged();
+    if (tr_conv_code) {
+      Cout << "\n<<<<< Trust region iteration converged for form " << index+1;
+      if (tr_lev != _NPOS) Cout << ", level " << tr_lev + 1; // id
+      Cout << "\n<<<<< ";
+      print_convergence_code(Cout, tr_conv_code);
+      if (last_tr) {
+	Cout << "<<<<< Optimal solution reached for truth model\n\n";
+	return;
+      }
+      else {
+	SurrBasedLevelData& next_tr = trustRegions[next_index];
+	size_t next_lev = next_tr.truth_model_level();
+	Cout << "<<<<< Promoting candidate iterate from "
+	     << tr_data.truth_model_form() + 1;
+	if (tr_lev   != _NPOS) Cout << ", level " <<   tr_lev + 1; // id
+	Cout << " for validation by form " << next_tr.truth_model_form() + 1;
+	if (next_lev != _NPOS) Cout << ", level " << next_lev + 1; // id
+	Cout << "\n\n";
+	// set NEW_CANDIDATE and transfer data for verify(i) on next pass
+	next_tr.vars_star(tr_data.vars_center());
+	next_tr.response_star(tr_data.response_center(UNCORR_TRUTH_RESPONSE),
+			      UNCORR_APPROX_RESPONSE);
+	correct_star_approx(next_index);	  
+	// reset TR data for current level; reset lambda/rho for all levels
+	tr_data.reset(); reset_lambda_rho = true;
+	// assume last TR size is ok if level hard converged, else reset it
+	// (don't want to carry excessive TR reductions forward)
+	if (tr_conv_code & (SOFT_CONVERGED | MIN_TR_CONVERGED))
+	  tr_data.trust_region_factor(origTrustRegionFactor[index]);
+      }
+    }
+    else {
+      Cout << "\n<<<<< Trust region iteration not converged for form "
+	   << index + 1;                                     // id
+      if (tr_lev != _NPOS) Cout << ", level " << tr_lev + 1; // id
+      Cout << ": continuing iteration\n";
+    }
   }
 
   // If needed, propagate TR updates down the hierarchy

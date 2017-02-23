@@ -333,8 +333,8 @@ void SurrBasedLocalMinimizer::post_run(std::ostream& s)
   // (final results output in derived post_run())
   s << "\nSurrogate-Based Optimization Complete:\n";
   print_convergence_code(s, converged());
-  s << "Total Number of Trust Region Minimizations = " << globalIterCount
-    << std::endl;
+  s << "Total Number of Trust Region Minimizations Performed = "
+    << globalIterCount << std::endl;
 
   Minimizer::post_run(s);
 }
