@@ -747,17 +747,22 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // rejected or insufficient filter metric improvement in actual or approx.
   //if ( !accept_step || std::fabs(numerator)   < convergenceTol ||
   //	                 std::fabs(denominator) < convergenceTol )
+  //
   // Merit fn case: soft convergence counter is incremented if insufficient
   // relative or absolute improvement in actual or approx.
-  Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-    std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
-  Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-    std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
-  if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
-                       denominator <= 0. || rel_denom < convergenceTol )
-    tr_data.increment_soft_convergence_count(); // ++counter
+  if (accept_step) {
+    Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
+      std::fabs(numerator / merit_fn_center_truth)    : std::fabs(numerator);
+    Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
+      std::fabs(denominator / merit_fn_center_approx) : std::fabs(denominator);
+    if ( numerator   <= 0. || rel_numer < convergenceTol ||
+	 denominator <= 0. || rel_denom < convergenceTol )
+      tr_data.increment_soft_convergence_count(); // ++ soft conv counter
+    else
+      tr_data.reset_soft_convergence_count();     // reset soft conv cntr to 0
+  }
   else
-    tr_data.reset_soft_convergence_count(); // reset counter to zero
+    tr_data.increment_soft_convergence_count();   // ++ soft conv counter
 }
 
 
