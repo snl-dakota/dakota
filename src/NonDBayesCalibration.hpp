@@ -263,6 +263,10 @@ protected:
   /// final statistics reporting
   RealMatrix acceptedFnVals;
 
+  /// container for managing best MCMC samples (points and associated
+  /// log posterior) collected across multiple (restarted) chains
+  std::/*multi*/map<Real, RealVector> bestSamples;
+
   /// number of MCMC samples to discard from acceptance chain
   int burnInSamples;
   /// period or skip in post-processing the acceptance chain
