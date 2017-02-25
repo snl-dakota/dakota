@@ -268,10 +268,18 @@ void HierarchSurrBasedLocalMinimizer::build()
     }
 
     // If new center accepted for a level, then build new approximation
-    // (response center truth), including derivatives
-    // TO DO: special case of no/zeroth order correction could be optimized
-    // to reuse transfer of response fn vals from star->center
-    if (tr_data.status(NEW_CENTER)) { //&& (truthSetRequest & 6)) {
+    // (response center truth), including derivatives.  Don't incur expense
+    // of building and checking for hard conv if already soft converged
+    // (e.g., max iters, min TR, insufficient decrease).
+    if (tr_data.status(NEW_CENTER) && globalIterCount<maxIterations) {// for now
+      //&& !tr_data.converged()) { // *** preferred ***
+      // TO DO: this is more general, but trickier.  Likely need to expand logic
+      // for find_center_truth() as in find_center_approx() to evaluate when
+      // needed, as well as augment top-down pass to match new bypass logic.
+
+      //&& (truthSetRequest & 6)) {
+      // TO DO (low priority): special case of no/zeroth order correction could
+      // be optimized to reuse transfer of response fn vals from star->center
 
       // build level approximation and retrieve/correct response center truth
       iteratedModel.active_variables(tr_data.vars_center());
@@ -317,7 +325,8 @@ void HierarchSurrBasedLocalMinimizer::build()
       if (tr_lev != _NPOS) Cout << ", level " << tr_lev+1; // id
       Cout << "\n<<<<< "; print_convergence_code(Cout, tr_conv_code);
       if (last_tr) {
-	Cout << "<<<<< Optimal solution reached for truth model\n\n"; return;
+	Cout << "<<<<< Optimal solution reached for truth model\n\n";
+	return;
       }
       else {
 	SurrBasedLevelData& next_tr = trustRegions[next_index];
