@@ -147,11 +147,11 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
 
-  bestVariablesArray.front().active_variables(
-    trustRegions[minimizeIndex].vars_center());
+  size_t last_index = trustRegions.size() - 1;
+  SurrBasedLevelData& tr_last = trustRegions[last_index];
+  bestVariablesArray.front().active_variables(tr_last.vars_center());
   bestResponseArray.front().function_values(
-    trustRegions[minimizeIndex].response_center(CORR_TRUTH_RESPONSE).
-    function_values());
+    tr_last.response_center(CORR_TRUTH_RESPONSE).function_values());
 
   SurrBasedLocalMinimizer::post_run(s);
 }
