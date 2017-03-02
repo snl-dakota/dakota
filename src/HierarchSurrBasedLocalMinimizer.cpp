@@ -271,15 +271,17 @@ void HierarchSurrBasedLocalMinimizer::build()
     // (response center truth), including derivatives.  Don't incur expense
     // of building and checking for hard conv if already soft converged
     // (e.g., max iters, min TR, insufficient decrease).
-    if (tr_data.status(NEW_CENTER) && globalIterCount<maxIterations) {// for now
-      //&& !tr_data.converged()) { // *** preferred ***
-      // TO DO: this is more general, but trickier.  Likely need to expand logic
+    if (tr_data.status(NEW_CENTER) && !tr_data.converged()) {
+      // TO DO: converged() is more general, but trickier. Need to expand logic
       // for find_center_truth() as in find_center_approx() to evaluate when
       // needed, as well as augment top-down pass to match new bypass logic.
 
-      //&& (truthSetRequest & 6)) {
-      // TO DO (low priority): special case of no/zeroth order correction could
-      // be optimized to reuse transfer of response fn vals from star->center
+      // && globalIterCount < maxIterations) // simplest approach and removes
+                                    // trailing builds, but not fully general
+
+      // && (truthSetRequest & 6)) { // TO DO (low priority): special case of
+      // no/0-th order correction could be optimized to reuse transfer of
+      // response fn vals from star->center
 
       // build level approximation and retrieve/correct response center truth
       iteratedModel.active_variables(tr_data.vars_center());
@@ -382,6 +384,8 @@ void HierarchSurrBasedLocalMinimizer::build()
       // Find approx response.  If not found, evaluate approx model.
       set_model_states(index);   // only LF model to be evaluated
       find_center_approx(index); // find/eval *uncorrected* center approx
+
+      // TO DO: if find_center_truth() bypassed above, need it here...
 
       // Compute additive/multiplicative correction
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
@@ -492,14 +496,22 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
 // Note: find() implies a DB lookup and DB entries are uncorrected, so employ
 // this convention consistently and correct after find() when needed.
 
-void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
+void HierarchSurrBasedLocalMinimizer::
+find_center_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  Model& truth_model = iteratedModel.truth_model();
+  const Variables&   v_center = tr_data.vars_center();
+  Model&          truth_model = iteratedModel.truth_model();
 
-  // TODO: hard-coded for now, see note in build()
-  tr_data.response_center(truth_model.current_response(),UNCORR_TRUTH_RESPONSE);
-  bool truth_found = true;
+  bool truth_found;
+  if (search_db)
+    truth_found = find_truth_response(v_center,
+      tr_data.response_center(UNCORR_TRUTH_RESPONSE));
+  else {
+    truth_found = true;
+    tr_data.response_center(truth_model.current_response(),
+                            UNCORR_TRUTH_RESPONSE);
+  }
 
   if (!truth_found) {
     Cout << "\n>>>>> Evaluating truth model at trust region center.\n";
@@ -516,14 +528,22 @@ void HierarchSurrBasedLocalMinimizer::find_center_truth(size_t tr_index)
 }
 
 
-void HierarchSurrBasedLocalMinimizer::find_star_truth(size_t tr_index)
+void HierarchSurrBasedLocalMinimizer::
+find_star_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
-  Model& truth_model = iteratedModel.truth_model();
+  const Variables&     v_star = tr_data.vars_star();
+  Model&          truth_model = iteratedModel.truth_model();
 
-  // TODO: hard-coded for now, see note in build()
-  tr_data.response_star(truth_model.current_response(), UNCORR_TRUTH_RESPONSE);
-  bool truth_found = true;
+  bool truth_found;
+  if (search_db)
+    truth_found = find_truth_response(v_star,
+      tr_data.response_star(UNCORR_TRUTH_RESPONSE));
+  else {
+    truth_found = true;
+    tr_data.response_star(truth_model.current_response(),
+			  UNCORR_TRUTH_RESPONSE);
+  }
 
   if (!truth_found) {
     Cout << "\n>>>>> Verifying trust region candidate with truth model.\n";

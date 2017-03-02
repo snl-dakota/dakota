@@ -137,6 +137,11 @@ protected:
 
   /// locate an approximate response with the data_pairs cache
   bool find_approx_response(const Variables& search_vars,Response& search_resp);
+  /// locate a truth response with the data_pairs cache
+  bool find_truth_response(const Variables& search_vars, Response& search_resp);
+  /// locate a response with the data_pairs cache
+  bool find_response(const Variables& search_vars, Response& search_resp,
+		     const String& search_id, short set_request);
 
   /// relax constraints by updating bounds when current iterate is infeasible
   void relax_constraints(SurrBasedLevelData& tr_data);
@@ -234,6 +239,24 @@ protected:
   /// pointer to SBLM instance used in static member functions
   static SurrBasedLocalMinimizer* sblmInstance;
 };
+
+
+inline bool SurrBasedLocalMinimizer::
+find_approx_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.surrogate_model().interface_id(),
+		       approxSetRequest);
+}
+
+
+inline bool SurrBasedLocalMinimizer::
+find_truth_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.truth_model().interface_id(),
+		       truthSetRequest);
+}
 
 
 inline void SurrBasedLocalMinimizer::reset_penalties()

@@ -1140,7 +1140,8 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 
 
 bool SurrBasedLocalMinimizer::
-find_approx_response(const Variables& search_vars, Response& search_resp)
+find_response(const Variables& search_vars, Response& search_resp,
+	      const String& search_id, short set_request)
 {
   bool found = false;
 
@@ -1148,18 +1149,17 @@ find_approx_response(const Variables& search_vars, Response& search_resp)
   // be different fn evals
   ActiveSet search_set = search_resp.active_set(); // copy
   search_set.request_values(1);
-  const String& search_id = iteratedModel.surrogate_model().interface_id();
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, search_id, search_vars, search_set);
   if (cache_it != data_pairs.get<hashed>().end()) {
     search_resp.function_values(cache_it->response().function_values());
-    if (approxSetRequest & 2) {
+    if (set_request & 2) {
       search_set.request_values(2);
       cache_it = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
 	search_resp.function_gradients(
 	  cache_it->response().function_gradients());
-	if (approxSetRequest & 4) {
+	if (set_request & 4) {
 	  search_set.request_values(4);
 	  cache_it
 	    = lookup_by_val(data_pairs, search_id, search_vars, search_set);
