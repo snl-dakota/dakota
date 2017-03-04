@@ -289,8 +289,9 @@ public:
   /// a DataFitSurrModel
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs,
 					  bool normalized = false);
-  /// retrieve the approximation variances from each
-  /// Approximation within a DataFitSurrModel
+
+  /// retrieve the prediction variances from each Approximation within
+  /// a DataFitSurrModel
   virtual const RealVector& approximation_variances(const Variables& vars);
 
   /// set response computation mode used in SurrogateModels for
@@ -299,6 +300,12 @@ public:
   /// return response computation mode used in SurrogateModels for
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
+
+  /// retrieve error estimates corresponding to the Model's response
+  /// (could be surrogate error for SurrogateModels, statistical MSE for
+  /// NestedModels, or adjoint error estimates for SimulationModels).
+  /// Errors returned correspond to most recent evaluate().
+  virtual const RealVector& error_estimates();
 
   /// return the DiscrepancyCorrection object used by SurrogateModels
   virtual DiscrepancyCorrection& discrepancy_correction();

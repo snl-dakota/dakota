@@ -338,6 +338,71 @@ evaluate(RealArray const &x, RealArray &vals, void *param)
 // TO DO: asynchronous evaluate_nowait()/synchronize()
 
 
+void NOWPACBlackBoxEvaluator::
+evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
+{
+  RealVector c_vars; copy_data(x, c_vars);
+  iteratedModel.continuous_variables(c_vars);
+  iteratedModel.evaluate(); // no ASV control, use default
+
+  const RealVector& dakota_fns
+    = iteratedModel.current_response().function_values();
+  const RealVector& errors = iteratedModel.error_estimates();
+  //NestedModel implements as subordinate_iterator().response_errors();
+
+  // See Harding et al. for error estimates for mean and std dev (not same as
+  // sqrt of variance error):
+  // > implement these per QoI (according to requested finalStats...) and
+  //   aggregated per level (see, e.g., convert_moments())
+  // > NestedModel queries its subIterator for errors associated with the
+  //   bestResponses/finalStatistics and returns these within something akin to
+  //   Model::approximation_variances() (consider rename to be more generic)
+  // > ask Joe and Guilhem about phi-burn and x_locn...
+
+  // If no mappings...
+  //copy_data(dakota_fns, vals);
+
+  // apply optimization sense mapping.  Note: Any MOO/NLS recasting is
+  // responsible for setting the scalar min/max sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  Real obj_fn = dakota_fns[0], mult;
+  vals[0]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
+  noise[0] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+
+  // apply nonlinear inequality constraint mappings
+  StLIter i_iter; RLIter m_iter, o_iter; size_t index, cntr = 0;
+  for (i_iter  = nonlinIneqConMappingIndices.begin(),
+       m_iter  = nonlinIneqConMappingMultipliers.begin(),
+       o_iter  = nonlinIneqConMappingOffsets.begin();
+       i_iter != nonlinIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter) {  // nonlinear ineq
+    index       = (*i_iter)+1; // offset single objective
+    mult        = (*m_iter);
+    vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
+    noise[cntr] = std::abs(mult) * errors[index];
+    ++cntr;
+  }
+  // apply linear inequality constraint mappings
+  const RealMatrix& lin_ineq_coeffs
+    = iteratedModel.linear_ineq_constraint_coeffs();
+  size_t j, num_cv = x.size();
+  for (i_iter  = linIneqConMappingIndices.begin(),
+       m_iter  = linIneqConMappingMultipliers.begin(),
+       o_iter  = linIneqConMappingOffsets.begin();
+       i_iter != linIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter) { // linear ineq
+    size_t index = *i_iter;
+    Real Ax = 0.;
+    for (j=0; j<num_cv; ++j)
+      Ax += lin_ineq_coeffs(index,j) * x[j];
+    vals[cntr]  = (*o_iter) + (*m_iter) * Ax;
+    noise[cntr] = 0.; // no error in linear case
+    ++cntr;
+  }
+}
+// TO DO: asynchronous evaluate_nowait()/synchronize()
+
+
 #ifdef HAVE_DYNLIB_FACTORIES
 NOWPACOptimizer* new_NOWPACOptimizer(ProblemDescDB& problem_db, Model& model)
 {

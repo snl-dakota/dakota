@@ -210,9 +210,10 @@ protected:
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
 
-
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
+  /// return error estimates associated with each of the finalStatistics
+  const RealVector& response_error_estimates() const;
 
   //
   //- Heading: Convenience member functions for derived classes
@@ -264,11 +265,14 @@ protected:
   String    rngName;	 ///< name of the random number generator
   unsigned short sampleType;  ///< the sample type: default, random, lhs,
                               ///< incremental random, or incremental lhs
-  bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  bool      wilksFlag;   ///< flags use of Wilks formula to calculate num samples
   unsigned short wilksOrder;
   Real      wilksAlpha;    
   Real      wilksBeta;    
   short     wilksSidedness;
+
+  /// standard errors (estimator std deviation) for each of the finalStatistics
+  RealVector finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
@@ -380,6 +384,10 @@ inline unsigned short NonDSampling::sampling_scheme() const
 
 inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
+
+
+inline const RealVector& NonDSampling::response_error_estimates() const
+{ return finalStatErrors; }
 
 } // namespace Dakota
 

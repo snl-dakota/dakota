@@ -479,12 +479,6 @@ expected_improvement(const RealVector& means, const RealVector& variances)
 {
   Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
 			iteratedModel.primary_response_fn_weights()), stdv;
-  //double dtemp1=-50.0;
-  //double dtemp2=50.0;
-  //printf("Phi(%g)=%22.16g phi(%g)=%22.16g\nPhi(%g)=%22.16g phi(%g)=%22.16g\n",
-    // dtemp1,Pecos::Phi(dtemp1),dtemp1,Pecos::phi(dtemp1),
-    // dtemp2,Pecos::Phi(dtemp2),dtemp2,Pecos::phi(dtemp2));
-  
 
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV

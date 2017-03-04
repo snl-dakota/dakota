@@ -85,6 +85,10 @@ protected:
   /// return optionalInterface
   Interface& derived_interface();
 
+  /// retrieve error estimates corresponding to the subIterator's response
+  /// results (e.g., statistical MSE for subordinate UQ).
+  const RealVector& error_estimates();
+
   /// pass a bypass request on to the subModel for any lower-level surrogates
   void surrogate_response_mode(short mode);
 
@@ -443,6 +447,10 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline Interface& NestedModel::derived_interface()
 { return optionalInterface; }
+
+
+inline const RealVector& NestedModel::error_estimates()
+{ return subIterator.response_error_estimates(); }
 
 
 inline void NestedModel::surrogate_response_mode(short mode)

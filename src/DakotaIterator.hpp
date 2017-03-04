@@ -139,6 +139,12 @@ public:
   /// only be used if returns_multiple_points() returns true.
   virtual const ResponseArray&  response_array_results();
 
+  /// set the requested data for the final iterator response results
+  virtual void response_results_active_set(const ActiveSet& set);
+
+  /// return error estimates associated with the final iterator solution
+  virtual const RealVector& response_error_estimates() const;
+
   /// indicates if this iterator accepts multiple initial points.  Default
   /// return is false.  Override to return true if appropriate.
   virtual bool accepts_multiple_points() const;
@@ -149,9 +155,6 @@ public:
   /// sets the multiple initial points for this iterator.  This should
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
-
-  /// set the requested data for the final iterator response results
-  virtual void response_results_active_set(const ActiveSet& set);
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);

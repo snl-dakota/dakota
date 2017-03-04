@@ -60,6 +60,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 
   // initialize finalStatistics using the default statistics set
   initialize_final_statistics();
+  if (!epistemicStats)
+    finalStatErrors.resize(finalStatistics.num_functions());
 
   if ( wilksFlag ) {
     // Only works with sample_type of random
@@ -1520,8 +1522,26 @@ void NonDSampling::update_final_statistics()
       finalStatistics.function_value(extremeValues[i].second, cntr++);
     }
   }
-  else // moments + level mappings
+  else { // moments + level mappings
     NonD::update_final_statistics();
+    // consider moving this down to NonDLHSSampling...
+    if (sampleType == SUBMETHOD_RANDOM) { // assign finalStatErrors for MC
+      size_t i, cntr = 0;
+      for (i=0; i<numFunctions; ++i) {
+	Real qoi_stdev = momentStats(1,i);
+	// standard error (estimator std-dev) for Monte Carlo mean
+	finalStatErrors[cntr++] = qoi_stdev / std::sqrt(numSamples);
+	// standard error (estimator std-dev) for Monte Carlo std-deviation
+	// (Harding et al., 2014): 
+	finalStatErrors[cntr++] = qoi_stdev / std::sqrt(2*numSamples-2);
+	// level mapping errors not implemented at this time
+	cntr += requestedRespLevels[i].length()
+	     +  requestedProbLevels[i].length()
+	     +  requestedRelLevels[i].length()
+	     +  requestedGenRelLevels[i].length();
+      }
+    }
+  }
 }
 
 

@@ -34,6 +34,10 @@ public:
 		void *param); // general pass through from NOWPAC
   // alternate evaluate requires an estimate of noise in 1 obj + len-1
   // nonlin ineq constr (this is tied to SNOWPAC stochastic_optimization)
+  void evaluate(std::vector<double> const &x, // incoming params in user space
+		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
+		std::vector<double> &noise,// 1 obj + len-1 nln ineq constr <= 0
+		void *param); // general pass through from NOWPAC
 
   // TO DO: queue() + synchronize()
 
