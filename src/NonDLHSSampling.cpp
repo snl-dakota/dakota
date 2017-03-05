@@ -669,6 +669,28 @@ void NonDLHSSampling::post_run(std::ostream& s)
 }
 
 
+void NonDLHSSampling::update_final_statistics()
+{
+  NonDSampling::update_final_statistics();
+  
+  // if MC sampling, assign standard errors for moments within finalStatErrors
+  if (sampleType == SUBMETHOD_RANDOM && !epistemicStats) {
+    size_t i, cntr = 0;
+    for (i=0; i<numFunctions; ++i) {
+      Real qoi_stdev = momentStats(1,i);
+      // standard error (estimator std-dev) for Monte Carlo mean
+      finalStatErrors[cntr++] = qoi_stdev / std::sqrt(numSamples);
+      // standard error (estimator std-dev) for Monte Carlo std-deviation
+      // (Harding et al., 2014): 
+      finalStatErrors[cntr++] = qoi_stdev / std::sqrt(2*numSamples-2);
+      // level mapping errors not implemented at this time
+      cntr += requestedRespLevels[i].length() + requestedProbLevels[i].length()
+	   + requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+    }
+  }
+}
+
+
 void NonDLHSSampling::compute_pca(std::ostream& s)
 {
   IntRespMCIter r_it; size_t fn, samp;

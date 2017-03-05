@@ -55,6 +55,7 @@ protected:
   void pre_run();
   void core_run();
   void post_run(std::ostream& s);
+  void update_final_statistics();
   void print_results(std::ostream& s);
 
 private:
