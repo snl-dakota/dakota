@@ -15,8 +15,6 @@
 #ifndef DAKOTA_OPT_TRAITS_H
 #define DAKOTA_OPT_TRAITS_H
 
-#include "DakotaMinimizer.hpp"
-
 namespace Dakota {
 
 
@@ -26,12 +24,9 @@ namespace Dakota {
     DOTOptimizer, CONMINOptimizer, NPSOLOptimizer, SNLLOptimizer,
     NLPQLPOptimizer, COLINOptimizer, and JEGAOptimizer. */
 
-class OptTraits: public Minimizer
+class OptTraits
 {
 public:
-
-  /// Static helper function: third-party opt packages which are not available
-  static void not_available(const std::string& package_name);
 
 protected:
 
@@ -41,15 +36,6 @@ protected:
 
   /// default constructor
   OptTraits();
-  /// alternate constructor; accepts a model
-  OptTraits(ProblemDescDB& problem_db, Model& model);
-
-  /// alternate constructor for "on the fly" instantiations
-  OptTraits(unsigned short method_name, Model& model);
-  /// alternate constructor for "on the fly" instantiations
-  OptTraits(unsigned short method_name, size_t num_cv, size_t num_div,
-	    size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	    size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq);
 
   /// destructor
   ~OptTraits();
@@ -67,20 +53,9 @@ protected:
   //
   //- Heading: Data
   //
-
-  /// number of objective functions (iterator view)
-  size_t numObjectiveFns;
-
-  /// flag indicating whether local recasting to a single objective is used
-  bool localObjectiveRecast;
   
   /// flag indicating whether method supports multiobjective optimization
   bool supportsMultiobjectives;
-
-  /// pointer to OptTraits instance used in static member functions
-  static OptTraits* optTraitsInstance;
-  /// pointer containing previous value of optTraitsInstance
-  OptTraits* prevOptTraitsInstance;
 
 private:
 
@@ -101,12 +76,6 @@ inline OptTraits::OptTraits()
 inline OptTraits::~OptTraits()
 { }
 
-
-inline void OptTraits::not_available(const std::string& package_name)
-{
-  Cerr << package_name << " is not available.\n";
-  abort_handler(-1);
-}
 
 } // namespace Dakota
 
