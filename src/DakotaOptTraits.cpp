@@ -294,4 +294,60 @@ void OptTraits::get_supports_multiobjectives(bool supports_multiobjectives)
   supports_multiobjectives = supportsMultiobjectives;
 }
 
+
+/** Sets supportsContinuousVariables to true */
+void OptTraits::set_supports_continuous_variables()
+{
+  supportsContinuousVariables = true;
+}
+
+
+/** Return the value of supportsContinuousVariables */
+void OptTraits::get_supports_continuous_variables(bool supports_continuous_variables)
+{
+  supports_continuous_variables = supportsContinuousVariables;
+}
+
+
+/** Sets supportsIntegerVariables to true */
+void OptTraits::set_supports_integer_variables()
+{
+  supportsIntegerVariables = true;
+}
+
+
+/** Return the value of supportsIntegerVariables */
+void OptTraits::get_upports_integer_variables(bool upports_integer_variables)
+{
+  upports_integer_variables = supportsIntegerVariables;
+}
+
+
+/** Sets supportsRelaxableDiscreteVariables to true */
+void OptTraits::set_supports_relaxable_discrete_variables()
+{
+  supportsRelaxableDiscreteVariables = true;
+}
+
+
+/** Return the value of supportsRelaxableDiscreteVariables */
+void OptTraits::get_supports_relaxable_discrete_variables(bool supports_relaxable_discrete_variables)
+{
+  supports_relaxable_discrete_variables = supportsRelaxableDiscreteVariables;
+}
+
+
+/** Sets supportsCategoricalVariables to true */
+void OptTraits::set_supports_categorical_variables()
+{
+  supportsCategoricalVariables = true;
+}
+
+
+/** Return the value of supportsCategoricalVariables */
+void OptTraits::get_supports_categorical_variables(bool supports_categorical_variables)
+{
+  supports_categorical_variables = supportsCategoricalVariables;
+}
+
 } // namespace Dakota

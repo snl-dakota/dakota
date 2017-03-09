@@ -68,6 +68,30 @@ protected:
   /// Return the ordered list of accepted responses
   void get_response_order(std::vector<std::string>& response_order);
 
+  /// Sets supportsContinuousVariables to true
+  void set_supports_continuous_variables();
+
+  /// Return the value of supportsContinuousVariables
+  void get_supports_continuous_variables(bool supports_continuous_variables);
+
+  /// Sets supportsIntegerVariables to true
+  void set_supports_integer_variables();
+
+  /// Return the value of supportsIntegerVariables
+  void get_upports_integer_variables(bool upports_integer_variables);
+
+  /// Sets supportsRelaxableDiscreteVariables to true
+  void set_supports_relaxable_discrete_variables();
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  void get_supports_relaxable_discrete_variables(bool supports_relaxable_discrete_variables);
+
+  /// Sets supportsCategoricalVariables to true
+  void set_supports_categorical_variables();
+
+  /// Return the value of supportsCategoricalVariables
+  void get_supports_categorical_variables(bool supports_categorical_variables);
+
   //
   //- Heading: Data
   //
@@ -89,6 +113,18 @@ protected:
 
   /// ordered list of accepted responses
   std::vector<int> responseOrder;
+
+  /// flag indicating whether method supports continuous variables
+  bool supportsContinuousVariables;
+
+  /// flag indicating whether method supports integer variables
+  bool supportsIntegerVariables;
+
+  /// flag indicating whether method supports relaxable discrete variables
+  bool supportsRelaxableDiscreteVariables;
+
+  /// flag indicating whether method supports categorical variables
+  bool supportsCategoricalVariables;
 
 
 private:
