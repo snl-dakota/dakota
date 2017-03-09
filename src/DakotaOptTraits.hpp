@@ -50,12 +50,46 @@ protected:
   /// Return the value of supportsMultiobjectives
   void get_supports_multiobjectives(bool supports_multiobjectives);
 
+  /// Sets the type of linear inequality supported
+  void set_linear_inequality_type(const std::string& linear_inequality_type);
+
+  /// Return the type of linear inequality supported
+  void get_linear_inequality_type(std::string& linear_inequality_type);
+
+  /// Sets the type of nonlinear inequality supported
+  void set_nonlinear_inequality_type(const std::string& nonlinear_inequality_type);
+
+  /// Return the type of nonlinear inequality supported
+  void get_nonlinear_inequality_type(std::string& nonlinear_inequality_type);
+
+  /// Sets the ordered list of accepted responses
+  void set_response_order(const std::vector<std::string>& response_order);
+
+  /// Return the ordered list of accepted responses
+  void get_response_order(std::vector<std::string>& response_order);
+
   //
   //- Heading: Data
   //
   
   /// flag indicating whether method supports multiobjective optimization
   bool supportsMultiobjectives;
+
+  /// structure conatining supported constraint forms
+  boost::bimap < std::string, int > validConstraints;
+
+  /// type of linear inequality supported
+  int linearInequalityType;
+
+  /// type of nonlinear inequality supported
+  int nonlinearInequalityType;
+
+  /// structure conatining supported response forms
+  boost::bimap < std::string, int > validResponses;
+
+  /// ordered list of accepted responses
+  std::vector<int> responseOrder;
+
 
 private:
 
