@@ -92,6 +92,36 @@ protected:
   /// Return the value of supportsCategoricalVariables
   void get_supports_categorical_variables(bool supports_categorical_variables);
 
+  /// Sets providesBestObjective to true
+  void set_provides_best_objective();
+
+  /// Return the value of providesBestObjective
+  void get_provides_best_objective(bool provides_best_objective);
+
+  /// Sets providesBestParameters to true
+  void set_provides_best_parameters();
+
+  /// Return the value of providesBestParameters
+  void get_provides_best_parameters(bool provides_best_parameters);
+
+  /// Sets providesBestConstraint to true
+  void set_provides_best_constraint();
+
+  /// Return the value of providesBestConstraint
+  void get_provides_best_constraint(bool provides_best_constraint);
+
+  /// Sets providesFinalGradient to true
+  void set_provides_final_gradient();
+
+  /// Return the value of providesFinalGradient
+  void get_provides_final_gradient(bool provides_final_gradient);
+
+  /// Sets providesFinalHessian to true
+  void set_provides_final_hessian();
+
+  /// Return the value of providesFinalHessian
+  void get_provides_final_hessian(bool provides_final_hessian);
+
   //
   //- Heading: Data
   //
@@ -125,6 +155,21 @@ protected:
 
   /// flag indicating whether method supports categorical variables
   bool supportsCategoricalVariables;
+
+  /// flag indicating whether method provides best objective result
+  bool providesBestObjective;
+
+  /// flag indicating whether method provides best parameters result
+  bool providesBestParameters;
+
+  /// flag indicating whether method provides best constraint result
+  bool providesBestConstraint;
+
+  /// flag indicating whether method provides final gradient result
+  bool providesFinalGradient;
+
+  /// flag indicating whether method provides final hessian result
+  bool providesFinalHessian;
 
 
 private:

@@ -350,4 +350,74 @@ void OptTraits::get_supports_categorical_variables(bool supports_categorical_var
   supports_categorical_variables = supportsCategoricalVariables;
 }
 
+
+/** Sets providesBestObjective to true */
+void OptTraits::set_provides_best_objective()
+{
+  providesBestObjective = true;
+}
+
+
+/** Return the value of providesBestObjective */
+void OptTraits::get_provides_best_objective(bool provides_best_objective)
+{
+  provides_best_objective = providesBestObjective;
+}
+
+
+/** Sets providesBestParameters to true */
+void OptTraits::set_provides_best_parameters()
+{
+  providesBestParameters = true;
+}
+
+
+/** Return the value of providesBestParameters */
+void OptTraits::get_provides_best_parameters(bool provides_best_parameters)
+{
+  provides_best_parameters = providesBestParameters;
+}
+
+
+/** Sets providesBestConstraint to true */
+void OptTraits::set_provides_best_constraint()
+{
+  providesBestConstraint = true;
+}
+
+
+/** Return the value of providesBestConstraint */
+void OptTraits::get_provides_best_constraint(bool provides_best_constraint)
+{
+  provides_best_constraint = providesBestConstraint;
+}
+
+
+/** Sets providesFinalGradient to true */
+void OptTraits::set_provides_final_gradient()
+{
+  providesFinalGradient = true;
+}
+
+
+/** Return the value of providesFinalGradient */
+void OptTraits::get_provides_final_gradient(bool provides_final_gradient)
+{
+  provides_final_gradient = providesFinalGradient;
+}
+
+
+/** Sets providesFinalHessian to true */
+void OptTraits::set_provides_final_hessian()
+{
+  providesFinalHessian = true;
+}
+
+
+/** Return the value of providesFinalHessian */
+void OptTraits::get_provides_final_hessian(bool provides_final_hessian)
+{
+  provides_final_hessian = providesFinalHessian;
+}
+
 } // namespace Dakota
