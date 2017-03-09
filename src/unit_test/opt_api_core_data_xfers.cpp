@@ -20,16 +20,27 @@ namespace {
   const size_t VEC_SIZE = 5;
   const size_t MAT_ROWS = 3;
 
-  class dummyTraits1 {
+  class dummyGradFreeOpt1 {
+
     public:
-      typedef double scalarType;
-      typedef std::vector<double> vectorType;
+
+      struct Traits {
+          typedef double scalarType;
+          typedef std::vector<double> vectorType;
+          static const bool supportsGradients = false;
+      };
   };
 
-  class dummyTraits2 {
+  class dummyGradFreeOpt2 {
+
     public:
-      typedef float scalarType;
-      typedef float vectorType[VEC_SIZE];
+
+      struct Traits {
+          typedef float scalarType;
+          typedef float vectorType[VEC_SIZE];
+          static const bool supportsGradients = false;
+      };
+
   };
 
 } // anonymous namespace
@@ -61,7 +72,7 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   RealVector vec(VEC_SIZE);
   vec.random();
 
-  dummyTraits1::vectorType tpl1_vec;
+  dummyGradFreeOpt1::Traits::vectorType tpl1_vec;
   copy_data(vec, tpl1_vec);
 
   // Test correctness of size and values accurate to double precision
@@ -73,7 +84,7 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   Real real_tol = std::pow(10.0, -std::numeric_limits<dummyTraits1::scalarType>::digits10);
   TEST_FLOATING_EQUALITY( max_diff, 1.0, real_tol );
 
-  dummyTraits2::vectorType tpl2_vec;
+  dummyGradFreeOpt2::Traits::vectorType tpl2_vec;
   copy_data<float>(vec, tpl2_vec, vec.length());
 
   // Test correctness of size and values accurate to single precision

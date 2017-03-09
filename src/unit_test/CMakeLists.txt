@@ -96,6 +96,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     file_reader.cpp
     data_conversions.cpp
     opt_api_core_data_xfers.cpp
+    opt_api_traits.cpp
     opt_tpl_api.cpp
     reduced_basis.cpp
     stat_utils.cpp
