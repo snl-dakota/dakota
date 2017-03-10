@@ -261,7 +261,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       // vars/resp center if accepted
       verify(index); // updates center vars
 
-      // Test for new center || contraction (should always be one or the other)
+      // Test for new center or contraction (should always be one or the other)
       // to track new TR updates not already performed prior to build().
       if (tr_data.status() & NEW_TRUST_REGION)
 	tr_update_max_index = index; // for subsequent top-down pass
@@ -276,8 +276,8 @@ void HierarchSurrBasedLocalMinimizer::build()
       // for find_center_truth() as in find_center_approx() to evaluate when
       // needed, as well as augment top-down pass to match new bypass logic.
 
-      // && globalIterCount < maxIterations) // simplest approach and removes
-                                    // trailing builds, but not fully general
+      // && globalIterCount < maxIterations)
+      // simplest approach to remove trailing builds, but not fully general
 
       // && (truthSetRequest & 6)) { // TO DO (low priority): special case of
       // no/0-th order correction could be optimized to reuse transfer of
@@ -290,6 +290,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
       // build
       iteratedModel.build_approximation();
+      tr_data.set_status_bits(NEW_CENTER_BUILT);
       // Extract truth model evaluation.
       // Note: code from DFSBLM case does lookup, which makes sense if last HF
       // eval was a rejected validation, but if find_center_truth() always
@@ -346,7 +347,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 	// reset TR data for current level; reset lambda/rho for all levels
 	tr_data.reset(); reset_lambda_rho = true;
 	// assume last TR size is ok if level hard converged, else reset it
-	// (don't want to carry excessive TR reductions forward)
+	// (following soft convergence, all related states should be reset)
 	if (tr_conv_code & (SOFT_CONVERGED | MIN_TR_CONVERGED))
 	  tr_data.trust_region_factor(origTrustRegionFactor[index]);
       }
@@ -375,17 +376,18 @@ void HierarchSurrBasedLocalMinimizer::build()
   for (index=num_tr-1; index>=min; --index) {
 
     SurrBasedLevelData& tr_data = trustRegions[index];
-    bool new_level_center = tr_data.status(NEW_CENTER);
+    unsigned short tr_status = tr_data.status();
 
-    if (new_level_center) {
+    if (tr_status & NEW_CENTER) {
       // all levels at or below this level must update corrected responses
       update_corr = true;
 
       // Find approx response.  If not found, evaluate approx model.
       set_model_states(index);   // only LF model to be evaluated
       find_center_approx(index); // find/eval *uncorrected* center approx
-
       // TO DO: if find_center_truth() bypassed above, need it here...
+      if ( (tr_status & NEW_CENTER_BUILT) == 0 )
+	find_center_truth(index, true); // search data_pairs
 
       // Compute additive/multiplicative correction
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
