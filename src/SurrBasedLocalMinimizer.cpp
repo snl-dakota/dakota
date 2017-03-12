@@ -678,7 +678,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     else // accept optimum, retain current TR
       Cout <<"Satisfactory Accuracy, ACCEPT Step, RETAIN Trust Region Size\n\n";
 
-    // update center vars, set NEW_CENTER, unset NEW_CANDIDATE
+    // update center vars, set NEW_CENTER, unset CANDIDATE_STATE
     tr_data.vars_center(tr_data.vars_star());
     // update response center from star, allowing for inconsistent data sets.
     // Note: we always do this even though build() may supplant with full center
@@ -704,7 +704,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    tr_data.reset_status_bits(NEW_CENTER | NEW_CANDIDATE);
+    tr_data.reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
     tr_data.scale_trust_region_factor(gammaContract);
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "
