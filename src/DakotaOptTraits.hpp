@@ -44,11 +44,53 @@ protected:
   //- Heading: Convenience/Helper functions
   //
 
+  /// Sets requiresBounds to true
+  void set_requires_bounds(bool requires_bounds);
+
+  /// Return the value of requiresBounds
+  bool get_requires_bounds();
+
+  /// Sets supportsLinearEquality to true
+  void set_supports_linear_equality(bool supports_linear_equality);
+
+  /// Return the value of supportsLinearEquality
+  bool get_supports_linear_equality();
+
+  /// Sets supportsLinearInequality to true
+  void set_supports_linear_inequality(bool supports_linear_inequality);
+
+  /// Return the value of supportsLinearInequality
+  bool get_supports_linear_inequality();
+
+  /// Sets supportsNonlinearEquality to true
+  void set_supports_nonlinear_equality(bool supports_nonlinear_equality);
+
+  /// Return the value of supportsNonlinearEquality
+  bool get_supports_nonlinear_equality();
+
+  /// Sets supportsNonlinearInequality to true
+  void set_supports_nonlinear_inequality(bool supports_nonlinear_inequality);
+
+  /// Return the value of supportsNonlinearInequality
+  bool get_supports_nonlinear_inequality();
+
+  /// Sets supportsScaling to true
+  void set_supports_scaling(bool supports_scaling);
+
+  /// Return the value of supportsScaling
+  bool get_supports_scaling();
+
+  /// Sets supportsLeastSquares to true
+  void set_supports_least_squares(bool supports_least_squares);
+
+  /// Return the value of supportsLeastSquares
+  bool get_supports_least_squares();
+
   /// Sets supportsMultiobjectives to true
-  void set_supports_multiobjectives();
+  void set_supports_multiobjectives(bool supports_multiobjectives);
 
   /// Return the value of supportsMultiobjectives
-  void get_supports_multiobjectives(bool supports_multiobjectives);
+  bool get_supports_multiobjectives();
 
   /// Sets the type of linear inequality supported
   void set_linear_inequality_type(const std::string& linear_inequality_type);
@@ -69,63 +111,78 @@ protected:
   void get_response_order(std::vector<std::string>& response_order);
 
   /// Sets supportsContinuousVariables to true
-  void set_supports_continuous_variables();
+  void set_supports_continuous_variables(bool supports_continuous_variables);
 
   /// Return the value of supportsContinuousVariables
-  void get_supports_continuous_variables(bool supports_continuous_variables);
+  bool get_supports_continuous_variables();
 
   /// Sets supportsIntegerVariables to true
-  void set_supports_integer_variables();
+  void set_supports_integer_variables(bool supports_integer_variables);
 
   /// Return the value of supportsIntegerVariables
-  void get_upports_integer_variables(bool upports_integer_variables);
+  bool get_upports_integer_variables();
 
   /// Sets supportsRelaxableDiscreteVariables to true
-  void set_supports_relaxable_discrete_variables();
+  void set_supports_relaxable_discrete_variables(bool supports_relaxable_discrete_variables);
 
   /// Return the value of supportsRelaxableDiscreteVariables
-  void get_supports_relaxable_discrete_variables(bool supports_relaxable_discrete_variables);
+  bool get_supports_relaxable_discrete_variables();
 
   /// Sets supportsCategoricalVariables to true
-  void set_supports_categorical_variables();
+  void set_supports_categorical_variables(bool supports_categorical_variables);
 
   /// Return the value of supportsCategoricalVariables
-  void get_supports_categorical_variables(bool supports_categorical_variables);
+  bool get_supports_categorical_variables();
 
   /// Sets providesBestObjective to true
-  void set_provides_best_objective();
+  void set_provides_best_objective(bool provides_best_objective);
 
   /// Return the value of providesBestObjective
-  void get_provides_best_objective(bool provides_best_objective);
+  bool get_provides_best_objective();
 
   /// Sets providesBestParameters to true
-  void set_provides_best_parameters();
+  void set_provides_best_parameters(bool provides_best_parameters);
 
   /// Return the value of providesBestParameters
-  void get_provides_best_parameters(bool provides_best_parameters);
+  bool get_provides_best_parameters();
 
   /// Sets providesBestConstraint to true
-  void set_provides_best_constraint();
+  void set_provides_best_constraint(bool provides_best_constraint);
 
   /// Return the value of providesBestConstraint
-  void get_provides_best_constraint(bool provides_best_constraint);
+  bool get_provides_best_constraint();
 
   /// Sets providesFinalGradient to true
-  void set_provides_final_gradient();
+  void set_provides_final_gradient(bool provides_final_gradient);
 
   /// Return the value of providesFinalGradient
-  void get_provides_final_gradient(bool provides_final_gradient);
+  bool get_provides_final_gradient();
 
   /// Sets providesFinalHessian to true
-  void set_provides_final_hessian();
+  void set_provides_final_hessian(bool provides_final_hessian);
 
   /// Return the value of providesFinalHessian
-  void get_provides_final_hessian(bool provides_final_hessian);
+  bool get_provides_final_hessian();
 
   //
   //- Heading: Data
   //
   
+  /// flag indicating whether method requires bounds
+  bool requiresBounds;
+  
+  /// flag indicating whether method supports linear equalities
+  bool supportsLinearEquality;
+
+  /// flag indicating whether method supports nonlinear equalities
+  bool supportsNonlinearEquality;
+
+  /// flag indicating whether method supports parameter scaling
+  bool supportsScaling;
+
+  /// flag indicating whether method supports least squares
+  bool supportsLeastSquares;
+
   /// flag indicating whether method supports multiobjective optimization
   bool supportsMultiobjectives;
 

@@ -28,7 +28,23 @@ namespace Dakota {
 
 /** Default constructor */
 inline OptTraits::OptTraits():
-supportsMultiobjectives(false)
+requiresBounds(false),
+supportsLinearEquality(false),
+supportsNonlinearEquality(false),
+supportsScaling(false),
+supportsLeastSquares(false),
+supportsMultiobjectives(false),
+linearInequalityType(1),
+nonlinearInequalityType(1),
+supportsContinuousVariables(false),
+supportsIntegerVariables(false),
+supportsRelaxableDiscreteVariables(false),
+supportsCategoricalVariables(false),
+providesBestObjective(false),
+providesBestParameters(false),
+providesBestConstraint(false),
+providesFinalGradient(false),
+providesFinalHessian(false)
 {
   typedef boost::bimap< std::string, int >::value_type position;
 
@@ -184,240 +200,212 @@ void OptTraits::get_linear_inequality_type(std::string& linear_inequality_type)
 
 
 /** Sets requiresBounds to true */
-void OptTraits::set_requires_bounds()
+void OptTraits::set_requires_bounds(bool requires_bounds)
 {
-  requiresBounds = true;
+  requiresBounds = requires_bounds;
 }
 
 
 /** Return the value of requiresBounds */
-void OptTraits::get_requires_bounds(bool requires_bounds)
+bool OptTraits::get_requires_bounds()
 {
-  requires_bounds = requiresBounds;
+  return requiresBounds;
 }
 
 
 /** Sets supportsLinearEquality to true */
-void OptTraits::set_supports_linear_equality()
+void OptTraits::set_supports_linear_equality(bool supports_linear_equality)
 {
-  supportsLinearEquality = true;
+  supportsLinearEquality = supports_linear_equality;
 }
 
 
 /** Return the value of supportsLinearEquality */
-void OptTraits::get_supports_linear_equality(bool supports_linear_equality)
+bool OptTraits::get_supports_linear_equality()
 {
-  supports_linear_equality = supportsLinearEquality;
-}
-
-
-/** Sets supportsLinearInequality to true */
-void OptTraits::set_supports_linear_inequality()
-{
-  supportsLinearInequality = true;
-}
-
-
-/** Return the value of supportsLinearInequality */
-void OptTraits::get_supports_linear_inequality(bool supports_linear_inequality)
-{
-  supports_linear_inequality = supportsLinearInequality;
+  return supportsLinearEquality;
 }
 
 
 /** Sets supportsNonlinearEquality to true */
-void OptTraits::set_supports_nonlinear_equality()
+void OptTraits::set_supports_nonlinear_equality(bool supports_nonlinear_equality)
 {
-  supportsNonlinearEquality = true;
+  supportsNonlinearEquality = supports_nonlinear_equality;
 }
 
 
 /** Return the value of supportsNonlinearEquality */
-void OptTraits::get_supports_nonlinear_equality(bool supports_nonlinear_equality)
+bool OptTraits::get_supports_nonlinear_equality()
 {
-  supports_nonlinear_equality = supportsNonlinearEquality;
-}
-
-
-/** Sets supportsNonlinearInequality to true */
-void OptTraits::set_supports_nonlinear_inequality()
-{
-  supportsNonlinearInequality = true;
-}
-
-
-/** Return the value of supportsNonlinearInequality */
-void OptTraits::get_supports_nonlinear_inequality(bool supports_nonlinear_inequality)
-{
-  supports_nonlinear_inequality = supportsNonlinearInequality;
+  return supportsNonlinearEquality;
 }
 
 
 /** Sets supportsScaling to true */
-void OptTraits::set_supports_scaling()
+void OptTraits::set_supports_scaling(bool supports_scaling)
 {
-  supportsScaling = true;
+  supportsScaling = supports_scaling;
 }
 
 
 /** Return the value of supportsScaling */
-void OptTraits::get_supports_scaling(bool supports_scaling)
+bool OptTraits::get_supports_scaling()
 {
-  supports_scaling = supportsScaling;
+  return supportsScaling;
 }
 
 
 /** Sets supportsLeastSquares to true */
-void OptTraits::set_supports_least_squares()
+void OptTraits::set_supports_least_squares(bool supports_least_squares)
 {
-  supportsLeastSquares = true;
+  supportsLeastSquares = supports_least_squares;
 }
 
 
 /** Return the value of supportsLeastSquares */
-void OptTraits::get_supports_least_squares(bool supports_least_squares)
+bool OptTraits::get_supports_least_squares()
 {
-  supports_least_squares = supportsLeastSquares;
+  return supportsLeastSquares;
 }
 
 
 /** Sets supportsMultiobjectives to true */
-void OptTraits::set_supports_multiobjectives()
+void OptTraits::set_supports_multiobjectives(bool supports_multiobjectives)
 {
-  supportsMultiobjectives = true;
+  supportsMultiobjectives = supports_multiobjectives;
 }
 
 
 /** Return the value of supportsMultiobjectives */
-void OptTraits::get_supports_multiobjectives(bool supports_multiobjectives)
+bool OptTraits::get_supports_multiobjectives()
 {
-  supports_multiobjectives = supportsMultiobjectives;
+  return supportsMultiobjectives;
 }
 
 
 /** Sets supportsContinuousVariables to true */
-void OptTraits::set_supports_continuous_variables()
+void OptTraits::set_supports_continuous_variables(bool supports_continuous_variables)
 {
-  supportsContinuousVariables = true;
+  supportsContinuousVariables = supports_continuous_variables;
 }
 
 
 /** Return the value of supportsContinuousVariables */
-void OptTraits::get_supports_continuous_variables(bool supports_continuous_variables)
+bool OptTraits::get_supports_continuous_variables()
 {
-  supports_continuous_variables = supportsContinuousVariables;
+  return supportsContinuousVariables;
 }
 
 
 /** Sets supportsIntegerVariables to true */
-void OptTraits::set_supports_integer_variables()
+void OptTraits::set_supports_integer_variables(bool supports_integer_variables)
 {
-  supportsIntegerVariables = true;
+  supportsIntegerVariables = supports_integer_variables;
 }
 
 
 /** Return the value of supportsIntegerVariables */
-void OptTraits::get_upports_integer_variables(bool upports_integer_variables)
+bool OptTraits::get_upports_integer_variables()
 {
-  upports_integer_variables = supportsIntegerVariables;
+  return supportsIntegerVariables;
 }
 
 
 /** Sets supportsRelaxableDiscreteVariables to true */
-void OptTraits::set_supports_relaxable_discrete_variables()
+void OptTraits::set_supports_relaxable_discrete_variables(bool relaxable_discrete_variables)
 {
-  supportsRelaxableDiscreteVariables = true;
+  supportsRelaxableDiscreteVariables = relaxable_discrete_variables;
 }
 
 
 /** Return the value of supportsRelaxableDiscreteVariables */
-void OptTraits::get_supports_relaxable_discrete_variables(bool supports_relaxable_discrete_variables)
+bool OptTraits::get_supports_relaxable_discrete_variables()
 {
-  supports_relaxable_discrete_variables = supportsRelaxableDiscreteVariables;
+  return supportsRelaxableDiscreteVariables;
 }
 
 
 /** Sets supportsCategoricalVariables to true */
-void OptTraits::set_supports_categorical_variables()
+void OptTraits::set_supports_categorical_variables(bool supports_categorical_variables)
 {
-  supportsCategoricalVariables = true;
+  supportsCategoricalVariables = supports_categorical_variables;
 }
 
 
 /** Return the value of supportsCategoricalVariables */
-void OptTraits::get_supports_categorical_variables(bool supports_categorical_variables)
+bool OptTraits::get_supports_categorical_variables()
 {
-  supports_categorical_variables = supportsCategoricalVariables;
+  return supportsCategoricalVariables;
 }
 
 
 /** Sets providesBestObjective to true */
-void OptTraits::set_provides_best_objective()
+void OptTraits::set_provides_best_objective(bool provides_best_objective)
 {
-  providesBestObjective = true;
+  providesBestObjective = provides_best_objective;
 }
 
 
 /** Return the value of providesBestObjective */
-void OptTraits::get_provides_best_objective(bool provides_best_objective)
+bool OptTraits::get_provides_best_objective()
 {
-  provides_best_objective = providesBestObjective;
+  return providesBestObjective;
 }
 
 
 /** Sets providesBestParameters to true */
-void OptTraits::set_provides_best_parameters()
+void OptTraits::set_provides_best_parameters(bool provides_best_parameters)
 {
-  providesBestParameters = true;
+  providesBestParameters = provides_best_parameters;
 }
 
 
 /** Return the value of providesBestParameters */
-void OptTraits::get_provides_best_parameters(bool provides_best_parameters)
+bool OptTraits::get_provides_best_parameters()
 {
-  provides_best_parameters = providesBestParameters;
+  return providesBestParameters;
 }
 
 
 /** Sets providesBestConstraint to true */
-void OptTraits::set_provides_best_constraint()
+void OptTraits::set_provides_best_constraint(bool provides_best_constraint)
 {
-  providesBestConstraint = true;
+  providesBestConstraint = provides_best_constraint;
 }
 
 
 /** Return the value of providesBestConstraint */
-void OptTraits::get_provides_best_constraint(bool provides_best_constraint)
+bool OptTraits::get_provides_best_constraint()
 {
-  provides_best_constraint = providesBestConstraint;
+  return providesBestConstraint;
 }
 
 
 /** Sets providesFinalGradient to true */
-void OptTraits::set_provides_final_gradient()
+void OptTraits::set_provides_final_gradient(bool provides_final_gradient)
 {
-  providesFinalGradient = true;
+  providesFinalGradient = provides_final_gradient;
 }
 
 
 /** Return the value of providesFinalGradient */
-void OptTraits::get_provides_final_gradient(bool provides_final_gradient)
+bool OptTraits::get_provides_final_gradient()
 {
-  provides_final_gradient = providesFinalGradient;
+  return providesFinalGradient;
 }
 
 
 /** Sets providesFinalHessian to true */
-void OptTraits::set_provides_final_hessian()
+void OptTraits::set_provides_final_hessian(bool provides_final_hessian)
 {
-  providesFinalHessian = true;
+  providesFinalHessian = provides_final_hessian;
 }
 
 
 /** Return the value of providesFinalHessian */
-void OptTraits::get_provides_final_hessian(bool provides_final_hessian)
+bool OptTraits::get_provides_final_hessian()
 {
-  provides_final_hessian = providesFinalHessian;
+  return providesFinalHessian;
 }
 
 } // namespace Dakota
