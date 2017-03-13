@@ -399,7 +399,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       tr_lower_truncation = true;
     }
   }
-  if (cv_truncation) tr_data.set_status_bits(NEW_CENTER); // rare case
+  //if (cv_truncation) tr_data.set_status_bits(NEW_CENTER);//handled in SBLD set
   tr_data.reset_status_bits(NEW_TR_FACTOR); // TR updates applied; reset bit
 
   // a flag for global approximations defining the availability of the

@@ -276,8 +276,9 @@ void HierarchSurrBasedLocalMinimizer::build()
 
       // Don't incur expense of building and checking for hard conv if already
       // soft converged (e.g., max iters, min TR, insufficient decrease).
-      if (tr_data.converged())
-	tr_data.set_status_bits(CENTER_DEFERRED);
+      if (tr_data.converged()) {
+	//tr_data.set_status_bits(CENTER_PENDING);
+      }
       else {
 	// build hierarchical approx, find center truth and correct it
 	build_center_truth(index);
@@ -364,7 +365,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       find_center_approx(index); // find/eval *uncorrected* center approx
       // If build was bypassed above due to level convergence, need it here
       // now that all updates have occurred and iteration has continued.
-      if (tr_status & CENTER_DEFERRED)
+      if ( (tr_status & CENTER_BUILT) == 0 )//if (tr_status & CENTER_PENDING)
 	build_center_truth(index);
 
       // Compute additive/multiplicative correction

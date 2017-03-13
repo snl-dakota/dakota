@@ -29,13 +29,12 @@ enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
 // bits for trust region status
 enum { NEW_CANDIDATE      =    1,
        CANDIDATE_ACCEPTED =    2,
-       CANDIDATE_REJECTED =    4,
-       CANDIDATE_STATE    = (NEW_CANDIDATE | CANDIDATE_ACCEPTED |
-			     CANDIDATE_REJECTED),
+     //CANDIDATE_REJECTED =    4,
+       CANDIDATE_STATE    = (NEW_CANDIDATE | CANDIDATE_ACCEPTED),// | _REJECTED
        NEW_CENTER         =    8,
        CENTER_BUILT       =   16,
-       CENTER_DEFERRED    =   32,
-       CENTER_STATE       = (NEW_CENTER | CENTER_BUILT | CENTER_DEFERRED),
+     //CENTER_PENDING     =   32,
+       CENTER_STATE       = (NEW_CENTER | CENTER_BUILT),// | CENTER_PENDING
        NEW_TR_FACTOR      =   64,
        NEW_TRUST_REGION   = (NEW_CENTER | NEW_TR_FACTOR),
        HARD_CONVERGED     =  128,
@@ -278,7 +277,8 @@ inline void SurrBasedLevelData::vars_center(const Variables& vars)
 {
   varsCenter.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CENTER);  reset_status_bits(CANDIDATE_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
@@ -293,14 +293,16 @@ inline Real SurrBasedLevelData::c_var_center(size_t i) const
 inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars)
 {
   varsCenter.continuous_variables(c_vars);
-  set_status_bits(NEW_CENTER);  reset_status_bits(CANDIDATE_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
 inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i)
 {
   varsCenter.continuous_variable(c_var, i);
-  set_status_bits(NEW_CENTER);  reset_status_bits(CANDIDATE_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CENTER);
 }
 
 
@@ -316,7 +318,8 @@ inline void SurrBasedLevelData::vars_star(const Variables& vars)
 {
   varsStar.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(CENTER_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
@@ -331,14 +334,16 @@ inline Real SurrBasedLevelData::c_var_star(size_t i) const
 inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
 {
   varsStar.continuous_variables(c_vars);
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(CENTER_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
 inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
 {
   varsStar.continuous_variable(c_var, i);
-  set_status_bits(NEW_CANDIDATE);  reset_status_bits(CENTER_STATE);
+  reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
+  set_status_bits(NEW_CANDIDATE);
 }
 
 
