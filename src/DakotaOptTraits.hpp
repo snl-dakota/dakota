@@ -249,6 +249,92 @@ inline OptTraits::~OptTraits()
 { }
 
 
+//----------------------------------------------------------------
+
+class InheritableSingleton_OptTraits
+{
+public:
+
+  /// default constructor
+  InheritableSingleton_OptTraits() { }
+
+  /// destructor
+  virtual ~InheritableSingleton_OptTraits() { }
+
+protected:
+  /// We could disallow instantiation of this base class by using a pure virtual function, eg
+  //virtual bool is_derived() = 0;
+
+public:
+  //
+  //- Heading: Convenience/Helper functions
+  //
+
+  /// Return the value of requiresBounds
+  virtual bool requires_bounds() { return false; }
+
+  /// Return the value of supportsLinearEquality
+  virtual bool supports_linear_equality() { return false; }
+
+  /// Return the value of supportsLinearInequality
+  virtual bool supports_linear_inequality() { return false; }
+
+  /// Return the value of supportsNonlinearEquality
+  virtual bool supports_nonlinear_equality() { return false; }
+
+  /// Return the value of supportsNonlinearInequality
+  virtual bool supports_nonlinear_inequality() { return false; }
+
+  /// Return the value of supportsScaling
+  virtual bool supports_scaling() { return false; }
+
+  /// Return the value of supportsLeastSquares
+  virtual bool supports_least_squares() { return false; }
+
+  /// Return the value of supportsMultiobjectives
+  virtual bool supports_multiobjectives() { return false; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return false; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool upports_integer_variables() { return false; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return false; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return false; }
+
+  /// Return the value of providesBestObjective
+  virtual bool provides_best_objective() { return false; }
+
+  /// Return the value of providesBestParameters
+  virtual bool provides_best_parameters() { return false; }
+
+  /// Return the value of providesBestConstraint
+  virtual bool provides_best_constraint() { return false; }
+
+  /// Return the value of providesFinalGradient
+  virtual bool provides_final_gradient() { return false; }
+
+  /// Return the value of providesFinalHessian
+  virtual bool provides_final_hessian() { return false; }
+
+
+private:
+
+  //
+  //- Heading: Convenience/Helper functions
+  //
+
+  //
+  //- Heading: Data
+  //
+};
+
+
+
 } // namespace Dakota
 
 #endif
