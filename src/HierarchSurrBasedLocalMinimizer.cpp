@@ -284,16 +284,14 @@ void HierarchSurrBasedLocalMinimizer::build()
 	build_center_truth(index);
 
 	// Must perform hard conv assessment on corrected truth, as consistent
-	// with subproblem optimization.  However, this correction is dependent
-	// on the hierarchical state of truth resp above, to be updated later
-	// in this loop.  We therefore require a final pass (bottom of build())
-	// to update all corrected responses once all builds are completed.
-	// Thus, hard convergence is assessed from _new_ UNCORR_TRUTH_RESPONSE
-	// combined with _previous_ corrections for all levels above.
+	// with subproblem optimization.  However, this correction is temporary
+	// as it is dependent on the hierarchical state of truth resp above, to
+	// be updated later in this loop.  We therefore require a final pass
+	// (bottom of build()) to update all corrected responses once all builds
+	// are completed.  Thus, hard convergence is assessed for this level
+	// using the latest info currently available: new UNCORR_TRUTH_RESPONSE
+	// combined with previous corrections for all levels above.
 	correct_center_truth(index);
-	// Recursive assessment of hard convergence is bottom up (TR bounds and 
-	// corrections managed top-down).  When one level has hard converged,
-	// we pass its iterate as a star candidate for the level above.
 	if (last_tr)
 	  hard_convergence_check(tr_data, globalLowerBnds, globalUpperBnds);
 	else
@@ -318,6 +316,8 @@ void HierarchSurrBasedLocalMinimizer::build()
 	return;
       }
       else {
+	// When an intermediate level has converged, we pass its center truth
+	// iterate as a star approx candidate for the level above:
 	SurrBasedLevelData& next_tr = trustRegions[next_index];
 	size_t next_lev = next_tr.truth_model_level();
 	Cout << "<<<<< Promoting candidate from form " << tr_formp1;
@@ -369,7 +369,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       update_corr = true;
 
       set_model_states(index);
-      // If build was bypassed above due to level convergence, do it here
+      // If build was bypassed above due to level convergence, do it now
       // (all updates have propagated and iteration has continued).
       if ( (tr_status & CENTER_BUILT) == 0 )//if (tr_status & CENTER_PENDING)
 	build_center_truth(index);
