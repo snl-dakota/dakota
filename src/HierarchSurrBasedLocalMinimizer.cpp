@@ -274,18 +274,26 @@ void HierarchSurrBasedLocalMinimizer::build()
       // no/0-th order correction could be optimized to reuse transfer of
       // response fn vals from star->center
 
-      // Don't incur expense of building and checking for hard conv if already
-      // soft converged (e.g., max iters, min TR, insufficient decrease).
       if (tr_data.converged()) {
+	// Don't incur expense of building + checking for hard conv if already
+	// soft converged (e.g., max iters, min TR, insufficient decrease).
 	//tr_data.set_status_bits(CENTER_PENDING);
       }
       else {
 	// build hierarchical approx, find center truth and correct it
 	build_center_truth(index);
 
+	// Must perform hard conv assessment on corrected truth, as consistent
+	// with subproblem optimization.  However, this correction is dependent
+	// on the hierarchical state of truth resp above, to be updated later
+	// in this loop.  We therefore require a final pass (bottom of build())
+	// to update all corrected responses once all builds are completed.
+	// Thus, hard convergence is assessed from _new_ UNCORR_TRUTH_RESPONSE
+	// combined with _previous_ corrections for all levels above.
+	correct_center_truth(index);
 	// Recursive assessment of hard convergence is bottom up (TR bounds and 
 	// corrections managed top-down).  When one level has hard converged,
-	// must update and recenter level above.
+	// we pass its iterate as a star candidate for the level above.
 	if (last_tr)
 	  hard_convergence_check(tr_data, globalLowerBnds, globalUpperBnds);
 	else
@@ -360,13 +368,13 @@ void HierarchSurrBasedLocalMinimizer::build()
       // all levels at or below this level must update corrected responses
       update_corr = true;
 
-      // Find approx response.  If not found, evaluate approx model.
-      set_model_states(index);   // only LF model to be evaluated
-      find_center_approx(index); // find/eval *uncorrected* center approx
-      // If build was bypassed above due to level convergence, need it here
-      // now that all updates have occurred and iteration has continued.
+      set_model_states(index);
+      // If build was bypassed above due to level convergence, do it here
+      // (all updates have propagated and iteration has continued).
       if ( (tr_status & CENTER_BUILT) == 0 )//if (tr_status & CENTER_PENDING)
 	build_center_truth(index);
+      // Find approx response.  If not found, evaluate approx model.
+      find_center_approx(index); // find/eval *uncorrected* center approx
 
       // Compute additive/multiplicative correction
       DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
@@ -409,14 +417,6 @@ void HierarchSurrBasedLocalMinimizer::build_center_truth(size_t tr_index)
   // eval was a rejected validation, but if find_center_truth() always
   // follows build_approximation(), then this lookup is not necessary.
   find_center_truth(tr_index); // find/eval *uncorrected* center truth
-  // Must perform hard conv assessment on corrected truth, as consistent
-  // with subproblem optimization.  However, this correction is dependent
-  // on the hierarchical state of truth resp above, to be updated later in
-  // this loop.  We therefore require a final pass (bottom of build()) to
-  // update all corrected responses once all recursive builds are completed.
-  // Thus, hard convergence is assessed from _new_ UNCORR_TRUTH_RESPONSE
-  // combined with _previous_ corrections for all levels above.
-  correct_center_truth(tr_index);
 }
 
 
