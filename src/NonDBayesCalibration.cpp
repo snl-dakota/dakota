@@ -53,6 +53,7 @@ NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
+  mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
   chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
@@ -218,6 +219,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   switch (emulatorType) {
 
   case PCE_EMULATOR: case SC_EMULATOR: {
+    mcmcModelHasSurrogate = true;
     const UShortArray& level_seq
       = probDescDB.get_usa("method.nond.sparse_grid_level");
     const RealVector& dim_pref
@@ -265,6 +267,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 
   case GP_EMULATOR: case KRIGING_EMULATOR: {
+    mcmcModelHasSurrogate = true;
     String sample_reuse; String approx_type;
     if (emulatorType == GP_EMULATOR)
       { approx_type = "global_gaussian"; mcmcDerivOrder = 3; } // grad support
@@ -318,6 +321,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 
   case NO_EMULATOR:
+    mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) transform_model(inbound_model, mcmcModel);//dist bnds
     else                   mcmcModel = inbound_model; // shared rep

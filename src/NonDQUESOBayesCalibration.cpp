@@ -677,7 +677,17 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
     }
 
     // now retreive function values
-    if (mcmcModel.model_type() == "surrogate") {
+
+    // NOTE: The MCMC may be PCE/SC model, DataFitSurrModel, or raw
+    // model, but it's type may be a ProbabilityTransform wrapper if
+    // standardizedSpace is active.  mcmcModelHasSurrogate controls
+    // model re-evals.  This is not sufficiently general, e.g., if the
+    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+
+    // TODO: Consider doing lookup first, then surrogate re-eval, or
+    // querying a more complete eval database when available...
+
+    if (mcmcModelHasSurrogate) {
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
@@ -686,8 +696,13 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
     else {
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
+      if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
+	// Set NaN in the chain points to avoid misleading the user
+	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
+      }
       else {
 	const RealVector& fn_vals = cache_it->response().function_values();
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);

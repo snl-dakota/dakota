@@ -175,6 +175,10 @@ protected:
   /// or direct access to simulations (no surrogate option)
   Model mcmcModel;
 
+  /// whether the MCMC Model is a surrogate, or a thin transformation
+  /// around a surrogate, so can be cheaply re-evaluated in chain recovery
+  bool mcmcModelHasSurrogate;
+
   /// DataTransformModel wrapping the mcmcModel
   Model residualModel;
 
