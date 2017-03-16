@@ -18,7 +18,6 @@
 #include <boost/functional/hash/hash.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-//#include <boost/numeric/conversion/cast.hpp>
 #include <boost/regex.hpp>
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
@@ -862,7 +861,6 @@ inline void merge_data_partial(const IntVector& d_vec,
   size_t i, num_items = d_vec.length();
   // In this case, incoming m_vec must already be sized and will be
   // indexed from start_index_ma to start_index_ma+num_items-1
-  //size_t m_vec_len = boost::numeric_cast<size_t>(m_vec.length());
   size_t m_vec_len = m_vec.length();
   if (start_index_ma + num_items > m_vec_len) {
     Cerr << "Error: indexing out of bounds in merge_data_partial(IntVector, "
