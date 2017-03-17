@@ -155,13 +155,13 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else // multiple solutions levels (only) --> traditional ML-MC
-    multilevel_mc(model_form);
+    multilevel_mc_Ysum(model_form);
 }
 
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc(size_t model_form)
+void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 {
   // Formulate as a coordinated progression towards convergence, where, e.g.,
   // time step is inferred from the spatial discretization (NOT an additional
@@ -204,11 +204,11 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
   // retrieve cost estimates across soln levels for a particular model form
   RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
-  // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
+  // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[i] = (Y^i)^2 for i=1).
   IntRealMatrixMap sum_Y; RealMatrix sum_YY(numFunctions, num_lev);
-  initialize_ml_sums(sum_Y, num_lev);
+  initialize_ml_Ysums(sum_Y, num_lev);
 
   // Initialize for pilot sample
   Sizet2DArray& N_l = NLev[model_form];
@@ -257,7 +257,7 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_sums(sum_Y, sum_YY, lev, N_l[lev]);
+	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
 	  write_data(Cout, sum_Y[1]); write_data(Cout, sum_Y[2]);
@@ -270,13 +270,15 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
 	// compute estimator variance from current sample accumulation:
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "variance of Y[" << lev << "]: ";
-	agg_var_l = aggregate_variance(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
+	agg_var_l
+	  = aggregate_variance_Ysum(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MC applied to HF:
       if (iter == 0)
-	estimator_var0 += aggregate_mse(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
+	estimator_var0
+	  += aggregate_mse_Ysum(sum_Y[1][lev], sum_YY[lev], N_l[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -318,6 +320,153 @@ void NonDMultilevelSampling::multilevel_mc(size_t model_form)
       Y_raw_mom(qoi,3) += sum_Y4(qoi,lev) / Nlq;
     }
   }
+  // Convert uncentered raw moment estimates to standardized moments
+  convert_moments(Y_raw_mom, momentStats);
+
+  // compute the equivalent number of HF evaluations (includes any sim faults)
+  equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
+  for (lev=1; lev<num_lev; ++lev) // subsequent levels incur 2 model costs
+    equivHFEvals += raw_N_l[lev] * (cost[lev] + cost[lev-1]);
+  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+}
+
+
+/** This function performs "geometrical" MLMC on a single model form
+    with multiple discretization levels. */
+void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
+{
+  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
+  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+
+  Model& truth_model  = iteratedModel.truth_model();
+  size_t lev, num_lev = truth_model.solution_levels(), // single model form
+    qoi, iter = 0, samp;
+  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
+  // retrieve cost estimates across soln levels for a particular model form
+  RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
+  // For moment estimation, we accumulate telescoping sums for Q^i using
+  // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
+  // For computing N_l from estimator variance, we accumulate square of Y1
+  // estimator (YY[i] = (Y^i)^2 for i=1).
+  IntRealMatrixMap sum_Ql, sum_Qlm1;
+  RealMatrix sum_QlQlm1(numFunctions, num_lev);
+  initialize_ml_Qsums(sum_Ql, sum_Qlm1, num_lev);
+
+  // Initialize for pilot sample
+  Sizet2DArray& N_l = NLev[model_form];
+  SizetArray delta_N_l; load_pilot_sample(delta_N_l);
+  Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
+  // raw eval counts are accumulation of allSamples irrespective of resp faults
+  SizetArray raw_N_l(num_lev, 0);
+
+  // now converge on sample counts per level (N_l)
+  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+
+    // set initial surrogate responseMode and model indices for lev 0
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
+
+    sum_sqrt_var_cost = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+
+      lev_cost = cost[lev];
+      if (lev) {
+	if (lev == 1) // update responseMode for levels 1:num_lev-1
+	  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS); // {LF,HF}
+	iteratedModel.surrogate_model_indices(model_form, lev-1);
+	iteratedModel.truth_model_indices(model_form,     lev);
+	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+      }
+
+      // set the number of current samples from the defined increment
+      numSamples = delta_N_l[lev];
+
+      // aggregate variances across QoI for estimating N_l (justification:
+      // for independent QoI, sum of QoI variances = variance of QoI sum)
+      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
+      if (numSamples) {
+
+	// generate new MC parameter sets
+	get_parameter_sets(iteratedModel);// pull dist params from any model
+
+	// export separate output files for each data set.  surrogate_model()
+	// has the correct model_form index for all levels.
+	if (exportSampleSets)
+	  export_all_samples("ml_", iteratedModel.surrogate_model(), iter, lev);
+
+	// compute allResponses from allVariables using hierarchical model
+	evaluate_parameter_sets(iteratedModel, true, false);
+
+	// process allResponses: accumulate new samples for each qoi and
+	// update number of successful samples for each QoI
+	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev, N_l[lev]);
+	if (outputLevel == DEBUG_OUTPUT) {
+	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n";
+	  write_data(Cout, sum_Ql[1]);   write_data(Cout, sum_Ql[2]);
+	  write_data(Cout, sum_Qlm1[1]); write_data(Cout, sum_Qlm1[2]);
+	  Cout << std::endl;
+	}
+	// update raw evaluation counts
+	raw_N_l[lev] += numSamples;
+
+	// compute estimator variance from current sample accumulation:
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "variance of Y[" << lev << "]: ";
+	agg_var_l = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+					    sum_Ql[2][lev], sum_QlQlm1[lev],
+					    sum_Qlm1[2][lev], N_l[lev]);
+      }
+
+      sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
+      // MSE reference is MC applied to HF:
+      if (iter == 0)
+	estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
+					     sum_Ql[2][lev], sum_QlQlm1[lev],
+					     sum_Qlm1[2][lev], N_l[lev]);
+    }
+    // compute epsilon target based on relative tolerance: total MSE = eps^2
+    // which is equally apportioned (eps^2 / 2) among discretization MSE and
+    // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
+    // discretization error, we compute an initial estimator variance and
+    // then seek to reduce it by a relative_factor <= 1.
+    if (iter == 0) { // eps^2 / 2 = var * relative factor
+      eps_sq_div_2 = estimator_var0 * convergenceTol;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+    }
+
+    // update targets based on variance estimates
+    Real fact = sum_sqrt_var_cost / eps_sq_div_2, N_target;
+    for (lev=0; lev<num_lev; ++lev) {
+      // Equation 3.9 in CTR Annual Research Briefs:
+      // "A multifidelity control variate approach for the multilevel Monte 
+      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
+      N_target = std::sqrt(agg_var[lev] / lev_cost) * fact;
+      delta_N_l[lev] = one_sided_delta(average(N_l[lev]), N_target);
+    }
+    ++iter;
+    Cout << "\nMLMC iteration " << iter << " sample increments:\n" << delta_N_l
+	 << std::endl;
+  }
+
+  // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
+  // value is sum of expected values from telescopic sum. There is no bias
+  // correction for small sample sizes as in NonDSampling::compute_moments().
+  RealMatrix Y_raw_mom(numFunctions, 4);
+  /*
+  RealMatrix &sum_Y1 = sum_Y[1], &sum_Y2 = sum_Y[2],
+	     &sum_Y3 = sum_Y[3], &sum_Y4 = sum_Y[4];
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (lev=0; lev<num_lev; ++lev) {
+      size_t Nlq = N_l[lev][qoi];
+      Y_raw_mom(qoi,0) += sum_Y1(qoi,lev) / Nlq;
+      Y_raw_mom(qoi,1) += sum_Y2(qoi,lev) / Nlq;
+      Y_raw_mom(qoi,2) += sum_Y3(qoi,lev) / Nlq;
+      Y_raw_mom(qoi,3) += sum_Y4(qoi,lev) / Nlq;
+    }
+  }
+  */
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(Y_raw_mom, momentStats);
 
@@ -556,7 +705,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  RealMatrix& sum_HH1 = sum_HH[1];
-	  accumulate_ml_sums(sum_H, sum_HH1, lev, N_hf[lev]);
+	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n";
 	    write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
@@ -567,7 +716,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  if (outputLevel >= DEBUG_OUTPUT)
 	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
-	    = aggregate_variance(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
+	    = aggregate_variance_Ysum(sum_H[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
       }
 
@@ -578,8 +727,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
       // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
-	  aggregate_mse(var_H[lev], N_hf[lev]) :
-	  aggregate_mse(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
+	  aggregate_mse_Yvar(var_H[lev], N_hf[lev]) :
+	  aggregate_mse_Ysum(sum_H[1][lev], sum_HH[1][lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -816,7 +965,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	else { // no LF model for this level; accumulate only multilevel
 	       // discrepancy sums (Hl is Yl) as in standard MLMC
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
-	  accumulate_ml_sums(sum_Hl, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
+	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n";
 	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
@@ -827,7 +976,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	  if (outputLevel >= DEBUG_OUTPUT)
 	    Cout << "variance of Y[" << lev << "]: ";
 	  agg_var_hf_l
-	    = aggregate_variance(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
+	    = aggregate_variance_Ysum(sum_Hl[1][lev], sum_HH1[lev], N_hf[lev]);
 	}
       }
 
@@ -838,8 +987,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
       // MSE reference is MC applied to HF Y aggregated across qoi & levels
       if (iter == 0)
 	estimator_var0 += (lev < num_cv_lev) ?
-	  aggregate_mse(var_Yl[lev], N_hf[lev]) :
-	  aggregate_mse(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev]);
+	  aggregate_mse_Yvar(var_Yl[lev], N_hf[lev]) :
+	  aggregate_mse_Ysum(sum_Hl[1][lev], sum_Hl_Hl[1][lev], N_hf[lev]);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -1012,7 +1161,7 @@ void NonDMultilevelSampling::load_pilot_sample(Sizet2DArray& delta_N_l)
 
 
 void NonDMultilevelSampling::
-initialize_ml_sums(IntRealMatrixMap& sum_Y, size_t num_lev)
+initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealMatrix> empty_pr;
@@ -1021,6 +1170,22 @@ initialize_ml_sums(IntRealMatrixMap& sum_Y, size_t num_lev)
     // std::map::insert() returns std::pair<IntRMMIter, bool>:
     // use IntRMMIter to shape RealMatrix in place and init sums to 0
     sum_Y.insert(empty_pr).first->second.shape(numFunctions, num_lev);
+  }
+}
+
+  
+void NonDMultilevelSampling::
+initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		    size_t num_lev)
+{
+  // sum_* are running sums across all increments
+  std::pair<int, RealMatrix> empty_pr;
+  for (int i=1; i<=4; ++i) {
+    empty_pr.first = i;
+    // std::map::insert() returns std::pair<IntRMMIter, bool>:
+    // use IntRMMIter to shape RealMatrix in place and init sums to 0
+    sum_Ql.insert(empty_pr).first->second.shape(numFunctions, num_lev);
+    sum_Qlm1.insert(empty_pr).first->second.shape(numFunctions, num_lev);
   }
 }
 
@@ -1123,8 +1288,8 @@ initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
-		   SizetArray& num_Y)
+accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
+		    SizetArray& num_Y)
 {
   using boost::math::isfinite;
   Real lf_fn, lf_prod;
@@ -1137,17 +1302,17 @@ accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 	lf_prod = lf_fn = fn_vals[qoi];
 	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
-	  y_it = sum_Y.begin(); y_ord = y_it->first; active_ord = 1;
+	  y_it = sum_Y.begin(); y_ord = y_it->first;
+	  active_ord = 1;
 
+	  // add to sum_YY: running sums across all sample increments
+	  sum_YY(qoi,lev) += lf_prod * lf_prod;
+	  // add to sum_Y: running sums across all sample increments
 	  while (y_it!=sum_Y.end() || active_ord <= 1) {
-	    // add to sum_Y: running sums across all sample increments
 	    if (y_ord == active_ord) {
 	      y_it->second(qoi,lev) += lf_prod; ++y_it;
 	      y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
 	    }
-	    // add to sum_YY: running sums across all sample increments
-	    if (active_ord == 1) sum_YY(qoi,lev) += lf_prod * lf_prod;
-	  
 	    lf_prod *= lf_fn; ++active_ord;
 	  }
 	  ++num_Y[qoi];
@@ -1164,18 +1329,17 @@ accumulate_ml_sums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 	lf_prod = lf_fn = fn_vals[qoi];
 	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
-	  y_it = sum_Y.begin();  y_ord = y_it->first;  active_ord = 1;
+	  y_it = sum_Y.begin();  y_ord = y_it->first;
+	  active_ord = 1;
 
+	  // add to sum_YY: running sums across all sample increments
+	  Real delta_prod = hf_prod - lf_prod;
+	  sum_YY(qoi,lev) += delta_prod * delta_prod; // (HF^p-LF^p)^2
+	  // add to sum_Y: running sums across all sample increments
 	  while (y_it!=sum_Y.end() || active_ord <= 1) {
-	    // add to sum_Y: running sums across all sample increments
 	    if (y_ord == active_ord) {
 	      y_it->second(qoi,lev) += hf_prod - lf_prod; // HF^p-LF^p
 	      ++y_it; y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
-	    }
-	    // add to sum_YY: running sums across all sample increments
-	    if (active_ord == 1) {
-	      Real delta_prod = hf_prod - lf_prod;
-	      sum_YY(qoi,lev) += delta_prod * delta_prod; // (HF^p-LF^p)^2
 	    }
 	    hf_prod *= hf_fn; lf_prod *= lf_fn; ++active_ord;
 	  }
@@ -1254,6 +1418,9 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 	lh_ord = /*(lh_it == sum_LH.end()) ? 0 :*/ lh_it->first;
 	active_ord = 1;
 
+	// High-High
+	sum_HH[qoi] += hf_prod * hf_prod;
+
 	while (ls_it!=sum_L_shared.end() || lr_it!=sum_L_refined.end() ||
 	       h_it!=sum_H.end() || ll_it!=sum_LL.end() ||
 	       lh_it!=sum_LH.end() || active_ord <= 1) {
@@ -1278,8 +1445,6 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 	    ll_it->second[qoi] += lf_prod * lf_prod;
 	    ++ll_it; ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
 	  }
-	  // High-High
-	  if (active_ord == 1) sum_HH[qoi] += hf_prod * hf_prod;
 	  // Low-High
 	  if (lh_ord == active_ord) {
 	    lh_it->second[qoi] += lf_prod * hf_prod;
@@ -1298,7 +1463,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 
 
 void NonDMultilevelSampling::
-accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
+accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 {
   using boost::math::isfinite;
   Real q_l, q_l_prod;
@@ -1331,11 +1496,64 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 
 
 void NonDMultilevelSampling::
+accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+		    RealMatrix& sum_QlQlm1, size_t lev, SizetArray& num_Q)
+{
+  if (lev == 0)
+    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
+  else {
+    using boost::math::isfinite;
+    Real q_l, q_l_prod, q_lm1_prod, q_lm1;
+    int l1_ord, l2_ord, active_ord; size_t qoi;
+    IntRespMCIter r_it; IntRMMIter l1_it, l2_it;
+
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	// response mode AGGREGATED_MODELS orders LF followed by HF
+	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
+	q_lm1_prod = q_lm1 = fn_vals[qoi];
+
+	// sync sample counts for Ql and Qlm1
+	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
+	  l1_it  = sum_Ql.begin();
+	  l2_it  = sum_Qlm1.begin();
+	  l1_ord = (l1_it == sum_Ql.end())   ? 0 : l1_it->first;
+	  l2_ord = (l2_it == sum_Qlm1.end()) ? 0 : l2_it->first;
+
+	  active_ord = 1;
+	  sum_QlQlm1(qoi,lev) += q_l_prod * q_lm1_prod;
+	  while (l1_it != sum_Ql.end() || l2_it != sum_Qlm1.end()) {
+
+	    // Low: Ll, Llm1
+	    if (l1_ord == active_ord) {
+	      l1_it->second(qoi,lev) += q_l_prod; ++l1_it;
+	      l1_ord = (l1_it == sum_Ql.end()) ? 0 : l1_it->first;
+	    }
+	    if (l2_ord == active_ord) {
+	      l2_it->second(qoi,lev) += q_lm1_prod; ++l2_it;
+	      l2_ord = (l2_it == sum_Qlm1.end()) ? 0 : l2_it->first;
+	    }
+
+	    q_l_prod *= q_l; q_lm1_prod *= q_lm1; ++active_ord;
+	  }
+	  ++num_Q[qoi];
+	}
+      }
+      //Cout << r_it->first << ": ";
+      //write_data(Cout, sum_Ql[1]); write_data(Cout, sum_Qlm1[1]);
+    }
+  }
+}
+
+
+void NonDMultilevelSampling::
 accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		      size_t lev, SizetArray& num_Q)
 {
   if (lev == 0)
-    accumulate_mlcv_Qsums(sum_Ql, lev, num_Q);
+    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
   else {
     using boost::math::isfinite;
     Real q_l, q_l_prod, q_lm1_prod, q_lm1;
@@ -1390,7 +1608,7 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev, SizetArray& num_Y)
   // case with discrepancies, indexed by level.
 
   if (lev == 0)
-    accumulate_mlcv_Qsums(sum_Y, lev, num_Y);
+    accumulate_ml_Qsums(sum_Y, lev, num_Y);
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
     using boost::math::isfinite;
     Real fn_l, prod_l, fn_lm1, prod_lm1;
