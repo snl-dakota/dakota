@@ -102,7 +102,7 @@ private:
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			   size_t num_lev);
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
 
   /// initialize the CV accumulators for computing means, variances, and
   /// covariances across fidelity levels
@@ -150,7 +150,7 @@ private:
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			   RealMatrix& sum_QlQlm1, size_t lev,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
 			   SizetArray& num_Q);
 
   /// update running sums for one model (sum_L) using set of model
@@ -370,6 +370,9 @@ private:
 			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			       const Real* sum_Qlm1Qlm1, const SizetArray& N_l);
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
+  /// QoI using discrepancy variances
+  Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
+  /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy sums
   Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
@@ -378,9 +381,6 @@ private:
   Real aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			  const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l);
-  /// sum up Monte Carlo estimates for mean squared error (MSE) across
-  /// QoI using discrepancy variances
-  Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
 
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
@@ -574,8 +574,8 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
     mu_Ql   = sum_Ql[qoi]   / Nlq;
     mu_Qlm1 = sum_Qlm1[qoi] / Nlq;
     //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-    var_Y = ( sum_QlQl[qoi]     - Nlq * mu_Ql   * mu_Ql                    // Ql
-      - 2.* ( sum_QlQlm1[qoi]   - Nlq * mu_Ql   * mu_Qlm1 ) +          // QlQlm1
+    var_Y = ( sum_QlQl[qoi]     - Nlq * mu_Ql   * mu_Ql                // var_Ql
+      - 2.* ( sum_QlQlm1[qoi]   - Nlq * mu_Ql   * mu_Qlm1 ) +    // covar_QlQlm1
 	      sum_Qlm1Qlm1[qoi] - Nlq * mu_Qlm1 * mu_Qlm1 ) / (Nlq - 1); // Qlm1
     agg_var_l += var_Y;
     if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
@@ -583,6 +583,16 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
   if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
 
   return agg_var_l;
+}
+
+
+inline Real NonDMultilevelSampling::
+aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
+{
+  Real agg_mse = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
+  return agg_mse;
 }
 
 
@@ -616,16 +626,6 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 	      sum_Qlm1Qlm1[qoi] - Nlq * mu_Qlm1 * mu_Qlm1 ) / (Nlq - 1); // Qlm1
     agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
   }
-  return agg_mse;
-}
-
-
-inline Real NonDMultilevelSampling::
-aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
-{
-  Real agg_mse = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
   return agg_mse;
 }
 
