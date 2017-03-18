@@ -154,8 +154,10 @@ void NonDMultilevelSampling::core_run()
       control_variate_mc(lf_form_level, hf_form_level);
     }
   }
-  else // multiple solutions levels (only) --> traditional ML-MC
-    multilevel_mc_Qsum(model_form);
+  else { // multiple solutions levels (only) --> traditional ML-MC
+    if (subIteratorFlag) multilevel_mc_Qsum(model_form); // includes error est
+    else                 multilevel_mc_Ysum(model_form); // lighter weight
+  }
 }
 
 
@@ -414,14 +416,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "variance of Y[" << lev << "]: ";
 	agg_var_l = aggregate_variance_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
-	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev], N_l[lev]);
+	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],N_l[lev],lev);
       }
 
       sum_sqrt_var_cost += std::sqrt(agg_var_l * lev_cost);
       // MSE reference is MC applied to HF:
       if (iter == 0)
 	estimator_var0 += aggregate_mse_Qsum(sum_Ql[1][lev], sum_Qlm1[1][lev],
-	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev], N_l[lev]);
+	  sum_Ql[2][lev], sum_QlQlm1[pr11][lev], sum_Qlm1[2][lev],N_l[lev],lev);
     }
     // compute epsilon target based on relative tolerance: total MSE = eps^2
     // which is equally apportioned (eps^2 / 2) among discretization MSE and
@@ -473,6 +475,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   }
   // Convert uncentered raw moment estimates to standardized moments
   convert_moments(Q_raw_mom, momentStats);
+
+  // populate finalStatErrors
+  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
@@ -2520,7 +2525,7 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 void NonDMultilevelSampling::
 convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
 {
-  // raw_mom is numFunctions x 4 and std_mom is the transpose
+  // Note: raw_mom is numFunctions x 4 and std_mom is the transpose
 
   if (std_mom.empty())
     std_mom.shapeUninitialized(4, numFunctions);
@@ -2546,6 +2551,49 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
 	   << " std mom 3 = " << std_mom(2,qoi) << '\n'
 	   <<  "raw mom 4 = " << raw_mom(qoi,3) << " cent mom 4 = " << cm4
 	   << " std mom 4 = " << std_mom(3,qoi) << "\n\n";
+  }
+}
+
+
+void NonDMultilevelSampling::
+compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			IntIntPairRealMatrixMap& sum_QlQlm1,
+			Sizet2DArray& num_Q)
+{
+  if (finalStatErrors.empty())
+    finalStatErrors.sizeUninitialized(2 * numFunctions);
+
+  Real agg_mse_q, std_err_mu, std_err_var, mu_Ql, mu_Qlm1, var_Y;
+  size_t lev, qoi, cntr = 0, Nlq;
+  IntIntPair pr11(1,1);
+  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
+    &sum_Q2l = sum_Ql[2], &sum_Q1lQ1lm1 = sum_QlQlm1[pr11],
+    &sum_Q2lm1 = sum_Qlm1[2];
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    // std error in mean estimate
+    lev = 0; Nlq = num_Q[lev][qoi];
+    mu_Ql   =  sum_Q1l(qoi,lev) / Nlq;
+    var_Y   = (sum_Q2l(qoi,lev) - Nlq * mu_Ql * mu_Ql) / (Nlq - 1); // var_Ql
+    agg_mse_q = var_Y / Nlq;
+    for (lev=1; qoi<numFunctions; ++qoi) {
+      Nlq     = num_Q[lev][qoi];
+      mu_Ql   = sum_Q1l(qoi,lev)   / Nlq;
+      mu_Qlm1 = sum_Q1lm1(qoi,lev) / Nlq;
+      //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+      var_Y = ( sum_Q2l(qoi,lev)      - Nlq * mu_Ql   * mu_Ql
+        - 2.* ( sum_Q1lQ1lm1(qoi,lev) - Nlq * mu_Ql   * mu_Qlm1 ) +
+	        sum_Q2lm1(qoi,lev)    - Nlq * mu_Qlm1 * mu_Qlm1 )
+	    / ( Nlq - 1 ); // bias corr
+      agg_mse_q += var_Y / Nlq;
+    }
+    finalStatErrors[cntr++] = std_err_mu  = std::sqrt(agg_mse_q);
+
+    // std error in variance estimate
+    finalStatErrors[cntr++] = std_err_var = 0.;
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "std_err_mu = " << std_err_mu << " std_err_var = " << std_err_var
+	   << "\n\n";
   }
 }
 
