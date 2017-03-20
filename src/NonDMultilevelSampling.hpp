@@ -390,6 +390,13 @@ private:
 			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 			  size_t lev);
 
+  /// convert uncentered (raw) moments to centered moments
+  Real uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
+  /// convert centered moments to standardized moments
+  Real centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
+  
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
   /// compute average of a set of observations
@@ -641,6 +648,30 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
     agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
   }
   return agg_mse;
+}
+
+
+inline Real NonDMultilevelSampling::
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
+{
+  // convert from uncentered ("raw") to centered moments
+  cm1 = rm1;             // mean
+  cm2 = rm2 - cm1 * cm1; // variance
+  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);
+  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+}
+
+
+inline Real NonDMultilevelSampling::
+centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+		     Real& sm1, Real& sm2, Real& sm3, Real& sm4) const
+{
+  // convert from centered to standardized moments
+  sm1 = cm1;                    // mean
+  sm2 = std::sqrt(cm2);         // std deviation
+  sm3 = cm3 / (cm2 * sm2);      // skewness
+  sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
 }
 
 

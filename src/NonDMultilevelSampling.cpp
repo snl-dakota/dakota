@@ -2523,34 +2523,38 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 
 
 void NonDMultilevelSampling::
-convert_moments(const RealMatrix& raw_mom, RealMatrix& std_mom)
+convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
 {
-  // Note: raw_mom is numFunctions x 4 and std_mom is the transpose
+  // Note: raw_mom is numFunctions x 4 and final_stat_mom is the transpose
 
-  if (std_mom.empty())
-    std_mom.shapeUninitialized(4, numFunctions);
-  Real m1, cm2, cm3, cm4;
+  if (final_stat_mom.empty())
+    final_stat_mom.shapeUninitialized(4, numFunctions);
+  Real cm1, cm2, cm3, cm4;
   // Convert uncentered raw moment estimates to standardized moments
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    m1  = std_mom(0,qoi) = raw_mom(qoi,0);   // mean
-    // convert from uncentered to centered moments
-    cm2 = raw_mom(qoi,1) - m1 * m1; // variance
-    cm3 = raw_mom(qoi,2) - m1 * (3. * cm2 + m1 * m1);
-    cm4 = raw_mom(qoi,3) - m1 * (4. * cm3 + m1 * (6. * cm2 + m1 * m1));
-    // convert from centered to standardized moments
-    Real stdev = std::sqrt(cm2);
-    std_mom(1,qoi) = stdev;                  // std deviation
-    std_mom(2,qoi) = cm3 / (cm2 * stdev);    // skewness
-    std_mom(3,qoi) = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+    if (subIteratorFlag)
+      // don't standardize for now so that finalStats matches finalStatErrors
+      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
+			     raw_mom(qoi,3), final_stat_mom(0,qoi),
+			     final_stat_mom(1,qoi), final_stat_mom(2,qoi),
+			     final_stat_mom(3,qoi));
+    else {
+      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
+			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
+      centered_to_standard(cm1, cm2, cm3, cm4, final_stat_mom(0,qoi),
+			   final_stat_mom(1,qoi), final_stat_mom(2,qoi),
+			   final_stat_mom(3,qoi));
+    }
+    
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout <<  "raw mom 1 = " << raw_mom(qoi,0) << " cent mom 1 = " << m1
-	   << " std mom 1 = " << std_mom(0,qoi) << '\n'
-	   <<  "raw mom 2 = " << raw_mom(qoi,1) << " cent mom 2 = " << cm2
-	   << " std mom 2 = " << std_mom(1,qoi) << '\n'
-	   <<  "raw mom 3 = " << raw_mom(qoi,2) << " cent mom 3 = " << cm3
-	   << " std mom 3 = " << std_mom(2,qoi) << '\n'
-	   <<  "raw mom 4 = " << raw_mom(qoi,3) << " cent mom 4 = " << cm4
-	   << " std mom 4 = " << std_mom(3,qoi) << "\n\n";
+      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
+	   << " final mom 1 = " << final_stat_mom(0,qoi) << '\n'
+	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
+	   << " final mom 2 = " << final_stat_mom(1,qoi) << '\n'
+	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
+	   << " final mom 3 = " << final_stat_mom(2,qoi) << '\n'
+	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
+	   << " final mom 4 = " << final_stat_mom(3,qoi) << "\n\n";
   }
 }
 
@@ -2563,37 +2567,78 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   if (finalStatErrors.empty())
     finalStatErrors.sizeUninitialized(2 * numFunctions);
 
-  Real agg_mse_q, std_err_mu, std_err_var, mu_Ql, mu_Qlm1, var_Y;
+  Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
+    cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
+    mu_Q2l, mu_Q2lm1, mu_Q1lQ1lm1, mu_Q2lQ1lm1, mu_Q1lQ2lm1, mu_Q2lQ2lm1,
+    mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1;
   size_t lev, qoi, cntr = 0, Nlq;
-  IntIntPair pr11(1,1);
-  RealMatrix &sum_Q1l = sum_Ql[1], &sum_Q1lm1 = sum_Qlm1[1],
-    &sum_Q2l = sum_Ql[2], &sum_Q1lQ1lm1 = sum_QlQlm1[pr11],
-    &sum_Q2lm1 = sum_Qlm1[2];
+  IntIntPair pr11(1,1), pr12(1,2), pr21(2,1), pr22(2,2);
+  RealMatrix &sum_Q1l = sum_Ql[1],           &sum_Q1lm1 = sum_Qlm1[1],
+             &sum_Q2l = sum_Ql[2],           &sum_Q2lm1 = sum_Qlm1[2],
+             &sum_Q3l = sum_Ql[3],           &sum_Q3lm1 = sum_Qlm1[3],
+             &sum_Q4l = sum_Ql[4],           &sum_Q4lm1 = sum_Qlm1[4],
+        &sum_Q1lQ1lm1 = sum_QlQlm1[pr11], &sum_Q1lQ2lm1 = sum_QlQlm1[pr12],
+        &sum_Q2lQ1lm1 = sum_QlQlm1[pr21], &sum_Q2lQ2lm1 = sum_QlQlm1[pr22];
   for (qoi=0; qoi<numFunctions; ++qoi) {
+
     // std error in mean estimate
     lev = 0; Nlq = num_Q[lev][qoi];
-    mu_Ql   =  sum_Q1l(qoi,lev) / Nlq;
-    var_Y   = (sum_Q2l(qoi,lev) - Nlq * mu_Ql * mu_Ql) / (Nlq - 1); // var_Ql
-    agg_mse_q = var_Y / Nlq;
+    cm1l   =  sum_Q1l(qoi,lev) / Nlq;
+    var_Yl = (sum_Q2l(qoi,lev) - Nlq * cm1l * cm1l) / (Nlq - 1); // var_Ql
+    agg_estim_var = var_Yl / Nlq;
     for (lev=1; qoi<numFunctions; ++qoi) {
-      Nlq     = num_Q[lev][qoi];
-      mu_Ql   = sum_Q1l(qoi,lev)   / Nlq;
-      mu_Qlm1 = sum_Q1lm1(qoi,lev) / Nlq;
-      //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-      var_Y = ( sum_Q2l(qoi,lev)      - Nlq * mu_Ql   * mu_Ql
-        - 2.* ( sum_Q1lQ1lm1(qoi,lev) - Nlq * mu_Ql   * mu_Qlm1 ) +
-	        sum_Q2lm1(qoi,lev)    - Nlq * mu_Qlm1 * mu_Qlm1 )
-	    / ( Nlq - 1 ); // bias corr
-      agg_mse_q += var_Y / Nlq;
+      Nlq  = num_Q[lev][qoi];
+      cm1l = sum_Q1l(qoi,lev) / Nlq; cm1lm1 = sum_Q1lm1(qoi,lev) / Nlq;
+      //var_Yl = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+      var_Yl = ( sum_Q2l(qoi,lev)              - Nlq * cm1l   * cm1l
+		 - 2.* ( sum_Q1lQ1lm1(qoi,lev) - Nlq * cm1l   * cm1lm1 ) +
+		 sum_Q2lm1(qoi,lev)            - Nlq * cm1lm1 * cm1lm1 )
+	     / ( Nlq - 1 ); // bias corr
+      agg_estim_var += var_Yl / Nlq;
     }
-    finalStatErrors[cntr++] = std_err_mu  = std::sqrt(agg_mse_q);
-
-    // std error in variance estimate
-    finalStatErrors[cntr++] = std_err_var = 0.;
-
+    finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "std_err_mu = " << std_err_mu << " std_err_var = " << std_err_var
-	   << "\n\n";
+      Cout << "Estimator variance for mean = " << agg_estim_var;
+
+    // std error in variance estimate (TO DO: std err in std dev estimate?)
+    lev = 0; Nlq = num_Q[lev][qoi];
+    // raw moments -> central moments
+    uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
+			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
+			   cm1l, cm2l, cm3l, cm4l);
+    cm2l_sq = cm2l * cm2l;
+    var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
+    agg_estim_var = var_P2l / Nlq;
+    for (lev=1; qoi<numFunctions; ++qoi) {
+      Nlq = num_Q[lev][qoi];
+      mu_Q2l = sum_Q2l(qoi,lev) / Nlq;   mu_Q2lm1 = sum_Q2lm1(qoi,lev) / Nlq;
+      uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, mu_Q2l,
+			     sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
+			     cm1l, cm2l, cm3l, cm4l);
+      uncentered_to_centered(sum_Q1lm1(qoi,lev) / Nlq, mu_Q2lm1,
+			     sum_Q3lm1(qoi,lev) / Nlq, sum_Q4lm1(qoi,lev) / Nlq,
+			     cm1lm1, cm2lm1, cm3lm1, cm4lm1);
+      cm1l_sq = cm1l * cm1l; cm1lm1_sq = cm1lm1 * cm1lm1;
+      cm2l_sq = cm2l * cm2l; cm2lm1_sq = cm2lm1 * cm2lm1;
+      var_Ql   = ( sum_Q2l(qoi,lev)   - Nlq * cm1l   * cm1l)    / ( Nlq - 1 );
+      var_Qlm1 = ( sum_Q2lm1(qoi,lev) - Nlq * cm1lm1 * cm1lm1 ) / ( Nlq - 1 );
+      mu_Q1lQ1lm1 = sum_Q1lQ1lm1(qoi,lev) / Nlq;
+      mu_Q1lQ2lm1 = sum_Q1lQ2lm1(qoi,lev) / Nlq;
+      mu_Q2lQ1lm1 = sum_Q2lQ1lm1(qoi,lev) / Nlq;
+      mu_Q2lQ2lm1 = sum_Q2lQ2lm1(qoi,lev) / Nlq;
+      mu_P2lP2lm1 = mu_Q2lQ2lm1 - 2. * cm1lm1 * mu_Q2lQ1lm1
+	+ cm1lm1_sq * mu_Q2l + cm1l_sq * mu_Q2lm1
+	- 2. * cm1l * mu_Q1lQ2lm1 + 4. * cm1l * cm1lm1 * mu_Q1lQ1lm1
+	- 3. * cm1l_sq * cm1lm1_sq;
+      var_P2l        = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
+      var_P2lm1      = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
+      covar_P2lP2lm1 = ( mu_P2lP2lm1 - var_Ql * var_Qlm1 +
+			 ( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) );
+      agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
+    }
+    finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << " and for variance = " << agg_estim_var << "\n\n";
   }
 }
 
