@@ -85,6 +85,9 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     break;
   }
   }
+
+  // For testing multilevel_mc_Qsum():
+  //subIteratorFlag = true;
 }
 
 
@@ -2571,7 +2574,8 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
     mu_Q2l, mu_Q2lm1, mu_Q1lQ1lm1, mu_Q2lQ1lm1, mu_Q1lQ2lm1, mu_Q2lQ2lm1,
     mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1;
-  size_t lev, qoi, cntr = 0, Nlq;
+  size_t lev, qoi, cntr = 0, Nlq,
+    num_lev = iteratedModel.truth_model().solution_levels();
   IntIntPair pr11(1,1), pr12(1,2), pr21(2,1), pr22(2,2);
   RealMatrix &sum_Q1l = sum_Ql[1],           &sum_Q1lm1 = sum_Qlm1[1],
              &sum_Q2l = sum_Ql[2],           &sum_Q2lm1 = sum_Qlm1[2],
@@ -2586,7 +2590,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     cm1l   =  sum_Q1l(qoi,lev) / Nlq;
     var_Yl = (sum_Q2l(qoi,lev) - Nlq * cm1l * cm1l) / (Nlq - 1); // var_Ql
     agg_estim_var = var_Yl / Nlq;
-    for (lev=1; qoi<numFunctions; ++qoi) {
+    for (lev=1; lev<num_lev; ++lev) {
       Nlq  = num_Q[lev][qoi];
       cm1l = sum_Q1l(qoi,lev) / Nlq; cm1lm1 = sum_Q1lm1(qoi,lev) / Nlq;
       //var_Yl = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
@@ -2602,14 +2606,13 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
     // std error in variance estimate (TO DO: std err in std dev estimate?)
     lev = 0; Nlq = num_Q[lev][qoi];
-    // raw moments -> central moments
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
 			   cm1l, cm2l, cm3l, cm4l);
     cm2l_sq = cm2l * cm2l;
     var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
     agg_estim_var = var_P2l / Nlq;
-    for (lev=1; qoi<numFunctions; ++qoi) {
+    for (lev=1; lev<num_lev; ++lev) {
       Nlq = num_Q[lev][qoi];
       mu_Q2l = sum_Q2l(qoi,lev) / Nlq;   mu_Q2lm1 = sum_Q2lm1(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, mu_Q2l,
