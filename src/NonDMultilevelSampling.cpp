@@ -87,7 +87,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   // For testing multilevel_mc_Qsum():
-  //subIteratorFlag = true;
+  // subIteratorFlag = true;
 }
 
 
@@ -2635,8 +2635,10 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	- 3. * cm1l_sq * cm1lm1_sq;
       var_P2l        = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
       var_P2lm1      = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
+      // [gg] modified to cope with negative variance      
       covar_P2lP2lm1 = ( mu_P2lP2lm1 - var_Ql * var_Qlm1 +
-			 ( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) );
+		         ( mu_Q1lQ1lm1 - cm1l * cm1lm1 )
+		         *( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) ); 
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
