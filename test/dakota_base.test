@@ -6693,15 +6693,15 @@ Test Number 4 succeeded
   oscillatorA_5: 60 val (60 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  3.1402543513e-01  1.3561304923e-01 -2.8671683964e-01 -1.6341380290e+00
-            x2  2.5669006072e-01  1.0222205071e-01  9.9946431878e-01  2.0687095045e-02
+            x1  2.8341207626e-01  1.2001755341e-01  4.2490870138e-01 -1.1411823700e+00
+            x2  2.8960030210e-01  9.6700886776e-02  2.6388320678e-01 -8.3241777558e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- oscillatorA_1  2.4945480262e-01  1.4848914964e-01 -8.6953168827e-01  1.0081346675e-01
- oscillatorA_2 -2.6000300269e-01  1.1810120152e-01 -3.3713209790e-01 -8.0912405424e-01
- oscillatorA_3 -4.2670018051e-03  8.2067151436e-02  1.2910801222e-01  3.5535759820e-01
- oscillatorA_4  1.2514641680e-01  7.5676473287e-02  2.9698215985e-01  1.8456377369e-01
- oscillatorA_5 -1.0108283907e-01  5.0687482724e-02  1.1570764151e+00  5.2023186254e-01
+ oscillatorA_1  1.8423880557e-01  1.4467713339e-01  2.1616573073e-01 -7.5996228807e-01
+ oscillatorA_2 -2.7694111366e-01  1.1846028463e-01 -3.3089137602e-01 -8.7569254199e-01
+ oscillatorA_3  6.9421997345e-02  1.0617729835e-01 -8.2837060238e-02 -4.0680855011e-01
+ oscillatorA_4  9.9280618320e-02  7.7509602202e-02  3.1783610786e-01 -7.2350476075e-01
+ oscillatorA_5 -1.3776238320e-01  6.0784012262e-02 -9.4179590819e-01  2.4146664583e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
   oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
