@@ -367,7 +367,7 @@ _pRE = {
             "num_an_comps":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
             "eval_id":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
+                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
             "variable":re.compile(_aprepro_re_base.format(
                 value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
             "function":re.compile(_aprepro_re_base.format(
@@ -386,7 +386,7 @@ _pRE = {
             "num_an_comps":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
             "eval_id":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>eval_id)")),
+                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with spaces
             "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
             "function":re.compile(_dakota_re_base.format(
