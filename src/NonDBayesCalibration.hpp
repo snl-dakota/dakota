@@ -486,13 +486,9 @@ template <typename VectorType>
 void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 {
   if (standardizedSpace) {
-    // BMA TODO: can we assume means are zero?  Don't think so as
-    // u_type may be same as x_type...
-    Cerr << "\nError: prior_mean not implemented for transformed space.\n";
-    abort_handler(-1);
-    // RealVector u_means = natafTransform.u_means();
-    // for (size_t i=0; i<numContinuousVars; ++i)
-    //   mean_vec[i] = u_means[i];
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = u_moments[i].first;
   }
   else {
     RealVector x_means = natafTransform.x_means();
@@ -508,21 +504,27 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 template <typename MatrixType>
 void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 {
-  // BMA TODO: does not account for correlations
-
-   if (standardizedSpace) {
-    // BMA TODO: can we assume means are 1.0?  Don't think so as
-    // u_type may be same as x_type...
-    Cerr << "\nError: prior_mean not implemented for transformed space.\n";
-    abort_handler(-1);
-    // RealVector u_means = natafTransform.u_means();
-    // for (size_t i=0; i<numContinuousVars; ++i)
-    //   mean_vec[i] = u_means[i];
+  if (standardizedSpace) {
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      const Real& u_std_i = u_moments[i].second;
+      var_mat(i,i) = u_std_i * u_std_i;
+    }
   }
   else {
     RealVector x_std = natafTransform.x_std_deviations();
-    for (size_t i=0; i<numContinuousVars; ++i)
-      var_mat(i,i) = x_std[i] * x_std[i];
+    if (natafTransform.x_correlation()) {
+      const RealSymMatrix& x_correl = natafTransform.x_correlation_matrix();
+      for (size_t i=0; i<numContinuousVars; ++i) {
+	var_mat(i,i) = x_std[i] * x_std[i];
+	for (size_t j=1; j<numContinuousVars; ++j)
+	  var_mat(i,j) = var_mat(j,i) = x_correl(i,j) * x_std[i] * x_std[j];
+      }
+    }
+    else {
+      for (size_t i=0; i<numContinuousVars; ++i)
+	var_mat(i,i) = x_std[i] * x_std[i];
+    }
   }
   for (size_t i=0; i<numHyperparams; ++i)
     var_mat(numContinuousVars + i, numContinuousVars + i) = 
