@@ -280,29 +280,22 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // std::vector containing all the points in scenario space where we have
   // simulations
-  std::vector<QUESO::GslVector *> simulationScenarios(numSimulations,
-      (QUESO::GslVector *) NULL);
+  std::vector<QUESO::SharedPtr<QUESO::GslVector>::Type > simulationScenarios(numSimulations);
 
   // std::vector containing all the points in parameter space where we have
   // simulations
-  std::vector<QUESO::GslVector *> paramVecs(numSimulations,
-      (QUESO::GslVector *) NULL);
+  std::vector<QUESO::SharedPtr<QUESO::GslVector>::Type > paramVecs(numSimulations);
 
 
   // std::vector containing all the simulation output data
-  std::vector<QUESO::GslVector *> outputVecs(numSimulations,
-      (QUESO::GslVector *) NULL);
-
-
+  std::vector<QUESO::SharedPtr<QUESO::GslVector>::Type > outputVecs(numSimulations);
 
   // std::vector containing all the points in scenario space where we have
   // experiments
-  std::vector<QUESO::GslVector *> experimentScenarios(numExperiments,
-      (QUESO::GslVector *) NULL);
+  std::vector<QUESO::SharedPtr<QUESO::GslVector>::Type > experimentScenarios(numExperiments);
 
   // std::vector containing all the experimental output data
-  std::vector<QUESO::GslVector *> experimentVecs(numExperiments,
-      (QUESO::GslVector *) NULL);
+  std::vector<QUESO::SharedPtr<QUESO::GslVector>::Type > experimentVecs(numExperiments);
   
 
   // Allocate the vectors for simulations and experiments
@@ -312,9 +305,9 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // Instantiate each of the simulation points/outputs
   for (unsigned int i = 0; i < numSimulations; i++) {
-    simulationScenarios[i] = new QUESO::GslVector(configSpace.zeroVector());  // 'x_{i+1}^*' in paper
-    paramVecs          [i] = new QUESO::GslVector(paramSpace->zeroVector());  // 't_{i+1}^*' in paper
-    outputVecs         [i] = new QUESO::GslVector(nEtaSpace.zeroVector());  // 'eta_{i+1}' in paper
+    simulationScenarios[i].reset(new QUESO::GslVector(configSpace.zeroVector()));  // 'x_{i+1}^*' in paper
+    paramVecs          [i].reset(new QUESO::GslVector(paramSpace->zeroVector()));  // 't_{i+1}^*' in paper
+    outputVecs         [i].reset(new QUESO::GslVector(nEtaSpace.zeroVector()));  // 'eta_{i+1}' in paper
   }
 
   // Populate simulation data  (generate or load build data)
@@ -393,8 +386,8 @@ void NonDGPMSABayesCalibration::calibrate()
 
   for (unsigned int i = 0; i < numExperiments; i++) {
 
-    experimentScenarios[i] = new QUESO::GslVector(configSpace.zeroVector()); // 'x_{i+1}' in paper
-    experimentVecs[i] = new QUESO::GslVector(experimentSpace.zeroVector());
+    experimentScenarios[i].reset(new QUESO::GslVector(configSpace.zeroVector())); // 'x_{i+1}' in paper
+    experimentVecs[i].reset(new QUESO::GslVector(experimentSpace.zeroVector()));
 
     // NOTE: these will resize the target objects rather than erroring...
     copy_gsl(exp_config_vars[i], *experimentScenarios[i]);
@@ -412,7 +405,8 @@ void NonDGPMSABayesCalibration::calibrate()
   // BMA: initialized to identity for now; need accessors to
   // experiment data cov, probably as element-wise access returning 0
   // if not defined.
-  QUESO::GslMatrix experimentMat(totalExperimentSpace.zeroVector(), 1.0);
+  QUESO::SharedPtr<QUESO::GslMatrix>::Type experimentMat;
+  experimentMat.reset(new QUESO::GslMatrix(totalExperimentSpace.zeroVector(), 1.0));
 
   for (unsigned int i = 0; i < numExperiments; i++) {
     for (unsigned int j = 0; j < experimentSize; j++) {
@@ -426,9 +420,9 @@ void NonDGPMSABayesCalibration::calibrate()
     }
   }
 
-  // Add simulation and experimental data
+
   gpmsaFactory.addSimulations(simulationScenarios, paramVecs, outputVecs);
-  gpmsaFactory.addExperiments(experimentScenarios, experimentVecs, &experimentMat);
+  gpmsaFactory.addExperiments(experimentScenarios, experimentVecs, experimentMat);
 
   // BMA TODO: is this postRv the whole space or the size of the parameter space?
   QUESO::GenericVectorRV<QUESO::GslVector, QUESO::GslMatrix>
