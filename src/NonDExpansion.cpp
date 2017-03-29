@@ -1336,6 +1336,7 @@ Real NonDExpansion::compute_covariance_metric()
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector delta_resp_var = respVariance; // deep copy
+    Real scale = respVariance.normFrobenius();
     compute_covariance();                     // update
     delta_resp_var -= respVariance;           // compute change
 #ifdef DEBUG
@@ -1344,11 +1345,16 @@ Real NonDExpansion::compute_covariance_metric()
     Cout << "norm of delta_resp_var = " << delta_resp_var.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
-    return delta_resp_var.normFrobenius();
+    // For adaptation started from level = 0, reference covariance = 0.
+    // Trap this and also avoid possible bogus termination from using absolute
+    // change compared against relative conv tol.
+    return (scale > 0.) ? delta_resp_var.normFrobenius() / scale :
+                          delta_resp_var.normFrobenius() / Pecos::SMALL_NUMBER;
     break;
   }
   case FULL_COVARIANCE: {
     RealSymMatrix delta_resp_covar = respCovariance; // deep copy
+    Real scale = respCovariance.normFrobenius();
     compute_covariance();                            // update
     delta_resp_covar -= respCovariance;              // compute change
 #ifdef DEBUG
@@ -1359,7 +1365,12 @@ Real NonDExpansion::compute_covariance_metric()
     Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
-    return delta_resp_covar.normFrobenius();
+    // For adaptation started from level = 0, reference covariance = 0.
+    // Trap this and also avoid possible bogus termination from using absolute
+    // change compared against relative conv tol.
+    return (scale > 0.) ?
+      delta_resp_covar.normFrobenius() / scale :
+      delta_resp_covar.normFrobenius() / Pecos::SMALL_NUMBER;
     break;
   }
   default: // NO_COVARIANCE or failure to redefine DEFAULT_COVARIANCE
@@ -1376,6 +1387,7 @@ Real NonDExpansion::compute_final_statistics_metric()
   // of increments is not available
 
   RealVector delta_final_stats = finalStatistics.function_values(); // deep copy
+  Real scale = delta_final_stats.normFrobenius();
   compute_statistics();                                             //    update
   delta_final_stats -= finalStatistics.function_values();      // compute change
 
@@ -1415,7 +1427,11 @@ Real NonDExpansion::compute_final_statistics_metric()
       sum_sq += std::pow(delta_final_stats[cntr], 2.);
   }
 
-  return std::sqrt(sum_sq);
+  // Risk of zero reference is reduced relative to covariance control, but not
+  // eliminated. Trap this and also avoid possible bogus termination from using
+  // absolute change compared against relative conv tol.
+  return (scale > 0.) ? std::sqrt(sum_sq) / scale :
+                        std::sqrt(sum_sq) / Pecos::SMALL_NUMBER;
 }
 
 
