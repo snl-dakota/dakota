@@ -119,6 +119,9 @@ public:
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;
 
+  /// number of onfiguration variables
+  size_t num_config_vars() const;
+
   /// values of the configuration variables, 1 RealVector per experiment
   const std::vector<RealVector>& config_vars() const;
 

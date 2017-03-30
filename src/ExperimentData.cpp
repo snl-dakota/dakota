@@ -687,6 +687,12 @@ num_fields() const
 }
 
 
+size_t ExperimentData::num_config_vars() const
+{
+  return numConfigVars; 
+}
+
+
 const std::vector<RealVector>& ExperimentData::config_vars() const
 {
   return allConfigVars;

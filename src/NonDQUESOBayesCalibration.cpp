@@ -1087,8 +1087,8 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 }
 
 
-/** Initialize the calibration parameter domain (space, bounds,
-    domain, initial values, and prior random variable) */
+/** Initialize the calibration parameter domain (paramSpace,
+    paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   // If calibrating error multipliers, the parameter domain is expanded to

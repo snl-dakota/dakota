@@ -79,7 +79,7 @@ protected:
   
   /// define solver options, likelihood callback, posterior RV, and
   /// inverse problem
-  void init_queso_solver();
+  virtual void init_queso_solver();
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
@@ -243,6 +243,9 @@ protected:
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
 
+  boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
+    QUESO::GslMatrix> > inverseProb;
+
   /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* nonDQUESOInstance;
 
@@ -252,11 +255,6 @@ private:
   // - Heading: Data
   // 
   
-  
-
-  boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
-    QUESO::GslMatrix> > inverseProb;
-
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
   RealVectorArray uniqueSamples;
