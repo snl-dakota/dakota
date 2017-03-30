@@ -100,9 +100,11 @@ void DiscrepancyCorrection::initialize_corrections()
   if (approxType.empty()) 
     sharedData = SharedApproxData("local_taylor", approx_order, numVars,
 				  dataOrder, NORMAL_OUTPUT);
-  else 
+  else { 
+    dataOrder = 1; // for GP and poly, do not need grad or hessian info
     sharedData = SharedApproxData(approxType, approx_order, numVars,
 				  dataOrder, NORMAL_OUTPUT);
+  }
   if (computeAdditive) {
     addCorrections.resize(numFns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
@@ -379,9 +381,9 @@ compute(const VariablesArray& vars_array, const ResponseArray&
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
       addCorrections[index].build();
-      const String GPstring = "modDiscrep";
-      const String GPPrefix = "GP";
-      addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
+      //const String GPstring = "modDiscrep";
+      //const String GPPrefix = "GP";
+      //addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
     }
   }
   
@@ -400,24 +402,26 @@ compute_additive(const Response& truth_response,
   if (dataOrder & 1)
     discrep_fn =  truth_response.function_value(index)
                - approx_response.function_value(index);
-  // -----------------------------
-  // Additive 1st order correction
-  // -----------------------------
-  if ( (dataOrder & 2) && !discrep_grad.empty() ) {
-    const Real*  truth_grad =  truth_response.function_gradient(index);
-    const Real* approx_grad = approx_response.function_gradient(index);
-    for (size_t j=0; j<numVars; ++j)
-      discrep_grad[j] = truth_grad[j] - approx_grad[j];
-  }
-  // -----------------------------
-  // Additive 2nd order correction
-  // -----------------------------
-  if ( (dataOrder & 4) && !discrep_hess.empty() ) {
-    const RealSymMatrix&  truth_hess =  truth_response.function_hessian(index);
-    const RealSymMatrix& approx_hess = approx_response.function_hessian(index);
-    for (size_t j=0; j<numVars; ++j)
-      for (size_t k=0; k<=j; ++k) // lower half
-	discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
+  if (approxType.empty()) {
+    // -----------------------------
+    // Additive 1st order correction
+    // -----------------------------
+    if ( (dataOrder & 2) && !discrep_grad.empty() ) {
+      const Real*  truth_grad =  truth_response.function_gradient(index);
+      const Real* approx_grad = approx_response.function_gradient(index);
+      for (size_t j=0; j<numVars; ++j)
+        discrep_grad[j] = truth_grad[j] - approx_grad[j];
+    }
+    // -----------------------------
+    // Additive 2nd order correction
+    // -----------------------------
+    if ( (dataOrder & 4) && !discrep_hess.empty() ) {
+      const RealSymMatrix&  truth_hess =  truth_response.function_hessian(index);
+      const RealSymMatrix& approx_hess = approx_response.function_hessian(index);
+      for (size_t j=0; j<numVars; ++j)
+        for (size_t k=0; k<=j; ++k) // lower half
+  	discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
+    }
   }
 }
 
@@ -705,17 +709,19 @@ compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
 {
   int index; ISIter it;
   RealVector pred_var(vars_array.size());
-  Cout << "Vars array size = " << vars_array.size();
+  //Cout << "Vars array size = " << vars_array.size();
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     for (int i=0; i < vars_array.size(); i++) {
+      //std::cout << "vars array = " << vars_array[i] << std::endl;
       pred_var[i] = addCorrections[index].prediction_variance(vars_array[i]);
     }
     Teuchos::setCol(pred_var, index, approx_variance);
   }
 
-  if (!quiet_flag)
-    Cout << "\nCorrection variances computed:\n" << approx_variance;
+  // KAM: turn this back on? 
+  //if (!quiet_flag)
+    //Cout << "\nCorrection variances computed:\n" << approx_variance;
 }
 
 const Response& DiscrepancyCorrection::

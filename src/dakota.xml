@@ -2524,7 +2524,21 @@
 	             <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" />
 		  </keyword>
 	      <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
-	      <!-- KAM -->
+    	        <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Discrepancy Type" help="" minOccurs="0" default="gaussian process" >
+    	          <oneOf>
+    	            <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,discrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes" help=""  >
+                      <alias name="kriging"/>
+		    </keyword>
+		    <keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,discrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" help=""  />
+    	          </oneOf>
+                  <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction" help="" minOccurs="0" default="2">
+                    <oneOf label="Correction Order">
+		      <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0" help="" />
+                      <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear" help=""  />
+                      <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic" help=""  />
+                    </oneOf>
+                  </keyword>
+    	        </keyword>
                   <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations" help="" minOccurs="0" default="0" >
                     <param type="INTEGER" constraint=">= 0" />
                   </keyword>
@@ -2548,8 +2562,58 @@
 		      </oneOf>
 		    </optional>
                   </keyword>
+	          <keyword  id="export_discrepancy_file" name="export_discrepancy_file" code="{N_mdm(str,exportDiscrepFile)}" label="File export of model discrepancy values" help="" minOccurs="0" default="discrepancy export to default filename" >
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+	          </keyword>
+		  <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values" help="" minOccurs="0" default="corrected model export to default filename" > 
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
+		  <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model" help="" minOccurs="0" default="corrected model variance export to default filename" > 
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
 		</keyword>
-	      <!-- KAM end -->
 	      <keyword  id='sub_sampling_period' name='sub_sampling_period' code='{N_mdm(int,subSamplingPeriod)}' label='Chain sampling period for statistics' help='' minOccurs='0' default='0'>
 		  	<param type='INTEGER' />
 		  </keyword>

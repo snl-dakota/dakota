@@ -1391,7 +1391,6 @@ void NonDQUESOBayesCalibration::set_mh_options()
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
-
 void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 {
 

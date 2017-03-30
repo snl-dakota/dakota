@@ -989,6 +989,25 @@ public:
   String importPredConfigs;
   /// tabular format for prediction configurations import file
   unsigned short importPredConfigFormat;
+  /// specify type of model discrepancy formulation
+  String discrepancyType;
+  /// correction order for either gaussian process or polynomial model
+  /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
+  short approxCorrectionOrder;
+  /// specify the name of file to which corrected model (model+discrepancy)
+  /// calculations are output
+  String exportCorrModelFile;
+  /// tabular format for corrected model (model+discrepancy) export file
+  unsigned short exportCorrModelFormat;
+  /// specify the name of file to which corrected model variance
+  /// calculations are output
+  String exportCorrVarFile;
+  /// tabular format for corrected model variance export file
+  unsigned short exportCorrVarFormat;
+  /// specify the name of file to which discrepancy calculations are output
+  String exportDiscrepFile;
+  /// tabular format for model discrepancy export file
+  unsigned short exportDiscrepFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
   /// whether to import candidate design points for adaptive Bayesian experimtal

@@ -316,6 +316,11 @@ struct Method_mp_utype_lit {
   unsigned short utype;
 };
 
+struct Method_mp_ord {
+  short DataMethodRep::* sp;
+  int ord;
+};
+
 struct Method_mp_type {
   short DataMethodRep::* ip;
   short type;
@@ -1105,6 +1110,12 @@ method_litz(const char *keyname, Values *val, void **g, void *v)
     botch("%s must be nonnegative",keyname);
   if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
     dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+}
+
+void NIDRProblemDescDB::
+method_order(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Meth_Info**)g)->dme->*((Method_mp_ord*)v)->sp = ((Method_mp_ord*)v)->ord;
 }
 
 void NIDRProblemDescDB::
@@ -6564,6 +6575,8 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
+	MP2(discrepancyType,global_kriging),
+	MP2(discrepancyType,global_polynomial),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),
@@ -6648,6 +6661,11 @@ static Method_mp_slit2
 
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
+
+static Method_mp_ord
+	MP2s(approxCorrectionOrder,0),
+	MP2s(approxCorrectionOrder,1),
+	MP2s(approxCorrectionOrder,2);
 
 static Real
 	MP_(absConvTol),
@@ -6748,6 +6766,9 @@ static String
         MP_(dataDistFile),
         MP_(displayFormat),
 	MP_(exportApproxPtsFile),
+	MP_(exportCorrModelFile),
+	MP_(exportCorrVarFile),
+	MP_(exportDiscrepFile),
 	MP_(exportExpansionFile),
 	MP_(exportMCMCPtsFile),
 	MP_(historyFile),
@@ -6958,6 +6979,21 @@ static Method_mp_utype
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
         MP2s(exportApproxFormat,TABULAR_IFACE_ID),
         MP2s(exportApproxFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrModelFormat,TABULAR_NONE),
+        MP2s(exportCorrModelFormat,TABULAR_HEADER),
+        MP2s(exportCorrModelFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrModelFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrModelFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrVarFormat,TABULAR_NONE),
+        MP2s(exportCorrVarFormat,TABULAR_HEADER),
+        MP2s(exportCorrVarFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrVarFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrVarFormat,TABULAR_ANNOTATED),
+        MP2s(exportDiscrepFormat,TABULAR_NONE),
+        MP2s(exportDiscrepFormat,TABULAR_HEADER),
+        MP2s(exportDiscrepFormat,TABULAR_EVAL_ID),
+        MP2s(exportDiscrepFormat,TABULAR_IFACE_ID),
+        MP2s(exportDiscrepFormat,TABULAR_ANNOTATED),
         MP2s(exportSamplesFormat,TABULAR_NONE),
         MP2s(exportSamplesFormat,TABULAR_HEADER),
         MP2s(exportSamplesFormat,TABULAR_EVAL_ID),

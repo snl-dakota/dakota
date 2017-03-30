@@ -224,11 +224,35 @@ protected:
 
   /// flag whether to calculate model discrepancy
   bool calModelDiscrepancy;
+  /// set discrepancy type
+  String discrepancyType; 
+  /// filename for corrected model (model+discrepancy) calculations output
+  String exportCorrModelFile;
+  /// filename for discrepancy calculations output
+  String exportDiscrepFile;
+  /// filename for corrected model variance calculations 
+  String exportCorrVarFile;
+  /// format options for corrected model output
+  unsigned short exportCorrModelFormat;
+  /// format options for discrepancy output
+  unsigned short exportDiscrepFormat;
+  /// format options for corrected model variance output
+  unsigned short exportCorrVarFormat;
+  /// specify polynomial or trend order for discrepancy correction
+  short approxCorrectionOrder;
   /// number of prediction configurations at which to calculate model 
   /// discrepancy
   size_t numPredConfigs;
+  /// lower bounds on configuration domain
   RealVector configLowerBnds;
+  /// upper bounds on configuration domain
   RealVector configUpperBnds;
+  /// array containing predicted of model+discrepancy
+  ResponseArray discrepancyResponses;
+  /// array containing predicted of model+discrepancy
+  ResponseArray correctedResponses;
+  /// matrix containing variances of model+discrepancy
+  RealMatrix correctedVariances;
   /// list of prediction configurations at which to calculate model discrepancy
   RealVector predictionConfigList;
   /// whether to import prediction configurations at which to calculate model
@@ -236,6 +260,8 @@ protected:
   String importPredConfigs;
   /// tabular format for prediction configurations import file
   unsigned short importPredConfigFormat;
+  /// print tabular files containing model+discrepancy responses and variances
+  void export_discrepancy(RealMatrix& pred_config_mat); 
 
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;
