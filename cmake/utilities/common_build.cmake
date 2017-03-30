@@ -136,7 +136,6 @@ if ( NOT DAKOTA_MAKE_PARALLEL_LEVEL )
 
   # Mac
   elseif(APPLE)
-    message ("DENA: in APPLE")
     set(sysctl_cmd sysctl)
     execute_process(COMMAND ${sysctl_cmd} -n hw.ncpu 
                       OUTPUT_VARIABLE processorCount)
