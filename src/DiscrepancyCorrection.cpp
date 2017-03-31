@@ -376,7 +376,6 @@ compute(const VariablesArray& vars_array, const ResponseArray&
 	    quiet_flag);
   }
 
-  // KAM: should this be moved somewhere else?
   if (!approxType.empty()) {
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;

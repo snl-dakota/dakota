@@ -648,15 +648,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
     design_matrix = lhs_iterator2.all_samples();
   }
   else {
-    /*
-    // KAM TODO: As is, do not support response read-in for 
-    // candidate points
-    Variables designvars = hifiModel.current_variables();
-    TabularIO::read_data_tabular(importCandPtsFile, 
-				 "user-provided candidate points", 
-				 designvars, numFunctions, design_matrix, 
-				 response_matrix, importCandFormat, false);	
-				 */
     // BMA TODO: This should probably be cv() + div() + ...
     size_t num_designvars = hifiModel.tv();
     RealMatrix design_matrix_in;
@@ -913,40 +904,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 void NonDBayesCalibration::build_model_discrepancy()
 {
-  /*
-  //check when NOT needed
-  // Construct MAP (will we ever want to use the full posterior?)
-  RealVector mapSoln; // move to hpp? See NonDQUESO
-  boost::shared_ptr<QUESO::GslVector> paramInitials; // move to hpp?
-  construct_map_optimizer();
-  if (mapSoln.empty()) // no previous map solution
-    copy_gsl_partial(*paramInitials, 0,
-      negLogPostModel.current_variables().continuous_variables_view());
-  else // warm start using map soln from previous emulator
-    negLogPostModel.current_variables().continuous_variables(mapSoln);
-  mapOptimizer.run();
-  const RealVector& map_c_vars
-      = mapOptimizer.variables_results().continuous_variables();
-  copy_gsl_partial(map_c_vars, *paramInitials, 0);
-  if (adaptPosteriorRefine) 
-    copy_data(map_c_vars, mapSoln);
-  RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
-  //int num_cols = acc_chain_transpose.numCols();
-  RealVector ave_params(1);
-  ave_params[0] = 1.1832;
-  //compute_col_means(acc_chain_transpose, ave_params); 
-  negLogPostModel.current_variables().continuous_variables(ave_params);
-  //residualModel.assign_rep(new DataTransformModel(mcmcModel, expData, numHyperparams, obsErrorMultiplierMode, mcmcDerivOrder), false);
-    Cout << "test 1\n";
-      mapOptimizer.assign_rep(new
-	SNLLOptimizer("optpp_newton", negLogPostModel), false);
-    //Cout << "test 2\n";
-    //mapOptimizer.run();
-    //Cout << "test 3\n";
-    //const RealVector& map_c_vars = mapOptimizer.variables_results().continuous_variables();
-    //Cout << "map_c_vars = " << map_c_vars;
-    */
-
   // For now, use average params (unfiltered)
   RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
   int num_cols = acc_chain_transpose.numCols();
@@ -993,7 +950,6 @@ void NonDBayesCalibration::build_model_discrepancy()
     configvar_array[i] = configvars.copy();
   }
 
-  // KAM - undo later(?)
   // Construct response information from expData and model 
   ResponseArray simresponse_array(num_exp);
   ResponseArray expresponse_array(num_exp);
@@ -1010,55 +966,6 @@ void NonDBayesCalibration::build_model_discrepancy()
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   modelDisc.compute(configvar_array, expresponse_array, simresponse_array, 
       		    quiet_flag);
-  
-  // KAM Hardcode for multiple samples of param post
-  /*
-  int num_post = 950;
-  ResponseArray simresponse_testarray(num_post*num_exp);
-  ResponseArray expresponse_testarray(num_post*num_exp);
-  RealMatrix postsamples(acceptanceChain.numRows(), num_post);
-  int ind_ctr = 0;
-  for (int j = 0; j < num_post; j++){
-    int ind = std::rand() % acceptanceChain.numCols();
-    RealVector param_samp = Teuchos::getCol(Teuchos::View, acceptanceChain, 
-						ind);
-    Teuchos::setCol(param_samp, j, postsamples);
-    mcmcModel.continuous_variables(param_samp);
-    for (int i = 0; i<num_exp; i++){
-      RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, 
-  		 	    i);
-      Model::inactive_variables(config_vec, mcmcModel);
-      mcmcModel.evaluate();
-      simresponse_testarray[ind_ctr] = mcmcModel.current_response().copy();
-      expresponse_testarray[ind_ctr] = expData.response(i);
-      ind_ctr++;
-    }
-  }
-  VariablesArray configvar_testarray(num_post*num_exp);
-  ind_ctr = 0;
-  for (int j = 0; j < num_post; j++) {
-    for (int i=0; i<num_exp; i++) {
-      const RealVector& config_i = Teuchos::getCol(Teuchos::View, 
-  				 allConfigInputs, i);
-      Model::inactive_variables(config_i, mcmcModel, vars_copy);
-      configvars.continuous_variables(vars_copy.inactive_continuous_variables());
-      configvars.discrete_int_variables(vars_copy.
-  				      inactive_discrete_int_variables());
-      configvars.discrete_real_variables(vars_copy.
-  				       inactive_discrete_real_variables());
-      configvar_testarray[ind_ctr] = configvars.copy();
-      Cout << "ind = " << ind_ctr << '\n';
-      ind_ctr++;
-    }
-  }
-  Cout << "sim response array = " << simresponse_testarray << '\n';
-  Cout << "exp response array = " << expresponse_testarray << '\n';
-  Cout << "config var array = " << configvar_testarray << '\n';
-  Cout << "post sample = " << postsamples << '\n';
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  modelDisc.compute(configvar_testarray, expresponse_testarray, 
-      		simresponse_testarray, quiet_flag);
-  */
   
   // Construct config var information for prediction configs   
   int num_pred;
