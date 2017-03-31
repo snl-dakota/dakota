@@ -125,6 +125,9 @@ public:
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
   const RealVector& all_data(size_t experiment);
+  
+  /// return response for the specified experiment
+  const Response& response(size_t experiment);
 
   /// return the individual sizes of the experimental data lengths
   /// (all function values, scalar and field)

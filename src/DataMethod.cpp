@@ -146,6 +146,8 @@ DataMethodRep::DataMethodRep():
   calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3), 
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), 
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
+  calModelDiscrepancy(false), discrepancyType("global_kriging"),
+  approxCorrectionOrder(2), 
     // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
@@ -153,8 +155,13 @@ DataMethodRep::DataMethodRep():
   // Point import/export files
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
-  importCandFormat(TABULAR_ANNOTATED),
-  exportApproxFormat(TABULAR_ANNOTATED),  exportSampleSeqFlag(false),
+  importCandFormat(TABULAR_ANNOTATED), 
+  importPredConfigFormat(TABULAR_ANNOTATED),
+  exportApproxFormat(TABULAR_ANNOTATED), 
+  exportCorrModelFormat(TABULAR_ANNOTATED), 
+  exportCorrVarFormat(TABULAR_ANNOTATED), 
+  exportDiscrepFormat(TABULAR_ANNOTATED), 
+  exportSampleSeqFlag(false),
   exportSamplesFormat(TABULAR_ANNOTATED), referenceCount(1)
 { }
 
@@ -277,12 +284,14 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
-    << maxHifiEvals << numCandidates << numChains << numCR 
+    << maxHifiEvals << numCandidates << numChains << numCR << numPredConfigs
     << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity
+    << calModelDiscrepancy << discrepancyType << approxCorrectionOrder
+    << numPredConfigs << predictionConfigList;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -295,8 +304,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
-    << importCandPtsFile << importBuildFormat
-    << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
+    << importCandPtsFile << importCandFormat << importBuildFormat
+    << importPredConfigs << importPredConfigFormat
+    << exportApproxPtsFile << exportApproxFormat << exportCorrModelFile
+    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat 
+    << exportDiscrepFile << exportDiscrepFormat << exportMCMCPtsFile 
     << exportSampleSeqFlag << exportSamplesFormat;
 }
 
@@ -420,12 +432,14 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
     >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
     >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod >> adaptExpDesign
-    >> maxHifiEvals >> numCandidates >> numChains >> numCR 
+    >> maxHifiEvals >> numCandidates >> numChains >> numCR >> numPredConfigs 
     >> crossoverChainPairs >> grThreshold >> jumpStep >> lipschitzType 
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
-    >> generatePosteriorSamples >> evaluatePosteriorDensity;
+    >> generatePosteriorSamples >> evaluatePosteriorDensity
+    >> calModelDiscrepancy >> discrepancyType >> approxCorrectionOrder
+    >> numPredConfigs >> predictionConfigList;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -438,8 +452,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> importCandPtsFile >> importCandFormat
-    >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
+    >> importCandPtsFile >> importCandFormat 
+    >> importPredConfigs >> importPredConfigFormat
+    >> exportApproxPtsFile >> exportApproxFormat >> exportCorrModelFile
+    >> exportCorrModelFormat >> exportCorrVarFile >> exportCorrVarFormat 
+    >> exportDiscrepFile >> exportDiscrepFormat >> exportMCMCPtsFile 
     >> exportSampleSeqFlag >> exportSamplesFormat;
 }
 
@@ -563,12 +580,14 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
-    << maxHifiEvals << numCandidates << numChains << numCR 
+    << maxHifiEvals << numCandidates << numChains << numCR << numPredConfigs 
     << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity
+    << calModelDiscrepancy << discrepancyType << approxCorrectionOrder
+    << numPredConfigs << predictionConfigList;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -582,7 +601,10 @@ void DataMethodRep::write(std::ostream& s) const
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << importCandPtsFile << importCandFormat 
-    << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
+    << importPredConfigs << importPredConfigFormat
+    << exportApproxPtsFile << exportApproxFormat << exportCorrModelFile 
+    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat 
+    << exportDiscrepFile << exportDiscrepFormat << exportMCMCPtsFile 
     << exportSampleSeqFlag << exportSamplesFormat;
 }
 

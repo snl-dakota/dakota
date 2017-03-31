@@ -38,6 +38,7 @@
 //#include "ANN/ANNx.h"
 #include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "DiscrepancyCorrection.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -67,6 +68,28 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
+  calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
+  discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
+  numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
+  predictionConfigList(probDescDB.get_rv("method.nond.prediction_configs")),
+  importPredConfigs(probDescDB.get_string("method.import_prediction_configs")),
+  importPredConfigFormat(
+    probDescDB.get_ushort("method.import_prediction_configs_format")),
+  exportCorrModelFile(
+    probDescDB.get_string("method.nond.export_corrected_model_file")),
+  exportCorrModelFormat(
+    probDescDB.get_ushort("method.nond.export_corrected_model_format")),
+  exportDiscrepFile(
+    probDescDB.get_string("method.nond.export_discrepancy_file")),
+  exportDiscrepFormat(
+    probDescDB.get_ushort("method.nond.export_discrep_format")),
+  exportCorrVarFile(
+    probDescDB.get_string("method.nond.export_corrected_variance_file")),
+  exportCorrVarFormat(
+    probDescDB.get_ushort("method.nond.export_corrected_variance_format")),
+  approxCorrectionOrder(probDescDB.get_short("method.nond.correction_order")),
+  configLowerBnds(probDescDB.get_rv("variables.continuous_state.lower_bounds")),
+  configUpperBnds(probDescDB.get_rv("variables.continuous_state.upper_bounds")),
   obsErrorMultiplierMode(
     probDescDB.get_ushort("method.nond.calibrate_error_mode")),
   numHyperparams(0),
@@ -486,6 +509,10 @@ void NonDBayesCalibration::core_run()
   else
     // delegate to base class calibration
     calibrate();
+  if (calModelDiscrepancy)
+    // calibrate a model discrepancy function
+    build_model_discrepancy();
+    //print_discrepancy_results();
 }
 
 
@@ -625,15 +652,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
     design_matrix = lhs_iterator2.all_samples();
   }
   else {
-    /*
-    // KAM TODO: As is, do not support response read-in for 
-    // candidate points
-    Variables designvars = hifiModel.current_variables();
-    TabularIO::read_data_tabular(importCandPtsFile, 
-				 "user-provided candidate points", 
-				 designvars, numFunctions, design_matrix, 
-				 response_matrix, importCandFormat, false);	
-				 */
     // BMA TODO: This should probably be cv() + div() + ...
     size_t num_designvars = hifiModel.tv();
     RealMatrix design_matrix_in;
@@ -888,6 +906,275 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 }
 
+void NonDBayesCalibration::build_model_discrepancy()
+{
+  // For now, use average params (unfiltered)
+  RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
+  int num_cols = acc_chain_transpose.numCols();
+  RealVector ave_params(num_cols);
+  compute_col_means(acc_chain_transpose, ave_params); 
+  mcmcModel.continuous_variables(ave_params);
+  
+  int num_exp = expData.num_experiments();
+  size_t num_configvars = expData.config_vars()[0].length();
+  RealMatrix allConfigInputs(num_configvars,num_exp);
+  for (int i = 0; i < num_exp; i++) {
+    RealVector config_vec = expData.config_vars()[i];
+    Teuchos::setCol(config_vec, i, allConfigInputs);
+  } 
+
+  // Initialize DiscrepancyCorrection class
+  IntSet fn_indices;
+  // Hardcode for now, call id_surrogates eventually? See SurrogateModel.cpp 
+  for (int i = 0; i < numFunctions; ++i)
+    fn_indices.insert(i);
+  DiscrepancyCorrection modelDisc;
+  short corr_type = ADDITIVE_CORRECTION; 
+  modelDisc.initialize(fn_indices, numFunctions, num_configvars, corr_type, 
+       		       approxCorrectionOrder, discrepancyType);
+
+  // Construct config var information
+  Variables vars_copy = mcmcModel.current_variables().copy();
+  std::pair<short, short> view(MIXED_STATE, EMPTY_VIEW);
+  SizetArray vars_comps_totals(NUM_VC_TOTALS, 0);
+  vars_comps_totals = mcmcModel.current_variables().shared_data().
+    		      inactive_components_totals();
+  SharedVariablesData svd(view, vars_comps_totals);
+  Variables configvars(svd);
+  VariablesArray configvar_array(num_exp);
+  for (int i=0; i<num_exp; i++) {
+    const RealVector& config_i = Teuchos::getCol(Teuchos::View, 
+				 allConfigInputs, i);
+    Model::inactive_variables(config_i, mcmcModel, vars_copy);
+    configvars.continuous_variables(vars_copy.inactive_continuous_variables());
+    configvars.discrete_int_variables(vars_copy.
+				      inactive_discrete_int_variables());
+    configvars.discrete_real_variables(vars_copy.
+				       inactive_discrete_real_variables());
+    configvar_array[i] = configvars.copy();
+  }
+
+  // Construct response information from expData and model 
+  ResponseArray simresponse_array(num_exp);
+  ResponseArray expresponse_array(num_exp);
+  for (int i = 0; i<num_exp; i++){
+    RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, 
+		 	    i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    mcmcModel.evaluate();
+    simresponse_array[i] = mcmcModel.current_response().copy();
+    expresponse_array[i] = expData.response(i);
+  }
+  //Cout << "sim response array = " << simresponse_array << '\n';
+  //Cout << "exp response array = " << expresponse_array << '\n';
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  modelDisc.compute(configvar_array, expresponse_array, simresponse_array, 
+      		    quiet_flag);
+  
+  // Construct config var information for prediction configs   
+  int num_pred;
+  RealMatrix configpred_mat; 
+  RealVector config(1); //KAM: currently assume only one config var
+  VariablesArray configpred_array;
+  if (!importPredConfigs.empty()) {
+    TabularIO::read_data_tabular(importPredConfigs,
+				 "user-provided prediction configurations",
+				 configpred_mat, num_configvars, 
+				 importPredConfigFormat, false);
+    num_pred = configpred_mat.numCols();
+    configpred_array.resize(num_pred);
+    for (int i = 0; i < num_pred; i++) {
+      config = Teuchos::getCol(Teuchos::View, configpred_mat, i);
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+    } 
+
+  }
+  else if (!predictionConfigList.empty()) {
+    num_pred = predictionConfigList.length(); 
+    configpred_array.resize(num_pred);
+    configpred_mat.shapeUninitialized(num_configvars, num_pred);
+    for (int i = 0; i < num_pred; i++) {
+      config = predictionConfigList[i];
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+      Teuchos::setCol(config, i, configpred_mat);
+    } 
+  }
+  else {
+    num_pred = ( numPredConfigs > 0) ? numPredConfigs : 10;
+    configpred_array.resize(num_pred);
+    configpred_mat.shapeUninitialized(num_configvars, num_pred);
+    double config_step = (configUpperBnds[0]-configLowerBnds[0])/(num_pred-1);
+    for (int i = 0; i < num_pred; i++){
+      config = configLowerBnds[0] + config_step*i;
+      configvars.continuous_variables(config);
+      configpred_array[i] = configvars.copy();
+      Teuchos::setCol(config, i, configpred_mat);
+    }
+  }
+
+  // Compute dsicrepancy approx and corrected response
+  correctedResponses.resize(num_pred);
+  discrepancyResponses.resize(num_pred);
+  Response zero_response = mcmcModel.current_response().copy();
+  for (int i = 0; i < num_pred; i++) {
+    for (size_t j = 0; j < numFunctions; j++) 
+      zero_response.function_value(0,j);
+    RealVector config_vec = Teuchos::getCol(Teuchos::View, configpred_mat, i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    mcmcModel.continuous_variables(ave_params); //KAM -delete later
+    mcmcModel.evaluate();
+    Variables configpred = configpred_array[i];
+    Response simresponse_pred = mcmcModel.current_response();
+    Cout << "Calculating model discrepancy";
+    modelDisc.apply(configpred, zero_response, quiet_flag);
+    discrepancyResponses[i] = zero_response.copy();
+    Cout << "Correcting model response";
+    modelDisc.apply(configpred, simresponse_pred, quiet_flag);
+    correctedResponses[i] = simresponse_pred.copy();
+  } 
+  
+  // Compute correction variance 
+  RealMatrix discrep_var(num_pred, numFunctions);
+  correctedVariances.shapeUninitialized(num_pred, numFunctions);
+  modelDisc.compute_variance(configpred_array, discrep_var, quiet_flag);
+  if (expData.variance_active()) {
+    RealVectorArray exp_stddevs(num_exp*numFunctions);
+    expData.cov_std_deviation(exp_stddevs); // one vector per experiment
+    RealVector col_vec(num_pred);
+    for (int i = 0; i < numFunctions; i++) {
+      Real& max_var = exp_stddevs[0][i];
+      for (int j = 0; j < num_exp; j++) 
+       if (exp_stddevs[j][i] > max_var)
+	 max_var = exp_stddevs[j][i];
+      RealVector discrep_varvec = Teuchos::getCol(Teuchos::View, discrep_var,i);
+      for (int j = 0; j < num_pred; j++) {
+    	col_vec[j] = discrep_varvec[j] + pow(max_var, 2);
+      }
+      Teuchos::setCol(col_vec, i, correctedVariances);
+    }
+  }
+  else {
+    correctedVariances = discrep_var;
+    Cout << "\nWarning: No variance information was provided in " 
+         << scalarDataFilename << ".\n         Prediction variance computed "
+	 << "contains only variance information\n         from the " 
+	 << "discrepancy model.\n";
+  }
+  
+  export_discrepancy(configpred_mat);
+}
+
+void NonDBayesCalibration::export_discrepancy(RealMatrix& 
+    			   pred_config_mat)
+{
+
+  // Calculate number of predictions
+  int num_pred = pred_config_mat.numCols();
+  Variables output_vars = mcmcModel.current_variables().copy(); 
+  const StringArray& resp_labels = 
+    		     mcmcModel.current_response().function_labels();
+  size_t wpp4 = write_precision+4;
+
+  // Discrepancy responses file output
+  unsigned short discrep_format = exportDiscrepFormat;
+  String discrep_filename = 
+    exportDiscrepFile.empty() ? "dakota_discrepancy_tabular.dat" : 
+    exportDiscrepFile;
+  std::ofstream discrep_stream;
+  TabularIO::open_file(discrep_stream, discrep_filename, 
+      		       "NonDBayesCalibration discrepancy response export");
+
+  TabularIO::write_header_tabular(discrep_stream, output_vars, resp_labels, 
+      				  "config_id", discrep_format);
+  discrep_stream << std::setprecision(write_precision)
+    		 << std::resetiosflags(std::ios::floatfield);
+  for (int i = 0; i < num_pred; ++i) {
+    TabularIO::write_leading_columns(discrep_stream, i+1, 
+				     mcmcModel.interface_id(), 
+				     discrep_format);
+    const RealVector& config_vec = Teuchos::getCol(Teuchos::View, 
+						   pred_config_mat, i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    output_vars = mcmcModel.current_variables().copy();
+    output_vars.write_tabular(discrep_stream);
+    const RealVector& resp_vec = discrepancyResponses[i].function_values();
+    for (size_t j = 0; j < numFunctions; ++j) 
+      discrep_stream << std::setw(wpp4) << resp_vec[j] << ' ';
+    discrep_stream << '\n';
+  }
+  TabularIO::close_file(discrep_stream, discrep_filename, 
+      	 		"NonDBayesCalibration discrepancy response export");
+
+  // Corrected model (model+discrep) file output
+  unsigned short corrmodel_format = exportCorrModelFormat;
+  String corrmodel_filename = 
+    exportCorrModelFile.empty() ? "dakota_corrected_model_tabular.dat" : 
+    exportCorrModelFile;
+  std::ofstream corrmodel_stream;
+  TabularIO::open_file(corrmodel_stream, corrmodel_filename, 
+      		       "NonDBayesCalibration corrected model response export");
+
+  TabularIO::write_header_tabular(corrmodel_stream, output_vars, resp_labels, 
+      				  "config_id", corrmodel_format);
+  corrmodel_stream << std::setprecision(write_precision)
+    		 << std::resetiosflags(std::ios::floatfield);
+  for (int i = 0; i < num_pred; ++i) {
+    TabularIO::write_leading_columns(corrmodel_stream, i+1, 
+				     mcmcModel.interface_id(), 
+				     corrmodel_format);
+    const RealVector& config_vec = Teuchos::getCol(Teuchos::View, 
+						   pred_config_mat, i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    output_vars = mcmcModel.current_variables().copy();
+    output_vars.write_tabular(corrmodel_stream);
+    const RealVector& resp_vec = correctedResponses[i].function_values();
+    for (size_t j = 0; j < numFunctions; ++j) 
+      corrmodel_stream << std::setw(wpp4) << resp_vec[j] << ' ';
+    corrmodel_stream << '\n';
+  }
+  TabularIO::close_file(corrmodel_stream, corrmodel_filename, 
+      	 		"NonDBayesCalibration corrected model response export");
+
+  // Corrected model variances file output
+  unsigned short discrepvar_format = exportCorrVarFormat;
+  String var_filename = exportCorrVarFile.empty() ? 
+    		 "dakota_discrepancy_variance_tabular.dat" : exportCorrVarFile;
+  //discrep_filename = "dakota_corrected_variances.dat";
+  std::ofstream discrepvar_stream;
+  TabularIO::open_file(discrepvar_stream, var_filename, 
+      		       "NonDBayesCalibration corrected model variance export");
+
+  RealMatrix corrected_var_transpose(correctedVariances, Teuchos::TRANS);
+  StringArray var_labels(numFunctions);
+  for (int i = 0; i < numFunctions; i++) {
+    std::stringstream s;
+    s << resp_labels[i] << "_var";
+    var_labels[i] = s.str();
+  }
+  TabularIO::write_header_tabular(discrepvar_stream, output_vars, var_labels, 
+      				  "pred_config", discrepvar_format);
+  discrepvar_stream << std::setprecision(write_precision)
+    		 << std::resetiosflags(std::ios::floatfield);
+  for (int i = 0; i < num_pred; ++i) {
+    TabularIO::write_leading_columns(discrepvar_stream, i+1, 
+				     mcmcModel.interface_id(), 
+				     discrepvar_format);
+    const RealVector& config_vec = Teuchos::getCol(Teuchos::View, 
+						   pred_config_mat, i);
+    Model::inactive_variables(config_vec, mcmcModel);
+    output_vars = mcmcModel.current_variables().copy();
+    output_vars.write_tabular(discrepvar_stream);
+    const RealVector& var_vec = Teuchos::getCol(Teuchos::View, 
+						corrected_var_transpose, i);
+    for (size_t j = 0; j < numFunctions; ++j) 
+      discrepvar_stream << std::setw(wpp4) << var_vec[j] << ' ';
+    discrepvar_stream << '\n';
+  }
+  TabularIO::close_file(discrepvar_stream, var_filename, 
+      	 		"NonDBayesCalibration corrected model variance export");
+}
 
 void NonDBayesCalibration::
 extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
@@ -1328,6 +1615,8 @@ void NonDBayesCalibration::compute_intervals()
   if (expData.variance_active())
     write_data(interval_stream, predVals);
 #endif
+  interval_stream << "acceptedVals = " << acceptedFnVals << '\n';
+  interval_stream << "predVals = " << predVals << '\n';
 }
 
 void NonDBayesCalibration::compute_prediction_vals
@@ -1403,7 +1692,6 @@ compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, RealVector& std_dev
     std_devs(i) = std::sqrt(res_vec.dot(res_vec)/((Real) num_rows-1));
   }
 }
-
 
 /** Print tabular file with filtered chain, function values, and pred values */
 void NonDBayesCalibration::
