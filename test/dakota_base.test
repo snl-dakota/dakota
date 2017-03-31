@@ -9486,52 +9486,52 @@ dakota_mogatest.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
-                      1.1940041563e-02 x1
-                     -1.4729406691e-03 x2
-                     -2.4703672167e-02 x3
+                     -4.8557257302e-02 x1
+                     -8.1458432638e-02 x2
+                     -4.0718602036e-02 x3
 <<<<< Best objective functions (set 1) =
-                      6.3839180302e-01
-                      6.2630526411e-01
-<<<<< Best data captured at function evaluation 2455
+                      7.0114544644e-01
+                      5.5669812570e-01
+<<<<< Best data captured at function evaluation 1982
 <<<<< Best parameters          (set 2) =
-                      2.9630174874e-02 x1
-                     -1.4729406691e-03 x2
-                     -2.3805001762e-02 x3
+                     -4.8557257302e-02 x1
+                     -8.5568333084e-02 x2
+                     -7.6629808208e-02 x3
 <<<<< Best objective functions (set 2) =
-                      6.3080165897e-01
-                      6.3449390351e-01
-<<<<< Best data captured at function evaluation 2334
+                      7.1603697603e-01
+                      5.3800097678e-01
+<<<<< Best data captured at function evaluation 1611
 <<<<< Best parameters          (set 3) =
-                      1.1940041563e-02 x1
-                      5.4304683606e-02 x2
-                     -2.3805001762e-02 x3
+                     -4.8557257302e-02 x1
+                     -8.1458432638e-02 x2
+                     -2.4703672167e-02 x3
 <<<<< Best objective functions (set 3) =
-                      6.1505432937e-01
-                      6.5099303949e-01
-<<<<< Best data captured at function evaluation 2219
+                      6.9524834673e-01
+                      5.6436433869e-01
+<<<<< Best data captured at function evaluation 1983
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
-                      5.5333600000e-01 x1
-                      1.1910000000e-03 x2
+                      7.9957400000e-01 x1
+                      4.2930000000e-03 x2
 <<<<< Best objective functions (set 1) =
-                      5.5333600000e-01
-                      1.7060824064e-01
-<<<<< Best data captured at function evaluation 749
+                      7.9957400000e-01
+                     -3.2782352341e-01
+<<<<< Best data captured at function evaluation 2500
 <<<<< Best parameters          (set 2) =
-                      7.9954000000e-01 x1
-                      4.2530000000e-03 x2
+                      7.9944429817e-01 x1
+                      4.3050000000e-03 x2
 <<<<< Best objective functions (set 2) =
-                      7.9954000000e-01
-                     -3.2815600087e-01
-<<<<< Best data captured at function evaluation 2648
+                      7.9944429817e-01
+                     -3.2647543518e-01
+<<<<< Best data captured at function evaluation 586
 <<<<< Best parameters          (set 3) =
-                      7.9982600000e-01 x1
-                      4.3420000000e-03 x2
+                      7.9950400000e-01 x1
+                      4.3010000000e-03 x2
 <<<<< Best objective functions (set 3) =
-                      7.9982600000e-01
-                     -3.2927239897e-01
-<<<<< Best data captured at function evaluation 1926
+                      7.9950400000e-01
+                     -3.2707272655e-01
+<<<<< Best data captured at function evaluation 2499
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
@@ -9573,7 +9573,7 @@ Test Number 3 succeeded
                       9.1182849371e-03
 <<<<< Best data captured at function evaluation 1872
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Function evaluation summary: 92 total (92 new, 0 duplicate
 <<<<< Best parameters          =
                                      0 x1
                                      0 x2
@@ -9581,9 +9581,9 @@ Test Number 4 succeeded
 <<<<< Best objective functions =
                       6.3212055883e-01
                       6.3212055883e-01
-<<<<< Best data captured at function evaluation 57
+<<<<< Best data captured at function evaluation 68
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Function evaluation summary: 92 total (92 new, 0 duplicate
 <<<<< Best parameters          =
                                      0 x1
                                      0 x2
@@ -9591,9 +9591,9 @@ Test Number 5 succeeded
 <<<<< Best objective functions =
                       6.3212055883e-01
                       6.3212055883e-01
-<<<<< Best data captured at function evaluation 57
+<<<<< Best data captured at function evaluation 68
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
+<<<<< Function evaluation summary: 92 total (92 new, 0 duplicate
 <<<<< Best parameters          =
                                      0 x1
                                      0 x2
@@ -9601,7 +9601,7 @@ Test Number 6 succeeded
 <<<<< Best objective functions =
                       6.3212055883e-01
                       6.3212055883e-01
-<<<<< Best data captured at function evaluation 57
+<<<<< Best data captured at function evaluation 68
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 64 total (64 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -9613,8 +9613,19 @@ Test Number 7 succeeded
                       6.3212055883e-01
 <<<<< Best data captured at function evaluation 61
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 632 total (632 new, 0 duplicate)
+<<<<< Function evaluation summary: 634 total (634 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
+                      9.5878080416e-01 x1
+                      9.7559906495e-01 x2
+                                     2 ddsiv_1
+                                     2 ddsiv_2
+                                     2 ddsiv_3
+                                  zulu s1
+                                 poker s2
+<<<<< Best objective function  (set 1) =
+                      8.8400000324e+02
+<<<<< Best data captured at function evaluation 613
+<<<<< Best parameters          (set 2) =
                       9.5878080416e-01 x1
                       9.7559906495e-01 x2
                                      0 ddsiv_1
@@ -9622,10 +9633,10 @@ Test Number 8 succeeded
                                      2 ddsiv_3
                                   zulu s1
                                  poker s2
-<<<<< Best objective function  (set 1) =
+<<<<< Best objective function  (set 2) =
                       8.8400000324e+02
-<<<<< Best data captured at function evaluation 632
-<<<<< Best parameters          (set 2) =
+<<<<< Best data captured at function evaluation 634
+<<<<< Best parameters          (set 3) =
                       9.5878080416e-01 x1
                       9.7559906495e-01 x2
                                      2 ddsiv_1
@@ -9633,20 +9644,9 @@ Test Number 8 succeeded
                                      2 ddsiv_3
                                   zulu s1
                                  poker s2
-<<<<< Best objective function  (set 2) =
-                      8.8400000324e+02
-<<<<< Best data captured at function evaluation 596
-<<<<< Best parameters          (set 3) =
-                      9.5878080416e-01 x1
-                      9.7559906495e-01 x2
-                                     0 ddsiv_1
-                                     0 ddsiv_2
-                                     2 ddsiv_3
-                                  zulu s1
-                                 poker s2
 <<<<< Best objective function  (set 3) =
                       8.8400000324e+02
-<<<<< Best data captured at function evaluation 533
+<<<<< Best data captured at function evaluation 598
 dakota_multiobj1.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
