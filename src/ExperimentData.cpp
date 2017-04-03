@@ -923,6 +923,13 @@ void ExperimentData::cov_as_correlation(RealSymMatrixArray& corr_matrices) const
   }
 }
 
+void ExperimentData::covariance(int exp_ind, RealSymMatrix& cov_mat) const
+{
+  const ExperimentCovariance& exp_cov = 
+    allExperiments[exp_ind].experiment_covariance();
+  exp_cov.dense_covariance(cov_mat);
+}
+
 
 /** This assumes the souce gradient/Hessian are size less or equal to
     the destination response, and that the leading part is to be populated. */

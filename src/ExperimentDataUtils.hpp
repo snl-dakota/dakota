@@ -112,8 +112,9 @@ public:
   /// another. 
   CovarianceMatrix& operator=( const CovarianceMatrix &source );
 
-  /// Return the matrix specifying the correlation between the field data
-  void get_covariance( RealMatrix &cov ) const;
+  /// Return the full dense matrix specifying the covariance among the
+  /// field data
+  void dense_covariance(RealSymMatrix &cov) const;
 
   /// Retrieve the covariance as a correlation matrix
   void as_correlation(RealSymMatrix& corr_mat) const;
@@ -233,6 +234,9 @@ public:
   /// Return a (copy) vector containing the main diagonal entries of the 
   /// experimental covariance matrix
   void get_main_diagonal( RealVector &diagonal ) const;
+
+  /// Retrieve a full/dense representation of the covariance
+  void dense_covariance(RealSymMatrix& cov_mat) const;
 
   /// Retrieve the covariance as a (dense) correlation matrix
   void as_correlation(RealSymMatrix& corr_mat) const;

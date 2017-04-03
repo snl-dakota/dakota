@@ -185,6 +185,9 @@ public:
   /// vector per experiment
   void cov_as_correlation(RealSymMatrixArray& corr_matrix) const;
 
+  /// retrieve an individual covariance entry as a dense matrix
+  void covariance(int exp_ind, RealSymMatrix& cov_mat) const;
+
   /// form residuals for all experiments, interpolating if necessary;
   /// one simulation response maps to all experiments
   void form_residuals(const Response& sim_resp, Response& residual_resp) const;

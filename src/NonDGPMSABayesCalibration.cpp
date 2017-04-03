@@ -453,21 +453,28 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
     total_exp_space(*quesoEnv, "experimentspace_", 
                     experiment_size * num_experiments, NULL);
 
-  QUESO::SharedPtr<GslMatrix>::Type exp_covariance;
-  (new GslMatrix(total_exp_space.zeroVector(), 1.0));
+  QUESO::SharedPtr<GslMatrix>::Type exp_covariance
+    (new GslMatrix(total_exp_space.zeroVector(), 1.0));
 
-  for (unsigned int i = 0; i < num_experiments; i++) {
-    for (unsigned int j = 0; j < experiment_size; j++) {
-      // Passing in error of experiments (standardised).
-      // The "magic number" here will in practice be an estimate
-      // of experimental error.  In this test example it is pulled
-      // from our posterior.
-      // experimentMat(experiment_size*i+j, experiment_size*i+j) =
-      // 	(0.025 / stdsim[j]) * (0.025 / stdsim[j]);
-      ;
+  // Passing in error of experiments (standardised).
+  // The "magic number" here will in practice be an estimate
+  // of experimental error.
+  // experimentMat(experiment_size*i+j, experiment_size*i+j) =
+  // 	(0.025 / stdsim[j]) * (0.025 / stdsim[j]);
+
+  // TODO: is covariance required by GPMSA?
+  if (expData.variance_active()) {
+    for (unsigned int i = 0; i < num_experiments; i++) {
+      RealSymMatrix exp_cov;
+      expData.covariance(i, exp_cov);
+      for (unsigned int j = 0; j < experiment_size; j++) {
+        for (unsigned int k = 0; k < experiment_size; k++) {
+          (*exp_covariance)(experiment_size*i+j, experiment_size*i+k) =
+            exp_cov(j,k);
+        }
+      }
     }
   }
-
 
   gpmsaFactory->addExperiments(exp_scenarios, exp_outputs, exp_covariance);
 
