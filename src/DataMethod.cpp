@@ -284,7 +284,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
-    << maxHifiEvals << numCandidates << numChains << numCR << numPredConfigs
+    << maxHifiEvals << numCandidates << numChains << numCR
     << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
@@ -304,7 +304,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
-    << importCandPtsFile << importCandFormat << importBuildFormat
+    << importCandPtsFile << importCandFormat
     << importPredConfigs << importPredConfigFormat
     << exportApproxPtsFile << exportApproxFormat << exportCorrModelFile
     << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat 
@@ -432,7 +432,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> proposalCovData >> proposalCovFile >> fitnessMetricType
     >> batchSelectionType >> calibrateErrorMode >> hyperPriorAlphas
     >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod >> adaptExpDesign
-    >> maxHifiEvals >> numCandidates >> numChains >> numCR >> numPredConfigs 
+    >> maxHifiEvals >> numCandidates >> numChains >> numCR
     >> crossoverChainPairs >> grThreshold >> jumpStep >> lipschitzType 
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
@@ -452,7 +452,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
-    >> importCandPtsFile >> importCandFormat 
+    >> importCandPtsFile >> importCandFormat
     >> importPredConfigs >> importPredConfigFormat
     >> exportApproxPtsFile >> exportApproxFormat >> exportCorrModelFile
     >> exportCorrModelFormat >> exportCorrVarFile >> exportCorrVarFormat 
@@ -580,7 +580,7 @@ void DataMethodRep::write(std::ostream& s) const
     << proposalCovData << proposalCovFile << fitnessMetricType
     << batchSelectionType << calibrateErrorMode << hyperPriorAlphas
     << hyperPriorBetas << burnInSamples << subSamplingPeriod << adaptExpDesign
-    << maxHifiEvals << numCandidates << numChains << numCR << numPredConfigs 
+    << maxHifiEvals << numCandidates << numChains << numCR
     << crossoverChainPairs << grThreshold << jumpStep << lipschitzType 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
@@ -600,7 +600,7 @@ void DataMethodRep::write(std::ostream& s) const
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
     << importApproxPtsFile << importApproxFormat << importApproxActive
-    << importCandPtsFile << importCandFormat 
+    << importCandPtsFile << importCandFormat
     << importPredConfigs << importPredConfigFormat
     << exportApproxPtsFile << exportApproxFormat << exportCorrModelFile 
     << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat 
