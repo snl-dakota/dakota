@@ -247,6 +247,14 @@ void NonDGPMSABayesCalibration::calibrate()
   inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
                                                 full_param_initials,
                                                 &full_proposal_cov);
+
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     chainSamples * chainCycles);
+  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
+  size_t cycle_num = 1;
+  aggregate_acceptance_chain(cycle_num);
+
+  compute_statistics();
 }
 
 
@@ -290,14 +298,12 @@ overlay_initial_params(GslVector& full_param_initials)
   gpmsaFactory->prior().pdf().distributionMean(full_param_initials);
 
   // But override whatever we want.
- 
   unsigned int num_calib_params = paramSpace->dimGlobal();
   for (unsigned int i=0; i<num_calib_params; ++i)
     full_param_initials[i] = (*paramInitials)[i];
 
-  full_param_initials[num_calib_params] = 0.4;
-
   // paramInitials[5]  = 0;   // Emulator mean, unused but don't leave it NaN!
+  //  full_param_initials[num_calib_params] = 0.4;
 
   // The rest of these we'll override, not because we have to, but
   // because the regression gold standard predates distributionMean()

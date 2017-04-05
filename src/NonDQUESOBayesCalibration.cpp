@@ -630,12 +630,16 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  QUESO::GslVector qv(paramSpace->zeroVector());
+
+  // The posterior may include GPMSA hyper-parameters, so use the postRv space
+  //  QUESO::GslVector qv(paramSpace->zeroVector());
+  QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
   
   int lookup_failures = 0, num_params = numContinuousVars + numHyperparams,
     sample_index = (cycle_num - 1) * chainSamples,
     //stop_index   = sample_index + chainSamples;
     start = (cycle_num == 1) ? 0 : 1; // 1st chain pt is redundant
+
   for (int i=start; i<num_mcmc; ++i, ++sample_index) {
 
     // translate the QUESO vector into x- or u-space lookup vars and
@@ -658,7 +662,13 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
 	lookup_vars.continuous_variables(x_rv);
     }
     else {
-      copy_gsl(qv, acceptanceChain, sample_index);
+      // A view that includes calibration params and Dakota-managed
+      // hyper-parameters, to facilitate copying from the longer qv
+      // into acceptanceChain:
+      RealVector theta_hp(Teuchos::View, acceptanceChain[sample_index], 
+			  numContinuousVars + numHyperparams);
+      copy_gsl_partial(qv, 0, theta_hp);
+      // lookup vars only need the calibration parameters
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
       lookup_vars.continuous_variables(x_rv);
