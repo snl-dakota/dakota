@@ -128,7 +128,8 @@ protected:
   boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
   gpmsaFactory; 
 
-
+  /// advanced options file name
+  String optionsFile;
 
 private:
 

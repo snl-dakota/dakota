@@ -72,7 +72,7 @@ protected:
   void print_results(std::ostream& s);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
-  void init_queso_environment();
+  void init_queso_environment(const String& input_filename = String());
 
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();

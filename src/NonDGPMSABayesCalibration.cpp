@@ -30,7 +30,7 @@ using QUESO::GslMatrix;
 static const char rcsId[]="@(#) $Id$";
 
 
-/* TODO / QUESIONS:
+/* TODO / QUESTIONS:
 
  * Write tests that use DOE vs import 
 
@@ -52,6 +52,9 @@ static const char rcsId[]="@(#) $Id$";
    Perhaps get access through GPMSAFactory?
 
  * Allow basic vs. advanced user options
+   ??? Appears only GPMSA allows default construct with parse override? 
+   ??? Passed prefix is ignored by some EnvOptions ctors ???
+   ??? Can't construct QUESO env with C++ options, then override from file...
 
  * Terminate handler might be getting called recursively in serial, at
    least when run in debugger.  Perhaps because old_terminate_handler
@@ -79,7 +82,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  buildSamples(probDescDB.get_int("method.build_samples"))
+  buildSamples(probDescDB.get_int("method.build_samples")),
+  optionsFile(probDescDB.get_string("method.queso_options_file"))
 {   
   // quesoEnv: Base class calls init_queso_environment().  May need to
   // override this to provide additional power-user options to
@@ -99,6 +103,18 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (expData.num_experiments() < 1) {
     Cerr << "\nError: GPMSA requires experimental data\n";
     found_error = true;
+  }
+
+  if (!optionsFile.empty()) {
+    if (boost::filesystem::exists(optionsFile)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Any GPMSA options in file '" << optionsFile 
+	     << "' will override Dakota options." << std::endl;
+    } else {
+      Cerr << "\nError: GPMSA options_file '" << optionsFile 
+	   << "' specified, but file not found.\n";
+      found_error = true;
+    }
   }
 
   if (found_error)
@@ -157,6 +173,8 @@ void NonDGPMSABayesCalibration::calibrate()
   // BMA TODO: base class needs runtime update as well
   nonDQUESOInstance = this;
   nonDGPMSAInstance = this;
+
+  init_queso_environment(optionsFile);
 
   // no emulators will be setup, but need to initialize the prob transforms
   initialize_model();
@@ -219,7 +237,21 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // default constructed options will have recommended settings, then
   // we can override via C++ API or input file (.parse())
+
   boost::scoped_ptr<QUESO::GPMSAOptions> gp_opts(new QUESO::GPMSAOptions());
+  // insert Dakota parameters here: gp_opts.m_emulatorPrecisionShape()
+  // now override with file-based power user parameters
+  if (!optionsFile.empty()) {
+    // if (outputLevel >= DEBUG_OUTPUT) {
+    //   Cout << "\nGPMSAOptions:\n";
+    //   gp_opts->print(Cout);
+    // }
+    gp_opts->parse(*quesoEnv, "");
+    // if (outputLevel >= DEBUG_OUTPUT) {
+    //   Cout << "\nGPMSAOptions:\n";
+    //   gp_opts->print(Cout);
+    // }
+  }
 
   gpmsaFactory.reset(new QUESO::GPMSAFactory<GslVector, GslMatrix>
                      (*quesoEnv, gp_opts.get(), *priorRv, *configSpace, 

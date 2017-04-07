@@ -234,8 +234,6 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
-  init_queso_environment();
- 
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
@@ -254,6 +252,8 @@ void NonDQUESOBayesCalibration::calibrate()
 {
   // instantiate QUESO objects and execute
   nonDQUESOInstance = this;
+
+  init_queso_environment();
 
   // build the emulator and initialize transformations, as needed
   initialize_model();
@@ -417,7 +417,12 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   }
 }
 
-void NonDQUESOBayesCalibration::init_queso_environment()
+
+/** The input filename is only passed by GPMSA as there's no way to
+    override the C++ options with file-based options for the QUESO
+    ctors. */
+void NonDQUESOBayesCalibration::
+init_queso_environment(const String& input_filename)
 {
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
@@ -428,15 +433,21 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   // needs envOptionsValues:
   quesoEnv.reset();
 
-  // TODO: see if this can be a local, or if the env retains a pointer
-  envOptionsValues.reset(new QUESO::EnvOptionsValues());
-  envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
-  envOptionsValues->m_subDisplayAllowedSet.insert(0);
-  envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity = 2;  
-  // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
-  envOptionsValues->m_seed = randomSeed; 
-  // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
+  // Unfortunately, if we set these options, can't load the GPMSA options!
+  // For now, require all options from file when using it
+  if (input_filename.empty()) {
+    // TODO: see if this can be a local, or if the env retains a pointer
+    envOptionsValues.reset(new QUESO::EnvOptionsValues());
+    envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
+    envOptionsValues->m_subDisplayAllowedSet.insert(0);
+    envOptionsValues->m_subDisplayAllowedSet.insert(1);
+    envOptionsValues->m_displayVerbosity = 2;  
+    // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
+    envOptionsValues->m_seed = randomSeed; 
+    // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
+  }
+  else
+    envOptionsValues.reset();
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -444,21 +455,22 @@ void NonDQUESOBayesCalibration::init_queso_environment()
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
-						envOptionsValues.get()));
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,
+						input_filename.c_str(),
+						"", envOptionsValues.get()));
   }
   else {
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment("","",
+      quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
 						envOptionsValues.get()));
   }
 #else
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment("","",
+    quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
 					      envOptionsValues.get()));
 #endif
 
