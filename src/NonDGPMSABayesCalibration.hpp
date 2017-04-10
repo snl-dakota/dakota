@@ -116,15 +116,19 @@ protected:
   //- Heading: Data
   //
 
+  /// vector space defining the scenario (configuration) variables
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 
   configSpace;
+
+  /// vector space defining the output (response) space for the simulations
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
   nEtaSpace;
 
+  /// vector space defining the output (response) space for the experiments
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
   experimentSpace;
 
-  
+  /// core factory that manages a GP-based likelihood
   boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
   gpmsaFactory; 
 

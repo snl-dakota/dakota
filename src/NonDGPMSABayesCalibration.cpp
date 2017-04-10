@@ -34,19 +34,43 @@ static const char rcsId[]="@(#) $Id$";
 
  * Write tests that use DOE vs import 
 
+ * A number of improvements in DACE / imported build data
+
+    - Decide on meaning of buildSamples for read vs. DACE iterator control
+
+    - Read build data in base class?
+
+    - Read using residualModel's DataTransformModel vars/resp?
+
+    - Handle string variables (convert to indices), probably be
+      reading into a Variables object
+
+    - Instead of assuming config vars = 0.5, use initial_state?
+
+    - Read the build data early so we know buildSamples; would be nice
+      to integrate with populating the data below so we can avoid the
+      temporary
+
+    - Document: theta, x, f ordering; document allVariables on DACE
+      iterator
+
  * Implement m_realizer? We implement only what's needed to compute
    log prior, not realize()
 
  * Can one disable inference of the hyper-parameters?  Option to
-   calibrate theta vs. config vars, e.g.,   mhVarOptions->m_parameterDisabledSet.insert(0);
+   calibrate theta vs. config vars, e.g.,
+   mhVarOptions->m_parameterDisabledSet.insert(0);
 
  * Normalization optional?  It's not clear what normalize means in
-   context of functional data?
+   context of functional data?  Do the config vars need to be normalized?
 
  * Functional data omission of scenarios; set to 0.5?
+   Need to be sure that no other code is assuming these params don't exist...
+   Also need to make sure to send a valid domain
 
  * BJW: How to handle LHS design generation?  Over all variables or
-        just theta?  Probably all variables
+        just theta?  Probably all variables; that's being assumed in
+        some places.
 
  * Can't use MAP pre-solve since don't have access to the likelihood?
    Perhaps get access through GPMSAFactory?
@@ -63,6 +87,10 @@ static const char rcsId[]="@(#) $Id$";
  * Emulator mean must be set to something to avoid nan/nan issue.
    Probably want to be able to omit parameters that aren't being
    calibrated statistically...
+
+ * Experiment covariance: correlation or covariance;
+   normalized by simulation std deviation as in example?  Does this
+   need to be defined if identity?
 
  */
 
@@ -99,11 +127,23 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
     found_error = true;
   }
 
+  // TODO: Do we want to allow a single field group to allow the full
+  // multi-variate case?
+  const SharedResponseData& srd = model.current_response().shared_data();
+  if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
+	 << "treated as a\n         single multivariate response set."
+	 << std::endl;
+
   // REQUIRE experiment data
   if (expData.num_experiments() < 1) {
     Cerr << "\nError: GPMSA requires experimental data\n";
     found_error = true;
   }
+
+  if (expData.num_config_vars() > 0 && !approxImportFile.empty() &&
+      approxImportActiveOnly && outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nWarning: Experimental data presented to GPMSA has configuration variables, but\n         simulation data import specifies active_only, so nominal values of\n         configuration variables will be used." << std::endl;
 
   if (!optionsFile.empty()) {
     if (boost::filesystem::exists(optionsFile)) {
@@ -187,11 +227,14 @@ void NonDGPMSABayesCalibration::calibrate()
   // proposal may depend on the parameter space properties
   init_proposal_covariance();
 
-  // BMA: In the following a scenario is a configuration
+  // In the following a "scenario" is a "configuration"
   unsigned int num_experiments = expData.num_experiments();
   unsigned int num_uncertain_vars = paramSpace->dimGlobal();
   unsigned int num_simulations = buildSamples; // TODO: generalize
-  unsigned int num_config_vars = expData.num_config_vars();
+  // GPMSA requires at least 1 configuration variable, set to 0.5 for
+  // all scenarios if needed
+  unsigned int gpmsa_config_vars = std::max(expData.num_config_vars(),
+					    (size_t) 1);
 
   // BMA TODO: manage experiment size (each experiment need not have
   // the same size and one sim may inform multiple experiments through
@@ -207,7 +250,7 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // Step 3: Instantiate the 'scenario' and 'output' spaces for simulation
   configSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-                    (*quesoEnv, "scenario_", num_config_vars, NULL));
+		    (*quesoEnv, "scenario_", gpmsa_config_vars, NULL));
   nEtaSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
                   (*quesoEnv, "output_", num_eta, NULL));
 
@@ -236,8 +279,7 @@ void NonDGPMSABayesCalibration::calibrate()
   // hyperparameter distributions.
 
   // default constructed options will have recommended settings, then
-  // we can override via C++ API or input file (.parse())
-
+  // we can override via C++ API or input file (parse)
   boost::scoped_ptr<QUESO::GPMSAOptions> gp_opts(new QUESO::GPMSAOptions());
   // insert Dakota parameters here: gp_opts.m_emulatorPrecisionShape()
   // now override with file-based power user parameters
@@ -358,24 +400,29 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
 {
   unsigned int num_uncertain_vars = paramSpace->dimGlobal();
   unsigned int num_simulations = buildSamples; // TODO: generalize
-  unsigned int num_config_vars = expData.num_config_vars();
+  unsigned int user_config_vars = expData.num_config_vars();
+  // GPMSA requires at least 1 configuration variable, set to 0.5 for
+  // all scenarios if needed
+  bool no_config_vars = (user_config_vars < 1);
+  unsigned int gpmsa_config_vars = std::max(user_config_vars, (unsigned int) 1);
 
   // simulations are described by configuration, parameters, output values
   std::vector<QUESO::SharedPtr<GslVector>::Type >
     sim_scenarios(num_simulations),  // config var values
-    sim_params(num_simulations),            // theta var values
-    sim_outputs(num_simulations);           // simulation output (response) values
+    sim_params(num_simulations),     // theta var values
+    sim_outputs(num_simulations);    // simulation output (response) values
 
   // Instantiate each of the simulation points/outputs
   for (unsigned int i = 0; i < num_simulations; i++) {
     sim_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
-    sim_params          [i].reset(new GslVector(paramSpace->zeroVector()));
-    sim_outputs         [i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
+    sim_params[i].reset(new GslVector(paramSpace->zeroVector()));
+    sim_outputs[i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
   }
 
   // Populate simulation data  (generate or load build data)
   if (approxImportFile.empty()) {
 
+    // NOTE: Assumes the design is performed over the config vars
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
     const RealMatrix&  all_samples = lhsIter.all_samples();
     const IntResponseMap& all_resp = lhsIter.all_responses();
@@ -391,41 +438,26 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
       int bd_index = 0;
       for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
         (*sim_params[i])[j] = all_samples(bd_index, i);
-      for (int j=0; j<num_config_vars; ++j, ++bd_index)
-        (*sim_scenarios[i])[j] = all_samples(bd_index, i);
+      for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
+	if (no_config_vars)
+	  (*sim_scenarios[i])[j] = 0.5;
+	else
+	  (*sim_scenarios[i])[j] = all_samples(bd_index, i);
+      }
       copy_gsl(resp_it->second.function_values(), *sim_outputs[i]);
     }
 
   }
   else {
-    // load the build data and differentiate calibration from
-    // configuration variables
-    //    load_build_data()
-    
-    // could consider using the DataTransformModel to manage this
-    
-    // for now, assume theta are followed by config vars and no string variables?
 
-    // might be able to read using residualModel's vars/resp
-
-    // need to convert strings to indices?
-    //    residualModel
-    
-    // if reading active_only, have to assume all simulations
-    // conducted at the nominal state variable values...
-
-      // Read the build data early so we know buildSamples; would be nice
-
-    // to integrate with populating the data below so we can avoid the
-    // temporary
-
-
-    // read the surrogate build data theta, x, f, assuming in that order
-
-    // TODO: Need to handle string variables and variable types,
-    // probably by loading into a Variables object; as well as active_only
+    // Read surrogate build data ( theta, [x, ], fns ) depending on
+    // active_only and number of user-specified config vars.  If
+    // reading active_only, have to assume all simulations conducted
+    // at nominal state variable values.
     RealMatrix build_data;
-    size_t record_len = num_uncertain_vars + num_config_vars + numFunctions;
+    size_t record_len = (approxImportActiveOnly) ?
+      num_uncertain_vars + numFunctions :
+      num_uncertain_vars + user_config_vars + numFunctions;
     bool verbose = (outputLevel > NORMAL_OUTPUT);
     TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
 				 build_data, num_simulations, record_len,
@@ -435,8 +467,12 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
       int bd_index = 0;
       for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
         (*sim_params[i])[j] = build_data(i, bd_index);
-      for (int j=0; j<num_config_vars; ++j, ++bd_index)
-        (*sim_scenarios[i])[j] = build_data(i, bd_index);
+      for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
+	if (no_config_vars)
+	  (*sim_scenarios[i])[j] = 0.5;
+	else
+	  (*sim_scenarios[i])[j] = build_data(i, bd_index);
+      }
       for (int j=0; j<numFunctions; ++j, ++bd_index)
         (*sim_outputs[i])[j] = build_data(i, bd_index);
 
@@ -452,7 +488,11 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
 void NonDGPMSABayesCalibration::fill_experiment_data()
 {
   unsigned int num_experiments = expData.num_experiments();
+  unsigned int user_config_vars = expData.num_config_vars();
   unsigned int experiment_size = expData.all_data(0).length();
+
+  bool no_config_vars = (user_config_vars < 1);
+  unsigned int gpmsa_config_vars = std::max(user_config_vars, (unsigned int) 1);
 
   // characterization of the experiment data
   std::vector<QUESO::SharedPtr<GslVector>::Type > 
@@ -462,7 +502,6 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
   // BMA: Why is sim_outputs based on nEtaSpace?  Is simulation allowed
   // to be differently sized from experiments?
 
-
   // Load the information on the experiments (scenarios and data)
   const RealVectorArray& exp_config_vars = expData.config_vars();
   for (unsigned int i = 0; i < num_experiments; i++) {
@@ -470,37 +509,22 @@ void NonDGPMSABayesCalibration::fill_experiment_data()
     exp_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
     exp_outputs[i].reset(new GslVector(experimentSpace->zeroVector()));
 
-    // NOTE: these will resize the target objects rather than erroring...
-    copy_gsl(exp_config_vars[i], *exp_scenarios[i]);
+    // NOTE: copy_gsl will resize the target objects rather than erroring.
+    if (no_config_vars)
+      (*exp_scenarios[i])[0] = 0.5;
+    else
+      copy_gsl(exp_config_vars[i], *exp_scenarios[i]);
     copy_gsl(expData.all_data(i), *exp_outputs[i]);
 
   }
 
-
-  // Observation error covariance
-
-  // BMA TODO: populate actual experiment covariance
-  // TODO: do we want correlation or covariance?
-  // TODO: Does this need to be defined if identity?
-
-  // The experimental output data observation error covariance matrix
-  // BMA: initialized to identity for now; need accessors to
-  // experiment data cov, probably as element-wise access returning 0
-  // if not defined.
+  // Experimental observation error covariance (default = I)
   QUESO::VectorSpace<GslVector, GslMatrix> 
     total_exp_space(*quesoEnv, "experimentspace_", 
-                    experiment_size * num_experiments, NULL);
-
+                    num_experiments * experiment_size, NULL);
   QUESO::SharedPtr<GslMatrix>::Type exp_covariance
     (new GslMatrix(total_exp_space.zeroVector(), 1.0));
 
-  // Passing in error of experiments (standardised).
-  // The "magic number" here will in practice be an estimate
-  // of experimental error.
-  // experimentMat(experiment_size*i+j, experiment_size*i+j) =
-  // 	(0.025 / stdsim[j]) * (0.025 / stdsim[j]);
-
-  // TODO: is covariance required by GPMSA?
   if (expData.variance_active()) {
     for (unsigned int i = 0; i < num_experiments; i++) {
       RealSymMatrix exp_cov;
