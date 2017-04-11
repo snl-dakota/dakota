@@ -133,9 +133,9 @@ DataMethodRep::DataMethodRep():
   //expansionSampleType("lhs"),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
-  samplesOnEmulator(0), emulatorOrder(0),
+  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
+  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
+  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   burnInSamples(0), subSamplingPeriod(1), adaptExpDesign(false), 
   maxHifiEvals(0), numCandidates(0), posteriorStatsKL(false), 
@@ -266,7 +266,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
     << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << distributionType << responseLevelTarget
+    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
     << samplesOnEmulator
@@ -409,7 +409,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
     >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> distributionType >> responseLevelTarget
+    >> pilotSamples >> finalMomentsType >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
     >> reliabilityLevels >> genReliabilityLevels >> chainSamples >> buildSamples 
     >> samplesOnEmulator
@@ -552,7 +552,7 @@ void DataMethodRep::write(std::ostream& s) const
     << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
     << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << distributionType << responseLevelTarget
+    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples 
     << samplesOnEmulator

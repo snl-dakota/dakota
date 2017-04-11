@@ -64,7 +64,9 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_rva("method.nond.gen_reliability_levels")),
   totalLevelRequests(0),
   cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
-  pdfOutput(false), distParamDerivs(false)
+  pdfOutput(false),
+  finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
+  distParamDerivs(false)
 {
   bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
@@ -225,7 +227,7 @@ NonD::NonD(unsigned short method_name, Model& model):
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), distParamDerivs(false)
+  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -258,7 +260,7 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
   epistemicStats(false), totalLevelRequests(0), cdfFlag(true), pdfOutput(false),
-  distParamDerivs(false)
+  finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.

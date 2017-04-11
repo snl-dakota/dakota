@@ -1609,7 +1609,7 @@ void NonDExpansion::compute_analytic_statistics()
 
   // loop over response fns and compute/store analytic stats/stat grads
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real mu, sigma, beta, z;
+  Real mu, var, sigma, beta, z;
   RealVector mu_grad, sigma_grad, final_stat_grad;
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -1630,7 +1630,7 @@ void NonDExpansion::compute_analytic_statistics()
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       // Pecos provides central moments
-      mu = moments[0]; const Real& var = moments[1];
+      mu = moments[0]; var = moments[1];
       if (covarianceControl ==  DIAGONAL_COVARIANCE) respVariance[i]     = var;
       else if (covarianceControl == FULL_COVARIANCE) respCovariance(i,i) = var;
       if (var >= 0.)
@@ -1645,51 +1645,61 @@ void NonDExpansion::compute_analytic_statistics()
 
     // compute moment gradients if needed for beta mappings
     bool moment_grad_mapping_flag = false;
+    size_t offset = (finalMomentsType) ? 2 : 0;
     if (respLevelTarget == RELIABILITIES)
       for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
-	if (final_asv[cntr+2+j] & 2)
+	if (final_asv[cntr+offset+j] & 2)
 	  { moment_grad_mapping_flag = true; break; }
     if (!moment_grad_mapping_flag)
       for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds,dsigma/ds
-	if (final_asv[cntr+2+pl_len+j] & 2)
+	if (final_asv[cntr+offset+pl_len+j] & 2)
 	  { moment_grad_mapping_flag = true; break; }
 
-    // *** mean
-    if (final_asv[cntr] & 1)
-      finalStatistics.function_value(mu, cntr);
-    // *** mean gradient
-    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
-      const RealVector& grad = (all_vars) ?
-	poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->mean_gradient();
-      if (final_asv[cntr] & 2)
-	finalStatistics.function_gradient(grad, cntr);
-      if (moment_grad_mapping_flag)
-	mu_grad = grad; // transfer to code below
-    }
-    ++cntr;
-
-    // *** std deviation
-    if (final_asv[cntr] & 1)
-      finalStatistics.function_value(sigma, cntr);
-    // *** std deviation gradient
-    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
-      sigma_grad = (all_vars) ?
-	poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->variance_gradient();
-      if (sigma > 0.)
-	for (j=0; j<num_final_grad_vars; ++j)
-	  sigma_grad[j] /= 2.*sigma;
-      else {
-	Cerr << "Warning: stochastic expansion std deviation is zero in "
-	     << "computation of std deviation gradient.\n         Setting "
-	     << "gradient to zero." << std::endl;
-	sigma_grad = 0.;
+    if (finalMomentsType) { // *** TO DO: moment_grad_mapping_flag
+      // *** mean
+      if (final_asv[cntr] & 1)
+	finalStatistics.function_value(mu, cntr);
+      // *** mean gradient
+      if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
+	const RealVector& grad = (all_vars) ?
+	  poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
+	  poly_approx_rep->mean_gradient();
+	if (final_asv[cntr] & 2)
+	  finalStatistics.function_gradient(grad, cntr);
+	if (moment_grad_mapping_flag)
+	  mu_grad = grad; // transfer to code below
       }
-      if (final_asv[cntr] & 2)
-	finalStatistics.function_gradient(sigma_grad, cntr);
+      ++cntr;
+
+      // *** std deviation / variance
+      bool std_moments = (finalMomentsType == STANDARD_MOMENTS);
+      if (final_asv[cntr] & 1) {
+	if (std_moments) finalStatistics.function_value(sigma, cntr);
+	else             finalStatistics.function_value(var,   cntr);
+      }
+      // *** std deviation gradient
+      if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
+	final_stat_grad = (all_vars) ?
+	  poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
+	  poly_approx_rep->variance_gradient();
+	if (std_moments || moment_grad_mapping_flag) {
+	  if (sigma > 0.)
+	    for (j=0; j<num_final_grad_vars; ++j)
+	      sigma_grad[j] = final_stat_grad[j] / (2.*sigma);
+	  else {
+	    Cerr << "Warning: stochastic expansion std deviation is zero in "
+		 << "computation of std deviation gradient.\n         Setting "
+		 << "gradient to zero." << std::endl;
+	    sigma_grad = 0.;
+	  }
+	}
+	if (final_asv[cntr] & 2) {
+	  if (std_moments) finalStatistics.function_gradient(sigma_grad, cntr);
+	  else        finalStatistics.function_gradient(final_stat_grad, cntr);
+	}
+      }
+      ++cntr;
     }
-    ++cntr;
 
     if (respLevelTarget == RELIABILITIES) {
       for (j=0; j<rl_len; ++j, ++cntr) {

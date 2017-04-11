@@ -418,6 +418,8 @@ protected:
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
   Response finalStatistics;
+  /// type of moments logged within finalStatistics: none, central, standard
+  short finalMomentsType;
 
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;

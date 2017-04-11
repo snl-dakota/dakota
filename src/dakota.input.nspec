@@ -775,6 +775,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
           [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
             uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
             |
@@ -960,6 +967,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
           [ 
             ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
               uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
@@ -1101,6 +1115,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
             [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
            ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
          )
         [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
           [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
@@ -1148,6 +1169,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
        )
       |
       ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
@@ -2101,6 +2129,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
        )
       |
       ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
