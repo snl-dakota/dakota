@@ -280,7 +280,7 @@ void HierarchSurrBasedLocalMinimizer::build()
 	//tr_data.set_status_bits(CENTER_PENDING);
       }
       else {
-	// build hierarchical approx, find center truth and correct it
+	// update model, build hierarchical approx, and find center truth
 	build_center_truth(index);
 
 	// Must perform hard conv assessment on corrected truth, as consistent
