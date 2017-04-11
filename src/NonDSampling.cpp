@@ -1013,10 +1013,15 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
     if (!num_samp) {
-      Cerr << "Error: Number of samples for " << resp_labels[i]
+      Cerr << "Warning: Number of samples for " << resp_labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
 	   << "compute_statistics()." << std::endl;
-      abort_handler(-1);
+      //      abort_handler(-1);
+      for (int j=0; j<4; ++j) {
+	momentStats(j,i) = std::numeric_limits<double>::quiet_NaN();
+	momentCIs(j,i) = std::numeric_limits<double>::quiet_NaN();
+      }
+      continue;
     }
 
     Real* moments_i = momentStats[i];
@@ -1156,10 +1161,13 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
     if (!num_samp) {
-      Cerr << "Error: Number of samples for qoi " << i+1 << " must be nonzero "
+      Cerr << "Warning: Number of samples for qoi " << i+1 << " must be nonzero "
 	   << "for moment calculation in NonDSampling::compute_statistics()."
 	   << std::endl;
-      abort_handler(-1);
+      //      abort_handler(-1);
+      for (int j=0; j<4; ++j)
+	moment_stats(j,i) = std::numeric_limits<double>::quiet_NaN();
+      continue;
     }
 
     Real* moments_i = moment_stats[i];

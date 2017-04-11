@@ -245,10 +245,10 @@ inline void build_labels_partial(StringArray& label_array,
 inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 			    std::vector<Real>& row)
 {
-  RealMatrix::ordinalType j, num_items = m.numCols();
+  size_t num_items = m.numCols();
   if (row.size() != num_items)
     row.resize(num_items);
-  for(j=0; j<num_items; ++j)
+  for(RealMatrix::ordinalType j=0; j<m.numCols(); ++j)
     row[j] = m(i,j);
 }
 
@@ -861,7 +861,8 @@ inline void merge_data_partial(const IntVector& d_vec,
   size_t i, num_items = d_vec.length();
   // In this case, incoming m_vec must already be sized and will be
   // indexed from start_index_ma to start_index_ma+num_items-1
-  if (start_index_ma + num_items > m_vec.length()) {
+  size_t m_vec_len = m_vec.length();
+  if (start_index_ma + num_items > m_vec_len) {
     Cerr << "Error: indexing out of bounds in merge_data_partial(IntVector, "
 	 << "RealVector, size_t)." << std::endl;
     abort_handler(-1);

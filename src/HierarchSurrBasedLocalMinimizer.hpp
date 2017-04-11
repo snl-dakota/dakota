@@ -68,12 +68,16 @@ private:
   //- Heading: Convenience member functions
   //
 
+  /// build the hierarchical approximation for a particular level by
+  /// computing center truth within the HierarchSurrModel
+  void build_center_truth(size_t tr_index);
+
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
-  void find_center_truth(size_t tr_index);
+  void find_center_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterApproxUncorrected
   void find_center_approx(size_t tr_index);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarTruthUncorrected
-  void find_star_truth(size_t tr_index);
+  void find_star_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarApproxUncorrected
   void find_star_approx(size_t tr_index);
 

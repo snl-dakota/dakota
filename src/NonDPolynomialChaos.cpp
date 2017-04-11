@@ -1348,9 +1348,6 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
     Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
       lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
-      // Equation 3.9 in CTR Annual Research Briefs:
-      // "A multifidelity control variate approach for the multilevel Monte 
-      // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
       delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
     }

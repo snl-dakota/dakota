@@ -28,6 +28,7 @@ method,
 #          bayes_calibration dream 		#s4
 #          chain_samples = 60				  #s4
 #          chains = 3				          #s4
+#          seed   = 1337                                  #s4
           output debug
 
 variables,

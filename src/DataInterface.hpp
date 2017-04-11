@@ -41,7 +41,7 @@ enum {
 };
 
 // put this helper function here to encourage sync with enum above
-static String interface_enum_to_string(unsigned short interface_type) 
+inline String interface_enum_to_string(unsigned short interface_type) 
 {
   switch (interface_type) {
   case DEFAULT_INTERFACE: return String("default");       break;

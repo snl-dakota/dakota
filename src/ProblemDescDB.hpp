@@ -331,6 +331,17 @@ public:
   /// and concurrency levels
   int max_procs_per_ie(int max_eval_concurrency);
 
+  /// return methodDBLocked
+  bool method_locked() const;
+  /// return modelDBLocked
+  bool model_locked() const;
+  /// return variablesDBLocked
+  bool variables_locked() const;
+  /// return interfaceDBLocked
+  bool interface_locked() const;
+  /// return responsesDBLocked
+  bool responses_locked() const;
+
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
@@ -609,6 +620,26 @@ inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
   else
     dataResponsesList.push_back(data_responses);
 }
+
+
+inline bool ProblemDescDB::method_locked() const
+{ return (dbRep) ? dbRep->methodDBLocked : methodDBLocked; }
+
+
+inline bool ProblemDescDB::model_locked() const
+{ return (dbRep) ? dbRep->modelDBLocked : modelDBLocked; }
+
+
+inline bool ProblemDescDB::variables_locked() const
+{ return (dbRep) ? dbRep->variablesDBLocked : variablesDBLocked; }
+
+
+inline bool ProblemDescDB::interface_locked() const
+{ return (dbRep) ? dbRep->interfaceDBLocked : interfaceDBLocked; }
+
+
+inline bool ProblemDescDB::responses_locked() const
+{ return (dbRep) ? dbRep->responsesDBLocked : responsesDBLocked; }
 
 
 inline bool ProblemDescDB::is_null() const

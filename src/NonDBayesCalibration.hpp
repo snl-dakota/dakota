@@ -117,6 +117,9 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  
+  /// calculate model discrepancy with respect to experimental data
+  void build_model_discrepancy();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
@@ -162,10 +165,6 @@ protected:
   //
   
   String scalarDataFilename;
-  String importCandPtsFile;
-  unsigned short importCandFormat;
-  size_t maxHifiEvals;
-  size_t numCandidates;
 
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
@@ -174,6 +173,10 @@ protected:
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model mcmcModel;
+
+  /// whether the MCMC Model is a surrogate, or a thin transformation
+  /// around a surrogate, so can be cheaply re-evaluated in chain recovery
+  bool mcmcModelHasSurrogate;
 
   /// DataTransformModel wrapping the mcmcModel
   Model residualModel;
@@ -210,6 +213,60 @@ protected:
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
   bool adaptExpDesign;
+  /// number of candidate designs for adaptive Bayesian experimental design
+  size_t numCandidates;
+  /// whether to import candidate design points for adaptive Bayesian 
+  /// experimental design
+  String importCandPtsFile;
+  /// tabular format for the candidate design points import file
+  unsigned short importCandFormat;
+  /// maximum number of high-fidelity model runs to be used for adaptive
+  /// Bayesian experimental design
+  size_t maxHifiEvals;
+
+  // settings specific to model discrepancy
+
+  /// flag whether to calculate model discrepancy
+  bool calModelDiscrepancy;
+  /// set discrepancy type
+  String discrepancyType; 
+  /// filename for corrected model (model+discrepancy) calculations output
+  String exportCorrModelFile;
+  /// filename for discrepancy calculations output
+  String exportDiscrepFile;
+  /// filename for corrected model variance calculations 
+  String exportCorrVarFile;
+  /// format options for corrected model output
+  unsigned short exportCorrModelFormat;
+  /// format options for discrepancy output
+  unsigned short exportDiscrepFormat;
+  /// format options for corrected model variance output
+  unsigned short exportCorrVarFormat;
+  /// specify polynomial or trend order for discrepancy correction
+  short approxCorrectionOrder;
+  /// number of prediction configurations at which to calculate model 
+  /// discrepancy
+  size_t numPredConfigs;
+  /// lower bounds on configuration domain
+  RealVector configLowerBnds;
+  /// upper bounds on configuration domain
+  RealVector configUpperBnds;
+  /// array containing predicted of model+discrepancy
+  ResponseArray discrepancyResponses;
+  /// array containing predicted of model+discrepancy
+  ResponseArray correctedResponses;
+  /// matrix containing variances of model+discrepancy
+  RealMatrix correctedVariances;
+  /// list of prediction configurations at which to calculate model discrepancy
+  RealVector predictionConfigList;
+  /// whether to import prediction configurations at which to calculate model
+  /// discrepancy
+  String importPredConfigs;
+  /// tabular format for prediction configurations import file
+  unsigned short importPredConfigFormat;
+  /// print tabular files containing model+discrepancy responses and variances
+  void export_discrepancy(RealMatrix& pred_config_mat); 
+
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;
   /// initial high-fidelity model samples

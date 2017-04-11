@@ -47,7 +47,7 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
   acceptLogic(probDescDB.get_short("method.sbl.acceptance_logic")),
   trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
-  penaltyIterOffset(-200), 
+  minimizeCycles(0), penaltyIterOffset(-200), 
   origTrustRegionFactor(
     probDescDB.get_rv("method.trust_region.initial_size")),
   minTrustRegionFactor(
@@ -329,25 +329,31 @@ void SurrBasedLocalMinimizer::core_run()
 
 void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  unsigned short code = converged();
-  Cout << "\nSurrogate-Based Optimization Complete - ";
-  // these can be overlaid:
-  if (code & MIN_TR_CONVERGED)
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  if (code & MAX_ITER_CONVERGED)
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  // these two are exclusive:
-  if (code & HARD_CONVERGED)
-    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-	 << "<= Convergence Tolerance\n";
-  else if (code & SOFT_CONVERGED)
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
+  // SBLM is complete: write out the convergence condition
+  // (final results output in derived post_run())
+  s << "\nSurrogate-Based Optimization Complete:\n";
+  print_convergence_code(s, converged());
+  s << "Total Number of Trust Region Minimizations Performed = "
+    << globalIterCount << std::endl;
 
   Minimizer::post_run(s);
+}
+
+
+void SurrBasedLocalMinimizer::
+print_convergence_code(std::ostream& s, unsigned short code)
+{
+  // these can be overlaid:
+  if (code & MIN_TR_CONVERGED)   s << "Minimum Trust Region Bounds Reached\n";
+  if (code & MAX_ITER_CONVERGED) s << "Exceeded Maximum Number of Iterations\n";
+
+  // these two are exclusive:
+  if (code & HARD_CONVERGED)
+    s << "Hard Convergence: Norm of Projected Lagrangian Gradient <= "
+      << "Conv Tol\n";
+  else if (code & SOFT_CONVERGED)
+    s << "Soft Convergence: Progress Between " << softConvLimit
+      << " Successive Iterations <= Conv Tol\n";
 }
 
 
@@ -393,7 +399,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       tr_lower_truncation = true;
     }
   }
-  if (cv_truncation) tr_data.set_status_bits(NEW_CENTER); // rare case
+  //if (cv_truncation) tr_data.set_status_bits(NEW_CENTER);//handled in SBLD set
   tr_data.reset_status_bits(NEW_TR_FACTOR); // TR updates applied; reset bit
 
   // a flag for global approximations defining the availability of the
@@ -405,7 +411,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   // Output the trust region bounds
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
-       << "************\nBegin SBLM Iteration Number " << sbIterNum+1
+       << "************\nBegin SBLM Iteration Number " << globalIterCount+1
        << "\n\nCurrent Trust Region for surrogate model (form "
        << tr_data.approx_model_form() + 1;
   if (tr_data.approx_model_level() != _NPOS)
@@ -454,7 +460,8 @@ void SurrBasedLocalMinimizer::minimize()
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
 
   Cout << "\n<<<<< Approximate optimization cycle completed.\n";
-  ++sbIterNum; // full iteration performed: increment the counter
+  ++minimizeCycles;  // number of trust-region minimization cycles
+  ++globalIterCount; // total iterations performed
 }
 
 
@@ -542,9 +549,9 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT) {
 
     // evaluate each merit function with the same augLagrangeMult estimates
-    // (updated from fns_center_truth for sbIterNum == 1 and from
-    // fns_star_truth for accepted steps) and penaltyParameter (updated if
-    // no reduction in constraint violation).
+    // (updated from fns_center_truth on initial iteration and from
+    // fns_star_truth for accepted steps) and penaltyParameter (updated
+    // if no reduction in constraint violation).
     merit_fn_center_truth = augmented_lagrangian_merit(fns_center_truth,
       sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
       origNonlinEqTargets);
@@ -567,7 +574,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     // An adaptive penalty is computed based on the ratio of the objective fn
     // change to the constraint violation change at each obj/cv trade-off.
     // For basic penalties and between adaptive trade-offs, penaltyParameter
-    // is ramped exponentially using the sbIterNum counter.
+    // is ramped exponentially using an iteration counter.
     if (numNonlinearConstraints)
       update_penalty(fns_center_truth, fns_star_truth);
 
@@ -671,7 +678,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     else // accept optimum, retain current TR
       Cout <<"Satisfactory Accuracy, ACCEPT Step, RETAIN Trust Region Size\n\n";
 
-    // update center vars, set NEW_CENTER, unset NEW_CANDIDATE
+    // update center vars, set NEW_CENTER, unset CANDIDATE_STATE
     tr_data.vars_center(tr_data.vars_star());
     // update response center from star, allowing for inconsistent data sets.
     // Note: we always do this even though build() may supplant with full center
@@ -697,7 +704,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    tr_data.reset_status_bits(NEW_CENTER | NEW_CANDIDATE);
+    tr_data.reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
     tr_data.scale_trust_region_factor(gammaContract);
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "
@@ -740,17 +747,22 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // rejected or insufficient filter metric improvement in actual or approx.
   //if ( !accept_step || std::fabs(numerator)   < convergenceTol ||
   //	                 std::fabs(denominator) < convergenceTol )
+  //
   // Merit fn case: soft convergence counter is incremented if insufficient
   // relative or absolute improvement in actual or approx.
-  Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-    std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
-  Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-    std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
-  if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
-                       denominator <= 0. || rel_denom < convergenceTol )
-    tr_data.increment_soft_convergence_count(); // ++counter
+  if (accept_step) {
+    Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
+      std::fabs(numerator / merit_fn_center_truth)    : std::fabs(numerator);
+    Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
+      std::fabs(denominator / merit_fn_center_approx) : std::fabs(denominator);
+    if ( numerator   <= 0. || rel_numer < convergenceTol ||
+	 denominator <= 0. || rel_denom < convergenceTol )
+      tr_data.increment_soft_convergence_count(); // ++ soft conv counter
+    else
+      tr_data.reset_soft_convergence_count();     // reset soft conv cntr to 0
+  }
   else
-    tr_data.reset_soft_convergence_count(); // reset counter to zero
+    tr_data.increment_soft_convergence_count();   // ++ soft conv counter
 }
 
 
@@ -774,9 +786,9 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   // (hard_convergence_check() invoked only if trustRegionData.new_center()).
 
   // initialize augmented Lagrangian multipliers
-  if (sbIterNum == 0 && numNonlinearConstraints &&
-      ( meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
+  if (minimizeCycles == 0 && numNonlinearConstraints &&
+      ( meritFnType       == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj  == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
     update_augmented_lagrange_multipliers(fns_truth);
 
   // hard convergence requires truth gradients and zero constraint violation
@@ -864,7 +876,7 @@ update_penalty(const RealVector& fns_center_truth,
     // Set the value of the penalty parameter in the penalty function.  An
     // offset of e^2.1 is used; this equates to constraint violation reduction
     // initially being ~8 times as important as objective reduction.
-    penaltyParameter = std::exp( 2.1 + (double)sbIterNum/10.0 );
+    penaltyParameter = std::exp( 2.1 + (double)minimizeCycles/10.0 );
     // this penalty schedule can be inconsistent with the final result of the
     // minimizer applied to the surrogate model.  That is, the minimizer should
     // return a large penalty solution (minimal constraint violation) by the end
@@ -912,7 +924,7 @@ update_penalty(const RealVector& fns_center_truth,
       // relative improvement in constraint violation is extremely small (and
       // avoids corrupting the penalty schedule in that case); however, it could
       // cause problems in making it difficult to achieve an offset near 200.
-      int new_offset = min_iter - sbIterNum;
+      int new_offset = min_iter - minimizeCycles;
       //int delta_offset = new_offset - penaltyIterOffset;
       if (new_offset > penaltyIterOffset && new_offset < 200)
 	penaltyIterOffset = new_offset;
@@ -924,10 +936,10 @@ update_penalty(const RealVector& fns_center_truth,
     // approx penalty fn.  This can lead to premature soft convergence.
     // Therefore, increase the penalty beyond the minimum by a small amount
     // (5 iters = half an exponential power = 65% additional penalty).  Both
-    // penaltyIterOffset and sbIterNum are capped at 200 (e^20 =~ 5e8) to
+    // penaltyIterOffset and minimizeCycles are capped at 200 (e^20 =~ 5e8) to
     // reduce problems w/ small infeasibilities and prevent numerical overflow.
-    penaltyParameter = (sbIterNum < 200)
-      ? std::exp((double)(sbIterNum + penaltyIterOffset + 5)/10.)
+    penaltyParameter = (minimizeCycles < 200)
+      ? std::exp((double)(minimizeCycles + penaltyIterOffset + 5)/10.)
       : std::exp(20.5 + (double)penaltyIterOffset/10.);
     //Cout << "penaltyIterOffset = " << penaltyIterOffset
     //     << " penaltyParameter = " << penaltyParameter << '\n';
@@ -1128,7 +1140,8 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 
 
 bool SurrBasedLocalMinimizer::
-find_approx_response(const Variables& search_vars, Response& search_resp)
+find_response(const Variables& search_vars, Response& search_resp,
+	      const String& search_id, short set_request)
 {
   bool found = false;
 
@@ -1136,18 +1149,17 @@ find_approx_response(const Variables& search_vars, Response& search_resp)
   // be different fn evals
   ActiveSet search_set = search_resp.active_set(); // copy
   search_set.request_values(1);
-  const String& search_id = iteratedModel.surrogate_model().interface_id();
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, search_id, search_vars, search_set);
   if (cache_it != data_pairs.get<hashed>().end()) {
     search_resp.function_values(cache_it->response().function_values());
-    if (approxSetRequest & 2) {
+    if (set_request & 2) {
       search_set.request_values(2);
       cache_it = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
 	search_resp.function_gradients(
 	  cache_it->response().function_gradients());
-	if (approxSetRequest & 4) {
+	if (set_request & 4) {
 	  search_set.request_values(4);
 	  cache_it
 	    = lookup_by_val(data_pairs, search_id, search_vars, search_set);
@@ -1184,7 +1196,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
 
   // initial relaxation data during the first SBLM iteration
-  if (sbIterNum == 0) {
+  if (minimizeCycles == 0) {
 
     // initialize inequality constraint slack vectors
     if (numNonlinearIneqConstraints) {

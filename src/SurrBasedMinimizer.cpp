@@ -56,7 +56,7 @@ namespace Dakota {
   extern PRPCache data_pairs; // global container
 
 SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model), sbIterNum(0),
+  Minimizer(problem_db, model), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))

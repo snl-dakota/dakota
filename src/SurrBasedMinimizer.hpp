@@ -128,8 +128,9 @@ protected:
   /// approximate subproblem on each surrogate-based iteration
   Iterator approxSubProbMinimizer;
 
-  /// surrogate-based minimization iteration number
-  int sbIterNum;
+  /// global iteration counter corresponding to number of
+  /// surrogate-based minimizations
+  size_t globalIterCount;
 
   /// Lagrange multipliers for basic Lagrangian calculations
   RealVector lagrangeMult;

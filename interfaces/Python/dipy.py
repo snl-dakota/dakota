@@ -74,6 +74,19 @@ class Parameters(object):
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
+        # Convert variables to the appropriate type. The possible types
+        # are int, float, and string. The variables are already strings.
+        # TODO: Consider a user option to override this behavior and keep
+        # everything as a string, or provide access to the original strings
+        for k, v in self._variables.items():
+            try:
+                self._variables[k] = int(v)
+            except ValueError:
+                try:
+                    self._variables[k] = float(v)
+                except ValueError:
+                    pass
+                pass
 
     @property
     def descriptors(self):
@@ -347,6 +360,9 @@ class Results(object):
             yield index, name, response
 
     def fail(self):
+        """Set the FAIL attribute. 
+        
+        When the results file is written, it will contain only the word FAIL"""
         self._failed = True
 
 ### Free functions and their helpers for constructing objects
@@ -367,7 +383,7 @@ _pRE = {
             "num_an_comps":re.compile(_aprepro_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_AN_COMPS)")),
             "eval_id":re.compile(_aprepro_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
+                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>DAKOTA_EVAL_ID)")),
             "variable":re.compile(_aprepro_re_base.format(
                 value="\"?(?P<value>.+?)\"?", tag ="(?P<tag>\S+)")),
             "function":re.compile(_aprepro_re_base.format(
@@ -386,7 +402,7 @@ _pRE = {
             "num_an_comps":re.compile(_dakota_re_base.format(
                 value="(?P<value>\d+)", tag="(?P<tag>analysis_components)")),
             "eval_id":re.compile(_dakota_re_base.format(
-                value="(?P<value>\d+)", tag="(?P<tag>eval_id)")),
+                value="(?P<value>\d+(?::\d+)*)", tag="(?P<tag>eval_id)")),
             # A lookahead assertion is required to catch string variables with spaces
             "variable":re.compile("\s*(?P<value>.+?)(?= \S+\n) (?P<tag>\S+)\n"),
             "function":re.compile(_dakota_re_base.format(
