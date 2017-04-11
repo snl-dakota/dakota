@@ -16878,7 +16878,7 @@ Test Number 0 succeeded
                                    200 N_x
                                     21 N_mod
 <<<<< Best objective function  =
-                     -8.9885973350e+00
+                     -8.9965332302e+00
 <<<<< Best data captured at function evaluation 229
 dakota_sbo_hier_poly_prod.in
 Test Number 0 succeeded
