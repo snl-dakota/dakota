@@ -1421,6 +1421,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nond.dimension_preference", P anisoDimPref},
 	{"nond.hyperprior_alphas", P hyperPriorAlphas},
 	{"nond.hyperprior_betas", P hyperPriorBetas},
+	{"nond.prediction_configs", P predictionConfigList},
 	{"nond.proposal_covariance_data", P proposalCovData},
 	{"nond.regression_noise_tolerance", P regressionNoiseTol},
 	{"parameter_study.final_point", P finalPoint},
@@ -2293,6 +2294,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"import_approx_points_file", P importApproxPtsFile},
 	{"import_build_points_file", P importBuildPtsFile},
 	{"import_candidate_points_file", P importCandPtsFile},
+	{"import_prediction_configs", P importPredConfigs},
 	{"initialization_type", P initializationType},
 	{"jega.convergence_type", P convergenceType},
 	{"jega.niching_type", P nichingType},
@@ -2308,7 +2310,11 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nond.data_dist_cov_type", P dataDistCovInputType},
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
+	{"nond.discrepancy_type", P discrepancyType},
 	{"nond.expansion_sample_type", P expansionSampleType},
+	{"nond.export_corrected_model_file", P exportCorrModelFile},
+	{"nond.export_corrected_variance_file", P exportCorrVarFile},
+	{"nond.export_discrepancy_file", P exportDiscrepFile},
 	{"nond.export_expansion_file", P exportExpansionFile},
 	{"nond.export_mcmc_points_file", P exportMCMCPtsFile},
 	{"nond.import_expansion_file", P importExpansionFile},
@@ -2652,6 +2658,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     static KW<short, DataMethodRep> Shdme[] = {	
       // must be sorted by string (key)
 	{"iterator_scheduling", P iteratorScheduling},
+	{"nond.correction_order", P approxCorrectionOrder},
 	{"nond.covariance_control", P covarianceControl},
 	{"nond.distribution", P distributionType},
 	{"nond.emulator", P emulatorType},
@@ -2771,10 +2778,14 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 	{"import_approx_format", P importApproxFormat},
 	{"import_build_format", P importBuildFormat},
 	{"import_candidate_format", P importCandFormat},
+	{"import_prediction_configs_format", P importPredConfigFormat},
 	{"nond.adapted_basis.advancements", P adaptedBasisAdvancements},
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
 	{"nond.cubature_integrand", P cubIntOrder},
+	{"nond.export_corrected_model_format", P exportCorrModelFormat},
+	{"nond.export_corrected_variance_format", P exportCorrVarFormat},
+	{"nond.export_discrep_format", P exportDiscrepFormat},
 	{"nond.export_samples_format", P exportSamplesFormat},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.pre_solve_method", P preSolveMethod},
@@ -2866,7 +2877,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_parents", P numParents},
 	{"max_hifi_evaluations", P maxHifiEvals},
 	{"num_candidate_designs", P numCandidateDesigns},
-	{"num_candidates", P numCandidates}
+	{"num_candidates", P numCandidates},
+	{"num_prediction_configs", P numPredConfigs}
     };
     #undef P
 
@@ -3040,6 +3052,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.export_sample_sequence", P exportSampleSeqFlag},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},
 	{"nond.logit_transform", P logitTransform},
+	{"nond.model_discrepancy", P calModelDiscrepancy},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

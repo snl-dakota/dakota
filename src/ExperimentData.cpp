@@ -718,6 +718,15 @@ const RealVector& ExperimentData::all_data(size_t experiment)
   return allExperiments[experiment].function_values();
 }
 
+const Response& ExperimentData::response(size_t experiment) 
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment];
+}
+
 size_t ExperimentData::num_total_exppoints() const
 {
   size_t res_size = 0;

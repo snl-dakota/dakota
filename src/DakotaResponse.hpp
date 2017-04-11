@@ -588,7 +588,7 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
     size_t j, cntr = sharedRespData.num_scalar_responses();
     for (j=0; j<i; j++)
       cntr += field_len[j];
-    int len_i = field_len[i];
+    size_t len_i = field_len[i];
     for (j=0; j<len_i; ++j, ++cntr)
       functionValues[cntr] = field_vals[j];
   }

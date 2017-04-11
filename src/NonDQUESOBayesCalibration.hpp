@@ -252,9 +252,6 @@ private:
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
   RealVectorArray uniqueSamples;
-  /// container for managing best MCMC samples (points and associated
-  /// log posterior) collected across multiple (restarted) chains
-  std::/*multi*/map<Real, QUESO::GslVector> bestSamples;
 
   // cache previous MCMC starting point for assessing convergence of
   // chain restart process

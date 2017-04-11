@@ -677,7 +677,17 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
     }
 
     // now retreive function values
-    if (mcmcModel.model_type() == "surrogate") {
+
+    // NOTE: The MCMC may be PCE/SC model, DataFitSurrModel, or raw
+    // model, but it's type may be a ProbabilityTransform wrapper if
+    // standardizedSpace is active.  mcmcModelHasSurrogate controls
+    // model re-evals.  This is not sufficiently general, e.g., if the
+    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+
+    // TODO: Consider doing lookup first, then surrogate re-eval, or
+    // querying a more complete eval database when available...
+
+    if (mcmcModelHasSurrogate) {
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
@@ -686,8 +696,13 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
     else {
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
+      if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
+	// Set NaN in the chain points to avoid misleading the user
+	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
+      }
       else {
 	const RealVector& fn_vals = cache_it->response().function_values();
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
@@ -857,10 +872,12 @@ local_to_aggregated(unsigned short batch_size,
     mcmc_chain = inverseProb->chain();
   std::/*multi*/map<Real, size_t>::const_iterator cit;
   QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  RealVector mcmc_sample_rv;
   for (cit=local_best.begin(); cit!=local_best.end(); ++cit) {
     mcmc_chain.getPositionValues(cit->second, mcmc_sample);
+    copy_gsl(mcmc_sample, mcmc_sample_rv);
     bestSamples.insert(
-      std::pair<Real, QUESO::GslVector>(cit->first, mcmc_sample));
+      std::pair<Real, RealVector>(cit->first, mcmc_sample_rv));
     // continuously maintain length to reduce sorting cost
     if (bestSamples.size() > batch_size)
       bestSamples.erase(bestSamples.begin()); // pop front
@@ -876,10 +893,12 @@ void NonDQUESOBayesCalibration::aggregated_to_all()
   size_t num_best = bestSamples.size();
   if (allSamples.numCols() != num_best)
     allSamples.shapeUninitialized(numContinuousVars, num_best);
-  std::/*multi*/map<Real, QUESO::GslVector>::iterator it; size_t i;
+  std::/*multi*/map<Real, RealVector>::iterator it; size_t i;
   if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
   for (it=bestSamples.begin(), i=0; it!=bestSamples.end(); ++it, ++i) {
-    copy_gsl(it->second, allSamples, i);
+
+    Teuchos::setCol(it->second, (int) i, allSamples);
+
     if (outputLevel >= NORMAL_OUTPUT) {
       Cout << "Best point " << i+1 << ": Log posterior = " << it->first
 	   << " Sample:";
@@ -1391,7 +1410,6 @@ void NonDQUESOBayesCalibration::set_mh_options()
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
-
 void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 {
 
@@ -1406,29 +1424,33 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // ----------------------------------------
   // Output best sample which appoximates MAP
   // ----------------------------------------
-  std::/*multi*/map<Real, QUESO::GslVector>::iterator it = --bestSamples.end();
-  //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
-  QUESO::GslVector& qv = it->second; 
+  std::/*multi*/map<Real, RealVector>::const_iterator it = --bestSamples.end();
+  //std::pair<Real, RealVector>& best = bestSamples.back();
+  const RealVector& best_sample = it->second;
+
   size_t wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
   // print MAP for continuous random variables
   if (standardizedSpace) {
-    RealVector u_rv(numContinuousVars, false), x_rv;
-    copy_gsl_partial(qv, 0, u_rv);
+    RealVector u_rv(Teuchos::View, best_sample.values(), numContinuousVars);
+    RealVector x_rv;
     natafTransform.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
     for (size_t j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j]
+      s << "                     " << std::setw(wpp7) << best_sample[j]
 	<< ' ' << cv_labels[j] << '\n';
   // print MAP for hyper-parameters (e.g., observation error params)
   for (size_t j=0; j<numHyperparams; ++j)
-    s << "                     " << std::setw(wpp7) << qv[numContinuousVars+j] 
-      << ' ' << combined_labels[numContinuousVars + j] << '\n';
+    s << "                     " << std::setw(wpp7) 
+      << best_sample[numContinuousVars+j] << ' ' 
+      << combined_labels[numContinuousVars + j] << '\n';
 
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
+  QUESO::GslVector qv(paramSpace->zeroVector());
+  copy_gsl(best_sample, qv);
   Real log_prior = log_prior_density(qv), log_post = it->first;
   size_t num_total_calib_terms = residualModel.num_primary_fns();
   Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
@@ -1450,15 +1472,15 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // --------------------------
   // Multipoint results summary
   // --------------------------
-  std::map<Real, QUESO::GslVector>::iterator it;
+  std::map<Real, RealVector>::const_iterator it;
   size_t i, j, num_best = bestSamples.size(), wpp7 = write_precision+7;
   for (it=bestSamples.begin(), i=1; it!=bestSamples.end(); ++it, ++i) {
     s << "<<<<< Best parameters          ";
     if (num_best > 1) s << "(set " << i << ") ";
     s << "=\n";
-    QUESO::GslVector& qv = it->second;
+    RealVector best_sample = it->second;
     for (j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+      s << "                     " << std::setw(wpp7) << best_sample[j] << '\n';
     s << "<<<<< Best log posterior       ";
     if (num_best > 1) s << "(set " << i << ") ";
     s << "=\n                     " << std::setw(wpp7) << it->first << '\n';

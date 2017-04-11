@@ -20,7 +20,7 @@ params, results = dipy.read_parameters_file()
 # set up the data structures the rosenbrock analysis code expects
 # for this simple example, put all the variables into a single hardwired array
 # The asv has to be mapped back into an integer
-continuous_vars = [ float(params['x1']), float(params['x2']) ]
+continuous_vars = [ params['x1'], params['x2'] ]
 active_set_vector = 0
 if results["obj_fn"].asv.function:
     active_set_vector += 1
