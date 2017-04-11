@@ -6,7 +6,7 @@ if [ -d local ]; then
   git fetch origin
   cd ../
 else
-  git clone --recursive development.sandia.gov:/git/dakota local
+  git clone --recursive software-srn.sandia.gov:/git/dakota local
 fi
 
 cd local
