@@ -100,6 +100,11 @@ public:
   /// set pdfOutput
   void pdf_output(bool output);
 
+  /// get finalMomentsType
+  short final_moments_type() const;
+  /// set finalMomentsType
+  void final_moments_type(short type);
+
   /// return natafTransform
   Pecos::ProbabilityTransformation& variable_transformation();
 
@@ -474,6 +479,14 @@ inline bool NonD::pdf_output() const
 
 inline void NonD::pdf_output(bool output)
 { pdfOutput = output; }
+
+
+inline short NonD::final_moments_type() const
+{ return finalMomentsType; }
+
+
+inline void NonD::final_moments_type(short type)
+{ finalMomentsType = type; }
 
 
 inline Pecos::ProbabilityTransformation& NonD::variable_transformation()
