@@ -88,9 +88,13 @@ static const char rcsId[]="@(#) $Id$";
    Probably want to be able to omit parameters that aren't being
    calibrated statistically...
 
+ * Allow variable Experiment sizes
+
  * Experiment covariance: correlation or covariance;
    normalized by simulation std deviation as in example?  Does this
    need to be defined if identity?
+
+ * Export chain to named file
 
  */
 
@@ -229,7 +233,7 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // In the following a "scenario" is a "configuration"
   unsigned int num_experiments = expData.num_experiments();
-  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
+  //  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
   unsigned int num_simulations = buildSamples; // TODO: generalize
   // GPMSA requires at least 1 configuration variable, set to 0.5 for
   // all scenarios if needed
@@ -398,7 +402,9 @@ overlay_initial_params(GslVector& full_param_initials)
 
 void NonDGPMSABayesCalibration::fill_simulation_data()
 {
-  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
+  // this is wrong because it may include hyper-parameters
+  //  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
+  unsigned int num_uncertain_vars = numContinuousVars;
   unsigned int num_simulations = buildSamples; // TODO: generalize
   unsigned int user_config_vars = expData.num_config_vars();
   // GPMSA requires at least 1 configuration variable, set to 0.5 for
@@ -439,10 +445,10 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
       for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
         (*sim_params[i])[j] = all_samples(bd_index, i);
       for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
-	if (no_config_vars)
-	  (*sim_scenarios[i])[j] = 0.5;
-	else
-	  (*sim_scenarios[i])[j] = all_samples(bd_index, i);
+        if (no_config_vars)
+          (*sim_scenarios[i])[j] = 0.5;
+        else
+          (*sim_scenarios[i])[j] = all_samples(bd_index, i);
       }
       copy_gsl(resp_it->second.function_values(), *sim_outputs[i]);
     }
@@ -468,10 +474,10 @@ void NonDGPMSABayesCalibration::fill_simulation_data()
       for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
         (*sim_params[i])[j] = build_data(i, bd_index);
       for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
-	if (no_config_vars)
-	  (*sim_scenarios[i])[j] = 0.5;
-	else
-	  (*sim_scenarios[i])[j] = build_data(i, bd_index);
+        if (no_config_vars)
+          (*sim_scenarios[i])[j] = 0.5;
+        else
+          (*sim_scenarios[i])[j] = build_data(i, bd_index);
       }
       for (int j=0; j<numFunctions; ++j, ++bd_index)
         (*sim_outputs[i])[j] = build_data(i, bd_index);

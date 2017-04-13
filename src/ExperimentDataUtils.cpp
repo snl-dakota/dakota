@@ -259,14 +259,18 @@ CovarianceMatrix& CovarianceMatrix::operator=( const CovarianceMatrix &source ){
 
 void CovarianceMatrix::dense_covariance(RealSymMatrix &cov) const
 {
-  cov.shape( numDOF_);
+  // reshape could be dangerous as will disconnect any Teuchos::View
+  if (cov.numRows() != numDOF_)
+    cov.shape(numDOF_);
+  cov = 0.0;
   if ( !covIsDiagonal_ ) {
-    for (int j=0; j<numDOF_; j++)
-      for (int i=j; i<numDOF_; i++)
+    for (int i=0; i<numDOF_; i++)
+      for (int j=0; j<i; j++)
         cov(i,j) = covMatrix_(i,j);
   } else {
-    for (int j=0; j<numDOF_; j++)
-      cov(j,j) = covMatrix_(j,j);
+    for (int i=0; i<numDOF_; i++) {
+      cov(i,i) = covDiagonal_[i];
+    }
   }
 }
 
@@ -692,7 +696,9 @@ void ExperimentCovariance::get_main_diagonal( RealVector &diagonal ) const {
 
 void ExperimentCovariance::dense_covariance(RealSymMatrix& cov_mat) const
 {
-  cov_mat.shape(num_dof());
+  // reshape could be dangerous as will disconnect any Teuchos::View
+  if (cov_mat.numRows() != num_dof())
+    cov_mat.shape(num_dof());
   int global_row_num = 0;
   for (int i=0; i<covMatrices_.size(); ++i) {
     RealSymMatrix sub_matrix(Teuchos::View, cov_mat, covMatrices_[i].num_dof(), 
@@ -705,7 +711,9 @@ void ExperimentCovariance::dense_covariance(RealSymMatrix& cov_mat) const
 
 void ExperimentCovariance::as_correlation(RealSymMatrix& corr_mat) const
 {
-  corr_mat.shape(num_dof());
+  // reshape could be dangerous as will disconnect any Teuchos::View
+  if (corr_mat.numRows() != num_dof())
+    corr_mat.shape(num_dof());
   int global_row_num = 0;
   for (int i=0; i<covMatrices_.size(); ++i) {
     RealSymMatrix sub_matrix(Teuchos::View, corr_mat, covMatrices_[i].num_dof(), 
