@@ -1916,7 +1916,11 @@ void NonD::update_aleatory_final_statistics()
     if (finalMomentsType) {
       if (!momentStats.empty()) {
 	finalStatistics.function_value(momentStats(0,i), cntr++); // mean
-	finalStatistics.function_value(momentStats(1,i), cntr++); // std dev
+	Real stdev = momentStats(1,i);
+	if (finalMomentsType == STANDARD_MOMENTS)
+	  finalStatistics.function_value(stdev, cntr++);         // std dev
+	else
+	  finalStatistics.function_value(stdev * stdev, cntr++); // variance
       }
       else
 	cntr += 2;

@@ -366,7 +366,7 @@ protected:
   /// evaluation, then this flag is set.
   bool epistemicStats;
 
-  /// moments of response functions (mean, std deviation, skewness, and
+  /// standardized moments of response functions (mean, std dev, skewness,
   /// kurtosis calculated in compute_moments()), indexed as (moment,fn)
   RealMatrix momentStats;
 

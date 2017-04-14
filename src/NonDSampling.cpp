@@ -1019,7 +1019,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       //      abort_handler(-1);
       for (int j=0; j<4; ++j) {
 	momentStats(j,i) = std::numeric_limits<double>::quiet_NaN();
-	momentCIs(j,i) = std::numeric_limits<double>::quiet_NaN();
+	momentCIs(j,i)   = std::numeric_limits<double>::quiet_NaN();
       }
       continue;
     }
@@ -1139,14 +1139,14 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
   using boost::math::isfinite;
   size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols(),
     num_samp;
-  Real sum, var, skew, kurt, sample;
+  Real sum, cm2, cm3, cm4, sample;
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
 
-    num_samp  = 0;
-    sum = var = skew = kurt = 0.;
+    num_samp = 0;
+    sum = cm2 = cm3 = cm4 = 0.;
     // means
     for (j=0; j<num_obs; ++j) {
       sample = samples(i,j);
@@ -1161,10 +1161,10 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
     if (!num_samp) {
-      Cerr << "Warning: Number of samples for qoi " << i+1 << " must be nonzero "
-	   << "for moment calculation in NonDSampling::compute_statistics()."
-	   << std::endl;
-      //      abort_handler(-1);
+      Cerr << "Warning: Number of samples for qoi " << i+1
+	   << " must be nonzero for moment calculation in NonDSampling::"
+	   << "compute_statistics().\n";
+      //abort_handler(-1);
       for (int j=0; j<4; ++j)
 	moment_stats(j,i) = std::numeric_limits<double>::quiet_NaN();
       continue;
@@ -1172,41 +1172,41 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
 
     Real* moments_i = moment_stats[i];
     Real& mean = moments_i[0];
-    mean = sum/((Real)num_samp);
+    Real ns = (Real)num_samp, np1 = ns + 1., nm1 = ns - 1., nm2 = ns - 2.,
+        nm3 = ns - 3.;
+    mean = sum / ns;
 
-    // accumulate variance, skewness, and kurtosis
+    // accumulate central moments (e.g., variance)
     Real centered_fn, pow_fn;
     for (j=0; j<num_obs; ++j) {
       sample = samples(i,j);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	pow_fn  = centered_fn = sample - mean;
-	pow_fn *= centered_fn; var  += pow_fn;
-	pow_fn *= centered_fn; skew += pow_fn;
-	pow_fn *= centered_fn; kurt += pow_fn;
+	pow_fn *= centered_fn; cm2 += pow_fn; // variance
+	pow_fn *= centered_fn; cm3 += pow_fn; // 3rd central moment
+	pow_fn *= centered_fn; cm4 += pow_fn; // 4th central moment
       }
     }
+    // Bypass this step and employ raw sums below:
+    //   biased central moment estimators:
+    //cm2 /= ns; cm3 /= ns; cm4 /= ns;
+    // unbiased central moment estimators:
+    //cm4  = (ns*np1*cm4 - 3.*nm1*cm2*cm2) / (nm1*nm2*nm3);
+    //cm3 *= ns/(nm1*nm2); cm2 /= nm1;
 
-    // sample std deviation
-    moments_i[1] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
+    // Standardized moment: std deviation (from unbiased variance estimator)
+    // For no variation, standardized moment is zero
+    moments_i[1] = (num_samp > 1 && cm2 > 0.) ? std::sqrt(cm2/nm1) : 0.;
 
-    // skewness
-    moments_i[2] = (num_samp > 2 && var > 0.) ? 
-      // sample skewness
-      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
-      // population skewness 
-      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
-      // for no variation, central moment is zero
-      0.;
+    // Standardized moment: skewness (unbiased population estimate)
+    // For no variation, standardized moment is zero
+    moments_i[2] = (num_samp > 2 && cm2 > 0.) ?
+      cm3*ns*std::sqrt(nm1)/(nm2*std::pow(cm2,1.5)) : 0.;
 
-    // kurtosis
-    moments_i[3] = (num_samp > 3 && var > 0.) ?
-      // sample kurtosis
-      (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
-      (Real)((num_samp-2)*(num_samp-3)*var*var) -
-      // population kurtosis
-      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
-      // for no variation, central moment is zero minus excess kurtosis
-      -3.;
+    // Standardized moment: (excess) kurtosis (unbiased population estimate)
+    // For no variation, standardized moment is zero minus excess kurtosis
+    moments_i[3] = (num_samp > 3 && cm2 > 0.) ?
+      nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3) : -3.;
   }
 }
 
