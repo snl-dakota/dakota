@@ -1125,9 +1125,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 
 
 void NonDSampling::compute_moments(const RealMatrix& samples)
-{
-  compute_moments(samples, momentStats);
-}
+{ compute_moments(samples, momentStats); }
 
 
 void NonDSampling::
@@ -1191,7 +1189,7 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
     //   biased central moment estimators:
     //cm2 /= ns; cm3 /= ns; cm4 /= ns;
     // unbiased central moment estimators:
-    //cm4  = (ns*np1*cm4 - 3.*nm1*cm2*cm2) / (nm1*nm2*nm3);
+    //cm4  = (ns*np1*cm4 - 3.*nm1*cm2*cm2) / (nm1*nm2*nm3); //precede cm2 update
     //cm3 *= ns/(nm1*nm2); cm2 /= nm1;
 
     // Standardized moment: std deviation (from unbiased variance estimator)

@@ -518,7 +518,7 @@ void NonDLocalReliability::mean_value()
   Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 
   // loop over response functions
-  size_t i, j, cntr;
+  size_t i, j, cntr, moment_offset = (finalMomentsType) ? 2 : 0;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
     size_t rl_len = requestedRespLevels[respFnCount].length(),
@@ -531,9 +531,9 @@ void NonDLocalReliability::mean_value()
     Real& std_dev = momentStats(1,respFnCount);
 
     RealVector dg_ds_meanx;
-    bool need_dg_ds = (final_asv[statCount] & 2); // mean stat
+    bool need_dg_ds = (finalMomentsType && (final_asv[statCount] & 2)); // mean
     if (!need_dg_ds)
-      for (i=0, j=statCount+2; i<total_lev; ++i, ++j)
+      for (i=0, j=statCount+moment_offset; i<total_lev; ++i, ++j)// all lev map
 	if (final_asv[j] & 2)
 	  { need_dg_ds = true; break; }
     if (need_dg_ds) {
@@ -543,27 +543,29 @@ void NonDLocalReliability::mean_value()
       dg_ds_eval(ranVarMeansX, fn_grad_mean_x, dg_ds_meanx);
     }
 
-    // approximate response means already computed
-    finalStatistics.function_value(mean, statCount);
-    // sensitivity of response mean
-    if (final_asv[statCount] & 2)
-      finalStatistics.function_gradient(dg_ds_meanx, statCount);
-    ++statCount;
+    if (finalMomentsType) {
+      // approximate response means already computed
+      finalStatistics.function_value(mean, statCount);
+      // sensitivity of response mean
+      if (final_asv[statCount] & 2)
+	finalStatistics.function_gradient(dg_ds_meanx, statCount);
+      ++statCount;
 
-    // approximate response std deviations already computed
-    finalStatistics.function_value(std_dev, statCount);
-    // sensitivity of response std deviation
-    if (final_asv[statCount] & 2) {
-      // Differentiating the first-order second-moment expression leads to
-      // 2nd-order d^2g/dxds sensitivities which are:
-      // > awkward to compute (nonstandard DVV w/ active + inactive vars)
-      // > a higher-order term that we will neglect for simplicity
-      Cerr << "Warning: response std deviation sensitivity is zero for MVFOSM."
-           << std::endl;
-      RealVector final_stat_grad(numUncertainVars); // init to 0.
-      finalStatistics.function_gradient(final_stat_grad, statCount);
+      // approximate response std deviations already computed
+      finalStatistics.function_value(std_dev, statCount);
+      // sensitivity of response std deviation
+      if (final_asv[statCount] & 2) {
+	// Differentiating the first-order second-moment expression leads to
+	// 2nd-order d^2g/dxds sensitivities which are:
+	// > awkward to compute (nonstandard DVV w/ active + inactive vars)
+	// > a higher-order term that we will neglect for simplicity
+	Cerr << "Warning: response std deviation sensitivity is zero for "
+	     << "MVFOSM." << std::endl;
+	RealVector final_stat_grad(numUncertainVars); // init to 0.
+	finalStatistics.function_gradient(final_stat_grad, statCount);
+      }
+      ++statCount;
     }
-    ++statCount;
 
     // If response std_dev is non-zero, compute importance factors.  Traditional
     // impFactors correspond to the diagonal terms in the computation of the
@@ -748,35 +750,37 @@ void NonDLocalReliability::mpp_search()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   for (respFnCount=0; respFnCount<numFunctions; ++respFnCount) {
 
-    // approximate response means already computed
-    finalStatistics.function_value(momentStats(0,respFnCount), statCount);
-    // sensitivity of response mean
-    if (final_asv[statCount] & 2) {
-      RealVector fn_grad_mean_x(numUncertainVars, false);
-      for (i=0; i<numUncertainVars; i++)
-	fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
-      // evaluate dg/ds at the variable means and store in finalStatistics
-      RealVector final_stat_grad;
-      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
-      finalStatistics.function_gradient(final_stat_grad, statCount);
-    }
-    ++statCount;
+    if (finalMomentsType) {
+      // approximate response means already computed
+      finalStatistics.function_value(momentStats(0,respFnCount), statCount);
+      // sensitivity of response mean
+      if (final_asv[statCount] & 2) {
+	RealVector fn_grad_mean_x(numUncertainVars, false);
+	for (i=0; i<numUncertainVars; i++)
+	  fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
+	// evaluate dg/ds at the variable means and store in finalStatistics
+	RealVector final_stat_grad;
+	dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
+	finalStatistics.function_gradient(final_stat_grad, statCount);
+      }
+      ++statCount;
 
-    // approximate response std deviations already computed
-    finalStatistics.function_value(momentStats(1,respFnCount), statCount);
-    // sensitivity of response std deviation
-    if (final_asv[statCount] & 2) {
-      // Differentiating the first-order second-moment expression leads to
-      // 2nd-order d^2g/dxds sensitivities which would be awkward to compute
-      // (nonstandard DVV containing active and inactive vars)
-      Cerr << "Error: response std deviation sensitivity not yet supported."
-           << std::endl;
-      abort_handler(-1);
-      // TO DO: back out from RIA/PMA equations (use closest level to mean?):
-      // RIA: dsigma/ds = (dmean/ds - sigma dbeta_cdf/ds) / beta_cdf
-      // PMA: dsigma/ds = (dmean/ds - dz/ds) / beta_cdf
+      // approximate response std deviations already computed
+      finalStatistics.function_value(momentStats(1,respFnCount), statCount);
+      // sensitivity of response std deviation
+      if (final_asv[statCount] & 2) {
+	// Differentiating the first-order second-moment expression leads to
+	// 2nd-order d^2g/dxds sensitivities which would be awkward to compute
+	// (nonstandard DVV containing active and inactive vars)
+	Cerr << "Error: response std deviation sensitivity not yet supported."
+	     << std::endl;
+	abort_handler(-1);
+	// TO DO: back out from RIA/PMA equations (use closest level to mean?):
+	// RIA: dsigma/ds = (dmean/ds - sigma dbeta_cdf/ds) / beta_cdf
+	// PMA: dsigma/ds = (dmean/ds - dz/ds) / beta_cdf
+      }
+      ++statCount;
     }
-    ++statCount;
 
     // The most general case is to allow a combination of response, probability,
     // reliability, and generalized reliability level specifications for each
@@ -976,7 +980,7 @@ void NonDLocalReliability::initial_taylor_series()
 	asrv[i] = mode;
     // no break: fall through
   case NO_APPROX:
-    if (subIteratorFlag) {
+    if (subIteratorFlag && finalMomentsType) {
       // check final_asv for active mean and std deviation stats
       size_t cntr = 0;
       for (i=0; i<numFunctions; i++) {
