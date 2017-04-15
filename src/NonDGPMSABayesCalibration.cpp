@@ -164,6 +164,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (found_error)
     abort_handler(-1);
 
+  init_queso_environment(optionsFile);
+
   // TODO: use base class to manage any problem transformations and
   // probably the surrogate build data management
 
@@ -217,8 +219,6 @@ void NonDGPMSABayesCalibration::calibrate()
   // BMA TODO: base class needs runtime update as well
   nonDQUESOInstance = this;
   nonDGPMSAInstance = this;
-
-  init_queso_environment(optionsFile);
 
   // no emulators will be setup, but need to initialize the prob transforms
   initialize_model();

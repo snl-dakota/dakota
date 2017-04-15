@@ -234,6 +234,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
+  init_queso_environment();
+
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
@@ -252,8 +254,6 @@ void NonDQUESOBayesCalibration::calibrate()
 {
   // instantiate QUESO objects and execute
   nonDQUESOInstance = this;
-
-  init_queso_environment();
 
   // build the emulator and initialize transformations, as needed
   initialize_model();
