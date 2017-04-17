@@ -57,6 +57,14 @@ public:
   template <typename Engine>
   void prior_sample(Engine& rng, RealVector& prior_samples);
 
+  /// return the mean of the prior distribution
+  template <typename VectorType>
+  void prior_mean(VectorType& mean_vec) const;
+
+  /// return the covariance of the prior distribution
+  template <typename MatrixType>
+  void prior_variance(MatrixType& var_mat) const;
+
   /**
    * \brief Compute the proposal covariance C based on low-rank approximation
    * to the prior-preconditioned misfit Hessian.
@@ -470,6 +478,57 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
     prior_samples[numContinuousVars + i] = invGammaDists[i].draw_sample(rng);
+}
+
+
+/** Assume the target mean_vec is sized by client */
+template <typename VectorType>
+void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
+{
+  if (standardizedSpace) {
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = u_moments[i].first;
+  }
+  else {
+    RealVector x_means = natafTransform.x_means();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = x_means[i];
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    mean_vec[numContinuousVars + i] = invGammaDists[i].mean();
+}
+
+
+/** Assumes the target var_mat is sized by client */
+template <typename MatrixType>
+void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
+{
+  if (standardizedSpace) {
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      const Real& u_std_i = u_moments[i].second;
+      var_mat(i,i) = u_std_i * u_std_i;
+    }
+  }
+  else {
+    RealVector x_std = natafTransform.x_std_deviations();
+    if (natafTransform.x_correlation()) {
+      const RealSymMatrix& x_correl = natafTransform.x_correlation_matrix();
+      for (size_t i=0; i<numContinuousVars; ++i) {
+	var_mat(i,i) = x_std[i] * x_std[i];
+	for (size_t j=1; j<numContinuousVars; ++j)
+	  var_mat(i,j) = var_mat(j,i) = x_correl(i,j) * x_std[i] * x_std[j];
+      }
+    }
+    else {
+      for (size_t i=0; i<numContinuousVars; ++i)
+	var_mat(i,i) = x_std[i] * x_std[i];
+    }
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    var_mat(numContinuousVars + i, numContinuousVars + i) = 
+      invGammaDists[i].variance();
 }
 
 

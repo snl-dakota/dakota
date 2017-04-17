@@ -1571,6 +1571,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ logit_transform {N_mdm(true,logitTransform)} ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
           [ 
@@ -1667,13 +1668,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           |
           rnum2 {N_mdm(lit,rngName_rnum2)}
          ]
-        [ pre_solve {0}
-          sqp {N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}
-          |
-          nip {N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}
-          |
-          none {N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}
-         ]
         [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
           ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
             [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
@@ -1693,6 +1687,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             matrix {N_mdm(lit,proposalCovInputType_matrix)}
            )
          ]
+        [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
        )
       |
       ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
@@ -1776,6 +1771,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
         ( data_distribution {0}
           ( 
             ( gaussian {0}
@@ -1890,6 +1886,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
           [ 
             annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
@@ -1926,7 +1923,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
          ]
        ]
-      [ standardized_space {N_mdm(true,standardizedSpace)} ]
       [ calibrate_error_multipliers {0}
         one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}
         |

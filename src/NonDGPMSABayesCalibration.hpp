@@ -16,8 +16,15 @@
 #ifndef NOND_GPMSA_BAYES_CALIBRATION_H
 #define NOND_GPMSA_BAYES_CALIBRATION_H
 
-#include "NonDBayesCalibration.hpp"
+#include "NonDQUESOBayesCalibration.hpp"
 
+namespace QUESO {
+//   template<class T> class SPType;
+//   //  template<typename T> struct SharedPtr;
+//   template<typename T>
+//   struct SharedPtr { typedef SPType<T> Type; }
+  template<class V, class M> class GPMSAFactory;
+}
 
 namespace Dakota {
 
@@ -42,7 +49,7 @@ namespace Dakota {
     structures need to be specified and initialized in DAKOTA and sent 
     to GPM/SA, and what data structures will be returned.  */
 
-class NonDGPMSABayesCalibration: public NonDBayesCalibration
+class NonDGPMSABayesCalibration: public NonDQUESOBayesCalibration
 {
 public:
 
@@ -86,12 +93,47 @@ protected:
   /// additional variables to be specified here. 
   void calibrate();
 
+  /// specialization to initialize the inverse problem and posterior
+  void init_queso_solver();
+
+  /// fill the full proposal covariance, inlcuding hyperparameter
+  /// entries with user-specified or default theta covariance
+  /// information
+  void overlay_proposal_covariance(QUESO::GslMatrix& full_prop_cov) const;
+
+  /// populate the simulation, running design of experiments as needed
+  void fill_simulation_data();
+
+  /// populate the experiment data
+  void fill_experiment_data();
+
+  void overlay_initial_params(QUESO::GslVector& full_param_initials);
+
   // print the final statistics
   //void print_results(std::ostream& s);
 
   //
   //- Heading: Data
   //
+
+  /// vector space defining the scenario (configuration) variables
+  boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 
+  configSpace;
+
+  /// vector space defining the output (response) space for the simulations
+  boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
+  nEtaSpace;
+
+  /// vector space defining the output (response) space for the experiments
+  boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
+  experimentSpace;
+
+  /// core factory that manages a GP-based likelihood
+  boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
+  gpmsaFactory; 
+
+  /// advanced options file name
+  String optionsFile;
 
 private:
 

@@ -6810,6 +6810,7 @@ static String
         MP_(posteriorSamplesImportFilename),
 	MP_(proposalCovFile),
 	MP_(pstudyFilename),
+        MP_(quesoOptionsFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
         MP_(subModelPointer);
