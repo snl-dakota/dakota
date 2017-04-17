@@ -1154,28 +1154,6 @@ size_t find_index(const ListT& l, const typename ListT::value_type& val)
 // TO DO: difficulty with compilation of ::type --> work-around by enumeration
 
 
-/// copy boost::multi_array view to Array - used by ActiveSet::derivative_vector - RWH
-inline void copy_data(SizetMultiArrayConstView ma, SizetArray& da)
-{
-  size_t size_ma = ma.size();
-  if (size_ma != da.size())
-    da.resize(size_ma);
-  for (size_t i=0; i<size_ma; ++i)
-    da[i] = ma[i];
-}
-
-
-/// copy boost::multi_array view to Array - used by Pecos::copy_data - RWH
-inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
-{
-  size_t size_ma = ma.size();
-  if (size_ma != da.size())
-    da.resize(size_ma);
-  for (size_t i=0; i<size_ma; ++i)
-    da[i] = ma[i];
-}
-
-
 /// return an iterator to the first list element satisfying the
 /// predicate test_fn w.r.t. the passed test_fn_data; end if not found
 template <typename ListT>
@@ -1196,6 +1174,28 @@ find_if(const ListT& c,
 }
 
 #endif
+
+
+/// copy boost::multi_array view to Array - used by ActiveSet::derivative_vector - RWH
+inline void copy_data(SizetMultiArrayConstView ma, SizetArray& da)
+{
+  size_t size_ma = ma.size();
+  if (size_ma != da.size())
+    da.resize(size_ma);
+  for (size_t i=0; i<size_ma; ++i)
+    da[i] = ma[i];
+}
+
+
+/// copy boost::multi_array view to Array - used by Pecos::copy_data - RWH
+inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
+{
+  size_t size_ma = ma.size();
+  if (size_ma != da.size())
+    da.resize(size_ma);
+  for (size_t i=0; i<size_ma; ++i)
+    da[i] = ma[i];
+}
 
 
 /// return true if the item val appears in container v

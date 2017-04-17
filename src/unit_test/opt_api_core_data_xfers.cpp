@@ -70,7 +70,7 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   for( size_t i=0; i<vec.length(); ++i )
     max_diff = (diff = std::fabs(vec[i]-tpl1_vec[i])) > max_diff ? diff : max_diff;
   max_diff += 1.0;
-  Real real_tol = std::pow(10, -std::numeric_limits<dummyTraits1::scalarType>::digits10);
+  Real real_tol = std::pow(10.0, -std::numeric_limits<dummyTraits1::scalarType>::digits10);
   TEST_FLOATING_EQUALITY( max_diff, 1.0, real_tol );
 
   dummyTraits2::vectorType tpl2_vec;
@@ -82,7 +82,7 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   for( size_t i=0; i<vec.length(); ++i )
     max_diff = (diff = std::fabs(vec[i]-tpl2_vec[i])) > max_diff ? diff : max_diff;
   max_diff += 1.0;
-  float float_tol = std::pow(10, -std::numeric_limits<dummyTraits2::scalarType>::digits10);
+  float float_tol = std::pow(10.0, -std::numeric_limits<dummyTraits2::scalarType>::digits10);
   TEST_FLOATING_EQUALITY( max_diff, 1.0, float_tol );
   TEST_COMPARE( max_diff, >, real_tol );
 }
