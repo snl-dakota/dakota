@@ -91,7 +91,7 @@ public:
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
-  /// update finalStatistics from minValues/maxValues, momentStats,
+  /// update finalStatistics from minValues/maxValues, finalMomentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
 
@@ -320,10 +320,9 @@ private:
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
-  /// Matrix of confidence internals on moments, with rows for
-  /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
-  /// compute_moments())
-  RealMatrix momentCIs;
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
+  RealMatrix finalMomentCIs;
 };
 
 

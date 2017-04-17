@@ -1914,16 +1914,13 @@ void NonD::update_aleatory_final_statistics()
   for (i=0; i<numFunctions; ++i) {
     // final stats from compute_moments()
     if (finalMomentsType) {
-      if (!momentStats.empty()) {
-	finalStatistics.function_value(momentStats(0,i), cntr++); // mean
-	Real stdev = momentStats(1,i);
-	if (finalMomentsType == STANDARD_MOMENTS)
-	  finalStatistics.function_value(stdev, cntr++);         // std dev
-	else
-	  finalStatistics.function_value(stdev * stdev, cntr++); // variance
-      }
-      else
+      if (finalMomentStats.empty())
 	cntr += 2;
+      else {
+	const Real* mom_i = finalMomentStats[i];
+	finalStatistics.function_value(mom_i[0], cntr++); // mean
+	finalStatistics.function_value(mom_i[1], cntr++); // stdev or var
+      }
     }
     // final stats from compute_level_mappings()
     rl_len = requestedRespLevels[i].length();

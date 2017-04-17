@@ -163,7 +163,7 @@ protected:
 
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
-  /// update finalStatistics::functionValues from momentStats and
+  /// update finalStatistics::functionValues from finalMomentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();
   /// update system metrics from component metrics within finalStatistics
@@ -366,9 +366,10 @@ protected:
   /// evaluation, then this flag is set.
   bool epistemicStats;
 
-  /// standardized moments of response functions (mean, std dev, skewness,
-  /// kurtosis calculated in compute_moments()), indexed as (moment,fn)
-  RealMatrix momentStats;
+  /// standardized or central moments of response functions, as determined
+  /// by finalMomentsType.  Calculated in compute_moments()) and indexed
+  /// as (moment,fn).
+  RealMatrix finalMomentStats;
 
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*

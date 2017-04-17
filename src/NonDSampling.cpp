@@ -991,8 +991,10 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
   Real sum, var, skew, kurt, sample;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (momentStats.empty()) momentStats.shapeUninitialized(4, numFunctions);
-  if (momentCIs.empty()) momentCIs.shapeUninitialized(4, numFunctions);
+  if (finalMomentStats.empty())
+    finalMomentStats.shapeUninitialized(4, numFunctions);
+  if (finalMomentCIs.empty())
+    finalMomentCIs.shapeUninitialized(4, numFunctions);
 
   IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
@@ -1018,13 +1020,13 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 	   << "compute_statistics()." << std::endl;
       //      abort_handler(-1);
       for (int j=0; j<4; ++j) {
-	momentStats(j,i) = std::numeric_limits<double>::quiet_NaN();
-	momentCIs(j,i)   = std::numeric_limits<double>::quiet_NaN();
+	finalMomentStats(j,i) = std::numeric_limits<double>::quiet_NaN();
+	finalMomentCIs(j,i)   = std::numeric_limits<double>::quiet_NaN();
       }
       continue;
     }
 
-    Real* moments_i = momentStats[i];
+    Real* moments_i = finalMomentStats[i];
     Real& mean = moments_i[0];
     mean = sum/((Real)num_samp);
 
@@ -1073,13 +1075,13 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       Pecos::students_t_dist t_dist(dof);
       Real mean_ci_delta = 
 	std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
-      momentCIs(0,i) = mean - mean_ci_delta;
-      momentCIs(1,i) = mean + mean_ci_delta;
+      finalMomentCIs(0,i) = mean - mean_ci_delta;
+      finalMomentCIs(1,i) = mean + mean_ci_delta;
       // std dev: chi-square distribution with (num_samp-1) degrees of freedom
       // (Haldar & Mahadevan, p. 132).
       Pecos::chi_squared_dist chisq(dof);
-      momentCIs(2,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
-      momentCIs(3,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
+      finalMomentCIs(2,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
+      finalMomentCIs(3,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
 /*
 #elif HAVE_GSL
       // mean: the better formula does not assume known variance but requires
@@ -1102,7 +1104,8 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 */
     }
     else
-      momentCIs(0,i) = momentCIs(1,i) = momentCIs(2,i) = momentCIs(3,i) = 0.0;
+      finalMomentCIs(0,i) = finalMomentCIs(1,i)
+	= finalMomentCIs(2,i) = finalMomentCIs(3,i) = 0.;
   }
 
   if (resultsDB.active()) {
@@ -1112,20 +1115,21 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
     md_moments["Column Labels"] = make_metadatavalue(resp_labels);
     resultsDB.insert(run_identifier(), resultsNames.moments_std, 
-		     momentStats, md_moments);
+		     finalMomentStats, md_moments);
     // archive the confidence intervals to results DB
     MetaDataType md;
     md["Row Labels"] = 
       make_metadatavalue("LowerCI_Mean", "UpperCI_Mean", "LowerCI_StdDev", 
 			 "UpperCI_StdDev");
     md["Column Labels"] = make_metadatavalue(resp_labels);
-    resultsDB.insert(run_identifier(), resultsNames.moment_cis, momentCIs, md);
+    resultsDB.insert(run_identifier(), resultsNames.moment_cis,
+		     finalMomentCIs, md);
   }
 }
 
 
 void NonDSampling::compute_moments(const RealMatrix& samples)
-{ compute_moments(samples, momentStats); }
+{ compute_moments(samples, finalMomentStats); }
 
 
 void NonDSampling::
@@ -1342,7 +1346,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   SizetArray bins; Real min, max, sample;
 
   // check if moments are required, and if so, compute them now
-  if (momentStats.empty()) {
+  if (finalMomentStats.empty()) {
     bool need_moments = false;
     for (i=0; i<numFunctions; ++i)
       if ( !requestedRelLevels[i].empty() ||
@@ -1443,7 +1447,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
 	break;
       case RELIABILITIES: { // z -> beta (from moment projection)
-	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
+	Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
 	for (j=0; j<rl_len; j++) {
 	  Real z = requestedRespLevels[i][j];
 	  if (std_dev > Pecos::SMALL_NUMBER)
@@ -1491,7 +1495,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
+      Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
       for (j=0; j<bl_len; j++) { // beta -> z
 	Real beta = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
@@ -1590,8 +1594,10 @@ print_moments(std::ostream& s, String qoi_type,
 	      const StringArray& moment_labels) const
 {
   bool print_cis = (numSamples > 1);
-  print_moments(s, momentStats, momentCIs, qoi_type, moment_labels, print_cis);
+  print_moments(s, finalMomentStats, finalMomentCIs, qoi_type, moment_labels,
+		print_cis);
 }
+
 
 void NonDSampling::
 print_moments(std::ostream& s, const RealMatrix& moment_stats,
@@ -1627,6 +1633,7 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
 	<< ' ' << std::setw(width) << moment_cis(3, i) << '\n';
   }
 }
+
 
 void NonDSampling::
 print_wilks_stastics(std::ostream& s) const
@@ -1708,4 +1715,5 @@ print_wilks_stastics(std::ostream& s) const
     }
   }
 }
+
 } // namespace Dakota

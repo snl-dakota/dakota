@@ -325,8 +325,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
       Q_raw_mom(qoi,3) += sum_Y4(qoi,lev) / Nlq;
     }
   }
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(Q_raw_mom, momentStats);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(Q_raw_mom, finalMomentStats);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
@@ -476,8 +476,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
       Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) / Nlq;
     }
   }
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(Q_raw_mom, momentStats);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(Q_raw_mom, finalMomentStats);
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -577,8 +577,8 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   RealMatrix H_raw_mom(numFunctions, 4);
   cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
 		 rho2_LH, H_raw_mom);
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(H_raw_mom, momentStats);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(H_raw_mom, finalMomentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
@@ -813,8 +813,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
       }
     }
   }
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(Y_mlmc_mom, momentStats);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(Y_mlmc_mom, finalMomentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -1083,8 +1083,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
       }
     }
   }
-  // Convert uncentered raw moment estimates to standardized moments
-  convert_moments(Y_mlmc_mom, momentStats);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(Y_mlmc_mom, finalMomentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -2529,27 +2529,32 @@ void NonDMultilevelSampling::
 convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
 {
   // Note: raw_mom is numFunctions x 4 and final_stat_mom is the transpose
-
   if (final_stat_mom.empty())
     final_stat_mom.shapeUninitialized(4, numFunctions);
-  Real cm1, cm2, cm3, cm4;
-  // Convert uncentered raw moment estimates to standardized moments
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    if (subIteratorFlag)
+
+  // Convert uncentered raw moment estimates to central moments
+  if (finalMomentsType == CENTRAL_MOMENTS) {
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
       // don't standardize for now so that finalStats matches finalStatErrors
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
 			     raw_mom(qoi,3), final_stat_mom(0,qoi),
 			     final_stat_mom(1,qoi), final_stat_mom(2,qoi),
 			     final_stat_mom(3,qoi));
-    else {
+  }
+  // Convert uncentered raw moment estimates to standardized moments
+  else { //if (finalMomentsType == STANDARD_MOMENTS) {
+    Real cm1, cm2, cm3, cm4;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
 			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
       centered_to_standard(cm1, cm2, cm3, cm4, final_stat_mom(0,qoi),
 			   final_stat_mom(1,qoi), final_stat_mom(2,qoi),
 			   final_stat_mom(3,qoi));
     }
-    
-    if (outputLevel >= DEBUG_OUTPUT)
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
       Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
 	   << " final mom 1 = " << final_stat_mom(0,qoi) << '\n'
 	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
@@ -2558,7 +2563,6 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
 	   << " final mom 3 = " << final_stat_mom(2,qoi) << '\n'
 	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
 	   << " final mom 4 = " << final_stat_mom(3,qoi) << "\n\n";
-  }
 }
 
 
