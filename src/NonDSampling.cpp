@@ -981,159 +981,37 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 }
 
 
-void NonDSampling::compute_moments(const IntResponseMap& samples)
+void NonDSampling::
+compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		RealMatrix& moment_conf_ints, short moments_type,
+		const StringArray& labels)
 {
   // For the samples array, calculate means and standard deviations
   // with confidence intervals
 
-  using boost::math::isfinite;
-  size_t i, j, num_obs = samples.size(), num_samp;
-  Real sum, var, skew, kurt, sample;
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
-  if (finalMomentStats.empty())
-    finalMomentStats.shapeUninitialized(4, numFunctions);
-  if (finalMomentCIs.empty())
-    finalMomentCIs.shapeUninitialized(4, numFunctions);
-
+  RealMatrix samples_rm; SizetArray sample_counts;
+  samples_rm.shapeUninitialized(numFunctions, samples.size());
   IntRespMCIter it;
-  for (i=0; i<numFunctions; ++i) {
-
-    num_samp  = 0;
-    sum = var = skew = kurt = 0.;
-    // means
-    for (it=samples.begin(); it!=samples.end(); ++it) {
-      sample = it->second.function_value(i);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	sum += sample;
-	++num_samp;
-      }
-    }
-
-    if (num_samp != num_obs)
-      Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
-	   << num_obs-num_samp << " failed evaluations out of " << num_obs
-	   << " samples.\n";
-    if (!num_samp) {
-      Cerr << "Warning: Number of samples for " << resp_labels[i]
-	   << " must be nonzero for moment calculation in NonDSampling::"
-	   << "compute_statistics()." << std::endl;
-      //      abort_handler(-1);
-      for (int j=0; j<4; ++j) {
-	finalMomentStats(j,i) = std::numeric_limits<double>::quiet_NaN();
-	finalMomentCIs(j,i)   = std::numeric_limits<double>::quiet_NaN();
-      }
-      continue;
-    }
-
-    Real* moments_i = finalMomentStats[i];
-    Real& mean = moments_i[0];
-    mean = sum/((Real)num_samp);
-
-    // accumulate variance, skewness, and kurtosis
-    Real centered_fn, pow_fn;
-    for (it=samples.begin(); it!=samples.end(); ++it) {
-      sample = it->second.function_value(i);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	pow_fn  = centered_fn = sample - mean;
-	pow_fn *= centered_fn; var  += pow_fn;
-	pow_fn *= centered_fn; skew += pow_fn;
-	pow_fn *= centered_fn; kurt += pow_fn;
-      }
-    }
-
-    // sample std deviation
-    Real& std_dev = moments_i[1];
-    std_dev = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
-
-    // skewness
-    moments_i[2] = (num_samp > 2 && var > 0.) ? 
-      // sample skewness
-      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
-      // population skewness 
-      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
-      // for no variation, central moment is zero
-      0.;
-
-    // kurtosis
-    moments_i[3] = (num_samp > 3 && var > 0.) ?
-      // sample kurtosis
-      (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
-      (Real)((num_samp-2)*(num_samp-3)*var*var) -
-      // population kurtosis
-      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
-      // for no variation, central moment is zero minus excess kurtosis
-      -3.;
-
-    if (num_samp > 1) {
-      // 95% confidence intervals (2-sided interval, not 1-sided limit)
-      Real dof = num_samp - 1;
-//#ifdef HAVE_BOOST
-      // mean: the better formula does not assume known variance but requires
-      // a function for the Student's t-distr. with (num_samp-1) degrees of
-      // freedom (Haldar & Mahadevan, p. 127).
-      Pecos::students_t_dist t_dist(dof);
-      Real mean_ci_delta = 
-	std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
-      finalMomentCIs(0,i) = mean - mean_ci_delta;
-      finalMomentCIs(1,i) = mean + mean_ci_delta;
-      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
-      // (Haldar & Mahadevan, p. 132).
-      Pecos::chi_squared_dist chisq(dof);
-      finalMomentCIs(2,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
-      finalMomentCIs(3,i) = std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
-/*
-#elif HAVE_GSL
-      // mean: the better formula does not assume known variance but requires
-      // a function for the Student's t-distr. with (num_samp-1) degrees of
-      // freedom (Haldar & Mahadevan, p. 127).
-      mean95CIDeltas[i]
-	= std_dev*gsl_cdf_tdist_Pinv(0.975,dof)/std::sqrt((Real)num_samp);
-      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
-      // (Haldar & Mahadevan, p. 132).
-      stdDev95CILowerBnds[i]
-        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.975, dof));
-      stdDev95CIUpperBnds[i]
-        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.025, dof));
-#else
-      // mean: k_(alpha/2) = Phi^(-1)(0.975) = 1.96 (Haldar & Mahadevan,
-      // p. 123).  This simple formula assumes a known variance, which
-      // requires a sample of sufficient size (i.e., greater than 10).
-      mean95CIDeltas[i] = 1.96*std_dev/std::sqrt((Real)num_samp);
-#endif // HAVE_BOOST
-*/
-    }
-    else
-      finalMomentCIs(0,i) = finalMomentCIs(1,i)
-	= finalMomentCIs(2,i) = finalMomentCIs(3,i) = 0.;
+  size_t i, j;
+  for (it=samples.begin(), j=0; it!=samples.end(); ++it, ++j) {
+    const RealVector& fn_vals = it->second.function_values();
+    for (i=0; i<numFunctions; ++i)
+      samples_rm(i,j) = fn_vals[i];
   }
-
+  compute_moments(samples_rm, sample_counts, moment_stats, moments_type,labels);
+  compute_moment_confidence_intervals(moment_stats, moment_conf_ints,
+				      sample_counts, moments_type);
   if (resultsDB.active()) {
-    // archive the moments to results DB
-    MetaDataType md_moments;
-    md_moments["Row Labels"] = 
-      make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
-    md_moments["Column Labels"] = make_metadatavalue(resp_labels);
-    resultsDB.insert(run_identifier(), resultsNames.moments_std, 
-		     finalMomentStats, md_moments);
-    // archive the confidence intervals to results DB
-    MetaDataType md;
-    md["Row Labels"] = 
-      make_metadatavalue("LowerCI_Mean", "UpperCI_Mean", "LowerCI_StdDev", 
-			 "UpperCI_StdDev");
-    md["Column Labels"] = make_metadatavalue(resp_labels);
-    resultsDB.insert(run_identifier(), resultsNames.moment_cis,
-		     finalMomentCIs, md);
+    archive_moments(moment_stats, moments_type, labels);
+    archive_moment_confidence_intervals(moment_conf_ints, moments_type, labels);
   }
 }
 
 
-void NonDSampling::compute_moments(const RealMatrix& samples)
-{ compute_moments(samples, finalMomentStats); }
-
-
 void NonDSampling::
-compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
+compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
+		RealMatrix& moment_stats, short moments_type,
+		const StringArray& labels)
 {
   // For a samples matrix, calculate mean, standard deviation,
   // skewness, and kurtosis
@@ -1144,9 +1022,11 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
   Real sum, cm2, cm3, cm4, sample;
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
+  if (sample_counts.size() != num_qoi) sample_counts.resize(num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
 
+    size_t& num_samp = sample_counts[i];
     num_samp = 0;
     sum = cm2 = cm3 = cm4 = 0.;
     // means
@@ -1158,21 +1038,21 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
       }
     }
 
+    Real* moments_i = moment_stats[i];
     if (num_samp != num_obs)
-      Cerr << "Warning: sampling statistics for qoi " << i+1 << " omit "
+      Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
     if (!num_samp) {
-      Cerr << "Warning: Number of samples for qoi " << i+1
+      Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
 	   << "compute_statistics().\n";
-      //abort_handler(-1);
+      //abort_handler(METHOD_ERROR);
       for (int j=0; j<4; ++j)
-	moment_stats(j,i) = std::numeric_limits<double>::quiet_NaN();
+	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
       continue;
     }
 
-    Real* moments_i = moment_stats[i];
     Real& mean = moments_i[0];
     Real ns = (Real)num_samp, np1 = ns + 1., nm1 = ns - 1., nm2 = ns - 2.,
         nm3 = ns - 3.;
@@ -1192,10 +1072,27 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
     // Bypass this step and employ raw sums below:
     //   biased central moment estimators:
     //cm2 /= ns; cm3 /= ns; cm4 /= ns;
-    // unbiased central moment estimators:
-    //cm4  = (ns*np1*cm4 - 3.*nm1*cm2*cm2) / (nm1*nm2*nm3); //precede cm2 update
-    //cm3 *= ns/(nm1*nm2); cm2 /= nm1;
 
+    // unbiased moment estimators (central and standardized):
+    bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (cm2 > 0.);
+    if (num_samp > 1 && pos_var)
+      moments_i[1] = (central) ? cm2 / nm1 : // central
+	std::sqrt(cm2/nm1);                  // standardized 
+    else
+      moments_i[1] = 0.;
+    if (num_samp > 2 && pos_var)
+      moments_i[2] = (central) ? cm3 * ns / (nm1*nm2) :      // central
+	cm3 * ns * std::sqrt(nm1) / (nm2*std::pow(cm2,1.5)); // standardized
+    else
+      moments_i[2] = 0.;
+    if (num_samp > 3 && pos_var)
+      moments_i[3] = (central) ?
+	(ns*np1*cm4 - 3.*nm1*cm2*cm2)/(nm1*nm2*nm3) :      // central
+	nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3); // standardized
+    else
+      moments_i[3] = (central) ? 0. : -3.;
+
+    /*
     // Standardized moment: std deviation (from unbiased variance estimator)
     // For no variation, standardized moment is zero
     moments_i[1] = (num_samp > 1 && cm2 > 0.) ? std::sqrt(cm2/nm1) : 0.;
@@ -1209,7 +1106,96 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats)
     // For no variation, standardized moment is zero minus excess kurtosis
     moments_i[3] = (num_samp > 3 && cm2 > 0.) ?
       nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3) : -3.;
+    */
   }
+}
+
+
+void NonDSampling::
+archive_moments(const RealMatrix& moment_stats, short moments_type,
+		const StringArray& labels)
+{
+  // archive the moments to results DB
+  MetaDataType md_moments;
+  md_moments["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
+    make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
+    make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
+  md_moments["Column Labels"] = make_metadatavalue(labels);
+  resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
+		   md_moments);
+}
+
+
+void NonDSampling::
+compute_moment_confidence_intervals(const RealMatrix& moment_stats,
+				    RealMatrix& moment_conf_ints,
+				    const SizetArray& sample_counts,
+				    short moments_type)
+{
+  size_t i, num_qoi = moment_stats.numRows();
+  if (moment_conf_ints.empty())
+    moment_conf_ints.shapeUninitialized(4, num_qoi);
+
+  Real mean, std_dev, var, qnan = std::numeric_limits<double>::quiet_NaN();
+  for (i=0; i<num_qoi; ++i) {
+    if (sample_counts[i] > 1) {
+      const Real* moment_i = moment_stats[i];
+      Real*    moment_ci_i = moment_conf_ints[i];
+      mean = moment_i[0];
+      if (moments_type == CENTRAL_MOMENTS)
+        { var = moment_i[1]; std_dev = std::sqrt(var); }
+      else
+        { std_dev = moment_i[1]; var = std_dev * std_dev; }
+      if (mean == qnan || std_dev == qnan || var == qnan)
+	for (int j=0; j<4; ++j)
+	  moment_ci_i[j] = qnan;
+      else {
+	// 95% confidence intervals (2-sided interval, not 1-sided limit)
+	Real ns = (Real)sample_counts[i], dof = ns - 1.;
+	// mean: the better formula does not assume known variance but requires
+	// a function for the Student's t-distr. with (num_samp-1) degrees of
+	// freedom (Haldar & Mahadevan, p. 127).
+	Pecos::students_t_dist t_dist(dof);
+	Real mean_ci_delta = std_dev*bmth::quantile(t_dist,0.975)/std::sqrt(ns);
+	moment_ci_i[0] = mean - mean_ci_delta;
+	moment_ci_i[1] = mean + mean_ci_delta;
+	// std dev: chi-square distribution with (num_samp-1) degrees of freedom
+	// (Haldar & Mahadevan, p. 132).
+	Pecos::chi_squared_dist chisq(dof);
+	Real z_975 = bmth::quantile(chisq, 0.975),
+	     z_025 = bmth::quantile(chisq, 0.025);
+	if (moments_type == CENTRAL_MOMENTS) {
+	  moment_ci_i[2] = var*dof/z_975;
+	  moment_ci_i[3] = var*dof/z_025;
+	}
+	else {
+	  moment_ci_i[2] = std_dev*std::sqrt(dof/z_975);
+	  moment_ci_i[3] = std_dev*std::sqrt(dof/z_025);
+	}
+      }
+    }
+    else
+      moment_conf_ints(0,i) = moment_conf_ints(1,i)
+	= moment_conf_ints(2,i) = moment_conf_ints(3,i) = 0.;
+  }
+}
+
+
+void NonDSampling::
+archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
+				    short moments_type,
+				    const StringArray& labels)
+{
+  // archive the confidence intervals to results DB
+  MetaDataType md;
+  md["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
+    make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
+		       "LowerCI_Variance", "UpperCI_Variance") :
+    make_metadatavalue("LowerCI_Mean", "UpperCI_Mean",
+		       "LowerCI_StdDev", "UpperCI_StdDev");
+  md["Column Labels"] = make_metadatavalue(labels);
+  resultsDB.insert(run_identifier(), resultsNames.moment_cis,
+		   moment_conf_ints, md);
 }
 
 
