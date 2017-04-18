@@ -1129,11 +1129,9 @@ void NonDMultilevelSampling::load_pilot_sample(SizetArray& delta_N_l)
 
 void NonDMultilevelSampling::load_pilot_sample(Sizet2DArray& delta_N_l)
 {
-  size_t i, j, num_lev, num_prev_lev, num_total_lev, num_samp,
-    pilot_size = pilotSamples.size(), num_mf = NLev.size();
-  bool same_lev = true;
-
+  size_t i, num_samp, pilot_size = pilotSamples.size(), num_mf = NLev.size();
   delta_N_l.resize(num_mf);
+
   // allow several different pilot sample specifications
   if (pilot_size <= 1) {
     num_samp = (pilot_size) ? pilotSamples[0] : 100;
@@ -1141,6 +1139,9 @@ void NonDMultilevelSampling::load_pilot_sample(Sizet2DArray& delta_N_l)
       delta_N_l[i].assign(NLev[i].size(), num_samp);
   }
   else {
+    size_t j, num_lev, num_prev_lev, num_total_lev = 0;
+    bool same_lev = true;
+
     for (i=0; i<num_mf; ++i) {
       // for now, only SimulationModel supports solution_levels()
       num_lev = NLev[i].size();
@@ -2145,7 +2146,7 @@ eval_ratio(const RealVector& sum_L_shared, const RealVector& sum_H,
 	   const RealVector& sum_HH, Real cost_ratio,
 	   const SizetArray& N_shared, RealVector& var_H, RealVector& rho2_LH)
 {
-  Real beta, eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
+  Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH[qoi];
@@ -2186,7 +2187,7 @@ eval_ratio(RealMatrix& sum_L_shared, RealMatrix& sum_H, RealMatrix& sum_LL,
 	   RealMatrix& sum_LH, RealMatrix& sum_HH, Real cost_ratio, size_t lev,
 	   const SizetArray& N_shared, RealMatrix& var_H, RealMatrix& rho2_LH)
 {
-  Real beta, eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
+  Real eval_ratio, avg_eval_ratio = 0.; size_t num_avg = 0;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
 
     Real& rho_sq = rho2_LH(qoi,lev);

@@ -1037,7 +1037,7 @@ compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
     else {
       Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
-	   << "compute_statistics().\n";
+	   << "compute_moments().\n";
       //abort_handler(METHOD_ERROR);
       for (int j=0; j<4; ++j)
 	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
@@ -1072,7 +1072,7 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats,
       Cerr << "Warning: Number of samples for quantity " << i+1
 	   << " must be nonzero in NonDSampling::compute_moments().\n";
       //abort_handler(METHOD_ERROR);
-      for (int j=0; j<4; ++j)
+      for (size_t j=0; j<4; ++j)
 	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
     }
   }
@@ -1100,7 +1100,7 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
       else
         { std_dev = moment_i[1]; var = std_dev * std_dev; }
       if (mean == qnan || std_dev == qnan || var == qnan)
-	for (int j=0; j<4; ++j)
+	for (size_t j=0; j<4; ++j)
 	  moment_ci_i[j] = qnan;
       else {
 	// 95% confidence intervals (2-sided interval, not 1-sided limit)
@@ -1128,8 +1128,8 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
       }
     }
     else
-      moment_conf_ints(0,i) = moment_conf_ints(1,i)
-	= moment_conf_ints(2,i) = moment_conf_ints(3,i) = 0.;
+      for (size_t j=0; j<4; ++j)
+	moment_conf_ints(j,i) = 0.;
   }
 }
 
