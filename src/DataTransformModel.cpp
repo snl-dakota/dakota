@@ -55,11 +55,11 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 
   // register state variables as inactive vars if config vars are present
   // BMA TODO: correctly manage the view if relaxed, also review recursion
-  if (!expData.config_vars().empty()) {
+  size_t num_config_vars = expData.num_config_vars();
+  if (num_config_vars > 0) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
       subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
-    size_t num_config_vars = expData.config_vars()[0].length();
     if (num_state_vars != num_config_vars) {
       Cerr << "\nError: (DataTransformModel) Number of continuous state "
 	   << "variables = " << num_state_vars << " must match\n       number "

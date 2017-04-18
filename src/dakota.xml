@@ -2188,6 +2188,7 @@
 			</oneOf>
 			<keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		      </keyword>
+		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 				<param type="OUTPUT_FILE" />
@@ -2260,63 +2261,59 @@
 		      </keyword>
 		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
 			<param type='INTEGER' constraint='> 0' />
-		      </keyword>
-		      <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
-			      <param type="INTEGER" />
-		      </keyword>
-		      <keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			<alias name="import_points_file"/>
-			<param type="INPUT_FILE" />
-			&method_import_build_format;
-			<keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-		      </keyword>
-		      		  <optional>
-		    <oneOf label="MCMC algorithm type" >
-		      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
-		      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
-		      <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
-		      <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
-		      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
-		    </oneOf>
-		  </optional>
-		  <keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
-		    <oneOf>
-		      <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
-		      <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve" help="" minOccurs="0" default="nip pre-solve for emulators" >
-		    <oneOf>
-		      <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
-		      <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
-		      <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none" help=""  />
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
-		    <oneOf>
-		      <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
-			<keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+			</keyword>
+			<keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
 			  <param type="INTEGER" />
 			</keyword>
+			<keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+			  <alias name="import_points_file"/>
+			  <param type="INPUT_FILE" />
+			  &method_import_build_format;
+			  <keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+			</keyword>
+		      	<optional>
+			  <oneOf label="MCMC algorithm type" >
+			    <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+			    <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+			    <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+			    <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+			    <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+			  </oneOf>
+			</optional>
+			<keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
+			  <oneOf>
+			    <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
+			    <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
+			  </oneOf>
+			</keyword>
+			<keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
+			  <oneOf>
+			    <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
+			      <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+				<param type="INTEGER" />
+			      </keyword>
+			    </keyword>
+			    <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
+			    <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
+			      <param type="REALLIST"/>
+			      <oneOf>
+				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
+				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			      </oneOf>
+			    </keyword>
+			    <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
+			      <param type="INPUT_FILE"/>
+			      <oneOf>
+				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
+				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			      </oneOf>
+			    </keyword>
+			  </oneOf>
+			</keyword>
+			<keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File" help="" minOccurs="0" default="no advanced options file" >
+			  <param type="INPUT_FILE" />
+			</keyword>
 		      </keyword>
-		      <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
-		      <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
-			<param type="REALLIST"/>
-			<oneOf>
-			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
-			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			</oneOf>
-		      </keyword>
-		      <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
-			<param type="INPUT_FILE"/>
-			<oneOf>
-			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
-			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			</oneOf>
-		      </keyword>
-		    </oneOf>
-		  </keyword>
-		    </keyword>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
 		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
 		    <param type='INTEGER' constraint='> 0' />
@@ -2390,6 +2387,7 @@
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
 		  <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
 		    <required>
 		      <oneOf>
@@ -2515,6 +2513,7 @@
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 		    <param type="OUTPUT_FILE" />
 		    <optional>
@@ -2564,7 +2563,6 @@
 		    </optional>
                   </keyword>
 		</keyword> 
-	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>
 		  <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />

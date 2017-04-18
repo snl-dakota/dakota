@@ -177,6 +177,14 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     = ncsudirectInstance->iteratedModel.primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
+//PDH: double * to RealVector
+//     Note that there's some re-scaling going on here because the
+//     DIRECT internal function that does it is bypassed.
+//     Also, c (and u and l) contains multiple points to be
+//     evaluated.  NOMAD can also do this, though the wrapper doesn't
+//     currently take advantage of it.  It should in future
+//     iterations.
+
   // loop over trial points, lift internal DIRECT scaling (mimics
   // DIRinfcn in DIRsubrout.f), and either submit for asynch
   // evaluation or compute synchronously
@@ -273,6 +281,11 @@ void NCSUOptimizer::core_run()
   double* ddata = NULL;
   char*   cdata = NULL;
 
+//PDH: RealVector to double *
+//     copy_data and .values() already used here.
+//     do something to make it consistent with other wrappers using
+//     new transfers/adapters.
+
   // Here local_des_vars is in the space of the original model
   RealVector local_des_vars;
   if (setUpType == SETUP_MODEL) {
@@ -344,6 +357,9 @@ void NCSUOptimizer::core_run()
     }
     Cout << std::endl;
   }
+
+//PDH: Pretty clean due to use of .values() above, but do something to
+//make this consistent with other wrappers using new transfers/adapters.
 
   // Set best variables and response for use by strategy level.
   // local_des_vars, fmin contain the optimal design 

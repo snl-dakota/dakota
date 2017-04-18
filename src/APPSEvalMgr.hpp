@@ -90,6 +90,8 @@ public:
   void set_total_workers(const int numDakotaWorkers)
   {numWorkersTotal = numDakotaWorkers;}
 
+//PDH: Shouldn't need this anymore.
+
   /// publishes constraint transformation
   void set_constraint_map(std::vector<int> constraintMapIndices,
 			  std::vector<double> constraintMapMultipliers,
@@ -118,6 +120,9 @@ private:
 
   /// total number of processors available for performing function evaluations
   int numWorkersTotal;
+
+//PDH: Don't think we'll need these three constraint map data members
+//anymore.
 
   /// map from Dakota constraint number to APPS constraint number
   std::vector<int> constrMapIndices;
