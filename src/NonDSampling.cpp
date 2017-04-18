@@ -25,6 +25,7 @@
 
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
+using boost::math::isfinite;
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
 
@@ -946,7 +947,6 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 {
   // For the samples array, calculate min/max response intervals
 
-  using boost::math::isfinite;
   size_t i, j, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
@@ -1016,113 +1016,66 @@ compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
   // For a samples matrix, calculate mean, standard deviation,
   // skewness, and kurtosis
 
-  using boost::math::isfinite;
-  size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols(),
-    num_samp;
+  size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols();
   Real sum, cm2, cm3, cm4, sample;
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
   if (sample_counts.size() != num_qoi) sample_counts.resize(num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
-
+    Real*  moments_i = moment_stats[i];
     size_t& num_samp = sample_counts[i];
-    num_samp = 0;
-    sum = cm2 = cm3 = cm4 = 0.;
-    // means
-    for (j=0; j<num_obs; ++j) {
-      sample = samples(i,j);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	sum += sample;
-	++num_samp;
-      }
-    }
 
-    Real* moments_i = moment_stats[i];
+    accumulate_mean(samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
-    if (!num_samp) {
+
+    if (num_samp)
+      accumulate_moments(samples, i, moments_i, moments_type);
+    else {
       Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
 	   << "compute_statistics().\n";
       //abort_handler(METHOD_ERROR);
       for (int j=0; j<4; ++j)
 	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
-      continue;
     }
-
-    Real& mean = moments_i[0];
-    Real ns = (Real)num_samp, np1 = ns + 1., nm1 = ns - 1., nm2 = ns - 2.,
-        nm3 = ns - 3.;
-    mean = sum / ns;
-
-    // accumulate central moments (e.g., variance)
-    Real centered_fn, pow_fn;
-    for (j=0; j<num_obs; ++j) {
-      sample = samples(i,j);
-      if (isfinite(sample)) { // neither NaN nor +/-Inf
-	pow_fn  = centered_fn = sample - mean;
-	pow_fn *= centered_fn; cm2 += pow_fn; // variance
-	pow_fn *= centered_fn; cm3 += pow_fn; // 3rd central moment
-	pow_fn *= centered_fn; cm4 += pow_fn; // 4th central moment
-      }
-    }
-    // Bypass this step and employ raw sums below:
-    //   biased central moment estimators:
-    //cm2 /= ns; cm3 /= ns; cm4 /= ns;
-
-    // unbiased moment estimators (central and standardized):
-    bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (cm2 > 0.);
-    if (num_samp > 1 && pos_var)
-      moments_i[1] = (central) ? cm2 / nm1 : // central
-	std::sqrt(cm2/nm1);                  // standardized 
-    else
-      moments_i[1] = 0.;
-    if (num_samp > 2 && pos_var)
-      moments_i[2] = (central) ? cm3 * ns / (nm1*nm2) :      // central
-	cm3 * ns * std::sqrt(nm1) / (nm2*std::pow(cm2,1.5)); // standardized
-    else
-      moments_i[2] = 0.;
-    if (num_samp > 3 && pos_var)
-      moments_i[3] = (central) ?
-	(ns*np1*cm4 - 3.*nm1*cm2*cm2)/(nm1*nm2*nm3) :      // central
-	nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3); // standardized
-    else
-      moments_i[3] = (central) ? 0. : -3.;
-
-    /*
-    // Standardized moment: std deviation (from unbiased variance estimator)
-    // For no variation, standardized moment is zero
-    moments_i[1] = (num_samp > 1 && cm2 > 0.) ? std::sqrt(cm2/nm1) : 0.;
-
-    // Standardized moment: skewness (unbiased population estimate)
-    // For no variation, standardized moment is zero
-    moments_i[2] = (num_samp > 2 && cm2 > 0.) ?
-      cm3*ns*std::sqrt(nm1)/(nm2*std::pow(cm2,1.5)) : 0.;
-
-    // Standardized moment: (excess) kurtosis (unbiased population estimate)
-    // For no variation, standardized moment is zero minus excess kurtosis
-    moments_i[3] = (num_samp > 3 && cm2 > 0.) ?
-      nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3) : -3.;
-    */
   }
 }
 
 
 void NonDSampling::
-archive_moments(const RealMatrix& moment_stats, short moments_type,
-		const StringArray& labels)
+compute_moments(const RealMatrix& samples, RealMatrix& moment_stats,
+		short moments_type)
 {
-  // archive the moments to results DB
-  MetaDataType md_moments;
-  md_moments["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
-    make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
-    make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
-  md_moments["Column Labels"] = make_metadatavalue(labels);
-  resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
-		   md_moments);
+  // For a samples matrix, calculate mean, standard deviation,
+  // skewness, and kurtosis
+
+  size_t i, num_qoi = samples.numRows(), num_obs = samples.numCols(), num_samp;
+
+  if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
+
+  for (i=0; i<num_qoi; ++i) {
+    Real* moments_i = moment_stats[i];
+
+    accumulate_mean(samples, i, num_samp, moments_i[0]);
+    if (num_samp != num_obs)
+      Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
+	   << num_obs-num_samp << " failed evaluations out of " << num_obs
+	   << " samples.\n";
+
+    if (num_samp)
+      accumulate_moments(samples, i, moments_i, moments_type);
+    else {
+      Cerr << "Warning: Number of samples for quantity " << i+1
+	   << " must be nonzero in NonDSampling::compute_moments().\n";
+      //abort_handler(METHOD_ERROR);
+      for (int j=0; j<4; ++j)
+	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
+    }
+  }
 }
 
 
@@ -1178,6 +1131,87 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
       moment_conf_ints(0,i) = moment_conf_ints(1,i)
 	= moment_conf_ints(2,i) = moment_conf_ints(3,i) = 0.;
   }
+}
+
+
+void NonDSampling::
+accumulate_mean(const RealMatrix& samples, size_t q,
+		size_t& num_samp, Real& mean)
+{
+  num_samp = 0;
+  Real sum = 0.;
+
+  size_t s, num_obs = samples.numCols(); Real sample;
+  for (s=0; s<num_obs; ++s) {
+    sample = samples(q,s);
+    if (isfinite(sample)) { // neither NaN nor +/-Inf
+      sum += sample;
+      ++num_samp;
+    }
+  }
+
+  if (num_samp)
+    mean = sum / (Real)num_samp;
+}
+
+
+void NonDSampling::
+accumulate_moments(const RealMatrix& samples, size_t q,
+		   Real* moments, short moments_type)
+{
+  // accumulate central moments (e.g., variance)
+  size_t s, num_obs = samples.numCols(), num_samp = 0;
+  Real& mean = moments[0]; // already computed in accumulate_mean()
+  Real sample, centered_fn, pow_fn, cm2 = 0., cm3 = 0., cm4 = 0.;
+  for (s=0; s<num_obs; ++s) {
+    sample = samples(q,s);
+    if (isfinite(sample)) { // neither NaN nor +/-Inf
+      pow_fn  = centered_fn = sample - mean;
+      pow_fn *= centered_fn; cm2 += pow_fn; // variance
+      pow_fn *= centered_fn; cm3 += pow_fn; // 3rd central moment
+      pow_fn *= centered_fn; cm4 += pow_fn; // 4th central moment
+      ++num_samp;
+    }
+  }
+  Real ns = (Real)num_samp, np1 = ns + 1., nm1 = ns - 1., nm2 = ns - 2.,
+      nm3 = ns - 3.;
+
+  // biased central moment estimators (bypass and use raw sums below):
+  //cm2 /= ns; cm3 /= ns; cm4 /= ns;
+
+  // unbiased moment estimators (central and standardized):
+  bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (cm2 > 0.);
+  if (num_samp > 1 && pos_var)
+    moments[1] = (central) ? cm2 / nm1 : // unbiased central
+      std::sqrt(cm2/nm1);                // unbiased standard
+  else
+    moments[1] = 0.;
+  if (num_samp > 2 && pos_var)
+    moments[2] = (central) ? cm3 * ns / (nm1*nm2) :        // unbiased central
+      cm3 * ns * std::sqrt(nm1) / (nm2*std::pow(cm2,1.5)); // unbiased standard
+  else
+    moments[2] = 0.;
+  if (num_samp > 3 && pos_var)
+    moments[3] = (central) ?
+      (ns*np1*cm4 - 3.*nm1*cm2*cm2)/(nm1*nm2*nm3) :      // unbiased central
+      nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3); // unbiased standard
+  else
+    moments[3] = (central) ? 0. : -3.;
+}
+
+
+void NonDSampling::
+archive_moments(const RealMatrix& moment_stats, short moments_type,
+		const StringArray& labels)
+{
+  // archive the moments to results DB
+  MetaDataType md_moments;
+  md_moments["Row Labels"] = (moments_type == CENTRAL_MOMENTS) ?
+    make_metadatavalue("Mean", "Variance", "3rdCentral", "4thCentral") :
+    make_metadatavalue("Mean", "Standard Deviation", "Skewness", "Kurtosis");
+  md_moments["Column Labels"] = make_metadatavalue(labels);
+  resultsDB.insert(run_identifier(), resultsNames.moments_std, moment_stats,
+		   md_moments);
 }
 
 
@@ -1325,7 +1359,6 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   // For the samples array, calculate the following statistics:
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
-  using boost::math::isfinite;
   size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
   const StringArray& resp_labels = iteratedModel.response_labels();
   std::multiset<Real> sorted_samples; // STL-based array for sorting
@@ -1624,8 +1657,6 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
 void NonDSampling::
 print_wilks_stastics(std::ostream& s) const
 {
-  using boost::math::isfinite;
-
   //std::multiset<Real> sorted_resp;
   //IntRespMCIter it2;
   //std::multiset<Real>::const_iterator cit2;

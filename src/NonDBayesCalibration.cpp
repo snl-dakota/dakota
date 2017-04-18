@@ -1497,16 +1497,10 @@ void NonDBayesCalibration::compute_statistics()
 
   }
 
-  StringArray moment_labels; SizetArray succeed_samples;
-  copy_data(mcmcModel.continuous_variable_labels(), moment_labels);
-  NonDSampling::compute_moments(filtered_chain, succeed_samples, chainStats,
-				STANDARD_MOMENTS, moment_labels);
-  NonDSampling::compute_moments(filteredFnVals, succeed_samples,
-				fnStats, STANDARD_MOMENTS,
-				mcmcModel.current_response().function_labels());
-  if (outputLevel >= NORMAL_OUTPUT) {
+  NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
+  NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
+  if (outputLevel >= NORMAL_OUTPUT)
     compute_intervals();
-  }
 
   // Print tabular file for the filtered chain
   if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)

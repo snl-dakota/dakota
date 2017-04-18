@@ -65,30 +65,33 @@ public:
   void compute_intervals(RealRealPairArray& extreme_fns,
 			 const IntResponseMap& samples);
 
-  /// calculates sample moments for an array of observations for a set of QoI
+  /// calculates sample moments from a matrix of observations for a set of QoI
   void compute_moments(const RealMatrix& samples);
-  /// called by compute_statistics() to calculate sample moments and
-  /// confidence intervals
+  /// calculate sample moments and confidence intervals from a map of
+  /// response observations
   void compute_moments(const IntResponseMap& samples);
+  /// convert IntResponseMap to RealMatrix and invoke helpers
+  void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		       RealMatrix& moment_conf_ints, short moments_type,
+		       const StringArray& labels);
   /// core compute_moments() implementation with all data as inputs
   static void compute_moments(const RealMatrix& samples,
 			      SizetArray& sample_counts,
 			      RealMatrix& moment_stats, short moments_type,
 			      const StringArray& labels);
-  /// convert IntResponseMap to RealMatrix and invoke helpers
-  void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
-		       RealMatrix& moment_conf_ints, short moments_type,
-		       const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealMatrix& samples,
+			      RealMatrix& moment_stats, short moments_type);
 
   /// compute moment confidence intervals from moment values
   static void compute_moment_confidence_intervals(
     const RealMatrix& moment_stats,  RealMatrix& moment_conf_ints,
     const SizetArray& sample_counts, short moments_type);
 
-  /// convert IntResponseMap to RealMatrix and invoke helpers
+  /// archive moment statistics in results DB
   void archive_moments(const RealMatrix& moment_stats, short moments_type,
 		       const StringArray& labels);
-  /// compute moment confidence intervals from moment values
+  /// archive moment confidence intervals in results DB
   void archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
 					   short moments_type,
 					   const StringArray& labels);
@@ -275,6 +278,12 @@ protected:
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
 
+  /// helper to accumulate sum of finite samples
+  static void accumulate_mean(const RealMatrix& samples, size_t q,
+			      size_t& num_samp, Real& mean);
+  /// helper to accumulate higher order sums of finite samples
+  static void accumulate_moments(const RealMatrix& samples, size_t q,
+				 Real* moments, short moments_type);
 
   //
   //- Heading: Data members
