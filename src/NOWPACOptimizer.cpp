@@ -86,7 +86,8 @@ void NOWPACOptimizer::initialize_options()
   // (a) links TR size to noise returned from evaluator
   // (b) feasibility restoration (on but not active in deterministic mode)
   // (c) outer Gaussian process approximation (smooths noisy evaluations)
-  nowpacSolver.set_option("stochastic_optimization"       , false);
+  bool stochastic = (methodName == MIT_SNOWPAC);
+  nowpacSolver.set_option("stochastic_optimization"       , stochastic);
   // This is tied to the other BlackBoxBaseClass::evaluate() fn redefinition.
 
   // Maximum number of total accepted steps

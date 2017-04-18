@@ -7074,6 +7074,7 @@ static Method_mp_utype
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
 	MP2s(methodName,MIT_NOWPAC),
+	MP2s(methodName,MIT_SNOWPAC),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
 	MP2s(methodName,GENIE_DIRECT),

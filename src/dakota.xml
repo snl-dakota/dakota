@@ -125,6 +125,28 @@
         <param type='INTEGER' constraint='>= 0' />
       </keyword>"
     >
+    <!ENTITY default_trust_region
+      "<keyword  id='trust_region' name='trust_region' code='{0,0,NIDRProblemDescDB::method_tr_final}' label='Trust region group specification' help='MethodCommands.html#MethodSBL' minOccurs='0' >
+         <keyword  id='initial_size' name='initial_size' code='{N_mdm(RealDL,trustRegionInitSize)}' label='Trust region initial size (relative to bounds)' help='MethodCommands.html#MethodSBL' minOccurs='0' >
+           <param type='REALLIST' />
+         </keyword>
+         <keyword  id='minimum_size' name='minimum_size' code='{N_mdm(Real,trustRegionMinSize)}' label='Trust region minimum size' help='MethodCommands.html#MethodSBL' minOccurs='0' default='1.e-6' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='contract_threshold' name='contract_threshold' code='{N_mdm(Real,trustRegionContractTrigger)}' label='Shrink trust region if trust region ratio is below this value' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.25' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='expand_threshold' name='expand_threshold' code='{N_mdm(Real,trustRegionExpandTrigger)}' label='Expand trust region if trust region ratio is above this value' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.75' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='contraction_factor' name='contraction_factor' code='{N_mdm(Real,trustRegionContract)}' label='Trust region contraction factor' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.25'>
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='expansion_factor' name='expansion_factor' code='{N_mdm(Real,trustRegionExpand)}' label='Trust region expansion factor' help='MethodCommands.html#MethodSBL' minOccurs='0' default='2.0' >
+           <param type='REAL' />
+	 </keyword>
+      </keyword>"
+    >
     <!ENTITY default_final_moments
       "<keyword  id='final_moments' name='final_moments' code='{0}' label='Type of moments in final statistics' help='' minOccurs='0' default='standard' >
          <oneOf label='objective formulation'>
@@ -501,26 +523,6 @@
             <param type="INTEGER" />
           </keyword>
           <keyword  id="truth_surrogate_bypass" name="truth_surrogate_bypass" code="{N_mdm(true,surrBasedLocalLayerBypass)}" label="Flag for bypassing lower level surrogates in truth verifications" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no bypass" />
-          <keyword  id="trust_region" name="trust_region" code="{0,0,NIDRProblemDescDB::method_tr_final}" label="Trust region group specification" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-            <keyword  id="initial_size" name="initial_size" code="{N_mdm(RealDL,trustRegionInitSize)}" label="Trust region initial size (relative to bounds)" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-              <param type="REALLIST" />
-            </keyword>
-            <keyword  id="minimum_size" name="minimum_size" code="{N_mdm(Real,trustRegionMinSize)}" label="Trust region minimum size" help="MethodCommands.html#MethodSBL" minOccurs="0" default="1.e-6" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="contract_threshold" name="contract_threshold" code="{N_mdm(Real,trustRegionContractTrigger)}" label="Shrink trust region if trust region ratio is below this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="expand_threshold" name="expand_threshold" code="{N_mdm(Real,trustRegionExpandTrigger)}" label="Expand trust region if trust region ratio is above this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.75" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="contraction_factor" name="contraction_factor" code="{N_mdm(Real,trustRegionContract)}" label="Trust region contraction factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25">
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="expansion_factor" name="expansion_factor" code="{N_mdm(Real,trustRegionExpand)}" label="Trust region expansion factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="2.0" >
-              <param type="REAL" />
-            </keyword>
-          </keyword>
           <keyword  id="approx_subproblem" name="approx_subproblem" code="{0}" label="Approximate subproblem formulation" help="MethodCommands.html#MethodSBL" minOccurs="0" default="original_primary original_constraints" >
             <oneOf label="objective formulation">
               <keyword  id="original_primary" name="original_primary" code="{N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}" label="original_primary" help=""  />
@@ -551,6 +553,7 @@
           <keyword  id="constraint_relax" name="constraint_relax" code="{0}" label="SBL constraint relaxation method for infeasible iterates" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no relaxation" >
             <keyword  id="homotopy" name="homotopy" code="{N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}" label="homotopy" help=""  />
           </keyword>
+	  &default_trust_region;
           &default_max_iterations;
           &default_convergence_tolerance;
           &default_constraint_tolerance;
@@ -804,26 +807,13 @@
               &default_scaling;
             </keyword>
             <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac" help="" minOccurs="1" >
-              <keyword  id="trust_region" name="trust_region" code="{0,0,NIDRProblemDescDB::method_tr_final}" label="Trust region group specification" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-		<keyword  id="initial_size" name="initial_size" code="{N_mdm(RealDL,trustRegionInitSize)}" label="Trust region initial size (relative to bounds)" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-		  <param type="REALLIST" />
-		</keyword>
-		<keyword  id="minimum_size" name="minimum_size" code="{N_mdm(Real,trustRegionMinSize)}" label="Trust region minimum size" help="MethodCommands.html#MethodSBL" minOccurs="0" default="1.e-6" >
-		  <param type="REAL" />
-		</keyword>
-		<keyword  id="contract_threshold" name="contract_threshold" code="{N_mdm(Real,trustRegionContractTrigger)}" label="Shrink trust region if trust region ratio is below this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25" >
-		  <param type="REAL" />
-		</keyword>
-		<keyword  id="expand_threshold" name="expand_threshold" code="{N_mdm(Real,trustRegionExpandTrigger)}" label="Expand trust region if trust region ratio is above this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.75" >
-		  <param type="REAL" />
-		</keyword>
-		<keyword  id="contraction_factor" name="contraction_factor" code="{N_mdm(Real,trustRegionContract)}" label="Trust region contraction factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25">
-		  <param type="REAL" />
-		</keyword>
-		<keyword  id="expansion_factor" name="expansion_factor" code="{N_mdm(Real,trustRegionExpand)}" label="Trust region expansion factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="2.0" >
-		  <param type="REAL" />
-		</keyword>
-              </keyword>
+              &default_trust_region;
+              &default_max_iterations;
+              &default_max_function_evaluations;
+              &default_scaling;
+            </keyword>
+            <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac" help="" minOccurs="1" >
+              &default_trust_region;
               &default_max_iterations;
               &default_max_function_evaluations;
               &default_scaling;
