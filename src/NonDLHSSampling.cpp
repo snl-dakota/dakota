@@ -674,7 +674,7 @@ void NonDLHSSampling::update_final_statistics()
   NonDSampling::update_final_statistics();
   
   // if MC sampling, assign standard errors for moments within finalStatErrors
-  if (sampleType == SUBMETHOD_RANDOM && !epistemicStats) {
+  if (sampleType == SUBMETHOD_RANDOM && finalMomentsType && !epistemicStats) {
     size_t i, cntr = 0;
     Real sqrt2 = std::sqrt(2.), sqrtn = std::sqrt(numSamples),
        sqrtnm1 = std::sqrt(numSamples - 1);

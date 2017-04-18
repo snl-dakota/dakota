@@ -203,7 +203,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, samp;
+    qoi, iter = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
@@ -345,7 +345,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, samp;
+    qoi, iter = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
@@ -597,7 +597,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
-  size_t qoi, iter = 0, samp, lev, num_hf_lev = truth_model.solution_levels(),
+  size_t qoi, iter = 0, lev, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
@@ -839,7 +839,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
-  size_t qoi, iter = 0, samp, lev, num_hf_lev = truth_model.solution_levels(),
+  size_t qoi, iter = 0, lev, num_hf_lev = truth_model.solution_levels(),
     num_cv_lev = std::min(num_hf_lev, surr_model.solution_levels());
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
@@ -2572,6 +2572,9 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			IntIntPairRealMatrixMap& sum_QlQlm1,
 			Sizet2DArray& num_Q)
 {
+  if (!finalMomentsType)
+    return;
+
   if (finalStatErrors.empty())
     finalStatErrors.sizeUninitialized(2 * numFunctions);
 
@@ -2609,7 +2612,15 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Estimator variance for mean = " << agg_estim_var;
 
-    // std error in variance estimate (TO DO: std err in std dev estimate?)
+    // std err in std dev estimate (*** TO DO ***)
+    if (finalMomentsType == STANDARD_MOMENTS) {
+      Cerr << "Warning: std error not currently supported for standardized "
+	   << "final moments.\n         Setting estimate to zero." << std::endl;
+      finalStatErrors[cntr++] = 0.;
+      continue;
+    }
+
+    // std error in variance estimate
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
