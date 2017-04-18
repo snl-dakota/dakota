@@ -61,9 +61,6 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 
   // initialize finalStatistics using the default statistics set
   initialize_final_statistics();
-  // finalStatErrors supported for MC, MLMC, MLCVMC
-  if (sampleType == SUBMETHOD_RANDOM && !epistemicStats)
-    finalStatErrors.resize(finalStatistics.num_functions());
 
   if ( wilksFlag ) {
     // Only works with sample_type of random

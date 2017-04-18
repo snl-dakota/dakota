@@ -2536,7 +2536,6 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
   // Convert uncentered raw moment estimates to central moments
   if (finalMomentsType == CENTRAL_MOMENTS) {
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      // don't standardize for now so that finalStats matches finalStatErrors
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
 			     raw_mom(qoi,3), final_stat_mom(0,qoi),
 			     final_stat_mom(1,qoi), final_stat_mom(2,qoi),
@@ -2576,7 +2575,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     return;
 
   if (finalStatErrors.empty())
-    finalStatErrors.sizeUninitialized(2 * numFunctions);
+    finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
 
   Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
     cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
@@ -2660,6 +2659,11 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << " and for variance = " << agg_estim_var << "\n\n";
+
+    // level mapping errors not implemented at this time
+    cntr +=
+      requestedRespLevels[qoi].length() +   requestedProbLevels[qoi].length() +
+      requestedRelLevels[qoi].length()  + requestedGenRelLevels[qoi].length();
   }
 }
 
@@ -2706,36 +2710,6 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
   //  compute_statistics(allSamples, allResponses);
 
   Analyzer::post_run(s);
-}
-
-
-void NonDMultilevelSampling::update_final_statistics()
-{
-  NonDSampling::update_final_statistics();
-  
-  // if MC sampling, assign standard errors for moments within finalStatErrors
-  if (sampleType == SUBMETHOD_RANDOM && !epistemicStats) {
-    
-    // TO DO: required data are not persistent scope --> compute the moment
-    // std errors at the same time as the moment stats, rather than here.
-    // Then this function can go away...
-
-    size_t i, cntr = 0;
-    for (i=0; i<numFunctions; ++i) {
-      // standard error (estimator std-dev) for Monte Carlo mean
-      Real var_sum = 0.;
-      //for (i=0; i<num_lev; ++i)
-      //  var_sum += var_Y[][][qoi] / NLev[][][qoi];
-      finalStatErrors[cntr++] = std::sqrt(var_sum);
-
-      // standard error (estimator std-dev) for Monte Carlo std-deviation
-      finalStatErrors[cntr++] = 0.; // TO DO
-
-      // level mapping errors not implemented at this time
-      cntr += requestedRespLevels[i].length() + requestedProbLevels[i].length()
-	   + requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
-    }
-  }
 }
 
 
