@@ -1082,7 +1082,7 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
 				    const SizetArray& sample_counts,
 				    short moments_type)
 {
-  size_t i, num_qoi = moment_stats.numRows();
+  size_t i, num_qoi = moment_stats.numCols();
   if (moment_conf_ints.empty())
     moment_conf_ints.shapeUninitialized(4, num_qoi);
 
@@ -1625,8 +1625,13 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
-    << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
-    << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
+    << std::setw(width+15) << "Mean";
+  if (finalMomentsType == CENTRAL_MOMENTS)
+    s << std::setw(width+1) << "Variance" << std::setw(width+1) << "3rdCentral"
+      << std::setw(width+2) << "4thCentral\n";
+  else
+    s << std::setw(width+1) << "Std Dev" << std::setw(width+1)  << "Skewness"
+      << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
   for (i=0; i<num_qoi; ++i) {
     const Real* moments_i = moment_stats[i];
@@ -1639,8 +1644,11 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
-      << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
-      << std::setw(width+2) << "UpperCI_StdDev\n";
+      << "UpperCI_Mean" << std::setw(width+1);
+    if (finalMomentsType == CENTRAL_MOMENTS)
+      s << "LowerCI_Variance" << std::setw(width+2) << "UpperCI_Variance\n";
+    else
+      s << "LowerCI_StdDev"   << std::setw(width+2) << "UpperCI_StdDev\n";
     for (i=0; i<num_qoi; ++i)
       s << std::setw(14) << moment_labels[i]
 	<< ' ' << std::setw(width) << moment_cis(0, i)
