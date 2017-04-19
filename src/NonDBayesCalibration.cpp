@@ -776,11 +776,11 @@ void NonDBayesCalibration::calibrate_to_hifi()
       copy_data(residualModel.continuous_variable_labels(), 
   	combined_labels);
       NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
-          "posterior variable", combined_labels, false); 
+	  "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
       // Print response moments
       StringArray resp_labels = mcmcModel.current_response().function_labels();
       NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
-          "response function", resp_labels, false); 
+          "response function", STANDARD_MOMENTS, resp_labels, false); 
     }
 
     if (!stop_metric) {
@@ -1499,11 +1499,10 @@ void NonDBayesCalibration::compute_statistics()
 
   }
 
-  NonDSampling::compute_moments(filtered_chain, chainStats);
-  NonDSampling::compute_moments(filteredFnVals, fnStats);
-  if (outputLevel >= NORMAL_OUTPUT) {
+  NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
+  NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
+  if (outputLevel >= NORMAL_OUTPUT)
     compute_intervals();
-  }
 
   // Print tabular file for the filtered chain
   if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
@@ -1910,11 +1909,11 @@ void NonDBayesCalibration::print_results(std::ostream& s)
   StringArray combined_labels;
         copy_data(residualModel.continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
-      "posterior variable", combined_labels, false); 
+      "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
   StringArray resp_labels = mcmcModel.current_response().function_labels();
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
-      "response function", resp_labels, false); 
+      "response function", STANDARD_MOMENTS, resp_labels, false); 
   
   // Print credibility and prediction intervals to screen
   int num_filtered = filteredFnVals.numCols();

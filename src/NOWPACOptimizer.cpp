@@ -86,7 +86,8 @@ void NOWPACOptimizer::initialize_options()
   // (a) links TR size to noise returned from evaluator
   // (b) feasibility restoration (on but not active in deterministic mode)
   // (c) outer Gaussian process approximation (smooths noisy evaluations)
-  nowpacSolver.set_option("stochastic_optimization"       , false);
+  bool stochastic = (methodName == MIT_SNOWPAC);
+  nowpacSolver.set_option("stochastic_optimization"       , stochastic);
   // This is tied to the other BlackBoxBaseClass::evaluate() fn redefinition.
 
   // Maximum number of total accepted steps
@@ -333,6 +334,61 @@ evaluate(RealArray const &x, RealArray &vals, void *param)
     for (j=0; j<num_cv; ++j)
       Ax += lin_ineq_coeffs(index,j) * x[j];
     vals[++cntr] = (*o_iter) + (*m_iter) * Ax;
+  }
+}
+// TO DO: asynchronous evaluate_nowait()/synchronize()
+
+
+void NOWPACBlackBoxEvaluator::
+evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
+{
+  RealVector c_vars; copy_data(x, c_vars);
+  iteratedModel.continuous_variables(c_vars);
+  iteratedModel.evaluate(); // no ASV control, use default
+
+  const RealVector& dakota_fns
+    = iteratedModel.current_response().function_values();
+  // NonD implements std error estimates for selected QoI statistics (see, e.g.,
+  // Harting et al. for MC error estimates).  NestedModel implements
+  // sub-iterator mappings for both fn vals & std errors.
+  const RealVector& errors = iteratedModel.error_estimates();
+
+  // apply optimization sense mapping.  Note: Any MOO/NLS recasting is
+  // responsible for setting the scalar min/max sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  Real obj_fn = dakota_fns[0], mult;
+  vals[0]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
+  noise[0] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+
+  // apply nonlinear inequality constraint mappings
+  StLIter i_iter; RLIter m_iter, o_iter; size_t index, cntr = 0;
+  for (i_iter  = nonlinIneqConMappingIndices.begin(),
+       m_iter  = nonlinIneqConMappingMultipliers.begin(),
+       o_iter  = nonlinIneqConMappingOffsets.begin();
+       i_iter != nonlinIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter) {  // nonlinear ineq
+    index       = (*i_iter)+1; // offset single objective
+    mult        = (*m_iter);
+    vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
+    noise[cntr] = std::abs(mult) * errors[index];
+    ++cntr;
+  }
+  // apply linear inequality constraint mappings
+  const RealMatrix& lin_ineq_coeffs
+    = iteratedModel.linear_ineq_constraint_coeffs();
+  size_t j, num_cv = x.size();
+  for (i_iter  = linIneqConMappingIndices.begin(),
+       m_iter  = linIneqConMappingMultipliers.begin(),
+       o_iter  = linIneqConMappingOffsets.begin();
+       i_iter != linIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter) { // linear ineq
+    size_t index = *i_iter;
+    Real Ax = 0.;
+    for (j=0; j<num_cv; ++j)
+      Ax += lin_ineq_coeffs(index,j) * x[j];
+    vals[cntr]  = (*o_iter) + (*m_iter) * Ax;
+    noise[cntr] = 0.; // no error in linear case
+    ++cntr;
   }
 }
 // TO DO: asynchronous evaluate_nowait()/synchronize()

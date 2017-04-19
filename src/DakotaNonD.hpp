@@ -100,6 +100,11 @@ public:
   /// set pdfOutput
   void pdf_output(bool output);
 
+  /// get finalMomentsType
+  short final_moments_type() const;
+  /// set finalMomentsType
+  void final_moments_type(short type);
+
   /// return natafTransform
   Pecos::ProbabilityTransformation& variable_transformation();
 
@@ -158,7 +163,7 @@ protected:
 
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
-  /// update finalStatistics::functionValues from momentStats and
+  /// update finalStatistics::functionValues from finalMomentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();
   /// update system metrics from component metrics within finalStatistics
@@ -361,9 +366,10 @@ protected:
   /// evaluation, then this flag is set.
   bool epistemicStats;
 
-  /// moments of response functions (mean, std deviation, skewness, and
-  /// kurtosis calculated in compute_moments()), indexed as (moment,fn)
-  RealMatrix momentStats;
+  /// standardized or central moments of response functions, as determined
+  /// by finalMomentsType.  Calculated in compute_moments()) and indexed
+  /// as (moment,fn).
+  RealMatrix finalMomentStats;
 
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*
@@ -418,6 +424,8 @@ protected:
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
   Response finalStatistics;
+  /// type of moments logged within finalStatistics: none, central, standard
+  short finalMomentsType;
 
   /// index for the active ParallelLevel within ParallelConfiguration::miPLIters
   size_t miPLIndex;
@@ -472,6 +480,14 @@ inline bool NonD::pdf_output() const
 
 inline void NonD::pdf_output(bool output)
 { pdfOutput = output; }
+
+
+inline short NonD::final_moments_type() const
+{ return finalMomentsType; }
+
+
+inline void NonD::final_moments_type(short type)
+{ finalMomentsType = type; }
 
 
 inline Pecos::ProbabilityTransformation& NonD::variable_transformation()

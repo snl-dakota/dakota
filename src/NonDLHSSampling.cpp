@@ -669,6 +669,53 @@ void NonDLHSSampling::post_run(std::ostream& s)
 }
 
 
+void NonDLHSSampling::update_final_statistics()
+{
+  NonDSampling::update_final_statistics();
+  
+  // if MC sampling, assign standard errors for moments within finalStatErrors
+  if (sampleType == SUBMETHOD_RANDOM && finalMomentsType && !epistemicStats) {
+
+    if (finalStatErrors.empty())
+      finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
+
+    size_t i, cntr = 0;
+    Real sqrt2 = std::sqrt(2.), sqrtn = std::sqrt(numSamples),
+       sqrtnm1 = std::sqrt(numSamples - 1);
+    switch (finalMomentsType) {
+    case STANDARD_MOMENTS:
+      for (i=0; i<numFunctions; ++i) {
+	Real qoi_stdev = finalMomentStats(1,i);
+	// standard error (estimator std-dev) for Monte Carlo mean
+	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+	// standard error (estimator std-dev) for Monte Carlo std-deviation
+	// (Harding et al., 2014: assumes normally distributed population): 
+	finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
+	// level mapping errors not implemented at this time
+	cntr +=
+	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
+      }
+      break;
+    case CENTRAL_MOMENTS:
+      for (i=0; i<numFunctions; ++i) {
+	Real qoi_var = finalMomentStats(1,i), qoi_stdev = std::sqrt(qoi_var);
+	// standard error (estimator std-dev) for Monte Carlo mean
+	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+	// standard error (estimator std-dev) for Monte Carlo variance
+	// (Harding et al., 2014: assumes normally distributed population): 
+	finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
+	// level mapping errors not implemented at this time
+	cntr +=
+	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
+      }
+      break;
+    }
+  }
+}
+
+
 void NonDLHSSampling::compute_pca(std::ostream& s)
 {
   IntRespMCIter r_it; size_t fn, samp;

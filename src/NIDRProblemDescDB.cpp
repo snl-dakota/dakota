@@ -6933,6 +6933,9 @@ static Method_mp_type
 	MP2p(expansionBasisType,TOTAL_ORDER_BASIS),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
+	MP2s(finalMomentsType,CENTRAL_MOMENTS),
+	MP2s(finalMomentsType,NO_MOMENTS),
+	MP2s(finalMomentsType,STANDARD_MOMENTS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -7072,6 +7075,7 @@ static Method_mp_utype
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
 	MP2s(methodName,MIT_NOWPAC),
+	MP2s(methodName,MIT_SNOWPAC),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
 	MP2s(methodName,GENIE_DIRECT),

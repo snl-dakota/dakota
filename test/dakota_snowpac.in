@@ -1,0 +1,92 @@
+#@ *: DakotaConfig=HAVE_NOWPAC
+
+environment,
+#	graphics
+	  method_pointer = 'OPTIM'
+
+###########################
+# begin opt specification #
+###########################
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'OPTIM_M'
+	snowpac
+	  max_iterations = 500
+#	  convergence_tolerance = 1e-4
+	  trust_region
+	    initial_size = 0.10
+	    minimum_size = 1.0e-6
+	    contract_threshold = 0.25
+	    expand_threshold   = 0.75
+	    contraction_factor = 0.50
+	    expansion_factor   = 1.50
+
+model,
+	id_model = 'OPTIM_M'
+	nested
+	  variables_pointer  = 'OPTIM_V'
+	  sub_method_pointer = 'UQ'
+	  responses_pointer  = 'OPTIM_R'
+	  primary_response_mapping   = 1. 0. 0. 0. 0. 0.
+	  secondary_response_mapping = 0. 0. 1. 0. 0. 0.
+                                       0. 0. 0. 0. 1. 0.
+
+variables,
+	id_variables = 'OPTIM_V'
+	continuous_design = 2
+	  initial_point    2.5    2.5
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors 'w' 't'
+
+responses,
+# minimize mean Weight
+# s.t.     mean_S <= 0
+#          mean_D <= 0
+	id_responses = 'OPTIM_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2 # default upper bounds < 0.0
+	no_gradients
+	no_hessians
+
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'UQ_M'
+        sampling
+	  samples = 50
+	  sample_type random # use MC error estimates
+	  seed = 12347 
+#	  fixed_seed
+#	  output quiet
+	final_moments central
+
+model,
+	id_model = 'UQ_M'
+	single
+	  variables_pointer = 'UQ_V'
+	  interface_pointer = 'UQ_I'
+	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'UQ_V'
+	continuous_design = 2
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'cantilever'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	response_functions = 3
+	no_gradients
+	no_hessians

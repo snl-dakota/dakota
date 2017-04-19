@@ -1,0 +1,38 @@
+#@ *: DakotaConfig=HAVE_NOWPAC
+
+method
+  nowpac
+  max_iterations = 500
+# convergence_tolerance = 1e-4
+  trust_region
+    initial_size = 0.10
+    minimum_size = 1.0e-6
+    contract_threshold = 0.25
+    expand_threshold   = 0.75
+    contraction_factor = 0.50
+    expansion_factor   = 1.50
+
+variables
+  continuous_design = 2
+    initial_point   -1.2  1.0				#s0
+    lower_bounds    -2.0 -2.0				#s0
+    upper_bounds     2.0  2.0				#s0
+    descriptors      'x1' 'x2'				#s0
+#   initial_point    4.0          4.0			#s1
+#   upper_bounds    10.0         10.0			#s1
+#   lower_bounds     1.0          1.0			#s1
+#   descriptors     'w' 't'				#s1
+# continuous_state = 4					#s1
+#   initial_state   40000.  29.E+6  500.  1000.		#s1
+#   descriptors       'R'    'E'    'X'    'Y'		#s1
+
+interface
+  direct
+    analysis_driver = 'rosenbrock'			#s0
+#   analysis_driver = 'cantilever'			#s1
+
+responses
+  objective_functions = 1
+# nonlinear_inequality_constraints = 2			#s1
+  no_gradients
+  no_hessians

@@ -3352,6 +3352,20 @@ const RealVector& Model::approximation_variances(const Variables& vars)
 }
 
 
+const RealVector& Model::error_estimates()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual error_estimates() "
+	 << "function.\n       This model does not support error estimation."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  // envelope fwd to letter
+  return modelRep->error_estimates();
+}
+
+
 const Pecos::SurrogateData& Model::approximation_data(size_t index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.

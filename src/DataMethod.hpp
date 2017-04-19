@@ -128,6 +128,8 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 // define special values for distributionType
 enum { CUMULATIVE, COMPLEMENTARY };
+// define special values for finalMomentsType
+enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
@@ -903,6 +905,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c final_moments specification in \ref MethodNonD
+  short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
   short distributionType;

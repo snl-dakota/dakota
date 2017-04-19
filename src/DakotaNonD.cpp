@@ -64,7 +64,9 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_rva("method.nond.gen_reliability_levels")),
   totalLevelRequests(0),
   cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
-  pdfOutput(false), distParamDerivs(false)
+  pdfOutput(false),
+  finalMomentsType(probDescDB.get_short("method.nond.final_moments")),
+  distParamDerivs(false)
 {
   bool err_flag = false;
   const Variables& vars = iteratedModel.current_variables();
@@ -225,7 +227,7 @@ NonD::NonD(unsigned short method_name, Model& model):
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), distParamDerivs(false)
+  pdfOutput(false), finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -258,7 +260,7 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
   numDiscStringEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
   epistemicStats(false), totalLevelRequests(0), cdfFlag(true), pdfOutput(false),
-  distParamDerivs(false)
+  finalMomentsType(STANDARD_MOMENTS), distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -1801,9 +1803,12 @@ void NonD::initialize_response_covariance()
     results to include means, standard deviations, and level mappings. */
 void NonD::initialize_final_statistics()
 {
-  size_t i, j, num_levels, cntr = 0, rl_len = 0,
-    num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
-  if (!epistemicStats) { // aleatory UQ
+  size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
+    num_active_vars = iteratedModel.cv();
+  if (epistemicStats)
+    num_final_stats = 2*numFunctions;
+  else { // aleatory UQ
+    num_final_stats  = (finalMomentsType) ? 2*numFunctions : 0;
     num_final_stats += totalLevelRequests;
     if (respLevelTargetReduce) {
       rl_len = requestedRespLevels[0].length();
@@ -1838,8 +1843,10 @@ void NonD::initialize_final_statistics()
     String dist_tag = (cdfFlag) ? String("cdf") : String("ccdf");
     for (i=0; i<numFunctions; ++i) {
       std::sprintf(resp_tag, "_r%i", i+1);
-      stats_labels[cntr++] = String("mean")    + String(resp_tag);
-      stats_labels[cntr++] = String("std_dev") + String(resp_tag);
+      if (finalMomentsType) {
+	stats_labels[cntr++] = String("mean")    + String(resp_tag);
+	stats_labels[cntr++] = String("std_dev") + String(resp_tag);
+      }
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
 	switch (respLevelTarget) {
@@ -1906,12 +1913,15 @@ void NonD::update_aleatory_final_statistics()
   size_t i, j, cntr = 0, rl_len, pl_bl_gl_len;
   for (i=0; i<numFunctions; ++i) {
     // final stats from compute_moments()
-    if (!momentStats.empty()) {
-      finalStatistics.function_value(momentStats(0,i), cntr++); // mean
-      finalStatistics.function_value(momentStats(1,i), cntr++); // std dev
+    if (finalMomentsType) {
+      if (finalMomentStats.empty())
+	cntr += 2;
+      else {
+	const Real* mom_i = finalMomentStats[i];
+	finalStatistics.function_value(mom_i[0], cntr++); // mean
+	finalStatistics.function_value(mom_i[1], cntr++); // stdev or var
+      }
     }
-    else
-      cntr += 2;
     // final stats from compute_level_mappings()
     rl_len = requestedRespLevels[i].length();
     switch (respLevelTarget) { // individual component p/beta/beta*
@@ -1941,7 +1951,8 @@ void NonD::update_system_final_statistics()
   if (respLevelTargetReduce) {
     // same rl_len enforced for all resp fns in initialize_final_statistics()
     size_t i, j, rl_len = requestedRespLevels[0].length(),
-      cntr = 2*numFunctions + totalLevelRequests;
+      cntr = totalLevelRequests;
+    if (finalMomentsType) cntr += 2*numFunctions;
     for (j=0; j<rl_len; ++j, ++cntr) {
       // compute system probability
       Real system_p = 1.;
@@ -1984,8 +1995,9 @@ void NonD::update_system_final_statistics_gradients()
       = finalStatistics.active_set_derivative_vector();
     // same rl_len enforced for all resp fns in initialize_final_statistics()
     size_t l, v, s, p, rl_len = requestedRespLevels[0].length(),
-      num_deriv_vars = final_dvv.size(),
-      cntr = 2*numFunctions + totalLevelRequests;
+      num_deriv_vars = final_dvv.size(), cntr = totalLevelRequests,
+      moment_offset = (finalMomentsType) ? 2 : 0;
+    if (finalMomentsType) cntr += 2*numFunctions;
     RealVector final_stat_grad(num_deriv_vars, false);
     RealVectorArray component_grad(numFunctions);
     Real prod;
@@ -1994,7 +2006,7 @@ void NonD::update_system_final_statistics_gradients()
 	// Retrieve component probability gradients from finalStatistics
 	size_t index = 0;
 	for (s=0; s<numFunctions; ++s) {
-	  index += 2;
+	  index += moment_offset;
 	  if (respLevelTarget == PROBABILITIES)
 	    component_grad[s] = finalStatistics.function_gradient_view(index+l);
 	  else {
@@ -2317,7 +2329,8 @@ void NonD::print_system_mappings(std::ostream& s) const
   size_t rl_len = requestedRespLevels[0].length();
   if (respLevelTargetReduce && rl_len) {
     size_t i, width = write_precision+7, g_width = 2*width+2,
-      cntr = 2*numFunctions + totalLevelRequests;
+      cntr = totalLevelRequests;
+    if (finalMomentsType) cntr += 2*numFunctions;
     const RealVector& final_stats = finalStatistics.function_values();
     s << std::scientific << std::setprecision(write_precision)
       << "\nSystem response level mappings:\n";

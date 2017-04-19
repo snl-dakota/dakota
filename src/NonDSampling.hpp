@@ -54,6 +54,7 @@ public:
   /// or intervals (epsitemic or mixed uncertainties)
   void compute_statistics(const RealMatrix&     vars_samples,
 			  const IntResponseMap& resp_samples);
+
   /// called by compute_statistics() to calculate min/max intervals
   /// using allResponses
   void compute_intervals(RealRealPairArray& extreme_fns);
@@ -63,21 +64,52 @@ public:
   /// using samples
   void compute_intervals(RealRealPairArray& extreme_fns,
 			 const IntResponseMap& samples);
-  /// called by compute_statistics() to calculate sample moments and
-  /// confidence intervals
+
+  /// calculates sample moments from a matrix of observations for a set of QoI
+  void compute_moments(const RealMatrix& samples);
+  /// calculate sample moments and confidence intervals from a map of
+  /// response observations
   void compute_moments(const IntResponseMap& samples);
+  /// convert IntResponseMap to RealMatrix and invoke helpers
+  void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		       RealMatrix& moment_conf_ints, short moments_type,
+		       const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealMatrix& samples,
+			      SizetArray& sample_counts,
+			      RealMatrix& moment_stats, short moments_type,
+			      const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealMatrix& samples,
+			      RealMatrix& moment_stats, short moments_type);
+
+  /// compute moment confidence intervals from moment values
+  static void compute_moment_confidence_intervals(
+    const RealMatrix& moment_stats,  RealMatrix& moment_conf_ints,
+    const SizetArray& sample_counts, short moments_type);
+
+  /// archive moment statistics in results DB
+  void archive_moments(const RealMatrix& moment_stats, short moments_type,
+		       const StringArray& labels);
+  /// archive moment confidence intervals in results DB
+  void archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
+					   short moments_type,
+					   const StringArray& labels);
+
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
   void compute_level_mappings(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
+
   /// prints the intervals computed in compute_intervals() with default
   /// qoi_type and moment_labels
   void print_intervals(std::ostream& s) const;
   /// prints the intervals computed in compute_intervals()
   void print_intervals(std::ostream& s, String qoi_type,
 		       const StringArray& interval_labels) const;
+
   /// prints the moments computed in compute_moments() with default
   /// qoi_type and moment_labels
   void print_moments(std::ostream& s) const;
@@ -87,20 +119,15 @@ public:
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
 			    const RealMatrix moment_cis, String qoi_type,
+			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
+
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
-  /// update finalStatistics from minValues/maxValues, momentStats,
+  /// update finalStatistics from minValues/maxValues, finalMomentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
-
-  /// calculates sample moments for an array of observations for a set of QoI
-  void compute_moments(const RealMatrix& samples);
-
-  /// core compute moments that can be called without object
-  static void compute_moments(const RealMatrix& samples, 
-			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
@@ -210,9 +237,10 @@ protected:
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
 
-
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
+  /// return error estimates associated with each of the finalStatistics
+  const RealVector& response_error_estimates() const;
 
   //
   //- Heading: Convenience member functions for derived classes
@@ -251,6 +279,12 @@ protected:
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
 
+  /// helper to accumulate sum of finite samples
+  static void accumulate_mean(const RealMatrix& samples, size_t q,
+			      size_t& num_samp, Real& mean);
+  /// helper to accumulate higher order sums of finite samples
+  static void accumulate_moments(const RealMatrix& samples, size_t q,
+				 Real* moments, short moments_type);
 
   //
   //- Heading: Data members
@@ -262,13 +296,16 @@ protected:
   int       samplesRef;  ///< reference number of samples updated for refinement
   int       numSamples;  ///< the current number of samples to evaluate
   String    rngName;	 ///< name of the random number generator
-  unsigned short sampleType;  ///< the sample type: default, random, lhs,
-                              ///< incremental random, or incremental lhs
-  bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  unsigned short sampleType; ///< the sample type: default, random, lhs,
+                             ///< incremental random, or incremental lhs
+  bool      wilksFlag; ///< flags use of Wilks formula to calculate num samples
   unsigned short wilksOrder;
   Real      wilksAlpha;    
   Real      wilksBeta;    
   short     wilksSidedness;
+
+  /// standard errors (estimator std deviation) for each of the finalStatistics
+  RealVector finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
@@ -316,11 +353,25 @@ private:
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
-  /// Matrix of confidence internals on moments, with rows for
-  /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
-  /// compute_moments())
-  RealMatrix momentCIs;
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
+  RealMatrix finalMomentCIs;
 };
+
+
+inline void NonDSampling::compute_moments(const RealMatrix& samples)
+{
+  SizetArray sample_counts;
+  compute_moments(samples, sample_counts, finalMomentStats, finalMomentsType,
+		  iteratedModel.response_labels());
+}
+
+
+inline void NonDSampling::compute_moments(const IntResponseMap& samples)
+{
+  compute_moments(samples, finalMomentStats, finalMomentCIs, finalMomentsType,
+		  iteratedModel.response_labels());
+}
 
 
 inline void NonDSampling::compute_intervals(RealRealPairArray& extreme_fns)
@@ -333,6 +384,16 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
 { print_intervals(s, "response function", iteratedModel.response_labels()); }
+
+
+inline void NonDSampling::
+print_moments(std::ostream& s, String qoi_type,
+	      const StringArray& moment_labels) const
+{
+  bool print_cis = (numSamples > 1);
+  print_moments(s, finalMomentStats, finalMomentCIs, qoi_type, finalMomentsType,
+		moment_labels, print_cis);
+}
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
@@ -380,6 +441,10 @@ inline unsigned short NonDSampling::sampling_scheme() const
 
 inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
+
+
+inline const RealVector& NonDSampling::response_error_estimates() const
+{ return finalStatErrors; }
 
 } // namespace Dakota
 

@@ -134,9 +134,9 @@ DataMethodRep::DataMethodRep():
   //expansionSampleType("lhs"),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
-  samplesOnEmulator(0), emulatorOrder(0),
+  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
+  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
+  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
   adaptPosteriorRefine(false), logitTransform(false), posteriorStatsKL(false),
   posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
@@ -277,7 +277,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
     << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << distributionType << responseLevelTarget
+    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << chainSamples
     << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
@@ -424,7 +424,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
     >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> distributionType >> responseLevelTarget
+    >> pilotSamples >> finalMomentsType >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
     >> reliabilityLevels >> genReliabilityLevels >> chainSamples
     >> buildSamples >> samplesOnEmulator >> emulatorOrder >> emulatorType
@@ -571,7 +571,7 @@ void DataMethodRep::write(std::ostream& s) const
     << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
     << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << distributionType << responseLevelTarget
+    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
     << reliabilityLevels << genReliabilityLevels << chainSamples
     << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
