@@ -87,7 +87,11 @@ void APPSOptimizer::core_run()
 //     Has to map format of constraints.
 //     Then populate bestResponseArray.
 
-    set_best_responses<APPSOptimizerAdapter>( optimizer, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
+    set_best_responses<APPSOptimizerAdapter>( optimizer, iteratedModel, 
+                                              constraintMapIndices, 
+                                              constraintMapMultipliers, 
+                                              constraintMapOffsets,
+                                              bestResponseArray);
   }
 }
 

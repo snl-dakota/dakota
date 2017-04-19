@@ -63,43 +63,6 @@ protected:
   void finalize_run();
   void print_results(std::ostream& s);
 
-  /// Data adapter for use by third-party opt packages to transfer data to Dakota
-  template <typename AdapterT>
-    void set_best_responses( typename AdapterT::OptT & optimizer,
-                             const std::vector<int> constraintMapIndices, // need to move this to traits or similar
-                             const std::vector<double> constraintMapMultipliers, // need to move this to traits or similar
-                             const std::vector<double> constraintMapOffsets) // need to move this to traits or similar
-    {
-      RealVector best_fns(numFunctions);
-
-      const int numNlEqCons = numNonlinearEqConstraints;
-
-      // Get best Objective - assumes single objective only for now
-      std::vector<double> bestEqs(numNlEqCons);
-      std::vector<double> bestIneqs(constraintMapIndices.size()-numNlEqCons);
-      const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
-
-      // Get best Nonlinear Equality Constraints
-      if (numNlEqCons > 0) {
-        optimizer.getBestNonlEqs(bestEqs); // we leave this method name the same for now but could generalize depending on other TPLs
-        for (size_t i=0; i<numNlEqCons; i++)
-          // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-          best_fns[constraintMapIndices[i]+1] = (bestEqs[i]-constraintMapOffsets[i]) / constraintMapMultipliers[i];
-      }
-
-      // Get best Nonlinear Inequality Constraints
-      if (numNonlinearIneqConstraints > 0) {
-        optimizer.getBestNonlIneqs(bestIneqs); // we leave this method name the same for now but could generalize depending on other TPLs
-        for (size_t i=0; i<bestIneqs.size(); i++)
-          // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-          best_fns[constraintMapIndices[i+numNlEqCons]+1] = 
-            (bestIneqs[i]-constraintMapOffsets[i+numNlEqCons]) / constraintMapMultipliers[i+numNlEqCons];
-      }
-      bestResponseArray.front().function_values(best_fns);
-    }
-
-
   //
   //- Heading: Data
   //
@@ -247,6 +210,47 @@ void copy_data( const VectorType1 & source,
     else
       dest[i] = source[i+offset];
   }
+}
+
+//----------------------------------------------------------------
+
+/// Data adapter for use by third-party opt packages to transfer response data to Dakota
+template <typename AdapterT>
+void set_best_responses( typename AdapterT::OptT & optimizer,
+                         const Model & model,
+                         const std::vector<int> constraintMapIndices, // need to move this to traits or similar
+                         const std::vector<double> constraintMapMultipliers, // need to move this to traits or similar
+                         const std::vector<double> constraintMapOffsets, // need to move this to traits or similar
+                               ResponseArray & response_array)
+{
+  RealVector best_fns(model.num_functions());
+
+  size_t numNlEqCons = model.num_nonlinear_eq_constraints();
+  size_t numNlIneqCons = model.num_nonlinear_ineq_constraints();
+
+  // Get best Objective - assumes single objective only for now
+  std::vector<double> bestEqs(numNlEqCons);
+  std::vector<double> bestIneqs(constraintMapIndices.size()-numNlEqCons);
+  const BoolDeque& max_sense = model.primary_response_fn_sense();
+  best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
+
+  // Get best Nonlinear Equality Constraints
+  if (numNlEqCons > 0) {
+    optimizer.getBestNonlEqs(bestEqs); // we leave this method name the same for now but could generalize depending on other TPLs
+    for (size_t i=0; i<numNlEqCons; i++)
+      // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
+      best_fns[constraintMapIndices[i]+1] = (bestEqs[i]-constraintMapOffsets[i]) / constraintMapMultipliers[i];
+  }
+
+  // Get best Nonlinear Inequality Constraints
+  if (numNlIneqCons > 0) {
+    optimizer.getBestNonlIneqs(bestIneqs); // we leave this method name the same for now but could generalize depending on other TPLs
+    for (size_t i=0; i<bestIneqs.size(); i++)
+      // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
+      best_fns[constraintMapIndices[i+numNlEqCons]+1] = 
+        (bestIneqs[i]-constraintMapOffsets[i+numNlEqCons]) / constraintMapMultipliers[i+numNlEqCons];
+  }
+  response_array.front().function_values(best_fns);
 }
 
 //----------------------------------------------------------------
