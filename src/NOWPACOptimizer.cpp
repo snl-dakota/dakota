@@ -348,20 +348,10 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
 
   const RealVector& dakota_fns
     = iteratedModel.current_response().function_values();
+  // NonD implements std error estimates for selected QoI statistics (see, e.g.,
+  // Harting et al. for MC error estimates).  NestedModel implements
+  // sub-iterator mappings for both fn vals & std errors.
   const RealVector& errors = iteratedModel.error_estimates();
-  //NestedModel implements as subordinate_iterator().response_errors();
-
-  // See Harding et al. for error estimates for mean and std dev (not same as
-  // sqrt of variance error):
-  // > implement these per QoI (according to requested finalStats...) and
-  //   aggregated per level (see, e.g., convert_moments())
-  // > NestedModel queries its subIterator for errors associated with the
-  //   bestResponses/finalStatistics and returns these within something akin to
-  //   Model::approximation_variances() (consider rename to be more generic)
-  // > ask Joe and Guilhem about phi-burn and x_locn...
-
-  // If no mappings...
-  //copy_data(dakota_fns, vals);
 
   // apply optimization sense mapping.  Note: Any MOO/NLS recasting is
   // responsible for setting the scalar min/max sense within the recast.
