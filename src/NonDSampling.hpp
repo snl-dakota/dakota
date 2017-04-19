@@ -119,6 +119,7 @@ public:
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
 			    const RealMatrix moment_cis, String qoi_type,
+			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
 
   /// prints the Wilks stastics
@@ -383,6 +384,16 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
 { print_intervals(s, "response function", iteratedModel.response_labels()); }
+
+
+inline void NonDSampling::
+print_moments(std::ostream& s, String qoi_type,
+	      const StringArray& moment_labels) const
+{
+  bool print_cis = (numSamples > 1);
+  print_moments(s, finalMomentStats, finalMomentCIs, qoi_type, finalMomentsType,
+		moment_labels, print_cis);
+}
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const

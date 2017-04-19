@@ -1606,18 +1606,8 @@ print_intervals(std::ostream& s, String qoi_type,
 
 
 void NonDSampling::
-print_moments(std::ostream& s, String qoi_type,
-	      const StringArray& moment_labels) const
-{
-  bool print_cis = (numSamples > 1);
-  print_moments(s, finalMomentStats, finalMomentCIs, qoi_type, moment_labels,
-		print_cis);
-}
-
-
-void NonDSampling::
 print_moments(std::ostream& s, const RealMatrix& moment_stats,
-	      const RealMatrix moment_cis, String qoi_type,
+	      const RealMatrix moment_cis, String qoi_type, short moments_type,
 	      const StringArray& moment_labels, bool print_cis)
 {
   size_t i, j, width = write_precision+7, num_moments = moment_stats.numRows(),
@@ -1626,7 +1616,7 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
     << std::setw(width+15) << "Mean";
-  if (finalMomentsType == CENTRAL_MOMENTS)
+  if (moments_type == CENTRAL_MOMENTS)
     s << std::setw(width+1) << "Variance" << std::setw(width+1) << "3rdCentral"
       << std::setw(width+2) << "4thCentral\n";
   else
@@ -1645,7 +1635,7 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1);
-    if (finalMomentsType == CENTRAL_MOMENTS)
+    if (moments_type == CENTRAL_MOMENTS)
       s << "LowerCI_Variance" << std::setw(width+2) << "UpperCI_Variance\n";
     else
       s << "LowerCI_StdDev"   << std::setw(width+2) << "UpperCI_StdDev\n";
