@@ -1842,8 +1842,8 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   else
     mapped_errors = 0.;
 
-  // Assume independent Gaussian errors: then std error of linear combination
-  // of Gaussians = Sqrt[ Sum [ coeff^2 sigma_i^2 ] ]
+  // Assume independent Gaussian errors: then std error from linear combination
+  // of Gaussian errors = Sqrt[ Sum [ coeff^2 sigma_i^2 ] ]
   // Note: final moments may be central or standard, but error estimates are
   //       always standard (sqrt of estimator variance of central/std moment)
 
