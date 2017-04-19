@@ -256,6 +256,11 @@ private:
   /// the model using the primaryCoeffs/secondaryCoeffs mappings
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
+  /// combine error estimates from the sub-iteration to define
+  /// mappedErrorEstimates
+  void iterator_error_estimation(const RealVector& sub_iterator_errors,
+				 RealVector& mapped_errors);
+
   /// locate existing or allocate new entry in nestedResponseMap
   Response& nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
@@ -282,6 +287,10 @@ private:
   /// and optionalInterface contributions) for aggregation and rekeying
   /// at the base class level
   IntResponseMap nestedResponseMap;
+
+  /// mapping of subIterator.response_error_estimates() through
+  /// primary and secondary mappings
+  RealVector mappedErrorEstimates;
 
   /// the miPLIndex for the outer parallelism context, prior to any
   /// subIterator partitioning
@@ -450,7 +459,16 @@ inline Interface& NestedModel::derived_interface()
 
 
 inline const RealVector& NestedModel::error_estimates()
-{ return subIterator.response_error_estimates(); }
+{
+  // For now, assume no error contributions from optional interface, e.g.,
+  // these are deterministic mappings and have no estimator variance.
+
+  // *** TO DO: integrate with evaluate and evalaute_nowait()
+
+  iterator_error_estimation(subIterator.response_error_estimates(),
+			    mappedErrorEstimates);
+  return mappedErrorEstimates; 
+}
 
 
 inline void NestedModel::surrogate_response_mode(short mode)
