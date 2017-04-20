@@ -357,21 +357,22 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
   // responsible for setting the scalar min/max sense within the recast.
   const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
   Real obj_fn = dakota_fns[0], mult;
-  vals[0]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
-  noise[0] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+  size_t index, cntr = 0;
+  vals[cntr]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
+  noise[cntr] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+  ++cntr;
 
   // apply nonlinear inequality constraint mappings
-  StLIter i_iter; RLIter m_iter, o_iter; size_t index, cntr = 0;
+  StLIter i_iter; RLIter m_iter, o_iter;
   for (i_iter  = nonlinIneqConMappingIndices.begin(),
        m_iter  = nonlinIneqConMappingMultipliers.begin(),
        o_iter  = nonlinIneqConMappingOffsets.begin();
        i_iter != nonlinIneqConMappingIndices.end();
-       ++i_iter, ++m_iter, ++o_iter) {  // nonlinear ineq
+       ++i_iter, ++m_iter, ++o_iter, ++cntr) {  // nonlinear ineq
     index       = (*i_iter)+1; // offset single objective
     mult        = (*m_iter);
     vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
     noise[cntr] = std::abs(mult) * errors[index];
-    ++cntr;
   }
   // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
@@ -381,14 +382,13 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
        m_iter  = linIneqConMappingMultipliers.begin(),
        o_iter  = linIneqConMappingOffsets.begin();
        i_iter != linIneqConMappingIndices.end();
-       ++i_iter, ++m_iter, ++o_iter) { // linear ineq
+       ++i_iter, ++m_iter, ++o_iter, ++cntr) { // linear ineq
     size_t index = *i_iter;
     Real Ax = 0.;
     for (j=0; j<num_cv; ++j)
       Ax += lin_ineq_coeffs(index,j) * x[j];
     vals[cntr]  = (*o_iter) + (*m_iter) * Ax;
     noise[cntr] = 0.; // no error in linear case
-    ++cntr;
   }
 }
 // TO DO: asynchronous evaluate_nowait()/synchronize()
