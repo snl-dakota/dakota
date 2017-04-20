@@ -24227,13 +24227,24 @@ dakota_snowpac.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3737016732e+00 w
-                      3.3102059006e+00 t
+                      2.3931187530e+00 w
+                      3.2844621423e+00 t
 <<<<< Best objective function  =
-                      7.8574412875e+00
+                      7.8601079579e+00
 <<<<< Best constraint values   =
-                     -1.8063931188e-02
-                      8.9517270767e-04
+                     -1.7067244765e-02
+                      8.0991070498e-04
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.5604418230e+00 w
+                      3.6713652599e+00 t
+<<<<< Best objective function  =
+                      9.4003171382e+00
+<<<<< Best constraint values   =
+                      4.4511954251e-04
+                     -4.7323482137e-02
 <<<<< Best data not found in evaluation cache
 dakota_steel_section.in
 Test Number 0 succeeded
