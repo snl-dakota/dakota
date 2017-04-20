@@ -162,22 +162,25 @@ void NOWPACOptimizer::core_run()
   // start optimization (on output: bbdata contains data that allows warmstart
   // and enables post-processing to get model values, gradients and hessians)
   nowpacSolver.optimize(x_star, obj_star, bb_data);
-  // output ...
-  Cout <<   "optimal value = " << obj_star
-       << "\noptimal point =\n" <<  x_star << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Solution returned from nowpacSolver:\n  optimal value = "
+	 << obj_star << "\n  optimal point =\n" <<  x_star << std::endl;
     
   // create post-processing object to compute surrogate models
   PostProcessModels<> PPD( bb_data );
-  Cout << "\n----------------------------------------"
-       << "\ntr size = " << PPD.get_trustregion()
-       << "\n----------------------------------------\n";
-  // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
-  // model gradient = g + H (x-x_c)
-  // model Hessian  = H
-  for ( int i = 0; i < numFunctions; ++i)
-    Cout << "model number " << i << "\nvalue   = " << PPD.get_c(i, x_star)
-	 << "\ngrad = [\n"  << PPD.get_g(i, x_star)
-	 << "]\nhess = [\n" << PPD.get_H(i) << "]\n";
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\n----------------------------------------\n"
+	 << "Data from PostProcessModels:\n"
+	 << "tr size = " << PPD.get_trustregion() << '\n';
+    // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
+    // model gradient = g + H (x-x_c)
+    // model Hessian  = H
+    for ( int i = 0; i < numFunctions; ++i)
+      Cout << "model number " << i+1 << "\nvalue   = " << PPD.get_c(i, x_star)
+	   << "\ngrad = [\n"  << PPD.get_g(i, x_star)
+	   << "]\nhess = [\n" << PPD.get_H(i) << "]\n";
+    Cout << "----------------------------------------\n";
+  }
 
   //////////////////////////////////////////////////////////////////////////
   // Publish optimal variables
