@@ -680,8 +680,8 @@ void NonDLHSSampling::update_final_statistics()
       finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
 
     size_t i, cntr = 0;
-    Real sqrt2 = std::sqrt(2.), sqrtn = std::sqrt(numSamples),
-       sqrtnm1 = std::sqrt(numSamples - 1);
+    Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
+       sqrtnm1 = std::sqrt(ns - 1.);
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
       for (i=0; i<numFunctions; ++i) {
