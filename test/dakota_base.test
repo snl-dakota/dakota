@@ -10938,6 +10938,30 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       6.0552240218e-07
 <<<<< Best data captured at function evaluation 40
+dakota_nowpac.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 135 total (135 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999863652e-01 x1
+                      9.9999726761e-01 x2
+<<<<< Best objective function  =
+                      1.8620266405e-12
+<<<<< Best data captured at function evaluation 135
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.3520354446e+00 w
+                      3.3262765445e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8235203311e+00
+<<<<< Best constraint values   =
+                     -1.6008905666e-02
+                     -3.7836400679e-13
+<<<<< Best data captured at function evaluation 90
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
@@ -24199,6 +24223,18 @@ Partial Rank Correlation Matrix between input and output:
            P         -nan -9.50528e-01 
            M         -nan -7.79496e-01 
            Y         -nan  9.21278e-01 
+dakota_snowpac.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.3737016732e+00 w
+                      3.3102059006e+00 t
+<<<<< Best objective function  =
+                      7.8574412875e+00
+<<<<< Best constraint values   =
+                     -1.8063931188e-02
+                      8.9517270767e-04
+<<<<< Best data not found in evaluation cache
 dakota_steel_section.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
