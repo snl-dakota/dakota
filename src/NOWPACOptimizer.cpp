@@ -87,15 +87,23 @@ void NOWPACOptimizer::initialize_options()
   // (b) feasibility restoration (on but not active in deterministic mode)
   // (c) outer Gaussian process approximation (smooths noisy evaluations)
   bool stochastic = (methodName == MIT_SNOWPAC);
-  nowpacSolver.set_option("stochastic_optimization"       , stochastic);
+  nowpacSolver.set_option("stochastic_optimization", stochastic);
   // This is tied to the other BlackBoxBaseClass::evaluate() fn redefinition.
+  if (stochastic) {
+    // SNOWPAC picks random points in the trust region to improve the
+    // distribution of the Gaussian Process regression
+    int random_seed = probDescDB.get_int("method.random_seed");
+    if (random_seed) // default for no user spec is zero
+      nowpacSolver.set_option("seed",                random_seed);
+    //else SNOWPAC uses a machine generated seed and is non-repeatable
+  }
 
   // Maximum number of total accepted steps
   nowpacSolver.set_option("max_nb_accepted_steps", maxIterations);// inf default
   // Within special context of meta-iteration like MG/Opt, ensure that we
   // have at least 2 successful steps
   //if (subIteratorFlag && ...)
-  //  nowpacSolver.set_option("max_nb_accepted_steps"         , 2    );
+  //  nowpacSolver.set_option("max_nb_accepted_steps", 2    );
 
   // This is also a termination criterion, but not one of the required ones.
   // NOWPAC stops if the Frobenius norm of the Hessian blows up, indicating

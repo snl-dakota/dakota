@@ -413,6 +413,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( snowpac {N_mdm(utype,methodName_MIT_SNOWPAC)}
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
         [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
         [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]

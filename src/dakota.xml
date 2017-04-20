@@ -813,6 +813,9 @@
               &default_scaling;
             </keyword>
             <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac" help="" minOccurs="1" >
+	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
               &default_trust_region;
               &default_max_iterations;
               &default_max_function_evaluations;
