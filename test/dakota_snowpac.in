@@ -34,7 +34,7 @@ model,
 variables,
 	id_variables = 'OPTIM_V'
 	continuous_design = 2
-	  initial_point    2.5    2.5
+	  initial_point    8.0    8.0 #2.5 2.5 (trouble w/ infeasible start)
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
 	  descriptors 'w' 't'
