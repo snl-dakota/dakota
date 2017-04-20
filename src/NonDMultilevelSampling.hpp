@@ -390,10 +390,10 @@ private:
 			  size_t lev);
 
   /// convert uncentered (raw) moments to centered moments
-  Real uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
   /// convert centered moments to standardized moments
-  Real centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+  void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
   
   /// compute sum of a set of observations
@@ -650,7 +650,7 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 }
 
 
-inline Real NonDMultilevelSampling::
+inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
 {
@@ -662,7 +662,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 }
 
 
-inline Real NonDMultilevelSampling::
+inline void NonDMultilevelSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 		     Real& sm1, Real& sm2, Real& sm3, Real& sm4) const
 {
