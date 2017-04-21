@@ -12,7 +12,7 @@
 #@ [taxonomy:end]
 
 # DAKOTA Input File: dakota_ouu1_tb.in
-# Dakota Input File: textbook_opt_ouu1.in             #s0
+# Dakota Input File: textbook_opt_ouu1.in		#s0
 # Optimization under uncertainty
 # using a version of the Textbook test problem that
 # has been modified to have six uncertain variables.
@@ -34,8 +34,10 @@ model
   id_model = 'OPTIM_M'
   nested
     sub_method_pointer = 'UQ'
-    primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
-    secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+    primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.	#s0
+    secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.	#s0
+#   primary_response_mapping   = 1. 1. 0.	      	 	#s1
+#   secondary_response_mapping = 0. 0. 1.			#s1
   variables_pointer  = 'OPTIM_V'
   responses_pointer  = 'OPTIM_R'
 
@@ -72,6 +74,7 @@ method
     response_levels = 3.6e+11 1.2e+05 3.5e+05
     distribution complementary
   model_pointer = 'UQ_M'
+# final_moments none					#s1
 
 model
   id_model = 'UQ_M'
@@ -100,7 +103,7 @@ interface
   id_interface = 'UQ_I'
   analysis_drivers = 'text_book_ouu'
     direct
-##    fork asynch evaluation_concurrency = 5	#s0
+##    fork asynch evaluation_concurrency = 5		#s0
 
 responses
   id_responses = 'UQ_R'

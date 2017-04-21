@@ -11013,6 +11013,16 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       1.2000000000e-01
 <<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 3250 total (3250 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.5485931657e+00 d1
+                      8.8140502640e-01 d2
+<<<<< Best objective function  =
+                      4.0000000000e-01
+<<<<< Best constraint values   =
+                      1.2000000000e-01
+<<<<< Best data not found in evaluation cache
 dakota_ouu1_tbch.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 27 total (22 new, 5 duplicate)
