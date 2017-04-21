@@ -24246,6 +24246,17 @@ Test Number 1 succeeded
                       3.0246214237e-04
                       7.4600396116e-05
 <<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+01 w
+                      1.0000000000e+01 t
+<<<<< Best objective function  =
+                      6.0623007750e-01
+<<<<< Best constraint values   =
+                     -9.7741948365e-01
+                     -9.9310390846e-01
+<<<<< Best data not found in evaluation cache
 dakota_steel_section.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)

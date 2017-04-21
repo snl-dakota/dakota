@@ -1844,8 +1844,10 @@ void NonD::initialize_final_statistics()
     for (i=0; i<numFunctions; ++i) {
       std::sprintf(resp_tag, "_r%i", i+1);
       if (finalMomentsType) {
-	stats_labels[cntr++] = String("mean")    + String(resp_tag);
-	stats_labels[cntr++] = String("std_dev") + String(resp_tag);
+	stats_labels[cntr++] = String("mean") + String(resp_tag);
+	stats_labels[cntr++] = (finalMomentsType == CENTRAL_MOMENTS) ?
+	  String("variance") + String(resp_tag) :
+	  String("std_dev")  + String(resp_tag);
       }
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
