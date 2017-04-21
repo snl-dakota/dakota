@@ -934,8 +934,9 @@ compute_statistics(const RealMatrix&     vars_samples,
 				      div_labels, dsv_labels, drv_labels,
 				      iteratedModel.response_labels());
   }
-  if (!finalStatistics.is_null())
-    update_final_statistics();
+
+  // push results into finalStatistics
+  update_final_statistics();
 }
 
 
@@ -1539,8 +1540,8 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 
 void NonDSampling::update_final_statistics()
 {
-  //if (finalStatistics.is_null())
-  //  initialize_final_statistics();
+  if (finalStatistics.is_null()) // some ctor chains do not track final stats
+    return;
 
   if (epistemicStats) {
     size_t i, cntr = 0;

@@ -2705,9 +2705,14 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
 
 void NonDMultilevelSampling::post_run(std::ostream& s)
 {
-  // Statistics are generated here and output in print_results() below
+  // Final moments are generated within core_run() by convert_moments().
+  // No addtional stats are currently supported.
   //if (statsFlag) // calculate statistics on allResponses
   //  compute_statistics(allSamples, allResponses);
+
+  // NonD::update_aleatory_final_statistics() pushes finalMomentStats
+  // into finalStatistics
+  update_final_statistics();
 
   Analyzer::post_run(s);
 }

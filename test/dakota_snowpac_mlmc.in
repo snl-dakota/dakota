@@ -37,7 +37,7 @@ model,
 variables,
 	id_variables = 'OPTIM_V'
 	continuous_design = 3
-	  initial_point    3*0.5
+	  initial_point    3*.5
 	  lower_bounds     3*-1.
 	  upper_bounds     3* 1.
 
@@ -53,6 +53,7 @@ responses,
 # begin UQ specification #
 ##########################
 method,
+	id_method = 'UQ'
 	model_pointer = 'HIERARCH'
         multilevel_sampling
 #	  sample_type lhs
@@ -62,7 +63,7 @@ method,
 #	  convergence_tolerance =   .01
 #	  convergence_tolerance =  .001
 #	  convergence_tolerance = .0001
-	output silent
+#	output silent
 	final_moments central
 
 model,

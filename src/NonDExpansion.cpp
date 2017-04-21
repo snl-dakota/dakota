@@ -613,8 +613,10 @@ void NonDExpansion::update_final_statistics()
   // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
   // for NonDExpansion since Pecos manages the moment arrays), such that all
   // that remains are system final stats and additional gradient scaling.
-  update_system_final_statistics();
-  update_system_final_statistics_gradients();
+  if (respLevelTargetReduce) {
+    update_system_final_statistics();
+    update_system_final_statistics_gradients();
+  }
   update_final_statistics_gradients();
 }
 
