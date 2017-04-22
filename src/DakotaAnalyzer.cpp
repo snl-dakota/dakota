@@ -34,7 +34,8 @@ extern PRPCache data_pairs;
 Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(probDescDB.get_int("environment.output_precision"))
+  writePrecision(probDescDB.get_int("environment.output_precision")),
+  initializeRunModelMapping(false)
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
@@ -60,7 +61,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 Analyzer::Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0)
+  writePrecision(0), initializeRunModelMapping(false)
 {
   update_from_model(iteratedModel); // variable/response counts & checks
 }
@@ -69,7 +70,7 @@ Analyzer::Analyzer(unsigned short method_name, Model& model):
 Analyzer::Analyzer(unsigned short method_name):
   Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0)
+  writePrecision(0), initializeRunModelMapping(false)
 { }
 
 
@@ -149,11 +150,14 @@ void Analyzer::initialize_run()
     // This is to catch un-initialized models used by local iterators that
     // are not called through IteratorScheduler::run_iterator()
     if (!iteratedModel.mapping_initialized()) {
+      // ensure pairing with finalize_mapping() below in finalize_run()
+      // (don't interfere with IteratorScheduler)
+      initializeRunModelMapping = true;
+
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
       if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
+        bool reinit_comms = resize(); // Ignore return value
       }
     }
 
@@ -182,6 +186,23 @@ void Analyzer::post_run(std::ostream& s)
   }
 
   resultsDB.write_databases();
+}
+
+
+void Analyzer::finalize_run()
+{
+  if (initializeRunModelMapping) {
+    // paired to matching call to Model.initialize_mapping() in
+    // initialize_run() above
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed) {
+      bool reinit_comms = resize(); // Ignore return value
+    }
+
+    initializeRunModelMapping = false;
+  }
+
+  Iterator::finalize_run(); // included for completeness
 }
 
 

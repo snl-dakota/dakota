@@ -69,6 +69,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// Perform any global updates prior to individual evaluate() calls
+  bool initialize_mapping(ParLevLIter pl_iter);
+  /// restore state in preparation for next initialization
+  bool finalize_mapping();
+  /// return false to force global updates each time
+  bool mapping_initialized();
+
   /// portion of evaluate() specific to HierarchSurrModel
   void derived_evaluate(const ActiveSet& set);
   /// portion of evaluate_nowait() specific to HierarchSurrModel
@@ -177,6 +184,9 @@ private:
   /// update the passed model (low or high fidelity) with current variable
   /// values/bounds/labels
   void update_model(Model& model);
+  /// update the passed model (low or high fidelity) with inactive variable
+  /// values/bounds
+  void update_model_inactive(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
@@ -262,11 +272,21 @@ private:
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
   IntResponseMap cachedTruthRespMap;
+
+  /// track use of initialize_mapping() and finalize_mapping() due to
+  /// potential redundancy between IteratorScheduler::run_iterator()
+  /// and {Analyzer,Minimizer}::initialize_run()
+  bool mappingInitialized;
 };
 
 
 inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+/** Perform initialize_mapping() for each Iterator::initialize_run(). */
+inline bool HierarchSurrModel::mapping_initialized()
+{ return mappingInitialized; }
 
 
 inline void HierarchSurrModel::check_interface_instance()
@@ -352,11 +372,14 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
 { return highFidelityIndices; }
 
+
 inline const unsigned short HierarchSurrModel::correction_mode() const
 { return correctionMode; }
 
+
 inline void HierarchSurrModel::correction_mode(unsigned short corr_mode)
 { correctionMode = corr_mode; }
+
 
 inline void HierarchSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)

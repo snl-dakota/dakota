@@ -380,9 +380,7 @@ protected:
 
 
 inline bool ActiveSubspaceModel::mapping_initialized()
-{
-  return subspaceInitialized;
-}
+{ return subspaceInitialized; }
 
 } // namespace Dakota
 

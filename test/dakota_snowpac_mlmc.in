@@ -12,8 +12,9 @@ method,
 	model_pointer = 'OPTIM_M'
 	snowpac
 	  seed = 25041981
-	  max_iterations = 500
+#	  max_iterations = 500
 #	  convergence_tolerance = 1e-4
+	  max_function_evaluations = 100
 	  trust_region
 	    initial_size = 0.10
 	    minimum_size = 1.0e-6
@@ -58,12 +59,12 @@ method,
         multilevel_sampling
 #	  sample_type lhs
 	  pilot_samples = 20 seed = 1237
-	  max_iterations = 5
-	  convergence_tolerance =    .1
-#	  convergence_tolerance =   .01
+	  max_iterations = 1
+#	  convergence_tolerance =    .1
+	  convergence_tolerance =   .015
 #	  convergence_tolerance =  .001
 #	  convergence_tolerance = .0001
-#	output silent
+	output silent
 	final_moments central
 
 model,
@@ -105,6 +106,7 @@ variables,
 interface,
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
 
 responses,
 	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)

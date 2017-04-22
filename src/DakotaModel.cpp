@@ -3659,7 +3659,7 @@ int Model::serve_init_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_init_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
 }
@@ -3680,7 +3680,7 @@ int Model::serve_finalize_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_finalize_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
 }

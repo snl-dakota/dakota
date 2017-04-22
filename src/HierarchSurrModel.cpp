@@ -23,7 +23,8 @@ namespace Dakota {
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION), componentParallelIndices(_NPOS,_NPOS)
+  correctionMode(SINGLE_CORRECTION), componentParallelIndices(_NPOS,_NPOS),
+  mappingInitialized(false)
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
@@ -301,6 +302,36 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     }
     */
   }
+}
+
+
+/** Inactive variables must be propagated when a HierarchSurrModel
+    is employed by a sub-iterator (e.g., OUU with MLMC or MLPCE).
+    In current use cases, this can occur once per sub-iterator
+    execution within Model::initialize_mapping(). */
+bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  // push inactive variable values/bounds from currentVariables and
+  // userDefinedConstraints into orderedModels
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    update_model_inactive(orderedModels[i]);
+
+  mappingInitialized = true;
+
+  return false; // no change to problem size
+}
+
+
+/** Inactive variables must be propagated when a HierarchSurrModel
+    is employed by a sub-iterator (e.g., OUU with MLMC or MLPCE).
+    In current use cases, this can occur once per sub-iterator
+    execution within Model::initialize_mapping(). */
+bool HierarchSurrModel::finalize_mapping()
+{
+  mappingInitialized = false;
+
+  return false; // no change to problem size
 }
 
 
@@ -1328,6 +1359,37 @@ void HierarchSurrModel::update_model(Model& model)
         currentVariables.inactive_discrete_real_variable_labels());
     }
   }
+}
+
+
+void HierarchSurrModel::update_model_inactive(Model& model)
+{
+  // update model with inactive currentVariables/userDefinedConstraints data.
+  // For efficiency, we avoid doing this on every evaluation, instead calling
+  // it from a pre-execution initialization context (initialize_mapping()).
+
+  // vars
+  model.inactive_continuous_variables(
+    currentVariables.inactive_continuous_variables());
+  model.inactive_discrete_int_variables(
+    currentVariables.inactive_discrete_int_variables());
+  model.inactive_discrete_string_variables(
+    currentVariables.inactive_discrete_string_variables());
+  model.inactive_discrete_real_variables(
+    currentVariables.inactive_discrete_real_variables());
+  // bound constraints
+  model.inactive_continuous_lower_bounds(
+    userDefinedConstraints.inactive_continuous_lower_bounds());
+  model.inactive_continuous_upper_bounds(
+    userDefinedConstraints.inactive_continuous_upper_bounds());
+  model.inactive_discrete_int_lower_bounds(
+    userDefinedConstraints.inactive_discrete_int_lower_bounds());
+  model.inactive_discrete_int_upper_bounds(
+    userDefinedConstraints.inactive_discrete_int_upper_bounds());
+  model.inactive_discrete_real_lower_bounds(
+    userDefinedConstraints.inactive_discrete_real_lower_bounds());
+  model.inactive_discrete_real_upper_bounds(
+    userDefinedConstraints.inactive_discrete_real_upper_bounds());
 }
 
 } // namespace Dakota

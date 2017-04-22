@@ -99,8 +99,8 @@ ProbabilityTransformModel(const Model& x_model,
              0, 0,recast_resp_order);
 
   RecastModel::
-  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-            primary_resp_map, secondary_resp_map,
+  init_maps(vars_map, nonlinear_vars_map, vars_u_to_x_mapping,
+	    set_u_to_x_mapping, primary_resp_map, secondary_resp_map,
             nonlinear_resp_map, resp_x_to_u_mapping, NULL);
 
   // publish inverse mappings for use in data imports.  Since derivatives are
@@ -109,8 +109,8 @@ ProbabilityTransformModel(const Model& x_model,
   RecastModel::inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 }
 
-ProbabilityTransformModel::
-~ProbabilityTransformModel()
+
+ProbabilityTransformModel::~ProbabilityTransformModel()
 {
   /* empty dtor */
 }

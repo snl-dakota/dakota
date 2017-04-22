@@ -49,10 +49,11 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
+    !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling"))
+  scaleFlag(probDescDB.get_bool("method.scaling")),
+  initializeRunModelMapping(false)
 {
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
@@ -72,7 +73,7 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false)
+  scaleFlag(false), initializeRunModelMapping(false)
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
@@ -91,7 +92,7 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
   speculativeFlag(false), optimizationFlag(true), 
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false)
+  scaleFlag(false), initializeRunModelMapping(false)
 { }
 
 
@@ -259,6 +260,10 @@ void Minimizer::initialize_run()
     // This is to catch un-initialized models used by local iterators that
     // are not called through IteratorScheduler::run_iterator()
     if (!iteratedModel.mapping_initialized()) {
+      // ensure pairing with finalize_mapping() below in finalize_run()
+      // (don't interfere with IteratorScheduler)
+      initializeRunModelMapping = true;
+
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
       if (var_size_changed) {
@@ -319,6 +324,26 @@ void Minimizer::post_run(std::ostream& s)
   }
 
   resultsDB.write_databases();
+}
+
+
+void Minimizer::finalize_run()
+{
+  // Restore previous object instance in case of recursion.
+  minimizerInstance = prevMinInstance;
+
+  if (initializeRunModelMapping) {
+    // paired to matching call to Model.initialize_mapping() in
+    // initialize_run() above
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed) {
+      bool reinit_comms = resize(); // Ignore return value
+    }
+
+    initializeRunModelMapping = false;
+  }
+
+  Iterator::finalize_run(); // included for completeness
 }
 
 

@@ -210,6 +210,10 @@ private:
   /// write precision as specified by the user
   int writePrecision;
 
+  /// enforces matching calls to Model::{initialize,finalize}_mapping()
+  /// from Analyzer::{initialize,finalize}_run()
+  bool initializeRunModelMapping;
+
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
   /// VBD main effect indices
@@ -219,7 +223,7 @@ private:
 };
 
 
-inline Analyzer::Analyzer()
+inline Analyzer::Analyzer(): initializeRunModelMapping(false)
 { }
 
 
@@ -295,12 +299,6 @@ inline void Analyzer::response_results_active_set(const ActiveSet& set)
 
 inline bool Analyzer::compact_mode() const
 { return compactMode; }
-
-
-inline void Analyzer::finalize_run()
-{
-  Iterator::finalize_run(); // included for completeness
-}
 
 } // namespace Dakota
 

@@ -204,14 +204,14 @@ bool SurrogateModel::force_rebuild()
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model       = truth_model();
+  Model& actual_model = truth_model();
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: There is probably a more elegant way to accomodate subspace models
-  if(actual_model.model_type() == "subspace")
+  if (actual_model.model_type() == "subspace")
     return false;
 
-  short  approx_active_view = currentVariables.view().first;
+  short approx_active_view = currentVariables.view().first;
   if (actual_model.is_null()) {
     // compare reference vars against current inactive top-level data
     if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||
