@@ -14,7 +14,7 @@ method,
 	  seed = 25041981
 #	  max_iterations = 500
 #	  convergence_tolerance = 1e-4
-	  max_function_evaluations = 100
+	  max_function_evaluations = 500
 	  trust_region
 	    initial_size = 0.10
 	    minimum_size = 1.0e-6
@@ -59,9 +59,9 @@ method,
         multilevel_sampling
 #	  sample_type lhs
 	  pilot_samples = 20 seed = 1237
-	  max_iterations = 1
+	  max_iterations = 2
 #	  convergence_tolerance =    .1
-	  convergence_tolerance =   .015
+	  convergence_tolerance =   .01
 #	  convergence_tolerance =  .001
 #	  convergence_tolerance = .0001
 	output silent
