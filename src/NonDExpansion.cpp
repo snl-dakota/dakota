@@ -2175,7 +2175,8 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
   PecosApproximation* poly_approx_rep;
-  size_t exp_mom, num_int_mom; bool exception = false, prev_exception = false;
+  size_t exp_mom, num_int_mom;
+  bool exception = false, curr_exception, prev_exception = false;
   RealVector std_exp_moments, std_num_int_moments;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
@@ -2185,10 +2186,12 @@ void NonDExpansion::print_moments(std::ostream& s)
       const RealVector& num_int_moments
 	= poly_approx_rep->numerical_integration_moments();
       exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
-      if ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
-	   (num_int_mom == 2 && num_int_moments[1] <  0.) ||
-	   (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
-	   (num_int_mom >  2 && num_int_moments[1] <= 0.) ) {
+      curr_exception
+	= ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
+	    (num_int_mom == 2 && num_int_moments[1] <  0.) ||
+	    (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
+	    (num_int_mom >  2 && num_int_moments[1] <= 0.) );
+      if (curr_exception || finalMomentsType == CENTRAL_MOMENTS) {
 	if (i==0 || !prev_exception)
 	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
 	    << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
@@ -2205,7 +2208,9 @@ void NonDExpansion::print_moments(std::ostream& s)
 	  for (j=0; j<num_int_mom; ++j)
 	    s << ' ' << std::setw(width) << num_int_moments[j];
 	}
-	exception = prev_exception = true;
+	prev_exception = curr_exception;
+	if (curr_exception && finalMomentsType == STANDARD_MOMENTS)
+	  exception = true;
       }
       else {
 	if (i==0 || prev_exception)
