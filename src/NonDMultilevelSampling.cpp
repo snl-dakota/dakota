@@ -67,9 +67,10 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   for (i=0, ml_iter=ordered_models.begin(); i<num_mf; ++i, ++ml_iter) {
     // for now, only SimulationModel supports solution_levels()
     num_lev = ml_iter->solution_levels();
-    NLev[i].resize(num_lev);
-    for (j=0; j<num_lev; ++j)
-      NLev[i][j].assign(numFunctions, 0);
+    //Sizet2DArray& Nl_i = NLev[i];
+    NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
   }
 
   switch (pilot_size) {
@@ -111,7 +112,14 @@ void NonDMultilevelSampling::pre_run()
 {
   Analyzer::pre_run();
 
-  // TO DO
+  // reset sample counters to 0
+  size_t i, j, num_mf = NLev.size(), num_lev;
+  for (i=0; i<num_mf; ++i) {
+    Sizet2DArray& Nl_i = NLev[i];
+    num_lev = Nl_i.size();
+    for (j=0; j<num_lev; ++j)
+      Nl_i[j].assign(numFunctions, 0);
+  }
 }
 
 
