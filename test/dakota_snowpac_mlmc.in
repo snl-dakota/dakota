@@ -14,7 +14,7 @@ method,
 	  seed = 25041981
 #	  max_iterations = 500
 #	  convergence_tolerance = 1e-4
-	  max_function_evaluations = 500
+#	  max_function_evaluations = 500
 	  trust_region
 	    initial_size = 0.10
 	    minimum_size = 1.0e-6
@@ -30,7 +30,7 @@ model,
 	  variables_pointer  = 'OPTIM_V'
 	  sub_method_pointer = 'UQ'
 	  responses_pointer  = 'OPTIM_R'
-	  primary_response_mapping   = 0. 1. 0. 1. 0. 1.
+	  primary_response_mapping   = 0. 1.e+6 0. 1.e+6 0. 1.e+6
 	  secondary_response_mapping = 1. 0. 0. 0. 0. 0.
 	  			       0. 0. 1. 0. 0. 0.
                                        0. 0. 0. 0. 1. 0.
@@ -46,6 +46,7 @@ responses,
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 3
+	nonlinear_inequality_upper_bounds = .02 .2 .02
 	no_gradients
 	no_hessians
 
