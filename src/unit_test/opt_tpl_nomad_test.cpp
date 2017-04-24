@@ -59,14 +59,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad1, hopspack)
   target = 2.1224215765;
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -75,7 +75,7 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad1, hopspack)
   max_tol = 1.e-3;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -126,14 +126,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad2, hopspack)
   target = 2.1224215765;
   max_tol = 1.e-3;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -142,7 +142,7 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad2, hopspack)
   max_tol = 1.e-3;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -193,14 +193,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad3, hopspack)
   target = 2.1224215765;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -209,7 +209,7 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_nomad3, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -260,19 +260,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad1, hopspack)
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-6;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -281,7 +281,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad1, hopspack)
   max_tol = 1.e-21;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -332,19 +332,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad2, hopspack)
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -353,7 +353,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad2, hopspack)
   max_tol = 1.e-7;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -404,19 +404,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad3, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -425,7 +425,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_nomad3, hopspack)
   max_tol = 1.e-4;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -476,13 +476,13 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad1, hopspack)
   max_tol = 1.e-8;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-9;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -491,7 +491,7 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad1, hopspack)
   max_tol = 1.e-10;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -542,13 +542,13 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad2, hopspack)
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-4;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -557,7 +557,7 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad2, hopspack)
   max_tol = 1.e-9;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -608,13 +608,13 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad3, hopspack)
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -623,7 +623,7 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_nomad3, hopspack)
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -674,13 +674,13 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad1, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -689,7 +689,7 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad1, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -740,13 +740,13 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad2, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -755,7 +755,7 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad2, hopspack)
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -806,13 +806,13 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad3, hopspack)
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -821,7 +821,7 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_nomad3, hopspack)
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -872,19 +872,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad1, hopspack)
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -893,7 +893,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad1, hopspack)
   max_tol = 1.e1;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -944,19 +944,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad2, hopspack)
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -965,7 +965,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad2, hopspack)
   max_tol = 1.e1;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -1016,19 +1016,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad3, hopspack)
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1037,7 +1037,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_nomad3, hopspack)
   max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -1089,19 +1089,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad1, hopspack)
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1110,7 +1110,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad1, hopspack)
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
@@ -1162,19 +1162,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad2, hopspack)
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1183,7 +1183,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad2, hopspack)
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
 
 
@@ -1236,19 +1236,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad3, hopspack)
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
@@ -1257,5 +1257,5 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_nomad3, hopspack)
   max_tol = 1.e2;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
-  TEST_ASSERT(rel_err < max_tol);
+  TEST_COMPARE(rel_err,<, max_tol);
 }
