@@ -505,7 +505,7 @@ inline void NonD::initialize_run()
 inline void NonD::finalize_run()
 { 
   nondInstance = prevNondInstance;
-  Iterator::finalize_run(); // included for completeness
+  Analyzer::finalize_run();
 }
 
 

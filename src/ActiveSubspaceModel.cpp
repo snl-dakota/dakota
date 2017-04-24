@@ -56,7 +56,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
   asmInstance = this;
-  modelType = "subspace";
+  modelType = "active_subspace";
 
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
@@ -101,7 +101,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   buildSurrogate(false), refinementSamples(0),
   subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
-  modelType = "subspace";
+  modelType = "active_subspace";
 
   outputLevel = output_level;
 

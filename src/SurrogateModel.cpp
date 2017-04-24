@@ -208,7 +208,7 @@ bool SurrogateModel::force_rebuild()
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: There is probably a more elegant way to accomodate subspace models
-  if (actual_model.model_type() == "subspace")
+  if (actual_model.model_type() == "active_subspace")
     return false;
 
   short approx_active_view = currentVariables.view().first;

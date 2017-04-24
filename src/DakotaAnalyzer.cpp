@@ -191,7 +191,7 @@ void Analyzer::post_run(std::ostream& s)
 
 void Analyzer::finalize_run()
 {
-  if (initializeRunModelMapping) {
+  if (initializeRunModelMapping && iteratedModel.mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
     bool var_size_changed = iteratedModel.finalize_mapping();

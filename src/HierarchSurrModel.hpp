@@ -182,11 +182,11 @@ private:
   void check_interface_instance();
 
   /// update the passed model (low or high fidelity) with current variable
-  /// values/bounds/labels
+  /// values
   void update_model(Model& model);
-  /// update the passed model (low or high fidelity) with inactive variable
-  /// values/bounds
-  void update_model_inactive(Model& model);
+  /// update the passed model (low or high fidelity) with current variable
+  /// bounds/labels and inactive variable values/bounds/labels
+  void update_model_extra(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking

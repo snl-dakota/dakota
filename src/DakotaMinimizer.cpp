@@ -332,7 +332,7 @@ void Minimizer::finalize_run()
   // Restore previous object instance in case of recursion.
   minimizerInstance = prevMinInstance;
 
-  if (initializeRunModelMapping) {
+  if (initializeRunModelMapping && iteratedModel.mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
     bool var_size_changed = iteratedModel.finalize_mapping();

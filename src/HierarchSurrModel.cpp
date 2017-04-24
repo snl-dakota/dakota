@@ -315,7 +315,7 @@ bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
   // userDefinedConstraints into orderedModels
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
-    update_model_inactive(orderedModels[i]);
+    update_model_extra(orderedModels[i]);
 
   mappingInitialized = true;
 
@@ -1281,50 +1281,37 @@ void HierarchSurrModel::update_model(Model& model)
   // TR center), but is needed for the LF model and could be relevant in cases
   // where the HF model involves additional surrogates/nestings.
 
-  // vars
-  model.continuous_variables(currentVariables.continuous_variables());
-  model.discrete_int_variables(currentVariables.discrete_int_variables());
-  model.discrete_string_variables(currentVariables.discrete_string_variables());
-  model.discrete_real_variables(currentVariables.discrete_real_variables());
-  // bound constraints
-  model.continuous_lower_bounds(
-    userDefinedConstraints.continuous_lower_bounds());
-  model.continuous_upper_bounds(
-    userDefinedConstraints.continuous_upper_bounds());
-  model.discrete_int_lower_bounds(
-    userDefinedConstraints.discrete_int_lower_bounds());
-  model.discrete_int_upper_bounds(
-    userDefinedConstraints.discrete_int_upper_bounds());
-  model.discrete_real_lower_bounds(
-    userDefinedConstraints.discrete_real_lower_bounds());
-  model.discrete_real_upper_bounds(
-    userDefinedConstraints.discrete_real_upper_bounds());
-  // linear constraints
-  if (userDefinedConstraints.num_linear_ineq_constraints()) {
-    model.linear_ineq_constraint_coeffs(
-      userDefinedConstraints.linear_ineq_constraint_coeffs());
-    model.linear_ineq_constraint_lower_bounds(
-      userDefinedConstraints.linear_ineq_constraint_lower_bounds());
-    model.linear_ineq_constraint_upper_bounds(
-      userDefinedConstraints.linear_ineq_constraint_upper_bounds());
+  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
+  // linear/nonlinear constraint coeffs/bnds updated in update_model_extra())
+  if (currentVariables.cv()) {
+    model.continuous_variables(currentVariables.continuous_variables());
+    model.continuous_lower_bounds(
+      userDefinedConstraints.continuous_lower_bounds());
+    model.continuous_upper_bounds(
+      userDefinedConstraints.continuous_upper_bounds());
   }
-  if (userDefinedConstraints.num_linear_eq_constraints()) {
-    model.linear_eq_constraint_coeffs(
-      userDefinedConstraints.linear_eq_constraint_coeffs());
-    model.linear_eq_constraint_targets(
-      userDefinedConstraints.linear_eq_constraint_targets());
+  if (currentVariables.div()) {
+    model.discrete_int_variables(currentVariables.discrete_int_variables());
+    model.discrete_int_lower_bounds(
+      userDefinedConstraints.discrete_int_lower_bounds());
+    model.discrete_int_upper_bounds(
+      userDefinedConstraints.discrete_int_upper_bounds());
   }
-  // nonlinear constraints
-  if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
-    model.nonlinear_ineq_constraint_lower_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
-    model.nonlinear_ineq_constraint_upper_bounds(
-      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
+  if (currentVariables.drv()) {
+    model.discrete_real_variables(currentVariables.discrete_real_variables());
+    model.discrete_real_lower_bounds(
+      userDefinedConstraints.discrete_real_lower_bounds());
+    model.discrete_real_upper_bounds(
+      userDefinedConstraints.discrete_real_upper_bounds());
   }
-  if (userDefinedConstraints.num_nonlinear_eq_constraints())
-    model.nonlinear_eq_constraint_targets(
-      userDefinedConstraints.nonlinear_eq_constraint_targets());
+  if (currentVariables.dsv())
+    model.discrete_string_variables(
+      currentVariables.discrete_string_variables());
+}
 
+
+void HierarchSurrModel::update_model_extra(Model& model)
+{
   // Set the low/high fidelity model variable descriptors with the variable
   // descriptors from currentVariables (eliminates the need to replicate
   // variable descriptors in the input file).  This only needs to be performed
@@ -1336,60 +1323,100 @@ void HierarchSurrModel::update_model(Model& model)
   // whereas before-the-fact updating in compute/build functions propagates
   // multiple levels.
   if (!approxBuilds) {
-    // active not currently necessary, but included for completeness and
-    // consistency with global approximation case
-    model.continuous_variable_labels(
-      currentVariables.continuous_variable_labels());
-    model.discrete_int_variable_labels(
-      currentVariables.discrete_int_variable_labels());
-    model.discrete_string_variable_labels(
-      currentVariables.discrete_string_variable_labels());
-    model.discrete_real_variable_labels(
-      currentVariables.discrete_real_variable_labels());
-    short active_view = currentVariables.view().first;
-    if (active_view != RELAXED_ALL && active_view != MIXED_ALL) {
-      // inactive needed for Nested/Surrogate propagation
-      model.inactive_continuous_variable_labels(
-        currentVariables.inactive_continuous_variable_labels());
-      model.inactive_discrete_int_variable_labels(
-        currentVariables.inactive_discrete_int_variable_labels());
-      model.inactive_discrete_string_variable_labels(
-        currentVariables.inactive_discrete_string_variable_labels());
-      model.inactive_discrete_real_variable_labels(
-        currentVariables.inactive_discrete_real_variable_labels());
-    }
+    size_t num_cv  = currentVariables.cv(),  num_div = currentVariables.div(),
+           num_drv = currentVariables.drv(), num_dsv = currentVariables.dsv();
+    if (num_cv && num_cv == model.cv())
+      model.continuous_variable_labels(
+	currentVariables.continuous_variable_labels());
+    if (num_div && num_div == model.div())
+      model.discrete_int_variable_labels(
+        currentVariables.discrete_int_variable_labels());
+    if (num_drv && num_drv == model.drv())
+      model.discrete_real_variable_labels(
+        currentVariables.discrete_real_variable_labels());
+    if (num_dsv && num_dsv == model.dsv())
+      model.discrete_string_variable_labels(
+        currentVariables.discrete_string_variable_labels());
   }
-}
 
+  // linear constraints
+  if ( ( userDefinedConstraints.num_linear_ineq_constraints() || 
+	 userDefinedConstraints.num_linear_eq_constraints() ) &&
+       currentVariables.cv() + currentVariables.div() + currentVariables.drv()
+       == model.cv() + model.div() + model.drv() ) {
+    model.linear_ineq_constraint_coeffs(
+      userDefinedConstraints.linear_ineq_constraint_coeffs());
+    model.linear_ineq_constraint_lower_bounds(
+      userDefinedConstraints.linear_ineq_constraint_lower_bounds());
+    model.linear_ineq_constraint_upper_bounds(
+      userDefinedConstraints.linear_ineq_constraint_upper_bounds());
 
-void HierarchSurrModel::update_model_inactive(Model& model)
-{
+    model.linear_eq_constraint_coeffs(
+      userDefinedConstraints.linear_eq_constraint_coeffs());
+    model.linear_eq_constraint_targets(
+      userDefinedConstraints.linear_eq_constraint_targets());
+  }
+
+  // nonlinear constraints
+  if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
+    model.nonlinear_ineq_constraint_lower_bounds(
+      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
+    model.nonlinear_ineq_constraint_upper_bounds(
+      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
+  }
+  if (userDefinedConstraints.num_nonlinear_eq_constraints())
+    model.nonlinear_eq_constraint_targets(
+      userDefinedConstraints.nonlinear_eq_constraint_targets());
+
+  short active_view = currentVariables.view().first;
+  if (active_view == RELAXED_ALL || active_view == MIXED_ALL)
+    return;
+
   // update model with inactive currentVariables/userDefinedConstraints data.
   // For efficiency, we avoid doing this on every evaluation, instead calling
   // it from a pre-execution initialization context (initialize_mapping()).
-
-  // vars
-  model.inactive_continuous_variables(
-    currentVariables.inactive_continuous_variables());
-  model.inactive_discrete_int_variables(
-    currentVariables.inactive_discrete_int_variables());
-  model.inactive_discrete_string_variables(
-    currentVariables.inactive_discrete_string_variables());
-  model.inactive_discrete_real_variables(
-    currentVariables.inactive_discrete_real_variables());
-  // bound constraints
-  model.inactive_continuous_lower_bounds(
-    userDefinedConstraints.inactive_continuous_lower_bounds());
-  model.inactive_continuous_upper_bounds(
-    userDefinedConstraints.inactive_continuous_upper_bounds());
-  model.inactive_discrete_int_lower_bounds(
-    userDefinedConstraints.inactive_discrete_int_lower_bounds());
-  model.inactive_discrete_int_upper_bounds(
-    userDefinedConstraints.inactive_discrete_int_upper_bounds());
-  model.inactive_discrete_real_lower_bounds(
-    userDefinedConstraints.inactive_discrete_real_lower_bounds());
-  model.inactive_discrete_real_upper_bounds(
-    userDefinedConstraints.inactive_discrete_real_upper_bounds());
+  size_t num_icv  = currentVariables.icv(),  num_idiv = currentVariables.idiv(),
+         num_idrv = currentVariables.idrv(), num_idsv = currentVariables.idsv();
+  if (num_icv && num_icv == model.icv()) {
+    model.inactive_continuous_variables(
+      currentVariables.inactive_continuous_variables());
+    model.inactive_continuous_lower_bounds(
+      userDefinedConstraints.inactive_continuous_lower_bounds());
+    model.inactive_continuous_upper_bounds(
+      userDefinedConstraints.inactive_continuous_upper_bounds());
+    if (!approxBuilds)
+      model.inactive_continuous_variable_labels(
+        currentVariables.inactive_continuous_variable_labels());
+  }
+  if (num_idiv && num_idiv == model.idiv()) {
+    model.inactive_discrete_int_variables(
+      currentVariables.inactive_discrete_int_variables());
+    model.inactive_discrete_int_lower_bounds(
+      userDefinedConstraints.inactive_discrete_int_lower_bounds());
+    model.inactive_discrete_int_upper_bounds(
+      userDefinedConstraints.inactive_discrete_int_upper_bounds());
+    if (!approxBuilds)
+      model.inactive_discrete_int_variable_labels(
+        currentVariables.inactive_discrete_int_variable_labels());
+  }
+  if (num_idrv && num_idrv == model.idrv()) {
+    model.inactive_discrete_real_variables(
+      currentVariables.inactive_discrete_real_variables());
+    model.inactive_discrete_real_lower_bounds(
+      userDefinedConstraints.inactive_discrete_real_lower_bounds());
+    model.inactive_discrete_real_upper_bounds(
+      userDefinedConstraints.inactive_discrete_real_upper_bounds());
+    if (!approxBuilds)
+      model.inactive_discrete_real_variable_labels(
+        currentVariables.inactive_discrete_real_variable_labels());
+  }
+  if (num_idsv && num_idsv == model.idsv()) {
+    model.inactive_discrete_string_variables(
+      currentVariables.inactive_discrete_string_variables());
+    if (!approxBuilds)
+      model.inactive_discrete_string_variable_labels(
+        currentVariables.inactive_discrete_string_variable_labels());
+  }
 }
 
 } // namespace Dakota
