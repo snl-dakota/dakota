@@ -2973,14 +2973,21 @@ bool Model::finalize_mapping()
 }
 
 
-bool Model::mapping_initialized()
+bool Model::mapping_initialized() const
 {
   if (modelRep)
     return modelRep->mapping_initialized();
-  else {
-    // Base class default behavior is true
+  else // Base class default is true
     return true;
-  }
+}
+
+
+bool Model::resize_pending() const
+{
+  if (modelRep)
+    return modelRep->resize_pending();
+  else // Base class default is false
+    return false;
 }
 
 

@@ -55,7 +55,7 @@ protected:
   //
 
   /// return mappingInitialized
-  bool mapping_initialized();
+  bool mapping_initialized() const;
 
   /// return truth_model()
   Model& subordinate_model();
@@ -206,7 +206,7 @@ inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline bool SurrogateModel::mapping_initialized()
+inline bool SurrogateModel::mapping_initialized() const
 { return mappingInitialized; }
 
 
