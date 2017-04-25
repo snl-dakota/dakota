@@ -23,15 +23,24 @@ interface,
 	  # this must agree with the qsub and driver script files
 	  evaluation_concurrency = 4
 
-	  # this will guarantee that evaluations are replaced with
-          # evaluations modulo the evaluation concurrency
- 	  local_evaluation_static_scheduling
+	  ## For static scheduling (as with text_book_bash_static.sh), uncomment:
+	
+          #local_evaluation_scheduling static
 
-	  analysis_driver = 'text_book_par_driver'
+          # This will guarantee that evaluations are replaced with
+          # evaluations modulo the evaluation concurrency
+ 	  
+	  ## Uncomment one of these analysis drivers:
+          #analysis_driver = 'text_book_bash_static.sh'
+          #analysis_driver = 'text_book_dipy_dynamic.py'
+          analysis_driver = 'text_book_mpitile_dynamic.sh'
+          
 	    parameters_file = 'params.in'
 	    results_file = 'results.out'
 	    file_tag
 	    file_save
+            work_directory named 'workdir'
+            directory_tag directory_save
 
 responses,
 	objective_functions = 1
