@@ -55,7 +55,7 @@ class dipyTestCase(unittest.TestCase):
     def test_aprepro_format(self):
         """Confirm that aprepro format Parameters files are parsed correctly."""
         pio = StringIO.StringIO(apreproParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio, results_file="results.out")
+        p, r = dipy.dipy._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
         self.assertAlmostEqual(p["x1"], 7.488318331306800e-01)
@@ -78,7 +78,7 @@ class dipyTestCase(unittest.TestCase):
     def test_dakota_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
         pio = StringIO.StringIO(dakotaParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio, results_file="results.out")
+        p, r = dipy.dipy._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
         self.assertAlmostEqual(p["x1"], 7.488318331306800e-01)
@@ -103,23 +103,23 @@ class dipyTestCase(unittest.TestCase):
         """Results behaves according to the ASV when response data is set."""
         # Function only
         pio = StringIO.StringIO(dakotaParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
         set_function(r)
-        self.assertRaises(dipy.ResponseError, set_gradient, r)
-        self.assertRaises(dipy.ResponseError, set_hessian, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_gradient, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_hessian, r)
         r.write(StringIO.StringIO())
         # Gradient only
         pio = StringIO.StringIO(dakotaParams % 2)
-        p, r = dipy._read_parameters_stream(stream=pio)
-        self.assertRaises(dipy.ResponseError, set_function, r)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
+        self.assertRaises(dipy.dipy.ResponseError, set_function, r)
         set_gradient(r)
-        self.assertRaises(dipy.ResponseError, set_hessian, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_hessian, r)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
-        p, r = dipy._read_parameters_stream(stream=pio)
-        self.assertRaises(dipy.ResponseError, set_function, r)
-        self.assertRaises(dipy.ResponseError, set_gradient, r)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
+        self.assertRaises(dipy.dipy.ResponseError, set_function, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_gradient, r)
         set_hessian(r)
         r.write(StringIO.StringIO())
        
@@ -128,14 +128,14 @@ class dipyTestCase(unittest.TestCase):
         # Test exceptions
         for i in range(1,8):
             sio = StringIO.StringIO(dakotaParams % i)
-            p, r = dipy._read_parameters_stream(stream=sio,ignore_asv=True)
+            p, r = dipy.dipy._read_parameters_stream(stream=sio,ignore_asv=True)
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
-        p, r = dipy._read_parameters_stream(stream=sio,ignore_asv=False)
+        p, r = dipy.dipy._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
         rio = StringIO.StringIO()
         r.write(stream=rio,ignore_asv=True)
@@ -143,7 +143,7 @@ class dipyTestCase(unittest.TestCase):
     
     def test_results_write(self):
         sio = StringIO.StringIO(dakotaParams % 7)
-        p, r = dipy._read_parameters_stream(stream=sio)
+        p, r = dipy.dipy._read_parameters_stream(stream=sio)
         set_function(r) 
         set_gradient(r) 
         set_hessian(r)
