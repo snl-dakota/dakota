@@ -23,8 +23,7 @@ namespace Dakota {
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db),
   corrOrder(problem_db.get_short("model.surrogate.correction_order")),
-  correctionMode(SINGLE_CORRECTION), componentParallelIndices(_NPOS,_NPOS),
-  mappingInitialized(false)
+  correctionMode(SINGLE_CORRECTION), componentParallelIndices(_NPOS,_NPOS)
 {
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
@@ -46,8 +45,8 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
     orderedModels[i] = problem_db.get_model();
     //check_submodel_compatibility(orderedModels[i]);
     //if (cv_view != orderedModels[i].current_variables().view()) {
-    //  Cerr << "Error: variable views in hierarchical models must be identical."
-    //       << std::endl;
+    //  Cerr << "Error: variable views in hierarchical models must be "
+    //       << "identical." << std::endl;
     //  abort_handler(-1);
     //}
   }
@@ -315,7 +314,7 @@ bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
   // userDefinedConstraints into orderedModels
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
-    update_model_extra(orderedModels[i]);
+    init_model(orderedModels[i]);
 
   mappingInitialized = true;
 
@@ -1272,45 +1271,7 @@ void HierarchSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 }
 
 
-void HierarchSurrModel::update_model(Model& model)
-{
-  // update model with currentVariables/userDefinedConstraints data.  In the
-  // hierarchical case, the variables view in LF/HF models correspond to the
-  // currentVariables view.  Note: updating the bounds is not strictly necessary
-  // in common usage for the HF model (when a single model evaluated only at the
-  // TR center), but is needed for the LF model and could be relevant in cases
-  // where the HF model involves additional surrogates/nestings.
-
-  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
-  // linear/nonlinear constraint coeffs/bnds updated in update_model_extra())
-  if (currentVariables.cv()) {
-    model.continuous_variables(currentVariables.continuous_variables());
-    model.continuous_lower_bounds(
-      userDefinedConstraints.continuous_lower_bounds());
-    model.continuous_upper_bounds(
-      userDefinedConstraints.continuous_upper_bounds());
-  }
-  if (currentVariables.div()) {
-    model.discrete_int_variables(currentVariables.discrete_int_variables());
-    model.discrete_int_lower_bounds(
-      userDefinedConstraints.discrete_int_lower_bounds());
-    model.discrete_int_upper_bounds(
-      userDefinedConstraints.discrete_int_upper_bounds());
-  }
-  if (currentVariables.drv()) {
-    model.discrete_real_variables(currentVariables.discrete_real_variables());
-    model.discrete_real_lower_bounds(
-      userDefinedConstraints.discrete_real_lower_bounds());
-    model.discrete_real_upper_bounds(
-      userDefinedConstraints.discrete_real_upper_bounds());
-  }
-  if (currentVariables.dsv())
-    model.discrete_string_variables(
-      currentVariables.discrete_string_variables());
-}
-
-
-void HierarchSurrModel::update_model_extra(Model& model)
+void HierarchSurrModel::init_model(Model& model)
 {
   // Set the low/high fidelity model variable descriptors with the variable
   // descriptors from currentVariables (eliminates the need to replicate
@@ -1342,8 +1303,9 @@ void HierarchSurrModel::update_model_extra(Model& model)
   // linear constraints
   if ( ( userDefinedConstraints.num_linear_ineq_constraints() || 
 	 userDefinedConstraints.num_linear_eq_constraints() ) &&
-       currentVariables.cv() + currentVariables.div() + currentVariables.drv()
-       == model.cv() + model.div() + model.drv() ) {
+       currentVariables.cv()  == model.cv()  &&
+       currentVariables.div() == model.div() &&
+       currentVariables.drv() == model.drv() ) {
     model.linear_ineq_constraint_coeffs(
       userDefinedConstraints.linear_ineq_constraint_coeffs());
     model.linear_ineq_constraint_lower_bounds(
@@ -1417,6 +1379,44 @@ void HierarchSurrModel::update_model_extra(Model& model)
       model.inactive_discrete_string_variable_labels(
         currentVariables.inactive_discrete_string_variable_labels());
   }
+}
+
+
+void HierarchSurrModel::update_model(Model& model)
+{
+  // update model with currentVariables/userDefinedConstraints data.  In the
+  // hierarchical case, the variables view in LF/HF models correspond to the
+  // currentVariables view.  Note: updating the bounds is not strictly necessary
+  // in common usage for the HF model (when a single model evaluated only at the
+  // TR center), but is needed for the LF model and could be relevant in cases
+  // where the HF model involves additional surrogates/nestings.
+
+  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
+  // linear/nonlinear constraint coeffs/bnds updated in init_model())
+  if (currentVariables.cv()) {
+    model.continuous_variables(currentVariables.continuous_variables());
+    model.continuous_lower_bounds(
+      userDefinedConstraints.continuous_lower_bounds());
+    model.continuous_upper_bounds(
+      userDefinedConstraints.continuous_upper_bounds());
+  }
+  if (currentVariables.div()) {
+    model.discrete_int_variables(currentVariables.discrete_int_variables());
+    model.discrete_int_lower_bounds(
+      userDefinedConstraints.discrete_int_lower_bounds());
+    model.discrete_int_upper_bounds(
+      userDefinedConstraints.discrete_int_upper_bounds());
+  }
+  if (currentVariables.drv()) {
+    model.discrete_real_variables(currentVariables.discrete_real_variables());
+    model.discrete_real_lower_bounds(
+      userDefinedConstraints.discrete_real_lower_bounds());
+    model.discrete_real_upper_bounds(
+      userDefinedConstraints.discrete_real_upper_bounds());
+  }
+  if (currentVariables.dsv())
+    model.discrete_string_variables(
+      currentVariables.discrete_string_variables());
 }
 
 } // namespace Dakota

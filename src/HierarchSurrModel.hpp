@@ -73,8 +73,6 @@ protected:
   bool initialize_mapping(ParLevLIter pl_iter);
   /// restore state in preparation for next initialization
   bool finalize_mapping();
-  /// return false to force global updates each time
-  bool mapping_initialized();
 
   /// portion of evaluate() specific to HierarchSurrModel
   void derived_evaluate(const ActiveSet& set);
@@ -181,12 +179,14 @@ private:
   /// identified by current {low,high}FidelityIndices
   void check_interface_instance();
 
-  /// update the passed model (low or high fidelity) with current variable
-  /// values
+  /// update the passed model (one of the ordered models) with data that could
+  /// change per function evaluation (active variable values/bounds)
   void update_model(Model& model);
-  /// update the passed model (low or high fidelity) with current variable
-  /// bounds/labels and inactive variable values/bounds/labels
-  void update_model_extra(Model& model);
+  /// update the passed model (one of the ordered models) with data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution),
+  /// including active variable labels, inactive variable values/bounds/labels,
+  /// and linear/nonlinear constraint coeffs/bounds
+  void init_model(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
@@ -272,21 +272,11 @@ private:
   /// derived_synchronize_nowait() that could not be returned since
   /// corresponding low-fidelity response portions were still pending
   IntResponseMap cachedTruthRespMap;
-
-  /// track use of initialize_mapping() and finalize_mapping() due to
-  /// potential redundancy between IteratorScheduler::run_iterator()
-  /// and {Analyzer,Minimizer}::initialize_run()
-  bool mappingInitialized;
 };
 
 
 inline HierarchSurrModel::~HierarchSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
-
-
-/** Perform initialize_mapping() for each Iterator::initialize_run(). */
-inline bool HierarchSurrModel::mapping_initialized()
-{ return mappingInitialized; }
 
 
 inline void HierarchSurrModel::check_interface_instance()

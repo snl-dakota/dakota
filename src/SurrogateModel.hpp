@@ -54,6 +54,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// return mappingInitialized
+  bool mapping_initialized();
+
   /// return truth_model()
   Model& subordinate_model();
 
@@ -179,6 +182,11 @@ protected:
   /// a rebuild is required.
   RealVector referenceIDRVars;
 
+  /// track use of initialize_mapping() and finalize_mapping() due to
+  /// potential redundancy between IteratorScheduler::run_iterator()
+  /// and {Analyzer,Minimizer}::initialize_run()
+  bool mappingInitialized;
+
 private:
 
   //
@@ -196,6 +204,10 @@ private:
 
 inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+inline bool SurrogateModel::mapping_initialized()
+{ return mappingInitialized; }
 
 
 inline Model& SurrogateModel::subordinate_model()
