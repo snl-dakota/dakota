@@ -13,9 +13,9 @@ using namespace Dakota;
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,cyl_head_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -63,11 +63,9 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga1, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -76,15 +74,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga1, hopspack)
   target = -2.4614299775;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,cyl_head_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -132,11 +129,9 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga2, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -145,15 +140,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga2, hopspack)
   target = -2.4614299775;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,cyl_head_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -201,11 +195,9 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga3, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.7659069377;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -214,15 +206,14 @@ TEUCHOS_UNIT_TEST(opt_test_cyl_head_soga3, hopspack)
   target = -2.4614299775;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -267,19 +258,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga1, hopspack)
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -288,15 +276,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga1, hopspack)
   target = 0.0;
   max_tol = 1.e-3;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -341,19 +328,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga2, hopspack)
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -362,15 +346,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga2, hopspack)
   target = 0.0;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -415,19 +398,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga3, hopspack)
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -436,15 +416,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga3, hopspack)
   target = 0.0;
   max_tol = 1.e2;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_lin_constr_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_lin_constr_input[] = 
     " method,"
     "   output silent"
@@ -491,19 +470,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga1, hopspack)
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -512,15 +488,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga1, hopspack)
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_lin_constr_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_lin_constr_input[] = 
     " method,"
     "   output silent"
@@ -567,19 +542,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga2, hopspack)
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -588,15 +560,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga2, hopspack)
   target = 0.0;
   max_tol = 1.e2;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_lin_constr_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_lin_constr_input[] = 
     " method,"
     "   output silent"
@@ -643,19 +614,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga3, hopspack)
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -664,15 +632,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_soga3, hopspack)
   target = 0.0;
   max_tol = 1.e4;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_herbie_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,herbie_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char herbie_input[] = 
     " method,"
     "   output silent"
@@ -717,13 +684,11 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga1, hopspack)
   target = -1.04082591;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -732,15 +697,14 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga1, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-4;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_herbie_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,herbie_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char herbie_input[] = 
     " method,"
     "   output silent"
@@ -785,13 +749,11 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga2, hopspack)
   target = -1.04082591;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -800,15 +762,14 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga2, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_herbie_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,herbie_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char herbie_input[] = 
     " method,"
     "   output silent"
@@ -853,13 +814,11 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga3, hopspack)
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -868,15 +827,14 @@ TEUCHOS_UNIT_TEST(opt_test_herbie_soga3, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,smooth_herbie_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char smooth_herbie_input[] = 
     " method,"
     "   output silent"
@@ -921,13 +879,11 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga1, hopspack)
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -936,15 +892,14 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga1, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,smooth_herbie_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char smooth_herbie_input[] = 
     " method,"
     "   output silent"
@@ -989,13 +944,11 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga2, hopspack)
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1004,15 +957,14 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga2, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,smooth_herbie_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char smooth_herbie_input[] = 
     " method,"
     "   output silent"
@@ -1057,13 +1009,11 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga3, hopspack)
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = -1.04082591;
   max_tol = 1.e1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1072,15 +1022,14 @@ TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_soga3, hopspack)
   target = -1.1268717458;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_range_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1125,19 +1074,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga1, hopspack)
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1146,15 +1092,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga1, hopspack)
   target = 0.0;
   max_tol = 1.e-10;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_range_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1199,19 +1144,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga2, hopspack)
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1220,15 +1162,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga2, hopspack)
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_range_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1273,19 +1214,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga3, hopspack)
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1294,15 +1232,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga3, hopspack)
   target = 0.0;
   max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_set_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1348,19 +1285,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga1, hopspack)
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1369,15 +1303,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga1, hopspack)
   target = 2.0;
   max_tol = 1.e-10;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_set_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1423,19 +1356,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga2, hopspack)
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1444,16 +1374,15 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga2, hopspack)
   target = 2.0;
   max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_soga,text_book_disc_set_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   output silent"
@@ -1499,19 +1428,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga3, hopspack)
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   max_tol = 1.e1;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1520,15 +1446,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga3, hopspack)
   target = 2.0;
   max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_moga,text_book_multi_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -1584,11 +1509,9 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga1, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/1.0);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1597,21 +1520,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga1, hopspack)
   target = 6.0;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(1) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga2, hopspack)
+TEUCHOS_UNIT_TEST(opt_moga,text_book_multi_2)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -1660,11 +1581,9 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga2, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/1.0);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.0;
   max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1673,21 +1592,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga2, hopspack)
   target = 6.0;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(1) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga3, hopspack)
+TEUCHOS_UNIT_TEST(opt_moga,text_book_multi_3)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -1736,11 +1653,9 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga3, hopspack)
   rel_err = fabs((vars.continuous_variable(0) - target)/1.0);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  cout << rel_err << endl;
   target = 1.0;
   max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1749,21 +1664,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_moga3, hopspack)
   target = 6.0;
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e0;
   rel_err = fabs((resp.function_value(1) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_moga1, hopspack)
+TEUCHOS_UNIT_TEST(opt_moga,text_book_multi_disc_set_1)
 {
-  /// Default Dakota input string for serial case (cyl_head):
+  /// Default Dakota input string:
   static const char cyl_head_input[] = 
     " method,"
     "   output silent"
@@ -1815,19 +1728,16 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_moga1, hopspack)
   target = 0.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(0)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(1)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
   max_tol = 1.e-10;
   rel_err = fabs((((double)vars.discrete_int_variable(2)) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
@@ -1836,12 +1746,10 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_moga1, hopspack)
   target = 6.3212055883e-01;
   max_tol = 1.e-10;
   rel_err = fabs((resp.function_value(0) - target)/target);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 6.3212055883e-01;
   max_tol = 1.e-10;
   rel_err = fabs((resp.function_value(1) - target)/1.0);
-  cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 }
