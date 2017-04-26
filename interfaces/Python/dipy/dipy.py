@@ -1,9 +1,8 @@
-"""This module simplifies development of interfaces between Dakota and black-
-box, Python-based simulation codes. It provides a convenient Dakota parameter 
-file reader, results file writer, and objects for accessing the contents of the
-parameter file and for collecting response data. It interprets the active set 
-vector and prevents (by raising exceptions) the user from returning response
-data to Dakota that was not requested.
+"""This module provides a Dakota parameter file reader, results file writer, 
+and objects for accessing the contents of the parameter file and for 
+collecting response data. It interprets the active set vector and prevents 
+(by raising exceptions) the user from returning response data to Dakota that 
+was not requested.
 
 Example Usage::
 
@@ -44,14 +43,16 @@ class MissingSourceError(Exception):
 class ParamsFormatError(Exception):
     pass
 
+# Constant used to specify an unnamed results file
+UNNAMED = True
 
 #### Class definitions
 
 class Parameters(object):
     """Access variables and analysis components from a Dakota parameters file
     
-    Parameters objects typically should be constructed by the function
-    dipy.read_parameters_file.
+    Parameters objects typically should be constructed by the convenience 
+    function ``dipy.read_parameters_file``.
 
     Variable values can be accessed by name or by index using []. Analysis
     components are accessible by index only using the an_comp attribute. The
@@ -60,7 +61,8 @@ class Parameters(object):
 
     Attributes:
         an_comps: List of strings containing the analysis components.
-        eval_id: Evaluation id (a string).
+        eval_id: Evaluation id (string).
+        eval_num: Evaluation number (final token in eval_id) (int).
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the variable descriptors (read-only)
@@ -74,6 +76,7 @@ class Parameters(object):
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
+        self.eval_num = int(eval_id.split(":")[-1])
         # Convert variables to the appropriate type. The possible types
         # are int, float, and string. The variables are already strings.
         # TODO: Consider a user option to override this behavior and keep
@@ -227,8 +230,8 @@ class Response(object):
 class Results(object):
     """Collect response data and write to results file.
 
-    Results objects typically should be constructed by the function
-    dipy.read_parameters_file.
+    Results objects typically should be constructed by the convenience function
+    ``dipy.read_parameters_file``.
 
     Each response is represented by a Response objected, and can be accessed 
     by name or by index using []. The Results class supports iteration, yielding
@@ -236,6 +239,7 @@ class Results(object):
 
     Attributes:
         eval_id: Evaluation id (a string).
+        eval_num: Evaluation number (final token in eval_id) (int).
         aprepro_format: Boolean indicating whether the parameters file was in
             aprepro (True) or Dakota (False) format.
         descriptors: List of the response descriptors (read-only)
@@ -243,8 +247,6 @@ class Results(object):
         deriv_vars: List of the derivative variables (read-only)
         num_deriv_vars: Number of derivative variables (read-only)
     """
-
-
 
     def __init__(self, aprepro_format=None, responses=None, 
             deriv_vars=None, eval_id=None, ignore_asv=False, 
@@ -259,6 +261,7 @@ class Results(object):
                     int(v)) 
         self.results_file = results_file
         self.eval_id = eval_id
+        self.eval_num = int(eval_id.split(":")[-1])
         self._failed = False
 
     def __getitem__(self,key):
@@ -309,7 +312,7 @@ class Results(object):
 
         Keyword Args:
             stream: Write results to this I/O stream. Overrides results_file
-                with which the object was constructed.
+                specified when the object was constructed.
             ignore_asv: Ignore the active set vector while writing the response
                 data to the results file (or stream). Overrides ignore_asv
                 setting provided at construct time.
@@ -496,8 +499,10 @@ def read_parameters_file(parameters_file=None, results_file=None,
     Keyword Args:
         parameters_file: Pathname to the Dakota parameters file. If not
             provided, the first command line argument will be used.
-        results_file: Pathname to the Dakota results file. If not provided,
-            the second command line argument will be used.
+        results_file: Pathname to the Dakota results file. If not provided
+            or set to None, the second command line argument will be used.
+            Setting to dipy.UNNAMED leaves the file unnamed, and a stream
+            must be specified in the call to Results.write().
         ignore_asv: If True, ignore the active set vector when setting
             responses on the returned Results object.
 
@@ -528,6 +533,8 @@ def read_parameters_file(parameters_file=None, results_file=None,
         except IndexError:
             raise MissingSourceError("No results filename provided and no "
                     "command line argument.")
+    elif results_file == UNNAMED:
+        results_file = ""
 
     ### Open and parse the parameters file
     with open(parameters_file, "r") as ifp:

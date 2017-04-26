@@ -1,3 +1,5 @@
+#@ Cross-platform diffs in tests 10-16 carried until we can ensure that surrogates are working correctly with discrete variables
+#@ *: Label=CarryDiff
 #@ s1: TimeoutAbsolute=2100
 #@ s5: TimeoutAbsolute=1800
 

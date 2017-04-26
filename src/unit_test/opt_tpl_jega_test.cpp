@@ -360,7 +360,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_soga2, hopspack)
   const Response& resp  = env.response_results();
 
   target = 0.0;
-  max_tol = 1.e-2;
+  max_tol = 1.e-1;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
@@ -1292,7 +1292,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_soga3, hopspack)
   const Response& resp  = env.response_results();
 
   target = 0.0;
-  max_tol = 1.e2;
+  max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
@@ -1442,7 +1442,7 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_soga2, hopspack)
   const Response& resp  = env.response_results();
 
   target = 2.0;
-  max_tol = 1.e2;
+  max_tol = 1.e3;
   rel_err = fabs((resp.function_value(0) - target)/target);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);

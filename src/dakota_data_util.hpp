@@ -335,7 +335,7 @@ inline void build_labels_partial(StringArray& label_array,
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(
   const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+        Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
 {
   OrdinalType i, j, num_vec = sdva.size(), max_vec_len = 0;
   for (i=0; i<num_vec; ++i) { // loop over vectors in array
@@ -1175,6 +1175,28 @@ find_if(const ListT& c,
 
 #endif
 
+// copy std::vector<VecType> to Real*
+// VectorType must support the length() method. 
+template<typename VectorType, typename ScalarType>
+void copy_data(const std::vector<VectorType>& va,
+               ScalarType * ptr,
+               int ptr_len)
+{
+  size_t total_len=0, cntr=0, num_vec = va.size();
+  for( size_t i=0; i<num_vec; ++i)
+    total_len += va[i].length();
+  if (total_len != ptr_len) {
+    Cerr << "copy_data Error: pointer allocation (" << ptr_len << ") does not equal "
+	 << "total std::vector<VecType> length (" << total_len << ")." << std::endl;
+    abort_handler(-1);
+  }
+  for( size_t i=0; i<num_vec; ++i)
+  {
+    int vec_len = va[i].length();
+    for(int j=0; j<vec_len; ++j)
+      ptr[cntr++] = va[i][j];
+  }
+}
 
 /// copy boost::multi_array view to Array - used by ActiveSet::derivative_vector - RWH
 inline void copy_data(SizetMultiArrayConstView ma, SizetArray& da)

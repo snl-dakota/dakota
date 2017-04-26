@@ -632,19 +632,19 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_lin_constr_apps3, hopspack)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-1;
+  max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-1;
+  max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-0;
+  max_tol = 1.e0;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   cout << rel_err << endl;
   TEST_COMPARE(rel_err,<, max_tol);

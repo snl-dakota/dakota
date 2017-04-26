@@ -66,8 +66,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.import_approx_points_file")),
   importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
   importApproxActiveOnly(
-    probDescDB.get_bool("method.import_approx_active_only")),
-  resizedFlag(false), callResize(false)
+    probDescDB.get_bool("method.import_approx_active_only"))
+  //resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -328,8 +328,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		piecewise_basis, use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
-  callResize(false) //, initSGLevel(0)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false), initSGLevel(0)
 {
   // -------------------
   // input sanity checks
@@ -404,8 +404,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), expOrderSeqSpec(exp_order_seq),
   dimPrefSpec(dim_pref), collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type), resizedFlag(false),
-  callResize(false)
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -516,7 +516,7 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 
 bool NonDPolynomialChaos::resize()
 {
-  resizedFlag = true;
+  //resizedFlag = true;
 
   bool parent_reinit_comms = NonDExpansion::resize();
   
@@ -547,68 +547,69 @@ bool NonDPolynomialChaos::resize()
   UShortArray exp_order; // empty for numerical integration approaches
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSeqSpec, dimPrefSpec);
+    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSeqSpec,
+			 dimPrefSpec);
     break;
   case Pecos::COMBINED_SPARSE_GRID:
-    construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec, dimPrefSpec);
+    construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec,
+			  dimPrefSpec);
     break;
   case Pecos::CUBATURE:
     construct_cubature(u_space_sampler, g_u_model, cubIntSpec);
     break;
   default:
-    {
-      if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
-          expOrderSeqSpec.empty()) {
-        // extract number of collocation points
-        numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
-          collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
-        // Construct u_space_sampler
-        String rng("mt19937");
-        construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-	        numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+    if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
+	expOrderSeqSpec.empty()) {
+      // extract number of collocation points
+      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
+	collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+      // Construct u_space_sampler
+      String rng("mt19937");
+      construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
+    }
+    else { // expansion_order-based
+      // resolve expansionBasisType, exp_terms, numSamplesOnModel
+      if (!expansionBasisType)
+	expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
+	  Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
+      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
+	expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
+      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
+	dimPrefSpec, numContinuousVars, exp_order);
+
+      size_t exp_terms;
+      switch (expansionBasisType) {
+      case Pecos::TOTAL_ORDER_BASIS:
+      case Pecos::ADAPTED_BASIS_GENERALIZED:
+      case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
+	exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+	break;
+      case Pecos::TENSOR_PRODUCT_BASIS:
+	exp_terms
+	  = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
+	break;
       }
-      else { // expansion_order-based
-        // resolve expansionBasisType, exp_terms, numSamplesOnModel
-        if (!expansionBasisType)
-          expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
-            Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-        unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-          expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-        NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-          dimPrefSpec, numContinuousVars, exp_order);
-
-        size_t exp_terms;
-        switch (expansionBasisType) {
-        case Pecos::TOTAL_ORDER_BASIS:
-        case Pecos::ADAPTED_BASIS_GENERALIZED:
-        case Pecos::ADAPTED_BASIS_EXPANDING_FRONT:
-          exp_terms = Pecos::SharedPolyApproxData::total_order_terms(exp_order);
-          break;
-        case Pecos::TENSOR_PRODUCT_BASIS:
-          exp_terms = Pecos::SharedPolyApproxData::tensor_product_terms(exp_order);
-          break;
-        }
     
-        if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
-          collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
-        else if (collocRatio > 0.)     // define colloc pts from collocRatio
-          numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+      if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
+	collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
+      else if (collocRatio > 0.)     // define colloc pts from collocRatio
+	numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 
-        // Construct u_space_sampler
-        if (tensorRegression) { // tensor sub-sampling
-          UShortArray dim_quad_order(numContinuousVars);
-          // define nominal quadrature order as exp_order + 1
-          // (m > p avoids most of the 0's in the Psi measurement matrix)
-          for (size_t i=0; i<numContinuousVars; ++i)
-            dim_quad_order[i] = exp_order[i] + 1;
-          construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
-		         dimPrefSpec);
-        }
-        else {
-          String rng("mt19937");
-          construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
-	          numSamplesOnModel, randomSeed, rng, false, ACTIVE);
-        }
+      // Construct u_space_sampler
+      if (tensorRegression) { // tensor sub-sampling
+	UShortArray dim_quad_order(numContinuousVars);
+	// define nominal quadrature order as exp_order + 1
+	// (m > p avoids most of the 0's in the Psi measurement matrix)
+	for (size_t i=0; i<numContinuousVars; ++i)
+	  dim_quad_order[i] = exp_order[i] + 1;
+	construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+			     dimPrefSpec);
+      }
+      else {
+	String rng("mt19937");
+	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
+		      numSamplesOnModel, randomSeed, rng, false, ACTIVE);
       }
     }
     break;
@@ -736,18 +737,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
        expansionCoeffsApproach == Pecos::CUBATURE   ||
        expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
        ( tensorRegression && numSamplesOnModel ) ) {
-    // Temp workaround: avoid interaction with mapping initializations
-    // unrelated to dimension reduction
-    const String& model_type = iteratedModel.model_type();
-    bool input_dim_reduce
-      = (model_type == "active_subspace" || model_type == "adapted_basis");
-    if (!input_dim_reduce || iteratedModel.mapping_initialized()) {
+    if (iteratedModel.resize_pending()) // defer grid initialization
+      { /* callResize = true; */ }
+    else {
       NonDIntegration* u_space_sampler_rep = 
         (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
       u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
     }
-    else
-      callResize = true;
   }
 
   // NumerGenOrthogPolynomial instances need to compute polyCoeffs and

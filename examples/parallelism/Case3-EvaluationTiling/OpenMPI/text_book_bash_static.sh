@@ -1,26 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 
-# MUST ENSURE that the application executable is built with the appropriate MPI
-# . /usr/share/modules/init/bash
-# module switch mpi mpi/openmpi-1.3.4_intel-11.1-f046-c046  
+# Bash script to run text_book_simple_par in parallel on an available set of
+# MPI "tasks" within an allocated job. The total set of tasks in a job is divided
+# up into tiles, each containing the number needed to run the user's executable.
 
-# script to create working directory, populate, and run text_book_simple_par
-# in parallel on a subset of processors
+# The script assumes a static scheduling model. Under this model, when
+# evaluation number N completes, Dakota launches evaluation N + evaluation_concurrency.
+# As such, the tile numbered N % evaluation_concurrency will be available. Static
+# scheduling of asynchronous evaluations is enabled in Dakota with the keywords
+# 'local_evaluation_scheduling static'.
 
-#-----------------------------------
-# CREATE TEMPORARY WORKING DIRECTORY
-#
-# This prevents file trampling when running concurrent jobs.
-#-----------------------------------
+# The names of the Dakota parameters and results files are provided as command
+# line arguments
+params=$1
+results=$2
 
-num=$(echo $1 | awk -F. '{print $NF}')
-topdir=`pwd`
-workdir=$topdir/workdir.$num
-
-mkdir workdir.$num
-cp $topdir/$1 $workdir/dakota_vars
-cd $workdir
-
+# Extract the evaluation number from the parameters file name (assumes the file_tag
+# keyword is present in the Dakota input file
+num=$(echo $params | awk -F. '{print $NF}')
 
 # -------------------------
 # INPUT FILE PRE-PROCESSING
@@ -38,8 +35,7 @@ cd $workdir
 
 # For this example we just prepare the application input by copying
 # the parameters:
-cp dakota_vars application.in
-
+cp $params application.in
 
 # -------------------
 # RUN SIMULATION CODE
@@ -54,7 +50,6 @@ echo "$0 running text_book_simple_par on 2 processors."
 # !!! an integer multiple of it
 
 # number of concurrent jobs (must agree with DAKOTA evaluation_concurrency)
-# CONCURRENCY=`grep concurr dakota_pstudy.in | cut -d "=" -f2`
 CONCURRENCY=4
 
 # number of processors per node (with SLURM could use
@@ -71,18 +66,19 @@ applic_nodes=$(( ($APPLIC_PROCS+$PPN-1) / $PPN ))
 # this is the first of the node block for this job
 relative_node=$(( (num - 1) % CONCURRENCY * APPLIC_PROCS / PPN ))
 
-# RESERVE a node for DAKOTA (recommended, but assumes DAKOTA starts on
+# RESERVE a node for DAKOTA (recommended, but assumes Dakota starts on
 # the zeroth node in the allocation (true for SLURM with OpenMPI);
-# some MPI start DAKOTA on the last node in which case you need not do
+# some MPI start Dakota on the last node in which case you need not do
 # anything special to these calcs, just add a node to the batch request)
 
-# NOTE: it's not trivial to reserve a processor for DAKOTA in this
+# NOTE: it's not trivial to reserve a processor for Dakota in this
 # case (due to -N1-1), though easy to reserve a _node_.  (must allow
 # one extra node in submission).  It is easy to reserve one CPU for
-# DAKOTA if the analysis requries only one CPU.
+# Dakota if the analysis requries only one CPU.
 ##relative_node=$(( (num - 1) % CONCURRENCY * APPLIC_PROCS / PPN + 1 ))
 
-# build a node list
+# build a node list to use as the argument to the -host option. This 
+# will look something like, "+n0,+n1,+n2,..."
 node_list="+n${relative_node}"
 for node_increment in `seq 1 $((applic_nodes - 1))`; do
   node_list="$node_list,+n$((relative_node + node_increment))"
@@ -96,7 +92,8 @@ mpirun -np $APPLIC_PROCS -host $node_list text_book_simple_par \
 # TODO: openmpi and/or srun exclusive mode should allow mpiexec-like
 # behavior, but haven't gotten working
 
-# use sleep command if file I/O timing is a problem
+# use sleep command if file I/O timing is a problem. This most often
+# manifests as Dakota complaining that it can't find a results file.
 #sleep 10
 
 
@@ -105,27 +102,8 @@ mpirun -np $APPLIC_PROCS -host $node_list text_book_simple_par \
 # ---------------------------
 
 # Normally any application-specific post-processing to prepare the
-# results.out file for DAKOTA would go here. Here we'll substitute a
+# results.out file for Dakota would go here. Here we'll substitute a
 # copy command:
 
-cp application.out results2dakota
+cp application.out $results
 
-# for demo, append the node name to see on which node this task ran
-# (comment out for actual application)
-uname -n >> results2dakota
-
-# When using DAKOTA's fork interface, the application can directly
-# write its output (if in the right format) to results.out.$num
-# (../$2) for DAKOTA, however for the system interface, use the
-# following move to avoid a race condition:
-
-mv results2dakota ../$2
-cd ..
-
-# -------------
-# CLEANUP
-# -------------
-
-# uncomment to cleanup work directories as evaluations progress
-#rm -rf ./workdir.$num
-#rm ./results.out.$num
