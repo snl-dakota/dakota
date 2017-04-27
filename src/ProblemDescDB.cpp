@@ -2572,6 +2572,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"fsu_cvt.num_trials", P numTrials},
 	{"iterator_servers", P iteratorServers},
 	{"max_function_evaluations", P maxFunctionEvaluations},
+	{"max_hifi_evaluations", P maxHifiEvals},
 	{"max_iterations", P maxIterations},
 	{"mesh_adaptive_search.neighbor_order", P neighborOrder},
 	{"nl2sol.covariance", P covarianceType},
@@ -2877,7 +2878,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
-	{"max_hifi_evaluations", P maxHifiEvals},
 	{"num_candidate_designs", P numCandidateDesigns},
 	{"num_candidates", P numCandidates},
 	{"num_prediction_configs", P numPredConfigs}

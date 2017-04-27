@@ -230,7 +230,7 @@ protected:
   unsigned short importCandFormat;
   /// maximum number of high-fidelity model runs to be used for adaptive
   /// Bayesian experimental design
-  size_t maxHifiEvals;
+  int maxHifiEvals;
 
   // settings specific to model discrepancy
 
