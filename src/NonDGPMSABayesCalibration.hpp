@@ -23,7 +23,6 @@ namespace QUESO {
 //   //  template<typename T> struct SharedPtr;
 //   template<typename T>
 //   struct SharedPtr { typedef SPType<T> Type; }
-  class GPMSAOptions;
   template<class V, class M> class GPMSAFactory;
 }
 
@@ -63,6 +62,21 @@ public:
   /// destructor
   ~NonDGPMSABayesCalibration();
 
+  //
+  //- Heading: Data
+  //
+
+  /// number of samples of the simulation to construct the GP 
+  int buildSamples;
+  /// flag to indicated if the sigma terms should be calibrated (default true)
+  bool calibrateSigmaFlag;
+  /// name of file from which to import build points to build GP
+  String approxImportFile;
+  /// build data import tabular format
+  unsigned short approxImportFormat;
+  /// import active variables only
+  bool approxImportActiveOnly;
+
 protected:
 
   //
@@ -82,22 +96,16 @@ protected:
   /// specialization to initialize the inverse problem and posterior
   void init_queso_solver();
 
-  /// Populate simulation data (run design of experiments or load build data)
-  void acquire_simulation_data();
-
-  /// Determine each scenario min/max and set GPMSA scaling options
-  void normalize_configs();
-
   /// fill the full proposal covariance, inlcuding hyperparameter
   /// entries with user-specified or default theta covariance
   /// information
   void overlay_proposal_covariance(QUESO::GslMatrix& full_prop_cov) const;
 
-  /// populate the simulation data, calculating and applying scaling if needed
-  void fill_simulation_data(bool scale_data);
+  /// populate the simulation, running design of experiments as needed
+  void fill_simulation_data();
 
-  /// populate the experiment data, applying scaling if needed
-  void fill_experiment_data(bool scale_data);
+  /// populate the experiment data
+  void fill_experiment_data();
 
   void overlay_initial_params(QUESO::GslVector& full_param_initials);
 
@@ -107,28 +115,6 @@ protected:
   //
   //- Heading: Data
   //
-
-  //
-  //- Heading: Data
-  //
-
-  /// number of samples of the simulation to construct the GP
-  int buildSamples;
-
-  /// name of file from which to import build points to build GP
-  String approxImportFile;
-
-  /// build data import tabular format
-  unsigned short approxImportFormat;
-
-  /// import active variables only
-  bool approxImportActiveOnly;
-
-  /// number of user-specified configuration (scenario) vars
-  unsigned int userConfigVars;
-
-  /// number of config vars presented to GPMSA (minimum 1)
-  unsigned int gpmsaConfigVars;
 
   /// vector space defining the scenario (configuration) variables
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 
@@ -142,27 +128,12 @@ protected:
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
   experimentSpace;
 
-  /// simulation data, one row per simulation build sample, columns
-  /// for calibration variables, configuration variables, function
-  /// values (duplicates storage, but unifies import vs. DOE cases)
-  RealMatrix simulationData;
-
-  /// simulation mean values for scaling, one per function
-  RealVector simulationMean;
-
-  /// simulation std deviations for scaling, one per function
-  RealVector simulationStdDev;
-
-  /// Configuration options for the GPMSA solver
-  boost::shared_ptr<QUESO::GPMSAOptions> gpmsaOptions;
-
-  /// advanced options file name
-  String optionsFile;
-
   /// core factory that manages a GP-based likelihood
   boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
   gpmsaFactory; 
 
+  /// advanced options file name
+  String optionsFile;
 
 private:
 

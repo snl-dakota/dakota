@@ -6,7 +6,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDGPMSABayesCalibration
+//- Class:	     NonDGPMSABayesCalibration
 //- Description: Derived class for Bayesian inference using QUESO/GPMSA
 //- Owner:       Laura Swiler, Brian Adams
 //- Checked by:
@@ -18,16 +18,6 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
-
-// then system-related headers
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
-namespace accum = boost::accumulators;
-
 // then list QUESO headers
 #include "queso/GPMSA.h"
 #include "queso/StatisticalInverseProblem.h"
@@ -120,13 +110,11 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDQUESOBayesCalibration(problem_db, model),
-  buildSamples(probDescDB.get_int("method.build_samples")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  userConfigVars(expData.num_config_vars()),
-  gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
+  buildSamples(probDescDB.get_int("method.build_samples")),
   optionsFile(probDescDB.get_string("method.queso_options_file"))
 {   
   // quesoEnv: Base class calls init_queso_environment().  May need to
@@ -157,7 +145,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
     found_error = true;
   }
 
-  if (userConfigVars > 0 && !approxImportFile.empty() &&
+  if (expData.num_config_vars() > 0 && !approxImportFile.empty() &&
       approxImportActiveOnly && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: Experimental data presented to GPMSA has configuration variables, but\n         simulation data import specifies active_only, so nominal values of\n         configuration variables will be used." << std::endl;
 
@@ -228,12 +216,9 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 /** Perform the uncertainty quantification */
 void NonDGPMSABayesCalibration::calibrate()
 {
-  // TODO: base class needs runtime update as well; decouple these:
+  // BMA TODO: base class needs runtime update as well
   nonDQUESOInstance = this;
   nonDGPMSAInstance = this;
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Setting up calibration." << std::endl;
 
   // no emulators will be setup, but need to initialize the prob transforms
   initialize_model();
@@ -246,37 +231,41 @@ void NonDGPMSABayesCalibration::calibrate()
   // proposal may depend on the parameter space properties
   init_proposal_covariance();
 
-  // GPMSA scenario space = configuration space. GPMSA requires at least 1
-  // configuration variable, set to 0.5 for all scenarios if needed
-  configSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-		    (*quesoEnv, "scenario_", gpmsaConfigVars, NULL));
-
-  // GPMSA output space.  TODO: The simulation output space eta won't
-  // always have same size as experiment space.  Moreover, each
-  // experiment might have different size. Generalize this to
-  // multi-experiment of varying size, and fields.
-  unsigned int num_eta = numFunctions;
-  nEtaSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
-                  (*quesoEnv, "output_", num_eta, NULL));
+  // In the following a "scenario" is a "configuration"
+  unsigned int num_experiments = expData.num_experiments();
+  //  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
+  unsigned int num_simulations = buildSamples; // TODO: generalize
+  // GPMSA requires at least 1 configuration variable, set to 0.5 for
+  // all scenarios if needed
+  unsigned int gpmsa_config_vars = std::max(expData.num_config_vars(),
+					    (size_t) 1);
 
   // BMA TODO: manage experiment size (each experiment need not have
   // the same size and one sim may inform multiple experiments through
   // DataTransform...)
   unsigned int experiment_size = expData.all_data(0).length();
+
+  // BMA TODO: Would be helpful for user to be unaware of the eta
+  // space.  Can it be sized differently than experiment size?  I
+  // suppose for field data.
+
+  // eta appears to be the size of the similation output space (numFunctions)
+  unsigned int num_eta = numFunctions;
+
+  // Step 3: Instantiate the 'scenario' and 'output' spaces for simulation
+  configSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
+		    (*quesoEnv, "scenario_", gpmsa_config_vars, NULL));
+  nEtaSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
+                  (*quesoEnv, "output_", num_eta, NULL));
+
+  // Step 4: Instantiate the 'output' space for the experiments
   experimentSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
                         (*quesoEnv,"experimentspace_", experiment_size, NULL));
 
-  // Simulation data is needed prior to setting scaling on config vars
-  acquire_simulation_data();
+  // TODO: generalize this to multi-experiment of varying size, and fields
 
-  // default constructed options will have recommended settings, then
-  // we can override via C++ API or input file (parse)
-  gpmsaOptions.reset(new QUESO::GPMSAOptions());
-  // insert Dakota parameters here: gpmsaOptions.m_emulatorPrecisionShape
-  // now override with file-based power user parameters
-  if (!optionsFile.empty())
-    gpmsaOptions->parse(*quesoEnv, "");
-
+  // Step 5: Instantiate the Gaussian process emulator object
+  //
   // Regarding simulation scenario input values, the user should standardise
   // them so that they exist inside a hypercube.
   //
@@ -289,39 +278,41 @@ void NonDGPMSABayesCalibration::calibrate()
   // Regarding experimental data, the user should transformed it so that it has
   // zero mean and variance one.
 
-  // TODO: user option for min/max vs. mu/sigma?  Also, when user
-  // gives bounds on distro instead of data, should we use those?
-  // They might not be finite...
-  bool scale_theta = true;
-  if (scale_theta)
-    for (unsigned int i = 0; i < (numContinuousVars + numHyperparams); ++i)
-      gpmsaOptions->set_autoscale_minmax_uncertain_parameter(i);
+  // GPMSA stores all the information about our simulation
+  // data and experimental data.  It also stores default information about the
+  // hyperparameter distributions.
 
-  // TODO: This should allow scaling by user-provided bounds as well
-  bool scale_configs = true;
-  if (scale_configs && userConfigVars > 0)
-    normalize_configs();
-
-  // TODO: Use GPMSA intrinsic data scaling when available
-  bool scale_data = true;
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;
+  // default constructed options will have recommended settings, then
+  // we can override via C++ API or input file (parse)
+  boost::scoped_ptr<QUESO::GPMSAOptions> gp_opts(new QUESO::GPMSAOptions());
+  // insert Dakota parameters here: gp_opts.m_emulatorPrecisionShape()
+  // now override with file-based power user parameters
+  if (!optionsFile.empty()) {
+    // if (outputLevel >= DEBUG_OUTPUT) {
+    //   Cout << "\nGPMSAOptions:\n";
+    //   gp_opts->print(Cout);
+    // }
+    gp_opts->parse(*quesoEnv, "");
+    // if (outputLevel >= DEBUG_OUTPUT) {
+    //   Cout << "\nGPMSAOptions:\n";
+    //   gp_opts->print(Cout);
+    // }
+  }
 
   gpmsaFactory.reset(new QUESO::GPMSAFactory<GslVector, GslMatrix>
-                     (*quesoEnv, gpmsaOptions.get(), *priorRv, *configSpace,
-                      *paramSpace, *nEtaSpace, *experimentSpace, buildSamples,
-                      expData.num_experiments()));
+                     (*quesoEnv, gp_opts.get(), *priorRv, *configSpace, 
+                      *paramSpace, *nEtaSpace, *experimentSpace, num_simulations,
+                      num_experiments));
 
-  // Scale and populate simulation build data and experiment data
-  fill_simulation_data(scale_data);
-  fill_experiment_data(scale_data);
+  // Load the simulation build data and experiment data
+  fill_simulation_data();
+  fill_experiment_data();
 
-  // solver setup must follow factory instantiation
+  // solver setup requires the configured factory
   init_queso_solver();
 
   // Override only the calibration parameter values with the ones the
-  // user specified (or TODO: the map point if we pre-solve)
+  // user specified (or TODO the map point if we pre-solve)
   GslVector full_param_initials(
     gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
   // Initial condition of the chain: overlay user params on default GPMSA values
@@ -331,15 +322,9 @@ void NonDGPMSABayesCalibration::calibrate()
     gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
   overlay_proposal_covariance(full_proposal_cov);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Performing calibration." << std::endl;
-
   inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
                                                 full_param_initials,
                                                 &full_proposal_cov);
-
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Generating statistics and ouput." << std::endl;
 
   acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
 				     chainSamples * chainCycles);
@@ -372,11 +357,12 @@ void NonDGPMSABayesCalibration::
 overlay_proposal_covariance(GslMatrix& full_prop_cov) const
 {
   // Start with the covariance matrix for the whole prior, including
-  // GPMSA hyper-parameters.
+  // hyper-parameters.
   gpmsaFactory->prior().pdf().distributionVariance(full_prop_cov);
 
   // Now override with user (or iterative algorithm-updated values)
-  unsigned int num_calib_params = numContinuousVars + numHyperparams;
+  // BMA TODO: make sure the base class proposal update is getting called...
+  unsigned int num_calib_params = paramSpace->dimGlobal();
   for (unsigned int i=0; i<num_calib_params; ++i)
     for (unsigned int j=0; j<num_calib_params; ++j)
       full_prop_cov(i,j) = (*proposalCovMatrix)(i,j);
@@ -389,43 +375,60 @@ overlay_initial_params(GslVector& full_param_initials)
   // Start with the mean of the prior
   gpmsaFactory->prior().pdf().distributionMean(full_param_initials);
 
-  // But override whatever we want, e.g., with user-specified values:
-  unsigned int num_calib_params = numContinuousVars + numHyperparams;;
+  // But override whatever we want.
+  unsigned int num_calib_params = paramSpace->dimGlobal();
   for (unsigned int i=0; i<num_calib_params; ++i)
     full_param_initials[i] = (*paramInitials)[i];
 
-  // Example of manually adjusting initial values:
-  // full_param_initials[num_calib_params + 0]  = 0.4; // Emulator mean (unused, but set to avoid NaN!)
-  // full_param_initials[num_calib_params + 1]  = 0.4; // emulator precision
-  // full_param_initials[num_calib_params + 2]  = 0.4; // weights0 precision
-  // full_param_initials[num_calib_params + 3]  = 0.4; // weights1 precision
-  // full_param_initials[num_calib_params + 4]  = 0.97; // emulator corr str
-  // full_param_initials[num_calib_params + 5]  = 0.97; // emulator corr str
-  // full_param_initials[num_calib_params + 6]  = 0.97; // emulator corr str
-  // full_param_initials[num_calib_params + 7]  = 0.97; // emulator corr str
-  // full_param_initials[num_calib_params + 8]  = 0.20; // emulator corr str
-  // full_param_initials[num_calib_params + 9]  = 0.80; // emulator corr str
-  // full_param_initials[num_calib_params + 10] = 10.0; // discrepancy precision
-  // full_param_initials[num_calib_params + 11] = 0.97; // discrepancy corr str
-  // full_param_initials[num_calib_params + 12] = 8000.0; // emulator data precision
-  // full_param_initials[num_calib_params + 13] = 1.0;  // observation error precision
+  // paramInitials[5]  = 0;   // Emulator mean, unused but don't leave it NaN!
+  //  full_param_initials[num_calib_params] = 0.4;
+
+  // The rest of these we'll override, not because we have to, but
+  // because the regression gold standard predates distributionMean()
+  // paramInitials[6]  = 0.4; // emulator precision
+  // paramInitials[7]  = 0.4; // weights0 precision
+  // paramInitials[8]  = 0.4; // weights1 precision
+  // paramInitials[9]  = 0.97; // emulator corr str
+  // paramInitials[10] = 0.97; // emulator corr str
+  // paramInitials[11] = 0.97; // emulator corr str
+  // paramInitials[12]  = 0.97; // emulator corr str
+  // paramInitials[13]  = 0.20; // emulator corr str
+  // paramInitials[14]  = 0.80; // emulator corr str
+  // paramInitials[15]  = 10.0; // discrepancy precision
+  // paramInitials[16]  = 0.97; // discrepancy corr str
+  // paramInitials[17]  = 8000.0; // emulator data precision
+  // // paramInitials[18]  = 1.0;  // observation error precision
 }
 
-
-void NonDGPMSABayesCalibration::acquire_simulation_data()
+void NonDGPMSABayesCalibration::fill_simulation_data()
 {
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Acquiring simulation data." << std::endl;
+  // this is wrong because it may include hyper-parameters
+  //  unsigned int num_uncertain_vars = paramSpace->dimGlobal();
+  unsigned int num_uncertain_vars = numContinuousVars;
+  unsigned int num_simulations = buildSamples; // TODO: generalize
+  unsigned int user_config_vars = expData.num_config_vars();
+  // GPMSA requires at least 1 configuration variable, set to 0.5 for
+  // all scenarios if needed
+  bool no_config_vars = (user_config_vars < 1);
+  unsigned int gpmsa_config_vars = std::max(user_config_vars, (unsigned int) 1);
 
-  // Rationale: Trying to keep this agnostic to mocked up config vars...
+  // simulations are described by configuration, parameters, output values
+  std::vector<QUESO::SharedPtr<GslVector>::Type >
+    sim_scenarios(num_simulations),  // config var values
+    sim_params(num_simulations),     // theta var values
+    sim_outputs(num_simulations);    // simulation output (response) values
 
-  simulationData.shape(buildSamples, 
-		       numContinuousVars + userConfigVars + numFunctions);
+  // Instantiate each of the simulation points/outputs
+  for (unsigned int i = 0; i < num_simulations; i++) {
+    sim_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
+    sim_params[i].reset(new GslVector(paramSpace->zeroVector()));
+    sim_outputs[i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
+  }
 
+  // Populate simulation data  (generate or load build data)
   if (approxImportFile.empty()) {
 
     // NOTE: Assumes the design is performed over the config vars
-    // TODO: make this modular on the dimensions of config vars...
     lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
     const RealMatrix&  all_samples = lhsIter.all_samples();
     const IntResponseMap& all_resp = lhsIter.all_responses();
@@ -437,15 +440,17 @@ void NonDGPMSABayesCalibration::acquire_simulation_data()
     }
 
     IntRespMCIter resp_it = all_resp.begin();
-    for (unsigned int i = 0; i < buildSamples; i++, ++resp_it) {
-      for (int j=0; j<numContinuousVars; ++j)
-	simulationData(i, j) = all_samples(j, i);
-      for (int j=0; j<userConfigVars; ++j)
-	simulationData(i, numContinuousVars + j) = 
-	  all_samples(numContinuousVars + j, i);
-      for (int j=0; j<numFunctions; ++j)
-	simulationData(i, numContinuousVars + userConfigVars + j) = 
-	  resp_it->second.function_values()[j];
+    for (unsigned int i = 0; i < num_simulations; i++, ++resp_it) {
+      int bd_index = 0;
+      for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
+        (*sim_params[i])[j] = all_samples(bd_index, i);
+      for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
+        if (no_config_vars)
+          (*sim_scenarios[i])[j] = 0.5;
+        else
+          (*sim_scenarios[i])[j] = all_samples(bd_index, i);
+      }
+      copy_gsl(resp_it->second.function_values(), *sim_outputs[i]);
     }
 
   }
@@ -455,108 +460,30 @@ void NonDGPMSABayesCalibration::acquire_simulation_data()
     // active_only and number of user-specified config vars.  If
     // reading active_only, have to assume all simulations conducted
     // at nominal state variable values.
+    RealMatrix build_data;
     size_t record_len = (approxImportActiveOnly) ?
-      numContinuousVars + numFunctions :
-      numContinuousVars + userConfigVars + numFunctions;
+      num_uncertain_vars + numFunctions :
+      num_uncertain_vars + user_config_vars + numFunctions;
     bool verbose = (outputLevel > NORMAL_OUTPUT);
     TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
-				 simulationData, buildSamples, record_len,
+				 build_data, num_simulations, record_len,
 				 approxImportFormat, verbose);
-    // TODO: Have to fill in configuration variable values for
-    // active_only, or error
-  }
 
-}
+    for (unsigned int i = 0; i < num_simulations; i++) {
+      int bd_index = 0;
+      for (int j=0; j<num_uncertain_vars; ++j, ++bd_index)
+        (*sim_params[i])[j] = build_data(i, bd_index);
+      for (int j=0; j<gpmsa_config_vars; ++j, ++bd_index) {
+        if (no_config_vars)
+          (*sim_scenarios[i])[j] = 0.5;
+        else
+          (*sim_scenarios[i])[j] = build_data(i, bd_index);
+      }
+      for (int j=0; j<numFunctions; ++j, ++bd_index)
+        (*sim_outputs[i])[j] = build_data(i, bd_index);
 
-
-/** Check for valid vs. degenerate configuration variable scaling
-    cases.  If all configs for a variable are identical, scale them
-    all to 0.5. Could also consider scaling them based on continuous
-    state bounds if present... */
-void NonDGPMSABayesCalibration::normalize_configs()
-{
-  for (int j=0; j<userConfigVars; ++j) {
-
-    // Calculate stats
-    accum::accumulator_set<Real, accum::stats<accum::tag::min, accum::tag::max> > acc;
-    for (int i=0; i<buildSamples; ++i)
-      acc(simulationData(i, numContinuousVars + j));
-    Real config_min = accum::min(acc);
-    Real config_max = accum::max(acc);
-
-    // These cases could be collapsed, but hope to delegate to QUESO,
-    // so modeling the various APIs.  TODO: numerical tolerance here
-    if (config_min < config_max)
-      gpmsaOptions->set_autoscale_minmax_scenario_parameter(j);
-    else {
-      gpmsaOptions->set_scenario_parameter_scaling( j, (config_min - 0.5),
-					       (config_max + 0.5) );
-      if (outputLevel >= VERBOSE_OUTPUT)
-	Cout << "GPMSA Warning: All simulation configurations for configuration"
-	     << " variable " << (j+1) << "\n               are identical."
-	     << std::endl;
     }
 
-  }
-}
-
-
-void NonDGPMSABayesCalibration::fill_simulation_data(bool scale_data)
-{
-  // simulations are described by configuration, parameters, output values
-  std::vector<QUESO::SharedPtr<GslVector>::Type >
-    sim_scenarios(buildSamples),  // config var values
-    sim_params(buildSamples),     // theta var values
-    sim_outputs(buildSamples);    // simulation output (response) values
-
-  // Instantiate each of the simulation points/outputs
-  for (unsigned int i = 0; i < buildSamples; i++) {
-    sim_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
-    sim_params[i].reset(new GslVector(paramSpace->zeroVector()));
-    sim_outputs[i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
-  }
-
-  // Rationale: loops ordered this way due to possible scaling in function values
-
-  for (int j=0; j<numContinuousVars; ++j)
-     for (int i=0; i<buildSamples; ++i)
-       (*sim_params[i])[j] = simulationData(i, j);
-
-  for (int j=0; j<gpmsaConfigVars; ++j)
-     for (int i=0; i<buildSamples; ++i)
-       if (userConfigVars > 0)
-	 (*sim_scenarios[i])[j] = simulationData(i, numContinuousVars + j);
-       else
-	 (*sim_scenarios[i])[j] = 0.5;
-
-  if (scale_data) {
-    // compute mean/stddev, scale, populate data
-    simulationMean.resize(numFunctions);
-    simulationStdDev.resize(numFunctions);
-
-    for (int j=0; j<numFunctions; ++j) {
-      accum::accumulator_set<Real, accum::stats<accum::tag::mean, accum::tag::variance> > acc;
-      for (int i = 0; i < buildSamples; ++i)
-	acc(simulationData(i, numContinuousVars + userConfigVars + j));
-      simulationMean[j]= accum::mean(acc);
-      simulationStdDev[j]= std::sqrt(accum::variance(acc));
-
-      for (int i = 0; i < buildSamples; ++i)
-	(*sim_outputs[i])[j] = 
-	  ( simulationData(i, numContinuousVars + userConfigVars + j) - 
-	    simulationMean[j]) / simulationStdDev[j];
-    }
-    if (outputLevel >= DEBUG_OUTPUT) {
-      Cout << "GPMSA simulationMean:\n" << simulationMean << std::endl;
-      Cout << "GPMSA simulationStdDev:\n" << simulationStdDev << std::endl;
-    }
-  }
-  else {
-    // copy data
-    for (int j=0; j<numFunctions; ++j)
-	for (int i = 0; i < buildSamples; ++i)
-	  (*sim_outputs[i])[j] = 
-	    simulationData(i, numContinuousVars + userConfigVars + j);
   }
 
   gpmsaFactory->addSimulations(sim_scenarios, sim_params, sim_outputs);
@@ -564,10 +491,14 @@ void NonDGPMSABayesCalibration::fill_simulation_data(bool scale_data)
 }
 
 
-void NonDGPMSABayesCalibration::fill_experiment_data(bool scale_data)
+void NonDGPMSABayesCalibration::fill_experiment_data()
 {
   unsigned int num_experiments = expData.num_experiments();
+  unsigned int user_config_vars = expData.num_config_vars();
   unsigned int experiment_size = expData.all_data(0).length();
+
+  bool no_config_vars = (user_config_vars < 1);
+  unsigned int gpmsa_config_vars = std::max(user_config_vars, (unsigned int) 1);
 
   // characterization of the experiment data
   std::vector<QUESO::SharedPtr<GslVector>::Type > 
@@ -585,23 +516,13 @@ void NonDGPMSABayesCalibration::fill_experiment_data(bool scale_data)
     exp_outputs[i].reset(new GslVector(experimentSpace->zeroVector()));
 
     // NOTE: copy_gsl will resize the target objects rather than erroring.
-    if (userConfigVars > 0)
-      copy_gsl(exp_config_vars[i], *exp_scenarios[i]);
-    else
+    if (no_config_vars)
       (*exp_scenarios[i])[0] = 0.5;
-
+    else
+      copy_gsl(exp_config_vars[i], *exp_scenarios[i]);
     copy_gsl(expData.all_data(i), *exp_outputs[i]);
 
   }
-  // TODO: experiment space may not be numFunctions in field case
-
-  // keep this loop separate in hopes of making it a separate
-  // function, or integrating in QUESO, instead of optimizing for now
-  if (scale_data)
-    for (int j=0; j<numFunctions; ++j)
-      for (unsigned int i = 0; i < num_experiments; i++)
-	(*exp_outputs[i])[j] =
-	  ((*exp_outputs[i])[j] - simulationMean[j]) / simulationStdDev[j];
 
   // Experimental observation error covariance (default = I)
   QUESO::VectorSpace<GslVector, GslMatrix> 
