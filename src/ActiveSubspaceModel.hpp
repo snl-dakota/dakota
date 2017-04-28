@@ -76,9 +76,7 @@ public:
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
-
   bool finalize_mapping();
-
   bool mapping_initialized() const;
   bool resize_pending() const;
 

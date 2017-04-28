@@ -84,7 +84,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
-  supportsEstimDerivs(true),
+  warmStartFlag(false), supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
@@ -285,7 +285,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
   currentResponse(srd, set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), fdGradStepType("relative"),
-  fdHessStepType("relative"), supportsEstimDerivs(true),
+  fdHessStepType("relative"), warmStartFlag(false), supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
@@ -309,7 +309,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
+  warmStartFlag(false), supportsEstimDerivs(true),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
@@ -2956,8 +2957,21 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
   if (modelRep)
     return modelRep->initialize_mapping(pl_iter);
   else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
+    // restore initial states for re-entrancy
+    currentResponse.reset();
+    if (!warmStartFlag) {
+      // Dakota::Variables does not support reset() since initial points are not
+      // cached in Model/Variables -- they are generally (re)set from Iterator.
+      //currentVariables.reset(); // not supported
+
+      if (!quasiHessians.empty()) {
+	for (size_t i=0; i<numFns; ++i)
+	  quasiHessians[i] = 0.;
+	numQuasiUpdates.assign(numFns, 0);
+      }
+    }
+
+    return false; // size did not change
   }
 }
 
@@ -2966,10 +2980,8 @@ bool Model::finalize_mapping()
 {
   if (modelRep)
     return modelRep->finalize_mapping();
-  else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
-  }
+  else // Base class default behavior is no-op
+    return false; // size did not change
 }
 
 

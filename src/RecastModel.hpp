@@ -186,6 +186,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+
   /// portion of evaluate() specific to RecastModel
   /// (forward to subModel.evaluate())
   void derived_evaluate(const ActiveSet& set);
@@ -498,6 +501,14 @@ inline RecastModel::~RecastModel()
 
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
 { subModel.supports_derivative_estimation(sed_flag); }
+
+
+inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
+{ return Model::initialize_mapping(pl_iter); }
+
+
+inline bool RecastModel::finalize_mapping()
+{ return Model::finalize_mapping(); }
 
 
 inline Iterator& RecastModel::subordinate_iterator()

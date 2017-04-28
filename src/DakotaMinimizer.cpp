@@ -52,8 +52,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling")),
-  initializeRunModelMapping(false)
+  scaleFlag(probDescDB.get_bool("method.scaling"))
 {
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
@@ -73,7 +72,7 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false), initializeRunModelMapping(false)
+  scaleFlag(false)
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
@@ -92,7 +91,7 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
   speculativeFlag(false), optimizationFlag(true), 
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false), initializeRunModelMapping(false)
+  scaleFlag(false)
 { }
 
 
@@ -258,18 +257,17 @@ void Minimizer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator()
+    // are not called through IteratorScheduler::run_iterator().  Within a
+    // recursion, it will correspond to the first initialize_run() with an
+    // uninitialized mapping, such as the outer-iterator on the first pass
+    // of a recursion.  On subsequent passes, it may correspond to the inner
+    // iterator.  The Iterator scope should not matter for the iteratedModel
+    // mapping initialize/finalize.
     if (!iteratedModel.mapping_initialized()) {
-      // ensure pairing with finalize_mapping() below in finalize_run()
-      // (don't interfere with IteratorScheduler)
-      initializeRunModelMapping = true;
-
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
-      if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
-      }
+      if (var_size_changed)
+        /*bool reinit_comms =*/ resize(); // ignore return value
     }
 
     // Do not reset the evaluation reference for sub-iterators
@@ -332,15 +330,15 @@ void Minimizer::finalize_run()
   // Restore previous object instance in case of recursion.
   minimizerInstance = prevMinInstance;
 
-  if (initializeRunModelMapping && iteratedModel.mapping_initialized()) {
+  // Finalize an initialized mapping.  This will correspond to the first
+  // finalize_run() with an uninitialized mapping, such as the inner-iterator
+  // in a recursion.
+  if (iteratedModel.mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
     bool var_size_changed = iteratedModel.finalize_mapping();
-    if (var_size_changed) {
-      bool reinit_comms = resize(); // Ignore return value
-    }
-
-    initializeRunModelMapping = false;
+    if (var_size_changed)
+      /*bool reinit_comms =*/ resize(); // ignore return value
   }
 
   Iterator::finalize_run(); // included for completeness

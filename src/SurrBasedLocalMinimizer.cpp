@@ -198,6 +198,11 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     if (approxSubProbObj != ORIGINAL_PRIMARY)
       approxSubProbModel.primary_fn_type(OBJECTIVE_FNS);
   }
+
+  // activate warm starting of accumulated data (i.e., quasi-Newton Hessians).
+  // Note: this is best done at the iteratedModel level, to avoid any
+  // interaction with penalty and multiplier states in approxSubProbModel.
+  iteratedModel.warm_start_flag(true);
 }
 
 
@@ -982,8 +987,7 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 			      Response& recast_response)
 {
   // RecastModel evaluates its subModel response and then invokes this fn
-  const RealVector& surrogate_fns   = surrogate_response.function_values();
-  const RealMatrix& surrogate_grads = surrogate_response.function_gradients();
+  const RealVector& surrogate_fns = surrogate_response.function_values();
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (sblmInstance->approxSubProbObj == ORIGINAL_PRIMARY) {
     for (size_t i=0; i<sblmInstance->numUserPrimaryFns; ++i) {
@@ -992,6 +996,9 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
       if (recast_asv[i] & 2)
 	recast_response.function_gradient(
 	  surrogate_response.function_gradient_view(i), i );
+      if (recast_asv[i] & 4)
+	recast_response.function_hessian(
+	  surrogate_response.function_hessian(i), i );
     }
   }
   else {
@@ -1035,6 +1042,8 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 
     if (recast_asv[0] & 2) {
       RealVector recast_grad;
+      const RealMatrix& surrogate_grads
+	= surrogate_response.function_gradients();
       switch (sblmInstance->approxSubProbObj) {
       case SINGLE_OBJECTIVE:
 	sblmInstance->objective_gradient(surrogate_fns, surrogate_grads, sense,
@@ -1051,6 +1060,31 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 	break;
       }
       recast_response.function_gradient(recast_grad, 0);
+    }
+
+    if (recast_asv[0] & 4) {
+      RealSymMatrix recast_hess;
+      const RealMatrix& surrogate_grads
+	= surrogate_response.function_gradients();
+      const RealSymMatrixArray& surrogate_hessians
+	= surrogate_response.function_hessians();
+      switch (sblmInstance->approxSubProbObj) {
+      case SINGLE_OBJECTIVE:
+	sblmInstance->objective_hessian(surrogate_fns, surrogate_grads,
+	  surrogate_hessians, sense, wts, recast_hess);
+	break;
+      case LAGRANGIAN_OBJECTIVE:
+	sblmInstance->lagrangian_hessian(surrogate_fns, surrogate_grads,
+	  surrogate_hessians, sense,
+	  wts, nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts, recast_hess);
+	break;
+      case AUGMENTED_LAGRANGIAN_OBJECTIVE:
+	sblmInstance->augmented_lagrangian_hessian(surrogate_fns,
+	  surrogate_grads, surrogate_hessians, sense, wts, nln_ineq_l_bnds,
+	  nln_ineq_u_bnds, nln_eq_tgts, recast_hess);
+	break;
+      }
+      recast_response.function_hessian(recast_hess, 0);
     }
   }
 }
@@ -1089,6 +1123,9 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
 	  surrogate_response.function_gradient_view(surr_i), recast_i );
+      if (recast_asv[recast_i] & 4)
+	recast_response.function_hessian(
+	  surrogate_response.function_hessian(surr_i), recast_i );
     }
     break;
   }
@@ -1123,6 +1160,11 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
 	  center_approx_resp.function_gradient_view(surr_i), recast_i);
+      if (recast_asv[recast_i] & 4) {
+	RealSymMatrix recast_hess
+	  = recast_response.function_hessian_view(recast_i);
+	recast_hess = 0.; // linearized constraints
+      }
     }
 #ifdef DEBUG
     Cout << "center_c_vars =\n" << center_c_vars << "c_vars =\n" << c_vars

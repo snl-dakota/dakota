@@ -129,6 +129,8 @@ void AdaptedBasisModel::validate_inputs()
 
 bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  RecastModel::initialize_mapping(pl_iter);
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nAdapted Basis Model: Initializing adapted basis model."
 	 << std::endl;
@@ -170,6 +172,10 @@ bool AdaptedBasisModel::initialize_mapping(ParLevLIter pl_iter)
 bool AdaptedBasisModel::finalize_mapping()
 {
   // TODO: return to full space
+  //adaptedBasisInitialized = false;
+
+  RecastModel::finalize_mapping();
+
   return false; // This will become true when TODO is implemented.
 }
 

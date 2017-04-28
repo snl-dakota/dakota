@@ -54,6 +54,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
   /// return mappingInitialized
   bool mapping_initialized() const;
 
@@ -182,11 +184,6 @@ protected:
   /// a rebuild is required.
   RealVector referenceIDRVars;
 
-  /// track use of initialize_mapping() and finalize_mapping() due to
-  /// potential redundancy between IteratorScheduler::run_iterator()
-  /// and {Analyzer,Minimizer}::initialize_run()
-  bool mappingInitialized;
-
 private:
 
   //
@@ -199,11 +196,30 @@ private:
   /// copy of the truth model constraints object used to simplify conversion 
   /// among differing variable views in force_rebuild()
   Constraints truthModelCons;
+
+  /// track use of initialize_mapping() and finalize_mapping() due to
+  /// potential redundancy between IteratorScheduler::run_iterator()
+  /// and {Analyzer,Minimizer}::initialize_run()
+  bool mappingInitialized;
 };
 
 
 inline SurrogateModel::~SurrogateModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+inline bool SurrogateModel::initialize_mapping(ParLevLIter pl_iter)
+{
+  mappingInitialized = true;
+  return Model::initialize_mapping(pl_iter);
+}
+
+
+inline bool SurrogateModel::finalize_mapping()
+{
+  mappingInitialized = false;
+  return Model::finalize_mapping();
+}
 
 
 inline bool SurrogateModel::mapping_initialized() const
