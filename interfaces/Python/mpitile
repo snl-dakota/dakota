@@ -91,8 +91,11 @@ def main():
     sys.exit(ret)
 
 if __name__ == "__main__":
-    main()
-
+    try:
+        main()
+    except (parallel.ResourceError, parallel.MgrEnvError) as e:
+        print("mpitile: " + str(e),file=sys.stderr)
+        sys.exit(1)
 
 
 
