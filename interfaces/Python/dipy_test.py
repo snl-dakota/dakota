@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import unittest
+import os
 try: # Python 2/3 compatible import of StringIO
     import StringIO
 except ImportError:
     import io as StringIO
 import dipy
+from dipy import parallel 
 
 apreproParams = """                    { DAKOTA_VARS     =                      3 }
                     { x1              =  7.488318331306800e-01 }
@@ -55,7 +57,7 @@ class dipyTestCase(unittest.TestCase):
     def test_aprepro_format(self):
         """Confirm that aprepro format Parameters files are parsed correctly."""
         pio = StringIO.StringIO(apreproParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio, results_file="results.out")
+        p, r = dipy.dipy._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
         self.assertAlmostEqual(p["x1"], 7.488318331306800e-01)
@@ -78,7 +80,7 @@ class dipyTestCase(unittest.TestCase):
     def test_dakota_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
         pio = StringIO.StringIO(dakotaParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio, results_file="results.out")
+        p, r = dipy.dipy._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
         self.assertAlmostEqual(p["x1"], 7.488318331306800e-01)
@@ -103,23 +105,23 @@ class dipyTestCase(unittest.TestCase):
         """Results behaves according to the ASV when response data is set."""
         # Function only
         pio = StringIO.StringIO(dakotaParams % 1)
-        p, r = dipy._read_parameters_stream(stream=pio)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
         set_function(r)
-        self.assertRaises(dipy.ResponseError, set_gradient, r)
-        self.assertRaises(dipy.ResponseError, set_hessian, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_gradient, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_hessian, r)
         r.write(StringIO.StringIO())
         # Gradient only
         pio = StringIO.StringIO(dakotaParams % 2)
-        p, r = dipy._read_parameters_stream(stream=pio)
-        self.assertRaises(dipy.ResponseError, set_function, r)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
+        self.assertRaises(dipy.dipy.ResponseError, set_function, r)
         set_gradient(r)
-        self.assertRaises(dipy.ResponseError, set_hessian, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_hessian, r)
         r.write(StringIO.StringIO())
         # Hessian only
         pio = StringIO.StringIO(dakotaParams % 4)
-        p, r = dipy._read_parameters_stream(stream=pio)
-        self.assertRaises(dipy.ResponseError, set_function, r)
-        self.assertRaises(dipy.ResponseError, set_gradient, r)
+        p, r = dipy.dipy._read_parameters_stream(stream=pio)
+        self.assertRaises(dipy.dipy.ResponseError, set_function, r)
+        self.assertRaises(dipy.dipy.ResponseError, set_gradient, r)
         set_hessian(r)
         r.write(StringIO.StringIO())
        
@@ -128,22 +130,23 @@ class dipyTestCase(unittest.TestCase):
         # Test exceptions
         for i in range(1,8):
             sio = StringIO.StringIO(dakotaParams % i)
-            p, r = dipy._read_parameters_stream(stream=sio,ignore_asv=True)
+            p, r = dipy.dipy._read_parameters_stream(stream=sio,ignore_asv=True)
             set_function(r) 
             set_gradient(r) 
             set_hessian(r)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
         sio = StringIO.StringIO(dakotaParams % 3)
-        p, r = dipy._read_parameters_stream(stream=sio,ignore_asv=False)
+        p, r = dipy.dipy._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
         rio = StringIO.StringIO()
         r.write(stream=rio,ignore_asv=True)
         self.assertEqual(rio.getvalue(), "  5.0000000000000000E+00 response_fn_1\n")
     
     def test_results_write(self):
+        """Verify Written test results"""
         sio = StringIO.StringIO(dakotaParams % 7)
-        p, r = dipy._read_parameters_stream(stream=sio)
+        p, r = dipy.dipy._read_parameters_stream(stream=sio)
         set_function(r) 
         set_gradient(r) 
         set_hessian(r)
@@ -162,6 +165,110 @@ class dipyTestCase(unittest.TestCase):
         expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
 
+
+    def test_slurm_info(self):
+        """Info correctly extracted from the environment."""
+        # Check env without SLURM_JOBID set
+        try:
+            del os.environ["SLURM_JOBID"]
+        except KeyError:
+            pass
+        self.assertRaises(parallel.MgrEnvError,parallel._get_job_info)
+
+        # Set JOBID and set TASKS_PER_NODE
+        os.environ["SLURM_JOBID"] = "1337"
+        os.environ["SLURM_TASKS_PER_NODE"] = "16(x2)"
+        nnodes, tpn, job_id = parallel._get_job_info()
+        self.assertEqual(nnodes, 2)
+        self.assertEqual(tpn, 16)
+        self.assertEqual(job_id,"1337")
+
+        # Single node
+        os.environ["SLURM_TASKS_PER_NODE"] = "16"
+        nnodes, tpn, job_id = parallel._get_job_info()
+        self.assertEqual(nnodes, 1)
+        self.assertEqual(tpn, 16)
+
+    def test_node_list(self):
+        """Relative node list is built correctly."""
+
+        self.assertEqual( "+n0",
+                parallel._get_node_list(tile=0, applic_tasks=16,
+                                             tasks_per_node=16))
+        self.assertEqual( "+n0,+n1",
+                parallel._get_node_list(tile=0, applic_tasks=32,
+                                             tasks_per_node=16))
+        self.assertEqual( "+n0",
+                parallel._get_node_list(tile=0, applic_tasks=8,
+                                             tasks_per_node=16))
+        self.assertEqual( "+n0",
+                parallel._get_node_list(tile=1, applic_tasks=8,
+                                             tasks_per_node=16))
+        self.assertEqual( "+n1",
+                parallel._get_node_list(tile=0, applic_tasks=16,
+                    tasks_per_node=16, dedicated_master=parallel.NODE))
+
+        self.assertEqual( "+n1,+n2",
+                parallel._get_node_list(tile=0, applic_tasks=32,
+                    tasks_per_node=16, dedicated_master=parallel.NODE))
+
+        self.assertEqual( "+n0",
+                parallel._get_node_list(tile=0, applic_tasks=8,
+                    tasks_per_node=16, dedicated_master=parallel.TILE))
+
+        self.assertEqual( "+n1",
+                parallel._get_node_list(tile=1, applic_tasks=8,
+                    tasks_per_node=16, dedicated_master=parallel.TILE))
+
+        self.assertEqual( "+n1",
+                parallel._get_node_list(tile=0, applic_tasks=16,
+                    tasks_per_node=16, dedicated_master=parallel.TILE))
+
+
+
+    def test_static_tile(self):
+        """Correct tile is returned"""
+        self.assertEqual(0,
+                parallel._calc_static_tile(eval_num=1, num_tiles=4))
+        self.assertEqual(3,
+                parallel._calc_static_tile(eval_num=4, num_tiles=4))
+        self.assertEqual(0,
+                parallel._calc_static_tile(eval_num=5, num_tiles=4))
+        self.assertEqual(0,
+                parallel._calc_static_tile(eval_num=9, num_tiles=4))
+        self.assertEqual(0,
+                parallel._calc_static_tile(eval_num=1, num_tiles=1))
+        self.assertEqual(0,
+                parallel._calc_static_tile(eval_num=100, num_tiles=1))
+
+    def test_num_tiles(self):
+        self.assertEqual(10,
+                parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
+                    num_nodes=10))
+        self.assertEqual(1,
+                parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
+                    num_nodes=1))
+        self.assertEqual(9,
+                parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
+                    num_nodes=10, dedicated_master=parallel.NODE))
+        self.assertEqual(9,
+                parallel._calc_num_tiles(applic_tasks=16, tasks_per_node=16,
+                    num_nodes=10, dedicated_master=parallel.TILE))
+        self.assertEqual(18,
+                parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
+                    num_nodes=10, dedicated_master=parallel.NODE))
+        self.assertEqual(19,
+                parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
+                    num_nodes=10, dedicated_master=parallel.TILE))
+        self.assertEqual(1,
+                parallel._calc_num_tiles(applic_tasks=8, tasks_per_node=16,
+                    num_nodes=1, dedicated_master=parallel.TILE))
+        self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
+                    applic_tasks=8, tasks_per_node=16, num_nodes=1, 
+                    dedicated_master=parallel.NODE)
+        self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
+                    applic_tasks=16, tasks_per_node=16, num_nodes=1, 
+                    dedicated_master=parallel.TILE)
 # todo: test iteration, integer access
 
 

@@ -2542,10 +2542,10 @@
 		    <param type="INTEGER" />
 		  </keyword>
 		  <!--&default_max_function_evaluations;-->
-                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="0" >
-                    <param type="INTEGER" constraint=">= 0" />
+                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="1" >
+                    <param type="INTEGER" constraint="> 0" />
                   </keyword>
-                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(sizet,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0" default="0" >
+                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0">
                     <param type="INTEGER" constraint=">= 0" />
                   </keyword>
                   <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import" help="" minOccurs="0" default="no point import from a file" >

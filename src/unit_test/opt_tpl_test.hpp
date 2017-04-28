@@ -36,7 +36,6 @@ static Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test::create_env(const Strin
   Dakota::ProgramOptions opts;
   opts.echo_input(false);
 
-  // opts.input_string(serial_input);
   opts.input_string(in_string);
 
   // delay validation/sync of the Dakota database and iterator
