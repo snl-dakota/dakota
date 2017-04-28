@@ -26,7 +26,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   correctionMode(SINGLE_CORRECTION), componentParallelIndices(_NPOS,_NPOS)
 {
   // Hierarchical surrogate models pass through numerical derivatives
-  supports_derivative_estimation(false);
+  supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
@@ -315,8 +315,10 @@ bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into orderedModels
   size_t i, num_models = orderedModels.size();
-  for (i=0; i<num_models; ++i)
+  for (i=0; i<num_models; ++i) {
+    orderedModels[i].initialize_mapping(pl_iter);
     init_model(orderedModels[i]);
+  }
 
   return false; // no change to problem size
 }
@@ -328,6 +330,10 @@ bool HierarchSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool HierarchSurrModel::finalize_mapping()
 {
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].finalize_mapping();
+
   SurrogateModel::finalize_mapping();
 
   return false; // no change to problem size

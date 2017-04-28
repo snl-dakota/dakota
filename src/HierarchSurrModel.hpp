@@ -169,6 +169,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
                                 bool relative_count = true) const;
 
+  /// set the warm start flag, including the orderedModels
+  void warm_start_flag(const bool flag);
+
 private:
 
   //
@@ -513,6 +516,17 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
   for (i=0; i<num_models; ++i)
     orderedModels[i].print_evaluation_summary(s, minimal_header,
         relative_count);
+}
+
+
+inline void HierarchSurrModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag; // for completeness
+
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].warm_start_flag(flag);
 }
 
 } // namespace Dakota

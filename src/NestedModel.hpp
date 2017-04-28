@@ -146,6 +146,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including actualModel
+  void warm_start_flag(const bool flag);
+
   //
   //- Heading: Member functions
   //
@@ -677,6 +680,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel.print_evaluation_summary(s, minimal_header, false);
+}
+
+
+inline void NestedModel::warm_start_flag(const bool flag)
+{
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
 }
 
 

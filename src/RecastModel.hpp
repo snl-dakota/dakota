@@ -346,6 +346,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including the orderedModels
+  void warm_start_flag(const bool flag);
+
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
 
@@ -803,6 +806,15 @@ inline void RecastModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 { subModel.print_evaluation_summary(s, minimal_header, relative_count); }
+
+
+inline void RecastModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
+}
+
 
 /** RecastModel just forwards any tags to its subModel */
 inline void RecastModel::eval_tag_prefix(const String& eval_id_str)

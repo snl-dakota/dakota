@@ -2958,7 +2958,7 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
     return modelRep->initialize_mapping(pl_iter);
   else {
     // restore initial states for re-entrancy
-    currentResponse.reset();
+    currentResponse.reset(); // for completeness
     if (!warmStartFlag) {
       // Dakota::Variables does not support reset() since initial points are not
       // cached in Model/Variables -- they are generally (re)set from Iterator.
@@ -2967,7 +2967,7 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
       if (!quasiHessians.empty()) {
 	for (size_t i=0; i<numFns; ++i)
 	  quasiHessians[i] = 0.;
-	numQuasiUpdates.assign(numFns, 0);
+	numQuasiUpdates.assign(numFns, 0);// {x,fnGrads}Prev will be overwritten
       }
     }
 
@@ -3702,6 +3702,13 @@ int Model::serve_finalize_mapping(ParLevLIter pl_iter)
     // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
+}
+
+
+void Model::warm_start_flag(const bool flag)
+{
+  if (modelRep) modelRep->warm_start_flag(flag);
+  else          warmStartFlag = flag;
 }
 
 

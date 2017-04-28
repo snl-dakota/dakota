@@ -399,6 +399,9 @@ public:
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
 
+  /// set the warm start flag (warmStartFlag)
+  virtual void warm_start_flag(const bool flag);
+
   //
   //- Heading: Member functions
   //
@@ -1057,11 +1060,6 @@ public:
   bool asynch_flag() const;
   /// set the asynchronous evaluation flag (asynchEvalFlag)
   void asynch_flag(const bool flag);
-
-  /// return the warm start flag (warmStartFlag)
-  bool warm_start_flag() const;
-  /// set the warm start flag (warmStartFlag)
-  void warm_start_flag(const bool flag);
 
   /// return the outputLevel
   short output_level() const;
@@ -3420,17 +3418,6 @@ inline void Model::asynch_flag(const bool flag)
 {
   if (modelRep) modelRep->asynchEvalFlag = flag;
   else          asynchEvalFlag = flag;
-}
-
-
-inline bool Model::warm_start_flag() const
-{ return (modelRep) ? modelRep->warmStartFlag : warmStartFlag; }
-
-
-inline void Model::warm_start_flag(const bool flag)
-{
-  if (modelRep) modelRep->warmStartFlag = flag;
-  else          warmStartFlag = flag;
 }
 
 

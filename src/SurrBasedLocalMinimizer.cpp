@@ -202,7 +202,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
   // activate warm starting of accumulated data (i.e., quasi-Newton Hessians).
   // Note: this is best done at the iteratedModel level, to avoid any
   // interaction with penalty and multiplier states in approxSubProbModel.
-  iteratedModel.warm_start_flag(true);
+  approxSubProbModel.warm_start_flag(true);
 }
 
 
