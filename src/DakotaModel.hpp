@@ -399,6 +399,9 @@ public:
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
 
+  /// set the warm start flag (warmStartFlag)
+  virtual void warm_start_flag(const bool flag);
+
   //
   //- Heading: Member functions
   //
@@ -1292,6 +1295,8 @@ protected:
   bool ignoreBounds;
   /// option to use old 2nd-order finite diffs for Hessians
   bool centralHess;
+  /// if in warm-start mode, don't reset accumulated data (e.g., quasiHessians)
+  bool warmStartFlag;
   /// whether model should perform or forward derivative estimation
   bool supportsEstimDerivs;
   /// quasi-Hessian type: bfgs, damped_bfgs, sr1

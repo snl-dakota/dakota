@@ -6882,6 +6882,7 @@ static int
         MP_(iteratorServers),
 	MP_(jumpStep),
 	MP_(maxFunctionEvaluations),
+	MP_(maxHifiEvals),
 	MP_(maxIterations),
 	MP_(maxRefineIterations),
 	MP_(maxSolverIterations),
@@ -6905,7 +6906,6 @@ static int
 	MP_(verifyLevel);
 
 static size_t
-	MP_(maxHifiEvals),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
         MP_(numDesigns),

@@ -13,26 +13,25 @@ def main():
     # parser is invoked on each subset.
     
     # The first set of tokens must contain options to mpitile (e.g. --static).
-    usage = "%(prog)s [tile options] [--] [global mpirun options] COMMAND1 : COMMAND2 : ..."
+    usage = "%(prog)s [%(prog)s options and global mpirun options] COMMAND1 : COMMAND2 : ..."
     parser = argparse.ArgumentParser(usage=usage,
             formatter_class=argparse.RawDescriptionHelpFormatter,
-            description="Run COMMAND(s) in parallel under SLURM+OpenMPI on an available tile.",
+            description="Run COMMAND (or MIMD COMMANDs) in parallel under SLURM+OpenMPI on an available tile.",
             epilog="%(prog)s is a wrapper for OpenMPI's MPI launcher mpirun. The mpirun\n" +
             "command must be on the PATH.\n\n" +
             "Options and arguments may be passed to mpirun (or the user's code) " +
-            "by including\nthem in COMMANDs. If COMMAND contains any options that are " +
-            "prefixed by a\ndash (\"-\"),then a double-dash must separate %(prog)s's " +
-            "options and the COMMAND.\n\n" +
-            "Example: Launch ./my_sim using 32 tasks, assuming a dedicated master. Pass\n" +
-            "the option -verbose=OFF to ./my_sim and include --.\n\n" +
-            "      %(prog)s -np 32 --dedicated-master -- ./my_sim -verbose=OFF")
+            "by including\nthem in COMMANDs.\n\n" +
+            "Example 1: Launch my_sim using 32 tasks, assuming a dedicated master. Pass\n" +
+            "the option --bind-to none to mpirun and -verbose=OFF to my_sim.\n\n" +
+            "      %(prog)s -np 32 --dedicated-master --bind-to none my_sim -verbose=OFF" +
+            "\n\nExample 2: Launch my_sim1 and my_sim2 in MIMD configuration using 16 " +
+            "tasks\nand static scheduling.\n\n" +
+            "      %(prog)s -np 16 --static --eval-num=$num my_sim1 : -np 16 my_sim2")
 
     parser.add_argument("-n","-np","-c","--n",type=int, dest="applic_tasks",
             help="Number of MPI processes (tasks)", required=True)
-    parser.add_argument("-m","--dedicated-master",action="store_true",dest="dedicated_master",
-            default=False, help="Reserve the first node for Dakota")
-    parser.add_argument("-V","--verbose",action="store_true", dest="verbose", default=False,
-            help="Log status messages.")
+    parser.add_argument("-m","--dedicated-master",action="store",dest="dedicated_master",
+            help="Reserve the first NODE or TILE for Dakota", choices=['NODE','TILE'])
     parser.add_argument("-u","--lock-id", dest="lock_id",
             help="Write lock files named <LOCK_ID>.<tile>. (Default: <SLURM_JOB_ID>.<tile>)")
     parser.add_argument("-l","--lock-dir",dest="lock_dir",
@@ -48,7 +47,7 @@ def main():
             help="Extract the evaluation number from the Dakota parameters file." + 
             "(This option is ignored for the default, dynamic scheduling, and when " +
             "--eval-num is given)")
-    parser.add_argument("command",nargs="*", help=argparse.SUPPRESS)
+    #parser.add_argument("command",nargs="*", help=argparse.SUPPRESS)
 
     # Break up the command line arguments on ":"
     all_cl = sys.argv[1:]
@@ -64,12 +63,15 @@ def main():
 
     # The first (and usually the only) set of tokens contains options to 
     # mpitile. Process these separately in order to extract them.
-    tile_args = parser.parse_args(command_lines[0])
+    tile_args, command = parser.parse_known_args(command_lines[0])
     # Commands is a list of tuples. Each tuple is (applic_tasks, command)
-    commands = [(tile_args.applic_tasks, tile_args.command)]
+    commands = [(tile_args.applic_tasks, command)]
     for line in command_lines[1:]:
-        args = parser.parse_args(line)
-        commands.append( (args.applic_tasks, args.command) )
+        args, command = parser.parse_known_args(line)
+        commands.append( (args.applic_tasks, command) )
+        if args.dedicated_master or args.lock_dir or args.lock_id or \
+                args.static or args.eval_num or args.params_file:
+            print("WARNING: All mpitile options in MIMD COMMANDs except APPLIC_PROCS will be ignored.")
 
     # Call tile_run_static or tile_run_dynamic to launch the user's code(s)
     if tile_args.static:
@@ -89,8 +91,11 @@ def main():
     sys.exit(ret)
 
 if __name__ == "__main__":
-    main()
-
+    try:
+        main()
+    except (parallel.ResourceError, parallel.MgrEnvError) as e:
+        print("mpitile: " + str(e),file=sys.stderr)
+        sys.exit(1)
 
 
 

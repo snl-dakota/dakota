@@ -186,6 +186,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+
   /// portion of evaluate() specific to RecastModel
   /// (forward to subModel.evaluate())
   void derived_evaluate(const ActiveSet& set);
@@ -343,6 +346,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including the orderedModels
+  void warm_start_flag(const bool flag);
+
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
 
@@ -498,6 +504,14 @@ inline RecastModel::~RecastModel()
 
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
 { subModel.supports_derivative_estimation(sed_flag); }
+
+
+inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
+{ return Model::initialize_mapping(pl_iter); }
+
+
+inline bool RecastModel::finalize_mapping()
+{ return Model::finalize_mapping(); }
 
 
 inline Iterator& RecastModel::subordinate_iterator()
@@ -792,6 +806,15 @@ inline void RecastModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 { subModel.print_evaluation_summary(s, minimal_header, relative_count); }
+
+
+inline void RecastModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
+}
+
 
 /** RecastModel just forwards any tags to its subModel */
 inline void RecastModel::eval_tag_prefix(const String& eval_id_str)

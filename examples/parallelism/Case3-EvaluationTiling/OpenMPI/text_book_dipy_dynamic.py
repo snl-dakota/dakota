@@ -14,11 +14,12 @@ shutil.copy(params_file, "application.in")
 ## Run
 # Construct the command. Because multiple tiles fit on each node, use the mpirun
 # option '--bind-to none' to allow tasks to be spread out properly on each node.
-# see the mpirun manpage for more information.
+# See the mpirun manpage for more information.
 
+# Each command is a tuple: (APPLIC_PROCS, ["arguments", "in", "command"] )
 command = (2, # Use two tasks
-        # command must be tokenized
-        ["--bind-to none",
+        ["--bind-to",
+            "none",
             "text_book_simple_par", 
             "application.in", 
             "application.out"]
@@ -28,9 +29,11 @@ command = (2, # Use two tasks
 parallel.tile_run_dynamic(commands=[command])
 
 # If static scheduling is desired, add 'local_evaluation_scheduling static' to
-# the Dakota input and uncomment:
-#parallel.tile_run_static(commands=[command], parameters_file=params_file)
+# the Dakota input, comment out the call to tile_run_dynamic, and uncomment
+# the call to tile_run_static. The parameters file is passed as an argument
+# in order ot provide the evaluation number.
 
+#parallel.tile_run_static(commands=[command], parameters_file=params_file)
 
 ## Post-process
 shutil.copy("application.out", results_file)

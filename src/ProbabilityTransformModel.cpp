@@ -25,7 +25,7 @@ ProbabilityTransformModel::
 ProbabilityTransformModel(const Model& x_model,
                           bool truncated_bounds, Real bound) :
   RecastModel(x_model), distParamDerivs(false),
-  truncatedBounds(truncated_bounds), boundVal(bound)
+  truncatedBounds(truncated_bounds), boundVal(bound), mappingInitialized(false)
 {
   ptmInstance = this;
   modelType = "probability_transform";
@@ -111,13 +111,13 @@ ProbabilityTransformModel(const Model& x_model,
 
 
 ProbabilityTransformModel::~ProbabilityTransformModel()
-{
-  /* empty dtor */
-}
+{ }
 
 
 bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  RecastModel::initialize_mapping(pl_iter);
+
   bool sub_model_resize = subModel.initialize_mapping(pl_iter);
 
   initialize_random_variable_parameters();
@@ -130,7 +130,21 @@ bool ProbabilityTransformModel::initialize_mapping(ParLevLIter pl_iter)
   if (sub_model_resize)
     estimate_message_lengths();
 
+  mappingInitialized = true;
+
   return sub_model_resize;
+}
+
+
+bool ProbabilityTransformModel::finalize_mapping()
+{
+  mappingInitialized = false;
+
+  bool sub_model_resize = subModel.finalize_mapping();
+
+  RecastModel::finalize_mapping();
+
+  return sub_model_resize; // This will become true when TODO is implemented.
 }
 
 

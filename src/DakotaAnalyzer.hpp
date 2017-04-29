@@ -210,10 +210,6 @@ private:
   /// write precision as specified by the user
   int writePrecision;
 
-  /// enforces matching calls to Model::{initialize,finalize}_mapping()
-  /// from Analyzer::{initialize,finalize}_run()
-  bool initializeRunModelMapping;
-
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
   /// VBD main effect indices
@@ -223,7 +219,7 @@ private:
 };
 
 
-inline Analyzer::Analyzer(): initializeRunModelMapping(false)
+inline Analyzer::Analyzer()
 { }
 
 

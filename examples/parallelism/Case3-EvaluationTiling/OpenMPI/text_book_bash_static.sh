@@ -6,8 +6,8 @@
 
 # The script assumes a static scheduling model. Under this model, when
 # evaluation number N completes, Dakota launches evaluation N + evaluation_concurrency.
-# As such, the tile numbered N % evaluation_concurrency will be available. Static
-# scheduling of asynchronous evaluations is enabled in Dakota with the keywords
+# As such, the tile numbered N % evaluation_concurrency can assumed to be available. 
+# Static scheduling of asynchronous evaluations is enabled in Dakota with the keywords
 # 'local_evaluation_scheduling static'.
 
 # The names of the Dakota parameters and results files are provided as command
@@ -16,7 +16,7 @@ params=$1
 results=$2
 
 # Extract the evaluation number from the parameters file name (assumes the file_tag
-# keyword is present in the Dakota input file
+# keyword is present in the Dakota input file.
 num=$(echo $params | awk -F. '{print $NF}')
 
 # -------------------------
@@ -39,8 +39,6 @@ cp $params application.in
 
 # -------------------
 # RUN SIMULATION CODE
-# TODO: instead of repeating the driver in every directory, could we just have
-#       a separate mpi_launch_app.sh in each dir?
 # -------------------
 
 echo "$0 running text_book_simple_par on 2 processors."
@@ -49,14 +47,14 @@ echo "$0 running text_book_simple_par on 2 processors."
 # !!! Requires that APPLIC_PROCS either divide evenly into PPN or be
 # !!! an integer multiple of it
 
-# number of concurrent jobs (must agree with DAKOTA evaluation_concurrency)
-CONCURRENCY=4
+# number of concurrent jobs (must agree with Dakota evaluation_concurrency)
+CONCURRENCY=8
 
-# number of processors per node (with SLURM could use
+# number of processes (or tasks) per node (with SLURM could use
 # $SLURM_CPUS_ON_NODE or $SLURM_TASKS_PER_NODE if appropriate)
-PPN=16
+PPN=4
 
-# number of processors per application job
+# number of processes (tasks) per application job
 APPLIC_PROCS=2
 
 # number of nodes needed per application job ( ceil(APPLIC_PROCS/PPN) )
@@ -66,10 +64,11 @@ applic_nodes=$(( ($APPLIC_PROCS+$PPN-1) / $PPN ))
 # this is the first of the node block for this job
 relative_node=$(( (num - 1) % CONCURRENCY * APPLIC_PROCS / PPN ))
 
-# RESERVE a node for DAKOTA (recommended, but assumes Dakota starts on
-# the zeroth node in the allocation (true for SLURM with OpenMPI);
-# some MPI start Dakota on the last node in which case you need not do
-# anything special to these calcs, just add a node to the batch request)
+# RESERVE a node for Dakota (may be needed if the analysis_driver is 
+# memory intensivs. Assumes Dakota starts on the zeroth node in the 
+# allocation (true for SLURM); some queue systems run the job submission
+# script (and hence Dakota) on the last node. In this case, you need not 
+# do anything special to these calcs, just add a node to the batch request.
 
 # NOTE: it's not trivial to reserve a processor for Dakota in this
 # case (due to -N1-1), though easy to reserve a _node_.  (must allow
@@ -84,9 +83,13 @@ for node_increment in `seq 1 $((applic_nodes - 1))`; do
   node_list="$node_list,+n$((relative_node + node_increment))"
 done
 
-# constrain each application instance to run on nnodes nodes, ncpu
-# processes, and start allocating with (zero-based) relnode (OpenMPI >= 1.3.3)
-mpirun -np $APPLIC_PROCS -host $node_list text_book_simple_par \
+# mpirun the command with the -host list. 
+# Because there are multiple tiles per node (as opposed to 1 tile per node or 
+# multiple nodes per tile), it may be wise to specify '--bind-to none' to mpirun
+# to allow the tasks to float from processor to processor for load balancing.
+# Otherwise, multiple MPI processes may be bound to a single core. This behavior
+# depends on your OpenMPI version; it is best to consult the documentation.
+mpirun -np $APPLIC_PROCS -host $node_list --bind-to none text_book_simple_par \
     application.in application.out
 
 # TODO: openmpi and/or srun exclusive mode should allow mpiexec-like

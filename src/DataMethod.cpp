@@ -149,7 +149,7 @@ DataMethodRep::DataMethodRep():
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
-  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(0),
+  importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),  
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),

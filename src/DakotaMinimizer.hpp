@@ -288,14 +288,11 @@ private:
   //- Heading: Data
   //
 
-  /// enforces matching calls to Model::{initialize,finalize}_mapping()
-  /// from Minimizer::{initialize,finalize}_run()
-  bool initializeRunModelMapping;
 };
 
 
 inline Minimizer::Minimizer(): 
-  calibrationDataFlag(false), scaleFlag(false), initializeRunModelMapping(false)
+  calibrationDataFlag(false), scaleFlag(false)
 { }
 
 

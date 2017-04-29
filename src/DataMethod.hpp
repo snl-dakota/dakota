@@ -1025,7 +1025,7 @@ public:
   size_t numCandidates;
   /// maximum number of highfidelity model runs to be used for adaptive Bayesian 
   /// experimental design
-  size_t maxHifiEvals;
+  int maxHifiEvals;
 
   // DREAM sub-specification
 

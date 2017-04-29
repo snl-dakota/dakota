@@ -78,7 +78,6 @@ protected:
 			const RealVector& nln_ineq_l_bnds,
 			const RealVector& nln_ineq_u_bnds,
 			const RealVector& nln_eq_tgts);
-
   /// compute the gradient of the Lagrangian function
   void lagrangian_gradient(const RealVector& fn_vals,
 			   const RealMatrix& fn_grads,
@@ -88,6 +87,16 @@ protected:
 			   const RealVector& nln_ineq_u_bnds,
 			   const RealVector& nln_eq_tgts,
 			   RealVector& lag_grad);
+  /// compute the Hessian of the Lagrangian function
+  void lagrangian_hessian(const RealVector& fn_vals,
+			  const RealMatrix& fn_grads, 
+			  const RealSymMatrixArray& fn_hessians,
+			  const BoolDeque&  sense,
+			  const RealVector& primary_wts,
+			  const RealVector& nln_ineq_l_bnds,
+			  const RealVector& nln_ineq_u_bnds,
+			  const RealVector& nln_eq_tgts,
+			  RealSymMatrix& lag_hess);
 
   /// compute an augmented Lagrangian function from a set of function values
   Real augmented_lagrangian_merit(const RealVector& fn_vals,
@@ -96,7 +105,6 @@ protected:
 				  const RealVector& nln_ineq_l_bnds,
 				  const RealVector& nln_ineq_u_bnds,
 				  const RealVector& nln_eq_tgts);
-
   /// compute the gradient of the augmented Lagrangian function
   void augmented_lagrangian_gradient(const RealVector& fn_vals,
 				     const RealMatrix& fn_grads,
@@ -106,6 +114,16 @@ protected:
 				     const RealVector& nln_ineq_u_bnds,
 				     const RealVector& nln_eq_tgts,
 				     RealVector& alag_grad);
+  /// compute the Hessian of the augmented Lagrangian function
+  void augmented_lagrangian_hessian(const RealVector& fn_vals,
+				    const RealMatrix& fn_grads, 
+				    const RealSymMatrixArray& fn_hessians,
+				    const BoolDeque&  sense,
+				    const RealVector& primary_wts,
+				    const RealVector& nln_ineq_l_bnds,
+				    const RealVector& nln_ineq_u_bnds,
+				    const RealVector& nln_eq_tgts,
+				    RealSymMatrix& alag_hess);
 
   /// compute a penalty function from a set of function values
   Real penalty_merit(const RealVector& fn_vals, const BoolDeque& sense,

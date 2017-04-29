@@ -67,6 +67,10 @@ from .dipy import read_parameters_file, UNNAMED
 #
 # Or, not. After all, how many resource managers are in common use?
 
+## Constants
+NODE = 0
+TILE = 1
+
 
 # TODO: Insert code to add plugin modules to this list
 _user_mangers = []
@@ -94,23 +98,27 @@ def _get_job_info():
     raise MgrEnvError("Unrecognized resource manager environment.")
 
 def _get_node_list(tile=None, applic_tasks=None, 
-        tasks_per_node=None, dedicated_master=False):
+        tasks_per_node=None, dedicated_master=None):
     """Determine the relative node list
 
     Keyword Args:
         tile: Tile number, 0-based.
         applic_tasks: Number of MPI processes (tasks) per tile.
         tasks_per_node: Number of MPI tasks per node.
-        dedicated_master: Whether to reserve the first node for
-            Dakota (default: False)
+        dedicated_master: Reserve the first NODE or TILE for Dakota (default: 
+            no reserved node)
 
     Returns:
         A string containing the relative node list.
             
     """
-    start_node = tile * applic_tasks//tasks_per_node
-    if dedicated_master:
-        start_node += 1
+    if dedicated_master == NODE:
+        start_node = tile * applic_tasks//tasks_per_node + 1
+    elif dedicated_master == TILE:
+        start_node = (tile + 1) * applic_tasks//tasks_per_node
+    else:
+        start_node = tile * applic_tasks//tasks_per_node
+
     end_node = start_node + (applic_tasks-1)//tasks_per_node
     node_string = "+n" + ",+n".join([str(i) for i in range(start_node, end_node+1)])
     return node_string
@@ -139,15 +147,12 @@ class _TileLock(object):
 
         Keyword args:
             num_tiles: Number of tiles in the allocation.
-            lock_id: Alternative unique identifer for lock files.
-            lock_dir: Alternative directory for lock files
+            lock_id: Unique identifer for lock files.
+            lock_dir: Directory for lock files
         """
         self._num_tiles = num_tiles
         self._id = lock_id
-        if lock_dir:
-            self._dir = lock_dir
-        else:
-            self._dir = os.environ["HOME"] + os.sep + ".DakotaEvalTiling"
+        self._dir = lock_dir
 
         try:
             os.mkdir(self._dir)
@@ -192,7 +197,34 @@ def _mpirun(node_list, user_commands):
     sys.stdout.flush()
     return returncode
 
-def tile_run_static(commands=[], dedicated_master=False, eval_num=None,
+def _calc_num_tiles(applic_tasks=None, tasks_per_node=None, num_nodes=None, 
+        dedicated_master=None):
+    """Compute the total number of tiles in the job, adjusting for a dedicated master
+
+    Args:
+        applic_tasks: Number of tasks for tile
+        num_nodes: Total number of nodes in the allocation
+        dedicated_master: Reserve a NODE or TILE for Dakota
+
+    Returns:
+        Number of tiles
+
+    Raises:
+        ResourseError: When a dedicated master takes up the entire allocation
+    """
+    if dedicated_master == NODE:
+        if num_nodes == 1:
+            raise ResourceError("Dedicated master node requested, but job has only one node.")
+        num_tiles = (num_nodes-1)*tasks_per_node//applic_tasks 
+    elif dedicated_master == TILE:
+        num_tiles = num_nodes*tasks_per_node//applic_tasks - 1
+        if num_tiles == 0:
+            raise ResourceError("Dedicated master tile requested, but job has only one tile.")
+    else: 
+        num_tiles = num_nodes*tasks_per_node//applic_tasks
+    return num_tiles
+
+def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
         parameters_file=None):
     """Run a command in parallel on an available tile assuming static scheduling
 
@@ -229,14 +261,9 @@ def tile_run_static(commands=[], dedicated_master=False, eval_num=None,
         applic_tasks += command[0]
     # Get information about the job from the environment.
     num_nodes, tasks_per_node, job_id = _get_job_info()
-
-    # Compute the total number of tiles in the job, adjusting for a dedicated master
-    if dedicated_master:
-        if num_nodes == 1 and dedicated_master:
-            raise ResourceError("Dedicated master requested, but job has only one node.")
-        num_nodes -= 1
-    num_tiles = num_nodes*tasks_per_node//applic_tasks
-   
+    # Compute the total number of tiles in the allocation, adjusting for a dedicated master
+    num_tiles = _calc_num_tiles(applic_tasks, tasks_per_node, num_nodes, dedicated_master)
+       
     # Calculate the available tile based on the eval_num, calculate its list of nodes, 
     # and mpirun the command(s) on these resources.
     tile = _calc_static_tile(eval_num, num_tiles)
@@ -244,7 +271,7 @@ def tile_run_static(commands=[], dedicated_master=False, eval_num=None,
     returncode = _mpirun(node_list, commands)
     return returncode
 
-def tile_run_dynamic(commands=[], dedicated_master=False, lock_id=None, lock_dir=None):
+def tile_run_dynamic(commands=[], dedicated_master=None, lock_id=None, lock_dir=None):
     """Run a command in parallel on an available tile assuming dynamic scheduling
 
     Keyword args:
@@ -269,16 +296,17 @@ def tile_run_dynamic(commands=[], dedicated_master=False, lock_id=None, lock_dir
     # Get information about the job from the environment.
     num_nodes, tasks_per_node, job_id = _get_job_info()
 
-    # Compute the total number of tiles in the job, adjusting for a dedicated master
-    if dedicated_master:
-        if num_nodes == 1 and dedicated_master:
-            raise ResourceError("Dedicated master requested, but job has only one node.")
-        num_nodes -= 1
-    num_tiles = num_nodes*tasks_per_node//applic_tasks
+    # Compute the total number of tiles in the allocation, adjusting for a dedicated master
+    num_tiles = _calc_num_tiles(applic_tasks, tasks_per_node, num_nodes, dedicated_master)
     
+    # Create default lock_id and lock_dir
+    if lock_id is None:
+        lock_id = job_id
+    if lock_dir is None:
+        lock_dir = os.environ["HOME"] + os.sep + ".DakotaEvalTiling"
     # Acquire an available tile, calculate its list of nodes, and mpirun the command(s)
     # on these resources.
-    with _TileLock(num_tiles, job_id, lock_dir) as tile:
+    with _TileLock(num_tiles, lock_id, lock_dir) as tile:
         node_list = _get_node_list(tile, applic_tasks, tasks_per_node, dedicated_master)
         returncode = _mpirun(node_list, commands)
     sys.stdout.flush()

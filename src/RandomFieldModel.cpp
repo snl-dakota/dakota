@@ -25,7 +25,7 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
   covarianceForm(problem_db.get_ushort("model.rf.analytic_covariance")),
   requestedReducedRank(problem_db.get_int("model.rf.expansion_bases")),
   percentVariance(problem_db.get_real("model.truncation_tolerance")),
-  actualReducedRank(5)
+  actualReducedRank(5), mappingInitialized(false)
 {
   rfmInstance = this;
   modelType = "random_field";
@@ -110,6 +110,8 @@ void RandomFieldModel::validate_inputs()
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  RecastModel::initialize_mapping(pl_iter);
+
   // TODO: create modes to switch between generating, accepting, and
   // underlying model
   fieldRealizationId=0;
@@ -127,6 +129,8 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
   // complete initialization of the base RecastModel
   initialize_recast();
 
+  mappingInitialized = true;
+
   if (expansionForm == RF_KARHUNEN_LOEVE) {
     // augment AleatoryDistParams with normal(0,1)
     initialize_rf_coeffs();
@@ -143,8 +147,13 @@ bool RandomFieldModel::initialize_mapping(ParLevLIter pl_iter)
 
 bool RandomFieldModel::finalize_mapping()
 {
+  mappingInitialized = false;
+
   // TODO: return to submodel space
   // probably don't do this...
+
+  RecastModel::finalize_mapping();
+
   return false; // This will become true when TODO is implemented.
 }
 

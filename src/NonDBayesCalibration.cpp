@@ -67,7 +67,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   importCandFormat(
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
-  maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
+  maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -592,6 +592,10 @@ void NonDBayesCalibration::initialize_model()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
+  RealVector vars = mcmcModel.continuous_variables();
+  const RealVector& initial_point = RealVector(Teuchos::Copy, 
+                              	    vars.values(), numContinuousVars);
+  
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
@@ -711,7 +715,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = (maxHifiEvals > 0) ? maxHifiEvals : num_candidates;
+  int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
 
   std::ofstream out_file("experimental_design_output.txt");
@@ -761,7 +765,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // of reconstructing
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-
+    mcmcModel.continuous_variables(initial_point);
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
 			      obsErrorMultiplierMode, mcmcDerivOrder), false);
@@ -783,7 +787,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
           "response function", STANDARD_MOMENTS, resp_labels, false); 
     }
 
-    if (!stop_metric) {
+    if (!stop_metric || max_hifi == 0) {
 
       if (outputLevel >= DEBUG_OUTPUT) {
 	Cout << "\n----------------------------------------------\n";
@@ -883,7 +887,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
       RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, 
     					         int(optimal_ind));
       Model::active_variables(optimal_config, hifiModel);
-      hifiModel.evaluate();
+      if (max_hifi > 0) 
+        hifiModel.evaluate();
       expData.add_data(optimal_config, hifiModel.current_response().copy());
       num_hifi++;
       // update list of candidates
@@ -901,7 +906,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
       out_file << "ITERATION " << num_hifi << "\n";
       out_file << "Optimal Design: " << optimal_config;
       out_file << "Mutual Information = " << max_MI << '\n';
-      out_file << "Hifi Response: " << hifiModel.current_response();
+      if (max_hifi > 0) 
+        out_file << "Hifi Response: " << hifiModel.current_response();
       out_file << "\n";
     } // end MI loop
   } // end while loop

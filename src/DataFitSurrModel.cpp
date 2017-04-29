@@ -277,11 +277,12 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
 bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  SurrogateModel::initialize_mapping(pl_iter);
+  actualModel.initialize_mapping(pl_iter);
+
   // push data that varies per iterator execution rather than per-evaluation
   // from currentVariables and userDefinedConstraints into actualModel
   init_model(actualModel);
-
-  mappingInitialized = true;
 
   return false; // no change to problem size
 }
@@ -293,7 +294,8 @@ bool DataFitSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool DataFitSurrModel::finalize_mapping()
 {
-  mappingInitialized = false;
+  actualModel.finalize_mapping();
+  SurrogateModel::finalize_mapping();
 
   return false; // no change to problem size
 }

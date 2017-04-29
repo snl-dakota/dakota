@@ -116,7 +116,10 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
   // (initiated from the restored starting point following construction).
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(approxSubProbMinimizer.method_id());
+  // As in SurrBasedLocalMinimizer::initialize_sub_minimizer(), the SBLM
+  // model_pointer is relevant and any sub-method model_pointer is ignored
+  probDescDB.set_db_method_node(approxSubProbMinimizer.method_id());
+  probDescDB.set_db_model_nodes(iteratedModel.model_id());
   approxSubProbMinimizer.init_communicators(pl_iter);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
@@ -207,14 +210,14 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 	active_lag_ineq.push_back(-ineq_id);
 	lag_index.push_back(cntr);
       }
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) { // g has an upper bound
       if (g > u_bnd - constraintTol) {
 	active_lag_ineq.push_back(ineq_id);
 	lag_index.push_back(cntr);
       }
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -422,13 +425,13 @@ lagrangian_merit(const RealVector& fn_vals, const BoolDeque& sense,
       g0 = l_bnd - g;                // convert l <= g to l - g <= 0
       if (g0 + constraintTol > 0.)   // g is active
 	lag += lagrangeMult[cntr]*g0;
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) {  // g has an upper bound
       g0 = g - u_bnd;                // convert g <= u to g - u <= 0
       if (g0 + constraintTol > 0.)   // g is active
 	lag += lagrangeMult[cntr]*g0;
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -448,8 +451,7 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
 		    const BoolDeque& sense, const RealVector& primary_wts,
 		    const RealVector& nln_ineq_l_bnds,
 		    const RealVector& nln_ineq_u_bnds,
-		    const RealVector& nln_eq_tgts,
-		    RealVector& lag_grad)
+		    const RealVector& nln_eq_tgts, RealVector& lag_grad)
 {
   size_t i, j, cntr = 0;
 
@@ -469,13 +471,13 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       if (g < l_bnd + constraintTol) // g is active
 	for (j=0; j<numContinuousVars; j++) // l - g <= 0  ->  grad g0 = -grad g
 	  lag_grad[j] -= lagrangeMult[cntr] * grad_g[j];
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) {  // g has an upper bound
       if (g > u_bnd - constraintTol) // g is active
 	for (j=0; j<numContinuousVars; j++) // g - u <= 0  ->  grad g0 = +grad g
 	  lag_grad[j] += lagrangeMult[cntr] * grad_g[j];
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -485,7 +487,59 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       = fn_grads[numUserPrimaryFns+numNonlinearIneqConstraints+i];
     for (j=0; j<numContinuousVars; j++)
       lag_grad[j] += lagrangeMult[cntr] * grad_h[j];
-    cntr++;
+    ++cntr;
+  }
+}
+
+
+void SurrBasedMinimizer::
+lagrangian_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads, 
+		   const RealSymMatrixArray& fn_hessians,
+		   const BoolDeque& sense, const RealVector& primary_wts,
+		   const RealVector& nln_ineq_l_bnds,
+		   const RealVector& nln_ineq_u_bnds,
+		   const RealVector& nln_eq_tgts, RealSymMatrix& lag_hess)
+{
+  size_t i, j, k, index, cntr = 0;
+
+  // objective function portion
+  objective_hessian(fn_vals, fn_grads, fn_hessians, sense, primary_wts,
+		    lag_hess);
+
+  // inequality constraint portion
+  for (i=0; i<numNonlinearIneqConstraints; i++) {
+    // check for active, not violated --> apply constraintTol on feasible side
+    //   g < l_bnd + constraintTol, g > u_bnd - constraintTol
+    // Note: if original bounds/targets, lagrangeMult will be 0 for inactive
+    index = i + numUserPrimaryFns;
+    const Real& g = fn_vals[index];
+    const RealSymMatrix& hess_g = fn_hessians[index];
+    const Real& l_bnd = nln_ineq_l_bnds[i];
+    const Real& u_bnd = nln_ineq_u_bnds[i];
+    if (l_bnd > -bigRealBoundSize) { // g has a lower bound
+      if (g < l_bnd + constraintTol) // g is active
+	for (j=0; j<numContinuousVars; j++) // l - g <= 0  ->  hess g0 = -hess g
+	  for (k=0; k<=j; ++k)
+	    lag_hess(j,k) -= lagrangeMult[cntr] * hess_g(j,k);
+      ++cntr;
+    }
+    if (u_bnd < bigRealBoundSize) {  // g has an upper bound
+      if (g > u_bnd - constraintTol) // g is active
+	for (j=0; j<numContinuousVars; j++) // g - u <= 0  ->  hess g0 = +hess g
+	  for (k=0; k<=j; ++k)
+	    lag_hess(j,k) += lagrangeMult[cntr] * hess_g(j,k);
+      ++cntr;
+    }
+  }
+
+  // equality constraint portion
+  for (i=0; i<numNonlinearEqConstraints; i++) {
+    index = i + numUserPrimaryFns + numNonlinearIneqConstraints;
+    const RealSymMatrix& hess_h = fn_hessians[index];
+    for (j=0; j<numContinuousVars; j++)
+      for (k=0; k<=j; ++k)
+	lag_hess(j,k) += lagrangeMult[cntr] * hess_h(j,k);
+    ++cntr;
   }
 }
 
@@ -571,7 +625,7 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
 	for (j=0; j<numContinuousVars; j++)
 	  alag_grad[j] -= (augLagrangeMult[cntr] + 2.*penaltyParameter*g0)
                        *  grad_g[j]; // l - g <= 0  -->  grad g0 = -grad g
-      cntr++;
+      ++cntr;
     }
     if (u_bnd < bigRealBoundSize) { // g has an upper bound
       g0 = g - u_bnd; // convert g <= u to g - u <= 0
@@ -580,7 +634,7 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
 	for (j=0; j<numContinuousVars; j++)
 	  alag_grad[j] += (augLagrangeMult[cntr] + 2.*penaltyParameter*g0)
                        *  grad_g[j]; // g - u <= 0  -->  grad g0 = +grad g
-      cntr++;
+      ++cntr;
     }
   }
 
@@ -592,7 +646,72 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
     for (j=0; j<numContinuousVars; j++)
       alag_grad[j] += (augLagrangeMult[cntr] + 2.*penaltyParameter*h0)
                    *  grad_h[j];
-    cntr++;
+    ++cntr;
+  }
+}
+
+
+void SurrBasedMinimizer::
+augmented_lagrangian_hessian(const RealVector& fn_vals, 
+			     const RealMatrix& fn_grads, 
+			     const RealSymMatrixArray& fn_hessians,
+			     const BoolDeque&  sense,
+			     const RealVector& primary_wts,
+			     const RealVector& nln_ineq_l_bnds,
+			     const RealVector& nln_ineq_u_bnds,
+			     const RealVector& nln_eq_tgts,
+			     RealSymMatrix& alag_hess)
+{
+  size_t i, j, k, index, cntr = 0;
+
+  // objective function portion
+  objective_hessian(fn_vals, fn_grads, fn_hessians, sense, primary_wts,
+		    alag_hess);
+
+  // inequality constraint portion
+  Real g0;
+  for (i=0; i<numNonlinearIneqConstraints; i++) {
+    // For the Rockafellar augmented Lagrangian, augLagrangeMult is an
+    // "extended" multiplier vector and includes inactive constraints.
+    index = i + numUserPrimaryFns;
+    const Real& g = fn_vals[index];
+    const Real& l_bnd = nln_ineq_l_bnds[i];
+    const Real& u_bnd = nln_ineq_u_bnds[i];
+    const RealSymMatrix& hess_g = fn_hessians[index];
+    if (l_bnd > -bigRealBoundSize) { // g has a lower bound
+      g0 = l_bnd - g; // convert l <= g to l - g <= 0
+      // grad psi = grad g0 if "active", 0 if "inactive"
+      if (g0 >= -augLagrangeMult[cntr]/2./penaltyParameter) {
+	Real term = augLagrangeMult[cntr] + 2.*penaltyParameter*g0;
+	for (j=0; j<numContinuousVars; j++)
+	  for (k=0; k<=j; ++k) // l - g <= 0  -->  hess g0 = -hess g
+	    alag_hess(j,k) -= term * hess_g(j,k);
+      }
+      ++cntr;
+    }
+    if (u_bnd < bigRealBoundSize) { // g has an upper bound
+      g0 = g - u_bnd; // convert g <= u to g - u <= 0
+      // grad psi = grad g0 if "active", 0 if "inactive"
+      if (g0 >= -augLagrangeMult[cntr]/2./penaltyParameter) {
+	Real term = augLagrangeMult[cntr] + 2.*penaltyParameter*g0;
+	for (j=0; j<numContinuousVars; j++)
+	  for (k=0; k<=j; ++k) // g - u <= 0  -->  hess g0 = +hess g
+	    alag_hess(j,k) += term * hess_g(j,k);
+      }
+      ++cntr;
+    }
+  }
+
+  // equality constraint portion
+  for (i=0; i<numNonlinearEqConstraints; i++) {
+    index = i + numUserPrimaryFns + numNonlinearIneqConstraints;
+    const RealSymMatrix& hess_h = fn_hessians[index];
+    Real h0 = fn_vals[index] - nln_eq_tgts[i], // convert to h0 = 0
+      term  = augLagrangeMult[cntr] + 2.*penaltyParameter*h0;
+    for (j=0; j<numContinuousVars; j++)
+      for (k=0; k<=j; ++k) // g - u <= 0  -->  hess g0 = +hess g
+	alag_hess(j,k) += term * hess_h(j,k);
+    ++cntr;
   }
 }
 
