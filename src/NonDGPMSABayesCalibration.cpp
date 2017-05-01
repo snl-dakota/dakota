@@ -44,6 +44,8 @@ static const char rcsId[]="@(#) $Id$";
 
  * Write tests that use DOE vs import 
 
+    - Notify users what data we're trying to read from tabular
+
  * A number of improvements in DACE / imported build data
 
     - Decide on meaning of buildSamples for read vs. DACE iterator control
@@ -332,20 +334,34 @@ void NonDGPMSABayesCalibration::calibrate()
     gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
   overlay_proposal_covariance(full_proposal_cov);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << ">>>>> GPMSA: Performing calibration." << std::endl;
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << ">>>>> GPMSA: Performing calibration with " << mcmcType << " using "
+       << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "\n  Calibrating " << numHyperparams << " error hyperparameters."
+	   << std::endl;
+  }
 
   inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
                                                 full_param_initials,
                                                 &full_proposal_cov);
 
-  cache_acceptance_chain();
-
   if (outputLevel >= NORMAL_OUTPUT) {
-    Cout << ">>>>> GPMSA: Generating statistics and ouput.\n";
-    Cout << "Info: GPMSA cannot currently retrieve response function statistics."
+    Cout << ">>>>> GPMSA: Calibration complete. Generating statistics and ouput.\n";
+
+    Cout << "  Info: MCMC details are in the QuesoDiagnostics directory:\n"
+	 << "          display_sub0.txt contains MCMC diagnostics\n";
+    if (standardizedSpace)
+      Cout << "          Matlab files contain chain values (in "
+	   << "standardized probability space)\n";
+    else
+      Cout << "          Matlab files contain chain values\n";
+
+    Cout << "  Info: GPMSA cannot currently retrieve response function statistics."
 	 << std::endl;
   }
+
+  cache_acceptance_chain();
   compute_statistics();
 }
 
@@ -413,7 +429,7 @@ overlay_initial_params(GslVector& full_param_initials)
 void NonDGPMSABayesCalibration::acquire_simulation_data()
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Acquiring simulation data." << std::endl;
+    Cout << ">>>>> GPMSA: Acquiring simulation data." << std::endl;
 
   // Rationale: Trying to keep this agnostic to mocked up config vars...
 
