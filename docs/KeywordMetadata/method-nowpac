@@ -4,9 +4,9 @@ Gradient-free inequality-constrained optimization using Nonlinear Optimization W
 Description:: 
 NOWPAC is a provably-convergent gradient-free optimization method from MIT that solves a series of trust region surrogate-based subproblems to generate improving steps.  Due to its use of an interior penalty scheme and enforcement of strict feasibility, it does not support linear or nonlinear \e equality constraints.  As opposed to the stochastic version (SNOWPAC), NOWPAC does not currently support a feasibility restoration mode, so it is necessary to start from a feasible design.
 
-Topics::
-(S)NOWPAC requires a separate installation of the NOWPAC distribution from MIT, combined with its TPLs of Eigen and NLOPT.
+Note: (S)NOWPAC is not configured with Dakota by default and requires a separate installation of the NOWPAC distribution from MIT, combined with its TPLs of Eigen and NLOPT.
 
+Topics::
 Examples::
 \verbatim
 method
