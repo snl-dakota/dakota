@@ -3397,68 +3397,68 @@ Partial Rank Correlation Matrix between input and output:
           x5  6.40372e-01 
 dakota_bayes_expdesign.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (lofi_IF): 4931 total (4910 new, 21 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5159 total (5139 new, 20 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.6367977857e-02 uuv_1
-                     -3.9272680731e+00 uuv_2
-                      1.3190008620e+02 uuv_3
+                      3.6452518774e-02 uuv_1
+                     -3.9286540881e+00 uuv_2
+                      1.3186957643e+02 uuv_3
 <<<<< Best misfit              =
-                      2.8330000302e-02
+                      8.0035393516e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
-                     -7.6118580559e+00
+                     -7.6635634491e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  3.9834309860e-02  6.7350767381e-03  1.4438156172e+00  7.2094471690e-01
-         uuv_2 -4.1269567188e+00  4.7779157470e-01 -1.4821088299e+00  7.9860358169e-01
-         uuv_3  1.3193672369e+02  5.7247150242e+00  1.2814874847e+00  5.1704189204e-01
+         uuv_1  3.4885564834e-02  3.6541295927e-03 -1.0416483542e+00 -4.6618228724e-02
+         uuv_2 -3.8348255853e+00  2.5618356642e-01  1.1354302493e+00  4.5701235437e-01
+         uuv_3  1.3121948593e+02  4.9363449263e+00 -1.9573519277e-01  3.0669602470e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.7654393290e+01  3.1298528991e+00 -1.0776342386e+00  1.8268667481e-01
+least_sq_term_1  4.1148417783e+01  3.0458369057e+00  3.0153050712e+00  1.3808119764e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (lofi_IF): 5096 total (5079 new, 17 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5108 total (5092 new, 16 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 2 total (2 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.4869535837e-02 uuv_1
-                     -3.8079638440e+00 uuv_2
-                      1.2969968073e+02 uuv_3
+                      3.5734147370e-02 uuv_1
+                     -3.8633757113e+00 uuv_2
+                      1.3049918448e+02 uuv_3
 <<<<< Best misfit              =
-                      3.8698315686e-02
+                      9.3521289820e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
-                     -7.6222263712e+00
+                     -7.6770493454e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  2.8775754371e-02  1.0109117137e-02 -5.7369921177e-01 -1.2622643938e+00
-         uuv_2 -3.3921364449e+00  6.9046627699e-01  5.2266432557e-01 -1.3174403198e+00
-         uuv_3  1.2450222332e+02  8.5157946545e+00 -5.6233916740e-01 -9.9165110886e-01
+         uuv_1  3.2599673519e-02  5.6044534486e-03 -9.3241342177e-01 -2.0836337786e-01
+         uuv_2 -3.6230599342e+00  4.4257077490e-01  1.0475536174e+00 -2.8437694850e-02
+         uuv_3  1.2665293595e+02  6.9827964216e+00 -1.3529886131e+00  7.7133257926e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  4.2419918309e+01  3.6355550960e+00  8.1977231020e-01 -6.1629141969e-02
+least_sq_term_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (lofi_IF): 4973 total (4952 new, 21 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5132 total (5112 new, 20 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 1 total (1 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.6266033218e-02 uuv_1
-                     -3.8162060566e+00 uuv_2
-                      1.2769752746e+02 uuv_3
+                      3.2471763471e-02 uuv_1
+                     -3.6677503350e+00 uuv_2
+                      1.2961576440e+02 uuv_3
 <<<<< Best misfit              =
-                      8.4210017007e+00
+                      1.2022021361e-01
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
-                     -1.6004529756e+01
+                     -7.7037482692e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-         uuv_1  3.8919425298e-02  7.4300424657e-03  1.3957887360e+00  4.6194696392e-01
-         uuv_2 -4.0157758575e+00  5.5116517185e-01 -1.4084926250e+00  4.8172002983e-01
-         uuv_3  1.2924939824e+02  7.0900886893e+00  1.4029960722e+00  4.7386018939e-01
+         uuv_1  3.0121482013e-02  2.3314834026e-03  3.8423799431e-01 -8.3338614117e-01
+         uuv_2 -3.5212489454e+00  1.4779999765e-01 -3.9662904584e-01 -6.0401286567e-01
+         uuv_3  1.2852608123e+02  3.9922601480e+00  2.9307168814e+00  1.0958938093e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-least_sq_term_1  3.0889444419e+01  3.0978571322e+00 -1.4120408131e+00  4.9928505993e-01
+least_sq_term_1  3.5870494636e+01  2.3254732876e+00  5.1564034700e-01  2.1230996605e+01
 dakota_bayes_linear.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)

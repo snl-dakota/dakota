@@ -1,6 +1,10 @@
 import re
 import os
 
+__author__ = 'J. Adam Stephens'
+__copyright__ = 'Copyright 2014 Sandia Corporation'
+__license__ = 'GNU Lesser General Public License'
+
 def is_me():
     try:
         os.environ["SLURM_JOBID"]

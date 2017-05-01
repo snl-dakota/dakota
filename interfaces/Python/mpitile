@@ -5,7 +5,9 @@ import sys
 import argparse
 from dipy import parallel, read_parameters_file, UNNAMED
 
-
+__author__ = 'J. Adam Stephens'
+__copyright__ = 'Copyright 2014 Sandia Corporation'
+__license__ = 'GNU Lesser General Public License'
 
 def main():
     # mpitile supports SIMD and MIMD models. See the manpage for mpirun for a description.

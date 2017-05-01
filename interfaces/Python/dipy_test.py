@@ -2,6 +2,11 @@
 from __future__ import print_function
 import unittest
 import os
+
+__author__ = 'J. Adam Stephens'
+__copyright__ = 'Copyright 2014 Sandia Corporation'
+__license__ = 'GNU Lesser General Public License'
+
 try: # Python 2/3 compatible import of StringIO
     import StringIO
 except ImportError:

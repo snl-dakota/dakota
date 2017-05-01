@@ -59,6 +59,10 @@ import time
 from . import slurm
 from .dipy import read_parameters_file, UNNAMED
 
+__author__ = 'J. Adam Stephens'
+__copyright__ = 'Copyright 2014 Sandia Corporation'
+__license__ = 'GNU Lesser General Public License'
+
 # For now, only SLURM is supported, but next we can add PBS and a plugin 
 # capability so that users can define their own. A plugin will need to define:
 # - detection (use me if these criteria are met)

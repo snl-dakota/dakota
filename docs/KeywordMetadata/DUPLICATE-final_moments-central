@@ -1,0 +1,21 @@
+Blurb::
+Output central moments and include them within the set of final statistics.
+
+Description::
+Output central moments (mean, variance, 3rd central, and 4th central) and include the first two within the set of final statistics to be used at a higher level (e.g., optimization under uncertainty, mixed aleatory-epistemic UQ).  This inclusion of moment results affects the primary and/or secondary response mappings in a nested model specificaton.
+
+Topics::
+Examples::
+
+The following method specification overrides the default to print \c central moments and include them in the set of final statistics.
+\verbatim
+method,
+  sampling
+    samples = 50 seed = 1234
+    response_levels = 3.6e+11 1.2e+05 3.5e+05
+    final_moments central
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

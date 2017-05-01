@@ -1,0 +1,18 @@
+Blurb::
+Omit moments from the set of final statistics.
+
+Description::
+The omission of moment results from the final statistics can allow for a more compact definition of primary and/or secondary response mappings within a nested model specification.
+
+Topics::
+Examples::
+\verbatim
+method,
+  sampling
+    samples = 50 seed = 1234
+    response_levels = 3.6e+11 1.2e+05 3.5e+05
+    final_moments none
+\endverbatim
+Theory::
+Faq::
+See_Also::	
