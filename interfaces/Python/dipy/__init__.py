@@ -22,7 +22,12 @@ Other members and methods of the Parameters and Results objects are described
 below. A more full-featured example is available in 
 ``examples/script_interfaces/Python``.
 """
-## The above docstring is in the __init__ file so that sphinx can find it.
+## The above docstring, which is nearly copied and pasted from dipy.py,
+## is in the __init__ file so that sphinx can find it.
+
+__author__ = 'J. Adam Stephens'
+__copyright__ = 'Copyright 2014 Sandia Corporation'
+__license__ = 'GNU Lesser General Public License'
 
 from .dipy import *
 
