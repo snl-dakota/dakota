@@ -99,10 +99,16 @@ protected:
   /// populate the experiment data, applying scaling if needed
   void fill_experiment_data(bool scale_data);
 
+  /// overlay the Dakota user's initial parameters on the full GPMSA
+  /// vector of parameters
   void overlay_initial_params(QUESO::GslVector& full_param_initials);
 
+  /// retrieve the chain from QUESO and populate acceptanceChain /
+  /// acceptedFnVals
+  void cache_acceptance_chain(); 
+
   // print the final statistics
-  //void print_results(std::ostream& s);
+  void print_results(std::ostream& s);
 
   //
   //- Heading: Data
