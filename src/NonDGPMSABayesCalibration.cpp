@@ -129,6 +129,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_build_active_only")),
   userConfigVars(expData.num_config_vars()),
   gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
+  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize")),
   optionsFile(probDescDB.get_string("method.queso_options_file"))
 {   
   // quesoEnv: Base class calls init_queso_environment().  May need to
@@ -295,18 +296,18 @@ void NonDGPMSABayesCalibration::calibrate()
   // gives bounds on distro instead of data, should we use those?
   // They might not be finite... For that matter, autoscale may break
   // on infinite domains?
-  bool scale_theta = true;
+  bool scale_theta = gpmsaNormalize;
   if (scale_theta)
     for (unsigned int i = 0; i < (numContinuousVars + numHyperparams); ++i)
       gpmsaOptions->set_autoscale_minmax_uncertain_parameter(i);
 
   // TODO: This should allow scaling by user-provided bounds as well
-  bool scale_configs = true;
+  bool scale_configs = gpmsaNormalize;
   if (scale_configs && userConfigVars > 0)
     normalize_configs();
 
   // TODO: Use GPMSA intrinsic data scaling when available
-  bool scale_data = true;
+  bool scale_data = gpmsaNormalize;
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;
@@ -472,12 +473,18 @@ void NonDGPMSABayesCalibration::acquire_simulation_data()
     size_t record_len = (approxImportActiveOnly) ?
       numContinuousVars + numFunctions :
       numContinuousVars + userConfigVars + numFunctions;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "GPMSA: Importing simulation data from '" << approxImportFile
+	   << "'\n       with " << numContinuousVars
+	   << " calibration variable(s), " << userConfigVars
+	   << " configuration variable(s),\n       and " << numFunctions
+	   << " simulation output(s)." << std::endl;
     bool verbose = (outputLevel > NORMAL_OUTPUT);
     TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
 				 simulationData, buildSamples, record_len,
 				 approxImportFormat, verbose);
     // TODO: Have to fill in configuration variable values for
-    // active_only, or error
+    // active_only, or error and move the function data over if so...
   }
 
 }

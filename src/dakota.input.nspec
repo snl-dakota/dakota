@@ -1697,6 +1697,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ logit_transform {N_mdm(true,logitTransform)} ]
+        [ gpmsa_normalize {N_mdm(true,gpmsaNormalize)} ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
           [ 
             annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}

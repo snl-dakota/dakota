@@ -6836,6 +6836,7 @@ static bool
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
+	MP_(gpmsaNormalize),
 	MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(latinizeFlag),

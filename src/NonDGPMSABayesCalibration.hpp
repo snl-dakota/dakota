@@ -136,6 +136,9 @@ protected:
   /// number of config vars presented to GPMSA (minimum 1)
   unsigned int gpmsaConfigVars;
 
+  /// whether to apply GPMSA-internal variable and data normalization
+  bool gpmsaNormalize;
+
   /// vector space defining the scenario (configuration) variables
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 
   configSpace;

@@ -943,6 +943,8 @@ public:
   bool adaptPosteriorRefine;
   /// flag indicating user activation of logit transform option within QUESO
   bool logitTransform;
+  /// whether to apply GPMSA-internal normalization
+  bool gpmsaNormalize;
   /// flag indicating the calculation of KL divergence between prior
   /// and posterior in Bayesian methods 
   bool posteriorStatsKL;

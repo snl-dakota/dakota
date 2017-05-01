@@ -3053,6 +3053,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.evaluate_posterior_density", P evaluatePosteriorDensity},
 	{"nond.export_sample_sequence", P exportSampleSeqFlag},
 	{"nond.generate_posterior_samples", P generatePosteriorSamples},
+	{"nond.gpmsa_normalize", P gpmsaNormalize},
 	{"nond.logit_transform", P logitTransform},
 	{"nond.model_discrepancy", P calModelDiscrepancy},
 	{"nond.normalized", P normalizedCoeffs},

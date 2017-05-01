@@ -2276,6 +2276,7 @@
 			</keyword>
 		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
+		      <keyword  id="gpmsa_normalize" name="gpmsa_normalize" code="{N_mdm(true,gpmsaNormalize)}" label="Apply GPMSA normalization" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 			<param type="OUTPUT_FILE" />
 			<optional>
