@@ -1693,7 +1693,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
-          [ active_only {N_mdm(true,importBuildActive)} ]
          ]
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ logit_transform {N_mdm(true,logitTransform)} ]

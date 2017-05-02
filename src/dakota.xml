@@ -2272,7 +2272,10 @@
 			  <alias name="import_points_file"/>
 			  <param type="INPUT_FILE" />
 			  &method_import_build_format;
+			  <!-- Disable active_only, until we can set the config vars to their nominal value; for now import must include any active config vars as well...
+
 			  <keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+			  -->
 			</keyword>
 		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
