@@ -223,7 +223,7 @@ still write a restart file, but using the default name
 \c dakota.rst instead of a user-specified name.
 
 To turn restart recording off, the user may use the 
-\ref interface-analysis_drivers-deactivate-restart_file keyword, in the \c
+\ref interface-deactivate-restart_file keyword, in the \c
 interface block.  This can increase execution speed and reduce disk
 storage requirements, but at the expense of a loss in the ability to
 recover and continue a run that terminates prematurely. This option is
