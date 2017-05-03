@@ -2782,10 +2782,10 @@ data in a low-fidelity model calibration. This can be done in with a single
 Bayesian calibration, or it can be done iteratively with the use of 
 experimental design, where an initial set of high-fidelity runs is 
 augmented sequentially to find the next ``best" high-fidelity design point at
-which to run the high-fidelity model to add to the calibration data. The low-
-fidelity posterior parameter distribution is then updated again using Bayesian
-calibration. The mutual information is used as the selection criterion to guide
-the process of high-fidelity data acquisition.
+which to run the high-fidelity model to add to the calibration data. The 
+low-fidelity posterior parameter distribution is then updated again using 
+Bayesian calibration. The mutual information is used as the selection criterion 
+to guide the process of high-fidelity data acquisition.
 
 In Dakota, design conditions, such as temperature or spatial location, can be 
 specified using so-called configuration
@@ -2857,22 +2857,11 @@ the low-fidelity model parameters. Alternatively, if the change in the mutual
 information from one iteration to the next is sufficiently small or if all 
 candidate points have been exhausted, the algorithm will terminate. 
 
-%Further theoretical and implementation details of this algorithm may be found 
-%in~\cite{TheoMan}.
-%From these candidate designs, that which maximizes the mutual information with 
-%respect to the current state of the low-fidelity model parameters is deemed 
-%``optimal." The mutual information between low-fidelity model parameters 
-%$\boldsymbol{\theta}$ and the high-fidelity data $\textbf{d}(\xi)$, gathered at 
-%design conditions $\xi$, is given by
-%\begin{equation}
-%I(\boldsymbol{\theta}, \textbf{d}(\xi)) = \iint p(\boldsymbol{\theta}, 
-	%\textbf{d}(\xi)) \log \frac{ p(\boldsymbol{\theta}, \textbf{d}(\xi)) }
-	%{p(\boldsymbol{\theta}) p(\textbf{d}(\xi))} d\boldsymbol{\theta}
-	%d\textbf{d}.
-%\end{equation}
-%This quantity is approximated using the low-fidelity model and the $k$-nearest
-%neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed 
-%in~\cite{Lew16}. %and the Dakota Theory Manual \ref{}.
+Progress of the algorithm will be reported to the screen with the rest of the
+Dakota output. Furthermore, a summary of the algorithm's results, including, 
+for each iteration, the optimal design, the mutual information, and the 
+corresponding high-fidelity model response, can be found in the file 
+\texttt{experimental\_design\_output.txt}.  
 
 \stepcounter{figure}
 \renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
@@ -2899,6 +2888,38 @@ basicstyle=\small,
 frame=single
 ]
 {bayes_experimental_design.in}
+
+\subsubsection{One-at-a-time Implementation}
+
+There may be some applications for which the high-fidelity model must be run
+independently of Dakota. This algorithm may still be implemented in this case,
+however, it requires some extra work by the user to ensure that the 
+high-fidelity model information is properly communicated to Dakota, as a 
+"dummy" high-fidelity model code must be supplied to Dakota. The data to be 
+used in the initial Bayesian calibration should be gathered from the 
+high-fidelity model or physical experiment and imported via the 
+\texttt{calibration\_data\_file} in the high-fidelity \texttt{responses} block, 
+and extra care should be taken to ensure that \texttt{initial\_samples} matches 
+the number of experiments in this file. It is also best, for this use-case, to 
+use \texttt{import\_candidate\_points\_file}, with \texttt{num\_candidates} 
+exactly matching the number of candidate points in the file.
+
+By setting \texttt{max\_hifi\_evaluations} to zero, Dakota will run the intial
+calibration of the low-fidelity model, select the ``optimal" design from
+those provided in \texttt{import\_candidate\_points\_file}, and exit 
+\textit{without} running the ``dummy" high-fidelity model code. The selected
+design will be output to the screen, as well as to 
+\texttt{experimental\_design\_output.txt}, as detailed above. The high-fidelity
+model may then be run offline with the newly selected design point.
+
+The user must update \texttt{calibration\_data\_file} with the new 
+high-fidelity data when it becomes available, as well as remove the previously
+selected design point from \texttt{import\_candidate\_points\_file}. Within the Dakota input file, \texttt{initial\_samples}, \texttt{num\_experiments}, and 
+\texttt{num\_candidates} should be correspondingly updated. Dakota may then be
+run again to yield the next optimal experimental design. It should be noted 
+that the stopping criteria will not be automatically evaluated by Dakota when 
+one-at-a-time implementation is used. The user must determine when the 
+algorithm should be terminated.
 
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 

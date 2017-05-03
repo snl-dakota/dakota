@@ -1,0 +1,8 @@
+Blurb::
+Trend function order of the model discrepancy
+
+Description::
+Whether Gaussian process or polynomial regression model is selected as
+the discrepancy formulation, the order of the trend function may be specified 
+using the \c correction_order command followed by either \c constant, 
+\c linear, or \c quadratic.

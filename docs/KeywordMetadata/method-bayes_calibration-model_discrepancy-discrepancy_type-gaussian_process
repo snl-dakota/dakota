@@ -1,0 +1,16 @@
+Blurb::
+Use the Surfpack version of Gaussain process as the discrepancy model
+
+Description::
+This keyword specifies a generic version of the Gaussian process implemented
+in the surface-fitting library called Surfpack. With the exception of the
+\c correction_order specification, all default options are used in the 
+approximation of the model discrepancy function. That is, DIRECT is used as
+the optimization method for finding the maximum likelihood estimates of the
+hyper-parameters that govern the trend and correlation functions, the 
+correlation lengths are optimized by Surfpack, and ill-conditioning is 
+handled internally; gradient-enhanced kriging is not provided as an option in
+this application.
+
+By selecting this option, each discrepancy function will take the form of
+a Gaussian process

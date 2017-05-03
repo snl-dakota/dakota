@@ -59,6 +59,11 @@ the number of iterations through the algorithm that will be performed. Any
 high-fidelity model runs needed to produce the data set for the initial 
 calibration are not included in this allocation.
 
+In the case that the high-fidelity model must be run indepently of Dakota,
+the user may set \c max_hifi_evaluations to zero. The optimal experimental
+design point will be calculated and reported, but the high-fidelity model 
+will not be run. For more details, see the User's Manual. 
+
 <b> Expected Output </b>
 
 Information regarding the progress and termination condition of the experimental

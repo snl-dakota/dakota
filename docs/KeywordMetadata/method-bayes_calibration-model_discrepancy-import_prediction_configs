@@ -1,0 +1,15 @@
+Blurb::
+Specify text file containing prediction configurations for model discrepancy
+
+Description::
+Enables text file import of user-specified prediction configurations at which
+to calculate the corrected model \f$M_i + \delta_i\f$
+
+<b> Usage Tips </b>
+
+Dakota parses input files without regard to whitespace, but the
+\c import_prediction_configs file must be in one of three formats:
+\li \c annotated (default)
+\li \c custom_annotated
+\li \c freeform
+
