@@ -67,7 +67,7 @@ specified prediction configurations will be exported to the file specified
 using \c export_corrected_model_file or to the default file 
 \c dakota_corrected_model_tabular.dat, and the corresponding prediction
 variances will be exported to \c dakota_discrepancy_variance_tabular.dat
-or the file specified with \c dakota_corrected_variance_file. 
+or the file specified with \c export_corrected_variance_file. 
 
 Examples::
 The input files below illustrate the options available to \c model_discrepancy

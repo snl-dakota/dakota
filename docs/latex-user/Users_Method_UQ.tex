@@ -2770,6 +2770,118 @@ deviation approximately 0.1.
   \label{fig:uq:obs_err_mult}
 \end{figure}
 
+\subsection{Model Discrepancy}
+%kam
+Whether in a Bayesian setting or otherwise, the goal of model calibration
+is to minimize the difference between the observational data $d_i$ and 
+the corresponding model response $q_i(\boldsymbol{\theta})$. In the 
+presence of scenario or configuration variables $x$, Eq.~\ref{eq:model} can
+be modified,
+\begin{equation}
+d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \epsilon_i,
+\end{equation} 
+with the ensuing equations of the likelihood and Bayes Theorem updated 
+likewise. The configuration variables represent experimental settings, such 
+as temperature or pressure, that may vary between experiments. 
+
+However, it is often the case that the agreement between the 
+data and the model after calibration is not sufficiently close. This is 
+generally attributed to model form or structural error, and can be corrected 
+to some extent with the use of model discrepancy. The Kennedy and 
+O'Hagan~\cite{Kenn01} formulation takes the form
+\begin{equation}
+d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
+\end{equation} 
+where $\delta_i(x)$ represents the model discrepancy. It should be noted that
+the discrepancy depends \textit{only} on the configuration variables. 
+Furthermore, one discrepancy model is calculated for \textit{each} observable
+$d_i$, $i = 1, \ldots, n$, yielding $\delta_1, \ldots, \delta_n$. Future 
+work includes developing a discrepancy model that accounts for field data so
+that a single, global $\delta(x)$ will be approximated.
+
+The current implementation of the model discrepancy capability in Dakota 
+serves as a post-processing mechanism after the completion of a Bayesian update.
+If \texttt{model\_discrepancy} is specified in the input file, Dakota will 
+perform the Bayesian update as detailed in the section above, and then begin 
+the process of approximating $\delta_i$. For each observable $d_i$ and for 
+each configuration $x_j$,
+\begin{equation}
+\delta_i \left( x_j \right) = d_i \left( x_j \right) - 
+q_i \left(\boldsymbol{\theta}^*, x_j \right),
+\end{equation}
+where $\boldsymbol{\theta}^*$ is the average of the calibrated posterior 
+distribution of the model parameters. The $i^{th}$ discrepancy function
+will be built over the computed $\delta_i \left( x_j \right)$, $j = 1, \ldots,
+m$. Within the Dakota input file, the user may specify the 
+\texttt{discrepancy\_type} to be either a Gaussian process or polynomial
+regression model with the \texttt{gaussian\_process} or \texttt{polynomial}
+commands, respectively. Additionally, the order of the trend function may be
+selected using the \texttt{correction\_order} command and choosing one of
+\texttt{constant}, \texttt{linear}, or \texttt{quadratic}. Any specifications
+using these keywords will apply to all $\delta_i$. By default, Dakota will 
+build a Gaussian process discrepancy model with a quadratic trend function.
+Information regarding how polynomial and Gaussian process models are built
+can be found in Sections~\ref{models:surf:polynomial} 
+and~\ref{models:surf:kriging}, respectively. 
+
+The user may specify new ``prediction" configurations at which the 
+corrected model should be calculated. For each response and for each new
+configuration, $M_i(\boldsymbol{\theta}, x_{k,new}) + \delta_i(x_{k,new})$ 
+will be computed. The prediction configurations can be specified in one of
+three ways. If \texttt{num\_prediction\_configs} is included, Dakota will 
+uniformly distribute the indicated number of prediction configurations 
+throughout the domain of the configuration variable that is given in the 
+\texttt{variables} block of the input file. Alternatively, the user may 
+explicitly list desired prediction configuration locations within the input
+file following the \texttt{prediction\_configs} keyword, or in an external
+file to be read in with the \texttt{import\_prediction\_configs} option. If 
+none of these three options is selected, Dakota will automatically calculate
+corrected model predictions at ten configurations, spread uniformly in the
+configuration variable domain. 
+
+%add comments regarding interpolation vs extrapolation?
+Calculations corresponding to each prediction configuration and to each
+observable will be output to tabular files. The responses from the discrepancy
+model itself is output to \texttt{dakota\_discrepancy\_tabular.dat}. Those
+from the corrected model are output to \texttt{dakota\_corrected\_tabular.dat}.
+The user may specify the output file names for the discrepancy and corrected
+model tabular files using the \texttt{export\_discrepancy\_file} and
+\texttt{export\_corrected\_model\_file} keywords, respectively. 
+
+Variance information corresponding to each specified configuration location 
+and for each observable is also computed. In a prediction setting, the 
+variance calculated from the discrepancy model is additively combined with 
+the variance information provided with the experimental data, such that
+\begin{equation}
+\label{eq:discrep_var}
+\Sigma_{total,i}(x) = \Sigma_{\delta, i}(x) + \sigma^{2}_{exp,i} I
+\end{equation}
+for each observable $i$. Further details of how the variance 
+$\Sigma_{\delta,i}(x)$ is computed for Gaussian process and polynomial 
+regression models can be found in the Dakota Theory Manual~\cite{TheoMan}. The 
+experimental variance provided for parameter calibration may vary for the
+same observable from experiment to experiment, thus $\sigma^{2}_{exp,i}$ is
+taken to be the maximum variance given for each observable. That is,
+\begin{equation}
+\sigma^2_{exp,i} = \max_{j} \sigma^2_{i}(x_j), 
+\end{equation}
+where $\sigma^2_{i}(x_j)$ is the variance provided for the $i^{th}$ observable
+$d_i$, computed or measured with the configuration variable $x_j$. 
+
+When each corrected model value $M_i(\boldsymbol{\theta}^{*}, x_{k, new}) +
+\delta_i(x_{k,new})$ is considered, the variance calculated 
+via~\ref{eq:discrep_var} provides a prediction interval, similar to those 
+described in Section~\ref{uq:bayesian:queso}. Including $\sigma^{2}_{exp,i}$ 
+in the variance calculation accounts for the uncertainty in the model 
+predictions that arise due to uncertainties in the calibration data. These
+prediction variances are output to the file 
+\texttt{dakota\_discrepancy\_variance\_tabular.dat} by default. The name of 
+this file can be modified using the \texttt{export\_corrected\_variance\_file} 
+keyword in the input script. 
+
+Additional details and an illustrative example of these calculations are given 
+in the Dakota Theory Manual~\cite{TheoMan}.
+
 \subsection{Bayesian Experimental Design}
 \label{sec:bayes_expdesign}
 
@@ -2814,6 +2926,32 @@ block should point to the appropriate high- or low-fidelity code, and the
 \texttt{responses} blocks should contain consistent details about the responses 
 from each code. For example, both of the models should return the same number 
 of \texttt{calibration\_terms}.  
+
+\stepcounter{figure}
+\renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
+\lstinputlisting
+[
+float=htbp,
+lastline=53,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign1},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
+\stepcounter{figure}
+\lstinputlisting
+[
+float=htbp,
+firstline=54,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign2},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
 
 The mutual information experimental design algorithm is selected by specifying 
 \texttt{bayesian\_calibration}, \texttt{queso}, and 
@@ -2862,32 +3000,6 @@ Dakota output. Furthermore, a summary of the algorithm's results, including,
 for each iteration, the optimal design, the mutual information, and the 
 corresponding high-fidelity model response, can be found in the file 
 \texttt{experimental\_design\_output.txt}.  
-
-\stepcounter{figure}
-\renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
-\lstinputlisting
-[
-float=htbp,
-lastline=53,
-caption={Dakota input file for Bayesian Experimental Design.}, 
-label={figure:uq_expdesign1},
-captionpos=b,
-basicstyle=\small,
-frame=single
-]
-{bayes_experimental_design.in}
-\stepcounter{figure}
-\lstinputlisting
-[
-float=htbp,
-firstline=54,
-caption={Dakota input file for Bayesian Experimental Design.}, 
-label={figure:uq_expdesign2},
-captionpos=b,
-basicstyle=\small,
-frame=single
-]
-{bayes_experimental_design.in}
 
 \subsubsection{One-at-a-time Implementation}
 
