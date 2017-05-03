@@ -625,7 +625,7 @@ void NonDExpansion::initialize_expansion()
 {
   // update ranVar info to capture any distribution param insertions
   initialize_random_variable_parameters();
-  initialize_final_statistics_gradients();
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
   transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions

@@ -480,6 +480,9 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 
 void NonDLocalReliability::core_run()
 {
+  initialize_random_variable_parameters();
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
+
   if (mppSearchType) mpp_search();
   else               mean_value();
 
@@ -491,7 +494,7 @@ void NonDLocalReliability::core_run()
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 
-  numRelAnalyses++;
+  ++numRelAnalyses;
 }
 
 
@@ -502,7 +505,6 @@ void NonDLocalReliability::mean_value()
   // finalStatistics.  Additionally, if uncorrelated variables, compute
   // importance factors.
 
-  initialize_random_variable_parameters();
   initial_taylor_series();
 
   // initialize arrays
@@ -511,7 +513,6 @@ void NonDLocalReliability::mean_value()
     (numUncertainVars * (numUncertainVars+1)) / 2 : numUncertainVars;
   impFactor.shapeUninitialized(num_imp_fact, numFunctions);
   statCount = 0;
-  initialize_final_statistics_gradients();
 
   // local reliability data aren't output to tabular, so send directly
   // to graphics window only
@@ -713,8 +714,6 @@ void NonDLocalReliability::mpp_search()
   NonDLocalReliability* prev_instance = nondLocRelInstance;
   nondLocRelInstance = this;
 
-  // The following 2 calls must precede use of natafTransform.trans_X_to_U()
-  initialize_random_variable_parameters();
   // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
   // Since the uncertain variable distributions (means, std devs, correlations)
   // may change among NonDLocalReliability invocations (e.g., RBDO with design
@@ -723,6 +722,8 @@ void NonDLocalReliability::mpp_search()
 
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
+  // and needs to follow initialize_random_variable_parameters() and
+  // transform_correlations()
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
       natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
@@ -740,7 +741,6 @@ void NonDLocalReliability::mpp_search()
 
   // Initialize local arrays
   statCount = 0;
-  initialize_final_statistics_gradients();
 
   // Initialize class scope arrays, modify the correlation matrix, and
   // evaluate median responses

@@ -1882,18 +1882,17 @@ void NonD::initialize_final_statistics()
 }
 
 
-void NonD::initialize_final_statistics_gradients()
+void NonD::resize_final_statistics_gradients()
 {
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  size_t i, num_final_stats     = final_asv.size(),
-            num_final_grad_vars = final_dvv.size();
+  size_t i, num_final_stats = final_asv.size();
   bool final_grad_flag = false;
   for (i=0; i<num_final_stats; i++)
     if (final_asv[i] & 2)
       { final_grad_flag = true; break; }
-  finalStatistics.reshape(num_final_stats, num_final_grad_vars,
-			  final_grad_flag, false);
+  finalStatistics.reshape(num_final_stats, final_dvv.size(),
+			  final_grad_flag, false); // no final Hessians
 }
 
 

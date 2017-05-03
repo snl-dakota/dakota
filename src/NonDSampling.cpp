@@ -46,8 +46,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillFlag(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")),
-  numLHSRuns(0)
+  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0)
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -56,7 +55,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // initialize finalStatistics using the default statistics set
@@ -66,16 +65,17 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
     if ( sampleType != SUBMETHOD_RANDOM ) {
-      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type." << std::endl;
-      abort_handler(-1);
+      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
     }
 
     // Check for conflicting samples spec. Note that this still allows
     // a user to specify "samples = 0" alongside wilks
     if ( numSamples > 0 ) { 
-      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"." 
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
     // Wilks order statistics
@@ -100,7 +100,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     wilksBeta = probDescDB.get_real("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
-    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilks_twosided);
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
+					   wilksBeta, wilks_twosided);
     samplesRef = numSamples;
   }
 
@@ -118,10 +119,10 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), wilksFlag(false), samplesIncrement(0), 
-  statsFlag(false), allDataFlag(true),
-  samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(vary_pattern), backfillFlag(false), numLHSRuns(0)
+  sampleType(sample_type), wilksFlag(false), samplesIncrement(0),
+  statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), backfillFlag(false),
+  numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -148,11 +149,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(true), backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -164,6 +164,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
@@ -174,11 +175,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
+  backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -190,6 +190,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor defines allSamples from an incoming
     sample matrix. */
@@ -216,13 +217,6 @@ NonDSampling::~NonDSampling()
 { }
 
 
-void NonDSampling::transform_samples(bool x_to_u)
-{
-  // transform x_samples to u_samples for use by expansionSampler
-  transform_samples(allSamples, x_to_u, numSamples);
-}
-
-
 void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
 				     int num_samples)
 {
@@ -242,23 +236,6 @@ void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
     }
 }
 
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    class member allSamples. */
-void NonDSampling::get_parameter_sets(Model& model)
-{
-  get_parameter_sets(model, numSamples, allSamples);
-}
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    the specified design matrix. */
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix)
-{
-  get_parameter_sets(model, num_samples, design_matrix, true);
-}
 
 void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
                                       RealMatrix& design_matrix, bool write_msg)
@@ -311,7 +288,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       if (!num_acv) {
 	Cerr << "Error: no active continuous variables for sampling in "
 	     << "uniform mode" << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
       const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
       const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
@@ -1373,7 +1350,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     if (need_moments) {
       Cerr << "Error: required moments not available in compute_distribution_"
 	   << "mappings().  Call compute_moments() first." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
       // Issue with the following approach is that subsequent invocations of
       // compute_level_mappings() without compute_moments() would not be
       // detected and old moments would be used.  Performing more rigorous

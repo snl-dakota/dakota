@@ -161,8 +161,8 @@ protected:
   /// create a system-generated unique seed (when a seed is unspecified)
   int generate_system_seed();
 
-  /// initializes finalStatistics::functionGradients
-  void initialize_final_statistics_gradients();
+  /// resizes finalStatistics::functionGradients based on finalStatistics ASV
+  void resize_final_statistics_gradients();
   /// update finalStatistics::functionValues from finalMomentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();

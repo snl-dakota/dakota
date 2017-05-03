@@ -443,6 +443,27 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
 
 
+/** transform x_samples to u_samples for use by expansionSampler */
+inline void NonDSampling::transform_samples(bool x_to_u)
+{ transform_samples(allSamples, x_to_u, numSamples); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    the specified design matrix. */
+inline void NonDSampling::
+get_parameter_sets(Model& model, const int num_samples,
+		   RealMatrix& design_matrix)
+{ get_parameter_sets(model, num_samples, design_matrix, true); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    class member allSamples. */
+inline void NonDSampling::get_parameter_sets(Model& model)
+{ get_parameter_sets(model, numSamples, allSamples); }
+
+
 inline const RealVector& NonDSampling::response_error_estimates() const
 { return finalStatErrors; }
 
