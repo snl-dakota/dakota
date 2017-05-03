@@ -674,6 +674,11 @@ void NonDLHSSampling::update_final_statistics()
 {
   NonDSampling::update_final_statistics();
   
+  // assign finalGradStats
+  if (finalMomentsType && !epistemicStats) {
+    
+  }
+
   // if MC sampling, assign standard errors for moments within finalStatErrors
   if (sampleType == SUBMETHOD_RANDOM && finalMomentsType && !epistemicStats) {
 

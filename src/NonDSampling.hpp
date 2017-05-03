@@ -284,7 +284,13 @@ protected:
 			      size_t& num_samp, Real& mean);
   /// helper to accumulate higher order sums of finite samples
   static void accumulate_moments(const RealMatrix& samples, size_t q,
-				 Real* moments, short moments_type);
+				 short moments_type, Real* moments);
+  /// helper to accumulate gradient sums
+  static void accumulate_moment_gradients(const RealMatrix& fn_samples,
+					  const RealMatrixArray& grad_samples,
+					  size_t q, short moments_type,
+					  const Real* moments,
+					  RealMatrix& moment_grads);
 
   //
   //- Heading: Data members

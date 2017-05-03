@@ -723,7 +723,7 @@ void NonDLocalReliability::mpp_search()
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
   // and needs to follow initialize_random_variable_parameters() and
-  // transform_correlations()
+  // transform_correlations().
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
       natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),

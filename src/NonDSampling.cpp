@@ -998,9 +998,8 @@ compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
   if (sample_counts.size() != num_qoi) sample_counts.resize(num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
-    Real*  moments_i = moment_stats[i];
     size_t& num_samp = sample_counts[i];
-
+    Real* moments_i = moment_stats[i];
     accumulate_mean(samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
@@ -1008,7 +1007,7 @@ compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
 	   << " samples.\n";
 
     if (num_samp)
-      accumulate_moments(samples, i, moments_i, moments_type);
+      accumulate_moments(samples, i, moments_type, moments_i);
     else {
       Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
@@ -1033,16 +1032,19 @@ compute_moments(const RealMatrix& samples, RealMatrix& moment_stats,
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
-    Real* moments_i = moment_stats[i];
 
+    Real* moments_i = moment_stats[i];
     accumulate_mean(samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
 
-    if (num_samp)
-      accumulate_moments(samples, i, moments_i, moments_type);
+    if (num_samp) {
+      accumulate_moments(samples, i, moments_type, moments_i);
+      //if (true) // TO DO: final ASV, compute_moment_gradients() ???
+      //  accumulate_moment_gradients(samples, i, moments_i, moments_type);
+    }
     else {
       Cerr << "Warning: Number of samples for quantity " << i+1
 	   << " must be nonzero in NonDSampling::compute_moments().\n";
@@ -1131,8 +1133,8 @@ accumulate_mean(const RealMatrix& samples, size_t q,
 
 
 void NonDSampling::
-accumulate_moments(const RealMatrix& samples, size_t q,
-		   Real* moments, short moments_type)
+accumulate_moments(const RealMatrix& samples, size_t q, short moments_type,
+		   Real* moments)
 {
   // accumulate central moments (e.g., variance)
   size_t s, num_obs = samples.numCols(), num_samp = 0;
@@ -1172,6 +1174,69 @@ accumulate_moments(const RealMatrix& samples, size_t q,
       nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3); // unbiased standard
   else
     moments[3] = (central) ? 0. : -3.;
+}
+
+
+void NonDSampling::
+accumulate_moment_gradients(const RealMatrix&        fn_samples,
+			    const RealMatrixArray& grad_samples, size_t q,
+			    short moments_type, const Real* moments,
+			    RealMatrix& moment_grads)
+{
+  size_t s, v, num_deriv_vars,
+    num_obs = std::min((size_t)fn_samples.numCols(), grad_samples.size());
+  if (num_obs)
+    num_deriv_vars = grad_samples[0].numRows(); // functionGradients = V x Q
+  else {
+    Cerr << "Error: emply samples array in NonDSampling::"
+	 << "accumulate_moment_gradients()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (moment_grads.numRows() != num_deriv_vars || moment_grads.numCols() != 2)
+    moment_grads.shape(num_deriv_vars, 2); // init to 0.
+  else
+    moment_grads = 0.;
+
+  SizetArray num_samp(num_deriv_vars, 0);
+  Real *mean_grad = moment_grads[0], *mom2_grad = moment_grads[1];
+  for (s=0; s<num_obs; ++s) {
+    // manage faults hierarchically as in Pecos::SurrogateData::response_check()
+    Real fn = fn_samples(q,s);
+    if (isfinite(fn)) {          // neither NaN nor +/-Inf
+      const Real* grad = grad_samples[s][q];
+      for (v=0; v<num_deriv_vars; ++v)
+	if (isfinite(grad[v])) { // neither NaN nor +/-Inf
+	  mean_grad[v] += grad[v];
+	  mom2_grad[v] += fn * grad[v];
+	  ++num_samp[v];
+	}
+    }
+  }
+
+  Real ns, nm1; size_t nsv;
+  Real mean = moments[0]/*moments(0,q)*/, mom2 = moments[1]/*moments(1,q)*/;
+  bool central_mom = (moments_type == CENTRAL_MOMENTS);
+  for (v=0; v<num_deriv_vars; ++v) {
+    nsv = num_samp[v];
+    if (nsv) {
+      ns = (Real)nsv;
+      // dMean/ds = E[dQ/ds] --> unbiased estimator 1/N Sum(dQ/ds)
+      mean_grad[v] /= ns;
+    }
+    if (nsv > 1) {
+      nm1 = ns - 1.;
+      // dVar/ds = 2 E[(Q - Mean)(dQ/ds - dMean/ds)] --> unbiased var estimator:
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean Sum(dQ/ds) -
+      //             dMean/ds Sum(Q) + N Mean Mean/ds ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean dMean/ds (N + N - N) ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - N Mean dMean/ds ]
+      // dVar/ds = 2 Sigma dSigma/ds -->
+      // dSigma/ds = [ Sum(Q dQ/ds) - N Mean dMean/ds ] / (Sigma (N-1))
+      mom2_grad[v]  = (central_mom) ?
+	2. * ( mom2_grad[v] - ns * mean * mean_grad[v] ) / nm1 :
+	     ( mom2_grad[v] - ns * mean * mean_grad[v] ) / (mom2 * nm1);
+    }
+  }
 }
 
 
