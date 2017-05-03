@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import sys
 import argparse
-from dipy import parallel, read_parameters_file, UNNAMED
+import dakota.interfacing.parallel as parallel 
 
 __author__ = 'J. Adam Stephens'
 __copyright__ = 'Copyright 2014 Sandia Corporation'

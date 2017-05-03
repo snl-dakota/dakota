@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Bash script to run text_book_simple_par in parallel on an available set of
+# Bash script to run text_book_par in parallel on an available set of
 # MPI "tasks" within an allocated job. The total set of tasks in a job is divided
 # up into tiles, each containing the number needed to run the user's executable.
 
@@ -38,7 +38,7 @@ cp $params application.in
 # RUN SIMULATION CODE
 # -------------------
 
-echo "$0 running text_book_simple_par on 2 processors."
+echo "$0 running text_book_par on 2 processors."
 
 # mpitile the command.
 # Because there are multiple tiles per node (as opposed to 1 tile per node or 
@@ -47,13 +47,13 @@ echo "$0 running text_book_simple_par on 2 processors."
 # Otherwise, multiple MPI processes may be bound to a single core. This behavior
 # depends on your OpenMPI version; it is best to consult the documentation.
 
-mpitile -np 2 --bind-to none text_book_simple_par \
+mpitile -np 2 --bind-to none text_book_par \
     application.in application.out
 
 # mpitile also supports static scheduling. Use the --static option and provide
 # either the evaluation number or name of the parameters file.
 # mpitile -np 2 --static --params-file $params --bind-to none \
-#	text_book_simple_par application.in application.out
+#	text_book_par application.in application.out
 
 # use sleep command if file I/O timing is a problem. This most often
 # manifests as Dakota complaining that it can't find a results file.

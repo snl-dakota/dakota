@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Bash script to run text_book_simple_par in parallel on an available set of
+# Bash script to run text_book_par in parallel on an available set of
 # MPI "tasks" within an allocated job. The total set of tasks in a job is divided
 # up into tiles, each containing the number needed to run the user's executable.
 
@@ -41,7 +41,7 @@ cp $params application.in
 # RUN SIMULATION CODE
 # -------------------
 
-echo "$0 running text_book_simple_par on 2 processors."
+echo "$0 running text_book_par on 2 processors."
 
 
 # !!! Requires that APPLIC_PROCS either divide evenly into PPN or be
@@ -89,7 +89,7 @@ done
 # to allow the tasks to float from processor to processor for load balancing.
 # Otherwise, multiple MPI processes may be bound to a single core. This behavior
 # depends on your OpenMPI version; it is best to consult the documentation.
-mpirun -np $APPLIC_PROCS -host $node_list --bind-to none text_book_simple_par \
+mpirun -np $APPLIC_PROCS -host $node_list --bind-to none text_book_par \
     application.in application.out
 
 # TODO: openmpi and/or srun exclusive mode should allow mpiexec-like

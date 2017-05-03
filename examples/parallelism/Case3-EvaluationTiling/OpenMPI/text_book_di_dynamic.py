@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import sys
 import shutil
-from dipy import parallel, read_parameters_file
+from dakota.interfacing import parallel, read_parameters_file
 
-## Use the dipy.parallel module to run text_book_simple_par in parallel
+## Use the dakota.interfacing.parallel module to run text_book_par in 
+# parallel
 
 params_file=sys.argv[1]
 results_file=sys.argv[2]
@@ -20,7 +21,7 @@ shutil.copy(params_file, "application.in")
 command = (2, # Use two tasks
         ["--bind-to",
             "none",
-            "text_book_simple_par", 
+            "text_book_par", 
             "application.in", 
             "application.out"]
         )

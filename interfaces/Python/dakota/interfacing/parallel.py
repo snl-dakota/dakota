@@ -24,7 +24,7 @@ Other module features:
 
 Example Usage::
 
-    from dipy import parallel, read_parameters_file
+    from dakota.interfacing import parallel, read_parameters_file
 
     # Dynamic scheduling. On 4 processs, launch "my_sim" with the --verbose
     # option. Pass the "--bind-to none" option ot mpirun by including it
@@ -57,7 +57,7 @@ import sys
 import subprocess
 import time
 from . import slurm
-from .dipy import read_parameters_file, UNNAMED
+from .interfacing import read_parameters_file, UNNAMED
 
 __author__ = 'J. Adam Stephens'
 __copyright__ = 'Copyright 2014 Sandia Corporation'
@@ -235,8 +235,8 @@ def tile_run_static(commands=[], dedicated_master=None, eval_num=None,
     Keyword args:
         commands (list): Each item is a tuple: (applic_procs, tokenized command 
             to be run). len(commands) == 1 for SIMD model.
-        dedicated_master (bool, optional): Reserve the first node for Dakota 
-            (default: False).
+        dedicated_master (NODE or TILE, optional): Reserve the first NODE or TILE 
+            for Dakota (default: None).
         eval_num (int): Dakota evaluation number. Either eval_num or
             parameters_file is required. eval_num supercedes parameters_file.
         parameters_file (string): Extract an eval_num from this Dakota
@@ -281,7 +281,8 @@ def tile_run_dynamic(commands=[], dedicated_master=None, lock_id=None, lock_dir=
     Keyword args:
         commands (list): Each item is a tuple: (applic_procs, tokenized command 
             to be run). len(commands) == 1 for SIMD model.
-        dedicated_master (bool, optional): Reserve the first node for Dakota (default: False).
+        dedicated_master (NODE or TILE, optional): Reserve the first NODE or TILE 
+            for Dakota (default: None).
         lock_id (str, optional): Unique prefix for lockfiles used to manage tiles.
         lock_dir (str, optional): Name of directory where lockfiles will be written.
     

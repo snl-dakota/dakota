@@ -14,7 +14,7 @@ variables,
 	  initial_point    1.0   1.0   1.0
 
 # Run Dakota in serial launching M=8 asynchronous local jobs, which each run in
-# parallel. mpirun's -host option with a realtive node list is used to land 
+# parallel. mpirun's -host option with a relative node list is used to land 
 # jobs on available nodes.
 interface,
 	fork,
@@ -32,6 +32,7 @@ interface,
           # This guarantees that evaluations are replaced with evaluations
           # modulo the evaluation concurrency. For the two dynamic
           # scheduling cases, this may be commented out.
+
           local_evaluation_scheduling static
 	  
           ## Uncomment one of these analysis drivers. All of these examples
@@ -39,7 +40,7 @@ interface,
           # SLURM (i.e. you use sbatch to submit jobs to the queue). Let us
           # know if you'd like to see support for other resource managers.
           analysis_driver = 'text_book_bash_static.sh'
-          #analysis_driver = 'text_book_dipy_dynamic.py'
+          #analysis_driver = 'text_book_di_dynamic.py'
           #analysis_driver = 'text_book_mpitile_dynamic.sh'
           
 	    parameters_file = 'params.in'

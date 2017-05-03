@@ -9,14 +9,14 @@
 # Load the Dakota module OR do other setup to:
 # 1. Add the Dakota install's bin and test folders on the path
 # 2. Make mpirun available on the PATH (e.g. load an openmpi module
-# 3. Add the folder containing the dipy package to PYTHONPATH.
+# 3. Add the folder containing the dakota Python package to PYTHONPATH.
 module load dakota
 
 # Run Dakota in serial and launch 4 parallel analysis jobs at a time
 dakota -i dakota_pstudy.in
 
-# optional: when using miptile or dipy.parallel, make sure the lock
-# files used to manage the tiles during dynamic scheduling are cleaned
+# optional: when using mpitile or dakota.interfacing.parallel, make sure the 
+# lock files used to manage the tiles during dynamic scheduling are cleaned
 # up.
 
 rm -f ${HOME}/.DakotaEvalTiling/${SLURM_JOBID}.*

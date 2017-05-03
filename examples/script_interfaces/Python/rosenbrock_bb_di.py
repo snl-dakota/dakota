@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
 # Dakota will execute this script as
-#   rosenbrock_bb.py params.in results.out
-#  The command line arguments will be extracted by dipy automatically.
+#   rosenbrock_bb_di.py params.in results.out
+#  The command line arguments will be extracted by dakota.interfacing automatically.
 
 # necessary python modules
-import dipy
+import dakota.interfacing as di
 
 # ----------------------------
 # Parse Dakota parameters file
 # ----------------------------
 
-params, results = dipy.read_parameters_file()
+params, results = di.read_parameters_file()
 
 # -------------------------------
 # Convert and send to application
