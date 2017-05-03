@@ -1,0 +1,12 @@
+Blurb::
+Specify options for capturing analysis driver failures during 
+Dakota execution. 
+
+Description::
+Allows various options when an analysis_driver job has failed, including stopping Dakota, bypassing the failed simulation run, or re-trying the analyses. 
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

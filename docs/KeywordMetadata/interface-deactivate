@@ -1,0 +1,13 @@
+Blurb::
+Deactivate various types of information
+
+Description::
+Deactivate can be used to eliminate various outputs, including 
+the function evaluation cache, the active set vector, and the restart file. 
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
+
