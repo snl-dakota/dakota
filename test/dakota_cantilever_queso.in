@@ -9,13 +9,13 @@ method,
          chain_samples = 1000 seed = 348
           dram  # | delayed_rejection | adaptive_metropolis | metropolis_hastings
 #         calibrate_error_multipliers per_response            #p4,#p5
-            # inverse gamma prior
-            #   alpha = (mean/std_dev)^2 + 2
-            #   beta = mean*(alpha-1)
-            # mean = 1.0, s.d. = 0.2
+#            # inverse gamma prior                            #p4,#p5
+#            #   alpha = (mean/std_dev)^2 + 2                 #p4,#p5
+#            #   beta = mean*(alpha-1)                        #p4,#p5
+#            # mean = 1.0, s.d. = 0.2                         #p4
 #           hyperprior_alphas = 27.0                          #p4
 #           hyperprior_betas  = 26.0                          #p4
-            # mean = 1.5, s.d. = 2.0
+#           # mean = 1.5, s.d. = 2.0                          #p5
 #           hyperprior_alphas = 2.5625                        #p5
 #           hyperprior_betas  = 2.34375                       #p5
 	  proposal_covariance
