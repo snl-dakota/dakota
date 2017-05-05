@@ -22,7 +22,7 @@
 #    params=$1
 #    source <this file>
 #    export_dakota_params $params
-#    echo ${DP_eval_id}
+#    echo ${DAK_eval_id}
 #
 ###################################################################################################
 
