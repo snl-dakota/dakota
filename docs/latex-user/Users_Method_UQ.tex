@@ -2792,7 +2792,7 @@ and~\ref{models:surf:kriging}, respectively.
 
 The user may specify new ``prediction" configurations at which the 
 corrected model should be calculated. For each response and for each new
-configuration, $M_i(\boldsymbol{\theta}, x_{k,new}) + \delta_i(x_{k,new})$ 
+configuration, $q_i(\boldsymbol{\theta}, x_{k,new}) + \delta_i(x_{k,new})$ 
 will be computed. The prediction configurations can be specified in one of
 three ways. If \texttt{num\_prediction\_configs} is included, Dakota will 
 uniformly distribute the indicated number of prediction configurations 
@@ -2805,7 +2805,6 @@ none of these three options is selected, Dakota will automatically calculate
 corrected model predictions at ten configurations, spread uniformly in the
 configuration variable domain. 
 
-%add comments regarding interpolation vs extrapolation?
 Calculations corresponding to each prediction configuration and to each
 observable will be output to tabular files. The responses from the discrepancy
 model itself is output to \texttt{dakota\_discrepancy\_tabular.dat}. Those
@@ -2834,7 +2833,7 @@ taken to be the maximum variance given for each observable. That is,
 where $\sigma^2_{i}(x_j)$ is the variance provided for the $i^{th}$ observable
 $d_i$, computed or measured with the configuration variable $x_j$. 
 
-When each corrected model value $M_i(\boldsymbol{\theta}^{*}, x_{k, new}) +
+When each corrected model value $q_i(\boldsymbol{\theta}^{*}, x_{k, new}) +
 \delta_i(x_{k,new})$ is considered, the variance calculated 
 via~\ref{eq:discrep_var} provides a prediction interval, similar to those 
 described in Section~\ref{uq:bayesian:queso}. Including $\sigma^{2}_{exp,i}$ 
