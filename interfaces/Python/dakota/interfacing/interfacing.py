@@ -31,7 +31,7 @@ class Parameters(object):
     """Access variables and analysis components from a Dakota parameters file
     
     Parameters objects typically should be constructed by the convenience 
-    function ``dipy.read_parameters_file``.
+    function ``dakota.interfacing.read_parameters_file``.
 
     Variable values can be accessed by name or by index using []. Analysis
     components are accessible by index only using the an_comp attribute. The
@@ -115,17 +115,17 @@ class Response(object):
             Each are a boolean indicating whether Dakota requested the
             associated information for the response. namedtuples can be
             accessed by index or by member.
-        function: Function value for the response. A dipy.ResponseError
+        function: Function value for the response. A ResponseError
             is raised if Dakota did not request the function value (and
             ignore_asv is False).
         gradient: Gradient for the response. Gradients must be a 1D iterable
-            of values that can be converted to float. A dipy.ResponseError
+            of values that can be converted to float. A ResponseError
             is raised if Dakota did not request the gradient (and ignore_asv is
             False), or if the number of elements does not equal the number of 
             derivative variables.
         hessian: Hessian value for the response. Hessians must be an iterable
             of iterables (e.g. a 2D numpy array or list of lists). A 
-            dipy.ResponseError is raised if Dakota did not request the Hessian 
+            ResponseError is raised if Dakota did not request the Hessian 
             (and ignore_asv is False), or if the dimension does not correspond 
             correctly with the number of derivative variables.    
     """
@@ -210,7 +210,7 @@ class Results(object):
     """Collect response data and write to results file.
 
     Results objects typically should be constructed by the convenience function
-    ``dipy.read_parameters_file``.
+    ``dakota.interfacing.read_parameters_file``.
 
     Each response is represented by a Response objected, and can be accessed 
     by name or by index using []. The Results class supports iteration, yielding
@@ -297,10 +297,10 @@ class Results(object):
                 setting provided at construct time.
 
         Raises:
-            dipy.MissingSourceError: No results_file was provided at construct
-                time, and no stream was provided to the method call.
-            dipy.ResponseError: A result requested by Dakota is missing (and 
-                ignore_asv is False).
+            dakota.interfacing.MissingSourceError: No results_file was provided at 
+                construct time, and no stream was provided to the method call.
+            dakota.interfacing.ResponseError: A result requested by Dakota is missing 
+                (and ignore_asv is False).
         """
         my_ignore_asv = self.ignore_asv
         if ignore_asv is not None:
@@ -480,8 +480,8 @@ def read_parameters_file(parameters_file=None, results_file=None,
             provided, the first command line argument will be used.
         results_file: Pathname to the Dakota results file. If not provided
             or set to None, the second command line argument will be used.
-            Setting to dipy.UNNAMED leaves the file unnamed, and a stream
-            must be specified in the call to Results.write().
+            Setting to dakota.interfacing.UNNAMED leaves the file unnamed, 
+            and a stream must be specified in the call to Results.write().
         ignore_asv: If True, ignore the active set vector when setting
             responses on the returned Results object.
 
@@ -490,10 +490,11 @@ def read_parameters_file(parameters_file=None, results_file=None,
         based on the parameters file.
             
     Raises:
-        dipy.MissingSourceError: Either filename is not provided and cannot
-            be read from the command line arguments.
+        dakota.interfacing.MissingSourceError: Parameters or results filename is 
+            not provided and cannot be read from the command line arguments.
 
-        dipy.ParamsFormatError: The Dakota parameters file was not valid. 
+        dakota.interfacing.ParamsFormatError: The Dakota parameters file was not 
+            valid. 
     """
     ### Determine the name of the parameters file and read it in
     if parameters_file is None:
