@@ -290,8 +290,8 @@ The \texttt{simulator\_script} listed in Figure~\ref{advint:figure02}
 is a short driver shell script that Dakota executes to perform each
 function evaluation. The names of the parameters and results files are
 passed to the script on its command line; they are
-referenced in the script by \texttt{\$argv[1]}
-and \texttt{\$argv[2]}, respectively. The \texttt{simulator\_script}
+referenced in the script by \texttt{\$1}
+and \texttt{\$2}, respectively. The \texttt{simulator\_script}
 is divided into three parts: pre-processing, analysis, and post-processing.
 % is divided into five parts: set up, pre-processing, analysis,
 % post-processing, and clean up.
@@ -324,7 +324,7 @@ is divided into three parts: pre-processing, analysis, and post-processing.
 
 In the pre-processing portion, the \texttt{simulator\_script} uses
 \texttt{dprepro}, a parsing utility, to extract the
-current variable values from a parameters file (\texttt{\$argv[1]})
+current variable values from a parameters file (\texttt{\$1})
 and combine them with the simulator template input file
 (\texttt{ros.template}) to create a new input file (\texttt{ros.in})
 for the simulator. Internal to Sandia, the APREPRO utility is often
@@ -357,7 +357,7 @@ brackets and then create a new file (\texttt{ros.in}) by replacing
 these targets with the corresponding numerical values for the
 variables. As noted in the usage information for \texttt{dprepro} and
 shown in \texttt{simulator\_script}, the names for the Dakota
-parameters file (\texttt{\$argv[1]}), template file
+parameters file (\texttt{\$1}), template file
 (\texttt{ros.template}), and generated input file (\texttt{ros.in})
 must be specified in the \texttt{dprepro} command line arguments.
 
@@ -395,7 +395,7 @@ The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX ``\texttt{grep}'' utility, the
 particular response values of interest are extracted from the raw
 simulator output and saved to a temporary file (\texttt{results.tmp}).
-When complete, this file is renamed \texttt{\$argv[2]}, which in this
+When complete, this file is renamed \texttt{\$2}, which in this
 example is always ``\texttt{results.out}''.
 Note that moving or renaming the completed results file
 avoids any problems with read race
@@ -511,7 +511,7 @@ and returned in the results file. This post-processing is relatively
 trivial in this case, and the \texttt{simulator\_script} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
 ``\texttt{Function value}" line of the \texttt{ros.out} output file and save it to
-\texttt{\$argv[2]}, which is the \texttt{results.out} file for this
+\texttt{\$2}, which is the \texttt{results.out} file for this
 evaluation. This single value provides the objective function value
 requested by the ASV.
 
@@ -561,7 +561,7 @@ need to be performed:
 
 \item Modify the \texttt{dprepro} arguments in
   \texttt{simulator\_script} to reflect names of the Dakota parameters
-  file (previously ``\texttt{\$argv[1]}''), template file name
+  file (previously ``\texttt{\$1}''), template file name
   (previously ``\texttt{ros.template}'') and generated input file
   (previously ``\texttt{ros.in}''). Alternatively, use APREPRO,
   BPREPRO, or JPrePost to perform this step (and adapt the syntax
