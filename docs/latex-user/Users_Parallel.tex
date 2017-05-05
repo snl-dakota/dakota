@@ -2352,7 +2352,7 @@ proposed.
 This Evaluation Tiling variant uses OpenMPI 1.3.3 or newer.  It leverages
 Dakota's \texttt{local\_evaluation\_scheduling static} option together with
 integer arithmetic to schedule each evaluation on the right subset of
-the processor allocation.  A Bash-based examples is provided in 
+the processor allocation.  A Bash-based example is provided in 
 \texttt{Case3-EvaluationTiling/OpenMPI}.  Similar approaches 
 work with some AIX/POE installations as well.
 
@@ -2387,7 +2387,7 @@ Note that this will not work with early OpenMPI versions with some resource
 managers (e.g., OpenMPI 1.2 with Torque), where machinefiles, even if
 a proper subset of {\tt \$PBS\_NODEFILE}, are ignored.  This will
 however work with OpenMPI 1.3 and newer.  See the example in
-\texttt{Case3-EvaluationTilining/MachinefileMgmt}.
+\texttt{Case3-EvaluationTiling/MachinefileMgmt}.
 
 In this case the {\tt pbs\_submission} script defines variables
 specifying how to create a separate node file for each job and sets up

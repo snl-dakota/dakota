@@ -1577,13 +1577,13 @@ By default, the returned {\tt Results} object enforces the active set vector (se
 
 \subsection{Parameters objects}
 
-{\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Paramters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+{\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Parameters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
 
 Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
 
-Analysis components are accessible by index only using the {\tt an\_comp} attribute. {\tt Parameters} objects support iteration over the variables, yielding the index, variable descriptor, and variable value.
+Analysis components are accessible by index only using the {\tt an\_comps} attribute. {\tt Parameters} objects support iteration over the variables, yielding the index, variable descriptor, and variable value.
 
-{\tt Parmeters} objects have the attributes:
+{\tt Parameters} objects have the attributes:
 
 \begin{itemize}
 
