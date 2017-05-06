@@ -91,6 +91,15 @@ further categorized as local, multipoint, and global approximation
 techniques, based on the number of points used in generating the data
 fit.  Local methods involve response data from a single point in
 parameter space.  Available local techniques currently include:
+  
+\emph{Known Issue: When using discrete variables, there have been
+  sometimes significant differences in data fit surrogate behavior
+  observed across computing platforms in some cases.  The cause has
+  not yet been fully diagnosed and is currently under investigation.
+  In addition, guidance on appropriate construction and use of
+  surrogates with discrete variables is under development.  In the
+  meantime, users should therefore be aware that there is a risk of
+  inaccurate results when using surrogates with discrete variables.}
 
 \textbf{Taylor Series Expansion}: This is a local first-order or
 second-order expansion centered at a single point in the parameter space.

@@ -14,6 +14,16 @@ These basis functions take many forms, but Gaussian kernels or splines
 are most common.  The Dakota implementation uses a Gaussian radial
 basis function.  The weights are determined via a linear least squares
 solution approach.  See \cite Orr96 for more details.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::

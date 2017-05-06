@@ -11,6 +11,16 @@ development. </b> It tends to work well in trust region optimization
 methods where the surrogate model is constructed in a constrained
 region over a few points. The present implementation may not work as
 well globally.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::
