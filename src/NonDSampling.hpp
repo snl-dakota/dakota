@@ -66,27 +66,37 @@ public:
 			 const IntResponseMap& samples);
 
   /// calculates sample moments from a matrix of observations for a set of QoI
-  void compute_moments(const RealMatrix& samples);
+  void compute_moments(const RealVectorArray& fn_samples);
   /// calculate sample moments and confidence intervals from a map of
   /// response observations
   void compute_moments(const IntResponseMap& samples);
-  /// convert IntResponseMap to RealMatrix and invoke helpers
+  /// convert IntResponseMap to RealVectorArray and invoke helpers
   void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
-		       RealMatrix& moment_conf_ints, short moments_type,
-		       const StringArray& labels);
+		       RealMatrix& moment_grads, RealMatrix& moment_conf_ints,
+		       short moments_type, const StringArray& labels);
   /// core compute_moments() implementation with all data as inputs
-  static void compute_moments(const RealMatrix& samples,
+  static void compute_moments(const RealVectorArray& fn_samples,
 			      SizetArray& sample_counts,
 			      RealMatrix& moment_stats, short moments_type,
 			      const StringArray& labels);
   /// core compute_moments() implementation with all data as inputs
-  static void compute_moments(const RealMatrix& samples,
+  static void compute_moments(const RealVectorArray& fn_samples,
+			      RealMatrix& moment_stats, short moments_type);
+  /// alternate RealMatrix samples API for use by external clients
+  static void compute_moments(const RealMatrix& fn_samples,
 			      RealMatrix& moment_stats, short moments_type);
 
+  /// compute moment_grads from function and gradient samples
+  void compute_moment_gradients(const RealVectorArray& fn_samples,
+				const RealMatrixArray& grad_samples,
+				const RealMatrix& moment_stats,
+				RealMatrix& moment_grads, short moments_type);
+
   /// compute moment confidence intervals from moment values
-  static void compute_moment_confidence_intervals(
-    const RealMatrix& moment_stats,  RealMatrix& moment_conf_ints,
-    const SizetArray& sample_counts, short moments_type);
+  void compute_moment_confidence_intervals(const RealMatrix& moment_stats,
+					   RealMatrix& moment_conf_ints,
+					   const SizetArray& sample_counts,
+					   short moments_type);
 
   /// archive moment statistics in results DB
   void archive_moments(const RealMatrix& moment_stats, short moments_type,
@@ -280,17 +290,17 @@ protected:
 		   size_t& drv_start,  size_t& num_drv) const;
 
   /// helper to accumulate sum of finite samples
-  static void accumulate_mean(const RealMatrix& samples, size_t q,
+  static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
 			      size_t& num_samp, Real& mean);
   /// helper to accumulate higher order sums of finite samples
-  static void accumulate_moments(const RealMatrix& samples, size_t q,
+  static void accumulate_moments(const RealVectorArray& fn_samples, size_t q,
 				 short moments_type, Real* moments);
   /// helper to accumulate gradient sums
-  static void accumulate_moment_gradients(const RealMatrix& fn_samples,
+  static void accumulate_moment_gradients(const RealVectorArray& fn_samples,
 					  const RealMatrixArray& grad_samples,
 					  size_t q, short moments_type,
-					  const Real* moments,
-					  RealMatrix& moment_grads);
+					  Real mean, Real mom2, Real* mean_grad,
+					  Real* mom2_grad);
 
   //
   //- Heading: Data members
@@ -309,6 +319,11 @@ protected:
   Real      wilksAlpha;    
   Real      wilksBeta;    
   short     wilksSidedness;
+
+  /// standardized or central moments of response functions, as determined
+  /// by finalMomentsType.  Calculated in compute_moments()) and indexed
+  /// as (moment,fn).
+  RealMatrix finalMomentGrads;
 
   /// standard errors (estimator std deviation) for each of the finalStatistics
   RealVector finalStatErrors;
@@ -365,18 +380,18 @@ private:
 };
 
 
-inline void NonDSampling::compute_moments(const RealMatrix& samples)
+inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
-  compute_moments(samples, sample_counts, finalMomentStats, finalMomentsType,
-		  iteratedModel.response_labels());
+  compute_moments(fn_samples, sample_counts, finalMomentStats,
+		  finalMomentsType, iteratedModel.response_labels());
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
-  compute_moments(samples, finalMomentStats, finalMomentCIs, finalMomentsType,
-		  iteratedModel.response_labels());
+  compute_moments(samples, finalMomentStats, finalMomentGrads, finalMomentCIs,
+		  finalMomentsType, iteratedModel.response_labels());
 }
 
 
