@@ -1799,8 +1799,8 @@ void NonD::initialize_response_covariance()
 
 
 /** Default definition of virtual function (used by sampling, reliability,
-    and stochastic expansion methods) defines the set of statistical
-    results to include means, standard deviations, and level mappings. */
+    and stochastic expansion methods) defines the set of statistical results
+    to include the first two moments and level mappings for each QoI. */
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
@@ -1889,7 +1889,7 @@ void NonD::resize_final_statistics_gradients()
   size_t i, num_final_stats = final_asv.size();
   bool final_grad_flag = false;
   for (i=0; i<num_final_stats; i++)
-    if (final_asv[i] & 2)
+    if (final_asv[i] & 2) // no need to distinguish moment/level mapping grads
       { final_grad_flag = true; break; }
   finalStatistics.reshape(num_final_stats, final_dvv.size(),
 			  final_grad_flag, false); // no final Hessians
@@ -1918,10 +1918,10 @@ void NonD::update_aleatory_final_statistics()
   for (i=0; i<numFunctions; ++i) {
     // final stats from compute_moments()
     if (finalMomentsType) {
-      if (finalMomentStats.empty())
+      if (momentStats.empty())
 	cntr += 2;
       else {
-	const Real* mom_i = finalMomentStats[i];
+	const Real* mom_i = momentStats[i];
 	finalStatistics.function_value(mom_i[0], cntr++); // mean
 	finalStatistics.function_value(mom_i[1], cntr++); // stdev or var
       }

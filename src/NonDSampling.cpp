@@ -1470,7 +1470,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   SizetArray bins; Real min, max, sample;
 
   // check if moments are required, and if so, compute them now
-  if (finalMomentStats.empty()) {
+  if (momentStats.empty()) {
     bool need_moments = false;
     for (i=0; i<numFunctions; ++i)
       if ( !requestedRelLevels[i].empty() ||
@@ -1571,7 +1571,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
 	break;
       case RELIABILITIES: { // z -> beta (from moment projection)
-	Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
+	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
 	for (j=0; j<rl_len; j++) {
 	  Real z = requestedRespLevels[i][j];
 	  if (std_dev > Pecos::SMALL_NUMBER)
@@ -1619,7 +1619,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
+      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
       for (j=0; j<bl_len; j++) { // beta -> z
 	Real beta = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?

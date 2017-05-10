@@ -673,14 +673,33 @@ void NonDLHSSampling::post_run(std::ostream& s)
 void NonDLHSSampling::update_final_statistics()
 {
   NonDSampling::update_final_statistics();
-  
-  // assign finalGradStats
-  if (finalMomentsType && !epistemicStats) {
-    
+  if (!finalMomentsType || epistemicStats)
+    return;
+
+  // assign momentGrads into finalStatistics
+  if (!momentGrads.empty()) {
+    // > NonDLocalReliability has no intermediary --> pushes grads directly
+    //   into finalStats (e.g., NonDLocalReliability::update_level_data())
+    // > NonDExpansion has no intermediary --> pushes grads directly
+    //   into finalStats within NonDExpansion::compute_analytic_statistics().
+    //   NonDExpansion::update_final_statistics_gradients() provides
+    //   post-processing for special cases (combined vars, insertion).
+    // > Does NonDSampling really need an intermediary? (momentGrads currently
+    //   mirrors momentStats)
+    const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+    size_t q, m, cntr = 0;
+    for (q=0; q<numFunctions; ++q) {
+      for (m=0; m<2; ++m, ++cntr)
+	if (final_asv[cntr] & 2)
+	  finalStatistics.function_gradient(
+	    Teuchos::getCol(Teuchos::View, momentGrads, (int)(2*q+m)), cntr);
+      cntr += requestedRespLevels[q].length() + requestedProbLevels[q].length()
+	+ requestedRelLevels[q].length() + requestedGenRelLevels[q].length();
+    }
   }
 
   // if MC sampling, assign standard errors for moments within finalStatErrors
-  if (sampleType == SUBMETHOD_RANDOM && finalMomentsType && !epistemicStats) {
+  if (sampleType == SUBMETHOD_RANDOM) {
 
     if (finalStatErrors.empty())
       finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
@@ -691,7 +710,7 @@ void NonDLHSSampling::update_final_statistics()
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
       for (i=0; i<numFunctions; ++i) {
-	Real qoi_stdev = finalMomentStats(1,i);
+	Real qoi_stdev = momentStats(1,i);
 	// standard error (estimator std-dev) for Monte Carlo mean
 	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
 	// standard error (estimator std-dev) for Monte Carlo std-deviation
@@ -705,7 +724,7 @@ void NonDLHSSampling::update_final_statistics()
       break;
     case CENTRAL_MOMENTS:
       for (i=0; i<numFunctions; ++i) {
-	Real qoi_var = finalMomentStats(1,i), qoi_stdev = std::sqrt(qoi_var);
+	Real qoi_var = momentStats(1,i), qoi_stdev = std::sqrt(qoi_var);
 	// standard error (estimator std-dev) for Monte Carlo mean
 	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
 	// standard error (estimator std-dev) for Monte Carlo variance

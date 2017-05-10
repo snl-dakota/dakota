@@ -163,7 +163,7 @@ protected:
 
   /// resizes finalStatistics::functionGradients based on finalStatistics ASV
   void resize_final_statistics_gradients();
-  /// update finalStatistics::functionValues from finalMomentStats and
+  /// update finalStatistics::functionValues from momentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();
   /// update system metrics from component metrics within finalStatistics
@@ -369,7 +369,7 @@ protected:
   /// standardized or central moments of response functions, as determined
   /// by finalMomentsType.  Calculated in compute_moments()) and indexed
   /// as (moment,fn).
-  RealMatrix finalMomentStats;
+  RealMatrix momentStats;
 
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*

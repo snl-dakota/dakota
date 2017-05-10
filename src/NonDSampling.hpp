@@ -135,7 +135,7 @@ public:
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
-  /// update finalStatistics from minValues/maxValues, finalMomentStats,
+  /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
 
@@ -323,7 +323,7 @@ protected:
   /// standardized or central moments of response functions, as determined
   /// by finalMomentsType.  Calculated in compute_moments()) and indexed
   /// as (moment,fn).
-  RealMatrix finalMomentGrads;
+  RealMatrix momentGrads;
 
   /// standard errors (estimator std deviation) for each of the finalStatistics
   RealVector finalStatErrors;
@@ -376,21 +376,21 @@ private:
 
   /// Matrix of confidence internals on moments, with rows for mean_lower,
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
-  RealMatrix finalMomentCIs;
+  RealMatrix momentCIs;
 };
 
 
 inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
-  compute_moments(fn_samples, sample_counts, finalMomentStats,
+  compute_moments(fn_samples, sample_counts, momentStats,
 		  finalMomentsType, iteratedModel.response_labels());
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
-  compute_moments(samples, finalMomentStats, finalMomentGrads, finalMomentCIs,
+  compute_moments(samples, momentStats, momentGrads, momentCIs,
 		  finalMomentsType, iteratedModel.response_labels());
 }
 
@@ -412,7 +412,7 @@ print_moments(std::ostream& s, String qoi_type,
 	      const StringArray& moment_labels) const
 {
   bool print_cis = (numSamples > 1);
-  print_moments(s, finalMomentStats, finalMomentCIs, qoi_type, finalMomentsType,
+  print_moments(s, momentStats, momentCIs, qoi_type, finalMomentsType,
 		moment_labels, print_cis);
 }
 
