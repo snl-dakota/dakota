@@ -1168,11 +1168,12 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
   size_t q, cntr = 0; int m1_index, m2_index;
   for (q=0; q<numFunctions; ++q) {
     m1_index = 2*q; m2_index = m1_index + 1;
-    // compute moment_grads
+    // Compute moment_grads
     accumulate_moment_gradients(fn_samples, grad_samples, q, moments_type,
 				moment_stats(0,q), moment_stats(1,q),
 				moment_grads[m1_index], moment_grads[m2_index]);
-    // assign moment_grads into finalStatistics
+    // Assign moment_grads into finalStatistics (could do this in one step,
+    // but retain API of moment_stats and moment_grads as their own matrices).
     // > NonDExpansion and NonDLocalReliability do not store moment grads as
     //   member variables; they update finalStats directly in NonDExpansion::
     //   compute_analytic_statistics() and NonDLocalRel::update_level_data().
