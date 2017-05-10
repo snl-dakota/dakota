@@ -673,70 +673,40 @@ void NonDLHSSampling::post_run(std::ostream& s)
 void NonDLHSSampling::update_final_statistics()
 {
   NonDSampling::update_final_statistics();
-  if (!finalMomentsType || epistemicStats)
+  if (!finalMomentsType || epistemicStats || sampleType != SUBMETHOD_RANDOM)
     return;
 
-  // assign momentGrads into finalStatistics
-  if (!momentGrads.empty()) {
-    // > NonDLocalReliability has no intermediary --> pushes grads directly
-    //   into finalStats (e.g., NonDLocalReliability::update_level_data())
-    // > NonDExpansion has no intermediary --> pushes grads directly
-    //   into finalStats within NonDExpansion::compute_analytic_statistics().
-    //   NonDExpansion::update_final_statistics_gradients() provides
-    //   post-processing for special cases (combined vars, insertion).
-    // > Does NonDSampling really need an intermediary? (momentGrads currently
-    //   mirrors momentStats)
-    const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-    size_t q, m, cntr = 0;
-    for (q=0; q<numFunctions; ++q) {
-      for (m=0; m<2; ++m, ++cntr)
-	if (final_asv[cntr] & 2)
-	  finalStatistics.function_gradient(
-	    Teuchos::getCol(Teuchos::View, momentGrads, (int)(2*q+m)), cntr);
-      cntr += requestedRespLevels[q].length() + requestedProbLevels[q].length()
-	+ requestedRelLevels[q].length() + requestedGenRelLevels[q].length();
-    }
-  }
-
   // if MC sampling, assign standard errors for moments within finalStatErrors
-  if (sampleType == SUBMETHOD_RANDOM) {
 
-    if (finalStatErrors.empty())
-      finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
+  if (finalStatErrors.empty())
+    finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
 
-    size_t i, cntr = 0;
-    Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
-       sqrtnm1 = std::sqrt(ns - 1.);
+  size_t i, cntr = 0;
+  Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
+    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev;
+  for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
-      for (i=0; i<numFunctions; ++i) {
-	Real qoi_stdev = momentStats(1,i);
-	// standard error (estimator std-dev) for Monte Carlo mean
-	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
-	// standard error (estimator std-dev) for Monte Carlo std-deviation
-	// (Harding et al., 2014: assumes normally distributed population): 
-	finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
-	// level mapping errors not implemented at this time
-	cntr +=
-	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
-      }
+      qoi_stdev = momentStats(1,i);
+      // standard error (estimator std-dev) for Monte Carlo mean
+      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      // standard error (estimator std-dev) for Monte Carlo std-deviation
+      // (Harding et al., 2014: assumes normally distributed population): 
+      finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
       break;
     case CENTRAL_MOMENTS:
-      for (i=0; i<numFunctions; ++i) {
-	Real qoi_var = momentStats(1,i), qoi_stdev = std::sqrt(qoi_var);
-	// standard error (estimator std-dev) for Monte Carlo mean
-	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
-	// standard error (estimator std-dev) for Monte Carlo variance
-	// (Harding et al., 2014: assumes normally distributed population): 
-	finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
-	// level mapping errors not implemented at this time
-	cntr +=
-	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
-      }
+      qoi_var = momentStats(1,i); qoi_stdev = std::sqrt(qoi_var);
+      // standard error (estimator std-dev) for Monte Carlo mean
+      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      // standard error (estimator std-dev) for Monte Carlo variance
+      // (Harding et al., 2014: assumes normally distributed population): 
+      finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
       break;
     }
+    // level mapping errors not implemented at this time
+    cntr +=
+      requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+      requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
   }
 }
 

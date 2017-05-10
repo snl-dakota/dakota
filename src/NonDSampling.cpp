@@ -1164,12 +1164,34 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
 			 const RealMatrix& moment_stats,
 			 RealMatrix& moment_grads, short moments_type)
 {
-  size_t q, m1_index, m2_index, num_qoi = moment_stats.numCols();
-  for (q=0; q<num_qoi; ++q) {
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t q, cntr = 0; int m1_index, m2_index;
+  for (q=0; q<numFunctions; ++q) {
     m1_index = 2*q; m2_index = m1_index + 1;
+    // compute moment_grads
     accumulate_moment_gradients(fn_samples, grad_samples, q, moments_type,
 				moment_stats(0,q), moment_stats(1,q),
 				moment_grads[m1_index], moment_grads[m2_index]);
+    // assign moment_grads into finalStatistics
+    // > NonDExpansion and NonDLocalReliability do not store moment grads as
+    //   member variables; they update finalStats directly in NonDExpansion::
+    //   compute_analytic_statistics() and NonDLocalRel::update_level_data().
+    //   Note: NonDExpansion::update_final_statistics_gradients() provides
+    //   post-processing for special cases (combined vars, insertion).
+    // > NonDSampling could retain a class member or use a local variable for
+    //   moment_grads (currently a local, whereas momentStats is a member)
+    //if (moments_type) {
+      if (final_asv[cntr] & 2) // moment 1 (mean) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m1_index), cntr);
+      ++cntr;
+      if (final_asv[cntr] & 2) // moment 2 (var or stdev) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m2_index), cntr);
+      cntr += 1 +
+	requestedRespLevels[q].length() + requestedProbLevels[q].length() +
+	requestedRelLevels[q].length()  + requestedGenRelLevels[q].length();
+    //}
   }
 }
 
