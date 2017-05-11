@@ -82,7 +82,7 @@ bool NonDRKDDarts::resize()
     /** Generate Parameter Sets. */
     void NonDRKDDarts::pre_run()
     {
-        Analyzer::pre_run();
+        NonD::pre_run();
 
         Cout << "*** Generating " << samples << " points *** " << '\n';
         

@@ -1004,7 +1004,7 @@ compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
 
   if (mom_grads) {
     RealMatrixArray grad_samples(num_obs);
-    for (IntRespMCIter it=samples.begin(); it!=samples.end(); ++it)
+    for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
       grad_samples[i] = it->second.function_gradients_view();
     moment_grads.shape(finalStatistics.active_set_derivative_vector().size(),
 		       2*numFunctions); // init to 0.

@@ -178,7 +178,7 @@ void NonDLHSSampling::sampling_increment()
 
 void NonDLHSSampling::pre_run()
 {
-  Analyzer::pre_run();
+  NonDSampling::pre_run();
 
   bool increm_lhs_active
     = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
@@ -647,7 +647,7 @@ void NonDLHSSampling::core_run()
 {
   bool log_resp_flag = (allDataFlag || statsFlag);
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
-    evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
 

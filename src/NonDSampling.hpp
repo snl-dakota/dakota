@@ -199,6 +199,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   int num_samples() const;
@@ -378,6 +379,20 @@ private:
   /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
 };
+
+
+inline void NonDSampling::pre_run()
+{ 
+  NonD::pre_run();
+
+  // synchronize the derivative components flowing down from a NestedModel's
+  // call to subIterator.response_results_active_set(), so that the correct 
+  // derivs are computed in Analyzer::evaluate_parameter_sets().  Note: the
+  // request vector set within finalStatistics corresponds to the stats vector,
+  // not the QoI vector, but the deriv components are the same.
+  if (subIteratorFlag)
+    activeSet.derivative_vector(finalStatistics.active_set_derivative_vector());
+}
 
 
 inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)

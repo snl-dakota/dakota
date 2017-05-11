@@ -110,7 +110,7 @@ bool NonDMultilevelSampling::resize()
 
 void NonDMultilevelSampling::pre_run()
 {
-  Analyzer::pre_run();
+  NonDSampling::pre_run();
 
   // reset sample counters to 0
   size_t i, j, num_mf = NLev.size(), num_lev;
