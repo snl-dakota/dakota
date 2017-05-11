@@ -178,10 +178,10 @@ void NonDLHSSampling::sampling_increment()
 
 void NonDLHSSampling::pre_run()
 {
-  Analyzer::pre_run();
+  NonDSampling::pre_run();
 
-  bool increm_lhs_active = (sampleType == SUBMETHOD_LHS && 
-			    refineSamples.length() > 0);
+  bool increm_lhs_active
+    = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
   if (dOptimal)
     // initialize nataf transform for generating basis
     initialize_random_variables(EXTENDED_U);
@@ -192,6 +192,7 @@ void NonDLHSSampling::pre_run()
     // Capture any run-time updates for x-space distributions
     initialize_random_variable_parameters();
   }
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
 
   // BMA TODO: D-optimal incremental LHS (challenging due to set/get ranks)
 
@@ -203,74 +204,74 @@ void NonDLHSSampling::pre_run()
 
   if (varBasedDecompFlag) {
     get_vbd_parameter_sets(iteratedModel, numSamples);
+    return;
   }
-  else {
-    // DataFitSurrModel sets subIteratorFlag; if true it will manage
-    // batch increments 
-    // BMA TODO: refactor to handle increments more gracefully
-    bool sample_all_batches = !subIteratorFlag;
 
-    // Initial numSamples may be augmented by 1 or more sets of refineSamples
-    int seq_len = 1;
-    if (sample_all_batches)
-      seq_len += refineSamples.length();
-    // the user may have fixed the seed; we have to advance it
-    if (refineSamples.length() > 0)
-      varyPattern = true;
+  // DataFitSurrModel sets subIteratorFlag; if true it will manage
+  // batch increments 
+  // BMA TODO: refactor to handle increments more gracefully
+  bool sample_all_batches = !subIteratorFlag;
 
-    IntVector samples_vec(seq_len);
-    samples_vec[0] = numSamples;
-    if (sample_all_batches)
-      copy_data_partial(refineSamples, samples_vec, 1);
+  // Initial numSamples may be augmented by 1 or more sets of refineSamples
+  int seq_len = 1;
+  if (sample_all_batches)
+    seq_len += refineSamples.length();
+  // the user may have fixed the seed; we have to advance it
+  if (refineSamples.length() > 0)
+    varyPattern = true;
 
-    // BMA TODO: VBD and other functions aren't accounting for string variables
-    // Sampling supports modes beyond just active... do member
-    // variable counts suffice?
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
-                dsv_start, num_dsv, drv_start, num_drv);
-    size_t num_vars = num_cv + num_div + num_dsv + num_drv;
-    int previous_samples = 0, total_samples = samples_vec.normOne();
+  IntVector samples_vec(seq_len);
+  samples_vec[0] = numSamples;
+  if (sample_all_batches)
+    copy_data_partial(refineSamples, samples_vec, 1);
+
+  // BMA TODO: VBD and other functions aren't accounting for string variables
+  // Sampling supports modes beyond just active... do member
+  // variable counts suffice?
+  size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
+    drv_start, num_drv;
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+	      dsv_start, num_dsv, drv_start, num_drv);
+  size_t num_vars = num_cv + num_div + num_dsv + num_drv;
+  int previous_samples = 0, total_samples = samples_vec.normOne();
     
-    // Initialize allSamples and all_ranks for total sample size
-    if (allSamples.numRows() != num_vars || 
-        allSamples.numCols() != total_samples)
-      allSamples.shape(num_vars, total_samples);
-    IntMatrix all_ranks;
-    if (increm_lhs_active)
-      all_ranks.shape(num_vars, total_samples);
+  // Initialize allSamples and all_ranks for total sample size
+  if (allSamples.numRows() != num_vars || 
+      allSamples.numCols() != total_samples)
+    allSamples.shape(num_vars, total_samples);
+  IntMatrix all_ranks;
+  if (increm_lhs_active)
+    all_ranks.shape(num_vars, total_samples);
 
-    for (int batch_ind = 0; batch_ind < seq_len; ++batch_ind) {
+  for (int batch_ind = 0; batch_ind < seq_len; ++batch_ind) {
 
-      // generate samples of each batch size to reproduce the series
-      // of increments, including the point selection
-      int new_samples = samples_vec[batch_ind];
+    // generate samples of each batch size to reproduce the series
+    // of increments, including the point selection
+    int new_samples = samples_vec[batch_ind];
 
-      if (increm_lhs_active) {
-        // CASE: incremental LHS
-        // BMA TODO: allow each batch to be D-optimal w.r.t. previous batch
-        if (batch_ind == 0)
-          initial_increm_lhs_set(new_samples, allSamples, all_ranks);
-        else 
-          increm_lhs_parameter_set(previous_samples, new_samples, 
-                                   allSamples, all_ranks);
-      }
-      else if (dOptimal) {
-        // CASES: random, incremental random, LHS w/ D-optimal
-        // populate the correct subset of allSamples, preserving previous
-        d_optimal_parameter_set(previous_samples, new_samples, allSamples);
-      }
-      else {
-	// CASES: random, incremental random, LHS
-        // sub-matrix of allSamples to populate
-        RealMatrix batch_samples(Teuchos::View, allSamples, 
-                                 num_vars, new_samples,  // num row/col
-                                 0, previous_samples);   // start row/col
-        get_parameter_sets(iteratedModel, new_samples, batch_samples);
-      }
-      previous_samples += new_samples;
+    if (increm_lhs_active) {
+      // CASE: incremental LHS
+      // BMA TODO: allow each batch to be D-optimal w.r.t. previous batch
+      if (batch_ind == 0)
+	initial_increm_lhs_set(new_samples, allSamples, all_ranks);
+      else 
+	increm_lhs_parameter_set(previous_samples, new_samples, 
+				 allSamples, all_ranks);
     }
+    else if (dOptimal) {
+      // CASES: random, incremental random, LHS w/ D-optimal
+      // populate the correct subset of allSamples, preserving previous
+      d_optimal_parameter_set(previous_samples, new_samples, allSamples);
+    }
+    else {
+      // CASES: random, incremental random, LHS
+      // sub-matrix of allSamples to populate
+      RealMatrix batch_samples(Teuchos::View, allSamples, 
+			       num_vars, new_samples,  // num row/col
+			       0, previous_samples);   // start row/col
+      get_parameter_sets(iteratedModel, new_samples, batch_samples);
+    }
+    previous_samples += new_samples;
   }
 }
 
@@ -646,7 +647,7 @@ void NonDLHSSampling::core_run()
 {
   bool log_resp_flag = (allDataFlag || statsFlag);
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
-    evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -672,46 +673,40 @@ void NonDLHSSampling::post_run(std::ostream& s)
 void NonDLHSSampling::update_final_statistics()
 {
   NonDSampling::update_final_statistics();
-  
+  if (!finalMomentsType || epistemicStats || sampleType != SUBMETHOD_RANDOM)
+    return;
+
   // if MC sampling, assign standard errors for moments within finalStatErrors
-  if (sampleType == SUBMETHOD_RANDOM && finalMomentsType && !epistemicStats) {
 
-    if (finalStatErrors.empty())
-      finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
+  if (finalStatErrors.empty())
+    finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
 
-    size_t i, cntr = 0;
-    Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
-       sqrtnm1 = std::sqrt(ns - 1.);
+  size_t i, cntr = 0;
+  Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
+    sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev;
+  for (i=0; i<numFunctions; ++i) {
     switch (finalMomentsType) {
     case STANDARD_MOMENTS:
-      for (i=0; i<numFunctions; ++i) {
-	Real qoi_stdev = finalMomentStats(1,i);
-	// standard error (estimator std-dev) for Monte Carlo mean
-	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
-	// standard error (estimator std-dev) for Monte Carlo std-deviation
-	// (Harding et al., 2014: assumes normally distributed population): 
-	finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
-	// level mapping errors not implemented at this time
-	cntr +=
-	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
-      }
+      qoi_stdev = momentStats(1,i);
+      // standard error (estimator std-dev) for Monte Carlo mean
+      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      // standard error (estimator std-dev) for Monte Carlo std-deviation
+      // (Harding et al., 2014: assumes normally distributed population): 
+      finalStatErrors[cntr++] = qoi_stdev / (sqrt2*sqrtnm1);
       break;
     case CENTRAL_MOMENTS:
-      for (i=0; i<numFunctions; ++i) {
-	Real qoi_var = finalMomentStats(1,i), qoi_stdev = std::sqrt(qoi_var);
-	// standard error (estimator std-dev) for Monte Carlo mean
-	finalStatErrors[cntr++] = qoi_stdev / sqrtn;
-	// standard error (estimator std-dev) for Monte Carlo variance
-	// (Harding et al., 2014: assumes normally distributed population): 
-	finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
-	// level mapping errors not implemented at this time
-	cntr +=
-	  requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-	  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
-      }
+      qoi_var = momentStats(1,i); qoi_stdev = std::sqrt(qoi_var);
+      // standard error (estimator std-dev) for Monte Carlo mean
+      finalStatErrors[cntr++] = qoi_stdev / sqrtn;
+      // standard error (estimator std-dev) for Monte Carlo variance
+      // (Harding et al., 2014: assumes normally distributed population): 
+      finalStatErrors[cntr++] = qoi_var * sqrt2 / sqrtnm1;
       break;
     }
+    // level mapping errors not implemented at this time
+    cntr +=
+      requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+      requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
   }
 }
 

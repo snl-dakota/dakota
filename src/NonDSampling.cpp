@@ -46,8 +46,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillFlag(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")),
-  numLHSRuns(0)
+  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0)
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -56,7 +55,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   if (epistemicStats && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // initialize finalStatistics using the default statistics set
@@ -66,16 +65,17 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     // Only works with sample_type of random
     // BMA: consider relaxing, despite no theory
     if ( sampleType != SUBMETHOD_RANDOM ) {
-      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type." << std::endl;
-      abort_handler(-1);
+      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
     }
 
     // Check for conflicting samples spec. Note that this still allows
     // a user to specify "samples = 0" alongside wilks
     if ( numSamples > 0 ) { 
-      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"." 
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
     // Wilks order statistics
@@ -100,7 +100,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     wilksBeta = probDescDB.get_real("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
-    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha, wilksBeta, wilks_twosided);
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
+					   wilksBeta, wilks_twosided);
     samplesRef = numSamples;
   }
 
@@ -118,10 +119,10 @@ NonDSampling(unsigned short method_name, Model& model,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), wilksFlag(false), samplesIncrement(0), 
-  statsFlag(false), allDataFlag(true),
-  samplingVarsMode(sampling_vars_mode), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(vary_pattern), backfillFlag(false), numLHSRuns(0)
+  sampleType(sample_type), wilksFlag(false), samplesIncrement(0),
+  statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), backfillFlag(false),
+  numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -148,11 +149,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE_UNIFORM),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(true), backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -164,6 +164,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of normal, correlated sample sets. */
@@ -174,11 +175,10 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
 	     const RealVector& upper_bnds, RealSymMatrix& correl):
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
-  numSamples(samples), rngName(rng), sampleType(sample_type), 
-  wilksFlag(false), samplesIncrement(0), statsFlag(false),
-  allDataFlag(true), samplingVarsMode(ACTIVE),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(true), backfillFlag(false), 
-  numLHSRuns(0)
+  numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
+  samplesIncrement(0), statsFlag(false), allDataFlag(true),
+  samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
+  backfillFlag(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -190,6 +190,7 @@ NonDSampling(unsigned short sample_type, int samples, int seed,
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
 
 /** This alternate constructor defines allSamples from an incoming
     sample matrix. */
@@ -216,13 +217,6 @@ NonDSampling::~NonDSampling()
 { }
 
 
-void NonDSampling::transform_samples(bool x_to_u)
-{
-  // transform x_samples to u_samples for use by expansionSampler
-  transform_samples(allSamples, x_to_u, numSamples);
-}
-
-
 void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
 				     int num_samples)
 {
@@ -242,23 +236,6 @@ void NonDSampling::transform_samples(RealMatrix& sample_matrix, bool x_to_u,
     }
 }
 
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    class member allSamples. */
-void NonDSampling::get_parameter_sets(Model& model)
-{
-  get_parameter_sets(model, numSamples, allSamples);
-}
-
-/** This version of get_parameter_sets() extracts data from the
-    user-defined model in any of the four sampling modes and populates
-    the specified design matrix. */
-void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
-                                      RealMatrix& design_matrix)
-{
-  get_parameter_sets(model, num_samples, design_matrix, true);
-}
 
 void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
                                       RealMatrix& design_matrix, bool write_msg)
@@ -311,7 +288,7 @@ void NonDSampling::get_parameter_sets(Model& model, const int num_samples,
       if (!num_acv) {
 	Cerr << "Error: no active continuous variables for sampling in "
 	     << "uniform mode" << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
       const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
       const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
@@ -981,62 +958,95 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
 
 void NonDSampling::
 compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
-		RealMatrix& moment_conf_ints, short moments_type,
-		const StringArray& labels)
+		RealMatrix& moment_grads, RealMatrix& moment_conf_ints,
+		short moments_type, const StringArray& labels)
 {
-  // For the samples array, calculate means and standard deviations
-  // with confidence intervals
+  // For the samples array, calculate 1st four moments and confidence intervals
 
-  RealMatrix samples_rm; SizetArray sample_counts;
-  samples_rm.shapeUninitialized(numFunctions, samples.size());
-  IntRespMCIter it;
-  size_t i, j;
-  for (it=samples.begin(), j=0; it!=samples.end(); ++it, ++j) {
-    const RealVector& fn_vals = it->second.function_values();
-    for (i=0; i<numFunctions; ++i)
-      samples_rm(i,j) = fn_vals[i];
+  // if subIteratorFlag, final_asv will be general.  If not a sub-iterator, then
+  // NonD::initialize_final_statistics() sets default request vector to 1's.
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+
+  // if statsFlag, always compute moments for output regardless of final ASV.
+  // else define moment requirements from final_asv and finalMomentsType.
+  bool mom_fns = statsFlag, mom_grads = false;
+  size_t i, cntr, num_obs = samples.size();
+  if (finalMomentsType) { // only compute moments if needed
+    for (i=0, cntr=0; i<numFunctions; ++i) {
+      if (final_asv[cntr] & 1) mom_fns   = true;
+      if (final_asv[cntr] & 2) mom_grads = true;
+      ++cntr;
+      if (final_asv[cntr] & 1) mom_fns   = true;
+      if (final_asv[cntr] & 2) mom_grads = true;
+      cntr += 1 +
+	requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
+	requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
+    }
   }
-  compute_moments(samples_rm, sample_counts, moment_stats, moments_type,labels);
-  compute_moment_confidence_intervals(moment_stats, moment_conf_ints,
-				      sample_counts, moments_type);
-  if (resultsDB.active()) {
-    archive_moments(moment_stats, moments_type, labels);
-    archive_moment_confidence_intervals(moment_conf_ints, moments_type, labels);
+  if (!mom_fns && !mom_grads)
+    return;
+
+  RealVectorArray fn_samples(num_obs);
+  SizetArray sample_counts;
+  IntRespMCIter it;
+  for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
+    fn_samples[i] = it->second.function_values_view();
+
+  if (mom_fns) {
+    compute_moments(fn_samples,sample_counts,moment_stats,moments_type,labels);
+    compute_moment_confidence_intervals(moment_stats, moment_conf_ints,
+					sample_counts, moments_type);
+    if (resultsDB.active()) {
+      archive_moments(moment_stats, moments_type, labels);
+      archive_moment_confidence_intervals(moment_conf_ints,moments_type,labels);
+    }
+  }
+
+  if (mom_grads) {
+    RealMatrixArray grad_samples(num_obs);
+    for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
+      grad_samples[i] = it->second.function_gradients_view();
+    moment_grads.shape(finalStatistics.active_set_derivative_vector().size(),
+		       2*numFunctions); // init to 0.
+    compute_moment_gradients(fn_samples, grad_samples, moment_stats,
+			     moment_grads, moments_type);
   }
 }
 
 
 void NonDSampling::
-compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
+compute_moments(const RealVectorArray& fn_samples, SizetArray& sample_counts,
 		RealMatrix& moment_stats, short moments_type,
 		const StringArray& labels)
 {
-  // For a samples matrix, calculate mean, standard deviation,
-  // skewness, and kurtosis
-
-  size_t i, j, num_qoi = samples.numRows(), num_obs = samples.numCols();
+  size_t i, j, num_obs = fn_samples.size(), num_qoi;
+  if (num_obs)
+    num_qoi = fn_samples[0].length();
+  else {
+    Cerr << "Error: empty samples array in NonDSampling::compute_moments()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
   Real sum, cm2, cm3, cm4, sample;
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
   if (sample_counts.size() != num_qoi) sample_counts.resize(num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
-    Real*  moments_i = moment_stats[i];
     size_t& num_samp = sample_counts[i];
-
-    accumulate_mean(samples, i, num_samp, moments_i[0]);
+    Real*  moments_i =  moment_stats[i];
+    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for " << labels[i] << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
 
     if (num_samp)
-      accumulate_moments(samples, i, moments_i, moments_type);
+      accumulate_moments(fn_samples, i, moments_type, moments_i);
     else {
       Cerr << "Warning: Number of samples for " << labels[i]
 	   << " must be nonzero for moment calculation in NonDSampling::"
 	   << "compute_moments().\n";
-      //abort_handler(METHOD_ERROR);
       for (int j=0; j<4; ++j)
 	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
     }
@@ -1045,35 +1055,51 @@ compute_moments(const RealMatrix& samples, SizetArray& sample_counts,
 
 
 void NonDSampling::
-compute_moments(const RealMatrix& samples, RealMatrix& moment_stats,
+compute_moments(const RealVectorArray& fn_samples, RealMatrix& moment_stats,
 		short moments_type)
 {
-  // For a samples matrix, calculate mean, standard deviation,
-  // skewness, and kurtosis
-
-  size_t i, num_qoi = samples.numRows(), num_obs = samples.numCols(), num_samp;
+  size_t i, j, num_obs = fn_samples.size(), num_qoi, num_samp;
+  if (num_obs)
+    num_qoi = fn_samples[0].length();
+  else {
+    Cerr << "Error: empty samples array in NonDSampling::compute_moments()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   if (moment_stats.empty()) moment_stats.shapeUninitialized(4, num_qoi);
 
   for (i=0; i<num_qoi; ++i) {
-    Real* moments_i = moment_stats[i];
 
-    accumulate_mean(samples, i, num_samp, moments_i[0]);
+    Real* moments_i = moment_stats[i];
+    accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
     if (num_samp != num_obs)
       Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
 
     if (num_samp)
-      accumulate_moments(samples, i, moments_i, moments_type);
+      accumulate_moments(fn_samples, i, moments_type, moments_i);
     else {
       Cerr << "Warning: Number of samples for quantity " << i+1
 	   << " must be nonzero in NonDSampling::compute_moments().\n";
-      //abort_handler(METHOD_ERROR);
       for (size_t j=0; j<4; ++j)
 	moments_i[j] = std::numeric_limits<double>::quiet_NaN();
     }
   }
+}
+
+
+void NonDSampling::
+compute_moments(const RealMatrix& fn_samples, RealMatrix& moment_stats,
+		short moments_type)
+{
+  int i, num_qoi = fn_samples.numRows(), num_obs = fn_samples.numCols();
+  RealVectorArray rva_samples(num_obs);
+  for (i=0; i<num_obs; ++i)
+    rva_samples[i]
+      = RealVector(Teuchos::View, const_cast<Real*>(fn_samples[i]), num_qoi);
+  compute_moments(rva_samples, moment_stats, moments_type);
 }
 
 
@@ -1133,15 +1159,53 @@ compute_moment_confidence_intervals(const RealMatrix& moment_stats,
 
 
 void NonDSampling::
-accumulate_mean(const RealMatrix& samples, size_t q,
-		size_t& num_samp, Real& mean)
+compute_moment_gradients(const RealVectorArray& fn_samples,
+			 const RealMatrixArray& grad_samples,
+			 const RealMatrix& moment_stats,
+			 RealMatrix& moment_grads, short moments_type)
+{
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  size_t q, cntr = 0; int m1_index, m2_index;
+  for (q=0; q<numFunctions; ++q) {
+    m1_index = 2*q; m2_index = m1_index + 1;
+    // Compute moment_grads
+    accumulate_moment_gradients(fn_samples, grad_samples, q, moments_type,
+				moment_stats(0,q), moment_stats(1,q),
+				moment_grads[m1_index], moment_grads[m2_index]);
+    // Assign moment_grads into finalStatistics (could do this in one step,
+    // but retain API of moment_stats and moment_grads as their own matrices).
+    // > NonDExpansion and NonDLocalReliability do not store moment grads as
+    //   member variables; they update finalStats directly in NonDExpansion::
+    //   compute_analytic_statistics() and NonDLocalRel::update_level_data().
+    //   Note: NonDExpansion::update_final_statistics_gradients() provides
+    //   post-processing for special cases (combined vars, insertion).
+    // > NonDSampling could retain a class member or use a local variable for
+    //   moment_grads (currently a local, whereas momentStats is a member)
+    //if (moments_type) {
+      if (final_asv[cntr] & 2) // moment 1 (mean) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m1_index), cntr);
+      ++cntr;
+      if (final_asv[cntr] & 2) // moment 2 (var or stdev) gradient
+	finalStatistics.function_gradient(
+	  Teuchos::getCol(Teuchos::View, moment_grads, m2_index), cntr);
+      cntr += 1 +
+	requestedRespLevels[q].length() + requestedProbLevels[q].length() +
+	requestedRelLevels[q].length()  + requestedGenRelLevels[q].length();
+    //}
+  }
+}
+
+
+void NonDSampling::
+accumulate_mean(const RealVectorArray& fn_samples, size_t q, size_t& num_samp,
+		Real& mean)
 {
   num_samp = 0;
-  Real sum = 0.;
-
-  size_t s, num_obs = samples.numCols(); Real sample;
+  Real sum = 0., sample;
+  size_t s, num_obs = fn_samples.size();
   for (s=0; s<num_obs; ++s) {
-    sample = samples(q,s);
+    sample = fn_samples[s][q];
     if (isfinite(sample)) { // neither NaN nor +/-Inf
       sum += sample;
       ++num_samp;
@@ -1154,15 +1218,15 @@ accumulate_mean(const RealMatrix& samples, size_t q,
 
 
 void NonDSampling::
-accumulate_moments(const RealMatrix& samples, size_t q,
-		   Real* moments, short moments_type)
+accumulate_moments(const RealVectorArray& fn_samples, size_t q,
+		   short moments_type, Real* moments)
 {
   // accumulate central moments (e.g., variance)
-  size_t s, num_obs = samples.numCols(), num_samp = 0;
+  size_t s, num_obs = fn_samples.size(), num_samp = 0;
   Real& mean = moments[0]; // already computed in accumulate_mean()
   Real sample, centered_fn, pow_fn, cm2 = 0., cm3 = 0., cm4 = 0.;
   for (s=0; s<num_obs; ++s) {
-    sample = samples(q,s);
+    sample = fn_samples[s][q];
     if (isfinite(sample)) { // neither NaN nor +/-Inf
       pow_fn  = centered_fn = sample - mean;
       pow_fn *= centered_fn; cm2 += pow_fn; // variance
@@ -1199,6 +1263,65 @@ accumulate_moments(const RealMatrix& samples, size_t q,
 
 
 void NonDSampling::
+accumulate_moment_gradients(const RealVectorArray& fn_samples,
+			    const RealMatrixArray& grad_samples, size_t q,
+			    short moments_type, Real mean, Real mom2,
+			    Real* mean_grad, Real* mom2_grad)
+{
+  size_t s, v, num_deriv_vars,
+    num_obs = std::min(fn_samples.size(), grad_samples.size());
+  if (num_obs)
+    num_deriv_vars = grad_samples[0].numRows(); // functionGradients = V x Q
+  else {
+    Cerr << "Error: emply samples array in NonDSampling::"
+	 << "accumulate_moment_gradients()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (v=0; v<num_deriv_vars; ++v)
+    mean_grad[v] = mom2_grad[v] = 0.;
+
+  SizetArray num_samp(num_deriv_vars, 0);
+  for (s=0; s<num_obs; ++s) {
+    // manage faults hierarchically as in Pecos::SurrogateData::response_check()
+    Real fn = fn_samples[s][q];
+    if (isfinite(fn)) {          // neither NaN nor +/-Inf
+      const Real* grad = grad_samples[s][q];
+      for (v=0; v<num_deriv_vars; ++v)
+	if (isfinite(grad[v])) { // neither NaN nor +/-Inf
+	  mean_grad[v] += grad[v];
+	  mom2_grad[v] += fn * grad[v];
+	  ++num_samp[v];
+	}
+    }
+  }
+
+  Real ns, nm1; size_t nsv;
+  bool central_mom = (moments_type == CENTRAL_MOMENTS);
+  for (v=0; v<num_deriv_vars; ++v) {
+    nsv = num_samp[v];
+    if (nsv) {
+      ns = (Real)nsv;
+      // dMean/ds = E[dQ/ds] --> unbiased estimator 1/N Sum(dQ/ds)
+      mean_grad[v] /= ns;
+    }
+    if (nsv > 1) {
+      nm1 = ns - 1.;
+      // dVar/ds = 2 E[(Q - Mean)(dQ/ds - dMean/ds)] --> unbiased var estimator:
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean Sum(dQ/ds) -
+      //             dMean/ds Sum(Q) + N Mean Mean/ds ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - Mean dMean/ds (N + N - N) ]
+      // = 2/(N-1) [ Sum(Q dQ/ds) - N Mean dMean/ds ]
+      // dVar/ds = 2 Sigma dSigma/ds -->
+      // dSigma/ds = [ Sum(Q dQ/ds) - N Mean dMean/ds ] / (Sigma (N-1))
+      mom2_grad[v]  = (central_mom) ?
+	2. * ( mom2_grad[v] - ns * mean * mean_grad[v] ) / nm1 :
+	     ( mom2_grad[v] - ns * mean * mean_grad[v] ) / (mom2 * nm1);
+    }
+  }
+}
+
+
+void NonDSampling::
 archive_moments(const RealMatrix& moment_stats, short moments_type,
 		const StringArray& labels)
 {
@@ -1231,8 +1354,9 @@ archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
 }
 
 
-int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha, 
-					    Real beta, bool twosided)
+int NonDSampling::
+compute_wilks_sample_size(unsigned short order, Real alpha, Real beta,
+			  bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1255,7 +1379,9 @@ int NonDSampling::compute_wilks_sample_size(unsigned short order, Real alpha,
 }
 
 
-Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Real alpha, Real beta, bool twosided)
+Real NonDSampling::
+compute_wilks_residual(unsigned short order, int nsamples, Real alpha,
+		       Real beta, bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1269,7 +1395,9 @@ Real NonDSampling::compute_wilks_residual(unsigned short order, int nsamples, Re
 }
 
 
-Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided)
+Real NonDSampling::
+compute_wilks_alpha(unsigned short order, int nsamples, Real beta,
+		    bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1310,7 +1438,9 @@ Real NonDSampling::compute_wilks_alpha(unsigned short order, int nsamples, Real 
 }
 
 
-Real NonDSampling::compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided)
+Real NonDSampling::
+compute_wilks_beta(unsigned short order, int nsamples, Real alpha,
+		   bool twosided)
 {
   Real rorder = (Real) order;
 
@@ -1363,7 +1493,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   SizetArray bins; Real min, max, sample;
 
   // check if moments are required, and if so, compute them now
-  if (finalMomentStats.empty()) {
+  if (momentStats.empty()) {
     bool need_moments = false;
     for (i=0; i<numFunctions; ++i)
       if ( !requestedRelLevels[i].empty() ||
@@ -1373,7 +1503,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     if (need_moments) {
       Cerr << "Error: required moments not available in compute_distribution_"
 	   << "mappings().  Call compute_moments() first." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
       // Issue with the following approach is that subsequent invocations of
       // compute_level_mappings() without compute_moments() would not be
       // detected and old moments would be used.  Performing more rigorous
@@ -1464,7 +1594,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
 	break;
       case RELIABILITIES: { // z -> beta (from moment projection)
-	Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
+	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
 	for (j=0; j<rl_len; j++) {
 	  Real z = requestedRespLevels[i][j];
 	  if (std_dev > Pecos::SMALL_NUMBER)
@@ -1512,7 +1642,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real mean = finalMomentStats(0,i), std_dev = finalMomentStats(1,i);
+      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
       for (j=0; j<bl_len; j++) { // beta -> z
 	Real beta = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?

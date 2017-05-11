@@ -580,7 +580,7 @@ void NonDBayesCalibration::initialize_model()
   }
   default: // GPs and NO_EMULATOR
     initialize_random_variable_parameters(); // standardizedSpace or not
-    //initialize_final_statistics_gradients(); // not required
+    //resize_final_statistics_gradients(); // not required
     if (standardizedSpace) transform_correlations();
     if (emulatorType)      mcmcModel.build_approximation();
     break;

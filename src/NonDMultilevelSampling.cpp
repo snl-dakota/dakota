@@ -110,7 +110,7 @@ bool NonDMultilevelSampling::resize()
 
 void NonDMultilevelSampling::pre_run()
 {
-  Analyzer::pre_run();
+  NonDSampling::pre_run();
 
   // reset sample counters to 0
   size_t i, j, num_mf = NLev.size(), num_lev;
@@ -334,7 +334,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Q_raw_mom, finalMomentStats);
+  convert_moments(Q_raw_mom, momentStats);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
@@ -485,7 +485,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Q_raw_mom, finalMomentStats);
+  convert_moments(Q_raw_mom, momentStats);
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -586,7 +586,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
 		 rho2_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, finalMomentStats);
+  convert_moments(H_raw_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
@@ -822,7 +822,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, finalMomentStats);
+  convert_moments(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -1092,7 +1092,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, finalMomentStats);
+  convert_moments(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -2718,8 +2718,8 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
   //if (statsFlag) // calculate statistics on allResponses
   //  compute_statistics(allSamples, allResponses);
 
-  // NonD::update_aleatory_final_statistics() pushes finalMomentStats
-  // into finalStatistics
+  // NonD::update_aleatory_final_statistics() pushes momentStats into
+  // finalStatistics
   update_final_statistics();
 
   Analyzer::post_run(s);
