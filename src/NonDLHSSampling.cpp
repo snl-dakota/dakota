@@ -655,13 +655,14 @@ void NonDLHSSampling::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag)
+  if (statsFlag) {
     // BMA TODO: always compute all stats, even in VBD mode (stats on
     // first two replicates)
     if (varBasedDecompFlag)
       compute_vbd_stats(numSamples, allResponses);
-    else 
+    else
       compute_statistics(allSamples, allResponses);
+  }
 
   Analyzer::post_run(s);
  
@@ -673,14 +674,14 @@ void NonDLHSSampling::post_run(std::ostream& s)
 void NonDLHSSampling::update_final_statistics()
 {
   NonDSampling::update_final_statistics();
-  if (!finalMomentsType || epistemicStats || sampleType != SUBMETHOD_RANDOM)
+
+  if (!statsFlag || !finalMomentsType || epistemicStats ||
+      sampleType != SUBMETHOD_RANDOM)
     return;
 
   // if MC sampling, assign standard errors for moments within finalStatErrors
-
   if (finalStatErrors.empty())
     finalStatErrors.size(finalStatistics.num_functions()); // init to 0.
-
   size_t i, cntr = 0;
   Real sqrt2 = std::sqrt(2.), ns = (Real)numSamples, sqrtn = std::sqrt(ns),
     sqrtnm1 = std::sqrt(ns - 1.), qoi_var, qoi_stdev;

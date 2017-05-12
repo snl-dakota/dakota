@@ -390,8 +390,12 @@ inline void NonDSampling::pre_run()
   // derivs are computed in Analyzer::evaluate_parameter_sets().  Note: the
   // request vector set within finalStatistics corresponds to the stats vector,
   // not the QoI vector, but the deriv components are the same.
-  if (subIteratorFlag)
-    activeSet.derivative_vector(finalStatistics.active_set_derivative_vector());
+  if (subIteratorFlag) {
+    const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
+    if (!final_dvv.empty()) // don't assign empty set of inactive cv's
+      activeSet.derivative_vector(final_dvv);
+    //else leave activeSet at default active cv's (from Iterator::update_from_model())
+  }
 }
 
 

@@ -56,6 +56,7 @@ NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
 NonDReliability::~NonDReliability()
 { }
 
+
 bool NonDReliability::resize()
 {
   bool parent_reinit_comms = NonD::resize();
