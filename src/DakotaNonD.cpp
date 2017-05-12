@@ -1827,7 +1827,7 @@ void NonD::initialize_final_statistics()
   //   in subIterator.response_results_active_set(sub_iterator_set)
   // > inactive views are not set until NestedModel ctor defines them, and
   //   subIterator construction follows in NestedModel::derived_init_comms()
-  //   such that invocation of this fn from NonD ctors should have inactive view
+  //   --> invocation of this fn from NonD ctors should have inactive view
   ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
   stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);

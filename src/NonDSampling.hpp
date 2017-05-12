@@ -260,6 +260,10 @@ protected:
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_lhs(bool write_message, int num_samples);
 
+  /// in the case of sub-iteration, map from finalStatistics.active_set()
+  /// requests to activeSet used in evaluate_parameter_sets()
+  void active_set_mapping();
+
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_design_counts(const Model& model, size_t& num_cdv, size_t& num_ddiv,
@@ -387,15 +391,9 @@ inline void NonDSampling::pre_run()
 
   // synchronize the derivative components flowing down from a NestedModel's
   // call to subIterator.response_results_active_set(), so that the correct 
-  // derivs are computed in Analyzer::evaluate_parameter_sets().  Note: the
-  // request vector set within finalStatistics corresponds to the stats vector,
-  // not the QoI vector, but the deriv components are the same.
-  if (subIteratorFlag) {
-    const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-    if (!final_dvv.empty()) // don't assign empty set of inactive cv's
-      activeSet.derivative_vector(final_dvv);
-    //else leave activeSet at default active cv's (from Iterator::update_from_model())
-  }
+  // derivs are computed in Analyzer::evaluate_parameter_sets()
+  if (subIteratorFlag)
+    active_set_mapping();
 }
 
 

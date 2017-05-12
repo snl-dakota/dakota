@@ -706,7 +706,7 @@ void NonDExpansion::compute_expansion()
   bool final_stat_grad_flag = false;
   for (i=0; i<num_final_stats; ++i)
     if (final_asv[i] & 2)
-      { final_stat_grad_flag  = true; break; }
+      { final_stat_grad_flag = true; break; }
 
   // define ASV for u_space_sampler and expansion coefficient/gradient
   // data flags for PecosApproximation

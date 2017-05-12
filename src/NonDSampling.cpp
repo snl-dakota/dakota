@@ -848,6 +848,65 @@ void NonDSampling::initialize_lhs(bool write_message, int num_samples)
 }
 
 
+/** Map ASV/DVV requests in final statistics into activeSet for use in
+    evaluate_parameter_sets() */
+void NonDSampling::active_set_mapping()
+{
+  // Adapted from NonDExpansion::compute_expansion()
+
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, total_i, cntr = 0,
+    num_final_stats = final_asv.size(),//, num_deriv_vars = final_dvv.size(),
+    moment_offset   = (finalMomentsType) ? 2 : 0;
+
+  // The request vector set within finalStatistics corresponds to the stats
+  // vector, not the QoI vector, but the deriv components are the same.
+  ShortArray sampler_asv(numFunctions, 0);
+  for (i=0; i<numFunctions; ++i) {
+    rl_len = requestedRespLevels[i].length();
+    pl_len = requestedProbLevels[i].length();
+    bl_len = requestedRelLevels[i].length();
+    gl_len = requestedGenRelLevels[i].length();
+    total_i = moment_offset + rl_len + pl_len + bl_len + gl_len;
+
+    // map final_asv value bits into qoi_fns requirements
+    bool qoi_fn = false, qoi_grad = false;
+    for (j=0; j<total_i; ++j)
+      if (final_asv[cntr+j] & 1)
+        { qoi_fn = true; break; }
+
+    // map final_asv gradient bits into moment grad requirements
+    bool moment1_grad = false, moment2_grad = false;
+    if (finalMomentsType) {
+      if (final_asv[cntr++] & 2) moment1_grad = true;
+      if (final_asv[cntr++] & 2) moment2_grad = true;
+    }
+    if (respLevelTarget == RELIABILITIES)
+      for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+	if (final_asv[cntr+j] & 2)
+	  { moment1_grad = moment2_grad = qoi_fn = true; break;}
+    cntr += rl_len + pl_len;
+    for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds, dsigma/ds
+      if (final_asv[cntr+j] & 2)
+	{ moment1_grad = moment2_grad = true; break; }
+    cntr += bl_len + gl_len;
+    if (moment1_grad) qoi_grad = true;
+    if (moment2_grad) qoi_grad = qoi_fn = true;
+
+    // map qoi_{fn,grad} requirements into ASV settings
+    if (qoi_fn)   sampler_asv[i] |= 1;
+    if (qoi_grad) sampler_asv[i] |= 2;
+  }
+  activeSet.request_vector(sampler_asv);
+
+  // don't assign if empty set of inactive cv's or finalStats uninitialized
+  if (!final_dvv.empty())
+    activeSet.derivative_vector(final_dvv);
+  //else leave DVV as default active cv's (from Iterator::update_from_model())
+}
+
+
 /** Default implementation generates allResponses from either allSamples
     or allVariables. */
 void NonDSampling::core_run()
