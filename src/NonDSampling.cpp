@@ -854,6 +854,7 @@ void NonDSampling::active_set_mapping()
 {
   // Adapted from NonDExpansion::compute_expansion()
 
+  const ShortArray& curr_asv  = activeSet.request_vector();
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   size_t i, j, rl_len, pl_len, bl_len, gl_len, total_i, cntr = 0,
@@ -862,16 +863,25 @@ void NonDSampling::active_set_mapping()
 
   // The request vector set within finalStatistics corresponds to the stats
   // vector, not the QoI vector, but the deriv components are the same.
-  ShortArray sampler_asv(numFunctions, 0);
+  ShortArray sampler_asv(numFunctions);//, 0); // *** TO DO
   for (i=0; i<numFunctions; ++i) {
-    rl_len = requestedRespLevels[i].length();
-    pl_len = requestedProbLevels[i].length();
-    bl_len = requestedRelLevels[i].length();
-    gl_len = requestedGenRelLevels[i].length();
-    total_i = moment_offset + rl_len + pl_len + bl_len + gl_len;
+
+    // *** TO DO: review NestedModel mappings: augment w/ finalStats?
+    //     (clean tests) or replace? (test FAILs)
+    sampler_asv[i] = curr_asv[i];
+
+    if (totalLevelRequests) {
+      rl_len = requestedRespLevels[i].length();
+      pl_len = requestedProbLevels[i].length();
+      bl_len = requestedRelLevels[i].length();
+      gl_len = requestedGenRelLevels[i].length();
+    }
+    else
+      rl_len = pl_len = bl_len = gl_len = 0;
 
     // map final_asv value bits into qoi_fns requirements
     bool qoi_fn = false, qoi_grad = false;
+    total_i = moment_offset + rl_len + pl_len + bl_len + gl_len;
     for (j=0; j<total_i; ++j)
       if (final_asv[cntr+j] & 1)
         { qoi_fn = true; break; }
@@ -895,8 +905,8 @@ void NonDSampling::active_set_mapping()
     if (moment2_grad) qoi_grad = qoi_fn = true;
 
     // map qoi_{fn,grad} requirements into ASV settings
-    if (qoi_fn)   sampler_asv[i] |= 1;
-    if (qoi_grad) sampler_asv[i] |= 2;
+    if (qoi_fn)                sampler_asv[i] |= 1;
+    if (qoi_grad /*|| useDerivs*/) sampler_asv[i] |= 2; // *** TO DO
   }
   activeSet.request_vector(sampler_asv);
 
@@ -1029,18 +1039,32 @@ compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
   // if statsFlag, always compute moments for output regardless of final ASV.
   // else define moment requirements from final_asv and finalMomentsType.
   bool mom_fns = statsFlag, mom_grads = false;
-  size_t i, cntr, num_obs = samples.size();
-  if (finalMomentsType) { // only compute moments if needed
-    for (i=0, cntr=0; i<numFunctions; ++i) {
-      if (final_asv[cntr] & 1) mom_fns   = true;
-      if (final_asv[cntr] & 2) mom_grads = true;
-      ++cntr;
-      if (final_asv[cntr] & 1) mom_fns   = true;
-      if (final_asv[cntr] & 2) mom_grads = true;
-      cntr += 1 +
-	requestedRespLevels[i].length() +   requestedProbLevels[i].length() +
-	requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
+  size_t i, l, m, cntr, num_lev, num_obs = samples.size();
+  for (i=0, cntr=0; i<numFunctions; ++i) {
+    if (finalMomentsType) { // only compute moments if needed
+      for (m=0; m<2; ++m, ++cntr) {
+	if (final_asv[cntr] & 1) mom_fns   = true;
+	if (final_asv[cntr] & 2) mom_grads = true;
+      }
     }
+    if (respLevelTarget == RELIABILITIES) {
+      num_lev = requestedRespLevels[i].length();
+      for (l=0; l<num_lev; ++l, ++cntr) {
+	if (final_asv[cntr] & 1) mom_fns = true;
+	// dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+	if (final_asv[cntr] & 2) mom_fns = mom_grads = true;
+      }
+    }
+    else
+      cntr += requestedRespLevels[i].length();
+    cntr += requestedProbLevels[i].length();
+    num_lev = requestedRelLevels[i].length();
+    for (l=0; l<num_lev; ++l, ++cntr) {
+      if (final_asv[cntr] & 1) mom_fns = true;
+      // dz/ds requires dmu/ds, dsigma/ds
+      if (final_asv[cntr] & 2) mom_grads = true;
+    }
+    cntr += requestedGenRelLevels[i].length();
   }
   if (!mom_fns && !mom_grads)
     return;
@@ -1065,8 +1089,6 @@ compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
     RealMatrixArray grad_samples(num_obs);
     for (it=samples.begin(), i=0; it!=samples.end(); ++it, ++i)
       grad_samples[i] = it->second.function_gradients_view();
-    moment_grads.shape(finalStatistics.active_set_derivative_vector().size(),
-		       2*numFunctions); // init to 0.
     compute_moment_gradients(fn_samples, grad_samples, moment_stats,
 			     moment_grads, moments_type);
   }
@@ -1224,7 +1246,15 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
 			 RealMatrix& moment_grads, short moments_type)
 {
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  size_t q, cntr = 0; int m1_index, m2_index;
+  size_t q, cntr = 0;
+  int m1_index, m2_index, num_mom = 2*numFunctions,
+    num_deriv_vars = finalStatistics.active_set_derivative_vector().size();
+  if (moment_grads.numRows() != num_deriv_vars ||
+      moment_grads.numRows() != num_mom)
+    moment_grads.shape(num_deriv_vars, num_mom); // init to 0.
+  else
+    moment_grads = 0.;
+
   for (q=0; q<numFunctions; ++q) {
     m1_index = 2*q; m2_index = m1_index + 1;
     // Compute moment_grads
@@ -1336,8 +1366,8 @@ accumulate_moment_gradients(const RealVectorArray& fn_samples,
 	 << "accumulate_moment_gradients()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  for (v=0; v<num_deriv_vars; ++v)
-    mean_grad[v] = mom2_grad[v] = 0.;
+  //for (v=0; v<num_deriv_vars; ++v)
+  //  mean_grad[v] = mom2_grad[v] = 0.;
 
   SizetArray num_samp(num_deriv_vars, 0);
   for (s=0; s<num_obs; ++s) {
@@ -1575,7 +1605,13 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 
   if (pdfOutput) extremeValues.resize(numFunctions);
   IntRespMCIter s_it; std::multiset<Real>::iterator ss_it;
-  bool extrapolated_mappings = false;
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  bool extrapolated_mappings = false,
+    central_mom = (finalMomentsType == CENTRAL_MOMENTS);
+  size_t cntr = 0,
+    num_deriv_vars = finalStatistics.active_set_derivative_vector().size(),
+    moment_offset = (finalMomentsType) ? 2 : 0;
+  RealVector mean_grad, mom2_grad;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -1634,6 +1670,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
     if (pdfOutput)
       { extremeValues[i].first = min; extremeValues[i].second = max; }
 
+    cntr += moment_offset;
     // ----------------
     // Process mappings
     // ----------------
@@ -1641,7 +1678,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: // z -> p/beta* (from binning)
 	bin_accumulator = 0;
-	for (j=0; j<rl_len; ++j) { // compute CDF/CCDF p/beta*
+	for (j=0; j<rl_len; ++j, ++cntr) { // compute CDF/CCDF p/beta*
 	  bin_accumulator += bins[j];
 	  Real cdf_prob = (Real)bin_accumulator/(Real)num_samp;
 	  Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
@@ -1653,22 +1690,45 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
 	}
 	break;
       case RELIABILITIES: { // z -> beta (from moment projection)
-	Real mean = momentStats(0,i), std_dev = momentStats(1,i);
-	for (j=0; j<rl_len; j++) {
-	  Real z = requestedRespLevels[i][j];
-	  if (std_dev > Pecos::SMALL_NUMBER)
+	Real mean  = momentStats(0,i);
+	Real stdev = (central_mom) ?
+	  std::sqrt(momentStats(1,i)) : momentStats(1,i);
+	if (!momentGrads.empty()) {
+	  int i2 = 2*i;
+	  mean_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2);
+	  mom2_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2+1);
+	}
+	for (j=0; j<rl_len; j++, ++cntr) {
+	  // *** beta
+	  Real z_bar = requestedRespLevels[i][j];
+	  if (stdev > Pecos::SMALL_NUMBER)
 	    computedRelLevels[i][j] = (cdfFlag) ?
-	      (mean - z)/std_dev : (z - mean)/std_dev;
+	      (mean - z_bar)/stdev : (z_bar - mean)/stdev;
 	  else
 	    computedRelLevels[i][j]
-	      = ( (cdfFlag && mean <= z) || (!cdfFlag && mean > z) )
+	      = ( (cdfFlag && mean <= z_bar) || (!cdfFlag && mean > z_bar) )
 	      ? -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
+	  // *** beta gradient
+	  if (final_asv[cntr] & 2) {
+	    RealVector beta_grad = finalStatistics.function_gradient_view(cntr);
+	    if (stdev > Pecos::SMALL_NUMBER) {
+	      for (k=0; k<num_deriv_vars; ++k) {
+		Real stdev_grad = (central_mom) ?
+		  mom2_grad[k] / (2.*stdev) : mom2_grad[k];
+		Real dratio_dx = (stdev*mean_grad[k] - (mean-z_bar)*stdev_grad)
+		               / std::pow(stdev, 2);
+		beta_grad[k] = (cdfFlag) ? dratio_dx : -dratio_dx;
+	      }
+	    }
+	    else
+	      beta_grad = 0.;
+	  }
 	}
 	break;
       }
       }
     }
-    for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
+    for (j=0; j<pl_len+gl_len; j++, ++cntr) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :	Pecos::
 	NormalRandomVariable::std_cdf(-requestedGenRelLevels[i][j-pl_len]);
       Real p_cdf = (cdfFlag) ? p : 1. - p;
@@ -1701,11 +1761,29 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
       else          computedRespLevels[i][j+bl_len] = z;
     }
     if (bl_len) {
-      Real mean = momentStats(0,i), std_dev = momentStats(1,i);
-      for (j=0; j<bl_len; j++) { // beta -> z
-	Real beta = requestedRelLevels[i][j];
+      Real mean  = momentStats(0,i);
+      Real stdev = (finalMomentsType == CENTRAL_MOMENTS) ?
+	std::sqrt(momentStats(1,i)) : momentStats(1,i);
+      if (!momentGrads.empty()) {
+	int i2 = 2*i;
+	mean_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2);
+	mom2_grad = Teuchos::getCol(Teuchos::View, momentGrads, i2+1);
+      }
+      for (j=0; j<bl_len; j++, ++cntr) {
+	// beta_bar -> z
+	Real beta_bar = requestedRelLevels[i][j];
 	computedRespLevels[i][j+pl_len] = (cdfFlag) ?
-	  mean - beta * std_dev : mean + beta * std_dev;
+	  mean - beta_bar * stdev : mean + beta_bar * stdev;
+	// *** z gradient
+	if (final_asv[cntr] & 2) {
+	  RealVector z_grad = finalStatistics.function_gradient_view(cntr);
+	  for (k=0; k<num_deriv_vars; ++k) {
+	    Real stdev_grad = (central_mom) ?
+	      mom2_grad[k] / (2.*stdev) : mom2_grad[k];
+	    z_grad[k] = (cdfFlag) ? mean_grad[k] - beta_bar * stdev_grad
+	                          : mean_grad[k] + beta_bar * stdev_grad;
+	  }
+	}
       }
     }
 

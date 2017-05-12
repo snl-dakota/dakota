@@ -325,10 +325,10 @@ protected:
   Real      wilksBeta;    
   short     wilksSidedness;
 
-  // gradients of standardized or central moments of response functions, as
-  // determined by finalMomentsType.  Calculated in compute_moments() and
-  // indexed as (var,moment) when moment id runs from 1:2*numFunctions.
-  //RealMatrix momentGrads;
+  /// gradients of standardized or central moments of response functions, as
+  /// determined by finalMomentsType.  Calculated in compute_moments() and
+  /// indexed as (var,moment) when moment id runs from 1:2*numFunctions.
+  RealMatrix momentGrads;
 
   /// standard errors (estimator std deviation) for each of the finalStatistics
   RealVector finalStatErrors;
@@ -392,7 +392,7 @@ inline void NonDSampling::pre_run()
   // synchronize the derivative components flowing down from a NestedModel's
   // call to subIterator.response_results_active_set(), so that the correct 
   // derivs are computed in Analyzer::evaluate_parameter_sets()
-  if (subIteratorFlag)
+  if (subIteratorFlag && !finalStatistics.is_null())
     active_set_mapping();
 }
 
@@ -407,8 +407,7 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
-  RealMatrix moment_grads; // temporary that updates finalStatistics
-  compute_moments(samples, momentStats, /*momentGrads*/moment_grads, momentCIs,
+  compute_moments(samples, momentStats, momentGrads, momentCIs,
 		  finalMomentsType, iteratedModel.response_labels());
 }
 
