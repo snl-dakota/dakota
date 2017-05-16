@@ -854,21 +854,28 @@ void NonDSampling::active_set_mapping()
 {
   // Adapted from NonDExpansion::compute_expansion()
 
-  const ShortArray& curr_asv  = activeSet.request_vector();
+  // Note: the ASV within finalStatistics corresponds to the stats vector,
+  // not the QoI vector, but the DVV carries over.
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
+  size_t num_final_stats = final_asv.size();
+  if (!num_final_stats) // finalStatistics not initialized
+    return;             // leave activeSet as is; nothing to augment
+
+  // activeSet ASV/DVV can include active-variable derivatives for surrogate
+  // creation (use_derivatives spec option).  Cannot easily support both this
+  // and moment gradients w.r.t. inactive variables without new logic for an
+  // aggregate DVV; however, the former case occurs in DataFitSurrModel
+  // contexts and the latter case occurs in NestedModel contexts:
+  // > for now, augment the incoming ASV (preserve the DataFitSurrModel case)
+  //   with any moment grad requirements and only overwrite the incoming DVV
+  //   when moment gradients are required (support the NestedModel case).
+  // > Model recursions that embed a derivative-enhanced DataFitSurrModel
+  //   within a NestedModel may dictate additional care...
+  ShortArray sampler_asv = activeSet.request_vector();//(numFunctions, 0);
+  bool assign_dvv = false, qoi_fn, qoi_grad, moment1_grad, moment2_grad;
   size_t i, j, rl_len, pl_len, bl_len, gl_len, total_i, cntr = 0,
-    num_final_stats = final_asv.size(),//, num_deriv_vars = final_dvv.size(),
-    moment_offset   = (finalMomentsType) ? 2 : 0;
-
-  // The request vector set within finalStatistics corresponds to the stats
-  // vector, not the QoI vector, but the deriv components are the same.
-  ShortArray sampler_asv(numFunctions);//, 0); // *** TO DO
+    moment_offset = (finalMomentsType) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
-
-    // *** TO DO: review NestedModel mappings: augment w/ finalStats?
-    //     (clean tests) or replace? (test FAILs)
-    sampler_asv[i] = curr_asv[i];
 
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
@@ -876,18 +883,17 @@ void NonDSampling::active_set_mapping()
       bl_len = requestedRelLevels[i].length();
       gl_len = requestedGenRelLevels[i].length();
     }
-    else
+    else // requested level arrays may not be sized
       rl_len = pl_len = bl_len = gl_len = 0;
 
     // map final_asv value bits into qoi_fns requirements
-    bool qoi_fn = false, qoi_grad = false;
+    qoi_fn = qoi_grad = moment1_grad = moment2_grad = false;
     total_i = moment_offset + rl_len + pl_len + bl_len + gl_len;
     for (j=0; j<total_i; ++j)
       if (final_asv[cntr+j] & 1)
         { qoi_fn = true; break; }
 
     // map final_asv gradient bits into moment grad requirements
-    bool moment1_grad = false, moment2_grad = false;
     if (finalMomentsType) {
       if (final_asv[cntr++] & 2) moment1_grad = true;
       if (final_asv[cntr++] & 2) moment2_grad = true;
@@ -901,18 +907,17 @@ void NonDSampling::active_set_mapping()
       if (final_asv[cntr+j] & 2)
 	{ moment1_grad = moment2_grad = true; break; }
     cntr += bl_len + gl_len;
-    if (moment1_grad) qoi_grad = true;
-    if (moment2_grad) qoi_grad = qoi_fn = true;
+    if (moment1_grad) assign_dvv = qoi_grad = true;
+    if (moment2_grad) assign_dvv = qoi_grad = qoi_fn = true;
 
     // map qoi_{fn,grad} requirements into ASV settings
-    if (qoi_fn)                sampler_asv[i] |= 1;
-    if (qoi_grad /*|| useDerivs*/) sampler_asv[i] |= 2; // *** TO DO
+    if (qoi_fn)                    sampler_asv[i] |= 1;
+    if (qoi_grad /*|| useDerivs*/) sampler_asv[i] |= 2; // future aggregation...
   }
   activeSet.request_vector(sampler_asv);
 
-  // don't assign if empty set of inactive cv's or finalStats uninitialized
-  if (!final_dvv.empty())
-    activeSet.derivative_vector(final_dvv);
+  if (assign_dvv)
+    activeSet.derivative_vector(finalStatistics.active_set_derivative_vector());
   //else leave DVV as default active cv's (from Iterator::update_from_model())
 }
 
