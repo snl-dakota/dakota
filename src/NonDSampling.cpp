@@ -1275,7 +1275,7 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
     //   post-processing for special cases (combined vars, insertion).
     // > NonDSampling could retain a class member or use a local variable for
     //   moment_grads (currently a local, whereas momentStats is a member)
-    //if (moments_type) {
+    if (moments_type) {
       if (final_asv[cntr] & 2) // moment 1 (mean) gradient
 	finalStatistics.function_gradient(
 	  Teuchos::getCol(Teuchos::View, moment_grads, m1_index), cntr);
@@ -1286,7 +1286,7 @@ compute_moment_gradients(const RealVectorArray& fn_samples,
       cntr += 1 +
 	requestedRespLevels[q].length() + requestedProbLevels[q].length() +
 	requestedRelLevels[q].length()  + requestedGenRelLevels[q].length();
-    //}
+    }
   }
 }
 
