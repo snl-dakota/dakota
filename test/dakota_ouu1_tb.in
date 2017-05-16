@@ -27,7 +27,7 @@ environment
 method
   id_method = 'OPTIM'
   npsol_sqp
-    convergence_tolerance = 1.e-8
+    convergence_tolerance = 1.e-10
     model_pointer = 'OPTIM_M'
 
 model
@@ -41,6 +41,12 @@ model
 #   primary_response_mapping   = 0. 1. 0. 0. 0. 0.		#s2,#s3
 #   secondary_response_mapping = 0. 0. 1. 0. 0. 0.		#s2,#s3
 #   			         0. 0. 0. 0. 1. 0.		#s2,#s3
+#   primary_response_mapping   = 0. 0. -1. 0. 0. 0. 0. 0. 0.	#s4,#s6
+#   secondary_response_mapping = 0. 0.  0. 0. 0. 1. 0. 0. 0.	#s4,#s6
+#   			         0. 0.  0. 0. 0. 0. 0. 0. 1.	#s4,#s6
+#   primary_response_mapping =  -1. 0. 0.	      	 	#s5
+#   secondary_response_mapping = 0. 1. 0.			#s5
+#   			         0. 0. 1.			#s5
   variables_pointer  = 'OPTIM_V'
   responses_pointer  = 'OPTIM_R'
 
@@ -66,14 +72,17 @@ responses
   objective_functions = 1
   nonlinear_inequality_constraints = 1			#s0,#s1
     upper_bounds = .1					#s0,#s1
-# nonlinear_inequality_constraints = 2			#s2,#s3
+# nonlinear_inequality_constraints = 2			#s2,#s3,#s4,#s5,#s6
 #   lower_bounds = 1.e+5 1.e+5				#s2,#s3
 #   upper_bounds = 1.e+6 1.e+6				#s2,#s3
-  numerical_gradients					#s0,#s1,#s3
-    method_source dakota				#s0,#s1,#s3
-    interval_type central				#s0,#s1,#s3
-    fd_step_size = 1.e-1				#s0,#s1,#s3
-# analytic_gradients					#s2
+#   lower_bounds = 2.     2.				#s4,#s5,#s6
+#   upper_bounds = 1.e+50 1.e+50			#s4,#s5,#s6
+  numerical_gradients					#s0,#s1,#s3,#s6
+    method_source dakota				#s0,#s1,#s3,#s6
+    interval_type central				#s0,#s1,#s3,#s6
+    fd_step_size = 1.e-1				#s0,#s1
+#   fd_step_size = 1.e-2				#s3,#s6
+# analytic_gradients					#s2,#s4,#s5
   no_hessians
 
 ##########################
@@ -82,13 +91,14 @@ responses
 method
   id_method = 'UQ'
   sampling
-    samples = 50 seed = 1
-#   fixed_seed						#s3
-    sample_type lhs
-    response_levels = 3.6e+11 1.2e+05 3.5e+05		#s0,#s1
-    distribution complementary				#s0,#s1
+    samples = 50  sample_type lhs
+    seed = 1						#s0,#s1
+#   seed = 12347 fixed_seed				#s2,#s3,#s4,#s5,#s6
+    response_levels = 3.6e+11 1.2e+05 3.5e+05		#s0,#s1,#s4,#s5,#s6
+    distribution complementary				#s0,#s1,#s4,#s5,#s6
+#   compute reliabilities				#s4,#s5,#s6
   model_pointer = 'UQ_M'
-# final_moments none					#s1
+# final_moments none					#s1,#s5
 # final_moments central					#s2,#s3
 
 model
@@ -123,6 +133,6 @@ interface
 responses
   id_responses = 'UQ_R'
   response_functions = 3
-  no_gradients						#s0,#s1,#s3
-# analytic_gradients					#s2
+  no_gradients						#s0,#s1,#s3,#s6
+# analytic_gradients					#s2,#s4,#s5
   no_hessians
