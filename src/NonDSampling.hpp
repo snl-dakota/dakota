@@ -392,7 +392,7 @@ inline void NonDSampling::pre_run()
   // synchronize the derivative components flowing down from a NestedModel's
   // call to subIterator.response_results_active_set(), so that the correct 
   // derivs are computed in Analyzer::evaluate_parameter_sets()
-  if (subIteratorFlag && !finalStatistics.is_null())
+  if (subIteratorFlag)
     active_set_mapping();
 }
 
