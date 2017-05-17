@@ -72,7 +72,7 @@ responses
 # s.t.     l <= mean_r2 <= u
 #          l <= mean_r3 <= u
 #
-# minimize -beta_r1
+# maximize beta_r1
 # s.t.     beta_r2 >= 2.
 #          beta_r3 >= 2.
 #

@@ -141,6 +141,13 @@ void NOWPACOptimizer::initialize_options()
   // Option 2. If meta-algorithm should enforce feasibility. can change
   //   --> sub-problem to min L s.t. g <= 0.  No need for dummy constraints
   //       assuming we back out grad f from grad L, grad g, lambda.
+
+  // Scale the design variables since the TR size controls are absolute, not
+  // relative.  Based on the default max TR size of 1., scale to [0,1].
+  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
+  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
+  nowpacSolver.set_lower_bounds(l_bnds);
+  nowpacSolver.set_upper_bounds(u_bnds);
 }
 
 
@@ -154,15 +161,12 @@ void NOWPACOptimizer::core_run()
 {
   //////////////////////////////////////////////////////////////////////////
   // Set bound constraints at run time to catch late updates
-  RealArray l_bnds, u_bnds;
-  copy_data(iteratedModel.continuous_lower_bounds(), l_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), u_bnds);
-  nowpacSolver.set_lower_bounds(l_bnds);
-  nowpacSolver.set_upper_bounds(u_bnds);
+  nowpacEvaluator.set_unscaled_bounds(iteratedModel.continuous_lower_bounds(), 
+				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver
   RealArray x_star; Real obj_star;
-  copy_data(iteratedModel.continuous_variables(), x_star);
+  nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
 
@@ -176,7 +180,7 @@ void NOWPACOptimizer::core_run()
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\n----------------------------------------"
 	 << "\nSolution returned from nowpacSolver:\n  optimal value = "
-	 << obj_star << "\n  optimal point =\n" <<  x_star
+	 << obj_star << "\n  optimal point =\n" << x_star
 	 << "\nData from PostProcessModels:\n"
 	 << "  tr size = " << PPD.get_trustregion() << '\n';
     // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
@@ -192,8 +196,8 @@ void NOWPACOptimizer::core_run()
 
   //////////////////////////////////////////////////////////////////////////
   // Publish optimal variables
-  RealVector local_cdv; copy_data(x_star, local_cdv);
-  bestVariablesArray.front().continuous_variables(local_cdv);
+  RealVector c_vars = bestVariablesArray.front().continuous_variables_view();
+  nowpacEvaluator.unscale(x_star, c_vars);
   // Publish optimal response
   if (!localObjectiveRecast) {
     RealVector best_fns(numFunctions);
@@ -307,8 +311,12 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
 void NOWPACBlackBoxEvaluator::
 evaluate(RealArray const &x, RealArray &vals, void *param)
 {
-  RealVector c_vars; copy_data(x, c_vars);
-  iteratedModel.continuous_variables(c_vars);
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
+
   iteratedModel.evaluate(); // no ASV control, use default
 
   const RealVector& dakota_fns
@@ -353,8 +361,12 @@ evaluate(RealArray const &x, RealArray &vals, void *param)
 void NOWPACBlackBoxEvaluator::
 evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
 {
-  RealVector c_vars; copy_data(x, c_vars);
-  iteratedModel.continuous_variables(c_vars);
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
+
   iteratedModel.evaluate(); // no ASV control, use default
 
   const RealVector& dakota_fns
