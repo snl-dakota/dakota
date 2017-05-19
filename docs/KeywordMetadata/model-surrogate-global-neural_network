@@ -25,6 +25,16 @@ constructed.
 This surrogate can be constructed from fewer than \f$n_{c_{quad}}\f$
 data points, however, it is a good rule of thumb to use at least
 \f$n_{c_{quad}}\f$ data points when possible.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::

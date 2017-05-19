@@ -1,0 +1,16 @@
+Blurb::
+Specify the type of model discrepancy
+
+Description::
+After the model parameters are calibrated, the difference between the data and
+the calibrated model, i.e. the model discrepancy, is calculated
+
+\f[
+\delta_i(x_j) = d_i(x_j) - M_i(\theta^*, x_j).
+\f]
+
+Each \f$\delta_i\f$ corresponds to a different regression model. These 
+regression models must all be either Gaussian process or polynomial models, and
+they are functions of the configuration variable \f$x\f$. The order
+of the trend function may be selected using the \c correction_order command
+by specifying \c constant, \c linear, or \c quadratic.

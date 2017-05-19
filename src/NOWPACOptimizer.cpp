@@ -117,18 +117,35 @@ void NOWPACOptimizer::initialize_options()
 
   // Required:
   // Must specify one or more stopping criteria: min TR size or maxFnEvals
-  //nowpacSolver.set_trustregion(initial_tr_radius); // if only initial
-  // TO DO: these are not relative to global bounds, they are absolute values
-  //        this is a hyper-sphere of constant dimensional radius.
-  // Therefore, it is advisable to present a scaled problem to NOWPAC in terms 
-  // of these optional inputs, and then perform a descaling to user-space within
-  // the BBEvaluator (scaling data can be passed by the "void* params").
+
+  nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
+
+  // NOWPAC trust region controls are not relative to global bounds; rather,
+  // they are absolute values for a hyper-sphere of constant dimensional radius.
+  // Therefore, we present a scaled problem to NOWPAC as consistent with these 
+  // trust region controls (see use of {un,}scale() within this file).
   const RealVector& tr_init
     = probDescDB.get_rv("method.trust_region.initial_size");
-  Real tr_init0 = (tr_init.empty()) ? 0.5 : tr_init[0];
-  nowpacSolver.set_trustregion(tr_init0,
-    probDescDB.get_real("method.trust_region.minimum_size"));
-  nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
+  size_t num_factors = tr_init.length();
+  Real   min_factor  = probDescDB.get_real("method.trust_region.minimum_size"),
+          tr_factor  = (num_factors) ? tr_init[0] : 0.5;
+  if (num_factors > 1)
+    Cerr << "\nWarning: ignoring trailing trust_region initial_size content "
+	 << "for NOWPACOptimizer.\n" << std::endl;
+  // domain is [0,1]; default max radius is 1; {init,min}_radius are required
+  // NOWPAC inputs (no defaults) --> use Dakota defaults for {init,min}_radius
+  if (min_factor < 0.)        min_factor = 0.; // Dakota default is 1.e-6
+  if (tr_factor < min_factor) tr_factor  = min_factor;
+  else if (tr_factor > 1.)    tr_factor  = 1.;
+  nowpacSolver.set_trustregion(tr_factor, min_factor);
+  //nowpacSolver.set_trustregion(tr_factor); // if only initial
+
+  // Scale the design variables since the TR size controls are absolute, not
+  // relative.  Based on the default max TR size of 1., scale to [0,1].
+  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
+  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
+  nowpacSolver.set_lower_bounds(l_bnds);
+  nowpacSolver.set_upper_bounds(u_bnds);
 
   // NOTES from 7/29/15 discussion:
   // For Lagrangian minimization within MG/Opt:
@@ -154,15 +171,12 @@ void NOWPACOptimizer::core_run()
 {
   //////////////////////////////////////////////////////////////////////////
   // Set bound constraints at run time to catch late updates
-  RealArray l_bnds, u_bnds;
-  copy_data(iteratedModel.continuous_lower_bounds(), l_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), u_bnds);
-  nowpacSolver.set_lower_bounds(l_bnds);
-  nowpacSolver.set_upper_bounds(u_bnds);
+  nowpacEvaluator.set_unscaled_bounds(iteratedModel.continuous_lower_bounds(), 
+				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver
   RealArray x_star; Real obj_star;
-  copy_data(iteratedModel.continuous_variables(), x_star);
+  nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
 
@@ -176,7 +190,7 @@ void NOWPACOptimizer::core_run()
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "\n----------------------------------------"
 	 << "\nSolution returned from nowpacSolver:\n  optimal value = "
-	 << obj_star << "\n  optimal point =\n" <<  x_star
+	 << obj_star << "\n  optimal point =\n" << x_star
 	 << "\nData from PostProcessModels:\n"
 	 << "  tr size = " << PPD.get_trustregion() << '\n';
     // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
@@ -192,8 +206,8 @@ void NOWPACOptimizer::core_run()
 
   //////////////////////////////////////////////////////////////////////////
   // Publish optimal variables
-  RealVector local_cdv; copy_data(x_star, local_cdv);
-  bestVariablesArray.front().continuous_variables(local_cdv);
+  RealVector c_vars = bestVariablesArray.front().continuous_variables_view();
+  nowpacEvaluator.unscale(x_star, c_vars);
   // Publish optimal response
   if (!localObjectiveRecast) {
     RealVector best_fns(numFunctions);
@@ -307,8 +321,12 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
 void NOWPACBlackBoxEvaluator::
 evaluate(RealArray const &x, RealArray &vals, void *param)
 {
-  RealVector c_vars; copy_data(x, c_vars);
-  iteratedModel.continuous_variables(c_vars);
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
+
   iteratedModel.evaluate(); // no ASV control, use default
 
   const RealVector& dakota_fns
@@ -353,8 +371,12 @@ evaluate(RealArray const &x, RealArray &vals, void *param)
 void NOWPACBlackBoxEvaluator::
 evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
 {
-  RealVector c_vars; copy_data(x, c_vars);
-  iteratedModel.continuous_variables(c_vars);
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
+
   iteratedModel.evaluate(); // no ASV control, use default
 
   const RealVector& dakota_fns

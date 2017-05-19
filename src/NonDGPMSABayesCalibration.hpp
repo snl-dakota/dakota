@@ -99,10 +99,16 @@ protected:
   /// populate the experiment data, applying scaling if needed
   void fill_experiment_data(bool scale_data);
 
+  /// overlay the Dakota user's initial parameters on the full GPMSA
+  /// vector of parameters
   void overlay_initial_params(QUESO::GslVector& full_param_initials);
 
+  /// retrieve the chain from QUESO and populate acceptanceChain /
+  /// acceptedFnVals
+  void cache_acceptance_chain(); 
+
   // print the final statistics
-  //void print_results(std::ostream& s);
+  void print_results(std::ostream& s);
 
   //
   //- Heading: Data
@@ -129,6 +135,9 @@ protected:
 
   /// number of config vars presented to GPMSA (minimum 1)
   unsigned int gpmsaConfigVars;
+
+  /// whether to apply GPMSA-internal variable and data normalization
+  bool gpmsaNormalize;
 
   /// vector space defining the scenario (configuration) variables
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 

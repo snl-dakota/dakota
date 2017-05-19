@@ -10,6 +10,15 @@ evaluated on the most promising points first.  Both true function and
 surrogate are used interchangeably within the method.  \c optimize
 forces the use of a surrogate in lieu of the true model and thus the
 true function is never invoked except to construct the surrogate.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
 
 <b> Default Behavior </b>
 

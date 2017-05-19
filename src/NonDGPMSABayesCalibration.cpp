@@ -44,6 +44,8 @@ static const char rcsId[]="@(#) $Id$";
 
  * Write tests that use DOE vs import 
 
+    - Notify users what data we're trying to read from tabular
+
  * A number of improvements in DACE / imported build data
 
     - Decide on meaning of buildSamples for read vs. DACE iterator control
@@ -127,6 +129,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_build_active_only")),
   userConfigVars(expData.num_config_vars()),
   gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
+  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize")),
   optionsFile(probDescDB.get_string("method.queso_options_file"))
 {   
   // quesoEnv: Base class calls init_queso_environment().  May need to
@@ -233,7 +236,7 @@ void NonDGPMSABayesCalibration::calibrate()
   nonDGPMSAInstance = this;
 
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Setting up calibration." << std::endl;
+    Cout << ">>>>> GPMSA: Setting up calibration." << std::endl;
 
   // no emulators will be setup, but need to initialize the prob transforms
   initialize_model();
@@ -291,19 +294,20 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // TODO: user option for min/max vs. mu/sigma?  Also, when user
   // gives bounds on distro instead of data, should we use those?
-  // They might not be finite...
-  bool scale_theta = true;
+  // They might not be finite... For that matter, autoscale may break
+  // on infinite domains?
+  bool scale_theta = gpmsaNormalize;
   if (scale_theta)
     for (unsigned int i = 0; i < (numContinuousVars + numHyperparams); ++i)
       gpmsaOptions->set_autoscale_minmax_uncertain_parameter(i);
 
   // TODO: This should allow scaling by user-provided bounds as well
-  bool scale_configs = true;
+  bool scale_configs = gpmsaNormalize;
   if (scale_configs && userConfigVars > 0)
     normalize_configs();
 
   // TODO: Use GPMSA intrinsic data scaling when available
-  bool scale_data = true;
+  bool scale_data = gpmsaNormalize;
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;
@@ -331,28 +335,41 @@ void NonDGPMSABayesCalibration::calibrate()
     gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
   overlay_proposal_covariance(full_proposal_cov);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Performing calibration." << std::endl;
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << ">>>>> GPMSA: Performing calibration with " << mcmcType << " using "
+       << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "\n  Calibrating " << numHyperparams << " error hyperparameters."
+	   << std::endl;
+  }
 
   inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
                                                 full_param_initials,
                                                 &full_proposal_cov);
 
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Generating statistics and ouput." << std::endl;
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << ">>>>> GPMSA: Calibration complete. Generating statistics and ouput.\n";
 
-  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
-				     chainSamples * chainCycles);
-  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples * chainCycles);
-  size_t cycle_num = 1;
-  aggregate_acceptance_chain(cycle_num);
+    Cout << "  Info: MCMC details are in the QuesoDiagnostics directory:\n"
+	 << "          display_sub0.txt contains MCMC diagnostics\n";
+    if (standardizedSpace)
+      Cout << "          Matlab files contain chain values (in "
+	   << "standardized probability space)\n";
+    else
+      Cout << "          Matlab files contain chain values\n";
 
+    Cout << "  Info: GPMSA cannot currently retrieve response function statistics."
+	 << std::endl;
+  }
+
+  cache_acceptance_chain();
   compute_statistics();
 }
 
 
 void NonDGPMSABayesCalibration::init_queso_solver() 
 {
+  // Note: The postRv includes GP-associated hyper-parameters
   postRv.reset(new QUESO::GenericVectorRV<GslVector, GslMatrix>
                ("post_", gpmsaFactory->prior().imageSet().vectorSpace()));
 
@@ -360,8 +377,6 @@ void NonDGPMSABayesCalibration::init_queso_solver()
   set_ip_options();
   set_mh_options();
 
-  // TODO: This postRV appears to include GP-associated
-  // hyper-parameters that most users won't care about...
   inverseProb.reset(new QUESO::StatisticalInverseProblem<GslVector, GslMatrix>
                     ("", calIpOptionsValues.get(), *gpmsaFactory, *postRv));
 }
@@ -415,7 +430,7 @@ overlay_initial_params(GslVector& full_param_initials)
 void NonDGPMSABayesCalibration::acquire_simulation_data()
 {
   if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "GPMSA: Acquiring simulation data." << std::endl;
+    Cout << ">>>>> GPMSA: Acquiring simulation data." << std::endl;
 
   // Rationale: Trying to keep this agnostic to mocked up config vars...
 
@@ -458,12 +473,18 @@ void NonDGPMSABayesCalibration::acquire_simulation_data()
     size_t record_len = (approxImportActiveOnly) ?
       numContinuousVars + numFunctions :
       numContinuousVars + userConfigVars + numFunctions;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "GPMSA: Importing simulation data from '" << approxImportFile
+	   << "'\n       with " << numContinuousVars
+	   << " calibration variable(s), " << userConfigVars
+	   << " configuration variable(s),\n       and " << numFunctions
+	   << " simulation output(s)." << std::endl;
     bool verbose = (outputLevel > NORMAL_OUTPUT);
     TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
 				 simulationData, buildSamples, record_len,
 				 approxImportFormat, verbose);
     // TODO: Have to fill in configuration variable values for
-    // active_only, or error
+    // active_only, or error and move the function data over if so...
   }
 
 }
@@ -628,11 +649,65 @@ void NonDGPMSABayesCalibration::fill_experiment_data(bool scale_data)
 }
 
 
-//void NonDQUESOBayesCalibration::print_results(std::ostream& s)
-//{
-//  NonDBayesCalibration::print_results(s);
-//
-//  additional QUESO output
-//}
+/** This is a subset of the base class retrieval, but we can't do the
+    fn value lookups.  Eventually should be able to retrieve them from
+    GPMSA. */
+void NonDGPMSABayesCalibration::cache_acceptance_chain()
+{
+  int num_params = numContinuousVars + numHyperparams;
+  int total_chain_length = chainSamples * chainCycles;
+
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+
+  if (num_mcmc != total_chain_length && outputLevel >= NORMAL_OUTPUT) {
+    Cout << "GPMSA Warning: Final chain is length " << num_mcmc 
+	 << ", not expected length " << total_chain_length << std::endl;
+  }
+
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     total_chain_length);
+  acceptedFnVals.shapeUninitialized(numFunctions, total_chain_length);
+
+  // The posterior includes GPMSA hyper-parameters, so use the postRv space
+  QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
+  RealVector nan_fn_vals(numFunctions);
+  nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+
+  for (int i=0; i<total_chain_length; ++i) {
+
+    // translate the QUESO vector into x-space acceptanceChain
+    mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
+    if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
+      RealVector u_rv(numContinuousVars, false);
+      copy_gsl_partial(qv, 0, u_rv);
+      Real* acc_chain_i = acceptanceChain[i];
+      RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      for (int j=numContinuousVars; j<num_params; ++j)
+	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
+    }
+    else {
+      // A view that includes calibration params and Dakota-managed
+      // hyper-parameters, to facilitate copying from the longer qv
+      // into acceptanceChain:
+      RealVector theta_hp(Teuchos::View, acceptanceChain[i], num_params);
+      copy_gsl_partial(qv, 0, theta_hp);
+    }
+
+    // TODO: Find a way to set meaningful function values
+    Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
+  }
+}
+
+
+void NonDGPMSABayesCalibration::print_results(std::ostream& s)
+{
+  //  TODO: additional QUESO output
+
+  NonDBayesCalibration::print_results(s);
+}
 
 } // namespace Dakota

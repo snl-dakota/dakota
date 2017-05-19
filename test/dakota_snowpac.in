@@ -17,11 +17,12 @@ method,
 #	  convergence_tolerance = 1e-4
 	  trust_region
 	    initial_size = 0.10
-	    minimum_size = 1.0e-6
+	    minimum_size = 1.e-6
 	    contract_threshold = 0.25
 	    expand_threshold   = 0.75
 	    contraction_factor = 0.50
 	    expansion_factor   = 1.50
+#	  scaling						#s3
 #	  output debug
 
 model,
@@ -32,8 +33,9 @@ model,
 	  responses_pointer  = 'OPTIM_R'
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0.	#s0,#s1
 #	  primary_response_mapping   = 0. 0. 0. 1.e+5 0. 1.e+5	#s2
-	  secondary_response_mapping = 0. 0. 1. 0. 0. 0.	#s0,#s2
-                                       0. 0. 0. 0. 1. 0.	#s0,#s2
+#	  primary_response_mapping   = 0. 0. 0. 1. 0. 1.	#s3
+	  secondary_response_mapping = 0. 0. 1. 0. 0. 0.	#s0,#s2,#s3
+                                       0. 0. 0. 0. 1. 0.	#s0,#s2,#s3
 #	  secondary_response_mapping = 0. 0. 1. 3. 0. 0.	#s1
 #	  			       0. 0. 0. 0. 1. 3.	#s1
 
@@ -51,7 +53,11 @@ responses,
 #          mean_D <= 0
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
+#	  primary_scale_types 'value'				#s3
+#	  primary_scales = 1.e-5				#s3
 	nonlinear_inequality_constraints = 2 # default upper bounds < 0.0
+#	  scale_types 'value'
+#	  primary_scales = 1. 1.
 	no_gradients
 	no_hessians
 
@@ -67,7 +73,7 @@ method,
 	  sample_type random # use MC error estimates
 #	  fixed_seed
 	  output silent
-#	final_moments central					#s2
+#	final_moments central					#s2,#s3
 
 model,
 	id_model = 'UQ_M'

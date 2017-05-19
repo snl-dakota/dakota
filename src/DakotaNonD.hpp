@@ -131,6 +131,7 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
 
   void initialize_run();
+  void pre_run();
   void finalize_run();
 
   // return the final uncertain variables from the nondeterministic iteration
@@ -161,9 +162,9 @@ protected:
   /// create a system-generated unique seed (when a seed is unspecified)
   int generate_system_seed();
 
-  /// initializes finalStatistics::functionGradients
-  void initialize_final_statistics_gradients();
-  /// update finalStatistics::functionValues from finalMomentStats and
+  /// resizes finalStatistics::functionGradients based on finalStatistics ASV
+  void resize_final_statistics_gradients();
+  /// update finalStatistics::functionValues from momentStats and
   /// computed{Prob,Rel,GenRel,Resp}Levels
   void update_aleatory_final_statistics();
   /// update system metrics from component metrics within finalStatistics
@@ -369,7 +370,7 @@ protected:
   /// standardized or central moments of response functions, as determined
   /// by finalMomentsType.  Calculated in compute_moments()) and indexed
   /// as (moment,fn).
-  RealMatrix finalMomentStats;
+  RealMatrix momentStats;
 
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*
@@ -500,6 +501,10 @@ inline void NonD::initialize_run()
   prevNondInstance = nondInstance; 
   nondInstance = this; 
 }
+
+
+inline void NonD::pre_run()
+{ Analyzer::pre_run(); }
 
 
 inline void NonD::finalize_run()

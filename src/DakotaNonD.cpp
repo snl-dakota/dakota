@@ -1799,8 +1799,8 @@ void NonD::initialize_response_covariance()
 
 
 /** Default definition of virtual function (used by sampling, reliability,
-    and stochastic expansion methods) defines the set of statistical
-    results to include means, standard deviations, and level mappings. */
+    and stochastic expansion methods) defines the set of statistical results
+    to include the first two moments and level mappings for each QoI. */
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
@@ -1822,9 +1822,13 @@ void NonD::initialize_final_statistics()
       num_final_stats += rl_len; // 1 aggregated system metric per resp level
     }
   }
-  // default response ASV/DVV may be overridden by NestedModel update
-  // in subIterator.response_results_active_set(sub_iterator_set)
-  ActiveSet stats_set(num_final_stats);//, num_active_vars);
+  // Instantiate finalStatistics:
+  // > default response ASV/DVV may be overridden by NestedModel update
+  //   in subIterator.response_results_active_set(sub_iterator_set)
+  // > inactive views are not set until NestedModel ctor defines them, and
+  //   subIterator construction follows in NestedModel::derived_init_comms()
+  //   --> invocation of this fn from NonD ctors should have inactive view
+  ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
   stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
@@ -1882,18 +1886,20 @@ void NonD::initialize_final_statistics()
 }
 
 
-void NonD::initialize_final_statistics_gradients()
+void NonD::resize_final_statistics_gradients()
 {
+  if (finalStatistics.is_null()) // not all ctor chains track final stats
+    return;
+
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  size_t i, num_final_stats     = final_asv.size(),
-            num_final_grad_vars = final_dvv.size();
+  size_t i, num_final_stats = final_asv.size();
   bool final_grad_flag = false;
   for (i=0; i<num_final_stats; i++)
-    if (final_asv[i] & 2)
+    if (final_asv[i] & 2) // no need to distinguish moment/level mapping grads
       { final_grad_flag = true; break; }
-  finalStatistics.reshape(num_final_stats, num_final_grad_vars,
-			  final_grad_flag, false);
+  finalStatistics.reshape(num_final_stats, final_dvv.size(),
+			  final_grad_flag, false); // no final Hessians
 }
 
 
@@ -1919,10 +1925,10 @@ void NonD::update_aleatory_final_statistics()
   for (i=0; i<numFunctions; ++i) {
     // final stats from compute_moments()
     if (finalMomentsType) {
-      if (finalMomentStats.empty())
+      if (momentStats.empty())
 	cntr += 2;
       else {
-	const Real* mom_i = finalMomentStats[i];
+	const Real* mom_i = momentStats[i];
 	finalStatistics.function_value(mom_i[0], cntr++); // mean
 	finalStatistics.function_value(mom_i[1], cntr++); // stdev or var
       }

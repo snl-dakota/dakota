@@ -1,0 +1,27 @@
+Blurb::
+Output file for prediction discrepancy calculations
+
+Description::
+Enables the user to specify the name and format of the file to which
+prediction discrepancy information is output. The file 
+will contain the values of the discrepancy model \f$\delta_i\f$ calculated 
+at those points specified with
+\c num_predictions, \c prediction_configs, or \c import_prediction_configs
+
+<b> Default Behavior </b>
+
+If \c export_discrepancy_file is not specified, information will be 
+automatically output to \c dakota_discrepancy_tabular.dat.
+
+<b> Usage Tips </b>
+
+Dakota exports tabular data in one of three formats:
+\li \c annotated (default)
+\li \c custom_annotated
+\li \c freeform
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

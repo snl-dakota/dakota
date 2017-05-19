@@ -238,6 +238,9 @@ protected:
   /// (SurrogateModel::responseMode)
   void surrogate_response_mode(short mode);
 
+  /// retrieve error estimates corresponding to the subModel
+  const RealVector& error_estimates();
+
   /// builds the subModel approximation
   void build_approximation();
   /// builds the subModel approximation
@@ -451,6 +454,9 @@ private:
   /// recast function using a nonlinear mapping.  Used in transform_set() to
   /// augment the subModel function value/gradient requirements.
   BoolDequeArray nonlinearRespMapping;
+
+  /// mapping of subModel.error_estimates() through response mappings
+  RealVector mappedErrorEstimates;
 
   /// holds pointer for variables mapping function passed in ctor/initialize
   void (*variablesMapping)     (const Variables& recast_vars,

@@ -10,10 +10,11 @@ analysis, which may be used individually or as components within
 surrogate-based and other advanced strategies.
 
 \author Brian M. Adams, William J. Bohnhoff, Keith
-R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,
-Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman,
-Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad Rushdi, Laura P.
-Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
+R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Joseph R. Frye, 
+Gianluca Geraci, Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, 
+John D. Jakeman, Mohammad Khalil, Kathryn A. Maupin, Jason A. Monschke, 
+Elliott M. Ridgway, Ahmad Rushdi, Laura P. Swiler, J. Adam Stephens, 
+Dena M. Vigil, Timothy M. Wildey
 
 <!-----
  %Dakota contains algorithms for:
@@ -223,7 +224,7 @@ still write a restart file, but using the default name
 \c dakota.rst instead of a user-specified name.
 
 To turn restart recording off, the user may use the 
-\ref interface-analysis_drivers-deactivate-restart_file keyword, in the \c
+\ref interface-deactivate-restart_file keyword, in the \c
 interface block.  This can increase execution speed and reduce disk
 storage requirements, but at the expense of a loss in the ability to
 recover and continue a run that terminates prematurely. This option is

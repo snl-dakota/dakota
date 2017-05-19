@@ -5,45 +5,59 @@ Description::
 
 Bayesian calibration methods take prior information on parameter
 values (in the form of prior distributions) and observational data
-(e.g. from experiments) and produce posterior distributions on the
+(e.g. from experiments) and infer posterior distributions on the
 parameter values. When the computational simulation is then executed
 with samples from the posterior parameter distributions, the results
 that are produced are consistent with ("agree with") the experimental
 data. Calibrating parameters from a computational simulation model
-requires a "likelihood function" that specifies the likelihood of
+requires a likelihood function that specifies the likelihood of
 observing a particular observation given the model and its associated
-parameterization; %Dakota assumes a Gaussian likelihood function
-currently. The algorithms that produce the posterior distributions on
-model parameters are most commonly Monte Carlo Markov Chain (MCMC)
-sampling algorithms. MCMC methods require many samples, often tens of
+parameterization; %Dakota assumes a Gaussian likelihood function. The
+algorithms that produce the posterior distributions on model
+parameters are most commonly Monte Carlo Markov Chain (MCMC) sampling
+algorithms. MCMC methods require many samples, often tens of
 thousands, so in the case of model calibration, often emulators of the
 computational simulation are used. For more details on the algorithms
 underlying the methods, see the %Dakota User's manual.
 
-%Dakota has three Bayesian calibration methods: QUESO, DREAM, and
-GPMSA, specified with \c bayes_calibration \c queso, \c
-bayes_calibration \c dream, or \c bayes_calibration \c gpmsa,
-respectively.  The QUESO method uses components from the QUESO library
+%Dakota has four classes of Bayesian calibration methods: QUESO/DRAM,
+GPMSA, DREAM, and WASABI.
+
+<ol>
+
+<li>The QUESO methods use components from the QUESO library
 (Quantification of Uncertainty for Estimation, Simulation, and
 Optimization) developed at The University of Texas at Austin.  %Dakota
 uses its DRAM (Delayed Rejected Adaptive Metropolis) algorithm, and
-variants, for the MCMC sampling.  DREAM (DiffeRential Evolution
-Adaptive Metropolis) is a method that runs multiple different chains
-simultaneously for global exploration, and automatically tunes the
-proposal covariance during the process by a self-adaptive randomized
-subspace sampling.  \cite Vrugt.  GPMSA (Gaussian Process Models for
-Simulation Analysis) is an approach developed at Los Alamos National
-Laboratory.  It constructs Gaussian process models to emulate the
-expensive computational simulation as well as model discrepancy. GPMSA
-also has extensive features for calibration, such as the capability to
-include a "model discrepancy" term and the capability to model
-functional data such as time series data.
+variants, for the MCMC sampling.</li>
+
+<li>GPMSA (Gaussian Process Models for Simulation Analysis) is an
+approach developed at Los Alamos National Laboratory and %Dakota
+currently uses the QUESO implementation.  It constructs Gaussian
+process models to emulate the expensive computational simulation as
+well as model discrepancy. GPMSA also has extensive features for
+calibration, such as the capability to include a model discrepancy
+term and the capability to model functional data such as time series
+data.  This is an experimental capability and not all features are
+available in %Dakota yet.</li>
+
+<li> DREAM (DiffeRential Evolution Adaptive Metropolis) is a method
+that runs multiple different chains simultaneously for global
+exploration, and automatically tunes the proposal covariance during
+the process by a self-adaptive randomized subspace sampling.
+\cite Vrugt.</li>
  
+<li> WASABI: Non-MCMC Bayesian inference via interval analysis </li>
+
+</ol>
+
+<b>Usage Tips</b>
+
 The Bayesian capabilities are under active development.  At this
 stage, the QUESO methods in %Dakota are the most advanced and robust,
-followed by DREAM, followed by GPMSA, which is in prototype form at
-this time.  %Dakota also has an experimental WASABI capability for
-non-MCMC Bayesian inference; it is not yet ready for production use.
+followed by DREAM, followed by GPMSA and WASABI which are not yet
+ready for production use.
+
 Note that as of Dakota 6.2, the field responses and associated field
 data may be used with QUESO and DREAM.  That is, the user can specify
 field simulation data and field experiment data, and Dakota will

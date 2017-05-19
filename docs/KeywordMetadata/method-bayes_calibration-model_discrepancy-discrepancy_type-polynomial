@@ -1,0 +1,14 @@
+Blurb::
+Use a polynomial surrogate as the discrepancy model
+
+Description::
+
+For the purposes of model discrepancy, constant, linear, and quadratic 
+polynomial surrogate models are available. These models are less expensive
+to calculate than Gaussian process models but are consequently less flexible
+to discrepancy trends that are not constant, linear, or quadratic in nature. 
+For more information, see the Dakota User's and Theory Manuals.
+
+By specifying this command, each discrepany function will take the form
+of a polynomial regression. They will all have the same order.
+

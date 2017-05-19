@@ -33,9 +33,9 @@ DataMethodRep::DataMethodRep():
   concurrentRandomJobs(0),
   // Local surrogate-based opt/NLS
   softConvLimit(0), // dummy value -> method-specific default
-  surrBasedLocalLayerBypass(false),  //trustRegionInitSize(0.4),
-  trustRegionMinSize(1.0e-6),        trustRegionContractTrigger(0.25),
-  trustRegionExpandTrigger(0.75),    trustRegionContract(0.25),
+  surrBasedLocalLayerBypass(false), //trustRegionInitSize(0.5),
+  trustRegionMinSize(1.e-6),        trustRegionContractTrigger(0.25),
+  trustRegionExpandTrigger(0.75),   trustRegionContract(0.25),
   trustRegionExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
   surrBasedLocalSubProbCon(ORIGINAL_CONSTRAINTS),
   surrBasedLocalMeritFn(AUGMENTED_LAGRANGIAN_MERIT),
@@ -138,7 +138,8 @@ DataMethodRep::DataMethodRep():
   responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
   chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
   emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), logitTransform(false), posteriorStatsKL(false),
+  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
+  posteriorStatsKL(false),
   posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
   proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
   batchSelectionType("naive"), lipschitzType("local"), 
@@ -282,6 +283,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityLevels << genReliabilityLevels << chainSamples
     << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
     << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
+    << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename
@@ -429,6 +431,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityLevels >> genReliabilityLevels >> chainSamples
     >> buildSamples >> samplesOnEmulator >> emulatorOrder >> emulatorType
     >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
+    >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> quesoOptionsFilename
@@ -576,6 +579,7 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityLevels << genReliabilityLevels << chainSamples
     << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
     << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
+    << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename

@@ -1693,7 +1693,24 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
-          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
+        [ logit_transform {N_mdm(true,logitTransform)} ]
+        [ gpmsa_normalize {N_mdm(true,gpmsaNormalize)} ]
+        [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+           ]
          ]
         [ 
           dram {N_mdm(lit,mcmcType_dram)}
@@ -1703,8 +1720,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
           |
           metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
-          |
-          multilevel {N_mdm(lit,mcmcType_multilevel)}
          ]
         [ rng {0}
           mt19937 {N_mdm(lit,rngName_mt19937)}
@@ -1948,8 +1963,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ experimental_design {N_mdm(true,adaptExpDesign)}
         initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
-        num_candidates INTEGER >= 0 {N_mdm(sizet,numCandidates)}
-        [ max_hifi_evaluations INTEGER >= 0 {N_mdm(sizet,maxHifiEvals)} ]
+        num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
+        [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
         [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
           [ 
             annotated {N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}

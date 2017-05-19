@@ -262,7 +262,7 @@ only to demonstrate the issues associated with interfacing a
 simulator. Modifications will almost surely be required for new
 applications.
 
-\subsection{Generic Script Interface Files} 
+\subsection{Generic Script Interface Files}\label{interfaces:generic}
 
 The {\tt Dakota/examples/script\_interfaces/generic} directory contains four important files:
 \texttt{dakota\_rosenbrock.in} (the Dakota input file),
@@ -290,8 +290,8 @@ The \texttt{simulator\_script} listed in Figure~\ref{advint:figure02}
 is a short driver shell script that Dakota executes to perform each
 function evaluation. The names of the parameters and results files are
 passed to the script on its command line; they are
-referenced in the script by \texttt{\$argv[1]}
-and \texttt{\$argv[2]}, respectively. The \texttt{simulator\_script}
+referenced in the script by \texttt{\$1}
+and \texttt{\$2}, respectively. The \texttt{simulator\_script}
 is divided into three parts: pre-processing, analysis, and post-processing.
 % is divided into five parts: set up, pre-processing, analysis,
 % post-processing, and clean up.
@@ -324,7 +324,7 @@ is divided into three parts: pre-processing, analysis, and post-processing.
 
 In the pre-processing portion, the \texttt{simulator\_script} uses
 \texttt{dprepro}, a parsing utility, to extract the
-current variable values from a parameters file (\texttt{\$argv[1]})
+current variable values from a parameters file (\texttt{\$1})
 and combine them with the simulator template input file
 (\texttt{ros.template}) to create a new input file (\texttt{ros.in})
 for the simulator. Internal to Sandia, the APREPRO utility is often
@@ -357,7 +357,7 @@ brackets and then create a new file (\texttt{ros.in}) by replacing
 these targets with the corresponding numerical values for the
 variables. As noted in the usage information for \texttt{dprepro} and
 shown in \texttt{simulator\_script}, the names for the Dakota
-parameters file (\texttt{\$argv[1]}), template file
+parameters file (\texttt{\$1}), template file
 (\texttt{ros.template}), and generated input file (\texttt{ros.in})
 must be specified in the \texttt{dprepro} command line arguments.
 
@@ -395,7 +395,7 @@ The third part performs the post-processing and writes the response
 results to a file for Dakota to read. Using the UNIX ``\texttt{grep}'' utility, the
 particular response values of interest are extracted from the raw
 simulator output and saved to a temporary file (\texttt{results.tmp}).
-When complete, this file is renamed \texttt{\$argv[2]}, which in this
+When complete, this file is renamed \texttt{\$2}, which in this
 example is always ``\texttt{results.out}''.
 Note that moving or renaming the completed results file
 avoids any problems with read race
@@ -511,7 +511,7 @@ and returned in the results file. This post-processing is relatively
 trivial in this case, and the \texttt{simulator\_script} uses the
 \texttt{grep} and \texttt{cut} utilities to extract the value from the
 ``\texttt{Function value}" line of the \texttt{ros.out} output file and save it to
-\texttt{\$argv[2]}, which is the \texttt{results.out} file for this
+\texttt{\$2}, which is the \texttt{results.out} file for this
 evaluation. This single value provides the objective function value
 requested by the ASV.
 
@@ -561,7 +561,7 @@ need to be performed:
 
 \item Modify the \texttt{dprepro} arguments in
   \texttt{simulator\_script} to reflect names of the Dakota parameters
-  file (previously ``\texttt{\$argv[1]}''), template file name
+  file (previously ``\texttt{\$1}''), template file name
   (previously ``\texttt{ros.template}'') and generated input file
   (previously ``\texttt{ros.in}''). Alternatively, use APREPRO,
   BPREPRO, or JPrePost to perform this step (and adapt the syntax
@@ -1555,3 +1555,186 @@ and the corresponding results would appear as
        0.000000000000000e+00 ]
 \end{verbatim}
 \end{small}
+
+\section{Parameters and Results Files with dakota.interfacing}\label{interfaces:dakota.interfacing}
+
+The Python module {\tt dakota.interfacing} first was made available with Dakota 6.6. (It was released with Dakota 6.5 as the module {\tt dipy}.) By providing a Python interface to read and write, respectively, Dakota parameters and results files, {\tt dakota.interfacing} can greatly simplify development of black-box interfaces. The benefit may be greatest when one or more phases of the interface (pre-processing, execution, post-processing) is written in Python.
+
+The following sections describe the components of {\tt dakota.interfacing}. These include a {\tt Parameters} class for making variable information available, a {\tt Results} class for collecting results and writing them to file, and a convenience function {\tt read\_parameters\_file}, the preferred way to construct {\tt Parameters} and {\tt Results} objects from a Dakota parameters file.
+
+\subsection{Creating Parameters and Results objects}
+
+{\tt dakota.interfacing} has one free function, {\tt read\_parameters\_file}, which creates {\tt Parameters} and {\tt Results} objects based on a Dakota parameters file. Its signature is:
+
+\phantomsection\label{index:dakota.interfacing.read_parameters_file}\texttt{dakota.interfacing.}\textbf{\texttt{read\_parameters\_file}}({\emph{parameters\_file=None}, \emph{results\_file=None}, \emph{ignore\_asv=False}}){}
+
+\emph{parameters\_file} and \emph{results\_file} are the names of the parameters file that is to be read and the results file that  ultimately is to be written. The names can be  absolute or relative filepaths or just filenames. If a parameters file or results file is not provided, it will be obtained from the command line arguments. (The results filename is assumed to be the last command line argument, and the parameters file the second to last.) Note that if the working directory has changed since script invocation, filenames provided as command line arguments by Dakota's {\tt fork} or {\tt system} interfaces may be incorrect.
+
+If \emph{results\_file} is set to the constant {\tt dakota.interfacing.UNNAMED}, the {\tt Results} object is constructed without a results file name.  In this case, an output stream must be provided when {\tt Results.write()} is called. Unnamed results files are most helpful when no results file will be written, as with a script intended purely for pre-processing.
+
+By default, the returned {\tt Results} object enforces the active set vector (see the {\tt Results} class section). This behavior can be overriden, allowing any property (function, gradient, Hessian) of a response to be set, by setting \emph{ignore\_asv} to True.
+
+
+\subsection{Parameters objects}
+
+{\tt Parameters} objects make the variables, analysis components, evaluation ID, and evaluation number read from a Dakota parameters file available through a combination of key-value access and object attributes. Although {\tt Parameters} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+Variable values can be accessed by Dakota descriptor or by index using {[}{]} on the object itself. Variables types (integer, real, string) are inferred by first attempting to convert to {\tt int} and then, if this fails, to {\tt float}.
+
+Analysis components are accessible by index only using the {\tt an\_comps} attribute. {\tt Parameters} objects support iteration over the variables, yielding the index, variable descriptor, and variable value.
+
+{\tt Parameters} objects have the attributes:
+
+\begin{itemize}
+
+  \item\index{an\_comps (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.an_comps}\textbf{\texttt{an\_comps}} List of the analysis components (strings).
+
+  \item\index{eval\_id (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.eval_id}\textbf{\texttt{eval\_id}} Evaluation id (string).
+
+  \item\index{eval\_num (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.eval_num}\textbf{\texttt{eval\_num}} Evaluation number (final token in eval\_id) (int).
+
+
+  \item\index{aprepro\_format (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.aprepro_format}\textbf{\texttt{aprepro\_format}} Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+
+  \item\index{descriptors (dakota.interfacing.Parameters attribute)}\phantomsection\label{index:dakota.interfacing.Parameters.descriptors}\textbf{\texttt{descriptors}} List of the variable descriptors
+
+  \item\index{num\_variables (dakota.interfacing.Parameters attribute)} \phantomsection\label{index:dakota.interfacing.Parameters.num_variables}\textbf{\texttt{num\_variables}} Number of variables
+
+  \item\index{num\_an\_comps (dakota.interfacing.Parameters attribute)}\phantomsection\label{index:dakota.interfacing.Parameters.num_an_comps}\textbf{\texttt{num\_an\_comps}} Number of analysis components
+
+\end{itemize}
+
+\subsection{Results objects}
+
+{\tt Results} objects:
+\begin{itemize}
+
+  \item communicate response requests from Dakota (active set vector and derivative variables)
+  \item collect response data (function values, gradients, and Hessians)
+  \item write Dakota results files
+\end{itemize}
+
+{\tt Results} objects are collections of {\tt Response} objects, which are documented in the following section. Each {\tt Response} can be accessed by name (Dakota descriptor) or by index using {[}{]} on the {\tt Results} object itself. {\tt Results} objects support iteration of the {\tt Response}s, yielding the index, response descriptor, and {\tt Response}. Although {\tt Results} objects may be constructed directly, it is advisable to use the {\tt read\_parameters\_file} function instead.
+
+Results objects have the attributes:
+
+\begin{itemize}
+
+  \item\index{eval\_id (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.eval_id}\textbf{\texttt{eval\_id}} Evaluation id (a string).
+
+  \item\index{eval\_num (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.eval_num}\textbf{\texttt{eval\_num}} Evaluation number (final token in eval\_id) (int).
+
+  \item\index{aprepro\_format (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.aprepro_format}\textbf{\texttt{aprepro\_format}} Boolean indicating whether the parameters file was in
+aprepro (True) or Dakota (False) format.
+
+  \item\index{descriptors (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.descriptors}\textbf{\texttt{descriptors}} List of the response descriptors (strings)
+
+  \item\index{num\_responses (dakota.interfacing.Results attribute)}  \phantomsection\label{index:dakota.interfacing.Results.num_responses}\textbf{\texttt{num\_responses}} Number of variables (read-only)
+
+  \item\index{deriv\_vars (dakota.interfacing.Results attribute)} \phantomsection\label{index:dakota.interfacing.Results.deriv_vars}\textbf{\texttt{deriv\_vars}} List of the derivative variables (strings)
+
+  \item\index{num\_deriv\_vars (dakota.interfacing.Results attribute)}\phantomsection\label{index:dakota.interfacing.Results.num_deriv_vars}\textbf{\texttt{num\_deriv\_vars}}Number of derivative variables (int)
+
+\end{itemize}
+
+Results objects have the methods:
+
+\begin{itemize}
+  \item\index{fail() (dakota.interfacing.Results method)}
+	  \phantomsection\label{index:dakota.interfacing.Results.fail}\textbf{\texttt{fail}}{()}{}
+	  Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering Dakota's failure capturing behavior (See Chapter~\ref{failure}).
+
+\item \index{write() (dakota.interfacing.Results method)}
+	\phantomsection\label{index:dakota.interfacing.Results.write}\textbf{\texttt{write}}({\emph{stream=None}, \emph{ignore\_asv=None}}){}
+Write the results to the Dakota results file. If \emph{stream} is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file. If \emph{ignore\_asv} is True, the file will be written even if information requested via the active set vector is missing.
+
+\end{itemize}
+
+\subsection{Response object}
+
+{\tt Response} objects store response information. They typically are instantiated and accessed through a Results object by index or response descriptor using {[}{]}.
+
+{\tt Response}s have the attributes:
+
+\begin{itemize}
+  \item \index{asv (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.asv}\textbf{\texttt{asv}} a {\tt collections.namedtuple} with three members, \emph{function}, \emph{gradient}, and \emph{hessian}.
+Each is a boolean indicating whether Dakota requested the
+associated information for the response. {\tt namedtuples} can be
+accessed by index or by member.
+
+  \item \index{function (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.function}\textbf{\texttt{function}} Function value for the response. A ResponseError
+is raised if Dakota did not request the function value (and
+ignore\_asv is False).
+  \item\index{gradient (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.gradient}\textbf{\texttt{gradient}} Gradient for the response. Gradients must be a 1D iterable of values that can be converted to floats, such as a {\tt list} or 1D {\tt numpy array}. A ResponseError is raised if Dakota did not request the gradient (and ignore\_asv is False), or if the number of elements does not equal the number of derivative variables.
+
+  \item \index{hessian (dakota.interfacing.Response attribute)} \phantomsection\label{index:dakota.interfacing.Response.hessian}\textbf{\texttt{hessian}} Hessian value for the response. Hessians must be an iterable of iterables (e.g. a 2D {\tt numpy array} or list of lists). A ResponseError is raised if Dakota did not request the Hessian (and ignore\_asv is False), or if the dimension does not correspond correctly with the number of derivative variables.
+
+\end{itemize}
+
+\subsection{dakota.interfacing Examples}
+
+In addition to those in this section, the {\tt Dakota/examples/script\_interfaces/Python} folder contains two runnable examples of Python analysis drivers. In one, {\tt rosenbrock\_bb.py}, parameters file parsing is performed manually. The other, {\tt rosenbrock\_bb\_di.py}, demonstrates the {\tt dakota.interfacing} module.
+
+For most applications, using {\tt dakota.interfacing} is straightforward. The first example, in Figure~\ref{diexample:simple}, is a mock analysis driver. Two variables with the descriptors {\tt x1} and {\tt x2} are read from the Dakota parameters file and used to evaluate the fictitious user function {\tt applic\_module.run()}. The result, stored in {\tt f}, is assigned to the {\tt function} value of the appropriate response. (A common error is leaving off the {\tt function} attribute, which is needed to distinguish the function value of the response from its gradient and Hessian.)
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+  import dakota.interfacing as di
+  import applic_module 
+
+  params, results = di.read_parameters_file()
+
+  # parameters can be accessed by descriptor, as shown here, or by index
+  x1 = params["x1"]
+  x2 = params["x2"]
+
+  f = applic_module.run(x1,x2)
+
+  # Responses also can be accessed by descriptor or index
+  results["f"].function = f
+  results.write()
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{A simple analysis driver that uses {\tt dakota.interfacing}}
+\label{diexample:simple}
+\end{figure}
+
+The {\tt Results} object exposes the active set vector read from the parameters file. When analytic gradients or Hessians are available for a response, the ASV should be queried to determine what Dakota has requested for an evaluation. If an attempt is made to addunrequested information to a response, a {\tt dakota.interface.ResponseError} is raised. The same exception results if a requested piece of information is missing when {\tt Results.write()} is called. The \emph{ignore\_asv} option to {\tt read\_parameters\_file} and {\tt Results.write()} overrides ASV checks.
+
+In Figure~\ref{diexample:asv}, {\tt applic\_module.run()} has been modified to return not only the function value of {\tt f}, but also its gradient and Hessian. The {\tt asv} attribute is examined to determine which of these to add to {\tt results["f"]}.
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+  import dakota.interfacing as di
+  import applic_module # fictitious application
+
+  params, results = di.read_parameters_file()
+
+  x1 = params["x1"]
+  x2 = params["x2"]
+
+  f, df, df2 = applic_module.run(x1,x2)
+
+  if Results.asv.function:
+      results["f"].function = f
+  if Results.asv.gradient:
+      results["f"].gradient = df
+  if Results.asv.hessian:
+      results["f"] = df2
+
+  results.write()
+\end{verbatim}
+
+
+\end{small}
+\end{bigbox}
+\caption{Examining the active set vector}
+\label{diexample:asv}
+\end{figure}
+
+

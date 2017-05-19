@@ -101,15 +101,40 @@ the difference between these field terms to create the set of
 residuals for the sum-of-squares calculation.  When \c interpolate is
 specified, the simulation coordinates are assumed fixed and the same
 for each simulation.  These simulation coordinates are provided in
-DESC.NUM.coords.  However, the experiment coordinates for each
+DESC.coords.  However, the experiment coordinates for each
 experiment can be different, and are provided in the files numbered by
 experiment with the file names given by DESC.NUM.coords, as indicated
 above.
 
 Examples::
 
+Consider this field example with three field-valued responses (volts as a function
+of 7 time points, amps as a function of 3 time points, and power as a
+function of 5 time points).  The experiments each have one coordinate (time) 
+per field. The experiments were conducted given values of two configuration variables. 
+There are four experiments (note that there often is only one experiment).
+
+\verbatim
+responses
+  descriptors = 'volts' 'amps' 'power'
+  calibration_terms = 3
+
+    #define field terms
+    field_calibration_terms = 3
+      lengths = 7 3 5
+      num_coordinates_per_field = 1 1 1
+      read_field_coordinates
+    
+    # specify the data
+    calibration_data
+      num_experiments = 4
+      num_config_variables = 2
+      variance_type 'diagonal' 'scalar' 'matrix' 
+\endverbatim
+
+<!-----
 Consider this mixed scalar/field example with 2 scalar responses
-(max_temp, size) and two field-valued responses (volts as a function
+(max_temp, size) and three field-valued responses (volts as a function
 of 7 time points, amps as a function of 3 time points, and power as a
 function of 5 time points).  The experiments were conducted given
 values of two configuration variables.
@@ -147,7 +172,7 @@ rows, and a total of 5 columns, with scalar variance information:
 3         8.4  8                38.2758  4.4559    0.25  0.04
 4         4.2  1                39.7600  6.4631    0.25  0.04
 \endverbatim
-   
+---->   
 The field data will be read from separate files:   
 <ol>
 

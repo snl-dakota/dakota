@@ -10940,18 +10940,18 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 40
 dakota_nowpac.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 135 total (135 new, 0 duplicate)
+<<<<< Function evaluation summary: 147 total (147 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9999863652e-01 x1
-                      9.9999726761e-01 x2
+                      9.9999994270e-01 x1
+                      9.9999988545e-01 x2
 <<<<< Best objective function  =
-                      1.8620266405e-12
-<<<<< Best data captured at function evaluation 135
+                      3.2834780295e-15
+<<<<< Best data captured at function evaluation 147
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
+<<<<< Function evaluation summary: 38 total (38 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520354446e+00 w
-                      3.3262765445e+00 t
+                      2.3520340806e+00 w
+                      3.3262784734e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -10959,9 +10959,9 @@ Test Number 1 succeeded
 <<<<< Best objective function  =
                       7.8235203311e+00
 <<<<< Best constraint values   =
-                     -1.6008905666e-02
-                     -3.7836400679e-13
-<<<<< Best data captured at function evaluation 90
+                     -1.6009003571e-02
+                     -1.7763568394e-15
+<<<<< Best data captured at function evaluation 38
 dakota_optdarts.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
@@ -11022,6 +11022,94 @@ Test Number 1 succeeded
                       4.0000000000e-01
 <<<<< Best constraint values   =
                       1.2000000000e-01
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 100 total (100 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1640000000e+00 d1
+                      2.8328481970e+00 d2
+<<<<< Best objective function  =
+                      3.5300621652e+21
+<<<<< Best constraint values   =
+                      1.3365505300e+05
+                      1.0000000000e+06
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 750 total (750 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1640000000e+00 d1
+                      2.8328481970e+00 d2
+<<<<< Best objective function  =
+                      3.5300621652e+21
+<<<<< Best constraint values   =
+                      1.3365505300e+05
+                      1.0000000000e+06
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 250 total (250 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909127e-01 d2
+<<<<< Best objective function  =
+                     -5.8186289662e-02
+<<<<< Best constraint values   =
+                      2.0000000000e+00
+                      2.0000000002e+00
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary (UQ_I): 250 total (250 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909127e-01 d2
+<<<<< Best objective function  =
+                     -5.8186289662e-02
+<<<<< Best constraint values   =
+                      2.0000000000e+00
+                      2.0000000002e+00
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary (UQ_I): 1250 total (1250 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909094e-01 d2
+<<<<< Best objective function  =
+                     -5.8186289579e-02
+<<<<< Best constraint values   =
+                      2.0000000000e+00
+                      2.0000000049e+00
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary (UQ_I): 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909128e-01 d2
+<<<<< Best objective function  =
+                      4.8645220088e+11
+<<<<< Best constraint values   =
+                      1.2000000000e+05
+                      3.5000000000e+05
+<<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
+<<<<< Function evaluation summary (UQ_I): 200 total (200 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909128e-01 d2
+<<<<< Best objective function  =
+                      4.8645220088e+11
+<<<<< Best constraint values   =
+                      1.2000000000e+05
+                      3.5000000000e+05
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (UQ_I): 1000 total (1000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.6230540659e+00 d1
+                      8.2674909128e-01 d2
+<<<<< Best objective function  =
+                      4.8645220088e+11
+<<<<< Best constraint values   =
+                      1.2000000000e+05
+                      3.5000000000e+05
 <<<<< Best data not found in evaluation cache
 dakota_ouu1_tbch.in
 Test Number 0 succeeded
@@ -24277,24 +24365,24 @@ dakota_snowpac.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3786832820e+00 w
-                      3.2980050729e+00 t
+                      2.3643604996e+00 w
+                      3.3270667849e+00 t
 <<<<< Best objective function  =
-                      7.8449095267e+00
+                      7.8663853484e+00
 <<<<< Best constraint values   =
-                     -1.5176506136e-02
-                      4.2762914259e-03
+                     -1.9577359364e-02
+                      1.6884470160e-06
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4204396457e+00 w
-                      3.8796764902e+00 t
+                      2.4682632646e+00 w
+                      3.8110890192e+00 t
 <<<<< Best objective function  =
-                      9.3905227624e+00
+                      9.4067707217e+00
 <<<<< Best constraint values   =
-                      3.0246214237e-04
-                      7.4600396116e-05
+                     -2.1480203455e-05
+                     -1.6772329451e-02
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
@@ -24302,10 +24390,35 @@ Test Number 2 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.0623007750e-01
+                      6.0284566229e-01
 <<<<< Best constraint values   =
-                     -9.7741948365e-01
-                     -9.9310390846e-01
+                     -9.7747809258e-01
+                     -9.9312595573e-01
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+01 w
+                      1.0000000000e+01 t
+<<<<< Best objective function  =
+                      6.0284566229e-06
+<<<<< Best constraint values   =
+                     -9.7747809254e-01
+                     -9.9312595293e-01
+<<<<< Best data not found in evaluation cache
+dakota_snowpac_mlmc.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 649522 total (649522 new, 0 duplicate)
+<<<<< Best parameters          =
+                      6.0797750897e-01 cdv_1
+                      1.0000000000e+00 cdv_2
+                      6.5452783979e-01 cdv_3
+<<<<< Best objective function  =
+                     -2.7119185259e-02
+<<<<< Best constraint values   =
+                      1.7429937538e-02
+                      1.1722763166e-01
+                      1.7429936287e-02
 <<<<< Best data not found in evaluation cache
 dakota_steel_section.in
 Test Number 0 succeeded

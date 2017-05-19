@@ -164,11 +164,19 @@ inline ActiveSet& ActiveSet::operator=(const ActiveSet& set)
 
 
 inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_vars)
-{ requestVector.resize(num_fns); derivVarsVector.resize(num_deriv_vars); }
+{
+  if (requestVector.size() != num_fns)
+    requestVector.resize(num_fns);
+  if (derivVarsVector.size() != num_deriv_vars)
+    derivVarsVector.resize(num_deriv_vars);
+}
 
 
 inline void ActiveSet::reshape(size_t num_fns)
-{ requestVector.resize(num_fns); }
+{
+  if (requestVector.size() != num_fns)
+    requestVector.resize(num_fns);
+}
 
 
 inline const ShortArray& ActiveSet::request_vector() const

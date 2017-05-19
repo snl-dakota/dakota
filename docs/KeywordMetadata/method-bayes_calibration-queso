@@ -1,26 +1,31 @@
 Blurb::
 Markov Chain Monte Carlo algorithms from the QUESO package
-Description::
-For the QUESO method, one can use an emulator in the MCMC sampling. This will 
-greatly improve the speed, since the Monte Carlo Markov Chain will generate 
-thousands of samples on the emulator instead of the real simulation code. 
-However, in the case of fast running evaluations, we recommend the use of 
-no emulator. An emulator may be specified with the keyword \c emulator, 
-followed by a \c gaussian_process emulator, a \c pce emulator (polynomial chaos
-expansion), or a \c sc emulator (stochastic collocation). For the 
-\c gaussian_process emulator, the user must specify whether to use the 
-\c surfpack or \c dakota version of the Gaussian process. 
-The user can define the number of samples 
-\c build_samples from which the emulator should be built. It is also 
-possible to build the Gaussian process from points read in from the 
-\c import_points_file and to export approximation-based sample evaluations 
-using \c export_points_file. For \c pce or \c sc, the user can define a \c sparse_grid_level. 
 
-In terms of the MCMC sampling, one can specify one of the following MCMC algorithms to use: 
-\c dram for DRAM (Delayed Rejection Adaptive Metropolis), \c delayed_rejection for delayed_rejection only, 
-\c adaptive_metropolis for adaptive metropolis only, 
-\c metropolis_hastings for Metropolis Hastings, 
-and \c multilevel for the multilevel MCMC algorithm. 
+Description::
+
+The \c queso method supports the following MCMC algorithms: DRAM
+(Delayed Rejection Adaptive Metropolis), delayed rejection (DR) only,
+adaptive metropolis (AM) only, pure Metropolis Hasting (MH)s, and
+multilevel (ML).
+
+When calibrating fast-running simulation models, use of an emulator is
+not typically warranted.  For slower models, using an emulator model
+in the MCMC sampling will greatly improve the speed, since the Monte
+Carlo Markov Chain will generate thousands of samples on the emulator
+instead of the real simulation code.  An emulator may be specified
+with the keyword \c emulator, followed by a \c gaussian_process
+emulator, a \c pce emulator (polynomial chaos expansion), or a \c sc
+emulator (stochastic collocation). For the \c gaussian_process
+emulator, the user must specify whether to use the \c surfpack or \c
+dakota version of the Gaussian process.  The user can define the
+number of samples \c build_samples from which the emulator should be
+built. It is also possible to build the Gaussian process from points
+read in from the \c import_points_file and to export
+approximation-based sample evaluations using \c
+export_points_file. For \c pce or \c sc, the user can define a \c
+sparse_grid_level.
+
+
 
 There are a variety of ways the user can specify the proposal covariance matrix which 
 is very important in governing the samples generated in the chain.  

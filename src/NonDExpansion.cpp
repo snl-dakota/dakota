@@ -625,7 +625,7 @@ void NonDExpansion::initialize_expansion()
 {
   // update ranVar info to capture any distribution param insertions
   initialize_random_variable_parameters();
-  initialize_final_statistics_gradients();
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
   transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions
@@ -706,7 +706,7 @@ void NonDExpansion::compute_expansion()
   bool final_stat_grad_flag = false;
   for (i=0; i<num_final_stats; ++i)
     if (final_asv[i] & 2)
-      { final_stat_grad_flag  = true; break; }
+      { final_stat_grad_flag = true; break; }
 
   // define ASV for u_space_sampler and expansion coefficient/gradient
   // data flags for PecosApproximation
