@@ -134,8 +134,14 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   // ill-conditioned and the maximum likelihood operations crash with floating
   // point errors.
   size_t num_factors = origTrustRegionFactor.length();
-  Real tr_factor     = (num_factors) ? origTrustRegionFactor[0] : 0.5;
-  if (num_factors != 1) origTrustRegionFactor.sizeUninitialized(1);
+  Real    tr_factor  = (num_factors) ? origTrustRegionFactor[0] : 0.5;
+  if (num_factors > 1) {
+    Cerr << "\nWarning: ignoring trailing trust_region initial_size content "
+	 << "for DataFitSurrBasedLocalMinimizer.\n" << std::endl;
+    origTrustRegionFactor.sizeUninitialized(1);
+  }
+  else if (!num_factors)
+    origTrustRegionFactor.sizeUninitialized(1);
   origTrustRegionFactor[0]
     = (tr_factor < minTrustRegionFactor) ? minTrustRegionFactor : tr_factor;
 }

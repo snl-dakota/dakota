@@ -117,7 +117,9 @@ void NOWPACOptimizer::initialize_options()
 
   // Required:
   // Must specify one or more stopping criteria: min TR size or maxFnEvals
-  //nowpacSolver.set_trustregion(initial_tr_radius); // if only initial
+
+  nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
+
   // TO DO: these are not relative to global bounds, they are absolute values
   //        this is a hyper-sphere of constant dimensional radius.
   // Therefore, it is advisable to present a scaled problem to NOWPAC in terms 
@@ -125,10 +127,26 @@ void NOWPACOptimizer::initialize_options()
   // the BBEvaluator (scaling data can be passed by the "void* params").
   const RealVector& tr_init
     = probDescDB.get_rv("method.trust_region.initial_size");
-  Real tr_init0 = (tr_init.empty()) ? 0.5 : tr_init[0];
-  nowpacSolver.set_trustregion(tr_init0,
-    probDescDB.get_real("method.trust_region.minimum_size"));
-  nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
+  size_t num_factors = tr_init.length();
+  Real   min_factor  = probDescDB.get_real("method.trust_region.minimum_size"),
+          tr_factor  = (num_factors) ? tr_init[0] : 0.5;
+  if (num_factors > 1)
+    Cerr << "\nWarning: ignoring trailing trust_region initial_size content "
+	 << "for NOWPACOptimizer.\n" << std::endl;
+  // domain is [0,1]; default max radius is 1; {init,min}_radius are required
+  // NOWPAC inputs (no defaults) --> use Dakota defaults for {init,min}_radius
+  if (min_factor < 0.)        min_factor = 0.; // Dakota default is 1.e-6
+  if (tr_factor < min_factor) tr_factor  = min_factor;
+  else if (tr_factor > 1.)    tr_factor  = 1.;
+  nowpacSolver.set_trustregion(tr_factor, min_factor);
+  //nowpacSolver.set_trustregion(tr_factor); // if only initial
+
+  // Scale the design variables since the TR size controls are absolute, not
+  // relative.  Based on the default max TR size of 1., scale to [0,1].
+  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
+  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
+  nowpacSolver.set_lower_bounds(l_bnds);
+  nowpacSolver.set_upper_bounds(u_bnds);
 
   // NOTES from 7/29/15 discussion:
   // For Lagrangian minimization within MG/Opt:
@@ -141,13 +159,6 @@ void NOWPACOptimizer::initialize_options()
   // Option 2. If meta-algorithm should enforce feasibility. can change
   //   --> sub-problem to min L s.t. g <= 0.  No need for dummy constraints
   //       assuming we back out grad f from grad L, grad g, lambda.
-
-  // Scale the design variables since the TR size controls are absolute, not
-  // relative.  Based on the default max TR size of 1., scale to [0,1].
-  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
-  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
-  nowpacSolver.set_lower_bounds(l_bnds);
-  nowpacSolver.set_upper_bounds(u_bnds);
 }
 
 

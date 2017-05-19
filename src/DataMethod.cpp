@@ -33,9 +33,9 @@ DataMethodRep::DataMethodRep():
   concurrentRandomJobs(0),
   // Local surrogate-based opt/NLS
   softConvLimit(0), // dummy value -> method-specific default
-  surrBasedLocalLayerBypass(false),  //trustRegionInitSize(0.4),
-  trustRegionMinSize(1.0e-6),        trustRegionContractTrigger(0.25),
-  trustRegionExpandTrigger(0.75),    trustRegionContract(0.25),
+  surrBasedLocalLayerBypass(false), //trustRegionInitSize(0.5),
+  trustRegionMinSize(1.e-6),        trustRegionContractTrigger(0.25),
+  trustRegionExpandTrigger(0.75),   trustRegionContract(0.25),
   trustRegionExpand(2.0), surrBasedLocalSubProbObj(ORIGINAL_PRIMARY),
   surrBasedLocalSubProbCon(ORIGINAL_CONSTRAINTS),
   surrBasedLocalMeritFn(AUGMENTED_LAGRANGIAN_MERIT),

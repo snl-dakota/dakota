@@ -893,8 +893,8 @@ const RealVector& RecastModel::error_estimates()
   if (respMapping) {
 
     // preclude nonlinear mappings and multi-component mappings for now.
-    // Note: a more general linear mapping can be supported in NestedModel::
-    //       iterator_error_estimation().
+    // Note: a linear multi-component mapping can be supported by NestedModel::
+    //       iterator_error_estimation(), because the mapping coeffs are known.
 
     size_t i, num_recast_fns = nonlinearRespMapping.size();
     for (i=0; i<num_recast_fns; ++i) {
@@ -918,6 +918,7 @@ const RealVector& RecastModel::error_estimates()
     sm_set.request_values(1); recast_set.request_values(1);
     Response sm_error_est(sm_resp.shared_data(), sm_set),
          recast_error_est(currentResponse.shared_data(), recast_set);
+    // transform the error estimates as Response::functionValues
     sm_error_est.function_values(subModel.error_estimates());
     transform_response(currentVariables, subModel.current_variables(),
 		       sm_error_est, recast_error_est);
