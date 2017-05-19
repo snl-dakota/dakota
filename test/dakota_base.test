@@ -24395,6 +24395,17 @@ Test Number 2 succeeded
                      -9.7743909844e-01
                      -9.9310745895e-01
 <<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+01 w
+                      1.0000000000e+01 t
+<<<<< Best objective function  =
+                      6.1077704067e-06
+<<<<< Best constraint values   =
+                     -9.7743909783e-01
+                     -9.9310746082e-01
+<<<<< Best data not found in evaluation cache
 dakota_snowpac_mlmc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 622586 total (622586 new, 0 duplicate)
