@@ -120,11 +120,10 @@ void NOWPACOptimizer::initialize_options()
 
   nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
 
-  // TO DO: these are not relative to global bounds, they are absolute values
-  //        this is a hyper-sphere of constant dimensional radius.
-  // Therefore, it is advisable to present a scaled problem to NOWPAC in terms 
-  // of these optional inputs, and then perform a descaling to user-space within
-  // the BBEvaluator (scaling data can be passed by the "void* params").
+  // NOWPAC trust region controls are not relative to global bounds; rather,
+  // they are absolute values for a hyper-sphere of constant dimensional radius.
+  // Therefore, we present a scaled problem to NOWPAC as consistent with these 
+  // trust region controls (see use of {un,}scale() within this file).
   const RealVector& tr_init
     = probDescDB.get_rv("method.trust_region.initial_size");
   size_t num_factors = tr_init.length();
