@@ -24390,10 +24390,10 @@ Test Number 2 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.1077704067e-01
+                      6.0284566229e-01
 <<<<< Best constraint values   =
-                     -9.7743909844e-01
-                     -9.9310745895e-01
+                     -9.7747809258e-01
+                     -9.9312595573e-01
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 49950 total (49950 new, 0 duplicate)
@@ -24401,24 +24401,24 @@ Test Number 3 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.1077704067e-06
+                      6.0284566229e-06
 <<<<< Best constraint values   =
-                     -9.7743909783e-01
-                     -9.9310746082e-01
+                     -9.7747809254e-01
+                     -9.9312595293e-01
 <<<<< Best data not found in evaluation cache
 dakota_snowpac_mlmc.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 622586 total (622586 new, 0 duplicate)
+<<<<< Function evaluation summary: 649522 total (649522 new, 0 duplicate)
 <<<<< Best parameters          =
-                      8.1373858413e-01 cdv_1
+                      6.0797750897e-01 cdv_1
                       1.0000000000e+00 cdv_2
-                      4.0250516917e-01 cdv_3
+                      6.5452783979e-01 cdv_3
 <<<<< Best objective function  =
-                     -1.7774841275e-02
+                     -2.7119185259e-02
 <<<<< Best constraint values   =
-                      1.6554270131e-02
-                      1.1564065682e-01
-                      1.6554274308e-02
+                      1.7429937538e-02
+                      1.1722763166e-01
+                      1.7429936287e-02
 <<<<< Best data not found in evaluation cache
 dakota_steel_section.in
 Test Number 0 succeeded
