@@ -1386,12 +1386,12 @@ Real NonDExpansion::compute_final_statistics_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  RealVector final_stats_ref = finalStatistics.function_values();  // deep copy
-  compute_statistics();                                            //    update
+  RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
+  compute_statistics();                                           //    update
   const RealVector& final_stats_new = finalStatistics.function_values();
 #ifdef DEBUG
-  Cout << "final_stats_ref:\n"   << final_stats_ref
-       << "final_stats_new:\n"   << final_stats_new << std::endl;
+  Cout << "final_stats_ref:\n" << final_stats_ref
+       << "final_stats_new:\n" << final_stats_new << std::endl;
 #endif // DEBUG
 
   // sum up only the level mapping stats (don't mix with mean and variance due
