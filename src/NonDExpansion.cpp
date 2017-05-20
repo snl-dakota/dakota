@@ -1386,24 +1386,20 @@ Real NonDExpansion::compute_final_statistics_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  RealVector delta_final_stats = finalStatistics.function_values(); // deep copy
-  Real scale = delta_final_stats.normFrobenius();
-  compute_statistics();                                             //    update
-  delta_final_stats -= finalStatistics.function_values();      // compute change
-
+  RealVector final_stats_ref = finalStatistics.function_values();  // deep copy
+  compute_statistics();                                            //    update
+  const RealVector& final_stats_new = finalStatistics.function_values();
 #ifdef DEBUG
-  Cout << "final_stats_ref:\n" << final_stats_ref
-       << "final_stats:\n" << finalStatistics.function_values()
-       << "delta_final_stats:\n" << delta_final_stats << std::endl;
+  Cout << "final_stats_ref:\n"   << final_stats_ref
+       << "final_stats_new:\n"   << final_stats_new << std::endl;
 #endif // DEBUG
 
   // sum up only the level mapping stats (don't mix with mean and variance due
   // to scaling issues)
   // TO DO: if the level mappings are of mixed type, then would need to scale
   //        with a target value or measure norm of relative change.
-  Real sum_sq = 0.;
-  size_t i, j, cntr = 0, num_levels_i,
-    moment_offset = (finalMomentsType) ? 2 : 0;
+  Real sum_sq = 0., scale_sq = 0.;
+  size_t i, j, cntr = 0, num_lev_i, moment_offset = (finalMomentsType) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
 
     /* this modification can be used to mirror the metrics in Gerstner & Griebel
@@ -1420,18 +1416,21 @@ Real NonDExpansion::compute_final_statistics_metric()
     // simple approach takes 2-norm of level mappings (no relative scaling),
     // which should be fine for mappings that are not of mixed type
     cntr += moment_offset; // skip moments
-    num_levels_i = requestedRespLevels[i].length() +
+    num_lev_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
-    for (j=0; j<num_levels_i; ++j, ++cntr)
-      sum_sq += std::pow(delta_final_stats[cntr], 2.);
+    for (j=0; j<num_lev_i; ++j, ++cntr) {
+      Real ref  = final_stats_ref[cntr], delta = final_stats_new[cntr] - ref;
+      scale_sq +=   ref *   ref;
+      sum_sq   += delta * delta;
+    }
   }
 
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using
   // absolute change compared against relative conv tol.
-  return (scale > 0.) ? std::sqrt(sum_sq) / scale :
-                        std::sqrt(sum_sq) / Pecos::SMALL_NUMBER;
+  return (scale_sq > 0.) ? std::sqrt(sum_sq / scale_sq) :
+                           std::sqrt(sum_sq / Pecos::SMALL_NUMBER);
 }
 
 
