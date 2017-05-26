@@ -12,6 +12,8 @@
 //- Owner:        Mike Eldred
 //- Version: $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:14Z mkhalil $
 
+#include <boost/bimap.hpp>
+
 #ifndef DAKOTA_OPT_TRAITS_H
 #define DAKOTA_OPT_TRAITS_H
 
@@ -239,10 +241,6 @@ private:
   //- Heading: Data
   //
 };
-
-
-inline OptTraits::OptTraits()
-{ }
 
 
 inline OptTraits::~OptTraits()

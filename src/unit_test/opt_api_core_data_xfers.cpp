@@ -81,7 +81,7 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   for( size_t i=0; i<vec.length(); ++i )
     max_diff = (diff = std::fabs(vec[i]-tpl1_vec[i])) > max_diff ? diff : max_diff;
   max_diff += 1.0;
-  Real real_tol = std::pow(10.0, -std::numeric_limits<dummyTraits1::scalarType>::digits10);
+  Real real_tol = std::pow(10, -std::numeric_limits<dummyGradFreeOpt1::Traits::scalarType>::digits10);
   TEST_FLOATING_EQUALITY( max_diff, 1.0, real_tol );
 
   dummyGradFreeOpt2::Traits::vectorType tpl2_vec;
@@ -93,10 +93,43 @@ TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_vec1)
   for( size_t i=0; i<vec.length(); ++i )
     max_diff = (diff = std::fabs(vec[i]-tpl2_vec[i])) > max_diff ? diff : max_diff;
   max_diff += 1.0;
-  float float_tol = std::pow(10.0, -std::numeric_limits<dummyTraits2::scalarType>::digits10);
+  float float_tol = std::pow(10, -std::numeric_limits<dummyGradFreeOpt2::Traits::scalarType>::digits10);
   TEST_FLOATING_EQUALITY( max_diff, 1.0, float_tol );
   TEST_COMPARE( max_diff, >, real_tol );
 }
 
 //----------------------------------------------------------------
 
+TEUCHOS_UNIT_TEST(opt_api_data_xfers, basic_mat1)
+{
+  const int MAT_ROW = 1;
+  RealMatrix mat(MAT_ROWS, VEC_SIZE);
+  mat.random();
+
+  dummyGradFreeOpt1::Traits::vectorType tpl1_vec;
+  copy_row_vector(mat, MAT_ROW, tpl1_vec);
+
+  // Test correctness of size and values accurate to double precision
+  TEST_EQUALITY( mat.numCols(), tpl1_vec.size() );
+  double diff, max_diff = 0.0;
+  for( size_t i=0; i<tpl1_vec.size(); ++i )
+    max_diff = (diff = std::fabs(mat(MAT_ROW,i)-tpl1_vec[i])) > max_diff ? diff : max_diff;
+  max_diff += 1.0;
+  Real real_tol = std::pow(10, -std::numeric_limits<dummyGradFreeOpt1::Traits::scalarType>::digits10);
+  TEST_FLOATING_EQUALITY( max_diff, 1.0, real_tol );
+
+
+  RealMatrix mat2;
+  insert_row_vector(tpl1_vec, 4, mat2);
+
+  // Test that matrix gets resized correctly and values are correnct in the propoer row
+  TEST_EQUALITY( mat2.numRows(), 5 );
+  TEST_EQUALITY( mat2.numCols(), VEC_SIZE );
+  max_diff = 0.0;
+  for( size_t i=0; i<tpl1_vec.size(); ++i )
+    max_diff = (diff = std::fabs(mat2(4,i)-tpl1_vec[i])) > max_diff ? diff : max_diff;
+  max_diff += 1.0;
+  TEST_FLOATING_EQUALITY( max_diff, 1.0, real_tol );
+}
+
+//----------------------------------------------------------------
