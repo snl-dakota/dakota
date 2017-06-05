@@ -23,6 +23,7 @@
 #include "HOPSPACK_LinConstr.hpp"
 #include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
+#include "APPSOptimizer.hpp"
 
 
 namespace Dakota {
@@ -78,6 +79,10 @@ public:
   /// compute the optimal solution
   void core_run();
 
+
+  /// Overwrite default trait
+  virtual bool supports_nonlinear_inequality() { return true; }
+
 protected:
 
   //
@@ -86,6 +91,9 @@ protected:
 
   /// sets options for specific methods based on user specifications
   void set_apps_parameters();
+
+  /// sets traits for specific TPL
+  void set_apps_traits();
 
   /// initializes problem variables and constraints
   void initialize_variables_and_constraints();

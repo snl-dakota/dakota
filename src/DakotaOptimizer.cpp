@@ -479,6 +479,12 @@ void Optimizer::initialize_run()
 {
   Minimizer::initialize_run();
 
+  // MK: testing inheritance of traits
+  if (supports_nonlinear_inequality())
+      Cout << "\nSupports nonlinear inequality.\n";
+  else
+      Cout << "\nDoesn't supports nonlinear inequality.\n";
+
   // TODO: This predates the multi-recast, so only goes down zero or
   // one levels.  Further recursion and possible transformations are
   // needed in the multi-recast case.  Can we make this update
