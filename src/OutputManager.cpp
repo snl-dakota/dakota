@@ -698,6 +698,11 @@ RestartWriter::RestartWriter(const String& write_restart_filename):
 {  /* empty ctor */  }
 
 
+RestartWriter::RestartWriter(std::ostream& write_restart_ostream):
+  restartOutputArchive(new boost::archive::binary_oarchive(write_restart_ostream))
+{  /* empty ctor */  }
+
+
 const String& RestartWriter::filename()
 { return restartOutputFilename; }
 

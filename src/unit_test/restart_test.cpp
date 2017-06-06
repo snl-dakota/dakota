@@ -7,11 +7,12 @@
 
 using namespace Dakota;
 
+/** In-core test with 1 variable/response */
 TEUCHOS_UNIT_TEST(io, restart_1var)
 {
-  String rst_filename("restart_1var.rst");
-  if (boost::filesystem::exists(rst_filename))
-    boost::filesystem::remove(rst_filename);
+  // NOTE: A possible problem with a stringstream is it isn't
+  // explicitly a binary stream (std::ios::binary)
+  std::stringstream rst_stream;
 
   // Mock up a single variable
   SizetArray vc_totals(NUM_VC_TOTALS);
@@ -19,7 +20,6 @@ TEUCHOS_UNIT_TEST(io, restart_1var)
   std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
   SharedVariablesData svd(view, vc_totals);
   Variables vars(svd);
-  vars.continuous_variable(M_LOG2E, 0);
 
   // Mock up a single response
   // active set with 1 var / 1 resp
@@ -27,37 +27,45 @@ TEUCHOS_UNIT_TEST(io, restart_1var)
   // TODO: can't default construct srd...
   SharedResponseData srd(as);
   Response resp(srd);
-  resp.function_value(M_PI, 0);
 
   String iface_id = "RST_IFACE";
-  int eval_id = 1;
 
-  // TODO: code is not robust to writing empty PRP (seg fault)
-  ParamResponsePair prp_out(vars, iface_id, resp, eval_id), prp_in;
-
+  int num_evals = 10;
+  PRPArray prps_out, prps_in;
   // added scope to force destruction of writer/reader and close the file
   {
-    RestartWriter rst_writer(rst_filename);
-    rst_writer.append_prp(prp_out);
+    RestartWriter rst_writer(rst_stream);
+
+    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
+      resp.function_value(M_PI + (Real) (eval_id-1), 0);
+      // TODO: code is not robust to writing empty PRP (seg fault)
+      // NOTE: This makes a deep copy of vars/resp by default:
+      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
+      prps_out.push_back(prp_out);
+      rst_writer.append_prp(prp_out);
+    }
   }
   {
-    std::ifstream restart_input_fs(rst_filename.c_str(), std::ios::binary);
-    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
-    restart_input_archive & prp_in;
+    boost::archive::binary_iarchive restart_input_archive(rst_stream);
+    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+      ParamResponsePair prp_in;
+      restart_input_archive & prp_in;
+      prps_in.push_back(prp_in);
+    }
   }
 
-  TEST_EQUALITY(prp_in, prp_out);
+  TEST_EQUALITY(prps_in, prps_out);
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
-
 }
 
+/** File-based test with multiple variables/responses */
 TEUCHOS_UNIT_TEST(io, restart_allvar)
 {
   String rst_filename("restart_allvar.rst");
-  if (boost::filesystem::exists(rst_filename))
-    boost::filesystem::remove(rst_filename);
+  boost::filesystem::remove(rst_filename);
 
   // Mock up one of each variable
   SizetArray vc_totals(NUM_VC_TOTALS, 1);
@@ -95,8 +103,9 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
   resp.function_value(M_PI, 0);
   resp.function_value(2*M_PI, 1);
 
-  // The following aren't deterministic, but that might be okay for
-  // this kind of test...
+  // This calls srand, but should be limited to this test
+  // TODO: utilities to use Boost RNG to populate matrices
+  Teuchos::ScalarTraits<Real>::seedrandom(12345);
 
   RealMatrix gradient(NUM_VC_TOTALS, num_resp);
   gradient.random();
@@ -114,22 +123,37 @@ TEUCHOS_UNIT_TEST(io, restart_allvar)
   int eval_id = 1;
 
   // TODO: code is not robust to writing empty PRP (seg fault)
-  ParamResponsePair prp_out(vars, iface_id, resp, eval_id), prp_in;
-
+  int num_evals = 10;
+  PRPArray prps_out, prps_in;
   // added scope to force destruction of writer/reader and close the file
   {
     RestartWriter rst_writer(rst_filename);
-    rst_writer.append_prp(prp_out);
+
+    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+      // For now this just make a small tweak so variables/resp are unique
+      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
+      resp.function_value(M_PI + (Real) (eval_id-1), 0);
+      // NOTE: This makes a deep copy of vars/resp by default:
+      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
+      prps_out.push_back(prp_out);
+      rst_writer.append_prp(prp_out);
+    }
+
   }
   {
     std::ifstream restart_input_fs(rst_filename.c_str(), std::ios::binary);
     boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
-    restart_input_archive & prp_in;
+    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+      ParamResponsePair prp_in;
+      restart_input_archive & prp_in;
+      prps_in.push_back(prp_in);
+    }
   }
 
-  TEST_EQUALITY(prp_in, prp_out);
+  TEST_EQUALITY(prps_in, prps_out);
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
 
+  boost::filesystem::remove(rst_filename);
 }

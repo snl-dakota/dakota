@@ -122,8 +122,12 @@ public:
   /// optional default ctor allowing a non-outputting RestartWriter
   RestartWriter();
 
-  /// typical ctor taking a filename
+  /// typical ctor taking a filename; this class encapsulates the output stream
   RestartWriter(const String& write_restart_filename);
+
+  /// alternate ctor taking a stream, helpful for testing; assumes
+  /// client manages the output stream
+  RestartWriter(std::ostream& write_restart_stream);
   
   /// output filename for this writer
   const String& filename();
