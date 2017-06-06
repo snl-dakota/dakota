@@ -296,7 +296,7 @@ public:
   virtual bool supports_continuous_variables() { return false; }
 
   /// Return the value of supportsIntegerVariables
-  virtual bool upports_integer_variables() { return false; }
+  virtual bool supports_integer_variables() { return false; }
 
   /// Return the value of supportsRelaxableDiscreteVariables
   virtual bool supports_relaxable_discrete_variables() { return false; }

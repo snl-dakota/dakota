@@ -18,6 +18,7 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
+#include "DakotaOptTraits.hpp"
 
 
 namespace Dakota {
@@ -38,7 +39,7 @@ class Response;
     class (Iterator) serves as the envelope and one of the derived
     classes (selected in Iterator::get_iterator()) serves as the letter. */
 
-class Iterator
+class Iterator: public InheritableSingleton_OptTraits
 {
 public:
 

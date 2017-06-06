@@ -14,7 +14,6 @@
 
 #ifndef DAKOTA_OPTIMIZER_H
 #define DAKOTA_OPTIMIZER_H
-#include "DakotaOptTraits.hpp"
 
 #include "DakotaMinimizer.hpp"
 
@@ -27,7 +26,7 @@ namespace Dakota {
     DOTOptimizer, CONMINOptimizer, NPSOLOptimizer, SNLLOptimizer,
     NLPQLPOptimizer, COLINOptimizer, and JEGAOptimizer. */
 
-class Optimizer: public Minimizer, public InheritableSingleton_OptTraits
+class Optimizer: public Minimizer
 {
 public:
 
