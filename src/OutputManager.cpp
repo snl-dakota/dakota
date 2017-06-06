@@ -426,7 +426,7 @@ void OutputManager::read_write_restart(bool restart_requested,
       }
       boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-      Cout << "Reading restart file '" << read_restart_filename << "'\n"
+      Cout << "Reading restart file '" << read_restart_filename << "'.\n"
 	   << "  Any unexpected errors may indicate a corrupt restart file; "
 	   << "using -stop_restart\n  to truncate the read may help."
 	   << std::endl;
@@ -447,8 +447,7 @@ void OutputManager::read_write_restart(bool restart_requested,
       while ( restart_input_fs.good() && !restart_input_fs.eof() &&
 	      (!stop_restart_evals ||
 	       cntr < stop_restart_evals) ) {
-	// Use default constr. & rely on Variables::read(BiStream&)
-	// & Response::read(BiStream&) to resize vars and response.
+	// Use default ctor; relies on Variables and Response reads to size them
 	ParamResponsePair current_pair;
 	try {
 	  // this reads vars (svd, vars), iface, resp, eval_id
@@ -458,9 +457,9 @@ void OutputManager::read_write_restart(bool restart_requested,
 	// TODO: should it be the default to truncate and warn when bad?!?
 	catch(const boost::archive::archive_exception& e) {
 	  Cerr << "\nError reading restart file '" << read_restart_filename
-	       << "'\nYou may be able to recover the first " << cntr
+	       << "'.\nYou may be able to recover the first " << cntr
 	       << " evaluations with -stop_restart " << cntr
-	       << ".\nDetails (boost::archive exception):      "
+	       << ".\nDetails (boost::archive exception): "
 	       << e.what() << std::endl;
 	  abort_handler(IO_ERROR);
 	}
@@ -489,7 +488,7 @@ void OutputManager::read_write_restart(bool restart_requested,
     }
     catch (const std::exception& e) {
       Cerr << "Unknown error reading restart file '" << read_restart_filename
-	   << "'\nIf some evaluations were read, using -stop_restart to "
+	   << "'.\nIf some evaluations were read, using -stop_restart to "
 	   << "truncate may help.\nDetails: " << e.what() << '\n';
       abort_handler(IO_ERROR);
     }
@@ -515,50 +514,62 @@ void OutputManager::read_write_restart(bool restart_requested,
   // evals are rewritten, omitting any corrupt data at the end of file.
 
   if (write_restart_filename == read_restart_filename)
-    Cout << "Overwriting existing restart file " << write_restart_filename 
-	 << std::endl;
+    Cout << "Overwriting existing restart file '" << write_restart_filename 
+	 << "'." << std::endl;
   else
-    Cout << "Writing new restart file " << write_restart_filename << std::endl;
+    Cout << "Writing new restart file '" << write_restart_filename << "'."
+	 << std::endl;
 
-  // create a new restart destination
-  boost::shared_ptr<RestartWriter> 
-    rst_writer(new RestartWriter(write_restart_filename));
-  restartDestinations.push_back(rst_writer);
+  try {
 
-  // Write any processed records from the old restart file to the new file.
-  // This prevents the situation where good data from an initial run and a 
-  // restart run are in separate files.  By keeping all of the saved data in
-  // 1 file, restarts can be chained together indefinitely.
-  //
-  // "View" the read_pairs cache as a collection ordered by eval_id
+    // create a new restart destination
+    boost::shared_ptr<RestartWriter>
+      rst_writer(new RestartWriter(write_restart_filename));
+    restartDestinations.push_back(rst_writer);
 
-  if (!read_pairs.empty()) {
-    // don't use a const iterator as PRP does not have a const serialize fn
-    PRPCacheIter it, it_end = read_pairs.end();
-    for (it = read_pairs.begin(); it != it_end; ++it) {
-      // insert read records into new restart DB as is (no negation of id's)
-      rst_writer->append_prp(*it);
+    // Write any processed records from the old restart file to the new file.
+    // This prevents the situation where good data from an initial run and a
+    // restart run are in separate files.  By keeping all of the saved data in
+    // 1 file, restarts can be chained together indefinitely.
+    //
+    // "View" the read_pairs cache as a collection ordered by eval_id
 
-      // Distinguish restart evals in memory by negating their eval ids;
-      // positive ids could be misleading if inconsistent with the progression
-      // of a restarted run (resulting in different evaluations that share the
-      // same evalInterfaceIds).  Moreover, they may not be unique within the
-      // restart DB in the presence of overlay/concatenation of multiple runs.
-      //   id > 0 for unique evals from current execution (in data_pairs)
-      //   id = 0 for evals from file import (not in data_pairs)
-      //   id < 0 for non-unique evals from restart (in data_pairs)
-      int restart_eval_id = it->eval_id();
-      if (restart_eval_id > 0) {
-	ParamResponsePair pair(*it); // shallow vars/resp copy, deep ids copy
-	pair.eval_id(-restart_eval_id);
-	data_pairs.insert(pair);
+    if (!read_pairs.empty()) {
+      // don't use a const iterator as PRP does not have a const serialize fn
+      PRPCacheIter it, it_end = read_pairs.end();
+      for (it = read_pairs.begin(); it != it_end; ++it) {
+	// insert read records into new restart DB as is (no negation of id's)
+	rst_writer->append_prp(*it);
+
+	// Distinguish restart evals in memory by negating their eval ids;
+	// positive ids could be misleading if inconsistent with the progression
+	// of a restarted run (resulting in different evaluations that share the
+	// same evalInterfaceIds).  Moreover, they may not be unique within the
+	// restart DB in the presence of overlay/concatenation of multiple runs.
+	//   id > 0 for unique evals from current execution (in data_pairs)
+	//   id = 0 for evals from file import (not in data_pairs)
+	//   id < 0 for non-unique evals from restart (in data_pairs)
+	int restart_eval_id = it->eval_id();
+	if (restart_eval_id > 0) {
+	  ParamResponsePair pair(*it); // shallow vars/resp copy, deep ids copy
+	  pair.eval_id(-restart_eval_id);
+	  data_pairs.insert(pair);
+	}
+	else // should not be negative (see rst append above), but can be zero
+	  data_pairs.insert(*it);
       }
-      else // should not be negative (see rst append above), but can be zero
-	data_pairs.insert(*it);
+
+      // flush is critical so we have a complete restart record in case of abort
+      rst_writer->flush();
     }
 
-    // flush is critical so we have a complete restart record in case of abort
-    rst_writer->flush();
+  }
+  catch (const boost::archive::archive_exception& e) {
+    if (outputLevel > SILENT_OUTPUT)
+      Cout << "\nWarning: Could not write restart file '" 
+	   << write_restart_filename
+	   << "'.\nDetails (Boost archive exception): "
+	   << e.what() << std::endl;
   }
 
   //}
@@ -693,9 +704,16 @@ RestartWriter::RestartWriter()
 
 RestartWriter::RestartWriter(const String& write_restart_filename):
   restartOutputFilename(write_restart_filename),
-  restartOutputFS(restartOutputFilename.c_str(), std::ios::binary),
-  restartOutputArchive(new boost::archive::binary_oarchive(restartOutputFS))
-{  /* empty ctor */  }
+  restartOutputFS(restartOutputFilename.c_str(), std::ios::binary)
+{
+  if (!restartOutputFS.good()) {
+    Cerr << "\nError: could not open restart file '"
+	 << write_restart_filename << "' for writing."<< std::endl;
+    abort_handler(IO_ERROR);
+  }
+
+  restartOutputArchive.reset(new boost::archive::binary_oarchive(restartOutputFS));
+}
 
 
 RestartWriter::RestartWriter(std::ostream& write_restart_ostream):
