@@ -267,7 +267,24 @@ Iterator::Iterator(ProblemDescDB& problem_db):
        << "envelope." << std::endl;
 #endif
 
+           // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " doesn't supports continuous variables.\n";
+
   iteratorRep = get_iterator(problem_db);
+  
+           // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " doesn't supports continuous variables.\n";
+
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -347,8 +364,25 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
        << "envelope." << std::endl;
 #endif
 
+         // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " doesn't supports continuous variables.\n";
+
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(problem_db, model);
+
+           // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
+     << " doesn't supports continuous variables.\n";
+
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -550,8 +584,25 @@ Iterator::Iterator(const String& method_string, Model& model):
        << "envelope." << std::endl;
 #endif
 
+           // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 5: " << method_string
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 5: " << method_string
+     << " doesn't supports continuous variables.\n";
+
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(method_string, model);
+
+             // MK: testing inheritance of traits
+  if (supports_continuous_variables())
+      Cout << "\nDakota Iterator in Iterator, 6: " << method_string
+     << " supports continuous variables.\n";
+  else
+      Cout << "\nDakota Iterator in Iterator, 6: " << method_string
+     << " doesn't supports continuous variables.\n";
+
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
