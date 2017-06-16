@@ -14,145 +14,108 @@
 #define NOND_C3_FUNCTION_TRAIN_H
 
 // #include "DakotaNonD.hpp
+
 #include "NonDExpansion.hpp"
-// #include "c3/lib_funcs.h"
-// #include "c3/lib_linalg.h"
-// #include "c3/lib_clinalg.h"
-
-extern "C"
-{
-    // utilities
-    double * linspace(double,double,size_t);
-    double ** malloc_dd(size_t);
-    void free_dd(size_t, double **);
-
-    // function wrapping
-    struct Fwrap;
-    struct Fwrap * fwrap_create(size_t, const char *);
-    void fwrap_set_fvec(struct Fwrap*,int(*)(size_t,const double*,double*,void*),void*);
-    void fwrap_destroy(struct Fwrap *);
-
-    // polynomial approximation options
-    struct OpeOpts;
-    enum poly_type {LEGENDRE, CHEBYSHEV, HERMITE, STANDARD};
-    struct OpeOpts * ope_opts_alloc(enum poly_type);
-    void ope_opts_set_lb(struct OpeOpts *, double);
-    double ope_opts_get_lb(const struct OpeOpts *);
-    void ope_opts_set_ub(struct OpeOpts *, double);
-    double ope_opts_get_ub(const struct OpeOpts *);
-    void ope_opts_set_start(struct OpeOpts *, size_t);
-    void ope_opts_set_maxnum(struct OpeOpts *,size_t);
-    
-    // One dimensional approximation options
-    enum function_class {CONSTANT,PIECEWISE, POLYNOMIAL,
-                         LINELM, RATIONAL, KERNEL};
-    struct OneApproxOpts;
-    struct OneApproxOpts * one_approx_opts_alloc(enum function_class, void *);
-    void one_approx_opts_free_deep(struct OneApproxOpts **);
-
-
-    // Function Train and analysis
-    struct FunctionTrain;
-    void function_train_free(struct FunctionTrain *);
-    double function_train_eval(struct FunctionTrain *, const double *);
-    double function_train_integrate(const struct FunctionTrain *);
-    double function_train_inner(const struct FunctionTrain *, 
-                                const struct FunctionTrain * );
-
-    
-    // General approximation options
-    enum C3ATYPE { CROSS, REGRESS };
-    struct C3Approx;
-    struct C3Approx * c3approx_create(enum C3ATYPE, size_t);
-    void c3approx_destroy(struct C3Approx *);
-    void c3approx_set_approx_opts_dim(struct C3Approx *,size_t,
-                                  struct OneApproxOpts *);
-    //setting cross approximation arguments
-    void c3approx_init_cross(struct C3Approx * c3a, size_t, int,
-                             double **);
-    void c3approx_set_round_tol(struct C3Approx *, double);
-    void c3approx_set_cross_tol(struct C3Approx *, double);
-    void c3approx_set_verbose(struct C3Approx *, int);
-    void c3approx_set_adapt_kickrank(struct C3Approx *, size_t);
-    void c3approx_set_adapt_maxrank_all(struct C3Approx *, size_t);
-    //void c3approx_set_adapt_maxiter(struct C3Approx *, size_t);
-    void c3approx_set_cross_maxiter(struct C3Approx *, size_t);
-
-    void c3approx_init_cross(struct C3Approx * c3a,size_t,int,double **);
-    struct FunctionTrain * c3approx_do_cross(struct C3Approx *,struct Fwrap *,int);
-}
-
 
 namespace Dakota {
-
 
 /// Nonintrusive uncertainty quantification with the C3 library ...
 
 /** The NonDC3FunctionTrain class uses ... */
 
-class NonDC3FunctionTrain: public NonDExpansion
-{
-public:
+    class NonDC3FunctionTrain: public NonDExpansion
+    {
+    public:
 
-  //
-  //- Heading: Constructors and destructor
-  //
+        //
+        //- Heading: Constructors and destructor
+        //
 
-  /// standard constructor
-  NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model);
-  /// destructor
-  ~NonDC3FunctionTrain();
+        /// standard constructor
+        NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model);
+        /// destructor
+        ~NonDC3FunctionTrain();
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+        //
+        //- Heading: Virtual function redefinitions
+        //
 
-  /// TODO
-  void pre_run();
-  /// perform a forward uncertainty propagation using PCE/SC methods
-  void core_run();
-  /// TODO
-  void post_run(std::ostream& s);
-  /// print the final statistics
-  void print_results(std::ostream& s);
+        /// TODO
+        void compute_expansion();
+        // void pre_run();
+        /// perform a forward uncertainty propagation using PCE/SC methods
+        void core_run();
+        /// TODO
+        void post_run(std::ostream& s);
+        /// print the final statistics
+        // void print_results(std::ostream& s);
 
-protected:
+    protected:
 
-  //
-  //- Heading: Virtual function redefinitions
-  //
+        //
+        //- Heading: Virtual function redefinitions
+        //
 
-  void resolve_inputs(short& u_space_type, short& data_order);
-  void initialize(short u_space_type);
+        void resolve_inputs(short& u_space_type, short& data_order);
+        void initialize(short u_space_type);
+
+        //
+        //- Heading: Member function definitions
+        //
+
+        /// user specified import build points file
+        String importBuildPointsFile;
+        /// user specified import build file format
+        unsigned short importBuildFormat;
+        /// user specified import build active only
+        bool importBuildActiveOnly;
+
+
+    private:
+
+        /// initialize uSpaceModel with input variable data
+        void initialize_u_space_model();
+        
+        /// OBJFUN in NPSOL manual: computes the value and first derivatives of the
+        /// objective function (passed by function pointer to NPSOL).
+        static int qoi_eval(size_t num_samp,        // number of evaluations
+                            const double* var_sets, // num_vars x num_evals
+                            double* qoi_sets,       // num_fns x num_evals
+                            void* args);            // optional arguments
+
+        //
+        //- Heading: Data
+        //
+
+        unsigned int randomSeed;
     
+        /// pointer to the active object instance used within the static evaluator
+        /// functions in order to avoid the need for static data
+        static NonDC3FunctionTrain* c3Instance;
 
-private:
+        // other data ...
+        /// The number of samples used to evaluate the emulator
+        int numSamplesOnEmulator;
 
-  /// OBJFUN in NPSOL manual: computes the value and first derivatives of the
-  /// objective function (passed by function pointer to NPSOL).
- static int qoi_eval(size_t num_samp,        // number of evaluations
-		     const double* var_sets, // num_vars x num_evals
-		     double* qoi_sets,       // num_fns x num_evals
-		     void* args);            // optional arguments
+        /// user specified import approx. points file
+        String importApproxPointsFile;
+        /// user specified import approx. file format
+        unsigned short importApproxFormat;
+        /// user specified import approx. active only
+        bool importApproxActiveOnly;
+        /// file name from \c export_approx_points_file specification
+        String exportPointsFile;
 
-  //
-  //- Heading: Data
-  //
 
-  /// pointer to the active object instance used within the static evaluator
-  /// functions in order to avoid the need for static data
-  static NonDC3FunctionTrain* c3Instance;
-
-  // other data ...
-  /// The number of samples used to evaluate the emulator
-  int numSamplesOnEmulator;
-
-  /// The maximum rank of the function train
-  size_t maxRank;
-  size_t maxNum;
-  size_t startOrder;
-
-};
+        /// override certain print functions 
+        void print_moments(std::ostream& s);
+        void print_sobol_indices(std::ostream& s);
+        void print_local_sensitivity(std::ostream& s);
+    
+        void compute_diagonal_variance();
+        void compute_off_diagonal_covariance();
+        void compute_analytic_statistics();
+    };
 
 } // namespace Dakota
 

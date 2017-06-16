@@ -1,6 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE DAKOTA_XML  [
     <!-- Reusable definition for a method's approximation data import format -->
+    <!ENTITY function_train SYSTEM "../../src/function_train.xml">
+    <!ENTITY function_train_method SYSTEM "../../src/function_train_method.xml">
     <!ENTITY method_import_build_format
         "<optional>
           <oneOf label='Tabular Format' >
@@ -1243,6 +1245,7 @@
 	      <oneOf>
 		<required> <!-- Group with rel/resp; compute prob/rel/gen/sys -->
 		  <oneOf>
+            &function_train_method;
 		    <keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_polynomial_chaos"/>
 		      <!-- Old reference default; samples = 0 -->
@@ -1606,24 +1609,6 @@
 			<param type="OUTPUT_FILE" />
 			&method_export_approx_format;
 		      </keyword>
-		    </keyword>
-		    <keyword  id="c3_function_train" name="c3_function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="Nondeterministic method for low rank approximation" help="MethodCommands.html#MethodNonDFnTrain" minOccurs="1" group="Uncertainty Quantification" >
-		      <alias name="function_train"/>
-		      <!-- TO DO -->
-		      &default_max_iterations;
-		      &default_convergence_tolerance;
-		      <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" default="10000">
-    		      <param type="INTEGER" />
-    		  </keyword>
-              <keyword  id="start_order" name="start_order" code="{N_mdm(sizet,startOrder)}" label="Starting polynomial order of univariate polynomials" help="" minOccurs="0" default="2">
-		          <param type="INTEGER" constraint=">= 0" />
-    		      </keyword>
-		      <keyword  id="max_rank" name="max_rank" code="{N_mdm(sizet,maxRank)}" label="Maximum rank of the function train" help="" minOccurs="0" default="3">
-		          <param type="INTEGER" constraint=">= 0" />
-    		      </keyword>
-              <keyword  id="max_num" name="max_num" code="{N_mdm(sizet,maxNum)}" label="Maximum number of polynomials" help="" minOccurs="0" default="5">
-		          <param type="INTEGER" constraint=">= 0" />
-    		      </keyword>
 		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_sampling"/>
@@ -3024,7 +3009,8 @@
                     <param type="INTEGER" />
                   </keyword>
                   &model_partial_surfpack_export_format;
-               </keyword>
+                </keyword>
+                &function_train;
                 <keyword  id="neural_network" name="neural_network" code="{N_mom(lit,surrogateType_global_neural_network)}" label="Artificial Neural Network" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <keyword  id="max_nodes" name="max_nodes" code="{N_mom(shint,annNodes)}" label="Maximum Number of Nodes" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="numTrainingData - 1">
 		    <alias name="nodes"/>

@@ -49,7 +49,9 @@ DataModelRep::DataModelRep():
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
   analyticCovIdForm(NOCOVAR), referenceCount(1), relTolerance(1.0e-6),
   decreaseTolerance(1.0e-6), subspaceCVMaxRank(-1), subspaceCVIncremental(true),
-  subspaceIdCVMethod(CV_ID_DEFAULT)
+  subspaceIdCVMethod(CV_ID_DEFAULT),
+  maxRank(3),maxNum(5),startOrder(2),rankAdapt(0),startRank(2),crossMaxIter(1),kickRank(2),
+  roundingTolerance(1.0e-8),solverTolerance(1.0e-10),verbosity(0)
 { }
 
 
@@ -127,7 +129,11 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
     >> decreaseTolerance >> subspaceCVMaxRank >> subspaceCVIncremental
-    >> subspaceIdCVMethod;
+    >> subspaceIdCVMethod
+    >> maxRank
+    >> maxNum >> startOrder >> startRank >> rankAdapt >> crossMaxIter >> kickRank
+    >> roundingTolerance >> solverTolerance >> verbosity;
+
 }
 
 
@@ -166,7 +172,10 @@ void DataModelRep::write(std::ostream& s) const
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod;
+    << subspaceIdCVMethod
+    << maxRank
+    << maxNum << startOrder << startRank << rankAdapt << crossMaxIter << kickRank
+    << roundingTolerance << solverTolerance << verbosity;
 }
 
 

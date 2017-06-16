@@ -176,6 +176,7 @@ public:
   KWH(model_order);
   KWH(model_pint);
   KWH(model_shint);
+  KWH(model_sizet);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);

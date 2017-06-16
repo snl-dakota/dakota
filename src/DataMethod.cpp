@@ -146,7 +146,7 @@ DataMethodRep::DataMethodRep():
   calibrateErrorMode(CALIBRATE_NONE), numChains(3), numCR(3), 
   crossoverChainPairs(3), grThreshold(1.2), jumpStep(5), 
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
-  maxRank(3),maxNum(5),startOrder(2),
+  modelParamSpec("FT"),
     // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
@@ -283,8 +283,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity << maxRank
-    << maxNum << startOrder;
+    << generatePosteriorSamples << evaluatePosteriorDensity;
+
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -427,8 +427,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
-    >> generatePosteriorSamples >> evaluatePosteriorDensity >> maxRank
-    >> maxNum >> startOrder;
+    >> generatePosteriorSamples >> evaluatePosteriorDensity;
+
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -571,8 +571,8 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity << maxRank << maxNum
-    << startOrder;
+    << generatePosteriorSamples << evaluatePosteriorDensity;
+
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

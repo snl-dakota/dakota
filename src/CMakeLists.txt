@@ -488,8 +488,8 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
 set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
     DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
-    PecosApproximation.cpp SharedApproxData.cpp
-    SharedPecosApproxData.cpp
+    C3Approximation.cpp PecosApproximation.cpp SharedApproxData.cpp
+    SharedPecosApproxData.cpp SharedC3ApproxData.cpp
     ApplicationInterface.cpp ProcessApplicInterface.cpp
     ProcessHandleApplicInterface.cpp SysCallApplicInterface.cpp
     CommandShell.cpp DirectApplicInterface.cpp TestDriverInterface.cpp)

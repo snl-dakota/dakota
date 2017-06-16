@@ -19,6 +19,7 @@
 #include "TANA3Approximation.hpp"
 #include "PecosApproximation.hpp"
 #include "GaussProcApproximation.hpp"
+#include "C3Approximation.hpp"
 #include "VPSApproximation.hpp"
 #ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.hpp"
@@ -129,6 +130,9 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return new PecosApproximation(problem_db, shared_data, approx_label);
     else if (approx_type == "global_gaussian")
       return new GaussProcApproximation(problem_db, shared_data, approx_label);
+    else if (approx_type == "function_train"){
+      return new C3Approximation(problem_db, shared_data, approx_label);
+    }
 #ifdef HAVE_SURFPACK
     else if (approx_type == "global_polynomial"     ||
 	     approx_type == "global_kriging"        ||
@@ -182,6 +186,8 @@ Approximation* Approximation::get_approx(const SharedApproxData& shared_data)
   else if (strends(approx_type, "_orthogonal_polynomial") ||
 	   strends(approx_type, "_interpolation_polynomial"))
     approx = new PecosApproximation(shared_data);
+  else if (approx_type == "function_train")
+    approx = new C3Approximation(shared_data);
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(shared_data);
   else if (approx_type == "global_voronoi_surrogate")

@@ -1828,7 +1828,7 @@ void NonD::initialize_final_statistics()
   StringArray stats_labels(num_final_stats);
   if (epistemicStats) { // epistemic & mixed aleatory/epistemic
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(resp_tag, "_r%i", i+1);
+      std::sprintf(resp_tag, "_r%zu", i+1);
       stats_labels[cntr++] = String("z_lo") + String(resp_tag);
       stats_labels[cntr++] = String("z_up") + String(resp_tag);
     }
@@ -1837,22 +1837,22 @@ void NonD::initialize_final_statistics()
     char lev_tag[10];
     String dist_tag = (cdfFlag) ? String("cdf") : String("ccdf");
     for (i=0; i<numFunctions; ++i) {
-      std::sprintf(resp_tag, "_r%i", i+1);
+      std::sprintf(resp_tag, "_r%zu", i+1);
       stats_labels[cntr++] = String("mean")    + String(resp_tag);
       stats_labels[cntr++] = String("std_dev") + String(resp_tag);
       num_levels = requestedRespLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
 	switch (respLevelTarget) {
-	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
-	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%zu",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%zu",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%zu", j+1); break;
 	}
 	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
       }
       num_levels = requestedProbLevels[i].length() +
 	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
       for (j=0; j<num_levels; ++j, ++cntr) {
-	std::sprintf(lev_tag, "_zlev%i", j+1);
+	std::sprintf(lev_tag, "_zlev%zu", j+1);
 	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
       }
     }
@@ -1860,9 +1860,9 @@ void NonD::initialize_final_statistics()
       String sys_tag("_sys");
       for (j=0; j<rl_len; ++j, ++cntr) {
 	switch (respLevelTarget) {
-	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
-	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%zu",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%zu",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%zu", j+1); break;
 	}
 	stats_labels[cntr] = dist_tag + String(lev_tag) + sys_tag;
       }

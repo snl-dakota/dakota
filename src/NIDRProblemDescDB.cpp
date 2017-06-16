@@ -1482,6 +1482,19 @@ model_shint(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
 }
 
+
+void NIDRProblemDescDB::
+model_sizet(const char *keyname, Values *val, void **g, void *v)
+{
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
+    botch("%s must be non-negative", keyname);
+#endif
+  (*(Mod_Info**)g)->dmo->**(size_t DataModelRep::**)v = n;
+}
+
+    
 void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1511,6 +1524,7 @@ model_str(const char *keyname, Values *val, void **g, void *v)
   (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
 }
 
+   
 void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
@@ -6771,7 +6785,8 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-        MP_(subModelPointer);
+    MP_(subModelPointer),
+    MP_(modelParamSpec);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6863,16 +6878,14 @@ static int
 
 static size_t
 	MP_(maxHifiEvals),
-    MP_(maxNum),        
-    MP_(maxRank),
-        MP_(numCandidateDesigns),
+    MP_(numCandidateDesigns),
 	MP_(numCandidates),
-        MP_(numDesigns),
-        MP_(numFinalSolutions),
+    MP_(numDesigns),
+    MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
-	MP_(numParents),
-    MP_(startOrder);
+	MP_(numParents);
+    
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -6982,7 +6995,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,MMAIS),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
-	MP2s(methodName,C3_FUNCTION_TRAIN),
+    MP2s(methodName,C3_FUNCTION_TRAIN),
 	MP2s(methodName,COLINY_BETA),
 	MP2s(methodName,COLINY_COBYLA),
 	MP2s(methodName,COLINY_DIRECT),
@@ -7119,6 +7132,7 @@ static Model_mp_lit
 	MP2(modelType,random_field),
 	MP2(modelType,simulation),
 	MP2(modelType,surrogate),
+    MP2(surrogateType,function_train),
 	MP2(surrogateType,hierarchical),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),
@@ -7203,6 +7217,8 @@ static Real
 	MP_(percentFold),
 	MP_(truncationTolerance),
 	MP_(relTolerance),
+    MP_(solverTolerance),
+    MP_(roundingTolerance),
 	MP_(decreaseTolerance);
 
 static RealVector
@@ -7294,6 +7310,16 @@ static int
         MP_(subspaceDimension),
         MP_(subspaceCVMaxRank);
 
+static size_t
+    MP_(crossMaxIter),
+    MP_(kickRank),
+    MP_(maxNum),        
+    MP_(maxRank),
+    MP_(rankAdapt),
+    MP_(startOrder),
+    MP_(startRank),
+    MP_(verbosity);
+    
 #undef MP2s
 #undef MP2
 #undef MP_

@@ -52,9 +52,9 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
+       C3_FUNCTION_TRAIN, POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
-       BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS, C3_FUNCTION_TRAIN,
+       BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
        LIST_SAMPLING, RANDOM_SAMPLING,
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
@@ -780,7 +780,10 @@ public:
   short wilksSidedInterval;
 
   // NonD
+  // pointer to model parameters for UQ
+  String modelParamSpec;
 
+    
   /// a sub-specification of vbdFlag: interaction order limit for
   /// calculation/output of component VBD indices
   unsigned short vbdOrder;
@@ -989,12 +992,8 @@ public:
   /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
   //experimental design
   size_t maxHifiEvals;
-  /// maximum rank
-  size_t maxRank;
-  /// starting polynomial order
-  size_t startOrder;
-  /// maximum number of samples
-  size_t maxNum;
+  
+    
 
   // DREAM sub-specification
 

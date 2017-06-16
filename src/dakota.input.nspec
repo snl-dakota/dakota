@@ -755,6 +755,35 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     |
     ( 
       ( 
+        ( function_train_uq ALIAS nond_function_train_uq {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
+          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+          [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+          [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+            [ 
+              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+              |
+              ( 
+                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
+              |
+              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+             ]
+            [ active_only {N_mdm(true,importBuildActive)} ]
+           ]
+          [ variance_based_decomp {N_mdm(true,vbdFlag)}
+            [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+            [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+           ]
+          model_param_spec STRING {N_mdm(str,modelParamSpec)}
+         )
+        |
         ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}
           [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
           [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
@@ -1050,15 +1079,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
              ]
            ]
-         )
-        |
-        ( c3_function_train ALIAS function_train {N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}
-          [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-          [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-          [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
-          [ start_order INTEGER >= 0 {N_mdm(sizet,startOrder)} ]
-          [ max_rank INTEGER >= 0 {N_mdm(sizet,maxRank)} ]
-          [ max_num INTEGER >= 0 {N_mdm(sizet,maxNum)} ]
          )
         |
         ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}
@@ -2291,6 +2311,20 @@ KEYWORD model {N_mom3(start,0,stop)}
             [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
            )
          ]
+       )
+      |
+      ( function_train {N_mom(lit,surrogateType_function_train)}
+        [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+        [ solver_tolerance REAL {N_mom(Real,solverTolerance)} ]
+        [ rounding_tolerance REAL {N_mom(Real,roundingTolerance)} ]
+        [ start_order INTEGER >= 0 {N_mom(sizet,startOrder)} ]
+        [ max_rank INTEGER >= 0 {N_mom(sizet,maxRank)} ]
+        [ max_num INTEGER >= 0 {N_mom(sizet,maxNum)} ]
+        [ start_rank INTEGER >= 0 {N_mom(sizet,startRank)} ]
+        [ rank_adapt INTEGER >= 0 {N_mom(sizet,rankAdapt)} ]
+        [ verbosity INTEGER >= 0 {N_mom(sizet,verbosity)} ]
+        [ kick_rank INTEGER >= 0 {N_mom(sizet,kickRank)} ]
+        [ cross_maxiter INTEGER >= 0 {N_mom(sizet,crossMaxIter)} ]
        )
       |
       ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
