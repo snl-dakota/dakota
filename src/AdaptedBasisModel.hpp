@@ -47,7 +47,8 @@ public:
 
   bool initialize_mapping(ParLevLIter pl_iter);
   bool finalize_mapping();
-  bool mapping_initialized();
+  bool mapping_initialized() const;
+  bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
@@ -240,8 +241,12 @@ inline const IntResponseMap& AdaptedBasisModel::derived_synchronize_nowait()
 }
 
 
-inline bool AdaptedBasisModel::mapping_initialized()
+inline bool AdaptedBasisModel::mapping_initialized() const
 { return adaptedBasisInitialized; }
+
+
+inline bool AdaptedBasisModel::resize_pending() const
+{ return !adaptedBasisInitialized; }
 
 
 /**  This specialization is because the model is used in multiple contexts

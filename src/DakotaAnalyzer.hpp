@@ -296,12 +296,6 @@ inline void Analyzer::response_results_active_set(const ActiveSet& set)
 inline bool Analyzer::compact_mode() const
 { return compactMode; }
 
-
-inline void Analyzer::finalize_run()
-{
-  Iterator::finalize_run(); // included for completeness
-}
-
 } // namespace Dakota
 
 #endif

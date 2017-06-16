@@ -7,7 +7,7 @@ environment
 
 method
   polynomial_chaos
-    quadrature_order   = 5        #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
+    quadrature_order_sequence   = 5        #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
 #    expansion_order    = 4	      #s14,#s15,#s16,#s17,#s18,#s19
 #    dimension_preference = 4 2	  #s14,#s15,#s16,#s17,#s18
     dimension_preference = 5 3	  #s0,#s1,#s2,#s3,#s4,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
@@ -21,7 +21,7 @@ method
 #    collocation_points = 24	    #s14,#s15,#s16,#s17,#s18
 #    collocation_points = 252	    #s19
     samples_on_emulator = 10000		            #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-    seed = 12347 rng rnum2	      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+    seed = 12347 	      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
     response_levels = .1 1. 50. 100. 500. 1000.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
 #	  response_levels = 10.		      #s12,#s13
 #	  compute reliabilities		      #s12,#s13
@@ -125,9 +125,9 @@ variables
 #    descriptors   = 'x1' 'x2'			      #s28,#s37,#s51,#s65
 
 interface
-  direct
-  analysis_driver = 'rosenbrock'              #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s14,#s15,#s16,#s17,#s18,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
-#  analysis_driver = 'generalized_rosenbrock'	#s5,#s11,#s12,#s13,#s19
+  analysis_drivers = 'rosenbrock'              #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s14,#s15,#s16,#s17,#s18,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60,#s61,#s62,#s63,#s64,#s65
+#  analysis_drivers = 'generalized_rosenbrock'	#s5,#s11,#s12,#s13,#s19
+    direct
 
 responses
   response_functions = 1

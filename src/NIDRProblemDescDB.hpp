@@ -143,6 +143,7 @@ public:
   KWH(method_litp);
   KWH(method_litr);
   KWH(method_litz);
+  KWH(method_order);
   KWH(method_nnint);
   KWH(method_num_resplevs);
   KWH(method_piecewise);

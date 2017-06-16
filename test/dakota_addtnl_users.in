@@ -27,29 +27,30 @@ method
 variables
   continuous_design = 2
     initial_point -1.2   1.0                  #s0,#s1
-#    initial_point  0.8   0.7			            #s2,#s3
-    lower_bounds  -2.0  -2.0			            #s0,#s1,#s2,#s3
-    upper_bounds   2.0   2.0			            #s0,#s1,#s2,#s3
-    descriptors    'x1'  'x2'			            #s0,#s1,#s2,#s3
-#    initial_point  1.8   1.0			            #s4
-#    upper_bounds   2.164 4.0  			          #s4
-#    lower_bounds   1.5   0.0 			          #s4
-#    descriptors'intake_dia' 'flatness' 	    #s4
-#    initial_point  4.0   4.0			            #s5
-#    upper_bounds  10.0  10.0  			          #s5
-#    lower_bounds   1.0   1.0  			          #s5
-#    descriptors'w' 't'	  			              #s5
-#  continuous_state = 4				                #s5
-#    initial_state  40000. 29.E+6 500. 1000.	#s5
-#    descriptors      'R'   'E'   'X'   'Y'	  #s5
+#    initial_point  0.8   0.7		      #s2,#s3
+    lower_bounds  -2.0  -2.0		      #s0,#s1,#s2,#s3
+    upper_bounds   2.0   2.0		      #s0,#s1,#s2,#s3
+    descriptors    'x1'  'x2'		      #s0,#s1,#s2,#s3
+#    initial_point  1.8   1.0		      #s4
+#    upper_bounds   2.164 4.0  		      #s4
+#    lower_bounds   1.5   0.0 		      #s4
+#    descriptors 'intake_dia' 'flatness'      #s4
+#    initial_point  4.0   4.0		      #s5
+#    upper_bounds  10.0  10.0  		      #s5
+#    lower_bounds   1.0   1.0  		      #s5
+#    descriptors    'w'   't'  		      #s5
+#  continuous_state = 4			      #s5
+#    initial_state  40000. 29.E+6 500. 1000.  #s5
+#    descriptors      'R'   'E'   'X'   'Y'   #s5
 
 interface
-  fork                                        #s0,#s1,#s2,#s3,#s5
-    analysis_driver = 'rosenbrock'		        #s0,#s1,#s2,#s3
-#  fork asynchronous                          #s4
-#    analysis_driver = 'cyl_head'		          #s4
-#    asynchronous evaluation_concurrency = 2	#s5
-#    analysis_driver = 'cantilever'		        #s5
+  analysis_drivers = 'rosenbrock'             #s0,#s1,#s2,#s3
+    fork                                      #s0,#s1,#s2,#s3
+#  analysis_drivers = 'cyl_head'		          #s4
+#    fork asynchronous                        #s4
+#  analysis_drivers = 'cantilever'		        #s5
+#    fork                                     #s5
+#  asynchronous evaluation_concurrency = 2	  #s5
 
 responses
   objective_functions = 1                     #s0,#s2,#s4,#s5
@@ -60,6 +61,6 @@ responses
 #    method_source dakota		                  #s4,#s5
 #    interval_type central		                #s4
 #    interval_type forward		                #s5
-#    fd_gradient_step_size = 1.e-4	          #s4,#s5
+#    fd_step_size = 1.e-4	                    #s4,#s5
   analytic_gradients                          #s0,#s1,#s2,#s3
   no_hessians

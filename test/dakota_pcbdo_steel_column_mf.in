@@ -119,7 +119,7 @@ method,
 	polynomial_chaos askey
  	  expansion_order = 2			#s0,#s1
 	  collocation_ratio = 2.		#s0,#s1
-	  seed = 12347 rng rnum2		#s0,#s1
+	  seed = 12347 		#s0,#s1
 #	  sparse_grid_level = 2 non_nested	#s2,#s3
 	  response_levels = 0.0
 	  compute reliabilities

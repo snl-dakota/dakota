@@ -589,6 +589,61 @@ see \texttt{Dakota/examples/users/herbie\_shubert\_opt\_ego.in} }
   \label{fig:2D_shubert}
 \end{figure}
 
+\section{Sobol and Ishigami Functions}
+These functions are often used to test sensitivity analysis methods. 
+These are documented in ~\cite{storlie_09}.  The first is 
+the Sobol rational function, given by the equation: 
+\begin{equation}
+f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^4}
+\end{equation}
+This function is monotonic across each of the inputs.  However, there is 
+substantial interaction between $x_1$ and $x_2$ which makes sensitivity analysis 
+difficult.
+This function in shown in Figure~\ref{fig:sobol_rational}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_rational}
+  \caption{Plot of the \texttt{sobol\_rational} test function in 2 dimensions.}
+  \label{fig:sobol_rational}
+\end{figure}
+
+The Ishigami test problem~\cite{storlie_09} is a
+smooth $C^{\infty}$ function:
+\begin{equation}
+f({\bf x}) = \sin(2 \pi x_1 - \pi) + 7 \sin^2(2 \pi x_2 - \pi) 
++ 0.1(2 \pi x_3 - \pi)^4 \sin(2 \pi x_1 - \pi)
+\end{equation}
+where the distributions for $x_1$, $x_2$, and $x_3$ are {\it iid}
+uniform on [0,1].  This function was created as a test for global
+sensitivity analysis methods, but is challenging for any method based
+on low-order structured grids (e.g., due to term cancellation at
+midpoints and bounds). 
+This function in shown in Figure~\ref{fig:sobol_ishigami}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_ishigami}
+  \caption{Plot of the \texttt{sobol\_ishigami} test function as a function of x1 and x3.}
+  \label{fig:sobol_ishigami}
+\end{figure}
+
+At the opposite end of the smoothness spectrum, Sobol's
+g-function~\cite{storlie_09} is $C^0$ with the absolute value
+contributing a slope discontinuity at the center of the domain:
+\begin{equation}
+f({\bf x}) = 2 \prod_{j=1}^5 \frac{|4x_j - 2| + a_j}{1+a_j};
+~~~a = [0, 1, 2, 4, 8]
+\end{equation}
+The distributions for $x_j$ for $j=1,2,3,4,5$ are {\it iid}
+uniform on [0,1]. 
+This function in shown in Figure~\ref{fig:sobol_g_function}.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.7]{images/sobol_g_function}
+  \caption{Plot of the \texttt{sobol\_g\_function} test function.}
+  \label{fig:sobol_g_function}
+\end{figure}
+
+
 %\clearpage
 \section{Cylinder Head}\label{additional:cylinder}
 
@@ -633,7 +688,7 @@ design variables according to the following simple expressions:
   \label{additional:cylheadexp}\\
 \sigma_{\mathtt{max}} &=& 750+\frac{1}{(\mathtt{t_{wall}})^{2.5}}\nonumber\\
 \mathtt{t_{wall}}     &=& \mathtt{offset_{intake}-offset_{exhaust}}-
-  \frac{(\mathtt{d_{intake}-d_{exhaust}})}{2}\nonumber
+  \frac{(\mathtt{d_{intake}+d_{exhaust}})}{2}\nonumber
 \end{eqnarray}
 
 where the constants in Equation~\ref{additional:cylheadaltg} and

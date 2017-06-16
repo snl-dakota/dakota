@@ -16,13 +16,13 @@ environment
 #  graphics
   tabular_data
     tabular_data_file = 'rosen_opt_sbo.dat'   #s0
-  method_pointer = 'SBLO'
+  top_method_pointer = 'SBLO'
 
 method
   id_method = 'SBLO'
   surrogate_based_local
   model_pointer = 'SURROGATE'
-  approx_method_pointer = 'NLP'
+  method_pointer = 'NLP'
   max_iterations = 500
 #	soft_convergence_limit = 10
 ###############################################
@@ -56,8 +56,6 @@ method
 model
   id_model = 'SURROGATE'
   surrogate global                      #s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
-    responses_pointer = 'SURROGATE_RESP'
-    dace_method_pointer = 'SAMPLING'		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 #	  reuse_samples region
 #	  use_derivatives			#s10,#s11
     correction additive zeroth_order 		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
@@ -71,7 +69,9 @@ model
 #	  moving_least_squares			          #s7
 #	  radial_basis				                #s8
 # 	surrogate local taylor_series		    #s5,#s6
+    dace_method_pointer = 'SAMPLING'		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 #	  actual_model_pointer = 'TRUTH' 	    #s5,#s6
+  responses_pointer = 'SURROGATE_RESP'
 
 variables
   continuous_design = 2
@@ -87,7 +87,7 @@ responses
   numerical_gradients               #s0,#s1,#s2,#s4,#s5,#s6
     method_source dakota		        #s0,#s1,#s2,#s4,#s5,#s6
     interval_type central		        #s0,#s1,#s2,#s4,#s5,#s6
-    fd_gradient_step_size = 1.e-6	  #s0,#s1,#s2,#s4,#s5,#s6
+    fd_step_size = 1.e-6	          #s0,#s1,#s2,#s4,#s5,#s6
   no_hessians
 
 ###############################################
@@ -96,7 +96,6 @@ responses
 ###############################################
 method
   id_method = 'SAMPLING'
-  model_pointer = 'TRUTH'
 #	dace box_behnken
 #	dace central_composite
 #	dace oas #seed = 5
@@ -111,8 +110,9 @@ method
     samples = 10          #s0,#s1,#s2,#s3,#s5,#s6,#s7,#s8,#s9,#s10
 #	  samples = 30		      #s4
 #	  samples =  5		      #s11
-    seed = 531 rng rnum2
+    seed = 531 
     sample_type lhs
+    model_pointer = 'TRUTH'
 
 model
   id_model = 'TRUTH'
@@ -121,10 +121,10 @@ model
     responses_pointer = 'TRUE_RESP'
 
 interface
-  direct
   id_interface = 'TRUE_FN'
-    analysis_driver = 'rosenbrock'
-    deactivate evaluation_cache restart_file
+  analysis_drivers = 'rosenbrock'
+    direct
+  deactivate evaluation_cache restart_file
 
 responses
   id_responses = 'TRUE_RESP'

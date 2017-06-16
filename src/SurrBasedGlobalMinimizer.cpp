@@ -26,12 +26,7 @@
 
 static const char rcsId[]="@(#) $Id: SurrBasedGlobalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
 
-
 namespace Dakota {
-
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
 
 
 SurrBasedGlobalMinimizer::
@@ -125,7 +120,7 @@ void SurrBasedGlobalMinimizer::core_run()
   // This flag will be used to indicate when we are finished iterating.  An
   // iteration is a solution of the approximate model followed by an update
   // of the surrogate.
-  while (sbIterNum < maxIterations) {
+  while (globalIterCount < maxIterations) {
 
     // Test how well the surrogate matches up with the truth model.  For this
     // test, we currently use R-squared as a measure of goodness of fit,
@@ -200,14 +195,14 @@ void SurrBasedGlobalMinimizer::core_run()
     // Beyond this point, we will want to know if this is the last iteration.
     // We will use this information to prevent updating of the surrogate since
     // it will not be used again.
-    bool last_iter = ++sbIterNum >= maxIterations;
+    bool last_iter = ++globalIterCount >= maxIterations;
 
     if (outputLevel > QUIET_OUTPUT) {
       // In here we want to write the truth values into a simple tab delimited
       // file so that we can easily compare them with the surrogate values of
       // the points returned by the iterator.
       std::string ofname("finaldatatruth");
-      ofname += boost::lexical_cast<std::string>(sbIterNum);
+      ofname += boost::lexical_cast<std::string>(globalIterCount);
       ofname += ".dat";
       std::ofstream ofile(ofname.c_str());
       ofile.precision(12);
@@ -244,7 +239,7 @@ void SurrBasedGlobalMinimizer::core_run()
     }
     else {
       // restore state prior to previous append_approximation()
-      if (replacePoints && sbIterNum > 1)
+      if (replacePoints && globalIterCount > 1)
 	approx_model.pop_approximation(false);// don't store SDP set; no restore
       // update the data set and rebuild the approximation
       approx_model.append_approximation(vars_results, truth_resp_results, true);

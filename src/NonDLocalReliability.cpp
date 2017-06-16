@@ -42,13 +42,8 @@ using OPTPP::NLPGradient;
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.cpp 4058 2006-10-25 01:39:40Z mseldre $";
 
 namespace Dakota {
+
 extern PRPCache data_pairs; // global container
-
-
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL 2
-
 
 // initialization of statics
 NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
@@ -485,6 +480,9 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 
 void NonDLocalReliability::core_run()
 {
+  initialize_random_variable_parameters();
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
+
   if (mppSearchType) mpp_search();
   else               mean_value();
 
@@ -496,7 +494,7 @@ void NonDLocalReliability::core_run()
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 
-  numRelAnalyses++;
+  ++numRelAnalyses;
 }
 
 
@@ -507,7 +505,6 @@ void NonDLocalReliability::mean_value()
   // finalStatistics.  Additionally, if uncorrelated variables, compute
   // importance factors.
 
-  initialize_random_variable_parameters();
   initial_taylor_series();
 
   // initialize arrays
@@ -516,15 +513,15 @@ void NonDLocalReliability::mean_value()
     (numUncertainVars * (numUncertainVars+1)) / 2 : numUncertainVars;
   impFactor.shapeUninitialized(num_imp_fact, numFunctions);
   statCount = 0;
-  initialize_final_statistics_gradients();
 
   // local reliability data aren't output to tabular, so send directly
   // to graphics window only
   Graphics& dakota_graphics = parallelLib.output_manager().graphics();
 
   // loop over response functions
-  size_t i, j, cntr;
+  size_t i, j, cntr, moment_offset = (finalMomentsType) ? 2 : 0;
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  Real mean, mom2, std_dev, var, terms_i;
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
     size_t rl_len = requestedRespLevels[respFnCount].length(),
            pl_len = requestedProbLevels[respFnCount].length(),
@@ -532,13 +529,16 @@ void NonDLocalReliability::mean_value()
            gl_len = requestedGenRelLevels[respFnCount].length(),
         total_lev = rl_len + pl_len + bl_len + gl_len;
 
-    Real& mean    = momentStats(0,respFnCount);
-    Real& std_dev = momentStats(1,respFnCount);
+    mean = momentStats(0,respFnCount); mom2 = momentStats(1,respFnCount);
+    if (finalMomentsType == CENTRAL_MOMENTS)
+      { var = mom2; std_dev = std::sqrt(mom2); }
+    else
+      { std_dev = mom2; var = mom2 * mom2; }
 
     RealVector dg_ds_meanx;
-    bool need_dg_ds = (final_asv[statCount] & 2); // mean stat
+    bool need_dg_ds = (finalMomentsType && (final_asv[statCount] & 2)); // mean
     if (!need_dg_ds)
-      for (i=0, j=statCount+2; i<total_lev; ++i, ++j)
+      for (i=0, j=statCount+moment_offset; i<total_lev; ++i, ++j)// all lev map
 	if (final_asv[j] & 2)
 	  { need_dg_ds = true; break; }
     if (need_dg_ds) {
@@ -548,27 +548,29 @@ void NonDLocalReliability::mean_value()
       dg_ds_eval(ranVarMeansX, fn_grad_mean_x, dg_ds_meanx);
     }
 
-    // approximate response means already computed
-    finalStatistics.function_value(mean, statCount);
-    // sensitivity of response mean
-    if (final_asv[statCount] & 2)
-      finalStatistics.function_gradient(dg_ds_meanx, statCount);
-    ++statCount;
+    if (finalMomentsType) {
+      // approximate response mean already computed
+      finalStatistics.function_value(mean, statCount);
+      // sensitivity of response mean
+      if (final_asv[statCount] & 2)
+	finalStatistics.function_gradient(dg_ds_meanx, statCount);
+      ++statCount;
 
-    // approximate response std deviations already computed
-    finalStatistics.function_value(std_dev, statCount);
-    // sensitivity of response std deviation
-    if (final_asv[statCount] & 2) {
-      // Differentiating the first-order second-moment expression leads to
-      // 2nd-order d^2g/dxds sensitivities which are:
-      // > awkward to compute (nonstandard DVV w/ active + inactive vars)
-      // > a higher-order term that we will neglect for simplicity
-      Cerr << "Warning: response std deviation sensitivity is zero for MVFOSM."
-           << std::endl;
-      RealVector final_stat_grad(numUncertainVars); // init to 0.
-      finalStatistics.function_gradient(final_stat_grad, statCount);
+      // approximate response std deviation or variance already computed
+      finalStatistics.function_value(mom2, statCount);
+      // sensitivity of response std deviation
+      if (final_asv[statCount] & 2) {
+	// Differentiating the first-order second-moment expression leads to
+	// 2nd-order d^2g/dxds sensitivities which are:
+	// > awkward to compute (nonstandard DVV w/ active + inactive vars)
+	// > a higher-order term that we will neglect for simplicity
+	Cerr << "Warning: response std deviation sensitivity is zero for "
+	     << "MVFOSM." << std::endl;
+	RealVector final_stat_grad(numUncertainVars); // init to 0.
+	finalStatistics.function_gradient(final_stat_grad, statCount);
+      }
+      ++statCount;
     }
-    ++statCount;
 
     // If response std_dev is non-zero, compute importance factors.  Traditional
     // impFactors correspond to the diagonal terms in the computation of the
@@ -584,10 +586,9 @@ void NonDLocalReliability::mean_value()
       if (correlation_flag) {
 	const Pecos::RealSymMatrix& x_corr_mat
 	  = natafTransform.x_correlation_matrix();
-	Real resp_var = std_dev * std_dev, terms_i;
 	for (i=0, cntr=numUncertainVars; i<numUncertainVars; ++i) {
 	  imp_fact[i] = std::pow(ranVarStdDevsX[i] / std_dev * fn_grad[i], 2);
-	  terms_i = 2. * ranVarStdDevsX[i] * fn_grad[i] / resp_var;
+	  terms_i = 2. * ranVarStdDevsX[i] * fn_grad[i] / var;
 	  for (j=0; j<i; ++j, ++cntr) // collect both off diagonal terms
 	    imp_fact[cntr]
 	      = terms_i * ranVarStdDevsX[j] * x_corr_mat(i,j) * fn_grad[j];
@@ -712,8 +713,6 @@ void NonDLocalReliability::mpp_search()
   NonDLocalReliability* prev_instance = nondLocRelInstance;
   nondLocRelInstance = this;
 
-  // The following 2 calls must precede use of natafTransform.trans_X_to_U()
-  initialize_random_variable_parameters();
   // Modify the correlation matrix (Nataf) and compute its Cholesky factor.
   // Since the uncertain variable distributions (means, std devs, correlations)
   // may change among NonDLocalReliability invocations (e.g., RBDO with design
@@ -722,6 +721,8 @@ void NonDLocalReliability::mpp_search()
 
   // initialize initialPtUSpec on first reliability analysis; needs to precede
   // iteratedModel.continuous_variables() assignment in initial_taylor_series()
+  // and needs to follow initialize_random_variable_parameters() and
+  // transform_correlations().
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
       natafTransform.trans_X_to_U(iteratedModel.continuous_variables(),
@@ -739,7 +740,6 @@ void NonDLocalReliability::mpp_search()
 
   // Initialize local arrays
   statCount = 0;
-  initialize_final_statistics_gradients();
 
   // Initialize class scope arrays, modify the correlation matrix, and
   // evaluate median responses
@@ -753,35 +753,37 @@ void NonDLocalReliability::mpp_search()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   for (respFnCount=0; respFnCount<numFunctions; ++respFnCount) {
 
-    // approximate response means already computed
-    finalStatistics.function_value(momentStats(0,respFnCount), statCount);
-    // sensitivity of response mean
-    if (final_asv[statCount] & 2) {
-      RealVector fn_grad_mean_x(numUncertainVars, false);
-      for (i=0; i<numUncertainVars; i++)
-	fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
-      // evaluate dg/ds at the variable means and store in finalStatistics
-      RealVector final_stat_grad;
-      dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
-      finalStatistics.function_gradient(final_stat_grad, statCount);
-    }
-    ++statCount;
+    if (finalMomentsType) {
+      // approximate response mean already computed
+      finalStatistics.function_value(momentStats(0,respFnCount), statCount);
+      // sensitivity of response mean
+      if (final_asv[statCount] & 2) {
+	RealVector fn_grad_mean_x(numUncertainVars, false);
+	for (i=0; i<numUncertainVars; i++)
+	  fn_grad_mean_x[i] = fnGradsMeanX(i,respFnCount);
+	// evaluate dg/ds at the variable means and store in finalStatistics
+	RealVector final_stat_grad;
+	dg_ds_eval(ranVarMeansX, fn_grad_mean_x, final_stat_grad);
+	finalStatistics.function_gradient(final_stat_grad, statCount);
+      }
+      ++statCount;
 
-    // approximate response std deviations already computed
-    finalStatistics.function_value(momentStats(1,respFnCount), statCount);
-    // sensitivity of response std deviation
-    if (final_asv[statCount] & 2) {
-      // Differentiating the first-order second-moment expression leads to
-      // 2nd-order d^2g/dxds sensitivities which would be awkward to compute
-      // (nonstandard DVV containing active and inactive vars)
-      Cerr << "Error: response std deviation sensitivity not yet supported."
-           << std::endl;
-      abort_handler(-1);
-      // TO DO: back out from RIA/PMA equations (use closest level to mean?):
-      // RIA: dsigma/ds = (dmean/ds - sigma dbeta_cdf/ds) / beta_cdf
-      // PMA: dsigma/ds = (dmean/ds - dz/ds) / beta_cdf
+      // approximate response std deviation or variance already computed
+      finalStatistics.function_value(momentStats(1,respFnCount), statCount);
+      // sensitivity of response std deviation
+      if (final_asv[statCount] & 2) {
+	// Differentiating the first-order second-moment expression leads to
+	// 2nd-order d^2g/dxds sensitivities which would be awkward to compute
+	// (nonstandard DVV containing active and inactive vars)
+	Cerr << "Error: response std deviation sensitivity not yet supported."
+	     << std::endl;
+	abort_handler(-1);
+	// TO DO: back out from RIA/PMA equations (use closest level to mean?):
+	// RIA: dsigma/ds = (dmean/ds - sigma dbeta_cdf/ds) / beta_cdf
+	// PMA: dsigma/ds = (dmean/ds - dz/ds) / beta_cdf
+      }
+      ++statCount;
     }
-    ++statCount;
 
     // The most general case is to allow a combination of response, probability,
     // reliability, and generalized reliability level specifications for each
@@ -955,8 +957,8 @@ void NonDLocalReliability::mpp_search()
 
 /** An initial first- or second-order Taylor-series approximation is
     required for MV/AMV/AMV+/TANA or for the case where momentStats
-    (from MV) are required within finalStatistics for subIterator
-    usage of NonDLocalReliability. */
+    (from MV) are required within finalStatistics for subIterator usage
+    of NonDLocalReliability. */
 void NonDLocalReliability::initial_taylor_series()
 {
   bool init_ts_flag = (mppSearchType < NO_APPROX); // updated below
@@ -981,7 +983,7 @@ void NonDLocalReliability::initial_taylor_series()
 	asrv[i] = mode;
     // no break: fall through
   case NO_APPROX:
-    if (subIteratorFlag) {
+    if (subIteratorFlag && finalMomentsType) {
       // check final_asv for active mean and std deviation stats
       size_t cntr = 0;
       for (i=0; i<numFunctions; i++) {
@@ -1053,7 +1055,7 @@ void NonDLocalReliability::initial_taylor_series()
       = natafTransform.x_correlation_matrix();
     for (i=0; i<numFunctions; ++i) {
       if (asrv[i]) {
-	Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
+	Real &mean = momentStats(0,i), &mom2 = momentStats(1,i);
 	mean = fnValsMeanX[i]; // first-order mean
 	Real v1 = 0., v2 = 0.;
 	for (j=0; j<numUncertainVars; ++j) {
@@ -1072,7 +1074,7 @@ void NonDLocalReliability::initial_taylor_series()
 	  }
 	}
 	if (t2nq) mean += v1/2.;
-	std_dev = std::sqrt(v2);
+	mom2 = (finalMomentsType == CENTRAL_MOMENTS) ? v2 : std::sqrt(v2);
       }
     }
 
@@ -1082,8 +1084,12 @@ void NonDLocalReliability::initial_taylor_series()
     //RealSymMatrix variance(numFunctions, false);
     //Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1., covariance,
     //                             fnGradsMeanX, variance);
-    //for (i=0; i<numFunctions; i++)
-    //  momentStats(1,i) = sqrt(variance(i,i));
+    //if (finalMomentsType == CENTRAL_MOMENTS)
+    //  for (i=0; i<numFunctions; i++)
+    //    momentStats(1,i) = variance(i,i);
+    //else
+    //  for (i=0; i<numFunctions; i++)
+    //    momentStats(1,i) = sqrt(variance(i,i));
     //Cout << "\nvariance = " << variance << "\nmomentStats = " << momentStats;
   }
 }
@@ -2723,18 +2729,21 @@ void NonDLocalReliability::print_results(std::ostream& s)
   }
 
   // output MV-specific statistics
-  if (!mppSearchType)
+  if (!mppSearchType) {
+    Real std_dev, *imp_fact_i;
     for (i=0; i<numFunctions; i++) {
       s << "MV Statistics for " << fn_labels[i] << ":\n";
       // approximate response means and std deviations and importance factors
-      Real& std_dev = momentStats(1,i);
-      s << "  Approximate Mean Response                  = " << std::setw(width)
-	<< momentStats(0,i) << "\n  Approximate Standard Deviation of Response"
-	<< " = " << std::setw(width)<< std_dev << '\n';
+      std_dev = (finalMomentsType == CENTRAL_MOMENTS) ?
+	std::sqrt(momentStats(1,i)) : momentStats(1,i);
+      s << "  Approximate Mean Response                  = "
+	<< std::setw(width) << momentStats(0,i)
+	<< "\n  Approximate Standard Deviation of Response = "
+	<< std::setw(width)<< std_dev << '\n';
       if (std_dev < Pecos::SMALL_NUMBER)
 	s << "  Importance Factors not available.\n";
       else {
-	Real* imp_fact_i = impFactor[i];
+	imp_fact_i = impFactor[i];
 	for (j=0; j<numUncertainVars; j++)
 	  s << "  Importance Factor for " << std::setiosflags(std::ios::left)
 	    << std::setw(20) << uv_labels[j].data() << " = "
@@ -2751,6 +2760,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
 		<< std::setw(width) << imp_fact_i[cntr] << '\n';
       }
     }
+  }
 
   // output PDFs (defined if pdfOutput and integrationRefinement)
   print_densities(s);
@@ -2760,7 +2770,9 @@ void NonDLocalReliability::print_results(std::ostream& s)
 
     size_t num_levels = computedRespLevels[i].length();
     if (num_levels) {
-      if (!mppSearchType && momentStats(1,i) < Pecos::SMALL_NUMBER)
+      Real std_dev = (finalMomentsType == CENTRAL_MOMENTS) ?
+	std::sqrt(momentStats(1,i)) : momentStats(1,i);
+      if (!mppSearchType && std_dev < Pecos::SMALL_NUMBER)
         s << "\nWarning: negligible standard deviation renders CDF results "
           << "suspect.\n\n";
       if (cdfFlag)

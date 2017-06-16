@@ -72,13 +72,14 @@ protected:
   void print_results(std::ostream& s);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
-  void init_queso_environment();
+  void init_queso_environment(const String& input_filename = String());
 
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
   
-  /// define variables, options, likelihood callback, and inverse problem
-  void init_queso_solver();
+  /// define solver options, likelihood callback, posterior RV, and
+  /// inverse problem
+  virtual void init_queso_solver();
 
   /// use derivative information from the emulator to define the proposal
   /// covariance (inverse of misfit Hessian)
@@ -135,6 +136,8 @@ protected:
 
   /// intialize the QUESO parameter space, min, max, initial, and domain
   void init_parameter_domain();
+
+  void init_proposal_covariance();
 
   /// use covariance of prior distribution for setting proposal covariance
   void prior_proposal_covariance();
@@ -197,15 +200,9 @@ protected:
       out-of-bounds samples by transforming bounded domains to [-inf,inf]. */
   bool logitTransform;
 
-private:
 
-  //
-  // - Heading: Data
-  // 
-  
-  /// Pointer to current class instance for use in static callback functions
-  static NonDQUESOBayesCalibration* nonDQUESOInstance;
-  
+
+
   // the following QUESO objects listed in order of construction;
   // scoped_ptr more appropriate, but don't want to include QUESO
   // headers here (would be needed for checked delete on scoped_ptr)
@@ -228,6 +225,9 @@ private:
   /// initial parameter values at which to start chain
   boost::shared_ptr<QUESO::GslVector> paramInitials;
 
+  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
+    priorRv;
+
   /// proposal covariance for DRAM
   boost::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
 
@@ -240,21 +240,24 @@ private:
   boost::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
     QUESO::GslMatrix> > likelihoodFunctionObj;
 
-  boost::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
-    priorRv;
-
   boost::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
     postRv;
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
 
+  /// Pointer to current class instance for use in static callback functions
+  static NonDQUESOBayesCalibration* nonDQUESOInstance;
+
+private:
+
+  //
+  // - Heading: Data
+  // 
+  
   /// container for aggregating unique MCMC sample points collected
   /// across multiple (restarted) chains
   RealVectorArray uniqueSamples;
-  /// container for managing best MCMC samples (points and associated
-  /// log posterior) collected across multiple (restarted) chains
-  std::/*multi*/map<Real, QUESO::GslVector> bestSamples;
 
   // cache previous MCMC starting point for assessing convergence of
   // chain restart process

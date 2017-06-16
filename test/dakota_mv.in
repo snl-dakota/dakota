@@ -18,8 +18,8 @@ method
   local_reliability
 
 interface
-  fork asynch
-    analysis_driver = 'text_book'
+  analysis_drivers = 'text_book'
+    fork asynchronous
 
 variables
   lognormal_uncertain = 2
@@ -38,6 +38,6 @@ responses
 #  mixed_gradients                                #s2
 #    id_numerical_gradients = 1				            #s2
 #    id_analytic_gradients  = 2 3			            #s2
-#    fd_gradient_step_size  = 1.e-4 1.e-3		      #s2
+#    fd_step_size  = 1.e-4 1.e-3		              #s2
   no_hessians						                          #s0,#s1,#s2
 #  numerical_hessians					                    #s3,#s4

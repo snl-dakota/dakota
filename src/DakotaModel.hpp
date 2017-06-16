@@ -187,9 +187,11 @@ public:
   virtual bool initialize_mapping(ParLevLIter pl_iter);
   /// finalize model mapping, returns true if the variables size has changed
   virtual bool finalize_mapping();
-
   /// return true if mapping has been fully initialized, false otherwise.
-  virtual bool mapping_initialized();
+  virtual bool mapping_initialized() const;
+  /// return true if a potential resize is still pending, such that
+  /// sizing-based initialization should be deferred
+  virtual bool resize_pending() const;
 
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
@@ -289,8 +291,9 @@ public:
   /// a DataFitSurrModel
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs,
 					  bool normalized = false);
-  /// retrieve the approximation variances from each
-  /// Approximation within a DataFitSurrModel
+
+  /// retrieve the prediction variances from each Approximation within
+  /// a DataFitSurrModel
   virtual const RealVector& approximation_variances(const Variables& vars);
 
   /// set response computation mode used in SurrogateModels for
@@ -300,14 +303,24 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
+  /// retrieve error estimates corresponding to the Model's response
+  /// (could be surrogate error for SurrogateModels, statistical MSE for
+  /// NestedModels, or adjoint error estimates for SimulationModels).
+  /// Errors returned correspond to most recent evaluate().
+  virtual const RealVector& error_estimates();
+
   /// return the DiscrepancyCorrection object used by SurrogateModels
   virtual DiscrepancyCorrection& discrepancy_correction();
+  /// apply the DiscrepancyCorrection object to correct an approximation
+  /// within a SurrogateModel
+  virtual void single_apply(const Variables& vars, Response& resp,
+			    const SizetSizet2DPair& indices);
+  /// apply the DiscrepancyCorrection object to recursively correct an 
+  /// approximation within a HierarchSurrModel
+  virtual void recursive_apply(const Variables& vars, Response& resp);
 
-  /// update component parallel mode for supporting parallelism in a model's
-  /// interface component, sub-model component, or neither component
-  /// [componentParallelMode = 0 (none), 1
-  /// (INTERFACE/APPROX_INTERFACE/OPTIONAL_INTERFACE/LF_MODEL/SURROGATE_MODEL),
-  /// or 2 (SUB_MODEL/ACTUAL_MODEL/HF_MODEL/TRUTH_MODEL)].
+  /// update componentParallelMode for supporting parallelism in model
+  /// sub-components
   virtual void component_parallel_mode(short mode);
 
   /// estimate the minimum and maximum partition sizes that can be
@@ -385,6 +398,9 @@ public:
   /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
+
+  /// set the warm start flag (warmStartFlag)
+  virtual void warm_start_flag(const bool flag);
 
   //
   //- Heading: Member functions
@@ -1279,6 +1295,8 @@ protected:
   bool ignoreBounds;
   /// option to use old 2nd-order finite diffs for Hessians
   bool centralHess;
+  /// if in warm-start mode, don't reset accumulated data (e.g., quasiHessians)
+  bool warmStartFlag;
   /// whether model should perform or forward derivative estimation
   bool supportsEstimDerivs;
   /// quasi-Hessian type: bfgs, damped_bfgs, sr1
@@ -1306,8 +1324,9 @@ protected:
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
 
-  /// the component parallelism mode: 0 (none), 1 (INTERFACE/LF_MODEL), or 2
-  /// (SUB_MODEL/HF_MODEL/TRUTH_MODEL)
+  /// the component parallelism mode: 0 (none),
+  /// 1 (INTERFACE/OPTIONAL_INTERFACE/SURROGATE_MODEL), or
+  /// 2 (SUB_MODEL/TRUTH_MODEL)
   short componentParallelMode;
 
   /// flags asynch evaluations (local or distributed)

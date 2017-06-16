@@ -69,7 +69,7 @@ method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
 	sampling
-	  sample_type lhs seed = 12347 rng rnum2
+	  sample_type lhs seed = 12347 
 #	  fixed_seed					#s1
 #	dace lhs seed = 5
 #	  samples = 8 symbols = 8
@@ -116,7 +116,7 @@ method,
 	model_pointer = 'UQ_M'
         sampling
 	  sample_type lhs samples = 50
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 #	  fixed_seed					#s1
 	  response_levels = 4.2e+11 1.6e+05 7.5e+05
 	  complementary distribution

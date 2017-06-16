@@ -54,6 +54,7 @@ public:
   /// or intervals (epsitemic or mixed uncertainties)
   void compute_statistics(const RealMatrix&     vars_samples,
 			  const IntResponseMap& resp_samples);
+
   /// called by compute_statistics() to calculate min/max intervals
   /// using allResponses
   void compute_intervals(RealRealPairArray& extreme_fns);
@@ -63,21 +64,62 @@ public:
   /// using samples
   void compute_intervals(RealRealPairArray& extreme_fns,
 			 const IntResponseMap& samples);
-  /// called by compute_statistics() to calculate sample moments and
-  /// confidence intervals
+
+  /// calculates sample moments from a matrix of observations for a set of QoI
+  void compute_moments(const RealVectorArray& fn_samples);
+  /// calculate sample moments and confidence intervals from a map of
+  /// response observations
   void compute_moments(const IntResponseMap& samples);
+  /// convert IntResponseMap to RealVectorArray and invoke helpers
+  void compute_moments(const IntResponseMap& samples, RealMatrix& moment_stats,
+		       RealMatrix& moment_grads, RealMatrix& moment_conf_ints,
+		       short moments_type, const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealVectorArray& fn_samples,
+			      SizetArray& sample_counts,
+			      RealMatrix& moment_stats, short moments_type,
+			      const StringArray& labels);
+  /// core compute_moments() implementation with all data as inputs
+  static void compute_moments(const RealVectorArray& fn_samples,
+			      RealMatrix& moment_stats, short moments_type);
+  /// alternate RealMatrix samples API for use by external clients
+  static void compute_moments(const RealMatrix& fn_samples,
+			      RealMatrix& moment_stats, short moments_type);
+
+  /// compute moment_grads from function and gradient samples
+  void compute_moment_gradients(const RealVectorArray& fn_samples,
+				const RealMatrixArray& grad_samples,
+				const RealMatrix& moment_stats,
+				RealMatrix& moment_grads, short moments_type);
+
+  /// compute moment confidence intervals from moment values
+  void compute_moment_confidence_intervals(const RealMatrix& moment_stats,
+					   RealMatrix& moment_conf_ints,
+					   const SizetArray& sample_counts,
+					   short moments_type);
+
+  /// archive moment statistics in results DB
+  void archive_moments(const RealMatrix& moment_stats, short moments_type,
+		       const StringArray& labels);
+  /// archive moment confidence intervals in results DB
+  void archive_moment_confidence_intervals(const RealMatrix& moment_conf_ints,
+					   short moments_type,
+					   const StringArray& labels);
+
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z as well as PDFs
   void compute_level_mappings(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;
+
   /// prints the intervals computed in compute_intervals() with default
   /// qoi_type and moment_labels
   void print_intervals(std::ostream& s) const;
   /// prints the intervals computed in compute_intervals()
   void print_intervals(std::ostream& s, String qoi_type,
 		       const StringArray& interval_labels) const;
+
   /// prints the moments computed in compute_moments() with default
   /// qoi_type and moment_labels
   void print_moments(std::ostream& s) const;
@@ -87,20 +129,15 @@ public:
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
 			    const RealMatrix moment_cis, String qoi_type,
+			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
+
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
-
-  /// calculates sample moments for an array of observations for a set of QoI
-  void compute_moments(const RealMatrix& samples);
-
-  /// core compute moments that can be called without object
-  static void compute_moments(const RealMatrix& samples, 
-			      RealMatrix& moment_stats);
 
   /// calculates the number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
@@ -162,6 +199,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void pre_run();
   void core_run();
 
   int num_samples() const;
@@ -210,9 +248,10 @@ protected:
   /// override default mapping of continuous variables only
   void sample_to_variables(const Real* sample_vars, Variables& vars);
 
-
   void variables_to_sample(const Variables& vars, Real* sample_vars);
 
+  /// return error estimates associated with each of the finalStatistics
+  const RealVector& response_error_estimates() const;
 
   //
   //- Heading: Convenience member functions for derived classes
@@ -220,6 +259,10 @@ protected:
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_lhs(bool write_message, int num_samples);
+
+  /// in the case of sub-iteration, map from finalStatistics.active_set()
+  /// requests to activeSet used in evaluate_parameter_sets()
+  void active_set_mapping();
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
@@ -251,6 +294,18 @@ protected:
 		   size_t& dsv_start,  size_t& num_dsv,
 		   size_t& drv_start,  size_t& num_drv) const;
 
+  /// helper to accumulate sum of finite samples
+  static void accumulate_mean(const RealVectorArray& fn_samples, size_t q,
+			      size_t& num_samp, Real& mean);
+  /// helper to accumulate higher order sums of finite samples
+  static void accumulate_moments(const RealVectorArray& fn_samples, size_t q,
+				 short moments_type, Real* moments);
+  /// helper to accumulate gradient sums
+  static void accumulate_moment_gradients(const RealVectorArray& fn_samples,
+					  const RealMatrixArray& grad_samples,
+					  size_t q, short moments_type,
+					  Real mean, Real mom2, Real* mean_grad,
+					  Real* mom2_grad);
 
   //
   //- Heading: Data members
@@ -262,13 +317,21 @@ protected:
   int       samplesRef;  ///< reference number of samples updated for refinement
   int       numSamples;  ///< the current number of samples to evaluate
   String    rngName;	 ///< name of the random number generator
-  unsigned short sampleType;  ///< the sample type: default, random, lhs,
-                              ///< incremental random, or incremental lhs
-  bool      wilksFlag;   /// flags use of Wilks formula to calculate num samples
+  unsigned short sampleType; ///< the sample type: default, random, lhs,
+                             ///< incremental random, or incremental lhs
+  bool      wilksFlag; ///< flags use of Wilks formula to calculate num samples
   unsigned short wilksOrder;
   Real      wilksAlpha;    
   Real      wilksBeta;    
   short     wilksSidedness;
+
+  /// gradients of standardized or central moments of response functions, as
+  /// determined by finalMomentsType.  Calculated in compute_moments() and
+  /// indexed as (var,moment) when moment id runs from 1:2*numFunctions.
+  RealMatrix momentGrads;
+
+  /// standard errors (estimator std deviation) for each of the finalStatistics
+  RealVector finalStatErrors;
 
   /// current increment in a sequence of samples
   int samplesIncrement;
@@ -316,11 +379,37 @@ private:
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
-  /// Matrix of confidence internals on moments, with rows for
-  /// mean_lower, mean_upper, sd_lower, sd_upper (calculated in
-  /// compute_moments())
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper, sd_lower, sd_upper (calculated in compute_moments())
   RealMatrix momentCIs;
 };
+
+
+inline void NonDSampling::pre_run()
+{ 
+  NonD::pre_run();
+
+  // synchronize the derivative components flowing down from a NestedModel's
+  // call to subIterator.response_results_active_set(), so that the correct 
+  // derivs are computed in Analyzer::evaluate_parameter_sets()
+  if (subIteratorFlag)
+    active_set_mapping();
+}
+
+
+inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
+{
+  SizetArray sample_counts;
+  compute_moments(fn_samples, sample_counts, momentStats,
+		  finalMomentsType, iteratedModel.response_labels());
+}
+
+
+inline void NonDSampling::compute_moments(const IntResponseMap& samples)
+{
+  compute_moments(samples, momentStats, momentGrads, momentCIs,
+		  finalMomentsType, iteratedModel.response_labels());
+}
 
 
 inline void NonDSampling::compute_intervals(RealRealPairArray& extreme_fns)
@@ -333,6 +422,16 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
 { print_intervals(s, "response function", iteratedModel.response_labels()); }
+
+
+inline void NonDSampling::
+print_moments(std::ostream& s, String qoi_type,
+	      const StringArray& moment_labels) const
+{
+  bool print_cis = (numSamples > 1);
+  print_moments(s, momentStats, momentCIs, qoi_type, finalMomentsType,
+		moment_labels, print_cis);
+}
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
@@ -380,6 +479,31 @@ inline unsigned short NonDSampling::sampling_scheme() const
 
 inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
+
+
+/** transform x_samples to u_samples for use by expansionSampler */
+inline void NonDSampling::transform_samples(bool x_to_u)
+{ transform_samples(allSamples, x_to_u, numSamples); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    the specified design matrix. */
+inline void NonDSampling::
+get_parameter_sets(Model& model, const int num_samples,
+		   RealMatrix& design_matrix)
+{ get_parameter_sets(model, num_samples, design_matrix, true); }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes and populates
+    class member allSamples. */
+inline void NonDSampling::get_parameter_sets(Model& model)
+{ get_parameter_sets(model, numSamples, allSamples); }
+
+
+inline const RealVector& NonDSampling::response_error_estimates() const
+{ return finalStatErrors; }
 
 } // namespace Dakota
 

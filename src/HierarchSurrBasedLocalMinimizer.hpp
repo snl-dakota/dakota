@@ -60,28 +60,58 @@ protected:
   void minimize();
   void verify();
 
+  unsigned short converged();
+
 private:
 
   //
   //- Heading: Convenience member functions
   //
 
+  /// build the hierarchical approximation for a particular level by
+  /// computing center truth within the HierarchSurrModel
+  void build_center_truth(size_t tr_index);
+
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
-  void find_center_truth(size_t tr_index);
+  void find_center_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterApproxUncorrected
   void find_center_approx(size_t tr_index);
+  /// Retrieve or evaluate SurrBasedLevelData::responseStarTruthUncorrected
+  void find_star_truth(size_t tr_index, bool search_db = false);
   /// Retrieve or evaluate SurrBasedLevelData::responseStarApproxUncorrected
   void find_star_approx(size_t tr_index);
+
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseCenterTruthUncorrected and store in SurrBasedLevelData::
+  /// responseCenterTruthCorrected
+  void correct_center_truth(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseStarTruthUncorrected and store in SurrBasedLevelData::
+  /// responseStarTruthCorrected
+  void correct_star_truth(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseCenterApproxUncorrected and store in SurrBasedLevelData::
+  /// responseCenterApproxCorrected
+  void correct_center_approx(size_t tr_index);
+  /// apply recursive corrections to SurrBasedLevelData::
+  /// responseStarApproxUncorrected and store in SurrBasedLevelData::
+  /// responseStarApproxCorrected
+  void correct_star_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
   /// the HierarchSurrModel associated with trustRegions[tr_index]
   void set_model_states(size_t tr_index);
 
+  /// update trust region bounds, recurring top-down from tr_index_start
+  void update_trust_region(size_t tr_index_start);
+  /// Verify approximate step with truth model for trust region level tr_index
+  void verify(size_t tr_index);
+
   // MG/Opt functions:
 
-  RealVector MG_Opt(const RealVector &xk, int k);
+  RealVector multigrid_recursion(const RealVector &xk, int k);
 
-  void MG_Opt_driver(const Variables &x0);
+  void multigrid_driver(const Variables &x0);
 
   RealVector optimize(const RealVector &x, int max_iter, int index);
 
@@ -95,7 +125,6 @@ private:
   /// number of ordered model fidelities within iteratedModel
   /// (a HierarchSurrModel)
   size_t numFid;
-  //bool multiFid;
 
   /// number of discretization levels per ordered model fidelity
   SizetArray numLev;
@@ -133,6 +162,21 @@ inline void HierarchSurrBasedLocalMinimizer::set_model_states(size_t tr_index)
     iteratedModel.truth_model_indices(
       trustRegions[tr_index].truth_model_form());
   }
+}
+
+
+inline void HierarchSurrBasedLocalMinimizer::update_trust_region()
+{ update_trust_region(trustRegions.size() - 1); }
+
+
+inline void HierarchSurrBasedLocalMinimizer::verify()
+{ verify(minimizeIndex); }
+
+
+inline unsigned short HierarchSurrBasedLocalMinimizer::converged()
+{
+  size_t last_tr = trustRegions.size() - 1;
+  return trustRegions[last_tr].converged(); // TR state at truth level
 }
 
 } // namespace Dakota

@@ -13,7 +13,7 @@ environment
 method									 
   global_interval_est ego     #s0,#p0
 #	global_interval_est lhs		  #s1
-    seed = 1234567 rng rnum2	#s0,#s1,#p0
+    seed = 1234567 	#s0,#s1,#p0
 #	local_interval_est sqp		  #s2,#p1
 #	local_interval_est nip		  #s3
     output verbose	   		  
@@ -21,7 +21,7 @@ method
 variables
   continuous_interval_uncertain = 2
     num_intervals   =  1    1
-    interval_probs  =  1.0  1.0
+    interval_probabilities  =  1.0  1.0
     lower_bounds    =  1.0  1.0
     upper_bounds    = 10.0 10.0
     descriptors        'w'  't'
@@ -35,12 +35,12 @@ variables
     descriptors       =  'R' 'E' 'X' 'Y'
 
 interface
-  direct
-    analysis_driver = 'cantilever'
+  analysis_drivers = 'cantilever'
+    direct
 
 responses
   response_functions = 3
-  response_descriptors = 'weight' 'stress' 'displ'
+  descriptors = 'weight' 'stress' 'displ'
   no_gradients						  #s0,#s1,#p0
 #  analytic_gradients				#s2,#s3
 #  numerical_gradients			#p1

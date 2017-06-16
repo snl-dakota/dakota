@@ -76,10 +76,9 @@ public:
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
-
   bool finalize_mapping();
-
-  bool mapping_initialized();
+  bool mapping_initialized() const;
+  bool resize_pending() const;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
@@ -379,10 +378,12 @@ protected:
 };
 
 
-inline bool ActiveSubspaceModel::mapping_initialized()
-{
-  return subspaceInitialized;
-}
+inline bool ActiveSubspaceModel::mapping_initialized() const
+{ return subspaceInitialized; }
+
+
+inline bool ActiveSubspaceModel::resize_pending() const
+{ return !subspaceInitialized; }
 
 } // namespace Dakota
 

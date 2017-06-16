@@ -50,29 +50,4 @@ TEUCHOS_UNIT_TEST(data_conversion, rva2rm)
     for( int j=0; j<NCOLS; ++j )
     TEST_FLOATING_EQUALITY( test_rva[i][j], test_rm(i,j), 1.e-14 );
 }
-
-//----------------------------------------------------------------
-
-TEUCHOS_UNIT_TEST(data_conversion, rm2rva)
-{
-  const int NROWS = 7;
-  const int NCOLS = 2;
-  RealMatrix test_rm(NROWS, NCOLS);
-  test_rm.random();
-  RealVectorArray test_rva;
-
-  /////////////////  What we want to test
-  copy_data(test_rm, test_rva);
-  /////////////////  What we want to test
-
-  // Verify correct dimensions
-  TEST_EQUALITY( NROWS, (int)test_rva.size() );
-  TEST_EQUALITY( NCOLS, test_rva[0].length() );
-
-  // Verify contents of what we wrote and what we read
-  for( size_t i=0; i<NROWS; ++i )
-    for( int j=0; j<NCOLS; ++j )
-    TEST_FLOATING_EQUALITY( test_rva[i][j], test_rm(i,j), 1.e-14 );
-}
-
 //----------------------------------------------------------------

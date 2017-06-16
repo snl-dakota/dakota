@@ -14,8 +14,10 @@ method,
 	efficient_global					#s0,#s1,#s2
 	  gaussian_process dakota				#s0
 #	  gaussian_process surfpack				#s1
-#	global_reliability x_gaussian_process			#s3
-#	  num_response_levels = 0 2 2				#s3
+#	global_reliability x_gaussian_process		#s3
+#   historical default:
+#   convergence_tolerance 0.001           #s3
+#	  num_response_levels = 0 2 2				    #s3
 #	  response_levels = 0.2 0.6 0.2 0.6			#s3
 	  seed = 123457
 

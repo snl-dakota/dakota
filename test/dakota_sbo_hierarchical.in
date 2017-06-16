@@ -19,13 +19,13 @@
 
 environment,
 	graphics tabular_data
-	method_pointer = 'SBLO'
+	top_method_pointer = 'SBLO'
 
 method,
 	id_method = 'SBLO'
 	surrogate_based_local
 	model_pointer = 'SURROGATE'
-	approx_method_pointer = 'NLP'
+	method_pointer = 'NLP'
 #	soft_convergence_limit = 6		#s6,#s8
 #	max_iterations = 500			#s12,#s13,#s14
 #	soft_convergence_limit = 20		#s10,#s12,#s13,#s14,#s15,#s16,#s17
@@ -44,7 +44,7 @@ method,
 	id_method = 'NLP'
 	npsol_sqp
 #	optpp_newton
-	  max_iterations = 50,
+	  max_iterations = 50
 	  convergence_tolerance = 1e-10
 
 model,
@@ -89,9 +89,9 @@ model,
 
 interface,
 	id_interface = 'LOFI_FN'
-	direct
- 	  analysis_driver = 'lf_rosenbrock'
-	  deactivate restart_file
+  analysis_drivers = 'lf_rosenbrock'
+	  direct
+  deactivate restart_file
 
 model,
 	id_model = 'HIFI'
@@ -100,6 +100,6 @@ model,
 
 interface,
 	id_interface = 'HIFI_FN'
-	direct
- 	  analysis_driver = 'rosenbrock'
-	  deactivate restart_file
+  analysis_drivers = 'rosenbrock'
+    direct
+  deactivate restart_file

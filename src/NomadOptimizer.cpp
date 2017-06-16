@@ -228,6 +228,10 @@ void NomadOptimizer::core_run()
   // Create Evaluator object and communicate constraint mapping and surrogate usage.
   Model& m = this->iteratedModel;
   NomadOptimizer::Evaluator ev (p,m);
+
+//PDH: May be able to get rid of setting the constraint map once we
+//have something in place that everyone can access.
+
   ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
   ev.set_surrogate_usage(useSurrogate);
 
@@ -253,6 +257,16 @@ void NomadOptimizer::core_run()
 	 << "Best point shown is best infeasible point.\n" << std::endl;
     bestX = mads.get_best_infeasible();
   }
+
+//PDH: Set final solution.
+//     Includes mappings of discrete variables.
+//     Similar to APPSPACK but need to look into NOMAD's Point more.
+//     Think the code from here to the end of the method
+//     can be greatly simplified with data adapters built
+//     on top of data tranfers.
+//     Would like to just do something like
+//     setBestVariables(...)
+//     setBestResponses(...)
 
   RealVector contVars(numContinuousVars);
   IntVector  discIntVars(numDiscreteIntVars);
@@ -293,6 +307,10 @@ void NomadOptimizer::core_run()
   for (j=0; j<numDiscreteStringVars; j++)
     bestVariablesArray.front().discrete_string_variable(set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars].value(), set_string_vars[j]), j);
 
+//PDH: Similar to APPSPACK but need to look into NOMAD's Point more.
+//     Has to respect Dakota's ordering of inequality and equality constraints.
+//     Has to map format of constraints.
+//     Then populate bestResponseArray.
 
   // Retrieve the best responses and convert from NOMAD to
   // DAKOTA vector.h
@@ -374,6 +392,13 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
 					 const NOMAD::Double &h_max,
 					 bool &count_eval) const
 {
+//PDH: Set current iterate values for evaluation.
+//     Similar to APPSPACK but need to look into NOMAD Point more.
+//     Think this code can be greatly simplified with data adapters
+//     built on top of data transfers.  Would like to just do
+//     something like
+//     setEvalVariables(...)
+
   int n_cont_vars = _model.cv();
   int n_disc_int_vars = _model.div();
   int n_disc_real_vars = _model.drv();
@@ -447,6 +472,9 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   else
     _model.evaluate();
     
+//PDH: NOMAD response values set one at a time.
+//     Has to respect ordering of inequality and equality constraints.
+//     Has to map format of constraints.
 
   // Obtain Model response
   const RealVector& ftn_vals = _model.current_response().function_values();
@@ -520,6 +548,13 @@ rma_iter, size_t last_cat_index, int num_hops)
 
 void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
 {
+//PDH: This initializes everything for NOMAD.
+//     Similar to APPSPACK but need to look into NOMAD Point more.
+//     Don't want any references to iteratedModel.
+//     Need to handle discrete variable mapping.
+//     Need to respect equality, inequality constraint ordering.
+//     Need to handle constraint mapping.
+
   //     numTotalVars = numContinuousVars +
   //                    numDiscreteIntVars + numDiscreteRealVars;
     

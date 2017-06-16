@@ -92,7 +92,7 @@ method,
 	polynomial_chaos askey			#s0,#s1,#s4,#s5
  	  expansion_order = 3			#s0,#s1
 	  collocation_ratio = 2.		#s0,#s1
-	  seed = 12347 rng rnum2		#s0,#s1
+	  seed = 12347 		#s0,#s1
 #	  quadrature_order = 4
 #	  sparse_grid_level = 3 non_nested	#s4,#s5
 #	local_reliability			#s2,#s3,#s6,#s7
@@ -120,7 +120,7 @@ method,
 	polynomial_chaos askey
  	  expansion_order = 2			#s0,#s1,#s2,#s3
 	  collocation_ratio = 2.		#s0,#s1,#s2,#s3
-	  seed = 12347 rng rnum2		#s0,#s1,#s2,#s3
+	  seed = 12347 		#s0,#s1,#s2,#s3
 #	  quadrature_order = 3
 #	  sparse_grid_level = 2 non_nested	#s4,#s5,#s6,#s7
 	  num_response_levels = 0 1

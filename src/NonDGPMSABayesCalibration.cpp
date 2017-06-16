@@ -7,41 +7,113 @@
     _______________________________________________________________________ */
 
 //- Class:	 NonDGPMSABayesCalibration
-//- Description: Derived class for Bayesian inference using GPMSA
-//- Owner:       Laura Swiler
+//- Description: Derived class for Bayesian inference using QUESO/GPMSA
+//- Owner:       Laura Swiler, Brian Adams
 //- Checked by:
 //- Version:
 
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDGPMSABayesCalibration.hpp"
+#include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaModel.hpp"
-#include "ProbabilityTransformation.hpp"
-#include "NonDLHSSampling.hpp"
-#include "dakota_data_io.hpp"
+
+// then system-related headers
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+namespace accum = boost::accumulators;
+
 // then list QUESO headers
+#include "queso/GPMSA.h"
 #include "queso/StatisticalInverseProblem.h"
-#include "queso/StatisticalInverseProblemOptions.h"
 #include "queso/GslVector.h"
 #include "queso/GslMatrix.h"
-#include "queso/Environment.h"
-#include "queso/EnvironmentOptions.h"
-#include "queso/Defines.h"
-#include "queso/ValidationCycle.h"
-#include "queso/VectorSpace.h" 
-#include "queso/GaussianJointPdf.h" 
-#include "queso/GpmsaComputerModel.h"
-#include "queso/SimulationModelOptions.h"
 
-#define CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
+using QUESO::GslVector;
+using QUESO::GslMatrix;
 
 static const char rcsId[]="@(#) $Id$";
 
 
+/* TODO / QUESTIONS:
+
+ * Write tests that use DOE vs import 
+
+    - Notify users what data we're trying to read from tabular
+
+ * A number of improvements in DACE / imported build data
+
+    - Decide on meaning of buildSamples for read vs. DACE iterator control
+
+    - Read build data in base class?
+
+    - Read using residualModel's DataTransformModel vars/resp?
+
+    - Handle string variables (convert to indices), probably be
+      reading into a Variables object
+
+    - Instead of assuming config vars = 0.5, use initial_state?
+
+    - Read the build data early so we know buildSamples; would be nice
+      to integrate with populating the data below so we can avoid the
+      temporary
+
+    - Document: theta, x, f ordering; document allVariables on DACE
+      iterator
+
+ * Implement m_realizer? We implement only what's needed to compute
+   log prior, not realize()
+
+ * Can one disable inference of the hyper-parameters?  Option to
+   calibrate theta vs. config vars, e.g.,
+   mhVarOptions->m_parameterDisabledSet.insert(0);
+
+ * Normalization optional?  It's not clear what normalize means in
+   context of functional data?  Do the config vars need to be normalized?
+
+ * Functional data omission of scenarios; set to 0.5?
+   Need to be sure that no other code is assuming these params don't exist...
+   Also need to make sure to send a valid domain
+
+ * BJW: How to handle LHS design generation?  Over all variables or
+        just theta?  Probably all variables; that's being assumed in
+        some places.
+
+ * Can't use MAP pre-solve since don't have access to the likelihood?
+   Perhaps get access through GPMSAFactory?
+
+ * Allow basic vs. advanced user options
+   ??? Appears only GPMSA allows default construct with parse override? 
+   ??? Passed prefix is ignored by some EnvOptions ctors ???
+   ??? Can't construct QUESO env with C++ options, then override from file...
+
+ * Terminate handler might be getting called recursively in serial, at
+   least when run in debugger.  Perhaps because old_terminate_handler
+   is NULL and causing a segfault when called.
+
+ * Emulator mean must be set to something to avoid nan/nan issue.
+   Probably want to be able to omit parameters that aren't being
+   calibrated statistically...
+
+ * Allow variable Experiment sizes
+
+ * Experiment covariance: correlation or covariance;
+   normalized by simulation std deviation as in example?  Does this
+   need to be defined if identity?
+
+ * Export chain to named file
+
+ */
+
+
 namespace Dakota {
 
-//initialization of statics
+// initialization of statics
 NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 
 /** This constructor is called for a standard letter-envelope iterator 
@@ -49,23 +121,81 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
-  NonDBayesCalibration(problem_db, model),
+  NonDQUESOBayesCalibration(problem_db, model),
+  buildSamples(probDescDB.get_int("method.build_samples")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
   approxImportActiveOnly(
     probDescDB.get_bool("method.import_build_active_only")),
-  buildSamples(probDescDB.get_int("method.build_samples"))
+  userConfigVars(expData.num_config_vars()),
+  gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
+  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize")),
+  optionsFile(probDescDB.get_string("method.queso_options_file"))
 {   
+  // quesoEnv: Base class calls init_queso_environment().  May need to
+  // override this to provide additional power-user options to
+  // override Dakota options.
+
+  bool found_error = false;
+
+  // Input spec should prevent this, but be sure.  It's possible
+  // through user input that the inbound model is of type surrogate
+  // and that's okay.
+  if (emulatorType != NO_EMULATOR) {
+    Cerr << "\nError: Dakota emulators not supported with GPMSA\n";
+    found_error = true;
+  }
+
+  // TODO: Do we want to allow a single field group to allow the full
+  // multi-variate case?
+  const SharedResponseData& srd = model.current_response().shared_data();
+  if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
+	 << "treated as a\n         single multivariate response set."
+	 << std::endl;
+
+  // REQUIRE experiment data
+  if (expData.num_experiments() < 1) {
+    Cerr << "\nError: GPMSA requires experimental data\n";
+    found_error = true;
+  }
+
+  if (userConfigVars > 0 && !approxImportFile.empty() &&
+      approxImportActiveOnly && outputLevel >= NORMAL_OUTPUT)
+    Cout << "\nWarning: Experimental data presented to GPMSA has configuration variables, but\n         simulation data import specifies active_only, so nominal values of\n         configuration variables will be used." << std::endl;
+
+  if (!optionsFile.empty()) {
+    if (boost::filesystem::exists(optionsFile)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Any GPMSA options in file '" << optionsFile 
+	     << "' will override Dakota options." << std::endl;
+    } else {
+      Cerr << "\nError: GPMSA options_file '" << optionsFile 
+	   << "' specified, but file not found.\n";
+      found_error = true;
+    }
+  }
+
+  if (found_error)
+    abort_handler(-1);
+
+  init_queso_environment(optionsFile);
+
+  // TODO: use base class to manage any problem transformations and
+  // probably the surrogate build data management
+
+  // TODO: conditionally enable sampler only if needed to augment
+  // samples and allow both to be specified
+  // if (approxImportFile.empty())
+  //   buildSamples = probDescDB.get_int("method.build_samples");
+  // else buildSamples will get set after reading the file at run-time
+
+  // BMA TODO: should we always instantiate this or not?  Allow augmentation?
+  int samples = approxImportFile.empty() ? buildSamples : 0;
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter.assign_rep(new
-    NonDLHSSampling(mcmcModel, sample_type, buildSamples, randomSeed, rng),
-    false);
-
-  Cerr << "Error: NonDGPMSABayesCalibration requires the user to update the vectors and parameters "
-       << "governing this model manually in the NonDGPMSABayesianCalibration class "
-       << "and then recompile.  For further instructions, contact a Dakota developer." << std::endl;
-  abort_handler(METHOD_ERROR);
+  lhsIter.assign_rep(new NonDLHSSampling(mcmcModel, sample_type, samples, 
+					 randomSeed, rng), false);
 }
 
 
@@ -78,7 +208,6 @@ void NonDGPMSABayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
   // at this level
   lhsIter.init_communicators(pl_iter);
-
   NonDBayesCalibration::derived_init_communicators(pl_iter);
 }
 
@@ -88,7 +217,6 @@ void NonDGPMSABayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
   // at this level
   lhsIter.set_communicators(pl_iter);
-
   NonDBayesCalibration::derived_set_communicators(pl_iter);
 }
 
@@ -103,1187 +231,483 @@ void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 /** Perform the uncertainty quantification */
 void NonDGPMSABayesCalibration::calibrate()
 {
-  // initialize the mcmcModel (including emulator construction) if needed
-  initialize_model();
- 
-  if (outputLevel > NORMAL_OUTPUT) 
-    Cout << "import points file "<< approxImportFile
-	 << "import points format " << approxImportFormat
-	 << "import points active " << approxImportActiveOnly;
-  if (approxImportFile.empty())
-    lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
-  // instantiate QUESO objects and execute
+  // TODO: base class needs runtime update as well; decouple these:
+  nonDQUESOInstance = this;
   nonDGPMSAInstance = this;
-  Cout << "\nNum Samples " << chainSamples << '\n';
-  // For now, set calcSigmaFlag to true: this should be read from input
-  calibrateSigmaFlag = true;
 
-  ////////////////////////////////////////////////////////
-  // Step 0: Instantiate the QUESO environment 
-  ////////////////////////////////////////////////////////
-  // NOTE:  for now we are assuming that DAKOTA will be run with 
-  // mpiexec to call MPI_Init.  Eventually we need to generalize this 
-  // and send QUESO the proper MPI subenvironments.
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << ">>>>> GPMSA: Setting up calibration." << std::endl;
 
-  QUESO::EnvOptionsValues* envOptionsValues = NULL;
-  envOptionsValues = new QUESO::EnvOptionsValues();
-  envOptionsValues->m_subDisplayFileName   = "GpmsaDiagnostics/display";
-  envOptionsValues->m_subDisplayAllowedSet.insert(0);
-  envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity     = 3;
-  envOptionsValues->m_seed = -1;
-  envOptionsValues->m_identifyingString="CASLexample";
-  //if (randomSeed) 
-  //  envOptionsValues->m_seed                 = randomSeed;
-  //else
-  //  envOptionsValues->m_seed                 = 1 + (int)clock(); 
-      
-  QUESO::FullEnvironment* env = NULL;
-#ifdef DAKOTA_HAVE_MPI
-  // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
-  if (parallelLib.mpirun_flag())
-    env = new QUESO::FullEnvironment(MPI_COMM_SELF,"mlhydra.inp","",NULL);
-  else
-    env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
-#else
-  env = new QUESO::FullEnvironment("mlhydra.inp","",NULL);
-#endif
- 
-  //***********************************************************************
-  //  Step 01 of 09: Instantiate parameter space, parameter domain, and prior Rv
-  // *********************************************************************
-  int total_num_params = numUncertainVars;
-  Cout << "total_num_params " << total_num_params;
-  
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
-    paramSpace(*env, "param_", total_num_params, NULL);
+  // no emulators will be setup, but need to initialize the prob transforms
+  initialize_model();
 
-  Cout << "Got to line 196 \n" ;
-  QUESO::GslVector paramMins(paramSpace.zeroVector());
-  QUESO::GslVector paramMaxs(paramSpace.zeroVector());
-  RealRealPairArray bnds = (standardizedSpace) ?
-    natafTransform.u_bounds() : natafTransform.x_bounds();
-  for (size_t i=0; i<numUncertainVars; ++i)
-    { paramMins[i] = bnds[i].first; paramMaxs[i] = bnds[i].second; }
-  const RealVector& init_point = mcmcModel.continuous_variables();
-  Cout << "Initial Points " << init_point
-       << '\n'; // << "emulatorType " << emulatorType << '\n';
- 
-  QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix>
-    paramDomain("param_",paramSpace,paramMins,paramMaxs);
-  Cout << "got to line 219" ;
+  // paramSpace, paramMins/paramMaxs, paramDomain, paramInitials, priorRV
+  // Note: The priorRV is only defined over the calibration parameters
+  // (and any Dakota-managed hyper-parameters)
+  init_parameter_domain();
 
-#if 0
-  QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix>* paramPriorRvPtr = NULL;
-  paramPriorRvPtr = new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix>("prior_",paramDomain);
-#else
-  QUESO::GaussianVectorRV<QUESO::GslVector,QUESO::GslMatrix>* paramPriorRvPtr = NULL; // prudenci_new_2013_09_06
-  QUESO::GslVector meanVec(paramSpace.zeroVector()); // prudenci_new_2013_09_06
-  meanVec[0] = 0.5; // prudenci_new_2013_09_06
-  meanVec[1] = 0.5; // prudenci_new_2013_09_06
-  meanVec[2] = 0.5; // prudenci_new_2013_09_06
-  QUESO::GslMatrix covMat(paramSpace.zeroVector()); // prudenci_new_2013_09_06
-  covMat(0,0) = 10.*10.; // prudenci_new_2013_09_06
-  covMat(1,1) = 10.*10.; // prudenci_new_2013_09_06
-  covMat(2,2) = 10.*10.; // prudenci_new_2013_09_06
-  paramPriorRvPtr = new QUESO::GaussianVectorRV<QUESO::GslVector,QUESO::GslMatrix>("prior_",paramDomain,meanVec,covMat); // prudenci_new_2013_09_06
-#endif
- 
+  // proposal may depend on the parameter space properties
+  init_proposal_covariance();
 
-  Cout << "got to line 218\n";
-  //***********************************************************************
-  // Step 02 of 09: Instantiate the 'scenario' and 'output' spaces
-  //***********************************************************************
-  //int num_config_vars = numContStateVars;
-  int num_config_vars = 1;
-  Cout << "num_config_vars " << num_config_vars << '\n';
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
-    config_x_space(*env, "scenario_", num_config_vars, NULL);
-               
-  unsigned int num_eta = numFunctions; // simulation output dimension; 'n_eta' in paper; 16 in tower example
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
-    n_eta_space(*env, "output_", num_eta, NULL);
-  Cout << "num_eta " << num_eta << '\n';
-  
- //***********************************************************************
- //  Step 03 of 09: Instantiate the simulation storage
- //  Regarding simulation scenario input values, QUESO will standardize them so that
- //  they exist inside a hypercube: this will be done in the 'SimulationModel'
- //  constructor, step 04 of 09.
- //  Regarding simulation output data, QUESO will transform it so that the mean is
- //       zero and the variance is one: this will be done in the 'SimulationModel'
- //        constructor, step 04 of 09.
- // ***********************************************************************
- 
-  int num_simulations = buildSamples;
-  Cout << "num_simulations " << num_simulations << '\n';
+  // GPMSA scenario space = configuration space. GPMSA requires at least 1
+  // configuration variable, set to 0.5 for all scenarios if needed
+  configSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
+		    (*quesoEnv, "scenario_", gpmsaConfigVars, NULL));
 
-  std::vector<unsigned int> simulationChunkSizes(2,0.); // prudenci_new_2013_09_06
-  simulationChunkSizes[0] = 1001; // prudenci_new_2013_09_06
-  simulationChunkSizes[1] = 1001; // prudenci_new_2013_09_06
+  // GPMSA output space.  TODO: The simulation output space eta won't
+  // always have same size as experiment space.  Moreover, each
+  // experiment might have different size. Generalize this to
+  // multi-experiment of varying size, and fields.
+  unsigned int num_eta = numFunctions;
+  nEtaSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
+                  (*quesoEnv, "output_", num_eta, NULL));
 
-  QUESO::SimulationStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>
-    simulationStorage(config_x_space,
-                      paramSpace,
-                      n_eta_space,
-#ifdef UQ_GPMSA_CODE_TREATS_SIMULATION_VECTORS_IN_CHUNKS // prudenci_new_2013_09_06
-                      simulationChunkSizes, // prudenci_new_2013_09_06
-#endif // prudenci_new_2013_09_06
-                      num_simulations);
+  // BMA TODO: manage experiment size (each experiment need not have
+  // the same size and one sim may inform multiple experiments through
+  // DataTransform...)
+  unsigned int experiment_size = expData.all_data(0).length();
+  experimentSpace.reset(new QUESO::VectorSpace<GslVector, GslMatrix>
+                        (*quesoEnv,"experimentspace_", experiment_size, NULL));
 
- 
-  // Add simulations: what if none?
-  // We have to dimension these properly. 
-  double num_each_grid = num_eta/2;
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>
-    n_grid(*env, "output_", num_each_grid, NULL);
-  QUESO::GslVector extraSimulationGridVec(n_eta_space.zeroVector());
-  QUESO::GslVector extraSimulationGridVec_forUvel(n_grid.zeroVector());
-  QUESO::GslVector extraSimulationGridVec_forVvel(n_grid.zeroVector());
-  std::vector<QUESO::GslVector* > simulationScenarios(num_simulations,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > paramVecs(num_simulations,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > outputVecs(num_simulations,(QUESO::GslVector*) NULL);
-            
-  for (int i = 0; i < num_simulations; ++i) {
-    simulationScenarios[i] = new QUESO::GslVector(config_x_space.zeroVector());   // 'x_{i+1}^*' in paper
-    paramVecs          [i] = new QUESO::GslVector(paramSpace.zeroVector());   // 't_{i+1}^*' in paper
-    outputVecs         [i] = new QUESO::GslVector(n_eta_space.zeroVector()); // 'eta_{i+1}' in paper
+  // Simulation data is needed prior to setting scaling on config vars
+  acquire_simulation_data();
+
+  // default constructed options will have recommended settings, then
+  // we can override via C++ API or input file (parse)
+  gpmsaOptions.reset(new QUESO::GPMSAOptions());
+  // insert Dakota parameters here: gpmsaOptions.m_emulatorPrecisionShape
+  // now override with file-based power user parameters
+  if (!optionsFile.empty())
+    gpmsaOptions->parse(*quesoEnv, "");
+
+  // Regarding simulation scenario input values, the user should standardise
+  // them so that they exist inside a hypercube.
+  //
+  // Regarding simulation output data, the user should transform it so that the
+  // mean is zero and the variance is one.
+  //
+  // Regarding experimental scenario input values, the user should standardize
+  // them so that they exist inside a hypercube.
+  //
+  // Regarding experimental data, the user should transformed it so that it has
+  // zero mean and variance one.
+
+  // TODO: user option for min/max vs. mu/sigma?  Also, when user
+  // gives bounds on distro instead of data, should we use those?
+  // They might not be finite... For that matter, autoscale may break
+  // on infinite domains?
+  bool scale_theta = gpmsaNormalize;
+  if (scale_theta)
+    for (unsigned int i = 0; i < (numContinuousVars + numHyperparams); ++i)
+      gpmsaOptions->set_autoscale_minmax_uncertain_parameter(i);
+
+  // TODO: This should allow scaling by user-provided bounds as well
+  bool scale_configs = gpmsaNormalize;
+  if (scale_configs && userConfigVars > 0)
+    normalize_configs();
+
+  // TODO: Use GPMSA intrinsic data scaling when available
+  bool scale_data = gpmsaNormalize;
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;
+
+  gpmsaFactory.reset(new QUESO::GPMSAFactory<GslVector, GslMatrix>
+                     (*quesoEnv, gpmsaOptions.get(), *priorRv, *configSpace,
+                      *paramSpace, *nEtaSpace, *experimentSpace, buildSamples,
+                      expData.num_experiments()));
+
+  // Scale and populate simulation build data and experiment data
+  fill_simulation_data(scale_data);
+  fill_experiment_data(scale_data);
+
+  // solver setup must follow factory instantiation
+  init_queso_solver();
+
+  // Override only the calibration parameter values with the ones the
+  // user specified (or TODO: the map point if we pre-solve)
+  GslVector full_param_initials(
+    gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
+  // Initial condition of the chain: overlay user params on default GPMSA values
+  overlay_initial_params(full_param_initials);
+
+  GslMatrix full_proposal_cov(
+    gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
+  overlay_proposal_covariance(full_proposal_cov);
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << ">>>>> GPMSA: Performing calibration with " << mcmcType << " using "
+       << calIpMhOptionsValues->m_rawChainSize << " MCMC samples." << std::endl;
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << "\n  Calibrating " << numHyperparams << " error hyperparameters."
+	   << std::endl;
   }
-                           
-  // Populate all objects just instantiated
-  //for (int i = 0; i<numFunctions; i++) 
-  //  extraSimulationGridVec[i]=1.5+1.5*i;
-  extraSimulationGridVec_forUvel[0]=0.0;
-  extraSimulationGridVec_forVvel[0]=0.0;
-  for (int i = 1; i<1001; i++){ 
-    extraSimulationGridVec_forUvel[i]=extraSimulationGridVec_forUvel[i-1]+0.001;
-    extraSimulationGridVec_forVvel[i]=extraSimulationGridVec_forVvel[i-1]+0.001;
-  }
-  //extraSimulationGridVec[1001]=0.0;
-  //for (int i = 52; i<102; i++) 
-  //  extraSimulationGridVec[i]=extraSimulationGridVec[i-1]+0.02;
-  Cout << "Extra Simulation Grid Vec1 " << extraSimulationGridVec_forUvel << '\n';
-  Cout << "Extra Simulation Grid Vec2 " << extraSimulationGridVec_forVvel << '\n';
 
-  RealVector temp_cvars;
-  QUESO::GslVector gsl_cvars(paramSpace.zeroVector());
-  QUESO::GslVector gsl_configvars(config_x_space.zeroVector());
-  int i,j,k;
-  if (approxImportFile.empty())
-  { 
+  inverseProb->solveWithBayesMetropolisHastings(calIpMhOptionsValues.get(), 
+                                                full_param_initials,
+                                                &full_proposal_cov);
+
+  if (outputLevel >= NORMAL_OUTPUT) {
+    Cout << ">>>>> GPMSA: Calibration complete. Generating statistics and ouput.\n";
+
+    Cout << "  Info: MCMC details are in the QuesoDiagnostics directory:\n"
+	 << "          display_sub0.txt contains MCMC diagnostics\n";
+    if (standardizedSpace)
+      Cout << "          Matlab files contain chain values (in "
+	   << "standardized probability space)\n";
+    else
+      Cout << "          Matlab files contain chain values\n";
+
+    Cout << "  Info: GPMSA cannot currently retrieve response function statistics."
+	 << std::endl;
+  }
+
+  cache_acceptance_chain();
+  compute_statistics();
+}
+
+
+void NonDGPMSABayesCalibration::init_queso_solver() 
+{
+  // Note: The postRv includes GP-associated hyper-parameters
+  postRv.reset(new QUESO::GenericVectorRV<GslVector, GslMatrix>
+               ("post_", gpmsaFactory->prior().imageSet().vectorSpace()));
+
+  // TODO: consider what options are relevant for GPMSA vs. QUESO
+  set_ip_options();
+  set_mh_options();
+
+  inverseProb.reset(new QUESO::StatisticalInverseProblem<GslVector, GslMatrix>
+                    ("", calIpOptionsValues.get(), *gpmsaFactory, *postRv));
+}
+
+
+
+void NonDGPMSABayesCalibration::
+overlay_proposal_covariance(GslMatrix& full_prop_cov) const
+{
+  // Start with the covariance matrix for the whole prior, including
+  // GPMSA hyper-parameters.
+  gpmsaFactory->prior().pdf().distributionVariance(full_prop_cov);
+
+  // Now override with user (or iterative algorithm-updated values)
+  unsigned int num_calib_params = numContinuousVars + numHyperparams;
+  for (unsigned int i=0; i<num_calib_params; ++i)
+    for (unsigned int j=0; j<num_calib_params; ++j)
+      full_prop_cov(i,j) = (*proposalCovMatrix)(i,j);
+}
+
+
+void NonDGPMSABayesCalibration::
+overlay_initial_params(GslVector& full_param_initials)
+{
+  // Start with the mean of the prior
+  gpmsaFactory->prior().pdf().distributionMean(full_param_initials);
+
+  // But override whatever we want, e.g., with user-specified values:
+  unsigned int num_calib_params = numContinuousVars + numHyperparams;;
+  for (unsigned int i=0; i<num_calib_params; ++i)
+    full_param_initials[i] = (*paramInitials)[i];
+
+  // Example of manually adjusting initial values:
+  // full_param_initials[num_calib_params + 0]  = 0.4; // Emulator mean (unused, but set to avoid NaN!)
+  // full_param_initials[num_calib_params + 1]  = 0.4; // emulator precision
+  // full_param_initials[num_calib_params + 2]  = 0.4; // weights0 precision
+  // full_param_initials[num_calib_params + 3]  = 0.4; // weights1 precision
+  // full_param_initials[num_calib_params + 4]  = 0.97; // emulator corr str
+  // full_param_initials[num_calib_params + 5]  = 0.97; // emulator corr str
+  // full_param_initials[num_calib_params + 6]  = 0.97; // emulator corr str
+  // full_param_initials[num_calib_params + 7]  = 0.97; // emulator corr str
+  // full_param_initials[num_calib_params + 8]  = 0.20; // emulator corr str
+  // full_param_initials[num_calib_params + 9]  = 0.80; // emulator corr str
+  // full_param_initials[num_calib_params + 10] = 10.0; // discrepancy precision
+  // full_param_initials[num_calib_params + 11] = 0.97; // discrepancy corr str
+  // full_param_initials[num_calib_params + 12] = 8000.0; // emulator data precision
+  // full_param_initials[num_calib_params + 13] = 1.0;  // observation error precision
+}
+
+
+void NonDGPMSABayesCalibration::acquire_simulation_data()
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << ">>>>> GPMSA: Acquiring simulation data." << std::endl;
+
+  // Rationale: Trying to keep this agnostic to mocked up config vars...
+
+  simulationData.shape(buildSamples, 
+		       numContinuousVars + userConfigVars + numFunctions);
+
+  if (approxImportFile.empty()) {
+
+    // NOTE: Assumes the design is performed over the config vars
+    // TODO: make this modular on the dimensions of config vars...
+    lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
     const RealMatrix&  all_samples = lhsIter.all_samples();
     const IntResponseMap& all_resp = lhsIter.all_responses();
-    for (i = 0; i < num_simulations; ++i) {
-      temp_cvars = Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(all_samples), i);
-      for (j=0; j<numUncertainVars;++j){
-        gsl_cvars[j]=temp_cvars[j];
-        Cout << "temp_cvars j" << temp_cvars[j] << '\n';
-      }
-      for (j=0; j<numUncertainVars;++j)
-        (*(paramVecs[i]))[j] = gsl_cvars[j];
-      Cout << *(paramVecs[i]) << '\n';
-    //for (j=0; j<numStateVars;++j) {
-    //  gsl_configvars[j]=temp_cvars[j+numUncertainVars];
-    //  Cout << "config_vars j" << temp_cvars[j+numUncertainVars] << '\n';
-    //}
-     // for (j=0; j<numStateVars;++j)
-    //  (*(simulationScenarios[i]))[j] = gsl_configvars[j];
-    // Cout << *(simulationScenarios[i]) << '\n';
-        (*(simulationScenarios[i]))[0]=0.5;
-      Cout << *(simulationScenarios[i]) << '\n';
+
+    if (all_samples.numCols() != buildSamples ||
+        all_resp.size() != buildSamples) {
+      Cerr << "\nError: GPMSA has insufficient surrogate build data.\n";
+      abort_handler(-1);
     }
-
-  //(*(paramVecs[0]))[0]=0.2105;
-  //(*(paramVecs[1]))[0]=0.1795;
-  //(*(paramVecs[2]))[0]=0.1167;
-  //(*(paramVecs[3]))[0]=0.1457;
-  //(*(paramVecs[4]))[0]=0.0610;
-  //(*(paramVecs[5]))[0]=0.2376;
-  //(*(paramVecs[6]))[0]=0.0982;
-  //(*(paramVecs[7]))[0]=0.1072;
-  //(*(paramVecs[8]))[0]=0.0742;
-  //(*(paramVecs[9]))[0]=0.0979;
-  //(*(paramVecs[10]))[0]=0.1639;
-  //(*(paramVecs[11]))[0]=0.2275;
-  //(*(paramVecs[12]))[0]=0.1977;
-  //(*(paramVecs[13]))[0]=0.2237;
-  //(*(paramVecs[14]))[0]=0.1914;
-  //(*(paramVecs[15]))[0]=0.2466;
-  //(*(paramVecs[16]))[0]=0.0702;
-  //(*(paramVecs[17]))[0]=0.1345;
-  //(*(paramVecs[18]))[0]=0.1564;
-  //(*(paramVecs[19]))[0]=0.1762;
-  //(*(paramVecs[20]))[0]=0.1498;
-  //(*(paramVecs[21]))[0]=0.1236;
-  //(*(paramVecs[22]))[0]=0.2087;
-  //(*(paramVecs[23]))[0]=0.0544;
-  //(*(paramVecs[24]))[0]=0.0885;
- 
-  //(*(simulationScenarios[0]))[0] = 0.5;
- // (*(simulationScenarios[1]))[0] = 0.5;
- // (*(simulationScenarios[2]))[0] = 0.5;
-
 
     IntRespMCIter resp_it = all_resp.begin();
-    for (j=0, resp_it=all_resp.begin(); j<num_simulations; ++j, ++resp_it) {
-      RealVector temp_resp(numFunctions);
-      for (k=0; k<numFunctions; k++)
-        temp_resp(k) = resp_it->second.function_value(k);
-      for (k=0; k<numFunctions; k++)
-        (*(outputVecs[j]))[k]=temp_resp[k];
-    //Cout << "temp_resp " << temp_resp << '\n';
-      Cout << *(outputVecs[j]) << '\n';
+    for (unsigned int i = 0; i < buildSamples; i++, ++resp_it) {
+      for (int j=0; j<numContinuousVars; ++j)
+	simulationData(i, j) = all_samples(j, i);
+      for (int j=0; j<userConfigVars; ++j)
+	simulationData(i, numContinuousVars + j) = 
+	  all_samples(numContinuousVars + j, i);
+      for (int j=0; j<numFunctions; ++j)
+	simulationData(i, numContinuousVars + userConfigVars + j) = 
+	  resp_it->second.function_values()[j];
     }
+
   }
   else {
-    bool verbose=(outputLevel>NORMAL_OUTPUT);
-    RealMatrix the_data;
-    // BMA TODO: allow active only on point import?
-    // approxImportActiveOnly
-    TabularIO::
-      read_data_tabular(approxImportFile, "GPMSA input points", the_data,
-			num_simulations, numUncertainVars+numFunctions,
-			approxImportFormat, verbose); 
-    RealVector temp_resp(numFunctions);
-    for (i = 0; i < num_simulations; ++i) {
-      for (j=0; j<(numUncertainVars);++j){
-        //if (j<numUncertainVars) {
-         gsl_cvars[j]=the_data[j][i];
-         Cout << "gsl_cvars j" << gsl_cvars[j] << '\n';
-        //} 
-        //else
-        //temp_resp[j-3] = the_data[j][i];
-      }
-      for (j=0; j<numUncertainVars;++j)
-        (*(paramVecs[i]))[j] = gsl_cvars[j];
-      Cout << *(paramVecs[i]) << '\n';
-      for (k=0; k<numFunctions; k++)
-        (*(outputVecs[i]))[k]=the_data[numUncertainVars+k][i];
-      Cout << *(outputVecs[i]) << '\n';
-      (*(simulationScenarios[i]))[0]=0.5;
-      Cout << *(simulationScenarios[i]) << '\n';
-    }
 
-  } 
-    //(*(simulationScenarios[i]))[0] = inputSimulScenarioVector [i];
-    //(*(paramVecs          [i]))[0] = inputSimulParameterVector[i];
-    //outputVecs[i] = ;
- 
-  //Finally, add information to the simulation storage
-  for (int i = 0; i < num_simulations; ++i) {
-    simulationStorage.addSimulation(*(simulationScenarios[i]),*(paramVecs[i]),*(outputVecs[i]));
+    // Read surrogate build data ( theta, [x, ], fns ) depending on
+    // active_only and number of user-specified config vars.  If
+    // reading active_only, have to assume all simulations conducted
+    // at nominal state variable values.
+    size_t record_len = (approxImportActiveOnly) ?
+      numContinuousVars + numFunctions :
+      numContinuousVars + userConfigVars + numFunctions;
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "GPMSA: Importing simulation data from '" << approxImportFile
+	   << "'\n       with " << numContinuousVars
+	   << " calibration variable(s), " << userConfigVars
+	   << " configuration variable(s),\n       and " << numFunctions
+	   << " simulation output(s)." << std::endl;
+    bool verbose = (outputLevel > NORMAL_OUTPUT);
+    TabularIO::read_data_tabular(approxImportFile, "GMPSA simulation data",
+				 simulationData, buildSamples, record_len,
+				 approxImportFormat, verbose);
+    // TODO: Have to fill in configuration variable values for
+    // active_only, or error and move the function data over if so...
   }
-  Cout << "got to line 294 " << '\n';
-  //***********************************************************************
-  // Step 04 of 09: Instantiate the simulation model
-  //***********************************************************************
-  QUESO::SmOptionsValues *smVarOptions = NULL;
-  smVarOptions = new QUESO::SmOptionsValues();
-  smVarOptions->m_dataOutputFileName = ".";
-  smVarOptions->m_dataOutputAllowAll = 0;
-  smVarOptions->m_dataOutputAllowedSet.insert(0);
-  smVarOptions->m_p_eta = 3;
-  smVarOptions->m_zeroRelativeSingularValue = 0.;
-  smVarOptions->m_cdfThresholdForPEta = 0.;
-  smVarOptions->m_a_w = 5.;
-  smVarOptions->m_b_w = 5.;
-  smVarOptions->m_a_rho_w = 1.;
-  smVarOptions->m_b_rho_w = 0.1;
-  smVarOptions->m_a_eta = 5.;
-  smVarOptions->m_b_eta = 0.005;
-  smVarOptions->m_a_s = 1.;
-  smVarOptions->m_b_s = 0.0001;
-
-  //simOptionsValues->m_ov.zeroRelativeSingularValue = 0.0;
-  //simOptionsValues->m_ov.cdfThresholdForPEta = 0.95;
-  QUESO::SimulationModel<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>
-    simulationModel("",   // prefix
-                    smVarOptions, // options values
-                    simulationStorage);
- 
-
-  unsigned int num_bases_eta = simulationModel.numBasis(); // number of simulation basis; 'p_eta' in paper; 2 in tower example
-  Cout << "num_bases_eta " << num_bases_eta << '\n';
-  Cout << "got to line 306 " << '\n';
-
-  size_t num_experiments = expData.num_experiments();
-
-  //***********************************************************************
-  // Step 05 of 09: Instantiate the experiment storage
-  // Regarding experimental scenario input values, QUESO will standardize them so that
-  //    they exist inside a hypercube: this will be done in the 'ExperimentModel'
-  //    constructor, step 06 of 09.
-  // Regarding experimental data, the user has to provide it already in transformed
-  //    format, that is, with mean zero and standard deviation one.
-  //***********************************************************************
-#if 1 // Replace by "if 0" if there is no experimental data available
-  // number of experiments; 'n' in paper; 3 in tower example, num_experiments
-
-  QUESO::ExperimentStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>* experimentStoragePtr = NULL;
-  experimentStoragePtr = new QUESO::ExperimentStorage<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>(config_x_space, num_experiments);
- 
-  Cout << "Got to line 323 " << '\n';
-  // Add experiments
-  std::vector<QUESO::GslVector* > experimentScenarios_original(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentScenarios_standard(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<unsigned int> experimentDims(num_experiments,0);
-  std::vector<unsigned int> experimentDimsEach(num_experiments,0);
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > experimentSpaces          (num_experiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > eachResponseSpace          (num_experiments,(QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forUvel(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > extraExperimentGridVecs_forVvel(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_original   (num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean    (num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean1    (num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_auxMean2    (num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslVector* > experimentVecs_transformed(num_experiments,(QUESO::GslVector*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_original   (num_experiments,(QUESO::GslMatrix*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_transformed(num_experiments,(QUESO::GslMatrix*) NULL);
-  std::vector<QUESO::GslMatrix* > experimentMats_transformed_inv(num_experiments,(QUESO::GslMatrix*) NULL);
-
-  //for (i = 0; i < num_experiments; ++i) {
-    //experimentDims[i] = numFunctions; // constant for now
-  //}
-  experimentDims[0]=54; 
-  //experimentDims[1]=4; 
-  //experimentDims[2]=3;
-  experimentDimsEach[0]=27;
-  Cout << "Got to line 338 " << '\n';
- 
-  for (i = 0; i < num_experiments; ++i) {
-    experimentScenarios_original[i] = new QUESO::GslVector(config_x_space.zeroVector());               // 'x_{i+1}' in paper
-    experimentScenarios_standard[i] = new QUESO::GslVector(config_x_space.zeroVector());     
-    experimentSpaces[i] = new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*env, "expSpace", experimentDims[i], NULL);
-    eachResponseSpace[i] = new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*env, "expSpace", experimentDimsEach[i], NULL);
-    extraExperimentGridVecs[i] = new QUESO::GslVector(experimentSpaces[i]->zeroVector());          //
-    extraExperimentGridVecs_forUvel[i] = new QUESO::GslVector(eachResponseSpace[i]->zeroVector());          //
-    extraExperimentGridVecs_forVvel[i] = new QUESO::GslVector(eachResponseSpace[i]->zeroVector());          //
-    experimentVecs_original[i] = new QUESO::GslVector(experimentSpaces[i]->zeroVector());          //
-    experimentVecs_auxMean[i] = new QUESO::GslVector(experimentSpaces[i]->zeroVector());          //
-    experimentVecs_auxMean1[i] = new QUESO::GslVector(eachResponseSpace[i]->zeroVector());          //
-    experimentVecs_auxMean2[i] = new QUESO::GslVector(eachResponseSpace[i]->zeroVector());          //
-    experimentVecs_transformed[i] = new QUESO::GslVector(experimentSpaces[i]->zeroVector());          // 'y_{i+1}' in paper
-    experimentMats_original   [i] = new QUESO::GslMatrix(experimentSpaces[i]->zeroVector());          //
-    experimentMats_transformed[i] = new QUESO::GslMatrix(experimentSpaces[i]->zeroVector());          // 'W_{i+1}' in paper
-    experimentMats_transformed_inv[i] = new QUESO::GslMatrix(experimentSpaces[i]->zeroVector());          // 'W_{i+1}' in paper
-  }
-
-  //***********************************************************************
-  // Populate information regarding experiment '0'
-  //***********************************************************************
-#if 0
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    // config vars are same for all functions for now
-    size_t fn_ind = 0;
-    const RealVector& xobs_i = expData.config_vars(fn_ind, i);
-    for (unsigned int j = 0; j < num_config_vars; ++j) 
-      (*(experimentScenarios_original[i]))[j] = xobs_i[j];
-    Cout << *(experimentScenarios_original[i]) << '\n';
-  }
-#else
-// prudenci 2013-08-25
-   for (unsigned int i = 0; i < num_experiments; ++i) {
-     for (unsigned int j = 0; j < num_config_vars; ++j) {
-       (*(experimentScenarios_original[i]))[j] = 0.5;
-     }
-     std::cout << *(experimentScenarios_original[i]) << '\n';
-   }
-#endif
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    *(experimentScenarios_standard[i])  = *(experimentScenarios_original[i]);
-   // *(experimentScenarios_standard[i]) -= simulationModel.xSeq_original_mins();
-   // for (unsigned int j = 0; j < num_config_vars; ++j) {
-   //   (*(experimentScenarios_standard[i]))[j] /= simulationModel.xSeq_original_ranges()[j];
-   // }
-  }
-  //(*(experimentScenarios[0]))[0] = 0.1; // 'x_1' in paper; Radius in tower example
-
-	 (*(extraExperimentGridVecs_forUvel[0]))[0] = 0.00000E+0;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[1] = 0.008219;   
-	 (*(extraExperimentGridVecs_forUvel[0]))[2] = 0.010959;   
-         (*(extraExperimentGridVecs_forUvel[0]))[3] = 0.021918;
-	 (*(extraExperimentGridVecs_forUvel[0]))[4] = 0.035616;
- 	 (*(extraExperimentGridVecs_forUvel[0]))[5] = 0.049315;
-	 (*(extraExperimentGridVecs_forUvel[0]))[6] = 0.065753;
-	 (*(extraExperimentGridVecs_forUvel[0]))[7] = 0.10137;
-	 (*(extraExperimentGridVecs_forUvel[0]))[8] = 0.131507;
- 	 (*(extraExperimentGridVecs_forUvel[0]))[9] = 0.161644;
-	 (*(extraExperimentGridVecs_forUvel[0]))[10] = 0.20274;
-	 (*(extraExperimentGridVecs_forUvel[0]))[11] = 0.29863;
-	 (*(extraExperimentGridVecs_forUvel[0]))[12] = 0.39726;
-	 (*(extraExperimentGridVecs_forUvel[0]))[13] = 0.50137;
-	 (*(extraExperimentGridVecs_forUvel[0]))[14] = 0.6;
-	 (*(extraExperimentGridVecs_forUvel[0]))[15] = 0.70137;
-	 (*(extraExperimentGridVecs_forUvel[0]))[16] = 0.80274;
-	 (*(extraExperimentGridVecs_forUvel[0]))[17] = 0.843836;
-	 (*(extraExperimentGridVecs_forUvel[0]))[18] = 0.863014;
-	 (*(extraExperimentGridVecs_forUvel[0]))[19] = 0.9013699;
-	 (*(extraExperimentGridVecs_forUvel[0]))[20] = 0.9369863;
-	 (*(extraExperimentGridVecs_forUvel[0]))[21] = 0.9534247;
-	 (*(extraExperimentGridVecs_forUvel[0]))[22] = 0.969863;
-	 (*(extraExperimentGridVecs_forUvel[0]))[23] =  0.9835616;
-	 (*(extraExperimentGridVecs_forUvel[0]))[24] = 0.99178082;
-	 (*(extraExperimentGridVecs_forUvel[0]))[25] = 0.99452055;
-	 (*(extraExperimentGridVecs_forUvel[0]))[26] = 1.00000E+0;  
- 	 (*(extraExperimentGridVecs_forVvel[0]))[0] = 5.55112E-17;  
-	 (*(extraExperimentGridVecs_forVvel[0]))[1] = 8.06452E-3;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[2] = 5.37634E-3;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[3] = 1.61290E-2;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[4] = 3.22581E-2;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[5] = 4.83871E-2;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[6] = 6.18280E-2;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[7] = 9.67742E-2;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[8] = 1.29032E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[9] = 1.58602E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[10] = 1.98925E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[11] = 2.98387E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[12] = 3.97849E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[13] = 4.97312E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[14] = 5.99462E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[15] = 6.98925E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[16] = 7.98387E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[17] = 8.38710E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[18] = 8.70968E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[19] = 9.00538E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[20] = 9.30108E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[21] = 9.51613E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[22] = 9.62366E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[23] = 9.81183E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[24] = 9.91935E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[25] = 9.91935E-1;   
-	 (*(extraExperimentGridVecs_forVvel[0]))[26] = 9.97312E-1; 
-   // (*(extraExperimentGridVecs[0]))[0] = ;
-   // (*(extraExperimentGridVecs[0]))[1] = 10.;
-   // (*(extraExperimentGridVecs[0]))[2] = 15.;
-   // (*(extraExperimentGridVecs[0]))[3] = 20.;
-   // (*(extraExperimentGridVecs[1]))[0] = 5.;
-   // (*(extraExperimentGridVecs[1]))[1] = 10.;
-   // (*(extraExperimentGridVecs[1]))[2] = 15.;
-   // (*(extraExperimentGridVecs[1]))[3] = 20.;
-   // (*(extraExperimentGridVecs[2]))[0] = 5.;
-   // (*(extraExperimentGridVecs[2]))[1] = 10.;
-   // (*(extraExperimentGridVecs[2]))[2] = 15.;
-
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    for (unsigned int j = 0; j < experimentDims[i]; ++j) { 
-      Real yobs = expData.scalar_data(j,i);
-      (*(experimentVecs_original[i]))[j] = yobs;
-    }
-    Cout << *(experimentVecs_original[i]) << '\n';
-    //Cout << *(extraExperimentGridVecs[i]) << '\n';
-    Cout << *(extraExperimentGridVecs_forUvel[i]) << '\n';
-    Cout << *(extraExperimentGridVecs_forVvel[i]) << '\n';
-  }
-  Cout << "Got to line 367 " << '\n';
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    QUESO::GslVector simulationModelEtaSeq1(n_grid.zeroVector());
-    QUESO::GslVector simulationModelEtaSeq2(n_grid.zeroVector());
-    for (int j = 0; j < 1001; ++j) {
-      simulationModelEtaSeq1[j]=simulationModel.etaSeq_original_mean()[j];
-      simulationModelEtaSeq2[j]=simulationModel.etaSeq_original_mean()[1001+j];
-    }
-    Cout << "simulationModelEtaSeq1 " << simulationModelEtaSeq1 << '\n';
-    Cout << "simulationModelEtaSeq2 " << simulationModelEtaSeq2 << '\n';
- 
-    experimentVecs_auxMean1[i]->matlabLinearInterpExtrap(extraSimulationGridVec_forUvel, simulationModelEtaSeq1,*(extraExperimentGridVecs_forUvel[i]));
-    experimentVecs_auxMean2[i]->matlabLinearInterpExtrap(extraSimulationGridVec_forVvel, simulationModelEtaSeq2,*(extraExperimentGridVecs_forVvel[i]));
-    Cout << "matlab interpolation done" << std::endl;
-    for (int j = 0; j < 27; ++j) {
-      (*experimentVecs_auxMean[i])[j]=(*experimentVecs_auxMean1[i])[j];
-    }
-    for (int j = 0; j < 27; ++j) {
-      (*experimentVecs_auxMean[i])[j+27]=(*experimentVecs_auxMean2[i])[j];
-    }
-    Cout << *(experimentVecs_auxMean[i]) << '\n';
-    
-    if ((env->subDisplayFile()) && (env->displayVerbosity() >= 2)) {
-         *env->subDisplayFile() << "In compute(), step 05, experiment " << i 
-                          << "\n  extraSimulationGridVec = "              << extraSimulationGridVec
-                          << "\n  simulationModel.etaSeq_original_mean() = " << simulationModel.etaSeq_original_mean()
-                          << "\n  *(extraExperimentGridVecs[i]) = "       << *(extraExperimentGridVecs[i])
-                          << "\n  *(experimentVecs_auxMean[i]) = "           << *(experimentVecs_auxMean[i])
-                          << std::endl;
-    }
-#ifdef UQ_GPMSA_CODE_TREATS_SIMULATION_VECTORS_IN_CHUNKS // prudenci_new_2013_09_06
-    for (unsigned int j = 0; j < 27; ++j) { // prudenci_new_2013_09_06
-      (*(experimentVecs_transformed[i]))[j   ] = (1./simulationModel.etaSeq_chunkStd(0)) * ( (*(experimentVecs_original[i]))[j   ] - (*(experimentVecs_auxMean[i]))[j   ] ); // 'y_1' in paper // prudenci_new_2013_09_06
-    } // prudenci_new_2013_09_06
-    for (unsigned int j = 0; j < 27; ++j) { // prudenci_new_2013_09_06
-      (*(experimentVecs_transformed[i]))[j+27] = (1./simulationModel.etaSeq_chunkStd(1)) * ( (*(experimentVecs_original[i]))[j+27] - (*(experimentVecs_auxMean[i]))[j+27] ); // 'y_1' in paper // prudenci_new_2013_09_06
-    } // prudenci_new_2013_09_06
-#else // prudenci_new_2013_09_06
-    *(experimentVecs_transformed[i]) = (1./simulationModel.etaSeq_allStd()) * ( *(experimentVecs_original[i]) - *(experimentVecs_auxMean[i]) ); // 'y_1' in paper
-#endif // prudenci_new_2013_09_06
-    if ((env->subDisplayFile()) && (env->displayVerbosity() >= 2)) {
-     *env->subDisplayFile() << "In compute(), step 05, experiment " << i
-                          << "\n  *(experimentVecs_original[i]) = "    << *(experimentVecs_original[i])
-                          << "\n  *(experimentVecs_auxMean[i]) = "     << *(experimentVecs_auxMean[i])
-#ifdef UQ_GPMSA_CODE_TREATS_SIMULATION_VECTORS_IN_CHUNKS // prudenci_new_2013_09_06
-#else // prudenci_new_2013_09_06
-                          << "\n  simulationModel.etaSeq_allStd() = "  << simulationModel.etaSeq_allStd()
-#endif // prudenci_new_2013_09_06
-                          << "\n  *(experimentVecs_transformed[i]) = " << *(experimentVecs_transformed[i])
-                          << std::endl;
-    }
-  }
-
-  Cout << "Got to line 367A " << '\n';
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
-      (*(experimentMats_original[i]))(j,j) = 0.0001;
-    }
-  }
-
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-#ifdef UQ_GPMSA_CODE_TREATS_SIMULATION_VECTORS_IN_CHUNKS // prudenci_new_2013_09_06
-    for (unsigned int j = 0; j < 27; ++j) { // prudenci_new_2013_09_06
-      (*(experimentMats_transformed[i]))(j   ,j   ) = (*(experimentMats_original[i]))(j   ,j   )/(simulationModel.etaSeq_chunkStd(0)*simulationModel.etaSeq_chunkStd(0)); // prudenci_new_2013_09_06
-    } // prudenci_new_2013_09_06
-    for (unsigned int j = 0; j < 27; ++j) { // prudenci_new_2013_09_06
-      (*(experimentMats_transformed[i]))(j+27,j+27) = (*(experimentMats_original[i]))(j+27,j+27)/(simulationModel.etaSeq_chunkStd(1)*simulationModel.etaSeq_chunkStd(1)); // prudenci_new_2013_09_06
-    } // prudenci_new_2013_09_06
-#else // prudenci_new_2013_09_06
-    for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
-      (*(experimentMats_transformed[i]))(j,j) = (*(experimentMats_original[i]))(j,j)/simulationModel.etaSeq_allStd(); // different
-    }
-#endif // prudenci_new_2013_09_06
-  }
-
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    for (unsigned int j = 0; j < experimentDims[i] ; ++j) {
-      (*(experimentMats_transformed_inv[i]))(j,j) = 1./(*(experimentMats_transformed[i]))(j,j);                                                                            
-    }
-  }
-
-  //***********************************************************************
-  // Finally, add information to the experiment storage
-  //***********************************************************************
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    if ((env->subDisplayFile()) && (env->displayVerbosity() >= 2)) {
-      *env->subDisplayFile() << "In compute(), step 05"
-                            << ": calling experimentStorage.addExperiment() for experiment of id '" << i << "'..."
-                            << std::endl;
-    }
-    experimentStoragePtr->addExperiment(*(experimentScenarios_standard[i]),*(experimentVecs_transformed[i]),*(experimentMats_transformed_inv[i]));
-    if ((env->subDisplayFile()) && (env->displayVerbosity() >= 2)) {
-      *env->subDisplayFile() << "In compute(), step 05"
-                            << ": returned from experimentStorage.addExperiment() for experiment of id '" << i << "'"
-                            << std::endl;
-    }
-  }
-  Cout << "Got to line 435 \n";
-
-  //***********************************************************************
-  // Step 06 of 09: Instantiate the experiment model
-  // User has to provide 'D' matrices
-  // User has to interpolate 'K_eta' matrix in order to form 'K_i' matrices
-  // 'K_eta' is 'Ksim' in the GPMSA tower example document (page 9)
-  //  'K_i' is 'Kobs' in the GPMSA tower example document (page 9)
-  //***********************************************************************
-  unsigned int num_delta_bases_forUvel = 7;
-  unsigned int num_delta_bases_forVvel = 7;
-  unsigned int num_delta_bases =  num_delta_bases_forUvel + num_delta_bases_forVvel; // number of experiment basis; 'p_delta' in paper; 13 in tower example
-
-  double kernelSigma = 0.1;
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> oneDSpace(*env, "oneDSpace", 1, NULL);
-  QUESO::GslVector oneDVec(oneDSpace.zeroVector());
-  QUESO::GslMatrix oneDMat(oneDSpace.zeroVector());
-  oneDMat(0,0) = kernelSigma*kernelSigma;
-
-  //***********************************************************************
-  // Form and compute 'DsimMat'
-  // Not mentioned in the paper
-  // 'Dsim' in the GPMSA tower example document (page 11)
-  //***********************************************************************
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> delta_space(*env, "delta_space", num_delta_bases, NULL);
-
-  QUESO::GslVector kernelSigmas (delta_space.zeroVector()); // prudenci_new_2013_09_06
-  kernelSigmas[ 0] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[ 1] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[ 2] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[ 3] = 0.05; // prudenci_new_2013_09_06
-  kernelSigmas[ 4] = 0.15; // prudenci_new_2013_09_06
-  kernelSigmas[ 5] = 0.25; // prudenci_new_2013_09_06
-  kernelSigmas[ 6] = 0.25; // prudenci_new_2013_09_06
-  kernelSigmas[ 7] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[ 8] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[ 9] = 0.025; // prudenci_new_2013_09_06
-  kernelSigmas[10] = 0.05; // prudenci_new_2013_09_06
-  kernelSigmas[11] = 0.15; // prudenci_new_2013_09_06
-  kernelSigmas[12] = 0.25; // prudenci_new_2013_09_06
-  kernelSigmas[13] = 0.25; // prudenci_new_2013_09_06
-
-  QUESO::GslVector kernelCenters(delta_space.zeroVector());
-  kernelCenters[ 0] = 0.0; // For 'u' velocity
-  kernelCenters[ 1] = 0.025;
-  kernelCenters[ 2] = 0.05;
-  kernelCenters[ 3] = 0.1;
-  kernelCenters[ 4] = 0.25;
-  kernelCenters[ 5] = 0.5;
-  kernelCenters[ 6] = 0.75;
-  kernelCenters[ 7] = 0.0; // For 'v' velocity
-  kernelCenters[ 8] = 0.025;
-  kernelCenters[ 9] = 0.05;
-  kernelCenters[10] = 0.1;
-  kernelCenters[11] = 0.25;
-  kernelCenters[12] = 0.5;
-  kernelCenters[13] = 0.75;
-
-  QUESO::GslMatrix DsimMat(*env,n_eta_space.map(),num_delta_bases); // Important matrix (not mentioned on paper)
-  QUESO::GslVector DsimCol(n_eta_space.zeroVector());
-  unsigned int num_eta_forUvel = 1001;
-  unsigned int num_eta_forVvel = 1001;
-  Cout << "Before we do 1st subgroup of DsimMat" << '\n';
-  // Take care of 1st subgroup of columns in 'DsimMat'
-  for (unsigned int colId = 0; colId < num_delta_bases_forUvel; ++colId) {
-    oneDVec[0] = kernelCenters[colId];
-    oneDMat(0,0) = kernelSigmas[colId]*kernelSigmas[colId]; // prudenci_new_2013_09_06
-    QUESO::GaussianJointPdf<QUESO::GslVector,QUESO::GslMatrix> kernelPdf("",oneDSpace,oneDVec,oneDMat);
-    for (unsigned int rowId = 0; rowId < num_eta_forUvel; ++rowId) {
-      oneDVec[0] = extraSimulationGridVec_forUvel[rowId];
-      DsimCol[rowId] = kernelPdf.actualValue(oneDVec,NULL,NULL,NULL,NULL);
-    }
-    DsimMat.setColumn(colId,DsimCol);
-  }
-  Cout << "Before we do 2nd subgroup of DsimMat" << '\n';
-
-  // Take care of 2nd subgroup of columns in 'DsimMat'
-  for (unsigned int colId = num_delta_bases_forUvel/* Yes, forU */; colId < num_delta_bases; ++colId) {
-    oneDVec[0] = kernelCenters[colId];
-    oneDMat(0,0) = kernelSigmas[colId]*kernelSigmas[colId]; // prudenci_new_2013_09_06
-    QUESO::GaussianJointPdf<QUESO::GslVector,QUESO::GslMatrix> kernelPdf("",oneDSpace,oneDVec,oneDMat);
-    DsimCol.cwSet(0.);
-    for (unsigned int rowId = 0; rowId < num_eta_forVvel; ++rowId) {
-      oneDVec[0] = extraSimulationGridVec_forVvel[rowId];
-      DsimCol[num_eta_forUvel/* Yes, forU */ + rowId] = kernelPdf.actualValue(oneDVec,NULL,NULL,NULL,NULL);
-    }
-    DsimMat.setColumn(colId,DsimCol);
-  }
-  Cout << "Got to line 435 A \n";
-
-  //***********************************************************************
-  // Populate information regarding experiment 'i'
-  //   'D_{i+1}' in the paper
-  //   'Dobs' in the GPMSA tower example document (page 11)
-  //***********************************************************************
-  std::vector<QUESO::GslMatrix* > DobsMats(num_experiments, (QUESO::GslMatrix*) NULL);
-  DobsMats.resize(num_experiments, (QUESO::GslMatrix*) NULL); // Important matrices (D_i's on paper)
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    DobsMats[i] = new QUESO::GslMatrix(*env,experimentSpaces[i]->map(),num_delta_bases); // 'D_{i+1}' in paper
-    QUESO::GslVector DobsCol(experimentSpaces[i]->zeroVector());
-    unsigned int num_experimentPoints_forUvel = 27; // check
-    unsigned int num_experimentPoints_forVvel = 27;
-
-    // Take care of 1st subgroup of columns in 'DobsMats[i]'
-    for (unsigned int colId = 0; colId < num_delta_bases_forUvel; ++colId) {
-      oneDVec[0] = kernelCenters[colId];
-      oneDMat(0,0) = kernelSigmas[colId]*kernelSigmas[colId]; // prudenci_new_2013_09_06
-      QUESO::GaussianJointPdf<QUESO::GslVector,QUESO::GslMatrix> kernelPdf("",oneDSpace,oneDVec,oneDMat);
-      for (unsigned int rowId = 0; rowId < num_experimentPoints_forUvel; ++rowId) {
-        oneDVec[0] = (*(extraExperimentGridVecs_forUvel[i]))[rowId];
-        DobsCol[rowId] = kernelPdf.actualValue(oneDVec,NULL,NULL,NULL,NULL);
-      }
-      DobsMats[i]->setColumn(colId,DobsCol);
-    }
-
-    // Take care of 2nd subgroup of columns in 'DobsMats[i]'
-    for (unsigned int colId = num_delta_bases_forUvel/* Yes, forU */; colId < num_delta_bases; ++colId) {
-      oneDVec[0] = kernelCenters[colId];
-      oneDMat(0,0) = kernelSigmas[colId]*kernelSigmas[colId]; // prudenci_new_2013_09_06
-      QUESO::GaussianJointPdf<QUESO::GslVector,QUESO::GslMatrix> kernelPdf("",oneDSpace,oneDVec,oneDMat);
-      DobsCol.cwSet(0.);
-      for (unsigned int rowId = 0; rowId < num_experimentPoints_forVvel; ++rowId) {
-        oneDVec[0] = (*(extraExperimentGridVecs_forVvel[i]))[rowId];
-        DobsCol[num_experimentPoints_forUvel/* Yes, forU */ + rowId] = kernelPdf.actualValue(oneDVec,NULL,NULL,NULL,NULL);
-      }
-      DobsMats[i]->setColumn(colId,DobsCol);
-    }
-  }
-
-  Cout << "Got to line 435 B \n";
-  //***********************************************************************
-  // Normalize 'DsimMat' and all 'DobsMats'
-  //***********************************************************************
-
-  // Extract submatrices from 'DsimMat'
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> n_eta_space_forUvel(*env, "m_eta_space_forUvel", num_eta_forUvel, NULL);
-  QUESO::GslMatrix DsimMat_forUvel(*env,n_eta_space_forUvel.map(),num_delta_bases_forUvel);
-  for (unsigned int i = 0; i < num_eta_forUvel; ++i) {
-    for (unsigned int j = 0; j < num_delta_bases_forUvel; ++j) {
-      DsimMat_forUvel(i,j) = DsimMat(i,j);
-    }
-  }
-
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> n_eta_space_forVvel(*env, "m_eta_space_forVvel", num_eta_forVvel, NULL);
-  QUESO::GslMatrix DsimMat_forVvel(*env,n_eta_space_forVvel.map(),num_delta_bases_forVvel);
-  for (unsigned int i = 0; i < num_eta_forVvel; ++i) {
-    for (unsigned int j = 0; j < num_delta_bases_forVvel; ++j) {
-      DsimMat_forVvel(i,j) = DsimMat(num_eta_forUvel/* Yes, forU*/ + i,num_delta_bases_forUvel/* Yes, forU*/ + j);
-    }
-  }
-
-  // Normalize
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> delta_space_forUvel(*env, "delta_space_forUvel", num_delta_bases_forUvel, NULL);
-  QUESO::GslMatrix DsimMat_forUvelTranspose(*env,delta_space_forUvel.map(),num_eta_forUvel);
-  DsimMat_forUvelTranspose.fillWithTranspose(0,0,DsimMat_forUvel,true,true);
-  double Dmax_forUvel = (DsimMat_forUvel * DsimMat_forUvelTranspose).max();
-  if (env->subDisplayFile()) {
-    *env->subDisplayFile() << "In compute()"
-                           << ": Dmax_forUvel = " << Dmax_forUvel
-                           << std::endl;
-  }
-  DsimMat_forUvel /= std::sqrt(Dmax_forUvel);
-
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> delta_space_forVvel(*env, "delta_space_forVvel", num_delta_bases_forVvel, NULL);
-  QUESO::GslMatrix DsimMat_forVvelTranspose(*env,delta_space_forVvel.map(),num_eta_forVvel);
-  DsimMat_forVvelTranspose.fillWithTranspose(0,0,DsimMat_forVvel,true,true);
-  double Dmax_forVvel = (DsimMat_forVvel * DsimMat_forVvelTranspose).max();
-  if (env->subDisplayFile()) {
-    *env->subDisplayFile() << "In compute()"
-                           << ": Dmax_forVvel = " << Dmax_forVvel
-                           << std::endl;
-  }
-  DsimMat_forVvel /= std::sqrt(Dmax_forVvel);
-
-  // Write values back to 'DsimMat'
-  for (unsigned int i = 0; i < num_eta_forUvel; ++i) {
-    for (unsigned int j = 0; j < num_delta_bases_forUvel; ++j) {
-      DsimMat(i,j) = DsimMat_forUvel(i,j);
-    }
-  }
-
-  for (unsigned int i = 0; i < num_eta_forVvel; ++i) {
-    for (unsigned int j = 0; j < num_delta_bases_forVvel; ++j) {
-      DsimMat(num_eta_forUvel/* Yes, forU*/ + i,num_delta_bases_forUvel/* Yes, forU*/ + j) = DsimMat_forVvel(i,j);
-    }
-  }
-
-  // Print out 'DsimMat'
-  if (env->subDisplayFile()) {
-    DsimMat.setPrintHorizontally(false);
-    *env->subDisplayFile() << "In compute()"
-                           << ": 'DsimMat'"
-                           << ", nRows = "      << DsimMat.numRowsLocal()
-                           << ", nCols = "      << DsimMat.numCols()
-                           << ", contents =\n " << DsimMat
-                           << std::endl;
-  }
-
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    // Extract submatrices from 'DobsMats[i]'
-    unsigned int num_experimentPoints_forUvel = 27; // check
-    unsigned int num_experimentPoints_forVvel = 27;
-
-    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> experiment_space_forUvel(*env, "experiment_space_forUvel", num_experimentPoints_forUvel, NULL);
-    QUESO::GslMatrix DobsMat_forUvel(*env,experiment_space_forUvel.map(),num_delta_bases_forUvel);
-    for (unsigned int j = 0; j < num_experimentPoints_forUvel; ++j) {
-      for (unsigned int k = 0; k < num_delta_bases_forUvel; ++k) {
-        DobsMat_forUvel(j,k) = (*(DobsMats[i]))(j,k);
-      }
-    }
-
-    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> experiment_space_forVvel(*env, "experiment_space_forVvel", num_experimentPoints_forVvel, NULL);
-    QUESO::GslMatrix DobsMat_forVvel(*env,experiment_space_forVvel.map(),num_delta_bases_forVvel);
-    for (unsigned int j = 0; j < num_experimentPoints_forVvel; ++j) {
-      for (unsigned int k = 0; k < num_delta_bases_forVvel; ++k) {
-        DobsMat_forVvel(j,k) = (*(DobsMats[i]))(num_experimentPoints_forUvel/* Yes, forU*/ + j,num_delta_bases_forUvel/* Yes, forU*/ + k);
-      }
-    }
-
-    // Normalize
-    DobsMat_forUvel /= std::sqrt(Dmax_forUvel);
-    DobsMat_forVvel /= std::sqrt(Dmax_forVvel);
-
-    // Write values back to 'DobsMats[i]'
-    for (unsigned int j = 0; j < num_experimentPoints_forUvel; ++j) {
-      for (unsigned int k = 0; k < num_delta_bases_forUvel; ++k) {
-        (*(DobsMats[i]))(j,k) = DobsMat_forUvel(j,k);
-      }
-    }
-
-    for (unsigned int j = 0; j < num_experimentPoints_forVvel; ++j) {
-      for (unsigned int k = 0; k < num_delta_bases_forVvel; ++k) {
-        (*(DobsMats[i]))(num_experimentPoints_forUvel/* Yes, forU*/ + j,num_delta_bases_forUvel/* Yes, forU*/ + k) = DobsMat_forVvel(j,k);
-      }
-    }
-
-    // Print out 'DobsMats[i]'
-    DobsMats[i]->setPrintHorizontally(false);
-    if (env->subDisplayFile()) {
-      *env->subDisplayFile() << "In compute()"
-                             << ": 'DobsMats', i = " << i
-                             << ", nRows = "         << DobsMats[i]->numRowsLocal()
-                             << ", nCols = "         << DobsMats[i]->numCols()
-                             << ", contents =\n"     << *(DobsMats[i])
-                             << std::endl;
-    }
-  }
-
-  Cout << "Got to line 435 C \n";
-  
-  //***********************************************************************
-  // Compute 'K_i' matrices (Kobs in the matlab documentation)
-  //***********************************************************************
-  std::vector<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>* > Kmats_interp_spaces(num_experiments, (QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>*) NULL);
-  std::vector<QUESO::GslMatrix*                                      > Kmats_interp       (num_experiments, (QUESO::GslMatrix*) NULL); // Interpolations of 'Kmat_eta' = 'K_i's' in paper
-
-  // Extract submatrices from 'Kmat_eta' (Ksim in the matlab documentation)
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> Kmat_eta_space_forUvel(*env,"Kmat_interp_space_forUvel",num_eta_forUvel,NULL);
-  QUESO::GslMatrix                                      Kmat_eta_forUvel      (*env,Kmat_eta_space_forUvel.map(),num_bases_eta);
-  for (unsigned int i = 0; i < num_eta_forUvel; ++i) {
-    for (unsigned int j = 0; j < num_bases_eta; ++j) {
-      Kmat_eta_forUvel(i,j) = simulationModel.Kmat_eta()(i,j);
-    }
-  }
-
-  QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> Kmat_eta_space_forVvel(*env,"Kmat_interp_space_forVvel",num_eta_forVvel,NULL);
-  QUESO::GslMatrix                                      Kmat_eta_forVvel      (*env,Kmat_eta_space_forVvel.map(),num_bases_eta);
-  for (unsigned int i = 0; i < num_eta_forVvel; ++i) {
-    for (unsigned int j = 0; j < num_bases_eta; ++j) {
-      Kmat_eta_forVvel(i,j) = simulationModel.Kmat_eta()(num_eta_forUvel/* Yes, forU */ + i,j);
-    }
-  }
-
-  for (unsigned int i = 0; i < num_experiments; ++i) {
-    unsigned int num_experimentPoints_forUvel = 27;
-    unsigned int num_experimentPoints_forVvel = 27;
-
-    // Interpolate
-    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> Kmat_interp_space_forUvel(*env,"Kmat_interp_space_forUvel",num_experimentPoints_forUvel,NULL);
-    QUESO::GslMatrix                                      Kmat_interp_forUvel      (*env,Kmat_interp_space_forUvel.map(),num_bases_eta);
-    Kmat_interp_forUvel.matlabLinearInterpExtrap(extraSimulationGridVec_forUvel,Kmat_eta_forUvel,*(extraExperimentGridVecs_forUvel[i]));
-
-    QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> Kmat_interp_space_forVvel(*env,"Kmat_interp_space_forVvel",num_experimentPoints_forVvel,NULL);
-    QUESO::GslMatrix                                      Kmat_interp_forVvel      (*env,Kmat_interp_space_forVvel.map(),num_bases_eta);
-    Kmat_interp_forVvel.matlabLinearInterpExtrap(extraSimulationGridVec_forVvel,Kmat_eta_forVvel,*(extraExperimentGridVecs_forVvel[i]));
-
-    // Form matrix 'Kmats_interp[i]'
-    Kmats_interp_spaces[i] = new QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix>(*env,"Kmats_interp_spaces_",experimentStoragePtr->n_ys_transformed()[i],NULL);
-    Kmats_interp       [i] = new QUESO::GslMatrix(*env,Kmats_interp_spaces[i]->map(),num_bases_eta); // check
-
-    for (unsigned int j = 0; j < num_experimentPoints_forUvel; ++j) {
-      for (unsigned int k = 0; k < num_bases_eta; ++k) {
-        (*(Kmats_interp[i]))(j,k) = Kmat_interp_forUvel(j,k);
-      }
-    }
-
-    for (unsigned int j = 0; j < num_experimentPoints_forVvel; ++j) {
-      for (unsigned int k = 0; k < num_bases_eta; ++k) {
-        (*(Kmats_interp[i]))(num_experimentPoints_forUvel/*Yes, forU*/ + j,k) = Kmat_interp_forVvel(j,k);
-      }
-    }
-
-    // Print out 'Kmats_interp[i]'
-    Kmats_interp[i]->setPrintHorizontally(false);
-    if (env->subDisplayFile()) {
-      *env->subDisplayFile() << "In compute()"
-                             << ": 'Kmats_interp', i = " << i
-                             << ", nRows = "             << Kmats_interp[i]->numRowsLocal()
-                             << ", nCols = "             << Kmats_interp[i]->numCols()
-                             << ", contents =\n"         << *(Kmats_interp[i])
-                             << std::endl;
-    }
-  }
-
-  if (env->subDisplayFile()) {
-    *env->subDisplayFile() << "In compute()"
-                           << ": finished computing 'K_i' matrices"
-                           << std::endl;
-  }
-
-  QUESO::ExperimentModel  <QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>* experimentModelPtr = NULL;
-
-  QUESO::EmOptionsValues *emVarOptions = NULL;
-  emVarOptions = new QUESO::EmOptionsValues();
-  emVarOptions->m_Gvalues.resize(1,0.);
-  emVarOptions->m_Gvalues[0] = 14;
-  emVarOptions->m_a_v = 1.;
-  emVarOptions->m_b_v = 0.0001;
-  emVarOptions->m_a_rho_v = 1.;
-  emVarOptions->m_b_rho_v = 0.1;
-  emVarOptions->m_a_y = 1000.;
-  emVarOptions->m_b_y = 1000.;
-
-
-  experimentModelPtr = new QUESO::ExperimentModel<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>("",   // prefix
-                    emVarOptions, // options values
-                    *experimentStoragePtr,
-                    DobsMats,
-                    Kmats_interp);
-#endif // "if 0" if there is no experimental data available
-
-  //***********************************************************************
-  // Step 07 of 09: Instantiate the GPMSA computer model
-  //***********************************************************************
- 
-  QUESO::GpmsaComputerModel<QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix,QUESO::GslVector,QUESO::GslMatrix>* gcm;
-  QUESO::GcmOptionsValues *gcmVarOptions = NULL;
-  gcmVarOptions = new QUESO::GcmOptionsValues();
-  gcmVarOptions->m_checkAgainstPreviousSample = 0;
-  gcmVarOptions->m_dataOutputFileName = ".";
-  gcmVarOptions->m_dataOutputAllowAll = 0;
-  gcmVarOptions->m_dataOutputAllowedSet.insert(0);
-  gcmVarOptions->m_dataOutputAllowedSet.insert(1);
-  gcmVarOptions->m_priorSeqNumSamples = 0;
-  gcmVarOptions->m_priorSeqDataOutputFileName = "GpmsaDiagnostics/priorSeq";
-  gcmVarOptions->m_priorSeqDataOutputFileType = "m";
-  gcmVarOptions->m_priorSeqDataOutputAllowAll = 0;
-  gcmVarOptions->m_priorSeqDataOutputAllowedSet.insert(0);
-  gcmVarOptions->m_nuggetValueForBtWyB = 0.0001;       // IMPORTANT
-  gcmVarOptions->m_nuggetValueForBtWyBInv = 1e-06;     // IMPORTANT
-  gcmVarOptions->m_formCMatrix = 0;
-  gcmVarOptions->m_useTildeLogicForRankDefficientC = 0;
-  gcmVarOptions->m_predVUsBySamplingRVs = 0;
-  gcmVarOptions->m_predVUsBySummingRVs = 0;
-  gcmVarOptions->m_predVUsAtKeyPoints = 1;
-  gcmVarOptions->m_predWsBySamplingRVs = 0;
-  gcmVarOptions->m_predWsBySummingRVs = 1;
-  gcmVarOptions->m_predWsAtKeyPoints = 0;
-  gcmVarOptions->m_predLag = 15;
-
-  gcm = new QUESO::GpmsaComputerModel<QUESO::GslVector,QUESO::GslMatrix,
-                                      QUESO::GslVector,QUESO::GslMatrix,
-                                      QUESO::GslVector,QUESO::GslMatrix,
-                                      QUESO::GslVector,QUESO::GslMatrix>
-          ("",
-           gcmVarOptions,
-           simulationStorage,
-           simulationModel,
-           experimentStoragePtr, // pass "NULL" if there is no experimental data available
-           experimentModelPtr,   // pass "NULL" if there is no experimental data available
-           paramPriorRvPtr);
-           //&dakotaLikelihoodRoutine);
- 
-  if (env->subDisplayFile()) {
-    *env->subDisplayFile() << "In compute()"
-                          << ": finished instantiating 'gcm'"
-                          << std::endl;
-  }
-
-   //***********************************************************************
-   // Step 08 of 09: Calibrate the computer model
-   //***********************************************************************
-  QUESO::GslVector totalInitialVec(gcm->totalSpace().zeroVector());
-  gcm->totalPriorRv().realizer().realization(totalInitialVec);
-#ifdef CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
-  totalInitialVec[ 0] = 126.11626143185;                        // lambda_eta = lamWOs
-  totalInitialVec[ 1] = 0.701343955862486;                      // lambda_w_1 = lamUz
-  totalInitialVec[ 2] = 0.708829052004483;                      // lambda_w_2 =
-  totalInitialVec[ 3] = 0.709682686862828;                      // lambda_w_3 =
-  totalInitialVec[ 4] = 0.997799643317481;    // rho_w_1_1  = exp(-model.betaU.*(0.5^2));
-  totalInitialVec[ 5] = 0.751419041988001;    // rho_w_1_2  =
-  totalInitialVec[ 6] = 0.810538180186257;    // rho_w_1_3  =
-  totalInitialVec[ 7] = 0.998404593547895;    // rho_w_1_4  =
-  totalInitialVec[ 8] = 0.999507021484067;    // rho_w_2_1  =
-  totalInitialVec[ 9] = 0.00715444906006562;  // rho_w_2_2  =
-  totalInitialVec[10] = 0.000231553394124439; // rho_w_2_3  =
-  totalInitialVec[11] = 0.388519721938543;    // rho_w_2_4  =
-  totalInitialVec[12] = 0.999482367093646;    // rho_w_3_1  =
-  totalInitialVec[13] = 0.000666947922032456; // rho_w_3_2  =
-  totalInitialVec[14] = 9.18617635486179e-07; // rho_w_3_3  =
-  totalInitialVec[15] = 0.156278430012145;    // rho_w_3_4  =
-  totalInitialVec[16] =  221.39241555032;                       // lambda_s_1 = lamWs
-  totalInitialVec[17] = 1956.58311200054;                       // lambda_s_2 =
-  totalInitialVec[18] = 8843.41472347505;                       // lambda_s_2 =
-  totalInitialVec[19] = 0.71728115298871;                       // lambda_y   = lamOs
-  totalInitialVec[20] = 0.14404321630243;                       // lambda_v_1 = lamVz
-  totalInitialVec[21] = 0.999908091519677;    // rho_v_1_1  = betaV prudenci 2013-08-24
-  totalInitialVec[22] = 0.000429516943004888;                   // theta_1    = theta
-  totalInitialVec[23] = 0.0101666957753953;                     // theta_2    = theta
-  totalInitialVec[24] = 0.0601876182547638;                     // theta_3    = theta
-#else
-  totalInitialVec[ 0] = 126.675;             // lambda_eta = lamWOs
-  totalInitialVec[ 1] = 1.;                  // lambda_w_1 = lamUz
-  totalInitialVec[ 2] = 1.;                  // lambda_w_2 =
-  totalInitialVec[ 3] = 1.;                  // lambda_w_3 =
-  totalInitialVec[ 4] = std::exp(-0.1*0.25); // rho_w_1_1  = exp(-model.betaU.*(0.5^2));
-  totalInitialVec[ 5] = std::exp(-0.1*0.25); // rho_w_1_2  =
-  totalInitialVec[ 6] = std::exp(-0.1*0.25); // rho_w_1_3  =
-  totalInitialVec[ 7] = std::exp(-0.1*0.25); // rho_w_1_4  =
-  totalInitialVec[ 8] = std::exp(-0.1*0.25); // rho_w_2_1  =
-  totalInitialVec[ 9] = std::exp(-0.1*0.25); // rho_w_2_2  =
-  totalInitialVec[10] = std::exp(-0.1*0.25); // rho_w_2_3  =
-  totalInitialVec[11] = std::exp(-0.1*0.25); // rho_w_2_4  =
-  totalInitialVec[12] = std::exp(-0.1*0.25); // rho_w_3_1  =
-  totalInitialVec[13] = std::exp(-0.1*0.25); // rho_w_3_2  =
-  totalInitialVec[14] = std::exp(-0.1*0.25); // rho_w_3_3  =
-  totalInitialVec[15] = std::exp(-0.1*0.25); // rho_w_3_4  =
-  totalInitialVec[16] = 1000.;               // lambda_s_1 = lamWs
-  totalInitialVec[17] = 1000.;               // lambda_s_2 =
-  totalInitialVec[18] = 1000.;               // lambda_s_2 =
-  totalInitialVec[19] = 1.0;                 // lambda_y   = lamOs
-  totalInitialVec[20] = 20.;                 // lambda_v_1 = lamVz
-  totalInitialVec[21] = std::exp(-0.1*0.25); // rho_v_1_1  = betaV prudenci 2013-08-24
-  totalInitialVec[22] = 0.5;                // theta_1    = theta
-  totalInitialVec[23] = 0.5;                 // theta_2    = theta
-  totalInitialVec[24] = 0.5;                 // theta_3    = theta
-#endif
- 
-  QUESO::GslVector diagVec(gcm->totalSpace().zeroVector());
-  diagVec.cwSet(0.25);
-  diagVec[ 0] = 0.0320;  //2500.;  // lambda_eta = lamWOs (gamma(5,0.005)?)
-  diagVec[ 1] = 0.0469;  //0.09;   // lambda_w_1 = lamUz (gamma(5,5))
-  diagVec[ 2] = 0.0205;  //0.09;   // lambda_w_2 =
-  diagVec[ 3] = 0.0204;  //0.09;   // lambda_w_3 =
-  diagVec[ 4] = 0.0611; //0.01;  //0.0001; // rho_w_1_1  = betaU
-  diagVec[ 5] = 0.0156;  //0.0001; // rho_w_1_2  =
-  diagVec[ 6] = 0.00556;  //0.0001; // rho_w_1_3  =
-  diagVec[ 7] = 1.95e-5;  //0.0001; // rho_w_1_4  =
-  diagVec[ 8] = 0.0675;  //0.0001; // rho_w_2_1  =
-  diagVec[ 9] = 0.00108;  //0.0001; // rho_w_2_2  =
-  diagVec[10] = 1.92e-5;  //0.0001; // rho_w_2_3  =
-  diagVec[11] = 0.0339;  //0.0001; // rho_w_2_4  =
-  diagVec[12] = 0.0504;  //0.0001; // rho_w_3_1  =
-  diagVec[13] = 7.51e-6;  //0.0001; // rho_w_3_2  =
-  diagVec[14] = 2.05e-5;  //0.0001; // rho_w_3_3  =
-  diagVec[15] = 0.0358;  //0.0001; // rho_w_3_4  =
-  diagVec[16] = 8.7e+1; //900.;            // lambda_s_1 = lamWs (gamma(3,0.003)?)
-  diagVec[17] = 8.62e+1;//900.;            // lambda_s_2 =
-  diagVec[18] = 1.09e+2; //900.;            // lambda_s_2 =
-  diagVec[19] = 4.64e-4;           // lambda_y   = lamOs gamma(1000,1000))
-  diagVec[20] = 0.0111; //9.;  //25.;    // lambda_v_1 = lamVz (gamma(1,0.0001))
-  diagVec[21] = 0.0571;  //0.0001; // rho_v_1_1  = betaV (beta(1,0.1)
-  diagVec[22] = 7.73e-1;  //0.0001; // theta_1    = theta
-  diagVec[23] = 7.03e-1;  //0.0001; // theta_2    = theta
-  diagVec[24] = 8.73e-1;  //0.0001; // theta_3    = theta
-#ifdef CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
-  diagVec[22] = 7.7339291e-05; //0.0001; // theta_1    = theta
-  diagVec[23] = 7.0290007e-04; //0.0001; // theta_2    = theta
-  diagVec[24] = 8.7347431e-02; //0.0001; // theta_3    = theta
-#endif
-
-  QUESO::GslMatrix totalInitialProposalCovMatrix(diagVec); // todo_r
-  Cout << "Got to line 597 \n"; 
-  
-  QUESO::MhOptionsValues *mhVarOptions = NULL;
-  mhVarOptions = new QUESO::MhOptionsValues();
-  mhVarOptions->m_dataOutputFileName = ".";
-  mhVarOptions->m_dataOutputAllowAll = 0;
-  mhVarOptions->m_dataOutputAllowedSet.insert(0);
-  mhVarOptions->m_dataOutputAllowedSet.insert(1);
-  mhVarOptions->m_totallyMute = 0;
-  mhVarOptions->m_initialPositionDataInputFileName = ".";
-  mhVarOptions->m_initialPositionDataInputFileType = "m";
-  mhVarOptions->m_initialProposalCovMatrixDataInputFileName = ".";
-  mhVarOptions->m_initialProposalCovMatrixDataInputFileType = "m";
-#ifdef CODE_TREATS_STATISTICALLY_ONLY_THE_THETA_PARAMETERS
-  mhVarOptions->m_parameterDisabledSet.insert(0);
-  mhVarOptions->m_parameterDisabledSet.insert(1);
-  mhVarOptions->m_parameterDisabledSet.insert(2);
-  mhVarOptions->m_parameterDisabledSet.insert(3);
-  mhVarOptions->m_parameterDisabledSet.insert(4);
-  mhVarOptions->m_parameterDisabledSet.insert(5);
-  mhVarOptions->m_parameterDisabledSet.insert(6);
-  mhVarOptions->m_parameterDisabledSet.insert(7);
-  mhVarOptions->m_parameterDisabledSet.insert(8);
-  mhVarOptions->m_parameterDisabledSet.insert(9);
-  mhVarOptions->m_parameterDisabledSet.insert(10);
-  mhVarOptions->m_parameterDisabledSet.insert(11);
-  mhVarOptions->m_parameterDisabledSet.insert(12);
-  mhVarOptions->m_parameterDisabledSet.insert(13);
-  mhVarOptions->m_parameterDisabledSet.insert(14);
-  mhVarOptions->m_parameterDisabledSet.insert(15);
-  mhVarOptions->m_parameterDisabledSet.insert(16);
-  mhVarOptions->m_parameterDisabledSet.insert(17);
-  mhVarOptions->m_parameterDisabledSet.insert(18);
-  mhVarOptions->m_parameterDisabledSet.insert(19);
-  mhVarOptions->m_parameterDisabledSet.insert(20);
-  mhVarOptions->m_parameterDisabledSet.insert(21);
-#endif
-  mhVarOptions->m_rawChainDataInputFileName = ".";
-  mhVarOptions->m_rawChainDataInputFileType = "m";
-  mhVarOptions->m_rawChainSize = chainSamples;                                  
-   // IMPORTANT
-  mhVarOptions->m_rawChainGenerateExtra = 0;
-  mhVarOptions->m_rawChainDisplayPeriod = 1000;
-  mhVarOptions->m_rawChainMeasureRunTimes = 1;
-  mhVarOptions->m_rawChainDataOutputPeriod = 1000;
-  mhVarOptions->m_rawChainDataOutputFileName = "GpmsaDiagnostics/rawChain_mh";
-   // IMPORTANT
-  mhVarOptions->m_rawChainDataOutputFileType = "m";                     
-   // IMPORTANT
-  mhVarOptions->m_rawChainDataOutputAllowAll = 0;                       
-   // IMPORTANT
-  mhVarOptions->m_rawChainDataOutputAllowedSet.insert(0);               
-   // IMPORTANT
-  mhVarOptions->m_filteredChainGenerate = 1;                            
-   // IMPORTANT
-  mhVarOptions->m_filteredChainDiscardedPortion = 0.1;                 
-   // IMPORTANT
-  mhVarOptions->m_filteredChainLag = 6;                                 \
-   // IMPORTANT
-   mhVarOptions->m_filteredChainDataOutputFileName = "GpmsaDiagnostics/filtChain_mh";
-   mhVarOptions->m_filteredChainDataOutputFileType = "m";                
-  mhVarOptions->m_filteredChainDataOutputAllowAll = 0;                  
-  mhVarOptions->m_filteredChainDataOutputAllowedSet.insert(0);          
-  mhVarOptions->m_displayCandidates = 0;
-  mhVarOptions->m_putOutOfBoundsInChain = 0;
-  mhVarOptions->m_tkUseLocalHessian = 0;
-  mhVarOptions->m_tkUseNewtonComponent = 1;
-  mhVarOptions->m_drMaxNumExtraStages = 0;          // IMPORTANT, typically 1
-  mhVarOptions->m_drScalesForExtraStages.resize(1);
-  //mhVarOptions->m_drScalesForExtraStages[0] = 10; // IMPORTANT
- // mhVarOptions->m_drScalesForExtraStages[1] = 7; // IMPORTANT
- // mhVarOptions->m_drScalesForExtraStages[2] = 10; // IMPORTANT
- // mhVarOptions->m_drScalesForExtraStages[3] = 20; // IMPORTANT
-  mhVarOptions->m_drDuringAmNonAdaptiveInt = 1;     // IMPORTANT
-  mhVarOptions->m_amKeepInitialMatrix = 0;          // IMPORTANT, typically 0
-  mhVarOptions->m_amInitialNonAdaptInterval = 5000;  // IMPORTANT, typically 1
-  mhVarOptions->m_amAdaptInterval = 5000;            // IMPORTANT
-  mhVarOptions->m_amAdaptedMatricesDataOutputPeriod = 5000;
-  mhVarOptions->m_amAdaptedMatricesDataOutputFileName = ".";
-  mhVarOptions->m_amAdaptedMatricesDataOutputFileType = "m";
-  mhVarOptions->m_amAdaptedMatricesDataOutputAllowAll = 0;
-  //mhVarOptions->m_am_adaptedMatrices_dataOutputAllowedSet.insert(0);
-  mhVarOptions->m_amEta = 2.4*2.4/((double) totalInitialVec.sizeLocal()); // IMPORTANT // prudenci 2013-08-25
-  mhVarOptions->m_amEpsilon = 1e-05;                // IMPORTANT
-  mhVarOptions->m_enableBrooksGelmanConvMonitor = 0;
-  mhVarOptions->m_BrooksGelmanLag = 100;
-                                          
-  //gcm->calibrateWithBayesMetropolisHastings(mhVarOptions,totalInitialVec,&totalInitialProposalCovMatrix);
-  gcm->calibrateWithBayesMLSampling();
- 
-  Cout << "Got to line 600 \n"; 
-  if (env->subDisplayFile()) {
-    *env->subDisplayFile() << "In compute()"
-                          << ": finished calibrating 'gcm'"
-                          << std::endl;
-  }
- 
-  //***********************************************************************
-  // Step 09 of 09: Make predictions with the calibrated computer model
-  //***********************************************************************
-  //QUESO::GslVector newExperimentScenarioVec(config_x_space.zeroVector());              // todo_rr
-  //QUESO::GslMatrix newKmat_interp          (*env,n_eta_space.map(),num_bases_eta);   // todo_rr
-  //QUESO::GslMatrix newDmat                 (*env,n_eta_space.map(),num_delta_bases); // todo_rr
-  //QUESO::GslVector simulationOutputVec     (n_eta_space.zeroVector()); // Yes, size of simulation, since it is a prediction using the emulator
-  //QUESO::GslVector discrepancyVec          (n_eta_space.zeroVector());
-  //gcm->predictExperimentResults(newExperimentScenarioVec,newKmat_interp,newDmat,simulationOutputVec,discrepancyVec);
- 
-  //QUESO::GslVector newSimulationScenarioVec (config_x_space.zeroVector()); // todo_rr
-  //QUESO::GslVector newSimulationParameterVec(paramSpace.zeroVector()); // todo_rr
-  //QUESO::GslVector newSimulationOutputVec   (n_eta_space.zeroVector());
-  //gcm->predictSimulationOutputs(newSimulationScenarioVec,newSimulationParameterVec,newSimulationOutputVec);
-
-  // Return
-  //delete env;
-  delete envOptionsValues;
-  delete paramPriorRvPtr;
-  delete experimentModelPtr;
-  delete experimentStoragePtr;
-
-  //MPI_Finalize();
-
-  return;
 
 }
 
-//void NonDQUESOBayesCalibration::print_results(std::ostream& s)
-//{
-//  NonDBayesCalibration::print_results(s);
-//
-//  additional QUESO output
-//}
+
+/** Check for valid vs. degenerate configuration variable scaling
+    cases.  If all configs for a variable are identical, scale them
+    all to 0.5. Could also consider scaling them based on continuous
+    state bounds if present... */
+void NonDGPMSABayesCalibration::normalize_configs()
+{
+  for (int j=0; j<userConfigVars; ++j) {
+
+    // Calculate stats
+    accum::accumulator_set<Real, accum::stats<accum::tag::min, accum::tag::max> > acc;
+    for (int i=0; i<buildSamples; ++i)
+      acc(simulationData(i, numContinuousVars + j));
+    Real config_min = accum::min(acc);
+    Real config_max = accum::max(acc);
+
+    // These cases could be collapsed, but hope to delegate to QUESO,
+    // so modeling the various APIs.  TODO: numerical tolerance here
+    if (config_min < config_max)
+      gpmsaOptions->set_autoscale_minmax_scenario_parameter(j);
+    else {
+      gpmsaOptions->set_scenario_parameter_scaling( j, (config_min - 0.5),
+					       (config_max + 0.5) );
+      if (outputLevel >= VERBOSE_OUTPUT)
+	Cout << "GPMSA Warning: All simulation configurations for configuration"
+	     << " variable " << (j+1) << "\n               are identical."
+	     << std::endl;
+    }
+
+  }
+}
+
+
+void NonDGPMSABayesCalibration::fill_simulation_data(bool scale_data)
+{
+  // simulations are described by configuration, parameters, output values
+  std::vector<QUESO::SharedPtr<GslVector>::Type >
+    sim_scenarios(buildSamples),  // config var values
+    sim_params(buildSamples),     // theta var values
+    sim_outputs(buildSamples);    // simulation output (response) values
+
+  // Instantiate each of the simulation points/outputs
+  for (unsigned int i = 0; i < buildSamples; i++) {
+    sim_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
+    sim_params[i].reset(new GslVector(paramSpace->zeroVector()));
+    sim_outputs[i].reset(new GslVector(nEtaSpace->zeroVector())); // eta
+  }
+
+  // Rationale: loops ordered this way due to possible scaling in function values
+
+  for (int j=0; j<numContinuousVars; ++j)
+     for (int i=0; i<buildSamples; ++i)
+       (*sim_params[i])[j] = simulationData(i, j);
+
+  for (int j=0; j<gpmsaConfigVars; ++j)
+     for (int i=0; i<buildSamples; ++i)
+       if (userConfigVars > 0)
+	 (*sim_scenarios[i])[j] = simulationData(i, numContinuousVars + j);
+       else
+	 (*sim_scenarios[i])[j] = 0.5;
+
+  if (scale_data) {
+    // compute mean/stddev, scale, populate data
+    simulationMean.resize(numFunctions);
+    simulationStdDev.resize(numFunctions);
+
+    for (int j=0; j<numFunctions; ++j) {
+      accum::accumulator_set<Real, accum::stats<accum::tag::mean, accum::tag::variance> > acc;
+      for (int i = 0; i < buildSamples; ++i)
+	acc(simulationData(i, numContinuousVars + userConfigVars + j));
+      simulationMean[j]= accum::mean(acc);
+      simulationStdDev[j]= std::sqrt(accum::variance(acc));
+
+      for (int i = 0; i < buildSamples; ++i)
+	(*sim_outputs[i])[j] = 
+	  ( simulationData(i, numContinuousVars + userConfigVars + j) - 
+	    simulationMean[j]) / simulationStdDev[j];
+    }
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "GPMSA simulationMean:\n" << simulationMean << std::endl;
+      Cout << "GPMSA simulationStdDev:\n" << simulationStdDev << std::endl;
+    }
+  }
+  else {
+    // copy data
+    for (int j=0; j<numFunctions; ++j)
+	for (int i = 0; i < buildSamples; ++i)
+	  (*sim_outputs[i])[j] = 
+	    simulationData(i, numContinuousVars + userConfigVars + j);
+  }
+
+  gpmsaFactory->addSimulations(sim_scenarios, sim_params, sim_outputs);
+
+}
+
+
+void NonDGPMSABayesCalibration::fill_experiment_data(bool scale_data)
+{
+  unsigned int num_experiments = expData.num_experiments();
+  unsigned int experiment_size = expData.all_data(0).length();
+
+  // characterization of the experiment data
+  std::vector<QUESO::SharedPtr<GslVector>::Type > 
+   exp_scenarios(num_experiments),   // config var values
+   exp_outputs(num_experiments);        // experiment (response) values
+  
+  // BMA: Why is sim_outputs based on nEtaSpace?  Is simulation allowed
+  // to be differently sized from experiments?
+
+  // Load the information on the experiments (scenarios and data)
+  const RealVectorArray& exp_config_vars = expData.config_vars();
+  for (unsigned int i = 0; i < num_experiments; i++) {
+
+    exp_scenarios[i].reset(new GslVector(configSpace->zeroVector()));
+    exp_outputs[i].reset(new GslVector(experimentSpace->zeroVector()));
+
+    // NOTE: copy_gsl will resize the target objects rather than erroring.
+    if (userConfigVars > 0)
+      copy_gsl(exp_config_vars[i], *exp_scenarios[i]);
+    else
+      (*exp_scenarios[i])[0] = 0.5;
+
+    copy_gsl(expData.all_data(i), *exp_outputs[i]);
+
+  }
+  // TODO: experiment space may not be numFunctions in field case
+
+  // keep this loop separate in hopes of making it a separate
+  // function, or integrating in QUESO, instead of optimizing for now
+  if (scale_data)
+    for (int j=0; j<numFunctions; ++j)
+      for (unsigned int i = 0; i < num_experiments; i++)
+	(*exp_outputs[i])[j] =
+	  ((*exp_outputs[i])[j] - simulationMean[j]) / simulationStdDev[j];
+
+  // Experimental observation error covariance (default = I)
+  QUESO::VectorSpace<GslVector, GslMatrix> 
+    total_exp_space(*quesoEnv, "experimentspace_", 
+                    num_experiments * experiment_size, NULL);
+  QUESO::SharedPtr<GslMatrix>::Type exp_covariance
+    (new GslMatrix(total_exp_space.zeroVector(), 1.0));
+
+  if (expData.variance_active()) {
+    for (unsigned int i = 0; i < num_experiments; i++) {
+      RealSymMatrix exp_cov;
+      expData.covariance(i, exp_cov);
+      for (unsigned int j = 0; j < experiment_size; j++) {
+        for (unsigned int k = 0; k < experiment_size; k++) {
+          (*exp_covariance)(experiment_size*i+j, experiment_size*i+k) =
+            exp_cov(j,k);
+        }
+      }
+    }
+  }
+
+  gpmsaFactory->addExperiments(exp_scenarios, exp_outputs, exp_covariance);
+
+}
+
+
+/** This is a subset of the base class retrieval, but we can't do the
+    fn value lookups.  Eventually should be able to retrieve them from
+    GPMSA. */
+void NonDGPMSABayesCalibration::cache_acceptance_chain()
+{
+  int num_params = numContinuousVars + numHyperparams;
+  int total_chain_length = chainSamples * chainCycles;
+
+  const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
+    mcmc_chain = inverseProb->chain();
+  unsigned int num_mcmc = mcmc_chain.subSequenceSize();
+
+  if (num_mcmc != total_chain_length && outputLevel >= NORMAL_OUTPUT) {
+    Cout << "GPMSA Warning: Final chain is length " << num_mcmc 
+	 << ", not expected length " << total_chain_length << std::endl;
+  }
+
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
+				     total_chain_length);
+  acceptedFnVals.shapeUninitialized(numFunctions, total_chain_length);
+
+  // The posterior includes GPMSA hyper-parameters, so use the postRv space
+  QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
+  RealVector nan_fn_vals(numFunctions);
+  nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+
+  for (int i=0; i<total_chain_length; ++i) {
+
+    // translate the QUESO vector into x-space acceptanceChain
+    mcmc_chain.getPositionValues(i, qv); // extract GSLVector from sequence
+    if (standardizedSpace) {
+      // u_rv and x_rv omit any hyper-parameters
+      RealVector u_rv(numContinuousVars, false);
+      copy_gsl_partial(qv, 0, u_rv);
+      Real* acc_chain_i = acceptanceChain[i];
+      RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
+      natafTransform.trans_U_to_X(u_rv, x_rv);
+      for (int j=numContinuousVars; j<num_params; ++j)
+	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
+    }
+    else {
+      // A view that includes calibration params and Dakota-managed
+      // hyper-parameters, to facilitate copying from the longer qv
+      // into acceptanceChain:
+      RealVector theta_hp(Teuchos::View, acceptanceChain[i], num_params);
+      copy_gsl_partial(qv, 0, theta_hp);
+    }
+
+    // TODO: Find a way to set meaningful function values
+    Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
+  }
+}
+
+
+void NonDGPMSABayesCalibration::print_results(std::ostream& s)
+{
+  //  TODO: additional QUESO output
+
+  NonDBayesCalibration::print_results(s);
+}
 
 } // namespace Dakota

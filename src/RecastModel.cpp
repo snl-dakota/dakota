@@ -238,8 +238,8 @@ init_maps(const Sizet2DArray& vars_map_indices,
 
 
 bool RecastModel::
-init_variables(const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-	       const BitArray& all_relax_dr)
+init_variables(const SizetArray& vars_comps_totals,
+	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
 {
   const Variables& sub_model_vars = subModel.current_variables();
   const SharedVariablesData& svd = sub_model_vars.shared_data();
@@ -886,6 +886,50 @@ void RecastModel::update_from_sub_model()
 }
 
 
+const RealVector& RecastModel::error_estimates()
+{
+  // linear mappings are fine (see NestedModel), but general nonlinear mappings
+  // are problematic.
+  if (respMapping) {
+
+    // preclude nonlinear mappings and multi-component mappings for now.
+    // Note: a linear multi-component mapping can be supported by NestedModel::
+    //       iterator_error_estimation(), because the mapping coeffs are known.
+
+    size_t i, num_recast_fns = nonlinearRespMapping.size();
+    for (i=0; i<num_recast_fns; ++i) {
+      const BoolDeque& nln_resp_map_i = nonlinearRespMapping[i];
+      if (nln_resp_map_i.size() > 1 ||
+	  std::find(nln_resp_map_i.begin(), nln_resp_map_i.end(), true) !=
+	            nln_resp_map_i.end()) {
+	Cerr << "Error: error estimation not currently supported for Recast"
+	     << "Model with nonlinear or multi-component response mapping."
+	     << std::endl;
+	abort_handler(MODEL_ERROR);
+      }
+    }
+
+    // push errors through linear single-component mapping (individual scaling)
+
+    // make dummy responses for use with transform_response()
+    const Response& sm_resp = subModel.current_response();
+    ActiveSet sm_set = sm_resp.active_set(),
+          recast_set = currentResponse.active_set();
+    sm_set.request_values(1); recast_set.request_values(1);
+    Response sm_error_est(sm_resp.shared_data(), sm_set),
+         recast_error_est(currentResponse.shared_data(), recast_set);
+    // transform the error estimates as Response::functionValues
+    sm_error_est.function_values(subModel.error_estimates());
+    transform_response(currentVariables, subModel.current_variables(),
+		       sm_error_est, recast_error_est);
+    mappedErrorEstimates = recast_error_est.function_values();
+    return mappedErrorEstimates;
+  }
+  else
+    return subModel.error_estimates();
+}
+
+
 bool RecastModel::
 db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 	  Response& found_resp)
@@ -903,7 +947,8 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   // invoke default implementation for the lookup; making copy to
   // avoid modifying submodel state during the lookup
   Response sub_model_resp(subModel.current_response().copy());
-  bool eval_found = Model::db_lookup(sub_model_vars, search_set, sub_model_resp);
+  bool eval_found
+    = Model::db_lookup(sub_model_vars, search_set, sub_model_resp);
   if (!eval_found)
     return false;
 
@@ -916,6 +961,5 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
 
   return eval_found;
 }
-
 
 } // namespace Dakota

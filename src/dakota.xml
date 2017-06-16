@@ -127,6 +127,37 @@
         <param type='INTEGER' constraint='>= 0' />
       </keyword>"
     >
+    <!ENTITY default_trust_region
+      "<keyword  id='trust_region' name='trust_region' code='{0,0,NIDRProblemDescDB::method_tr_final}' label='Trust region group specification' help='MethodCommands.html#MethodSBL' minOccurs='0' >
+         <keyword  id='initial_size' name='initial_size' code='{N_mdm(RealDL,trustRegionInitSize)}' label='Trust region initial size (relative to bounds)' help='MethodCommands.html#MethodSBL' minOccurs='0' >
+           <param type='REALLIST' />
+         </keyword>
+         <keyword  id='minimum_size' name='minimum_size' code='{N_mdm(Real,trustRegionMinSize)}' label='Trust region minimum size' help='MethodCommands.html#MethodSBL' minOccurs='0' default='1.e-6' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='contract_threshold' name='contract_threshold' code='{N_mdm(Real,trustRegionContractTrigger)}' label='Shrink trust region if trust region ratio is below this value' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.25' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='expand_threshold' name='expand_threshold' code='{N_mdm(Real,trustRegionExpandTrigger)}' label='Expand trust region if trust region ratio is above this value' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.75' >
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='contraction_factor' name='contraction_factor' code='{N_mdm(Real,trustRegionContract)}' label='Trust region contraction factor' help='MethodCommands.html#MethodSBL' minOccurs='0' default='0.25'>
+           <param type='REAL' />
+         </keyword>
+         <keyword  id='expansion_factor' name='expansion_factor' code='{N_mdm(Real,trustRegionExpand)}' label='Trust region expansion factor' help='MethodCommands.html#MethodSBL' minOccurs='0' default='2.0' >
+           <param type='REAL' />
+	 </keyword>
+      </keyword>"
+    >
+    <!ENTITY default_final_moments
+      "<keyword  id='final_moments' name='final_moments' code='{0}' label='Type of moments in final statistics' help='' minOccurs='0' default='standard' >
+         <oneOf label='objective formulation'>
+           <keyword  id='none' name='none' code='{N_mdm(type,finalMomentsType_NO_MOMENTS)}' label='no moments' help=''  />
+           <keyword  id='standard' name='standard' code='{N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}' label='standardized moments' help=''  />
+           <keyword  id='central' name='central' code='{N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}' label='central moments' help=''  />
+         </oneOf>
+      </keyword>"
+    >
     <!ENTITY default_speculative
       "<keyword  id='speculative' name='speculative' code='{N_mdm(true,speculativeFlag)}' label='Speculative gradients and Hessians' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='no speculation' />"
     >
@@ -270,7 +301,7 @@
         </keyword>
       </keyword>
       </group>
-      <keyword  id="top_method_pointer" name="top_method_pointer" code="{N_stm(str,topMethodPointer)}" label="Method Pointer" help="EnvCommands.html#EnvMethPtr" minOccurs="0" default="see discussion" complexity="1">
+      <keyword  id="top_method_pointer" name="top_method_pointer" code="{N_stm(str,topMethodPointer)}" label="Method Pointer" help="EnvCommands.html#EnvMethPtr" minOccurs="0" default="see discussion" complexity="0">
         <alias name="method_pointer"/>
         <param type="STRING" in_taglist="method" />
       </keyword>
@@ -494,26 +525,6 @@
             <param type="INTEGER" />
           </keyword>
           <keyword  id="truth_surrogate_bypass" name="truth_surrogate_bypass" code="{N_mdm(true,surrBasedLocalLayerBypass)}" label="Flag for bypassing lower level surrogates in truth verifications" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no bypass" />
-          <keyword  id="trust_region" name="trust_region" code="{0,0,NIDRProblemDescDB::method_tr_final}" label="Trust region group specification" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-            <keyword  id="initial_size" name="initial_size" code="{N_mdm(RealDL,surrBasedLocalTRInitSize)}" label="Trust region initial size (relative to bounds)" help="MethodCommands.html#MethodSBL" minOccurs="0" >
-              <param type="REALLIST" />
-            </keyword>
-            <keyword  id="minimum_size" name="minimum_size" code="{N_mdm(Real,surrBasedLocalTRMinSize)}" label="Trust region minimum size" help="MethodCommands.html#MethodSBL" minOccurs="0" default="1.e-6" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="contract_threshold" name="contract_threshold" code="{N_mdm(Real,surrBasedLocalTRContractTrigger)}" label="Shrink trust region if trust region ratio is below this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="expand_threshold" name="expand_threshold" code="{N_mdm(Real,surrBasedLocalTRExpandTrigger)}" label="Expand trust region if trust region ratio is above this value" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.75" >
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="contraction_factor" name="contraction_factor" code="{N_mdm(Real,surrBasedLocalTRContract)}" label="Trust region contraction factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="0.25">
-              <param type="REAL" />
-            </keyword>
-            <keyword  id="expansion_factor" name="expansion_factor" code="{N_mdm(Real,surrBasedLocalTRExpand)}" label="Trust region expansion factor" help="MethodCommands.html#MethodSBL" minOccurs="0" default="2.0" >
-              <param type="REAL" />
-            </keyword>
-          </keyword>
           <keyword  id="approx_subproblem" name="approx_subproblem" code="{0}" label="Approximate subproblem formulation" help="MethodCommands.html#MethodSBL" minOccurs="0" default="original_primary original_constraints" >
             <oneOf label="objective formulation">
               <keyword  id="original_primary" name="original_primary" code="{N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}" label="original_primary" help=""  />
@@ -544,6 +555,7 @@
           <keyword  id="constraint_relax" name="constraint_relax" code="{0}" label="SBL constraint relaxation method for infeasible iterates" help="MethodCommands.html#MethodSBL" minOccurs="0" default="no relaxation" >
             <keyword  id="homotopy" name="homotopy" code="{N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}" label="homotopy" help=""  />
           </keyword>
+	  &default_trust_region;
           &default_max_iterations;
           &default_convergence_tolerance;
           &default_constraint_tolerance;
@@ -792,6 +804,21 @@
                   </keyword>
                 </oneOf>
               </keyword>
+              &default_max_iterations;
+              &default_max_function_evaluations;
+              &default_scaling;
+            </keyword>
+            <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac" help="" minOccurs="1" >
+              &default_trust_region;
+              &default_max_iterations;
+              &default_max_function_evaluations;
+              &default_scaling;
+            </keyword>
+            <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac" help="" minOccurs="1" >
+	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
+              &default_trust_region;
               &default_max_iterations;
               &default_max_function_evaluations;
               &default_scaling;
@@ -1259,6 +1286,7 @@
 		      <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
 		      &default_max_refinement_iterations;
 		      &default_convergence_tolerance;
+		      &default_final_moments;
 		      <keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no refinement" >
 			<oneOf label="p-refinement type">
 			  <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
@@ -1503,6 +1531,7 @@
 		      <!-- &default_max_iterations; for future multilevel SC -->
 		      &default_max_refinement_iterations;
 		      &default_convergence_tolerance;
+		      &default_final_moments;
 		      <optional>
 			<oneOf label="Automated refinement type">
 			  <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" default="no refinement" >
@@ -1670,6 +1699,7 @@
                         <keyword  id="one_sidedupper" name="one_sided_upper" code="{N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)}" label="one_sided_upper" help="" minOccurs="0" />
                         <keyword  id="two_sided" name="two_sided" code="{N_mdm(type,wilksSidedInterval_TWO_SIDED)}" label="two_sided" help="" minOccurs="0" />
 		      </keyword>
+		      &default_final_moments;
 		    </keyword>
 		  </oneOf>
 		  <keyword  id="reliability_levels" name="reliability_levels" code="{N_mdm(resplevs,reliabilityLevels)}" label="reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
@@ -1732,6 +1762,7 @@
 		  </keyword>
 		  &default_max_iterations;
 		  &default_convergence_tolerance;
+		  &default_final_moments;
 		</keyword>
 		<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_importance_sampling"/>
@@ -2090,77 +2121,71 @@
 	    <keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" >
 	      <alias name="nond_bayes_calibration"/>
 	      <oneOf>
-		<required>
-		  <oneOf>
 		    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
 		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-			<alias name='samples' />
-			<param type='INTEGER' />
+			    <alias name='samples' />
+			    <param type='INTEGER' />
 		      </keyword>
 		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
+			    <param type='INTEGER' constraint='> 0' />
 		      </keyword>
 		      <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-			<oneOf label="emulator type" >
-			  <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			    <alias name="kriging"/>
-			    <oneOf>
-			      <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			      <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			    </oneOf>
-			    <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			      <param type="INTEGER" />
-			    </keyword>
-			    <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only8" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
-			  </keyword>
-			  <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			    <oneOf>
-			      <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-				<param type="INTEGERLIST" />
+			  <oneOf label="emulator type" >
+			    <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
+			      <alias name="kriging"/>
+			      <oneOf>
+			        <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+			        <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+			      </oneOf>
+			      <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
+			        <param type="INTEGER" />
 			      </keyword>
-			      <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				<param type="INTEGERLIST" />
-				<oneOf>
-				  <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				    <param type="INTEGERLIST" />
-				  </keyword>
-				  <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				    <param type="REAL" />
-				  </keyword>
-				</oneOf>
-				<keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				  <alias name="import_points_file"/>
-				  <param type="INPUT_FILE" />
-				  &method_import_build_format;
-				  <keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				</keyword>
+			      <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			      <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+			        <alias name="import_points_file"/>
+			        <param type="INPUT_FILE" />
+			        &method_import_build_format;
+			        <keyword  id="active_only8" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
 			      </keyword>
-			      <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				<keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				  <param type="INTEGERLIST" />
-				</keyword>
-				<keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-				</keyword>
-				<keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				  <alias name="import_points_file"/>
-				  <param type="INPUT_FILE" />
-				  &method_import_build_format;
-				  <keyword  id="active_only10" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				</keyword>
-			      </keyword>
-			    </oneOf>
-			  </keyword>
+			    </keyword>
+			    <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+			      <oneOf>
+			        <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
+				      <param type="INTEGERLIST" />
+			        </keyword>
+			        <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				      <param type="INTEGERLIST" />
+				      <oneOf>
+				        <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+						  <param type="INTEGERLIST" />
+						</keyword>
+						<keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+						  <param type="REAL" />
+						</keyword>
+				      </oneOf>
+					  <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"/>
+					  <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+					  <keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+				        <alias name="import_points_file"/>
+						<param type="INPUT_FILE" />
+						&method_import_build_format;
+						<keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+				      </keyword>
+			        </keyword>
+			        <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				      <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				        <param type="INTEGERLIST" />
+				      </keyword>
+				      <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+					  <keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+				        <alias name="import_points_file"/>
+				        <param type="INPUT_FILE" />
+				        &method_import_build_format;
+				        <keyword  id="active_only10" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+				      </keyword>
+			        </keyword>
+			      </oneOf>
+			    </keyword>
 			  <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
 			    <keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
 			      <param type="INTEGERLIST" />
@@ -2169,53 +2194,34 @@
 			</oneOf>
 			<keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		      </keyword>
+		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-			<param type="OUTPUT_FILE" />
-			<optional>
-			  <oneOf label="Tabular Format" >
-			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-			    <required>
-			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			      </keyword>
-			    </required>
-			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-			  </oneOf>
-			</optional>
+				<param type="OUTPUT_FILE" />
+				<optional>
+				  <oneOf label="Tabular Format" >
+				    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+				    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+				    <required>
+				      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+					<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+					<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+					<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+				      </keyword>
+				    </required>
+				    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+				  </oneOf>
+				</optional>
 		      </keyword>
-		    </keyword>
-		    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
-		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-			<alias name='samples' />
-			<param type='INTEGER' />
-		      </keyword>
-		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
-		      </keyword>
-		      <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
-			      <param type="INTEGER" />
-		      </keyword>
-		      <keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			<alias name="import_points_file"/>
-			<param type="INPUT_FILE" />
-			&method_import_build_format;
-			<keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-		      </keyword>
-		    </keyword>
-		  </oneOf>
-		  <optional>
-		    <oneOf label="MCMC algorithm type" >
-		      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
-		      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
-		      <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
-		      <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
-		      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
-		    </oneOf>
-		  </optional>
+		     <optional>
+			    <oneOf label="MCMC algorithm type" >
+			      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+			      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+			      <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+			      <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+			      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+			    </oneOf>
+			 </optional>
 		  <keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
 		    <oneOf>
 		      <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
@@ -2253,7 +2259,92 @@
 		      </keyword>
 		    </oneOf>
 		  </keyword>
-		</required>
+		    </keyword>
+		    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
+		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
+			<alias name='samples' />
+			<param type='INTEGER' />
+		      </keyword>
+		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
+			<param type='INTEGER' constraint='> 0' />
+			</keyword>
+			<keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
+			  <param type="INTEGER" />
+			</keyword>
+			<keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+			  <alias name="import_points_file"/>
+			  <param type="INPUT_FILE" />
+			  &method_import_build_format;
+			  <!-- Disable active_only, until we can set the config vars to their nominal value; for now import must include any active config vars as well...
+
+			  <keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+			  -->
+			</keyword>
+		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
+		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
+		      <keyword  id="gpmsa_normalize" name="gpmsa_normalize" code="{N_mdm(true,gpmsaNormalize)}" label="Apply GPMSA normalization" help="" minOccurs="0" />
+		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+			<param type="OUTPUT_FILE" />
+			<optional>
+			  <oneOf label="Tabular Format" >
+			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+			    <required>
+			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			      </keyword>
+			    </required>
+			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+			  </oneOf>
+			</optional>
+		      </keyword>
+		      	<optional>
+			  <oneOf label="MCMC algorithm type" >
+			    <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+			    <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+			    <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+			    <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+			    <!--
+			    <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+			    -->
+			  </oneOf>
+			</optional>
+			<keyword  id="rng2" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
+			  <oneOf>
+			    <keyword  id="mt199372" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
+			    <keyword  id="rnum22" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
+			  </oneOf>
+			</keyword>
+			<keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
+			  <oneOf>
+			    <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
+			      <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
+				<param type="INTEGER" />
+			      </keyword>
+			    </keyword>
+			    <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
+			    <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
+			      <param type="REALLIST"/>
+			      <oneOf>
+				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
+				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			      </oneOf>
+			    </keyword>
+			    <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
+			      <param type="INPUT_FILE"/>
+			      <oneOf>
+				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
+				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
+			      </oneOf>
+			    </keyword>
+			  </oneOf>
+			</keyword>
+			<keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File" help="" minOccurs="0" default="no advanced options file" >
+			  <param type="INPUT_FILE" />
+			</keyword>
+		      </keyword>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
 		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
 		    <param type='INTEGER' constraint='> 0' />
@@ -2327,6 +2418,7 @@
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
 		  <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
 		    <required>
 		      <oneOf>
@@ -2452,6 +2544,7 @@
 		    </oneOf>
 		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 		    <param type="OUTPUT_FILE" />
 		    <optional>
@@ -2473,14 +2566,14 @@
 	      </oneOf>
 		<keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design" help="" minOccurs="0" >
 		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Hi-fi Samples" help="" default="method-dependent">
-		    <param type="INTEGER" />
 		    <alias name="samples" />
+		    <param type="INTEGER" />
 		  </keyword>
 		  <!--&default_max_function_evaluations;-->
-                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="0" >
-                    <param type="INTEGER" constraint=">= 0" />
+                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="1" >
+                    <param type="INTEGER" constraint="> 0" />
                   </keyword>
-                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(sizet,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0" default="0" >
+                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0">
                     <param type="INTEGER" constraint=">= 0" />
                   </keyword>
                   <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import" help="" minOccurs="0" default="no point import from a file" >
@@ -2501,7 +2594,6 @@
 		    </optional>
                   </keyword>
 		</keyword> 
-	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>
 		  <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />
@@ -2526,6 +2618,97 @@
 	             <keyword id="kl_divergence" name="kl_divergence" code="{N_mdm(true,posteriorStatsKL)}" minOccurs="0" />
 	             <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" />
 		  </keyword>
+	      <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
+    	        <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Discrepancy Type" help="" minOccurs="0" default="gaussian process" >
+    	          <oneOf>
+    	            <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,discrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes" help=""  >
+                      <alias name="kriging"/>
+		    </keyword>
+		    <keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,discrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" help=""  />
+    	          </oneOf>
+                  <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction" help="" minOccurs="0" default="2">
+                    <oneOf label="Correction Order">
+		      <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0" help="" />
+                      <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear" help=""  />
+                      <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic" help=""  />
+                    </oneOf>
+                  </keyword>
+    	        </keyword>
+                  <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations" help="" minOccurs="0" default="0" >
+                    <param type="INTEGER" constraint=">= 0" />
+                  </keyword>
+                  <keyword  id="prediction_configs" name="prediction_configs" code="{N_mdm(RealDL,predictionConfigList)}" label="List of Prediction Configurations" help="" minOccurs="0" >
+                    <param type="REALLIST" />
+		  </keyword>
+                  <keyword  id="import_prediction_configs" name="import_prediction_configs" code="{N_mdm(str,importPredConfigs)}" label="Filename for Prediction Configs" help="" minOccurs="0" default="no point import from a file" >
+                    <param type="INPUT_FILE" />
+		    <optional>
+		      <oneOf label="tabular_format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			  </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="freeform" help=""  />
+		      </oneOf>
+		    </optional>
+                  </keyword>
+	          <keyword  id="export_discrepancy_file" name="export_discrepancy_file" code="{N_mdm(str,exportDiscrepFile)}" label="File export of model discrepancy values" help="" minOccurs="0" default="discrepancy export to default filename" >
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+	          </keyword>
+		  <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values" help="" minOccurs="0" default="corrected model export to default filename" > 
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
+		  <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model" help="" minOccurs="0" default="corrected model variance export to default filename" > 
+		    <param type="OUTPUT_FILE" />
+		    <optional>
+		      <oneOf label="Tabular Format" >
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
+		        <required>
+		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		          </keyword>
+		        </required>
+		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		      </oneOf>
+		    </optional>
+		  </keyword>
+		</keyword>
 	      <keyword  id='sub_sampling_period' name='sub_sampling_period' code='{N_mdm(int,subSamplingPeriod)}' label='Chain sampling period for statistics' help='' minOccurs='0' default='0'>
 		  	<param type='INTEGER' />
 		  </keyword>
@@ -2733,6 +2916,7 @@
                   </keyword>
                   &default_max_iterations;
                   &default_convergence_tolerance;
+		  &default_final_moments;
                 </keyword>
                 <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability" help="" minOccurs="1" group="Uncertainty Quantification" >
                   <alias name="nond_global_reliability"/>
@@ -2919,7 +3103,7 @@
       <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier" help="ModelCommands.html#ModelIndControl" minOccurs="0" default="method use of last model parsed" complexity="0">
         <param type="STRING" taglist="model" />
       </keyword>
-      <oneOf>
+      <oneOf label="Model Type">
         <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single" help="" minOccurs="1" default="N/A ( single if no model specification)" complexity="0">
           <alias name="simulation"/>
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
@@ -2936,16 +3120,16 @@
           <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(intsetm1,surrogateFnIndices)}" label="Surrogate Response IDs" help="ModelCommands.html#ModelSurrogate" minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
-          <oneOf>
+          <oneOf label="Surrogate Category">
             <keyword  id="global" name="global" code="{0}" label="Global Approximation" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
-              <oneOf>
+              <oneOf label="Global Surrogate Type">
                 <keyword  id="gaussian_process5" name="gaussian_process" code="{0}" label="Gaussian Process" help="ModelCommands.html#ModelSurrG" minOccurs="1" >
                   <alias name="kriging"/>
-                  <oneOf>
+                  <oneOf label="GP Implementation">
                     <keyword  id="dakota6" name="dakota" code="{N_mom(lit,surrogateType_global_gaussian)}" label="Dakota" help="" minOccurs="1" >
                       <keyword  id="point_selection" name="point_selection" code="{N_mom(true,pointSelection)}" label="Point Selection" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="no point selection" />
                       <keyword  id="trend" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
-                        <oneOf>
+                        <oneOf label="Trend Order">
                           <keyword  id="constant" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
                           <keyword  id="linear" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
                           <keyword  id="reduced_quadratic" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
@@ -2954,7 +3138,7 @@
                     </keyword>
                     <keyword  id="surfpack6" name="surfpack" code="{N_mom(lit,surrogateType_global_kriging)}" label="Surfpack" help="" minOccurs="1" >
                       <keyword  id="trend1" name="trend" code="{0}" label="Specify Trend Function" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="reduced_quadratic" >
-                        <oneOf>
+                        <oneOf label="Trend Order">
                           <keyword  id="constant1" name="constant" code="{N_mom(lit,trendOrder_constant)}" label="Constant" help=""  />
                           <keyword  id="linear1" name="linear" code="{N_mom(lit,trendOrder_linear)}" label="Linear" help=""  />
                           <keyword  id="reduced_quadratic1" name="reduced_quadratic" code="{N_mom(lit,trendOrder_reduced_quadratic)}" label="Reduced Quadratic" help=""  />
@@ -2993,7 +3177,7 @@
                     <param type="INTEGER" />
                   </keyword>
                   <keyword  id="interpolation" name="interpolation" code="{0}" label="Interpolation Type" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="" >
-                    <oneOf>
+                    <oneOf label="Interpolation Order">
                       <keyword  id="linear2" name="linear" code="{N_mom(lit,marsInterpolation_linear)}" label="Linear" help=""  />
                       <keyword  id="cubic" name="cubic" code="{N_mom(lit,marsInterpolation_cubic)}" label="Cubic" help=""  />
                     </oneOf>
@@ -3062,7 +3246,7 @@
 		  <param type="INTEGER" />
 		</keyword>
 				<keyword  id="discontinuity_detection" name="discontinuity_detection" code="{N_mom(true,decompDiscontDetect)}" label="Enable Discontinuity Detection" help="" minOccurs="0">
-		  <oneOf>
+		  <oneOf label="Threshold Mode">
 				    <keyword  id="jump_threshold" name="jump_threshold" code="{N_mom(Real,discontJumpThresh)}" label="Absolute Function Jump Threshold" help="" minOccurs="1">
 		      <param type="REAL" />
 		    </keyword>
@@ -3114,7 +3298,7 @@
 	      </optional>
           <keyword  id="reuse_points3" name="reuse_points" code="{0}" label="Re-use Points" help="" minOccurs="0" default="all for import; none otherwise">
                 <alias name="reuse_samples"/>
-                <oneOf>
+                <oneOf label="Reuse Domain">
               <keyword  id="all" name="all" code="{N_mom(lit,approxPointReuse_all)}" label="All" help=""  />
               <keyword  id="region" name="region" code="{N_mom(lit,approxPointReuse_region)}" label="Region" help=""  />
               <keyword  id="none" name="none" code="{N_mom(lit,approxPointReuse_none)}" label="None" help=""  />
@@ -3195,7 +3379,7 @@
                 <param type="STRINGLIST" />
                 <keyword  id="cross_validation4" name="cross_validation" code="{N_mom(true,crossValidateFlag)}" label="Perform Cross Validation" help="ModelCommands.html#ModelSurrG" minOccurs="0" default="No cross validation" >
                   <optional>
-                    <oneOf>
+                    <oneOf label="Partition Control">
                       <keyword  id="folds" name="folds" code="{N_mom(int,numFolds)}" label="Number Cross Validation Folds" help="ModelCommands.html#ModelSurrG"  default="10" >
                         <param type="INTEGER" />
                       </keyword>
@@ -3253,12 +3437,12 @@
 		</keyword>
 	      -->
               <keyword  id="correction1" name="correction" code="{0}" label="Surrogate Correction Approach" help="ModelCommands.html#ModelSurrH" minOccurs="0" default="no surrogate correction" >
-                <oneOf label="correction order">
+                <oneOf label="Correction Order">
                   <keyword  id="zeroth_order1" name="zeroth_order" code="{N_mom(order,approxCorrectionOrder_0)}" label="Zeroth Order" help=""  />
                   <keyword  id="first_order2" name="first_order" code="{N_mom(order,approxCorrectionOrder_1)}" label="First Order" help=""  />
                   <keyword  id="second_order2" name="second_order" code="{N_mom(order,approxCorrectionOrder_2)}" label="Second Order" help=""  />
                 </oneOf>
-                <oneOf label="correction type">
+                <oneOf label="Correction Type">
                   <keyword  id="additive1" name="additive" code="{N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}" label="Additive" help=""  />
                   <keyword  id="multiplicative1" name="multiplicative" code="{N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}" label="Multiplicative" help=""  />
                   <keyword  id="combined1" name="combined" code="{N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}" label="Combined" help=""  />
@@ -3280,7 +3464,7 @@
               <param type="INTEGER" constraint="> 0" />
             </keyword>
             <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="Iterator Scheduling" help="" minOccurs="0" >
-              <oneOf>
+              <oneOf label="Server Mode">
                 <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="Master" help=""  />
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer" help=""  />
 				<!-- #	      | ( peer {0}
@@ -3316,7 +3500,7 @@
 	    <param type='INTEGER' />
 	  </keyword>
 	  <keyword  id="sample_type" name="sample_type" code="{0}" label="Sample Type" help="" minOccurs="0" default="random" >
-	    <oneOf>
+	    <oneOf label="Sample Type">
 	      <keyword  id="lhs" name="lhs" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_LHS)}" label="LHS" help=""  />
 	      <keyword  id="random" name="random" code="{N_mom(utype,subspaceSampleType_SUBMETHOD_RANDOM)}" label="Random" help=""  />
 	    </oneOf>
@@ -3361,7 +3545,7 @@
             </keyword>
 	  </keyword>
 	  <keyword id="normalization" name="normalization" label="Normalization" code="{0}" minOccurs="0"> 
-      <oneOf> 
+      <oneOf label="Normalize By..."> 
         <keyword id="mean_value" name="mean_value" label="Mean Value" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_VALUE)}" /> 
         <keyword id="mean_gradient" name="mean_gradient" label="Mean Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_MEAN_GRAD)}" /> 
         <keyword id="local_gradient" name="local_gradient" label="Local Gradient" code="{N_mom(utype,subspaceNormalization_SUBSPACE_NORM_LOCAL_GRAD)}" /> 
@@ -3372,7 +3556,7 @@
 	  <keyword id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-	  <oneOf>
+	  <oneOf label="Expansion Basis Control">
 	    <keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mom(int,adaptedBasisSparseGridLev)}" label="Adapted Basis Sparse Grid Level" >
 	      <param type="INTEGER" />
 	    </keyword>
@@ -3387,7 +3571,7 @@
 	</keyword>
 	    <keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field" help="" minOccurs="1" complexity="1">
 	      <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
-	    <oneOf>
+	    <oneOf label="Build Data Source">
 	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
               </keyword>
@@ -3395,7 +3579,7 @@
                 <param type="STRING" in_taglist="method" />
               </keyword>
 	          <keyword id="analytic_covariance" name="analytic_covariance" label="Analytic Covariance" code="{0}" >
-	        <oneOf>
+	        <oneOf label="Covariance Kernel Form">
 	              <keyword id="squared_exponential" name="squared_exponential" label="Squared Covariance" code="{N_mom(utype,analyticCovIdForm_EXP_L2)}" />
 	              <keyword id="exponential" name="exponential" label="Exponential" code="{N_mom(utype,analyticCovIdForm_EXP_L1)}" />
 	        </oneOf>
@@ -3403,7 +3587,7 @@
 	    </oneOf>
           </keyword>
 	      <keyword id="expansion_form" name="expansion_form" label="Expansion Form" code="{0}" minOccurs="0">
-	    <oneOf>
+	    <oneOf label="Reduced Basis Type">
 	          <keyword id="karhunen_loeve" name="karhunen_loeve" label="Karhunen-Loeve" code="{N_mom(utype,randomFieldIdForm_RF_KARHUNEN_LOEVE)}" />
 	          <keyword id="principal_components" name="principal_components" label="Principal Components" code="{N_mom(utype,randomFieldIdForm_RF_PCA_GP)}" />
 	    </oneOf>
@@ -4213,159 +4397,196 @@
       </keyword>
       <keyword  id='linear_equality_scales' name='linear_equality_scales' code='{N_vam(rvec,linearEqScales)}' label='linear_equality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
         <param type='REALLIST' />
-      </keyword>"
+      </keyword>
     </keyword>
 
     
     <!-- **** TOPLEVEL *** -->
     <keyword id="interface" name="interface" minOccurs="1" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" help="InterfCommands.html">
-      <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface set identifier" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="use of last interface parsed" >
+      <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface Set Identifier" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="use of last interface parsed" complexity="0">
         <param type="STRING" taglist="interface" />
       </keyword>
-      <keyword  id="algebraic_mappings" name="algebraic_mappings" code="{N_ifm(str,algebraicMappings)}" label="Algebraic mappings file" help="InterfCommands.html#InterfAlgebraic" minOccurs="0" default="no algebraic mappings" >
-        <param type="STRING" />
-      </keyword>
-      <keyword  id="analysis_drivers" name="analysis_drivers" code="{N_ifm(strL,analysisDrivers)}" label="Analysis drivers" help="InterfCommands.html#InterfApplic" minOccurs="0" >
+      <keyword  id="analysis_drivers" name="analysis_drivers" code="{N_ifm(strL,analysisDrivers)}" label="Analysis Drivers" help="InterfCommands.html#InterfApplic" minOccurs="0" complexity="0">
         <param type="STRINGLIST" />
-        <keyword  id="analysis_components" name="analysis_components" code="{N_ifm(str2D,analysisComponents)}" label="Additional identifiers for use by the analysis_drivers" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no additional identifiers" >
-          <param type="STRINGLIST" />
-        </keyword>
-        <keyword  id="input_filter" name="input_filter" code="{N_ifm(str,inputFilter)}" label="Input filter" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no input filter" >
+        <keyword  id="input_filter" name="input_filter" code="{N_ifm(str,inputFilter)}" label="Input Filter" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no input filter" complexity="1">
           <param type="STRING" />
         </keyword>
-        <keyword  id="output_filter" name="output_filter" code="{N_ifm(str,outputFilter)}" label="Output filter" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no output filter" >
+        <keyword  id="output_filter" name="output_filter" code="{N_ifm(str,outputFilter)}" label="Output Filter" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no output filter" complexity="1">
           <param type="STRING" />
         </keyword>
-        <oneOf>
-          <required>
-            <oneOf>
-              <keyword  id="system9" name="system" code="{N_ifm(type,interfaceType_SYSTEM_INTERFACE)}" label="system" help=""  />
-              <keyword  id="fork" name="fork" code="{N_ifm(type,interfaceType_FORK_INTERFACE)}" label="Fork interface " help="InterfCommands.html#InterfApplicF"  />
-            </oneOf>
-            <keyword  id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="parameters_file" help="" minOccurs="0" default="Unix temp files" >
+        <oneOf label="Interface Type">
+          <keyword id="system9" name="system" code="{N_ifm(type,interfaceType_SYSTEM_INTERFACE)}" label="System" help="" complexity="0">
+	        <keyword id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="Parameters File" help="" minOccurs="0" default="Unix temp files" complexity="0">
               <param type="STRING" />
             </keyword>
-            <keyword  id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="results_file" help="" minOccurs="0" default="Unix temp files" >
+	        <keyword id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="Results File" help="" minOccurs="0" default="Unix temp files" complexity="0">
               <param type="STRING" />
             </keyword>
-            <keyword  id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="allow_existing_results" help="" minOccurs="0" default="results files removed before each evaluation" />
-            <keyword  id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="verbatim" help="" minOccurs="0" default="driver/filter invocation syntax augmented with file names" />
-            <keyword  id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="aprepro" help="" minOccurs="0" default="standard parameters file format" >
-              <alias name="dprepro"/>
+	        <keyword id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="File Tag" help="" minOccurs="0" default="no tagging" complexity="0"/>
+	        <keyword id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="File Save" help="" minOccurs="0" default="file cleanup" complexity="0"/>
+	        <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="Labeled" help="Labeled results file format" minOccurs="0" default="Function value labels optional" complexity="0"/>
+	        <keyword id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="APREPRO" help="" minOccurs="0" default="standard parameters file format" complexity="0">
+              <alias name="dprepro" />
             </keyword>
-	    
-	    <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" help="Expected foramt of results files" minOccurs="0" maxOccurs="1" default="Flexible format">
-		<oneOf>
-                  <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" help="Flexible results file format" />-->
-                  <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="labeled" help="Labeled results file format" minOccurs="0" default="Function value labels optional" />
-		  <!-- </oneOf>
-	    </keyword>-->
-	    <keyword  id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="file_tag" help="" minOccurs="0" default="no tagging" />
-            <keyword  id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="file_save" help="" minOccurs="0" default="file cleanup" />
-            <keyword  id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="work_directory" help="" minOccurs="0" default="no work directory" >
-              <keyword  id="named" name="named" code="{N_ifm(str,workDir)}" label="named" help="" minOccurs="0" default="dakota_work_xxxxxxxx" >
+	        <keyword id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="Work Directory" help="" minOccurs="0" default="no work directory" complexity="0">
+              <keyword id="named" name="named" code="{N_ifm(str,workDir)}" label="Named" help="" minOccurs="0" default="dakota_work_xxxxxxxx" complexity="0">
                 <param type="STRING" />
               </keyword>
-              <keyword  id="directory_tag" name="directory_tag" code="{N_ifm(true,dirTag)}" label="directory_tag" help="" minOccurs="0" default="no work directory tagging" >
-                <alias name="dir_tag"/>
+              <keyword id="directory_tag" name="directory_tag" code="{N_ifm(true,dirTag)}" label="Directory Tag" help="" minOccurs="0" default="no work directory tagging" complexity="0">
+                <alias name="dir_tag" />
               </keyword>
-              <keyword  id="directory_save" name="directory_save" code="{N_ifm(true,dirSave)}" label="directory_save" help="" minOccurs="0" default="remove work directory" >
-                <alias name="dir_save"/>
+              <keyword id="directory_save" name="directory_save" code="{N_ifm(true,dirSave)}" label="Directory Save" help="" minOccurs="0" default="remove work directory" complexity="0">
+                <alias name="dir_save" />
               </keyword>
-              <keyword  id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to link" help="" minOccurs="0" default="no linked files">
+              <keyword id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to Link" help="" minOccurs="0" default="no linked files" complexity="0">
                 <param type="STRINGLIST" />
               </keyword>
-              <keyword  id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to copy" help="" minOccurs="0" default="no copied files">
+              <keyword id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to Copy" help="" minOccurs="0" default="no copied files" complexity="0">
                 <param type="STRINGLIST" />
               </keyword>
-              <keyword  id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="replace" help="" minOccurs="0" default="do not overwrite files" />
+              <keyword id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="Replace" help="" minOccurs="0" default="do not overwrite files" complexity="1"/>
             </keyword>
-          </required>
-          <keyword  id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct function interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" >
-            <keyword  id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of processors per analysis server" help="InterfCommands.html#InterfApplicDF" minOccurs="0" default="automatic (see discussion)" >
-              <param type="INTEGER" constraint="> 0" />
+	        <keyword id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="Allow Existing Results" help="" minOccurs="0" default="results files removed before each evaluation" complexity="1"/>
+	        <keyword id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="Verbatim" help="" minOccurs="0" default="driver/filter invocation syntax augmented with file names" complexity="1"/>
+	        <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" help="Expected foramt of results files" minOccurs="0" maxOccurs="1" default="Flexible format">
+		    <oneOf>
+              <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" help="Flexible results file format" />
+		    </oneOf>
+	        </keyword>
+	        -->
+	      </keyword>
+          <keyword id="fork" name="fork" code="{N_ifm(type,interfaceType_FORK_INTERFACE)}" label="Fork Interface " help="InterfCommands.html#InterfApplicF" complexity="0">
+            <keyword id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="Parameters File" help="" minOccurs="0" default="Unix temp files" complexity="0">
+              <param type="STRING" />
+            </keyword>
+	        <keyword id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="Results File" help="" minOccurs="0" default="Unix temp files" complexity="0">
+              <param type="STRING" />
+            </keyword>
+	        <keyword id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="File Tag" help="" minOccurs="0" default="no tagging" complexity="0"/>
+	        <keyword id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="File Save" help="" minOccurs="0" default="file cleanup" complexity="0"/>
+	        <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="Labeled" help="Labeled results file format" minOccurs="0" default="Function value labels optional" complexity="0"/>
+	        <keyword id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="APREPRO" help="" minOccurs="0" default="standard parameters file format" complexity="0">
+              <alias name="dprepro" />
+            </keyword>
+	        <keyword id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="Work Directory" help="" minOccurs="0" default="no work directory" complexity="0">
+              <keyword id="named" name="named" code="{N_ifm(str,workDir)}" label="Named" help="" minOccurs="0" default="dakota_work_xxxxxxxx" complexity="0">
+                <param type="STRING" />
+              </keyword>
+              <keyword id="directory_tag" name="directory_tag" code="{N_ifm(true,dirTag)}" label="Directory Tag" help="" minOccurs="0" default="no work directory tagging" complexity="0">
+                <alias name="dir_tag" />
+              </keyword>
+              <keyword id="directory_save" name="directory_save" code="{N_ifm(true,dirSave)}" label="Directory Save" help="" minOccurs="0" default="remove work directory" complexity="0">
+                <alias name="dir_save" />
+              </keyword>
+              <keyword id="link_files" name="link_files" code="{N_ifm(strL,linkFiles)}" label="Files to Link" help="" minOccurs="0" default="no linked files" complexity="0">
+                <param type="STRINGLIST" />
+              </keyword>
+              <keyword id="copy_files" name="copy_files" code="{N_ifm(strL,copyFiles)}" label="Files to Copy" help="" minOccurs="0" default="no copied files" complexity="0">
+                <param type="STRINGLIST" />
+              </keyword>
+              <keyword id="replace" name="replace" code="{N_ifm(true,templateReplace)}" label="Replace" help="" minOccurs="0" default="do not overwrite files" complexity="1"/>
+            </keyword>
+	        <keyword id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="Allow Existing Results" help="" minOccurs="0" default="results files removed before each evaluation" complexity="1"/>
+	        <keyword id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="Verbatim" help="" minOccurs="0" default="driver/filter invocation syntax augmented with file names" complexity="1"/>
+	        <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" help="Expected foramt of results files" minOccurs="0" maxOccurs="1" default="Flexible format">
+		      <oneOf>
+                <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" help="Flexible results file format" />
+		      </oneOf>
+	        </keyword>
+	        -->
+          </keyword>
+          <keyword id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct Function Interface " help="InterfCommands.html#InterfApplicDF" minOccurs="1" complexity="0">
+            <keyword id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(pint,procsPerAnalysis)}" label="Number of Processors per Analysis Server" help="InterfCommands.html#InterfApplicDF" minOccurs="0" default="automatic (see discussion)" complexity="1">
+              <param type="INTEGER" constraint="&gt; 0" />
             </keyword>
           </keyword>
-          <!-- TODO: processors per analysis? -->
-          <keyword  id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab interface " help="InterfCommands.html#InterfApplicMSP"  />
-          <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
+	      <!-- TODO: processors per analysis? -->
+	      <keyword id="matlab" name="matlab" code="{N_ifm(type,interfaceType_MATLAB_INTERFACE)}" label="Matlab Interface " help="InterfCommands.html#InterfApplicMSP" complexity="1"/>
+	      <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
                #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
-            -->
-          <keyword  id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python interface " help="InterfCommands.html#InterfApplicMSP" minOccurs="1" >
-            <keyword  id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy dataflow" help="InterfCommands.html#InterfApplicMSP" minOccurs="0" default="Python list dataflow" />
+	      -->
+	      <keyword id="python" name="python" code="{N_ifm(type,interfaceType_PYTHON_INTERFACE)}" label="Python Interface " help="InterfCommands.html#InterfApplicMSP" minOccurs="1" complexity="1">
+            <keyword id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy Dataflow" help="InterfCommands.html#InterfApplicMSP" minOccurs="0" default="Python list dataflow" complexity="1"/>
           </keyword>
-          <keyword  id="scilab" name="scilab" code="{N_ifm(type,interfaceType_SCILAB_INTERFACE)}" label="Scilab interface " help="InterfCommands.html#InterfApplicMSP"  />
-          <keyword  id="grid2" name="grid" code="{N_ifm(type,interfaceType_GRID_INTERFACE)}" label="Grid interface " help="InterfCommands.html#InterfApplicG"  />
-        </oneOf>
-        <keyword  id="failure_capture" name="failure_capture" code="{0}" label="Failure capturing" help="InterfCommands.html#InterfApplic" minOccurs="0" default="abort" >
-          <oneOf label="failure mitigation">
-            <keyword  id="abort" name="abort" code="{N_ifm(lit,failAction_abort)}" label="abort" help=""  />
-            <keyword  id="retry" name="retry" code="{N_ifm(ilit,TYPE_DATA_failAction_retry)}" label="retry" help=""  >
-              <param type="INTEGER" />
-            </keyword>
-            <keyword  id="recover" name="recover" code="{N_ifm(Rlit,TYPE_DATA_failAction_recover)}" label="recover" help=""  >
-              <param type="REALLIST" />
-            </keyword>
-            <keyword  id="continuation" name="continuation" code="{N_ifm(lit,failAction_continuation)}" label="continuation" help=""  />
+	      <keyword id="scilab" name="scilab" code="{N_ifm(type,interfaceType_SCILAB_INTERFACE)}" label="Scilab Interface " help="InterfCommands.html#InterfApplicMSP" complexity="1"/>
+	      <keyword id="grid2" name="grid" code="{N_ifm(type,interfaceType_GRID_INTERFACE)}" label="Grid Interface " help="InterfCommands.html#InterfApplicG" complexity="1"/>
+	    </oneOf>
+	    <keyword id="analysis_components" name="analysis_components" code="{N_ifm(str2D,analysisComponents)}" label="Additional Identifiers for Use by the Analysis Drivers" help="InterfCommands.html#InterfApplic" minOccurs="0" default="no additional identifiers" complexity="1">
+          <param type="STRINGLIST" />
+	    </keyword>
+      </keyword>
+      <keyword id="algebraic_mappings" name="algebraic_mappings" code="{N_ifm(str,algebraicMappings)}" label="Algebraic Mappings File" help="InterfCommands.html#InterfAlgebraic" minOccurs="0" default="no algebraic mappings" complexity="1">
+	    <param type="STRING" />
+      </keyword>
+      <keyword  id="failure_capture" name="failure_capture" code="{0}" label="Failure Capturing" help="InterfCommands.html#InterfApplic" minOccurs="0" default="abort" complexity="0">
+	    <oneOf label="Failure Mitigation">
+          <keyword  id="abort" name="abort" code="{N_ifm(lit,failAction_abort)}" label="Abort" help=""  complexity="0"/>
+          <keyword  id="retry" name="retry" code="{N_ifm(ilit,TYPE_DATA_failAction_retry)}" label="Retry" help=""  complexity="0">
+            <param type="INTEGER" />
+          </keyword>
+          <keyword  id="recover" name="recover" code="{N_ifm(Rlit,TYPE_DATA_failAction_recover)}" label="Recover" help=""  complexity="0">
+            <param type="REALLIST" />
+          </keyword>
+          <keyword  id="continuation" name="continuation" code="{N_ifm(lit,failAction_continuation)}" label="Continuation" help=""  complexity="1"/>
+	    </oneOf>
+      </keyword>
+      <keyword  id="deactivate" name="deactivate" code="{0}" label="Feature Deactivation" help="InterfCommands.html#InterfApplic" minOccurs="0" default="Active set vector control, function evaluation cache, and restart file features are active" complexity="0">
+	    <keyword  id="active_set_vector" name="active_set_vector" code="{N_ifm(false,activeSetVectorFlag)}" label="Active Set Vector" help="" minOccurs="0" complexity="0"/>
+	    <keyword  id="evaluation_cache" name="evaluation_cache" code="{N_ifm(false,evalCacheFlag)}" label="Evaluation Cache" help="" minOccurs="0" complexity="1"/>
+	    <keyword  id="strict_cache_equality" name="strict_cache_equality" code="{N_ifm(true,nearbyEvalCacheFlag)}" label="Strict Cache Equality" help="" minOccurs="0" complexity="1">
+          <keyword  id="cache_tolerance" name="cache_tolerance" code="{N_ifm(Real,nearbyEvalCacheTol)}" label="Cache Tolerance" help="" minOccurs="0" complexity="1">
+            <param type="REAL" />
+          </keyword>
+	    </keyword>
+	    <keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="Restart File" help="" minOccurs="0" complexity="1"/>
+      </keyword>
+      <keyword id="asynchronous" name="asynchronous" code="{N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}" label="Asynchronous Interface Usage" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="synchronous interface usage" complexity="0">
+	    <keyword id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous Evaluation Concurrency" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="0">
+          <param type="INTEGER" constraint="&gt; 0" />
+	    </keyword>
+	    <keyword id="local_evaluation_scheduling" name="local_evaluation_scheduling" code="{0}" label="Local Evaluation Scheduling" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="dynamic" complexity="1">
+          <oneOf label="Scheduling Mode">
+            <keyword id="dynamic" name="dynamic" code="{N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}" label="Dynamic" help="" complexity="1" />
+            <keyword id="static" name="static" code="{N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}" label="Static" help="" complexity="1" />
           </oneOf>
-        </keyword>
-        <keyword  id="deactivate" name="deactivate" code="{0}" label="Feature deactivation" help="InterfCommands.html#InterfApplic" minOccurs="0" default="Active set vector control, function evaluation cache, and restart file features are active" >
-          <keyword  id="active_set_vector" name="active_set_vector" code="{N_ifm(false,activeSetVectorFlag)}" label="active_set_vector" help="" minOccurs="0" />
-          <keyword  id="evaluation_cache" name="evaluation_cache" code="{N_ifm(false,evalCacheFlag)}" label="evaluation_cache" help="" minOccurs="0" />
-          <keyword  id="strict_cache_equality" name="strict_cache_equality" code="{N_ifm(true,nearbyEvalCacheFlag)}" label="strict_cache_equality" help="" minOccurs="0" >
-            <keyword  id="cache_tolerance" name="cache_tolerance" code="{N_ifm(Real,nearbyEvalCacheTol)}" label="cache_tolerance" help="" minOccurs="0" >
-              <param type="REAL" />
-            </keyword>
-          </keyword>
-          <keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="restart_file" help="" minOccurs="0" />
-        </keyword>
+	    </keyword>
+	    <keyword id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(pint,asynchLocalAnalysisConcurrency)}" label="Asynchronous Analysis Concurrency" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" complexity="1">
+          <param type="INTEGER" constraint="&gt; 0" />
+	    </keyword>
       </keyword>
-      <keyword  id="asynchronous" name="asynchronous" code="{N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}" label="Asynchronous interface usage" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="synchronous interface usage" >
-        <keyword  id="evaluation_concurrency" name="evaluation_concurrency" code="{N_ifm(pint,asynchLocalEvalConcurrency)}" label="Asynchronous evaluation concurrency" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" >
-          <param type="INTEGER" constraint="> 0" />
-        </keyword>
-        <keyword  id="local_evaluation_scheduling" name="local_evaluation_scheduling" code="{0}" label="Local evaluation scheduling" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="dynamic" >
-          <oneOf>
-            <keyword  id="dynamic" name="dynamic" code="{N_ifm(type,asynchLocalEvalScheduling_DYNAMIC_SCHEDULING)}" label="dynamic" help=""  />
-            <keyword  id="static" name="static" code="{N_ifm(type,asynchLocalEvalScheduling_STATIC_SCHEDULING)}" label="static" help=""  />
-          </oneOf>
-        </keyword>
-        <keyword  id="analysis_concurrency" name="analysis_concurrency" code="{N_ifm(pint,asynchLocalAnalysisConcurrency)}" label="Asynchronous analysis concurrency" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="local: unlimited concurrency, hybrid: no concurrency" >
-          <param type="INTEGER" constraint="> 0" />
-        </keyword>
-      </keyword>
-      <keyword  id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of evaluation servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
-        <param type="INTEGER" constraint="> 0" />
-      </keyword>
-      <keyword  id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message passing configuration for scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
-        <oneOf>
-          <keyword  id="master2" name="master" code="{N_ifm(type,evalScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
-          <keyword  id="peer2" name="peer" code="{0}" label="Peer scheduling of evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="1" >
-            <oneOf>
-              <keyword  id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="dynamic" help="" default="dynamic (see discussion)" />
-              <keyword  id="static1" name="static" code="{N_ifm(type,evalScheduling_PEER_STATIC_SCHEDULING)}" label="static" help=""  />
-            </oneOf>
-          </keyword>
-        </oneOf>
-      </keyword>
-      <keyword  id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(pint,procsPerEval)}" label="Number of processors per evaluation server" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
-        <param type="INTEGER" constraint="> 0" />
-      </keyword>
-      <keyword  id="analysis_servers" name="analysis_servers" code="{N_ifm(pint,analysisServers)}" label="Number of analysis servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
-        <param type="INTEGER" constraint="> 0" />
-      </keyword>
-      <keyword  id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message passing configuration for scheduling of analyses" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" >
-        <oneOf>
-          <keyword  id="master3" name="master" code="{N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
-          <keyword  id="peer3" name="peer" code="{N_ifm(type,analysisScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
-          <!-- #	  | ( peer {0}
-               #	      dynamic  {N_ifm(type,analysisScheduling_PEER_DYNAMIC_SCHEDULING)}
-               #	      | static {N_ifm(type,analysisScheduling_PEER_STATIC_SCHEDULING)} )
-            -->
-        </oneOf>
-      </keyword>
+      <group label="Parallel Configuration">
+	    <keyword id="evaluation_servers" name="evaluation_servers" code="{N_ifm(pint,evalServers)}" label="Number of Evaluation Servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="&gt; 0" />
+	    </keyword>
+		<keyword id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" complexity="1">
+	      <oneOf label="Server Mode">
+	        <keyword id="master2" name="master" code="{N_ifm(type,evalScheduling_MASTER_SCHEDULING)}" label="Master" help="" complexity="1" />
+	        <keyword id="peer2" name="peer" code="{0}" label="Peer Scheduling of Evaluations" help="InterfCommands.html#InterfIndControl" minOccurs="1" complexity="1">
+	          <oneOf label="Scheduling Mode">
+		        <keyword id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="Dynamic" help="" default="dynamic (see discussion)" complexity="1" />
+		        <keyword id="static1" name="static" code="{N_ifm(type,evalScheduling_PEER_STATIC_SCHEDULING)}" label="Static" help="" complexity="1" />
+	          </oneOf>
+	        </keyword>
+	       </oneOf>
+		</keyword>
+	    <keyword id="processors_per_evaluation" name="processors_per_evaluation" code="{N_ifm(pint,procsPerEval)}" label="Number of Processors per Evaluation Server" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="&gt; 0" />
+	    </keyword>
+	    <keyword id="analysis_servers" name="analysis_servers" code="{N_ifm(pint,analysisServers)}" label="Number of Analysis Servers" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" complexity="1">
+          <param type="INTEGER" constraint="&gt; 0" />
+	    </keyword>
+	    <keyword id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Analyses" help="InterfCommands.html#InterfIndControl" minOccurs="0" default="automatic (see discussion)" complexity="1">
+	      <oneOf label="Scheduling Mode">
+	        <keyword id="master3" name="master" code="{N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}" label="Master" help="" complexity="1" />
+	        <keyword id="peer3" name="peer" code="{N_ifm(type,analysisScheduling_PEER_SCHEDULING)}" label="Peer" help="" complexity="1" />
+	        <!-- #	  | ( peer {0}
+			#	      dynamic  {N_ifm(type,analysisScheduling_PEER_DYNAMIC_SCHEDULING)}
+			#	      | static {N_ifm(type,analysisScheduling_PEER_STATIC_SCHEDULING)} )
+	        -->
+	      </oneOf>
+	    </keyword>
+      </group>
     </keyword>
-
     
     <!-- **** TOPLEVEL *** -->
     <keyword id="responses" name="responses" minOccurs="1" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" help="RespCommands.html">

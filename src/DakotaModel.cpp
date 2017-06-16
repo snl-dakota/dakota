@@ -84,7 +84,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
-  supportsEstimDerivs(true),
+  warmStartFlag(false), supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1), 
@@ -285,7 +285,7 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
   currentResponse(srd, set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), fdGradStepType("relative"),
-  fdHessStepType("relative"), supportsEstimDerivs(true),
+  fdHessStepType("relative"), warmStartFlag(false), supportsEstimDerivs(true),
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
@@ -309,7 +309,8 @@ Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
 Model::
 Model(LightWtBaseConstructor, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
-  supportsEstimDerivs(true), probDescDB(problem_db), parallelLib(parallel_lib),
+  warmStartFlag(false), supportsEstimDerivs(true),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT), hierarchicalTagging(false),
@@ -2956,8 +2957,21 @@ bool Model::initialize_mapping(ParLevLIter pl_iter)
   if (modelRep)
     return modelRep->initialize_mapping(pl_iter);
   else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
+    // restore initial states for re-entrancy
+    currentResponse.reset(); // for completeness
+    if (!warmStartFlag) {
+      // Dakota::Variables does not support reset() since initial points are not
+      // cached in Model/Variables -- they are generally (re)set from Iterator.
+      //currentVariables.reset(); // not supported
+
+      if (!quasiHessians.empty()) {
+	for (size_t i=0; i<numFns; ++i)
+	  quasiHessians[i] = 0.;
+	numQuasiUpdates.assign(numFns, 0);// {x,fnGrads}Prev will be overwritten
+      }
+    }
+
+    return false; // size did not change
   }
 }
 
@@ -2966,21 +2980,26 @@ bool Model::finalize_mapping()
 {
   if (modelRep)
     return modelRep->finalize_mapping();
-  else {
-    // Base class default behavior is no-op
-    return false; // Variables size did not change
-  }
+  else // Base class default behavior is no-op
+    return false; // size did not change
 }
 
 
-bool Model::mapping_initialized()
+bool Model::mapping_initialized() const
 {
   if (modelRep)
     return modelRep->mapping_initialized();
-  else {
-    // Base class default behavior is true
+  else // Base class default is true
     return true;
-  }
+}
+
+
+bool Model::resize_pending() const
+{
+  if (modelRep)
+    return modelRep->resize_pending();
+  else // Base class default is false
+    return false;
 }
 
 
@@ -3352,6 +3371,20 @@ const RealVector& Model::approximation_variances(const Variables& vars)
 }
 
 
+const RealVector& Model::error_estimates()
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual error_estimates() "
+	 << "function.\n       This model does not support error estimation."
+	 << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  // envelope fwd to letter
+  return modelRep->error_estimates();
+}
+
+
 const Pecos::SurrogateData& Model::approximation_data(size_t index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
@@ -3394,6 +3427,31 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 
   // envelope fwd to letter
   return modelRep->discrepancy_correction();
+}
+
+
+void Model::single_apply(const Variables& vars, Response& resp,
+			 const SizetSizet2DPair& indices)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->single_apply(vars, resp, indices);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
+	 << "function.\n." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void Model::recursive_apply(const Variables& vars, Response& resp)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->recursive_apply(vars, resp);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual recursive_apply() "
+	 << "function.\n." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
 }
 
 
@@ -3620,7 +3678,7 @@ int Model::serve_init_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_init_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
 }
@@ -3641,9 +3699,16 @@ int Model::serve_finalize_mapping(ParLevLIter pl_iter)
   if (modelRep) // envelope fwd to letter
     return modelRep->serve_finalize_mapping(pl_iter);
   else {
-    // Base class is a no-op, return 0 since init_communicators() was not recalled
+    // Base class is a no-op, return 0 since init_communicators() was not called
     return 0;
   }
+}
+
+
+void Model::warm_start_flag(const bool flag)
+{
+  if (modelRep) modelRep->warm_start_flag(flag);
+  else          warmStartFlag = flag;
 }
 
 

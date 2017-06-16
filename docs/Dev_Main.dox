@@ -5,10 +5,11 @@ namespace Dakota { // for some reason, this doesn't work with mainpage
 \image html logo_3d_halfsize.jpg
 
 \author Brian M. Adams, William J. Bohnhoff, Keith
-R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,
-Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, John D. Jakeman,
-Kathryn A. Maupin, Jason A. Monschke, Elliott M. Ridgway, Ahmad Rushdi, Laura P.
-Swiler, J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey
+R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Joseph R. Frye, 
+Gianluca Geraci, Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, 
+John D. Jakeman, Mohammad Khalil, Kathryn A. Maupin, Jason A. Monschke, 
+Elliott M. Ridgway, Ahmad Rushdi, Laura P. Swiler, J. Adam Stephens, 
+Dena M. Vigil, Timothy M. Wildey
 
 \htmlonly
 <b>Main Page Table of Contents</b>
@@ -569,7 +570,7 @@ specific development activities:
 Additional development resources include:
 
 \li The %Dakota Developer Portal linked from
-    http://dakota.sandia.gov/developer/ includes information on getting 
+    http://dakota.sandia.gov/content/developer-portal/ includes information on getting 
     started as a developer and links to project management resources.
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
     links to frequently asked questions, documentation, publications, mailing 

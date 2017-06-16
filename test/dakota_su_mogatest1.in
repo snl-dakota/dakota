@@ -7,13 +7,13 @@
 environment
   tabular_data
     tabular_data_file = 'mogatest1_opt_sbo.dat'
-  method_pointer = 'SBGO'
+  top_method_pointer = 'SBGO'
 
 method
     id_method = 'SBGO'
     surrogate_based_global
     model_pointer = 'SURROGATE'
-    approx_method_pointer = 'MOGA'
+    method_pointer = 'MOGA'
     max_iterations = 5
     replace_points
     output verbose
@@ -24,7 +24,6 @@ method
 method
     id_method = 'MOGA'
     moga
-    output silent
         seed = 10983
     population_size = 300
     max_function_evaluations = 5000
@@ -42,6 +41,7 @@ method
         orthogonal_distance 0.05 0.05
     convergence_type metric_tracker
         percent_change = 0.05 num_generations = 10
+    output silent
 
 model
     id_model = 'SURROGATE'
@@ -53,11 +53,11 @@ model
 
 method
     id_method = 'SAMPLING'
-    model_pointer = 'TRUTH'
     sampling
       samples = 100
       seed = 531
       sample_type lhs
+    model_pointer = 'TRUTH'
 
 model
     id_model = 'TRUTH'
@@ -73,8 +73,8 @@ variables
 
 interface
     id_interface = 'TRUE_FN'
-    direct
-      analysis_driver = 'mogatest1'
+    analysis_drivers = 'mogatest1'
+      direct
 
 responses
     objective_functions = 2

@@ -119,12 +119,18 @@ public:
   /// retrieve the number of fields (applies to all experiments)
   size_t num_fields() const;
 
+  /// number of onfiguration variables
+  size_t num_config_vars() const;
+
   /// values of the configuration variables, 1 RealVector per experiment
   const std::vector<RealVector>& config_vars() const;
 
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
   const RealVector& all_data(size_t experiment);
+  
+  /// return response for the specified experiment
+  const Response& response(size_t experiment);
 
   /// return the individual sizes of the experimental data lengths
   /// (all function values, scalar and field)
@@ -178,6 +184,9 @@ public:
   /// get the observation error covariance as a correlation matrix, one
   /// vector per experiment
   void cov_as_correlation(RealSymMatrixArray& corr_matrix) const;
+
+  /// retrieve an individual covariance entry as a dense matrix
+  void covariance(int exp_ind, RealSymMatrix& cov_mat) const;
 
   /// form residuals for all experiments, interpolating if necessary;
   /// one simulation response maps to all experiments

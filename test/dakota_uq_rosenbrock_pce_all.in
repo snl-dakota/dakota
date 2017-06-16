@@ -11,7 +11,7 @@ method,
 #	stoch_collocation				#s3,#s4,#s5
 	  quadrature_order = 5				#s0,#s1,#s3,#s4
 #	  sparse_grid_level = 2				#s2,#s5
-	  samples_on_emulator = 10000 seed = 12347 rng rnum2
+	  samples_on_emulator = 10000 seed = 12347 
 	  probability_levels = .001 .01 .1 .2 .3 .4 .5 .6 .7 .8 .9 .99 .999
 	  variance_based_decomp #interaction_order = 1
 #	  output debug

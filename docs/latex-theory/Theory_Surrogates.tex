@@ -253,6 +253,7 @@ the predictions and can be utilized to guide the selection of new
 sample points during optimization or to otherwise improve the 
 surrogate.  The adjusted variance is
 \begin{eqnarray*}
+\label{Eq:KrigVar}
 {\rm Var}\left(\hat{y}\right) &=& {\rm Var}\left(\hat{f}\left(\underline{x}\right)|\underline{f}\left(\underline{\underline{X}}\right)\right) \\ 
 &=&\hat{\sigma}^2\left(1-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{r}\left(\underline{x}\right) + \right. ... \\
 &&\left. \left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right) \left(\underline{\underline{G}}^T\underline{\underline{R}}^{-1} \underline{\underline{G}}\right)^{-1}\left(\underline{g}\left(\underline{x}\right)^T-\underline{r}\left(\underline{x}\right)^T\ \underline{\underline{R}}^{-1}\underline{\underline{G}}\right)^T\right)
@@ -592,3 +593,65 @@ $\underline{\underline{R_{\nabla}}}$ when the number of dimensions $M$
 is large.  It will also likely be negligible compared to the cost of
 performing LAPACK's non-pivoted Cholesky on 
 $\underline{\underline{\tilde{R}_{\nabla}}}$.
+
+\section{Polynomial Models}\label{sec:poly_surr}
+
+A preliminary discussion of the surrogate polynomial models available in
+Dakota is presented in the Surrogate Models Chapter of the User's 
+Manual~\cite{UsersMan}, with select details reproduced here. For ease of 
+notation, the discussion in this section assumes that the model returns a 
+single response $\hat{f}$ and that the design parameters $x$ have dimension $n$. 
+
+For each point $x$, a linear polynomial model is approximated by
+\begin{equation}
+\hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i,
+\end{equation}
+a quadratic polynomial model is 
+\begin{equation}
+\hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i + \sum_{i = 1}^{n} 
+\sum_{j \geq i}^{n} c_{ij} x_i x_j,
+\end{equation}
+and a cubic polynomial model is
+\begin{equation}
+\hat{f}(x) \approx c_0 + \sum_{i = 1}^{n} c_i x_i + \sum_{i = 1}^{n} 
+\sum_{j \geq i}^{n} c_{ij} x_i x_j + \sum_{i = 1}^{n} \sum_{j \geq i}^{n}
+\sum_{k \geq j}^{n} c_{ijk} x_i x_j x_k.
+\end{equation}
+In these equations, $c_0$, $c_i$, $c_{ij}$, and $c_{ijk}$ are the polynomial
+coefficients that are determined during the approximation of the surrogate. 
+Furthermore, each point $x$ corresponds to a vector $v_x$ with entries given 
+by the terms $1$, $x_i$, $x_i x_j$, and $x_i x_j x_k$. The length $n_c$ of 
+this vector corresponds to the number of coefficients present in the polynomial 
+expression. For the linear, quadratic, and cubic polynomials, respectively,
+\begin{eqnarray}
+n_{c} 	&=& n+1, \\
+n_{c} 	&=& \frac{(n+1)(n+2)}{2}, \\
+n_{c}	&=& \frac{n^3 + 6n^2 + 11n + 6}{6}.
+\end{eqnarray} 
+
+Let the matrix $X$ be such that each row corresponds to the vector of a
+training point. Thus, given $m$ training points, $X \in \mathbb{R}^{m \times
+n_c}$. Approximating the polynomial model then amounts to approximating the
+solution to
+\begin{equation}
+Xb = Y,
+\end{equation} 
+where $b$ is the vector of the polynomial coefficients described above, and $Y$
+contains the true responses $y(x)$. Details regarding the solution or
+approximate solution of this equation can be found in most mathematical texts
+and are not discussed here. For any of the training points, the estimated
+variance is given by
+\begin{equation}
+\sigma^{2}\left(\hat{f}(x)\right) = MSE\left(v_x^{T} (X^{T} X)^{-1} v_x\right),
+\end{equation} 
+where $MSE$ is the mean-squared error of the approximation over all of the
+training points. For any new design parameter, the prediction variance is
+given by 
+\begin{equation}\label{eq:poly_var}
+\sigma^{2}\left(\hat{f}(x_{new})\right) = MSE\left(1 + v_{x_{new}}^{T} 
+(X^{T} X)^{-1} v_{x_{new}} \right).
+\end{equation}
+Additional discussion and detail can be found in~\cite{Net85}.
+
+
+

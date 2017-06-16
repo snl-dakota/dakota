@@ -81,6 +81,11 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// Perform any global updates prior to individual evaluate() calls
+  bool initialize_mapping(ParLevLIter pl_iter);
+  /// restore state in preparation for next initialization
+  bool finalize_mapping();
+
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
@@ -253,6 +258,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
 
+  /// set the warm start flag, including actualModel
+  void warm_start_flag(const bool flag);
+
   //
   //- Heading: Data members
   //
@@ -309,10 +317,12 @@ private:
   /// Call build_approximation on the interface, passing appropriate constraints
   void interface_build_approx();
 
-  /// update actualModel with data from current variables/labels/bounds/targets
-  void update_actual_model();
+  /// update actualModel with data from constraints/labels/sets
+  void init_model(Model& model);
+  /// update actualModel with data from current variables/bounds
+  void update_model(Model& model);
   /// update current variables/labels/bounds/targets with data from actualModel
-  void update_from_actual_model();
+  void update_from_model(const Model& model);
 
   /// test for exact equality in values between vars and sdv
   bool vars_exact_compare(const Variables& vars,
@@ -434,7 +444,7 @@ inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
     if (depth > 0)
       actualModel.update_from_subordinate_model(depth - 1);
     // now pull the latest updates from actualModel
-    update_from_actual_model();
+    update_from_model(actualModel);
   }
 }
 
@@ -669,6 +679,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
     else // daceIterator resets the eval reference -> don't use a relative count
       actualModel.print_evaluation_summary(s, minimal_header, false);
   }
+}
+
+
+inline void DataFitSurrModel::warm_start_flag(const bool flag)
+{
+  warmStartFlag = flag;
+  actualModel.warm_start_flag(flag);
 }
 
 } // namespace Dakota

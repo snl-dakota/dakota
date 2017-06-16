@@ -91,6 +91,13 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 		      fieldLabels);
     // unroll field response groups to create individual function labels
     fieldRespGroupLengths = problem_db.get_iv("responses.lengths");
+    if (num_field_responses != fieldRespGroupLengths.length()) {
+      Cerr << "Error: For each field response, you must specify " 
+           << "the length of that field.  The number of elements " 
+           << "in the 'lengths' vector must " 
+           << "equal the number of field responses."  << std::endl;
+      abort_handler(-1);
+    } 
     build_field_labels();
   } 
   else if (numScalarResponses) {

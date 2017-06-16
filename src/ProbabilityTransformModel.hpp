@@ -42,21 +42,23 @@ public:
   /// destructor
   ~ProbabilityTransformModel();
 
-
-  /// perform correlation warping for variable types supported by Nataf
-  void transform_correlations();
-
-
   //
   //- Heading: Virtual function redefinitions
   //
 
   bool initialize_mapping(ParLevLIter pl_iter);
+  bool finalize_mapping();
+  bool mapping_initialized() const;
+  bool resize_pending() const;
 
+  //
+  //- Heading: Member functions
+  //
 
+  /// perform correlation warping for variable types supported by Nataf
+  void transform_correlations();
 
 protected:
-
 
   //
   //- Heading: Member functions
@@ -267,18 +269,26 @@ private:
   /// static pointer to this class for use in static callbacks
   static ProbabilityTransformModel* ptmInstance;
 
+  /// track use of initialize_mapping() and finalize_mapping()
+  bool mappingInitialized;
 };
+
+
+inline bool ProbabilityTransformModel::mapping_initialized() const
+{ return mappingInitialized; }
+
+
+inline bool ProbabilityTransformModel::resize_pending() const
+{ return subModel.resize_pending(); }
 
 
 inline void ProbabilityTransformModel::transform_correlations()
 { natafTransform.transform_correlations(); }
 
 
-inline void ProbabilityTransformModel::distribution_parameter_derivatives(
-  bool dist_param_derivs)
-{
-  distParamDerivs = dist_param_derivs;
-}
+inline void ProbabilityTransformModel::
+distribution_parameter_derivatives(bool dist_param_derivs)
+{ distParamDerivs = dist_param_derivs; }
 
 
 /** Map the variables from iterator space (u) to simulation space (x). */

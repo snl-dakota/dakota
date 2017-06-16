@@ -26,6 +26,7 @@ foreach(generated_input ${users_test_inputs})
   list(GET geninput_as_args 2 test_num)
 
   add_custom_command(
+    DEPENDS "${test_path}/${test_input}.in"
     OUTPUT  "${test_output}.in"
     COMMAND "${PERL_EXECUTABLE}"
     ARGS    "${test_path}/dakota_test.perl" --extract "${test_path}/${test_input}.in" ${test_num} --file-extract="${CMAKE_CURRENT_BINARY_DIR}/${test_output}.in"

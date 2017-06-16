@@ -13,7 +13,7 @@
 # calibration low-fidelity codes" by Lewis, et al, published in 2016.  
 
 environment
-        tabular_graphics_data
+  tabular_data
 
 method,
        bayes_calibration queso
@@ -38,15 +38,15 @@ model,
 model,
         id_model = 'LF'
         single
+          interface_pointer = 'lofi_IF'
         variables_pointer = 'ALL_VARS'
-        interface_pointer = 'lofi_IF'
         responses_pointer = 'lofi_resp'
 
 model,
         id_model = 'HF'
         single
+          interface_pointer = 'hifi_IF'
         variables_pointer = 'CONFIG_VARS'
-        interface_pointer = 'hifi_IF'
         responses_pointer = 'hifi_resp'
 
 variables,
@@ -66,16 +66,16 @@ variables,
           lower_bounds = 10
 
 interface,
-        fork
-        analysis_driver = 'expdesign_high'
-        asynchronous evaluation_concurrency=2              #s0
         id_interface = 'hifi_IF'
+        analysis_drivers = 'expdesign_high'
+          fork
+        asynchronous evaluation_concurrency=2              #s0
 
 interface,
-        fork 
-        analysis_driver = 'expdesign_low'
-        asynchronous evaluation_concurrency=4              #s0
         id_interface = 'lofi_IF'
+        analysis_drivers = 'expdesign_low'
+          fork 
+        asynchronous evaluation_concurrency=4              #s0
 
 responses,
  	id_responses = 'lofi_resp'
@@ -86,7 +86,7 @@ responses,
 responses,
  	id_responses = 'hifi_resp'
  	calibration_terms = 1
-#	calibration_data_file = "dakota_bayes_expdesign.dat"	#s1,#s2
+#	calibration_data_file = 'dakota_bayes_expdesign.dat'	#s1,#s2
 #	  freeform						#s1,#s2
 #	  num_config_variables = 1				#s1,#s2
 #	  num_experiments = 2				        #s2	

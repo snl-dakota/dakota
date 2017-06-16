@@ -69,6 +69,11 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  /// Perform any global updates prior to individual evaluate() calls
+  bool initialize_mapping(ParLevLIter pl_iter);
+  /// restore state in preparation for next initialization
+  bool finalize_mapping();
+
   /// portion of evaluate() specific to HierarchSurrModel
   void derived_evaluate(const ActiveSet& set);
   /// portion of evaluate_nowait() specific to HierarchSurrModel
@@ -164,6 +169,9 @@ protected:
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
                                 bool relative_count = true) const;
 
+  /// set the warm start flag, including the orderedModels
+  void warm_start_flag(const bool flag);
+
 private:
 
   //
@@ -174,9 +182,14 @@ private:
   /// identified by current {low,high}FidelityIndices
   void check_interface_instance();
 
-  /// update the passed model (low or high fidelity) with current variable
-  /// values/bounds/labels
+  /// update the passed model (one of the ordered models) with data that could
+  /// change per function evaluation (active variable values/bounds)
   void update_model(Model& model);
+  /// update the passed model (one of the ordered models) with data that could
+  /// change once per set of evaluations (e.g., an outer iterator execution),
+  /// including active variable labels, inactive variable values/bounds/labels,
+  /// and linear/nonlinear constraint coeffs/bounds
+  void init_model(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
@@ -204,6 +217,10 @@ private:
   /// for computing a correction and applying it to lf_resp_map
   void compute_apply_delta(IntResponseMap& lf_resp_map);
 
+  /// helper function for applying a single deltaCorr correction
+  /// corresponding to indices
+  void single_apply(const Variables& vars, Response& resp,
+		    const SizetSizet2DPair& indices);
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp);
@@ -348,11 +365,14 @@ truth_model_indices(const SizetSizetPair& hf_form_level)
 inline const SizetSizetPair& HierarchSurrModel::truth_model_indices() const
 { return highFidelityIndices; }
 
+
 inline const unsigned short HierarchSurrModel::correction_mode() const
 { return correctionMode; }
 
+
 inline void HierarchSurrModel::correction_mode(unsigned short corr_mode)
 { correctionMode = corr_mode; }
+
 
 inline void HierarchSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
@@ -496,6 +516,17 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
   for (i=0; i<num_models; ++i)
     orderedModels[i].print_evaluation_summary(s, minimal_header,
         relative_count);
+}
+
+
+inline void HierarchSurrModel::warm_start_flag(const bool flag)
+{
+  // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
+  warmStartFlag = flag; // for completeness
+
+  size_t i, num_models = orderedModels.size();
+  for (i=0; i<num_models; ++i)
+    orderedModels[i].warm_start_flag(flag);
 }
 
 } // namespace Dakota

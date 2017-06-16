@@ -207,12 +207,18 @@ void NLPQLPOptimizer::allocate_workspace()
   G      = new Real [MMAX*L];
   DF     = new Real [NMAX];
   DG     = new Real [MMAX*NMAX];
+  // Need to initialize this data to avoid valgrind errors (TPL should do it but doesn't)
+  for( int i=0; i<MMAX*NMAX; ++i )
+    DG[i] = 0;
   U      = new Real [MNN2];
   C      = new Real [NMAX*NMAX];
   D      = new Real [NMAX];
   WA     = new Real [LWA];
   KWA    = new  int [LKWA];
   ACTIVE = new  int [LACTIVE];
+  // Need to initialize this data to avoid valgrind errors (TPL should do it but doesn't)
+  for( int i=0; i<LACTIVE; ++i )
+    ACTIVE[i] = 1; // These need to be non-zero so that all constraints are active. - RWH
 }
 
 

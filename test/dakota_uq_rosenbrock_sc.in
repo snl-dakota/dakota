@@ -9,15 +9,15 @@ method
   stoch_collocation
     quadrature_order = 5          #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s52,#s53,#s54
     dimension_preference = 5 3		#s0,#s1,#s2,#s3,#s4,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
-#    sparse_grid_level = 2			  #s6,#s7,#s8,#s9,#s10,#s11,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s48
-#    sparse_grid_level = 3			  #s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s49,#s55,#s56,#s57,#s58,#s59,#s60
+#    sparse_grid_level_sequence = 2			  #s6,#s7,#s8,#s9,#s10,#s11,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s48
+#    sparse_grid_level_sequence = 3			  #s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s49,#s55,#s56,#s57,#s58,#s59,#s60
 #    dimension_preference = 2 1		#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s49
 #    piecewise	       	   			  #s44,#s45,#s50,#s53,#s56,#s59
 #    piecewise use_derivatives		#s46,#s47,#s51,#s54,#s57,#s60
 #    quadrature_order  = 20			  #s44,#s46
 #    sparse_grid_level = 10			  #s45,#s47,#s50,#s51
 #    hierarchical				          #s48,#s49,#s50,#s51,#s58,#s59,#s60
-    samples_on_emulator = 10000 seed = 12347 rng rnum2
+    samples_on_emulator = 10000 seed = 12347 
     response_levels = .1 1. 50. 100. 500. 1000.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
 #    response_levels = 1000.:1000.:8000.	#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60
     variance_based_decomp #interaction_order = 1
@@ -108,9 +108,9 @@ variables
 #    descriptors       = 'd1' 'd2'	  #s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60
 
 interface
-  direct
-    analysis_driver = 'rosenbrock'              #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
-#    analysis_driver = 'generalized_rosenbrock' #s5,#s11,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60
+  analysis_drivers = 'rosenbrock'              #s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28,#s29,#s30,#s31,#s32,#s33,#s34,#s35,#s36,#s37,#s38,#s39,#s40,#s41,#s42,#s43,#s44,#s45,#s46,#s47,#s48,#s49,#s50,#s51
+#  analysis_drivers = 'generalized_rosenbrock' #s5,#s11,#s52,#s53,#s54,#s55,#s56,#s57,#s58,#s59,#s60
+    direct
 
 responses
   response_functions = 1

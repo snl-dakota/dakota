@@ -280,6 +280,8 @@ public:
 
   /// copy the active cv/div/dsv/drv variables from vars
   void active_variables(const Variables& vars);
+  /// copy all cv/div/dsv/drv variables from vars
+  void all_variables(const Variables& vars);
 
   /// return a mutable view of the active continuous variables
   RealVector& continuous_variables_view();
@@ -871,6 +873,24 @@ inline void Variables::active_variables(const Variables& vars)
     if (vars.div()) discrete_int_variables(vars.discrete_int_variables());
     if (vars.dsv()) discrete_string_variables(vars.discrete_string_variables());
     if (vars.drv()) discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::all_variables(const Variables& vars) 
+{
+  // Set all variables
+  if (variablesRep)
+    variablesRep->all_variables(vars);
+  else {
+    if (vars.acv())
+      all_continuous_variables(vars.all_continuous_variables());
+    if (vars.adiv())
+      all_discrete_int_variables(vars.all_discrete_int_variables());
+    if (vars.adsv())
+      all_discrete_string_variables(vars.all_discrete_string_variables());
+    if (vars.adrv())
+      all_discrete_real_variables(vars.all_discrete_real_variables());
   }
 }
 

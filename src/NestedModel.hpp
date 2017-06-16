@@ -85,6 +85,10 @@ protected:
   /// return optionalInterface
   Interface& derived_interface();
 
+  /// retrieve error estimates corresponding to the subIterator's response
+  /// results (e.g., statistical MSE for subordinate UQ).
+  const RealVector& error_estimates();
+
   /// pass a bypass request on to the subModel for any lower-level surrogates
   void surrogate_response_mode(short mode);
 
@@ -141,6 +145,9 @@ protected:
   /// (request forwarded to optionalInterface and subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
 				bool relative_count = true) const;
+
+  /// set the warm start flag, including actualModel
+  void warm_start_flag(const bool flag);
 
   //
   //- Heading: Member functions
@@ -252,6 +259,11 @@ private:
   /// the model using the primaryCoeffs/secondaryCoeffs mappings
   void iterator_response_overlay(const Response& sub_iterator_response,
 				 Response& mapped_response);
+  /// combine error estimates from the sub-iteration to define
+  /// mappedErrorEstimates
+  void iterator_error_estimation(const RealVector& sub_iterator_errors,
+				 RealVector& mapped_errors);
+
   /// locate existing or allocate new entry in nestedResponseMap
   Response& nested_response(int nested_cntr);
   /// check function counts for the mapped_asv
@@ -278,6 +290,10 @@ private:
   /// and optionalInterface contributions) for aggregation and rekeying
   /// at the base class level
   IntResponseMap nestedResponseMap;
+
+  /// mapping of subIterator.response_error_estimates() through
+  /// primary and secondary mappings
+  RealVector mappedErrorEstimates;
 
   /// the miPLIndex for the outer parallelism context, prior to any
   /// subIterator partitioning
@@ -443,6 +459,19 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline Interface& NestedModel::derived_interface()
 { return optionalInterface; }
+
+
+inline const RealVector& NestedModel::error_estimates()
+{
+  // For now, assume no error contributions from optional interface, e.g.,
+  // these are deterministic mappings and have no estimator variance.
+
+  // *** TO DO: integrate with evaluate and evalaute_nowait()
+
+  iterator_error_estimation(subIterator.response_error_estimates(),
+			    mappedErrorEstimates);
+  return mappedErrorEstimates; 
+}
 
 
 inline void NestedModel::surrogate_response_mode(short mode)
@@ -651,6 +680,13 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel.print_evaluation_summary(s, minimal_header, false);
+}
+
+
+inline void NestedModel::warm_start_flag(const bool flag)
+{
+  warmStartFlag = flag;
+  subModel.warm_start_flag(flag);
 }
 
 

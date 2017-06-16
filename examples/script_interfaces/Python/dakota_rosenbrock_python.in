@@ -14,9 +14,9 @@ variables,
 
 interface,							
 	fork							
-	  analysis_drivers = 'rosenbrock_bb_dipy.py'
+	  analysis_drivers = 'rosenbrock_bb_di.py'
 # This instead for Windows:
-##	  analysis_drivers = 'python.exe rosenbrock_bb_dipy.py'
+##	  analysis_drivers = 'python.exe rosenbrock_bb_di.py'
 	parameters_file = 'params.in'
 	results_file = 'results.out'
 #	file_tag

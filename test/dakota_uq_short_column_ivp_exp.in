@@ -20,7 +20,7 @@ method,
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
 	global_interval_est		#s0,#s1,#s2,#s3,#s8,#s9,#s10,#s11,#s16,#p0,#p1,#p4,#p5,#p6,#p7
-	  seed = 1234567 rng rnum2	#s0,#s1,#s2,#s3,#s8,#s9,#s10,#s11,#s16,#p0,#p1,#p4,#p5,#p6,#p7
+	  seed = 1234567 	#s0,#s1,#s2,#s3,#s8,#s9,#s10,#s11,#s16,#p0,#p1,#p4,#p5,#p6,#p7
 #	local_interval_est		#s4,#s5,#s6,#s7,#s12,#s13,#s14,#s15,#s17,#p2,#p3
 #	  output verbose
 

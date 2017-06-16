@@ -931,6 +931,10 @@ JEGAOptimizer::LoadDakotaResponses(
     IntVector  di_vars(this->numDiscreteIntVars);
     RealVector dr_vars(this->numDiscreteRealVars);
 
+//PDH: JEGA variables to Dakota variables.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped on entry at a time.
+
     // The first numContinuousVars of a design will be all the continuous
     // variables of the problem (see LoadTheDesignVariables).
     for(size_t i=0; i<this->numContinuousVars; ++i)
@@ -950,6 +954,12 @@ JEGAOptimizer::LoadDakotaResponses(
     // integers in JEGA, so they must be unmapped. Here, they also are set in
     // vars using the single value setter to avoid creating a 
     // StringMultiArrayConstView
+
+//PDH: JEGA variables to Dakota variables.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped on entry at a time.
+//     String variables also need to be remapped.
+
     const StringSetArray& dssv_values = 
       iteratedModel.discrete_design_set_string_values();
     for(size_t i=0; i<this->numDiscreteStringVars; ++i) {
@@ -962,6 +972,11 @@ JEGAOptimizer::LoadDakotaResponses(
     vars.continuous_variables(c_vars);
     vars.discrete_int_variables(di_vars);
     vars.discrete_real_variables(dr_vars);
+
+//PDH: JEGA responses to Dakota responses.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped on entry at a time.
+//     Need to respect constraint ordering.
 
     // BMA TODO: Could always populate constraints and just get
     // primary responses from the DB, as in SNLL
@@ -1384,6 +1399,11 @@ JEGAOptimizer::LoadTheDesignVariables(
     // the RandomBitMutator.  Other than that, it is largely ignored by this
     // implementation.  It can have a fairly profound effect on the preformance
     // of those operators that use it to encode to binary.
+
+//PDH: Should be able to simplify all of this code quite a bit.  As
+//far as I can tell, the JEGA vectors are all just std vectors of the
+//corresponding type.  Not sure what exactly pConfig is, though.
+
     const RealVector& clbs = m.continuous_lower_bounds();
     const RealVector& cubs = m.continuous_upper_bounds();
     StringMultiArrayConstView clabels = m.continuous_variable_labels();
@@ -1419,6 +1439,8 @@ JEGAOptimizer::LoadTheDesignVariables(
       pConfig.AddDiscreteRealVariable(drlabels[i],
 	JEGA::DoubleVector(dak_set.begin(), dak_set.end()) );
     }
+
+//PDH: Have to map the string variables to indices.
 
     // Finally, load in the "discrete set of string" variables. These must
     // be mapped to discrete integer variables.
@@ -1502,6 +1524,12 @@ JEGAOptimizer::LoadTheConstraints(
     const RealVector& nln_ineq_upr_bnds
         = m.nonlinear_ineq_constraint_upper_bounds();
 
+//PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped on entry at a time.
+//     Looks like we don't have to worry about (JEGA) order.  Need to
+//     determine if they have to be two-sided for JEGA.
+
     // Loop over all two sided non linear inequality constraitns and add an
     // info object for each.
     for(size_t i=0; i<this->numNonlinearIneqConstraints; ++i)
@@ -1518,6 +1546,12 @@ JEGAOptimizer::LoadTheConstraints(
             "Non-Linear Equality " + asstring(i), nln_eq_targets[i]
             );
 
+//PDH: Dakota linear constraints to JEGA linear constraints.
+//     Don't know what the JEGA data structure is.  These are all
+//     mapped on entry at a time.
+//     Looks like we don't have to worry about (JEGA) order.  Need to
+//     determine if they have to be two-sided for JEGA.
+
     // now do linear (2-sided) inequality constraints  The information we need
     // for these is in linear_ineq_constraint_lower_bounds and
     // linear_ineq_constraint_upper_bounds.
@@ -1531,6 +1565,10 @@ JEGAOptimizer::LoadTheConstraints(
         = m.linear_ineq_constraint_coeffs();
 
     JEGA::DoubleVector lin_ineq_coeffs_row(lin_ineq_coeffs.numCols());
+
+//PDH: RealMatrix -> set of std::vector
+//     Just need the individual rows.  Check copy_row_vector to see if
+//     transpose is also needed.
 
     for(size_t i=0; i<numLinearIneqConstraints; ++i) {
         copy_row_vector(lin_ineq_coeffs, i, lin_ineq_coeffs_row);
@@ -1550,6 +1588,10 @@ JEGAOptimizer::LoadTheConstraints(
     const RealMatrix& lin_eq_coeffs = m.linear_eq_constraint_coeffs();
 
     JEGA::DoubleVector lin_eq_coeffs_row(lin_eq_coeffs.numCols());
+
+//PDH: RealMatrix -> set of std::vector
+//     Just need the individual rows.  Check copy_row_vector to see if
+//     transpose is also needed.
 
     for(size_t i=0; i<numLinearEqConstraints; ++i) {
         copy_row_vector(lin_eq_coeffs, i, lin_eq_coeffs_row);
@@ -1935,6 +1977,10 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     const DesignTarget& target = from.GetDesignTarget();
     const DesignVariableInfoVector& dvis = target.GetDesignVariableInfos();
 
+//PDH: I think there's something that can be done here with regard to
+//     mapping discrete variables, but I don't know what the JEGA data
+//     structures are at the moment.
+
     // We will be marching through the dvis and need to keep track of were we
     // are from loop to loop.
     size_t i, dvi_cntr = 0;
@@ -1992,6 +2038,9 @@ JEGAOptimizer::Evaluator::RecordResponses(
 
     // prepare to store the location in the responses vector.
     RealVector::ordinalType loc = 0;
+
+//PDH: I think this is going from Dakota responses to JEGA responses,
+//     e.g., after a function evaluation.
 
     // find out how many objective and constraint functions there are.
     const size_t nof = target.GetNOF();

@@ -24,15 +24,15 @@ method
 
 variables
   continuous_design = 2
-    descriptors'H' 'D'
+    descriptors   'H' 'D'
     initial_point 4.5 4.5
     lower_bounds  0.0 0.0
 
 interface
-  fork
-    analysis_driver = 'container'               #s0
+  analysis_drivers = 'container'               #s0
 # Lack of extension on script wrapper to allow Unix and Windows testing
-#	  analysis_driver = 'dakota_container-driver'	#s1
+#	 analysis_driver = 'dakota_container-driver'	#s1
+    fork
     parameters_file = 'container.in'
     results_file    = 'container.out'
     file_tag
@@ -43,5 +43,5 @@ responses
   numerical_gradients
     method_source dakota
     interval_type central
-    fd_gradient_step_size = 0.001
+    fd_step_size = 0.001
   no_hessians

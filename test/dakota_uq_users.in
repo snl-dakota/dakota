@@ -8,28 +8,28 @@ environment
   tabular_data
     tabular_data_file = 'textbook_uq_sampling.dat'    #s0
 #    tabular_data_file = 'textbook_uq_surrogate.dat'	#s4
-  method_pointer = 'UQ'
+  top_method_pointer = 'UQ'
 
 method
   id_method = 'UQ'
-#  model_pointer = 'SURR'		#s4
   sampling
     sample_type lhs         #s0,#s1,#s4
 #    sample_type random			#s2,#s3
     samples = 10			      #s0,#s2,#s3
 #    samples = 5			      #s1
 #    samples = 1000			    #s4
-    seed = 98765 rng rnum2
+    seed = 98765 
     response_levels = 0.1 0.2 0.6
                       0.1 0.2 0.6
                       0.1 0.2 0.6
     distribution cumulative
+#  model_pointer = 'SURR'		#s4
 
 #model                              #s4
 #  id_model = 'SURR'                #s4
 #  surrogate global			 	          #s4
 #    dace_method_pointer = 'DACE'		#s4
-#    reuse_samples all			 	      #s4
+#    reuse_points all			 	        #s4
 ##    polynomial quadratic          #s4
 ##    neural_network                #s4
 ##    gaussian_process surfpack   	#s4
@@ -37,9 +37,9 @@ method
           
 #method                                   #s4
 #  id_method = 'DACE'                     #s4
-#  model_pointer = 'DACE_M'		 	          #s4
 #  sampling sample_type lhs		 	          #s4
-#    samples = 121 seed = 5034 rng rnum2	#s4
+#  model_pointer = 'DACE_M'		 	          #s4
+#    samples = 121 seed = 5034 	#s4
 
 #model						                 #s4
 #  id_model = 'DACE_M'				     #s4
@@ -54,8 +54,9 @@ variables
 
 interface
   id_interface = 'I1'
-  fork asynch evaluation_concurrency = 5
-    analysis_driver = 'text_book'
+  analysis_drivers = 'text_book'
+    fork 
+  asynchronous evaluation_concurrency = 5
 
 responses
   response_functions = 3

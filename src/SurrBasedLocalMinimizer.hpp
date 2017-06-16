@@ -21,8 +21,6 @@
 
 namespace Dakota {
 
-class SurrBasedLevelData;
-
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -74,10 +72,14 @@ protected:
   /// build the approximation over the current trust region
   virtual void build() = 0;
   /// solve the approximate subproblem
-  virtual void minimize() = 0;
+  virtual void minimize();
   /// verify the approximate iterate and update the trust region for
   /// the next approximate optimization cycle
   virtual void verify() = 0;
+
+  /// return the convergence code for the truth level of the trust
+  /// region hierarchy
+  virtual unsigned short converged() = 0;
 
   //
   //- Heading: Member functions
@@ -90,22 +92,33 @@ protected:
   /// initialize lagrangeMult and augLagrangeMult
   void initialize_multipliers();
 
+  /// reset all penalty parameters to their initial values
+  void reset_penalties();
+  /// reset Lagrange multipliers to initial values for cases where
+  /// they are accumulated instead of computed directly
+  void reset_multipliers();
+
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region_data(SurrBasedLevelData& tr_data,
 				const RealVector& parent_l_bnds,
 				const RealVector& parent_u_bnds);
+
+  /// update variables and bounds within approxSubProbModel
+  void update_approx_sub_problem(SurrBasedLevelData& tr_data);
 
   /// compute trust region ratio (for SBLM iterate acceptance and trust
   /// region resizing) and check for soft convergence (diminishing returns)
   void compute_trust_region_ratio(SurrBasedLevelData& tr_data,
 				  bool check_interior = false);
 
-  /// check for hard convergence (norm of projected gradient of
-  /// merit function near zero)
-  void hard_convergence_check(const Response& response_truth,
-			      const RealVector& c_vars,
+  /// check for hard convergence (norm of projected gradient of merit
+  /// function < tolerance)
+  void hard_convergence_check(SurrBasedLevelData& tr_data,
 			      const RealVector& lower_bnds,
 			      const RealVector& upper_bnds);
+
+  /// print out the state corresponding to the code returned by converged()
+  void print_convergence_code(std::ostream& s, unsigned short code);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
@@ -124,6 +137,11 @@ protected:
 
   /// locate an approximate response with the data_pairs cache
   bool find_approx_response(const Variables& search_vars,Response& search_resp);
+  /// locate a truth response with the data_pairs cache
+  bool find_truth_response(const Variables& search_vars, Response& search_resp);
+  /// locate a response with the data_pairs cache
+  bool find_response(const Variables& search_vars, Response& search_resp,
+		     const String& search_id, short set_request);
 
   /// relax constraints by updating bounds when current iterate is infeasible
   void relax_constraints(SurrBasedLevelData& tr_data);
@@ -164,6 +182,9 @@ protected:
   /// points: NO_RELAX or HOMOTOPY
   short trConstraintRelax;
 
+  /// counter for number of minimization cycles that have accumulated prior
+  /// to convergence at the minimizeIndex level (used for ramping penalties)
+  int minimizeCycles;
   /// iteration offset used to update the scaling of the penalty parameter
   /// for adaptive_penalty merit functions
   int penaltyIterOffset;
@@ -182,13 +203,8 @@ protected:
   /// trust region expansion factor
   Real gammaExpand;
 
-  /// code indicating satisfaction of hard or soft convergence conditions
-  short convergenceFlag;
-  /// number of consecutive candidate point rejections.  If the
-  /// count reaches softConvLimit, stop SBLM.
-  unsigned short softConvCount;
-  /// the limit on consecutive candidate point rejections.  If
-  /// exceeded by softConvCount, stop SBLM.
+  /// convergence control limiting the number of consecutive iterations that
+  /// fail to achieve sufficient decrease.  If exceeded by softConvCount, stop.
   unsigned short softConvLimit;
 
   /// derivative order of truth data used within the SBLM process
@@ -225,19 +241,44 @@ protected:
 };
 
 
+inline bool SurrBasedLocalMinimizer::
+find_approx_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.surrogate_model().interface_id(),
+		       approxSetRequest);
+}
+
+
+inline bool SurrBasedLocalMinimizer::
+find_truth_response(const Variables& search_vars, Response& search_resp)
+{
+  return find_response(search_vars, search_resp,
+		       iteratedModel.truth_model().interface_id(),
+		       truthSetRequest);
+}
+
+
+inline void SurrBasedLocalMinimizer::reset_penalties()
+{
+  penaltyIterOffset = -200; penaltyParameter = 5.;
+
+  eta = 1.; alphaEta = 0.1; betaEta = 0.9;
+  etaSequence = eta * std::pow(2.*penaltyParameter, -alphaEta);
+}
+
+
+inline void SurrBasedLocalMinimizer::reset_multipliers()
+{
+  //lagrangeMult  = 0.; // not necessary since redefined each time
+  augLagrangeMult = 0.; // necessary since += used
+}
+
+
 inline void SurrBasedLocalMinimizer::reset()
 {
-  convergenceFlag = softConvCount = sbIterNum = 0;
-
-  penaltyIterOffset = -200; penaltyParameter  = 5.;
-
-  eta               = 1.;
-  alphaEta          = 0.1;
-  betaEta           = 0.9;
-  etaSequence       = eta*std::pow(2.*penaltyParameter, -alphaEta);
-
-  //lagrangeMult    = 0.; // not necessary since redefined each time
-  augLagrangeMult   = 0.; // necessary since += used
+  globalIterCount = minimizeCycles = 0;
+  reset_penalties(); reset_multipliers();
 }
 
 } // namespace Dakota

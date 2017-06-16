@@ -19,6 +19,16 @@ truth model, called the "training data".
 <ul>
   <li> Data fits:
   
+    <em>Known Issue: When using discrete variables, there have been
+    sometimes significant differences in surrogate behavior observed
+    across computing platforms in some cases.  The cause has not yet
+    been fully diagnosed and is currently under investigation.  In
+    addition, guidance on appropriate construction and use of
+    surrogates with discrete variables is under development.  In the
+    meantime, users should therefore be aware that there is a risk of
+    inaccurate results when using surrogates with discrete
+    variables.</em>
+
     Data fitting methods involve construction of an
     approximation or surrogate model using data (response values,
     gradients, and Hessians) generated from the original truth model.

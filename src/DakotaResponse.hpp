@@ -588,7 +588,7 @@ inline void Response::field_values(const RealVector& field_vals, size_t i)
     size_t j, cntr = sharedRespData.num_scalar_responses();
     for (j=0; j<i; j++)
       cntr += field_len[j];
-    int len_i = field_len[i];
+    size_t len_i = field_len[i];
     for (j=0; j<len_i; ++j, ++cntr)
       functionValues[cntr] = field_vals[j];
   }
@@ -864,6 +864,7 @@ update_partial(size_t start_index_target, size_t num_items,
 inline bool Response::is_null() const
 { return (responseRep == NULL); }
 
+
 inline RealMatrix Response::field_gradients_view(size_t i) const
 {
   if (responseRep)
@@ -878,6 +879,7 @@ inline RealMatrix Response::field_gradients_view(size_t i) const
 		      0, cntr);
   }
 }
+
 
 inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
 {
@@ -896,6 +898,7 @@ inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
     return fn_hessians_view;
   }
 }
+
 
 /// global comparison function for Response
 inline bool responses_id_compare(const Response& resp, const void* id)

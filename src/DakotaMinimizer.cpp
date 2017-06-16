@@ -49,7 +49,7 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-		      !probDescDB.get_string("responses.scalar_data_filename").empty()),
+    !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(probDescDB.get_bool("method.scaling"))
@@ -257,14 +257,17 @@ void Minimizer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator()
+    // are not called through IteratorScheduler::run_iterator().  Within a
+    // recursion, it will correspond to the first initialize_run() with an
+    // uninitialized mapping, such as the outer-iterator on the first pass
+    // of a recursion.  On subsequent passes, it may correspond to the inner
+    // iterator.  The Iterator scope should not matter for the iteratedModel
+    // mapping initialize/finalize.
     if (!iteratedModel.mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
-      if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
-      }
+      if (var_size_changed)
+        /*bool reinit_comms =*/ resize(); // ignore return value
     }
 
     // Do not reset the evaluation reference for sub-iterators
@@ -319,6 +322,26 @@ void Minimizer::post_run(std::ostream& s)
   }
 
   resultsDB.write_databases();
+}
+
+
+void Minimizer::finalize_run()
+{
+  // Restore previous object instance in case of recursion.
+  minimizerInstance = prevMinInstance;
+
+  // Finalize an initialized mapping.  This will correspond to the first
+  // finalize_run() with an uninitialized mapping, such as the inner-iterator
+  // in a recursion.
+  if (iteratedModel.mapping_initialized()) {
+    // paired to matching call to Model.initialize_mapping() in
+    // initialize_run() above
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed)
+      /*bool reinit_comms =*/ resize(); // ignore return value
+  }
+
+  Iterator::finalize_run(); // included for completeness
 }
 
 

@@ -10,7 +10,17 @@ Taylor series may be either first-order or second-order, which is
 automatically determined from the gradient and Hessian specifications
 in the responses specification (see \ref responses for info on
 how to specify gradients and Hessians)
-for the truth model.
+for the truth model
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::

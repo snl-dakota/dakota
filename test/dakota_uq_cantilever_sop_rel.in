@@ -16,35 +16,35 @@
 
 environment
 #	graphics
-    method_pointer = 'EPISTEMIC'
+    top_method_pointer = 'EPISTEMIC'
 
 #################################
 # begin EPISTEMIC specification #
 #################################
 method
   id_method = 'EPISTEMIC'
-  model_pointer = 'EPIST_M'
   sampling
     samples = 50 seed = 12347
 #	  response_levels = 9.52 3.0 3.0 #s1
+  model_pointer = 'EPIST_M'
 
 model
   id_model = 'EPIST_M'
   nested
-    variables_pointer  = 'EPIST_V'
     sub_method_pointer = 'ALEATORY'
-    responses_pointer  = 'EPIST_R'
     primary_variable_mapping   = 'X'    'Y'
     secondary_variable_mapping = 'mean' 'mean'
     primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
                                  0. 0. 0. 0. 1. 0. 0. 0.
                                  0. 0. 0. 0. 0. 0. 0. 1.
+  variables_pointer  = 'EPIST_V'
+  responses_pointer  = 'EPIST_R'
 
 variables
   id_variables = 'EPIST_V'
   continuous_interval_uncertain = 2       #s0,#p0
     num_intervals = 1 1                   #s0,#p0
-    interval_probs =      1.0       1.0	  #s0,#p0
+    interval_probabilities =      1.0       1.0	  #s0,#p0
     lower_bounds =      400.0     800.0	  #s0,#p0
     upper_bounds =      600.0    1200.0	  #s0,#p0
     descriptors      'X_mean'  'Y_mean'   #s0,#p0
@@ -61,7 +61,7 @@ responses
 #       which is a combination of nested & interface responses.
   id_responses = 'EPIST_R'
   response_functions = 3
-  response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
+  descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
   no_gradients
   no_hessians
 
@@ -70,20 +70,20 @@ responses
 ################################
 method
   id_method = 'ALEATORY'
-  model_pointer = 'ALEAT_M'
   local_reliability
     mpp_search no_approx
-    num_response_levels = 0 1 1
     response_levels = 0.0 0.0
+      num_response_levels = 0 1 1
     compute reliabilities
-    complementary distribution
+    distribution complementary
+    model_pointer = 'ALEAT_M'
 
 model
   id_model = 'ALEAT_M'
   single
-    variables_pointer = 'ALEAT_V'
     interface_pointer = 'ALEAT_I'
-    responses_pointer = 'ALEAT_R'
+  variables_pointer = 'ALEAT_V'
+  responses_pointer = 'ALEAT_R'
 
 variables
   id_variables = 'ALEAT_V'
@@ -97,14 +97,14 @@ variables
 
 interface
   id_interface = 'ALEAT_I'
-  direct
-    analysis_driver = 'cantilever'
-    deactivate evaluation_cache restart_file
+  analysis_drivers = 'cantilever'
+    direct
+  deactivate evaluation_cache restart_file
 
 responses
   id_responses = 'ALEAT_R'
   response_functions = 3
-  response_descriptors = 'weight' 'stress' 'displ'
+  descriptors = 'weight' 'stress' 'displ'
   analytic_gradients					#s0,#s1
 #  numerical_gradients					#p0
 #    method_source dakota				#p0

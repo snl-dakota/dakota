@@ -4,28 +4,28 @@
 
 environment,
 #	graphics
-	  method_pointer = 'OPTIM'
+  top_method_pointer = 'OPTIM'
 
 ###########################
 # begin opt specification #
 ###########################
 method,
 	id_method = 'OPTIM'
-	model_pointer = 'OPTIM_M'
 	npsol_sqp
 	  convergence_tolerance = 1.e-6
-	  output verbose
+ 	  model_pointer = 'OPTIM_M'
+  output verbose
 
 model,
 	id_model = 'OPTIM_M'
 	nested
-	  variables_pointer  = 'OPTIM_V'
 	  sub_method_pointer = 'UQ'
-	  responses_pointer  = 'OPTIM_R'
 # use projection of analytic PCE moments: constrain beta
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
 	  secondary_response_mapping = 0. 0. 0. 0. 1. 0. 0. 0.
 				       0. 0. 0. 0. 0. 0. 0. 1.
+  variables_pointer  = 'OPTIM_V'
+  responses_pointer  = 'OPTIM_R'
 
 variables,
 	id_variables = 'OPTIM_V'
@@ -45,8 +45,8 @@ responses,
 	id_responses = 'OPTIM_R'
 	objective_functions = 1
 	nonlinear_inequality_constraints = 2
-	nonlinear_inequality_lower_bounds = 3. 3.
-	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50
+	  lower_bounds = 3. 3.
+	  upper_bounds = 1.e+50 1.e+50
 	analytic_gradients			#s0,#s1,#s4,#s5,#s8,#s9,#s12
 #	numerical_gradients			#s2,#s3,#s6,#s7,#s10,#s11,#s13
 #	  method_source dakota			#s2,#s3,#s6,#s7,#s10,#s11,#s13
@@ -59,28 +59,28 @@ responses,
 ##########################
 method,
 	id_method = 'UQ'
-	model_pointer = 'UQ_M'
 	polynomial_chaos
- 	  expansion_order = 2					#s0,#s2,#s4,#s6
-# 	  expansion_order = 4					#s1,#s3,#s5,#s7
-	  collocation_ratio = 2 seed = 12347 rng rnum2		#s0,#s1,#s2,#s3
-#	  collocation_ratio = 0.5 seed = 12347 rng rnum2	#s4,#s5,#s6,#s7
-#	  collocation_points = 70 seed = 12347 rng rnum2	#s12
-#	  collocation_points = 30 seed = 12347 rng rnum2	#s13
-#	  orthogonal_least_interpolation       	   		#s12,#s13
-#	  sparse_grid_level = 2 non_nested			#s8,#s10
-#	  sparse_grid_level = 4 non_nested			#s9,#s11
-	  num_response_levels = 0 1 1
+ 	  expansion_order_sequence = 2					  #s0,#s2,#s4,#s6
+# 	expansion_order_sequence = 4				    #s1,#s3,#s5,#s7
+	    collocation_ratio = 2 seed = 12347 		#s0,#s1,#s2,#s3
+#	    collocation_ratio = 0.5 seed = 12347 	#s4,#s5,#s6,#s7
+#	    collocation_points = 70 seed = 12347 	#s12
+#	    collocation_points = 30 seed = 12347 	#s13
+#	  orthogonal_least_interpolation       	  #s12,#s13
+#	  sparse_grid_level = 2 non_nested			  #s8,#s10
+#	  sparse_grid_level = 4 non_nested			  #s9,#s11
 	  response_levels = 0.0 0.0
-	  compute reliabilities
-	  complementary distribution
+	    num_response_levels = 0 1 1
+	    compute reliabilities
+	  distribution complementary
+	  model_pointer = 'UQ_M'
 
 model,
 	id_model = 'UQ_M'
 	single
-	  variables_pointer = 'UQ_V'
 	  interface_pointer = 'UQ_I'
-	  responses_pointer = 'UQ_R'
+  variables_pointer = 'UQ_V'
+  responses_pointer = 'UQ_R'
 
 variables,
 	id_variables = 'UQ_V'
@@ -93,9 +93,9 @@ variables,
 
 interface,
 	id_interface = 'UQ_I'
-	direct
-	  analysis_driver = 'mod_cantilever'
-#	  deactivate evaluation_cache restart_file
+  analysis_drivers = 'mod_cantilever'
+  	direct
+#	deactivate evaluation_cache restart_file
 
 responses,
 	id_responses = 'UQ_R'

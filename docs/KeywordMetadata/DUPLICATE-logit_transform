@@ -1,0 +1,30 @@
+Blurb::Utilize the logit transformation to reduce sample rejection for bounded domains
+
+Description::The logit transformation performs an internal variable transformation from bounded domains to unbounded domains in order to reduce sample rejection due to an out-of-bounds condition.
+
+<b> Default Behavior </b>
+
+This option is experimental at present, and is therefore defaulted off.
+
+<b> Usage Tips </b>
+
+This option can be helpful when regions of high posterior density exist
+in the corners of a multi-dimensional bounded domain.  In these cases,
+it may be difficult to generate feasible samples from the proposal density,
+such that transformation to unbounded domains may greatly reduce sample
+rejection rates.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+        bayes_calibration queso
+          samples = 2000 seed = 348
+          dram
+          logit_transform
+\endverbatim
+
+Theory::
+Faq::
+See_Also::

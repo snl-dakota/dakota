@@ -56,7 +56,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
   asmInstance = this;
-  modelType = "subspace";
+  modelType = "active_subspace";
 
   // Set seed of bootstrap sampler:
   BootstrapSamplerBase<RealMatrix>::set_seed(randomSeed);
@@ -101,7 +101,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   buildSurrogate(false), refinementSamples(0),
   subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
-  modelType = "subspace";
+  modelType = "active_subspace";
 
   outputLevel = output_level;
 
@@ -1106,6 +1106,8 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
     may want ide of build/update like DataFitSurrModel, eventually. */
 bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 {
+  RecastModel::initialize_mapping(pl_iter);
+
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\nSubspace Model: Initializing active subspace." << std::endl;
 
@@ -1164,6 +1166,10 @@ bool ActiveSubspaceModel::initialize_mapping(ParLevLIter pl_iter)
 bool ActiveSubspaceModel::finalize_mapping()
 {
   // TODO: return to full space
+  //subspaceInitialized = false;
+
+  RecastModel::finalize_mapping();
+
   return false; // This will become true when TODO is implemented.
 }
 

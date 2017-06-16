@@ -71,7 +71,7 @@ enum { DEFAULT_METHOD=0,
        ASYNCH_PATTERN_SEARCH=(MINIMIZER_BIT | OPTIMIZER_BIT), OPTPP_PDS,
        COLINY_BETA, COLINY_COBYLA,         COLINY_DIRECT, COLINY_MULTI_START,
        COLINY_EA,   COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS,
-       MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, NOWPAC_OPT, SNOWPAC_OPT,
+       MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, MIT_NOWPAC, MIT_SNOWPAC,
        GENIE_OPT_DARTS, GENIE_DIRECT,
        // Gradient-based Optimizers / Minimizers:
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
@@ -128,6 +128,8 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 // define special values for distributionType
 enum { CUMULATIVE, COMPLEMENTARY };
+// define special values for finalMomentsType
+enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
@@ -369,7 +371,7 @@ public:
   /// size per surrogate model (notes: no trust region for the truth
   /// model; sizes are relative values, e.g., 0.1 = 10% of range of
   /// global bounds for each variable
-  RealVector surrBasedLocalTRInitSize;
+  RealVector trustRegionInitSize;
   /// minimum trust region size in the surrogate-based local method
   /// (from the \c minimum_size specification in \ref MethodSBL), if
   /// the trust region size falls below this threshold the SBL
@@ -377,25 +379,25 @@ public:
   /// the min trust region size is set to 1.0e-3 in attempt to avoid
   /// ill-conditioned matrixes that arise in kriging over small trust
   /// regions)
-  Real surrBasedLocalTRMinSize;
+  Real trustRegionMinSize;
   /// trust region minimum improvement level (ratio of actual to predicted
   /// decrease in objective fcn) in the surrogate-based local method
   /// (from the \c contract_threshold specification in \ref MethodSBL),
   /// the trust region shrinks or is rejected if the ratio is below
   /// this value ("eta_1" in the Conn-Gould-Toint trust region book)
-  Real surrBasedLocalTRContractTrigger;
+  Real trustRegionContractTrigger;
   /// trust region sufficient improvement level (ratio of actual to
   /// predicted decrease in objective fn) in the surrogate-based local
   /// method (from the \c expand_threshold specification in \ref
   /// MethodSBL), the trust region expands if the ratio is above this
   /// value ("eta_2" in the Conn-Gould-Toint trust region book)
-  Real surrBasedLocalTRExpandTrigger;
+  Real trustRegionExpandTrigger;
   /// trust region contraction factor in the surrogate-based local method
   /// (from the \c contraction_factor specification in \ref MethodSBL)
-  Real surrBasedLocalTRContract;
+  Real trustRegionContract;
   /// trust region expansion factor in the surrogate-based local method
   /// (from the \c expansion_factor specification in \ref MethodSBL)
-  Real surrBasedLocalTRExpand;
+  Real trustRegionExpand;
   /// SBL approximate subproblem objective: ORIGINAL_PRIMARY, SINGLE_OBJECTIVE,
   /// LAGRANGIAN_OBJECTIVE, or AUGMENTED_LAGRANGIAN_OBJECTIVE
   short surrBasedLocalSubProbObj;
@@ -906,6 +908,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c final_moments specification in \ref MethodNonD
+  short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
   /// in \ref MethodNonD
   short distributionType;
@@ -942,6 +946,8 @@ public:
   bool adaptPosteriorRefine;
   /// flag indicating user activation of logit transform option within QUESO
   bool logitTransform;
+  /// whether to apply GPMSA-internal normalization
+  bool gpmsaNormalize;
   /// flag indicating the calculation of KL divergence between prior
   /// and posterior in Bayesian methods 
   bool posteriorStatsKL;
@@ -961,6 +967,8 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
+  /// file containing advanced QUESO option overrides
+  String quesoOptionsFilename;
   /// the \c fitness metric type specification in \ref
   /// MethodNonDAdaptive
   String fitnessMetricType;
@@ -980,6 +988,37 @@ public:
   int burnInSamples;
   /// period or skip in post-processing the acceptance chain
   int subSamplingPeriod;
+  /// flag to calculate model discrepancy
+  bool calModelDiscrepancy;
+  /// number of prediction configurations at which to calculate model 
+  /// discrepancy
+  size_t numPredConfigs;
+  /// list of prediction configurations at which to calculate model discrepancy
+  RealVector predictionConfigList;
+  /// whether to import prediction configurations at which to calculate model
+  /// discrepancy
+  String importPredConfigs;
+  /// tabular format for prediction configurations import file
+  unsigned short importPredConfigFormat;
+  /// specify type of model discrepancy formulation
+  String discrepancyType;
+  /// correction order for either gaussian process or polynomial model
+  /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
+  short approxCorrectionOrder;
+  /// specify the name of file to which corrected model (model+discrepancy)
+  /// calculations are output
+  String exportCorrModelFile;
+  /// tabular format for corrected model (model+discrepancy) export file
+  unsigned short exportCorrModelFormat;
+  /// specify the name of file to which corrected model variance
+  /// calculations are output
+  String exportCorrVarFile;
+  /// tabular format for corrected model variance export file
+  unsigned short exportCorrVarFormat;
+  /// specify the name of file to which discrepancy calculations are output
+  String exportDiscrepFile;
+  /// tabular format for model discrepancy export file
+  unsigned short exportDiscrepFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
   /// whether to import candidate design points for adaptive Bayesian experimtal
@@ -989,11 +1028,9 @@ public:
   unsigned short importCandFormat;
   /// number of candidate designs for adaptive Bayesian experimental design
   size_t numCandidates;
-  /// maximum number of hi-fidelity model runs to be used for adaptive Bayesian 
-  //experimental design
-  size_t maxHifiEvals;
-  
-    
+  /// maximum number of highfidelity model runs to be used for adaptive Bayesian 
+  /// experimental design
+  int maxHifiEvals;
 
   // DREAM sub-specification
 

@@ -91,6 +91,15 @@ further categorized as local, multipoint, and global approximation
 techniques, based on the number of points used in generating the data
 fit.  Local methods involve response data from a single point in
 parameter space.  Available local techniques currently include:
+  
+\emph{Known Issue: When using discrete variables, there have been
+  sometimes significant differences in data fit surrogate behavior
+  observed across computing platforms in some cases.  The cause has
+  not yet been fully diagnosed and is currently under investigation.
+  In addition, guidance on appropriate construction and use of
+  surrogates with discrete variables is under development.  In the
+  meantime, users should therefore be aware that there is a risk of
+  inaccurate results when using surrogates with discrete variables.}
 
 \textbf{Taylor Series Expansion}: This is a local first-order or
 second-order expansion centered at a single point in the parameter space.
@@ -507,9 +516,16 @@ and for the cubic polynomial:
 \end{equation}
 
 There must be at least $n_{c}$ data samples in order to form a fully
-determined linear system and solve for the polynomial coefficients. In
-Dakota, a least-squares approach involving a singular value
-decomposition numerical method is applied to solve the linear system.
+determined linear system and solve for the polynomial coefficients. For
+discrete design variables, a further requirement for a well-posed
+problem is for the number of distinct values that each discrete
+variable can take must be greater than the order of polynomial model
+(by at least one level). For the special case involving anisotropy in
+which the degree can be specified differently per dimension, the number
+of values for each discrete variable needs to be greater than the 
+corresponding order along the respective dimension. In Dakota, a
+least-squares approach involving a singular value decomposition
+numerical method is applied to solve the linear system.
 
 The utility of the polynomial models stems from two sources: (1) over
 a small portion of the parameter space, a low-order polynomial model
@@ -535,7 +551,7 @@ as \texttt{gaussian\_process dakota} and
 \texttt{gaussian\_process surfpack}.  In Dakota releases prior to 5.2, the 
 \texttt{dakota} version was referred to as the \texttt{gaussian\_process} 
 model while the \texttt{surfpack} version was referred to as the 
-\texttt{kriging} model.  As of DAKTOA 5.2, specifying only 
+\texttt{kriging} model.  As of Dakota 5.2, specifying only
 \texttt{gaussian\_process} or \texttt{kriging} will default to the
 \texttt{surfpack} version in all contexts except Bayesian calibration.  
 For now, both versions are supported but the \texttt{dakota} version is 

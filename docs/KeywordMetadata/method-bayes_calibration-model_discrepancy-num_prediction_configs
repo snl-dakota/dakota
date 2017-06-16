@@ -1,0 +1,17 @@
+Blurb::
+Specify number of prediction locations for model discrepancy
+
+Description::
+Following the calculation of the model discrepancy functions, \f$\delta_i\f$, 
+and the corrected model \f$M_i + \delta_i\f$ may be calculated at new or 
+"prediction" configurations. Using the \c num_prediction_configurations 
+command, the user may specify the number of prediction configurations they 
+wish to be computed. The new configuration locations will be 
+spread uniformly in the configuration variable domain specified in the
+\c variables block of the input file.
+
+<b> Usage Tips </b>
+
+If none of \c num_prediction_configs, \c prediction_configs, or
+\c import_prediction_configs is specified, the number of prediction 
+configurations is set to 10. 

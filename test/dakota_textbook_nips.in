@@ -28,11 +28,11 @@ variables
 #  linear_inequality_upper_bounds = 1.05	#s5,#s6
 
 interface
-  fork
-    analysis_driver = 'text_book'
-    parameters_file = 'text_book.in'
-    results_file    = 'text_book.out'
-    file_tag #file_save
+  analysis_drivers = 'text_book'
+    fork
+      parameters_file = 'text_book.in'
+      results_file    = 'text_book.out'
+      file_tag #file_save
 
 responses
   objective_functions = 1               #s0,#s1,#s2,#s3,#s4

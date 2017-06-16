@@ -272,7 +272,7 @@ Iterator::Iterator(ProblemDescDB& problem_db):
 
   iteratorRep = get_iterator(problem_db);
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -353,7 +353,7 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(problem_db, model);
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -497,7 +497,7 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NomadOptimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_NOWPAC
-  case NOWPAC_OPT: case SNOWPAC_OPT:
+  case MIT_NOWPAC: case MIT_SNOWPAC:
     return new NOWPACOptimizer(problem_db, model); break;
 #endif
 #ifdef HAVE_NPSOL
@@ -560,7 +560,7 @@ Iterator::Iterator(const String& method_string, Model& model):
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(method_string, model);
   if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -757,7 +757,7 @@ void Iterator::assign_rep(Iterator* iterator_rep, bool ref_count_incr)
       Cerr << "Error: duplicated iterator_rep pointer assignment without "
 	   << "reference count increment in Iterator::assign_rep()."
 	   << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
   }
   else { // normal case: old != new
@@ -841,8 +841,8 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case SOGA:                    return String("soga"); break;
   case DL_SOLVER:               return String("dl_solver"); break;
   case MESH_ADAPTIVE_SEARCH:    return String("mesh_adaptive_search"); break;
-  case NOWPAC_OPT:              return String("nowpac"); break;
-  case SNOWPAC_OPT:             return String("snowpac"); break;
+  case MIT_NOWPAC:              return String("nowpac"); break;
+  case MIT_SNOWPAC:             return String("snowpac"); break;
   case NPSOL_SQP:               return String("npsol_sqp"); break;
   case NLSSOL_SQP:              return String("nlssol_sqp"); break;
   case NLPQL_SQP:               return String("nlpql_sqp"); break;
@@ -864,7 +864,7 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   default:
     Cerr << "Invalid method conversion: case " << method_name
 	 << " not available." << std::endl;
-    abort_handler(-1); return String(); break;
+    abort_handler(METHOD_ERROR); return String(); break;
   }
 }
 
@@ -933,8 +933,8 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "soga")             return SOGA;
   else if (method_name == "dl_solver")        return DL_SOLVER;
   else if (method_name == "mesh_adaptive_search")  return MESH_ADAPTIVE_SEARCH;
-  else if (method_name == "nowpac")           return NOWPAC_OPT;
-  else if (method_name == "snowpac")          return SNOWPAC_OPT;
+  else if (method_name == "nowpac")           return MIT_NOWPAC;
+  else if (method_name == "snowpac")          return MIT_SNOWPAC;
   else if (method_name == "npsol_sqp")        return NPSOL_SQP;
   else if (method_name == "nlssol_sqp")       return NLSSOL_SQP;
   else if (method_name == "nlpql_sqp")        return NLPQL_SQP;
@@ -958,7 +958,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else {
     Cerr << "Invalid method conversion: " << method_name << " not available."
 	 << std::endl;
-    abort_handler(-1); return 0;
+    abort_handler(METHOD_ERROR); return 0;
   }
 }
 
@@ -991,7 +991,7 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_name) const
   default:
     Cerr << "Invalid submethod conversion: case " << submethod_name
 	 << " not available." << std::endl;
-    abort_handler(-1); return String(); break;
+    abort_handler(METHOD_ERROR); return String(); break;
   }
 }
 
@@ -1015,7 +1015,7 @@ void Iterator::update_from_model(const Model& model)
   bestResponseArray.push_back(best_resp);
 
   //if (err_flag)
-  //  abort_handler(-1);
+  //  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1109,7 +1109,7 @@ void Iterator::core_run()
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: Letter lacking redefinition of virtual core_run() function."
 	 << "\nNo default iteration defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1231,7 +1231,7 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
     if (map_iter == methodPCIterMap.end()) { // this config does not exist
       Cerr << "Error: failure in parallel configuration lookup in "
            << "Iterator::set_communicators() for pl_index = " << pl_index << "." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
     else
       methodPCIter = map_iter->second;
@@ -1301,7 +1301,7 @@ void Iterator::initialize_iterator(int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initialize_iterator virtual "
 	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1313,7 +1313,7 @@ void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_parameters_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1326,7 +1326,7 @@ unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1339,7 +1339,7 @@ unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_parameters_initialize"
 	 << " virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1351,7 +1351,7 @@ void Iterator::pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine pack_results_buffer virtual "
 	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1364,7 +1364,7 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine unpack_results_buffer "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1376,7 +1376,7 @@ void Iterator::update_local_results(int job_index)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine update_local_results "
 	 << "virtual  fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1421,6 +1421,19 @@ void Iterator::response_results_active_set(const ActiveSet& set)
 }
 
 
+const RealVector& Iterator::response_error_estimates() const
+{
+  // no default implementation if no override
+  if (!iteratorRep) {
+    Cerr << "Error: letter class does not redefine response_error_estimates "
+	 << "virtual fn.\nNo default defined at base class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  
+  return iteratorRep->response_error_estimates(); // envelope fwd to letter
+}
+
+
 bool Iterator::accepts_multiple_points() const
 {
   if (iteratorRep) // envelope fwd to letter
@@ -1446,7 +1459,7 @@ void Iterator::initial_points(const VariablesArray& pts)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points virtual fn.\n"
 	 << "No default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1456,7 +1469,7 @@ const VariablesArray& Iterator::initial_points() const
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine initial_points "
             "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->initial_points(); // envelope fwd to letter
@@ -1540,7 +1553,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   else { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine sampling_reset() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1553,7 +1566,7 @@ sampling_reference(int samples_ref)
     Cerr << "Error: letter class does not redefine sampling_reference() "
 	 << "virtual fn.\nThis iterator does not support sampling."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1566,7 +1579,7 @@ sampling_increment()
     Cerr << "Error: letter class does not redefine sampling_increment() "
 	 << "virtual fn.\nThis iterator does not support incremental sampling."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1575,7 +1588,7 @@ unsigned short Iterator::sampling_scheme() const
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine sampling_scheme() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->sampling_scheme(); // envelope fwd to letter
@@ -1588,7 +1601,7 @@ const Model& Iterator::algorithm_space_model() const
     Cerr << "Error: letter class does not redefine algorithm_space_model() "
          << "virtual fn.\nThis iterator does not support a single model "
 	 << "instance." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
   else // envelope fwd to letter
     return iteratorRep->algorithm_space_model();
@@ -1620,7 +1633,7 @@ void Iterator::method_recourse()
   else { // default definition (letter lacking redefinition of virtual fn.)
     Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
@@ -1631,7 +1644,7 @@ const VariablesArray& Iterator::all_variables()
     Cerr << "Error: letter class does not redefine all_variables() virtual fn."
          << "\n       This iterator does not support variables histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_variables(); // envelope fwd to letter
@@ -1644,7 +1657,7 @@ const RealMatrix& Iterator::all_samples()
     Cerr << "Error: letter class does not redefine all_samples() virtual fn."
          << "\n       This iterator does not support sample histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_samples(); // envelope fwd to letter
@@ -1657,7 +1670,7 @@ const IntResponseMap& Iterator::all_responses() const
     Cerr << "Error: letter class does not redefine all_responses() virtual fn."
          << "\n       This iterator does not support response histories."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   return iteratorRep->all_responses(); // envelope fwd to letter
@@ -1740,7 +1753,7 @@ void Iterator::post_input()
 	// this should be unreachable due to command-line parsing
 	Cerr << "\nError: method " << method_enum_to_string(methodName)
 	     << " does not support post-run file input." << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
     }
   }

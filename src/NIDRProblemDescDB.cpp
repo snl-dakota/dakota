@@ -316,6 +316,11 @@ struct Method_mp_utype_lit {
   unsigned short utype;
 };
 
+struct Method_mp_ord {
+  short DataMethodRep::* sp;
+  int ord;
+};
+
 struct Method_mp_type {
   short DataMethodRep::* ip;
   short type;
@@ -1105,6 +1110,12 @@ method_litz(const char *keyname, Values *val, void **g, void *v)
     botch("%s must be nonnegative",keyname);
   if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
     dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+}
+
+void NIDRProblemDescDB::
+method_order(const char *keyname, Values *val, void **g, void *v)
+{
+  (*(Meth_Info**)g)->dme->*((Method_mp_ord*)v)->sp = ((Method_mp_ord*)v)->ord;
 }
 
 void NIDRProblemDescDB::
@@ -1973,36 +1984,36 @@ method_tr_final(const char *keyname, Values *val, void **g, void *v)
   DataMethodRep &data_method = *(*(Meth_Info**)g)->dme;
 
   // sanity checks on trust region user-defined values
-  size_t i, num_init = data_method.surrBasedLocalTRInitSize.length();
+  size_t i, num_init = data_method.trustRegionInitSize.length();
   Real min_init_size = 1.;
   for (i=0; i<num_init; ++i) {
-    Real init_size_i = data_method.surrBasedLocalTRInitSize[i];
+    Real init_size_i = data_method.trustRegionInitSize[i];
     if ( init_size_i <= 0. || init_size_i > 1. )
       botch("specified initial TR size must be in (0,1]");
     if (init_size_i < min_init_size)
       min_init_size = init_size_i;
   }
-  if ( data_method.surrBasedLocalTRMinSize > min_init_size ) {
+  if ( data_method.trustRegionMinSize > min_init_size ) {
     if (num_init) botch("specified initial TR size less than minimum TR size");
     else          botch("minimum TR size must be <= 1.");
   }
   // allow 0 for min size spec (conv control becomes inactive)
-  if ( data_method.surrBasedLocalTRMinSize < 0. ||
-       data_method.surrBasedLocalTRMinSize > 1. )
+  if ( data_method.trustRegionMinSize < 0. ||
+       data_method.trustRegionMinSize > 1. )
     botch("specified minimum TR size must be in [0,1]");
-  if( data_method.surrBasedLocalTRContractTrigger <= 0. ||
-      data_method.surrBasedLocalTRContractTrigger >
-      data_method.surrBasedLocalTRExpandTrigger         ||
-      data_method.surrBasedLocalTRExpandTrigger   >  1. )
+  if( data_method.trustRegionContractTrigger <= 0. ||
+      data_method.trustRegionContractTrigger >
+      data_method.trustRegionExpandTrigger         ||
+      data_method.trustRegionExpandTrigger   >  1. )
     botch("expand/contract threshold values must satisfy\n\t"
 	  "0 < contract_threshold <= expand_threshold <= 1");
-  if ( data_method.surrBasedLocalTRContract <= 0. ||
-       data_method.surrBasedLocalTRContract >  1. )
+  if ( data_method.trustRegionContract <= 0. ||
+       data_method.trustRegionContract >  1. )
     botch("contraction_factor must be in (0,1]");
-  else if ( data_method.surrBasedLocalTRContract == 1. )
+  else if ( data_method.trustRegionContract == 1. )
     warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
 	 "to assure convergence of the surrogate_based_opt method");
-  if ( data_method.surrBasedLocalTRExpand < 1. )
+  if ( data_method.trustRegionExpand < 1. )
     botch("expansion_factor must be >= 1");
 }
 
@@ -3707,8 +3718,24 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
     for(i = k = 0; i < m; ++i) {
       nIi = (key) ? (*nI)[i] : avg_nI;
       RealRealPairRealMap& Pi = P[i];  // map from an interval to a probability
-      ub = -(lb = dbl_inf);
-      if (!num_p) default_p = 1./nIi; // default = equal probability per cell
+      lb = dbl_inf;
+      ub = -dbl_inf;
+      if (!num_p) 
+        default_p = 1./nIi; // default = equal probability per cell
+      else {
+        double total_prob=0.0; 
+        size_t s = k;
+        for(j=0; j<nIi; ++j, ++s) {  // normalize the probabilities to sum to one
+          total_prob+=(*Ip)[s];
+        }         
+        if (fabs(total_prob-1.0) > 1.E-10) {
+          s = k;
+          {for(j=0; j<nIi; ++j,++s)  // normalize the probabilities to sum to one
+            (*Ip)[s]/=total_prob;
+          }       
+          Warn("Renormalized probability assignments to sum to one for variable %d",i);
+        } 
+      }
       for(j=0; j<nIi; ++j, ++k) {
 	lbj = (*Ilb)[k];
 	ubj = (*Iub)[k];
@@ -3718,6 +3745,8 @@ Vchk_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	  Squawk("Continuous interval [%g, %g] specified more than once for variable %d", interval.first, interval.second, i);
 	if (lb > lbj) lb = lbj;
 	if (ub < ubj) ub = ubj;
+        if (lbj > ubj)
+	  Squawk("Upper bound less than lower bound: [%g, %g] for interval variable %d", lbj, ubj,i);
       }
       if (lb > ub)
 	Squawk("Inconsistent interval uncertain bounds: %g > %g", lb, ub);
@@ -6578,6 +6607,8 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
+	MP2(discrepancyType,global_kriging),
+	MP2(discrepancyType,global_polynomial),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),
@@ -6663,6 +6694,11 @@ static Method_mp_slit2
 static Method_mp_utype_lit
         MP3s(methodName,dlDetails,DL_SOLVER); // struct order: ip, sp, utype
 
+static Method_mp_ord
+	MP2s(approxCorrectionOrder,0),
+	MP2s(approxCorrectionOrder,1),
+	MP2s(approxCorrectionOrder,2);
+
 static Real
 	MP_(absConvTol),
 	MP_(centeringParam),
@@ -6703,13 +6739,13 @@ static Real
         MP_(smoothFactor),
  	MP_(solnTarget),
 	MP_(stepLenToBoundary),
-	MP_(surrBasedLocalTRContract),
-	MP_(surrBasedLocalTRContractTrigger),
-	MP_(surrBasedLocalTRExpand),
-	MP_(surrBasedLocalTRExpandTrigger),
-	MP_(surrBasedLocalTRMinSize),
 	MP_(threshDelta),
 	MP_(threshStepLength),
+	MP_(trustRegionContract),
+	MP_(trustRegionContractTrigger),
+	MP_(trustRegionExpand),
+	MP_(trustRegionExpandTrigger),
+	MP_(trustRegionMinSize),
 	MP_(vbdDropTolerance),
 	MP_(volBoxSize),
 	MP_(vns),
@@ -6725,10 +6761,11 @@ static RealVector
 	MP_(hyperPriorAlphas),
 	MP_(hyperPriorBetas),
 	MP_(listOfPoints),
+	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
         MP_(stepVector),
-	MP_(surrBasedLocalTRInitSize);
+	MP_(trustRegionInitSize);
 
 static RealVectorArray
 	MP_(genReliabilityLevels),
@@ -6761,6 +6798,9 @@ static String
         MP_(dataDistFile),
         MP_(displayFormat),
 	MP_(exportApproxPtsFile),
+	MP_(exportCorrModelFile),
+	MP_(exportCorrVarFile),
+	MP_(exportDiscrepFile),
 	MP_(exportExpansionFile),
 	MP_(exportMCMCPtsFile),
 	MP_(historyFile),
@@ -6775,6 +6815,7 @@ static String
 	MP_(importBuildPtsFile),
 	MP_(importCandPtsFile),
 	MP_(importExpansionFile),
+	MP_(importPredConfigs),
 	MP_(logFile),
 	MP_(lowFidModelPointer),
 	MP_(modelPointer),
@@ -6783,6 +6824,7 @@ static String
         MP_(posteriorSamplesImportFilename),
 	MP_(proposalCovFile),
 	MP_(pstudyFilename),
+        MP_(quesoOptionsFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
     MP_(subModelPointer),
@@ -6798,6 +6840,7 @@ static bool
 	MP_(adaptExpDesign),
 	MP_(adaptPosteriorRefine),
 	MP_(backfillFlag),
+	MP_(calModelDiscrepancy),
 	MP_(constantPenalty),
 	MP_(crossValidation),
 	MP_(crossValidNoiseOnly),
@@ -6808,6 +6851,7 @@ static bool
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
         MP_(generatePosteriorSamples),
+	MP_(gpmsaNormalize),
 	MP_(importApproxActive),
 	MP_(importBuildActive),
 	MP_(latinizeFlag),
@@ -6854,6 +6898,7 @@ static int
         MP_(iteratorServers),
 	MP_(jumpStep),
 	MP_(maxFunctionEvaluations),
+	MP_(maxHifiEvals),
 	MP_(maxIterations),
 	MP_(maxRefineIterations),
 	MP_(maxSolverIterations),
@@ -6877,15 +6922,14 @@ static int
 	MP_(verifyLevel);
 
 static size_t
-	MP_(maxHifiEvals),
-    MP_(numCandidateDesigns),
+        MP_(numCandidateDesigns),
 	MP_(numCandidates),
     MP_(numDesigns),
     MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
-	MP_(numParents);
-    
+	MP_(numParents),
+  	MP_(numPredConfigs);
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),
@@ -6905,6 +6949,9 @@ static Method_mp_type
 	MP2p(expansionBasisType,TOTAL_ORDER_BASIS),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
+	MP2s(finalMomentsType,CENTRAL_MOMENTS),
+	MP2s(finalMomentsType,NO_MOMENTS),
+	MP2s(finalMomentsType,STANDARD_MOMENTS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
@@ -6970,6 +7017,21 @@ static Method_mp_utype
         MP2s(exportApproxFormat,TABULAR_EVAL_ID),
         MP2s(exportApproxFormat,TABULAR_IFACE_ID),
         MP2s(exportApproxFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrModelFormat,TABULAR_NONE),
+        MP2s(exportCorrModelFormat,TABULAR_HEADER),
+        MP2s(exportCorrModelFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrModelFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrModelFormat,TABULAR_ANNOTATED),
+        MP2s(exportCorrVarFormat,TABULAR_NONE),
+        MP2s(exportCorrVarFormat,TABULAR_HEADER),
+        MP2s(exportCorrVarFormat,TABULAR_EVAL_ID),
+        MP2s(exportCorrVarFormat,TABULAR_IFACE_ID),
+        MP2s(exportCorrVarFormat,TABULAR_ANNOTATED),
+        MP2s(exportDiscrepFormat,TABULAR_NONE),
+        MP2s(exportDiscrepFormat,TABULAR_HEADER),
+        MP2s(exportDiscrepFormat,TABULAR_EVAL_ID),
+        MP2s(exportDiscrepFormat,TABULAR_IFACE_ID),
+        MP2s(exportDiscrepFormat,TABULAR_ANNOTATED),
         MP2s(exportSamplesFormat,TABULAR_NONE),
         MP2s(exportSamplesFormat,TABULAR_HEADER),
         MP2s(exportSamplesFormat,TABULAR_EVAL_ID),
@@ -6990,6 +7052,11 @@ static Method_mp_utype
         MP2s(importCandFormat,TABULAR_EVAL_ID),
         MP2s(importCandFormat,TABULAR_IFACE_ID),
         MP2s(importCandFormat,TABULAR_ANNOTATED),
+        MP2s(importPredConfigFormat,TABULAR_NONE),
+        MP2s(importPredConfigFormat,TABULAR_HEADER),
+        MP2s(importPredConfigFormat,TABULAR_EVAL_ID),
+        MP2s(importPredConfigFormat,TABULAR_IFACE_ID),
+        MP2s(importPredConfigFormat,TABULAR_ANNOTATED),
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
@@ -7024,6 +7091,8 @@ static Method_mp_utype
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),
+	MP2s(methodName,MIT_NOWPAC),
+	MP2s(methodName,MIT_SNOWPAC),
         MP2s(methodName,ADAPTIVE_SAMPLING),
 	MP2s(methodName,BAYES_CALIBRATION),
 	MP2s(methodName,GENIE_DIRECT),

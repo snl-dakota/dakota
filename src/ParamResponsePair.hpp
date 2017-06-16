@@ -270,7 +270,7 @@ inline void ParamResponsePair::write(std::ostream& s) const
 {
   s << "Parameters:\n" << prpVariables;
   if (!evalInterfaceIds.second.empty())
-    Cout << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
+    s << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
   s << "\nActive response data:\n"<< prpResponse << std::endl;
 }
 

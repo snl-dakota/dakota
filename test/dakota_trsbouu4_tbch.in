@@ -68,7 +68,7 @@ method,
 	id_method = 'OPTIM_DACE'
 	model_pointer = 'OPTIM_DACE_M'
 	sampling
-	  sample_type lhs seed = 12347 rng rnum2
+	  sample_type lhs seed = 12347 
 #	  fixed_seed					#s1
 #	dace lhs seed = 5
 #	  samples = 50 symbols = 50
@@ -116,7 +116,7 @@ method,
         sampling
 	  output quiet
 	  samples = 5000 sample_type lhs
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 #	  fixed_seed					#s1
 	  response_levels = 4.2e+11 1.6e+05 7.5e+05
 	  complementary distribution
@@ -161,7 +161,7 @@ method,
 	model_pointer = 'UQ_DACE_M'
         sampling
 	  sample_type lhs #samples = 50
-	  seed = 12347 rng rnum2
+	  seed = 12347 
 #	  fixed_seed					#s1
 
 model,

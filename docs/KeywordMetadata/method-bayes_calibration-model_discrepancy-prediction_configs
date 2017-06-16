@@ -1,0 +1,15 @@
+Blurb::
+List prediction locations for model discrepancy
+
+Description::
+Following the calculation of the model discrepancy functions, \f$\delta_i\f$, 
+and the corrected model \f$M_i + \delta_i\f$ may be calculated at new or 
+"prediction" configurations. Using the \c prediction_configs command, the 
+user may explicitly list the locations of the prediction configurations they 
+wish to be computed. See parent command for an example. 
+
+<b> Usage Tips </b>
+
+If none of \c num_prediction_configs, \c prediction_configs, or
+\c import_prediction_configs is specified, Dakota sets \c 
+num_prediction_configs to 10. 

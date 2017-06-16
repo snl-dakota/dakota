@@ -225,12 +225,10 @@ private:
   /// user specified import approx. active only
   bool importApproxActiveOnly;
 
-  /// local flag to signal a resizing occurred
-  bool resizedFlag;
-
-  /// local flag to signal an explicit call to resize
-  /// is necessary if resizedFlag is false
-  bool callResize;
+  // local flag to signal a resizing occurred
+  //bool resizedFlag;
+  // local flag to signal an explicit call to resize() is necessary
+  //bool callResize;
 
   /// number of samples allocated to each level of a discretization
   /// hierarchy within multilevel regression

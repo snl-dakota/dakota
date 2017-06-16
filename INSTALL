@@ -23,7 +23,7 @@ Table of Contents
 
 Distribution Contents
 Binary Quick Start
- I.   Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
+ I.   Install Unix-Like Binary (Linux RHEL6/7, or binary compatible, Mac OS X)
  II.  Install Windows Executable
  III. Test Binary Distribution installation.
 Source Quick Start
@@ -35,9 +35,9 @@ Distribution Contents
 
 The directories contained in Dakota distributions include:
   * bin-dist denotes binary distributions 
-    	     (Dakota.release.platform.tar.gz, Dakota.release.platform.zip)
+    	     (dakota.<release>.<platform>.tar.gz, dakota.<release>.<platform>.zip)
   * src-dist denotes source or checkout distributions
-    	     (Dakota.release.src.tar.gz, Dakota.release.src.zip)
+    	     (dakota.<release>.src.tar.gz, dakota.<release>.src.zip)
 
 Distribution  Directory	 Description
 Type
@@ -54,6 +54,9 @@ bin-dist      test	 Files for regression and unit testing of the
 src-dist      unit_test	 Dakota system. Test simulator programs and Dakota
 			 input files are provided for testing different
 			 capabilities. 
+
+bin-dist      share      dakota Python package and Bash interface helper
+src-dist      interfaces 
 
 bin-dist      include	 Include files for Dakota and it's associated TPLs.
 
@@ -80,7 +83,7 @@ Binary Quick Start
 
 Most users will install from a binary distribution, if available for
 the target platform.  This typically involves unpacking the archive
-and setting appropriate PATH variables, if required.
+and setting the PATH variable, if required.
 
 Dakota binary distributions are provided in archive format (either tar.gz 
 or zip). 
@@ -89,7 +92,7 @@ or zip).
  * See Section III below to test binary installion.
 
 --------------------------------------------------------------------
-I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
+I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
 --------------------------------------------------------------------
 
 1. Extract archive file into suitable install location, e.g. /home/username.
@@ -97,17 +100,17 @@ I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
    e.g. /usr/local. 
 
        $ cd /path/to/Dakota/install/directory
-       $ tar xzvf /path/to/Dakota-release.src.tar.gz
+       $ tar xzvf /path/to/dakota-<release>.src.tar.gz
    
    Rename the extracted Dakota binary executable directory:
 
        $ ls
        dakota-<release>.<platform>
-       $ mv dakota-<release>.<platform> Dakota
+       $ mv dakota-<release>.<platform> dakota
 
    In the instructions below, $INSTALL_DIR refers to the path to this new
    directory,
-	/path/to/Dakota/install/directory/Dakota
+	/path/to/Dakota/install/directory/dakota
 
 2. Make sure Dakota executables (and optionally test files and current
    directory) are available on the PATH by typing 'which dakota' at command
@@ -138,14 +141,6 @@ I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
 
          export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/test:$PATH
      
-      If installing Dakota on a Linux system, also set LD_LIBRARY_PATH:
-         
-         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INSTALL_DIR/lib:$INSTALL_DIR/bin
-
-      On a Mac, set DYLD_LIBRARY_PATH:
-
-         export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$INSTALL_DIR/lib:$INSTALL_DIR/bin
-
    c. Save and close file.
    d. Update changes in your terminal window. At
       
@@ -160,18 +155,15 @@ I. Install Unix-Like Binary (Linux RHEL6 or binary compatible, Mac OS X)
 
          setenv path=($INSTALL_DIR/bin $INSTALL_DIR/test $path)
 
-      If installing Dakota on a Linux system, also set LD_LIBRARY_PATH:
-         
-         setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${INSTALL_DIR}/lib:${INSTALL_DIR}/bin"
-
-      On a Mac, set DYLD_LIBRARY_PATH:
-
-         setenv DYLD_LIBRARY_PATH "${DYLD_LIBRARY_PATH}:${INSTALL_DIR}/lib:${INSTALL_DIR}/bin"
-
    c. Save and close file.
    d. Update changes in your terminal window. At
       
       $ source ~/.cshrc
+
+4. If you intend to use the dakota Python package, add the path
+   $INSTALL_DIR/share/dakota/Python/ to the environment variable PYTHONPATH.
+   This can be made permanent by making this change in ~/.bashrc or ~/.cshrc. 
+   Adapt the instructions in step 3.
 
 --------------------------------------------------------------------
 II.  Install Windows Executable
@@ -204,7 +196,13 @@ II.  Install Windows Executable
       
       Note that the path will be set only for as long as the cmd window
       remains open. To permanently add Dakota to your path, consult the 
-      documentation for your version of Windows. 
+      documentation for your version of Windows.
+
+3. If you intend to use the dakota Python package, add the path
+   %install_dir%\share\dakota\Python to the environment variable PYTHONPATH. As 
+   with the change to %path%, this change will be lost when the cmd Window is 
+   closed. Consult the documentation for your version of Windows to make an 
+   environment variable persistent.
 
 --------------------------------------------------------------------
 III. Test Binary Distribution installation.
@@ -248,7 +246,7 @@ The following are instructions for building Dakota on a Unix-like platform
 in a Bash shell. You may need to use appropriate commands to work for your
 particular platform or shell.
 
-1. Install CMake 2.8.9 (or later) and ensure it is in your $PATH.
+1. Install CMake 2.8.12 (or later) and ensure it is in your $PATH.
 
 2. Extract Dakota source archive file. In the example below, Dakota will
    be extracted into the user's home directory, /home/username. 

@@ -12,7 +12,7 @@ method
 #  global_evidence ego						                          #s4
 #  local_evidence  sqp						                          #s5
     samples = 1000                                          #s0,#s1,#s2,#s3
-    seed = 59334 rng rnum2                                  #s0,#s1,#s2,#s3,#s4
+    seed = 59334                                   #s0,#s1,#s2,#s3,#s4
     response_levels = 0.001 0.03 0.2 0.8 0.001 0.2 0.6 0.8
 #    compute gen_reliabilities                              #s2,#s3
     probability_levels = 0.25 0.5 0.75 0.25 0.5 0.75		    #s0,#s1,#s4,#s5
@@ -24,15 +24,15 @@ method
 variables
   continuous_interval_uncertain = 2
     num_intervals   = 3 2
-    interval_probs  = 0.5 0.1 0.4 0.7 0.3
+    interval_probabilities  = 0.5 0.1 0.4 0.7 0.3
 #    lower_bounds    = 0.1 0.5 0.7 0.3 0.5
 #    upper_bounds    = 0.5 1.0 1.2 0.5 0.8
     lower_bounds    = 0.6 0.1 0.5 0.3 0.6
     upper_bounds    = 0.9 0.5 1.0 0.5 0.8
 
 interface
-  direct
-    analysis_driver = 'text_book'
+  analysis_drivers = 'text_book'
+    direct
 
 responses
   response_functions = 2

@@ -233,7 +233,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   // in the scaled case, perform numerical derivatives at the RecastModel level
   // (override the RecastModel default and the subModel default)
-  supports_derivative_estimation(true);
+  supportsEstimDerivs = true;
   sub_model.supports_derivative_estimation(false);
 
   size_t num_cv = cv(), num_primary = num_primary_fns(),

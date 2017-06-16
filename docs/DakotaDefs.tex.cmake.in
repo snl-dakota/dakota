@@ -21,12 +21,12 @@
 % Need to manually break line or Eldred gets incorrectly split
 \newcommand{\DakotaAuthorSAND}{
 Brian~M.~Adams, Lara~E.~Bauman, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
-John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci, \\
-Russell~W.~Hooper, Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, \\
-Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~Rushdi, Laura~P.~Swiler, \\
-J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
+John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Joseph~R.~Frye,\\
+Gianluca~Geraci, Russell~W.~Hooper, Patricia~D.~Hough, Kenneth~T.~Hu,\\
+John~D.~Jakeman, Mohammad~Khalil, Kathryn~A.~Maupin, Jason~A.~Monschke,\\
+Ahmad~Rushdi, Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil,\\
+Timothy~M.~Wildey
 }
-
 
 \newcommand{\authvskip}{0.25cm}
 
@@ -37,10 +37,10 @@ J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey
 {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
 {William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
 {John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
-{Russell~W.~Hooper,} {\sl Multiphysics Applications Department} \vspace*{\authvskip} \\
+{Joseph~R.~Frye, Russell~W.~Hooper,} {\sl Multiphysics Applications Department} \vspace*{\authvskip} \\
 {Kenneth~T.~Hu,} {\sl Validation and Uncertainty Quantification Department} \vspace*{\authvskip} \\
 {Keith~R.~Dalbey,} {\sl Mission Analysis and Simulation Department} \vspace*{\authvskip} \\
-{Patricia~D.~Hough} \\
+{Patricia~D.~Hough, Mohammad~Khalil} \\
 {\sl Quantitative Modeling and Analysis Department} \vspace*{\authvskip} \\
 {Elliott~M.~Ridgway,} {\sl Data-driven and Neural Computing} \vspace*{\authvskip} \\
 Sandia National Laboratories\\
@@ -53,9 +53,9 @@ Davis, CA 95616-5294\\
 }
 
 \newcommand{\DakotaAuthorFormatted}{
-{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, Gianluca~Geraci,\\ 
-John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,\\
-J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,\\ 
+John D. Jakeman, Kathryn A. Maupin, Jason A. Monschke, Laura P. Swiler,\\
+J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey}\\
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{\authvskip}
 {\large \bf William J. Bohnhoff}\\
@@ -67,13 +67,13 @@ J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\large \bf John P. Eddy}\\
 {\large System Readiness and Sustainment Technologies Department}\\
 \vspace*{\authvskip}
-{\large \bf Russell W. Hooper}\\
+{\large \bf Joseph R. Frye, Russell W. Hooper}\\
 {\large Multiphysics Applications Department}\\
 \vspace*{\authvskip}
 {\large \bf Kenneth T. Hu}\\
 {\large Validation and Uncertainty Quantification Department}\\
 \vspace*{\authvskip}
-{\large \bf Patricia D. Hough}\\
+{\large \bf Patricia D. Hough, Mohammad Khalil}\\
 {\large Quantitative Modeling and Analysis Department}\\
 \vspace*{\authvskip}
 {\large \bf Elliott M. Ridgway}\\
@@ -90,7 +90,6 @@ J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\large One Shields Avenue}\\
 {\large Davis, CA 95616-5294}\\
 }
-
 
 % Fragments which together comprise abstracts
 

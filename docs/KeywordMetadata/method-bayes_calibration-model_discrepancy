@@ -1,0 +1,98 @@
+Blurb::
+(Experimental) Post-calibration calculation of model discrepancy correction
+
+Description::
+The goal of parameter calibration is to minimize the difference between 
+experimental data, \f$d(x)\f$, and model observations, \f$M(\theta, x)\f$, 
+where \f$\theta\f$ are the model parameters and \f$x\f$ is a configuration
+variable, such as temperature or pressure. However, it is not uncommon that, at 
+the conclusion of parameter calibration, the agreement between experimental 
+data and the calibrated model is not "close enough." This is often due to 
+model form or structural error. In this case, the canonical equation
+
+\f[
+d (x) = M (\theta, x) + \varepsilon
+\f] 
+
+is replaced by one that also includes model discrepancy \f$\delta(x)\f$,
+
+\f[
+d (x) = M (\theta, x) + \delta(x) + \varepsilon.
+\f]
+
+In the Dakota implementation, the calculation of \f$\delta(x)\f$ is performed 
+after the model parameters \f$\theta\f$ are calibrated. For each observable
+\f$d_i\f$, the discrepancy 
+
+\f[
+\delta_i(x_j) = d_i(x_j) - M_i(\theta^*, x_j)
+\f]
+
+is calculated for each value \f$x_j\f$ of the configuration variable, where
+\f$\theta^*\f$ is the optimal parameter value obtained during the 
+calibration. It should be emphasized that the model discrepancy is only a 
+function of the configuration variables, and there is one discrepancy 
+regression model for each observable \f$d_i\f$. This set of discrepancy 
+models may be specified to be either Gaussian process or polynomial regression 
+models of constant, linear, or quadratic order, and each model is fit to the 
+calculated discrepancy values. See the 
+\ref method-bayes_calibration-model_discrepancy-discrepancy_type 
+command for more details regarding these options. 
+
+The user 
+may then specify new or "prediction" configurations at which the corrected 
+model \f$M(\theta^*, x_{new}) + \delta(x_{new})\f$ should be calculated, using
+one of the \c num_prediction_configs, \c prediction_configs, or
+\c import_prediction_configs keywords. If none of these keywords is specified,
+the number of prediction configurations is set to 10. The corresponding 
+prediction variances are also calculated, according to
+
+\f[
+\Sigma_{total}(x) = \Sigma_{\delta}(x) + \sigma^2_{exp}I.
+\f]
+
+Here, \f$\Sigma_{\delta}(x)\f$ is the (co)variance calculated from the
+Gaussian process or polynomial regression model, and \f$\sigma^2_{exp}\f$ is 
+the maximum variance, taken over all configuration variables for that 
+observation. Further details can be found in the Dakota User's and Theory 
+Manuals.
+
+<b> Expected Output </b>
+
+The resulting values of 
+\f$\delta(x_{new})\f$ will be exported to the file specified using
+\c export_discrepancy_file or to the default file 
+\c dakota_discrepancy_tabular.dat. The values of the corrected model at the
+specified prediction configurations will be exported to the file specified 
+using \c export_corrected_model_file or to the default file 
+\c dakota_corrected_model_tabular.dat, and the corresponding prediction
+variances will be exported to \c dakota_discrepancy_variance_tabular.dat
+or the file specified with \c export_corrected_variance_file. 
+
+Examples::
+The input files below illustrate the options available to \c model_discrepancy
+
+\verbatim
+model_discrepancy
+  discrepancy_type  gaussian_process
+  num_prediction_configs  11
+  export_discrepancy_file  "discrepancy_values.txt"
+  export_corrected_model_file  "corrected_model.txt"
+  export_corrected_variance_file  "prediction_variance.txt"
+\endverbatim 
+
+\verbatim
+model_discrepancy
+  discrepancy_type  polynomial
+    correction_order  constant
+  prediction_configs  1  1.5  2  2.5  3 
+\endverbatim
+
+\verbatim
+model_discrepancy
+  discrepancy_type  polynomial
+    correction_order  linear
+  import_prediction_configs "prediction_configs.txt"
+\endverbatim
+
+

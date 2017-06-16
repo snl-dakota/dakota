@@ -31,7 +31,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
-  surrModelEvalCntr(0), approxBuilds(0)
+  surrModelEvalCntr(0), approxBuilds(0), mappingInitialized(false)
 {
   // assign default responseMode based on correction specification;
   // NO_CORRECTION (0) is default
@@ -58,7 +58,8 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const ActiveSet& set, short corr_type, short output_level):
   Model(LightWtBaseConstructor(), problem_db, parallel_lib, svd, srd,
 	set, output_level),
-  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0)
+  corrType(corr_type), surrModelEvalCntr(0), approxBuilds(0),
+  mappingInitialized(false)
 {
   modelType = "surrogate";
 
@@ -204,14 +205,14 @@ bool SurrogateModel::force_rebuild()
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model       = truth_model();
+  Model& actual_model = truth_model();
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: There is probably a more elegant way to accomodate subspace models
-  if(actual_model.model_type() == "subspace")
+  if (actual_model.model_type() == "active_subspace")
     return false;
 
-  short  approx_active_view = currentVariables.view().first;
+  short approx_active_view = currentVariables.view().first;
   if (actual_model.is_null()) {
     // compare reference vars against current inactive top-level data
     if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||

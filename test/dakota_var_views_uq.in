@@ -21,7 +21,9 @@ method,
 #	  num_response_levels = 1 1 1		#f10,#f11
 #	  response_levels = 0.5	0.5 0.5		#f10,#f11
 #	global_reliability  	    		#s2,   #f11
-#	  x_gaussian_process			#s2,   #f11
+#	  x_gaussian_process			    #s2,   #f11
+#   historical default:
+#   convergence_tolerance 0.001 #s2,   #f11
 #	polynomial_chaos			#s3,   #f12
 #	  quadrature_order = 5			#s3,#s4,#f12,#f13
 #	stoch_collocation			#s4,   #f13

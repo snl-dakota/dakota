@@ -165,6 +165,11 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   numIntDriver.initialize_grid(poly_basis);
   ssgDriver->level(ssgLevelRef);
   ssgDriver->dimension_preference(dimPrefSpec);
+
+  // Precompute quadrature rules (e.g., by defining maximal order for
+  // NumGenOrthogPolynomial::solve_eigenproblem()):
+  ssgDriver->precompute_rules(); // efficiency optimization
+
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires polyParams
 }
 

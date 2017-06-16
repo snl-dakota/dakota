@@ -57,6 +57,14 @@ public:
   template <typename Engine>
   void prior_sample(Engine& rng, RealVector& prior_samples);
 
+  /// return the mean of the prior distribution
+  template <typename VectorType>
+  void prior_mean(VectorType& mean_vec) const;
+
+  /// return the covariance of the prior distribution
+  template <typename MatrixType>
+  void prior_variance(MatrixType& var_mat) const;
+
   /**
    * \brief Compute the proposal covariance C based on low-rank approximation
    * to the prior-preconditioned misfit Hessian.
@@ -117,6 +125,9 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  
+  /// calculate model discrepancy with respect to experimental data
+  void build_model_discrepancy();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
@@ -162,10 +173,6 @@ protected:
   //
   
   String scalarDataFilename;
-  String importCandPtsFile;
-  unsigned short importCandFormat;
-  size_t maxHifiEvals;
-  size_t numCandidates;
 
   // technically doesn't apply to GPMSA, but leaving here for now
   /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
@@ -174,6 +181,10 @@ protected:
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
   Model mcmcModel;
+
+  /// whether the MCMC Model is a surrogate, or a thin transformation
+  /// around a surrogate, so can be cheaply re-evaluated in chain recovery
+  bool mcmcModelHasSurrogate;
 
   /// DataTransformModel wrapping the mcmcModel
   Model residualModel;
@@ -210,6 +221,60 @@ protected:
   /// whether to perform iterative design of experiments with
   /// high-fidelity model
   bool adaptExpDesign;
+  /// number of candidate designs for adaptive Bayesian experimental design
+  size_t numCandidates;
+  /// whether to import candidate design points for adaptive Bayesian 
+  /// experimental design
+  String importCandPtsFile;
+  /// tabular format for the candidate design points import file
+  unsigned short importCandFormat;
+  /// maximum number of high-fidelity model runs to be used for adaptive
+  /// Bayesian experimental design
+  int maxHifiEvals;
+
+  // settings specific to model discrepancy
+
+  /// flag whether to calculate model discrepancy
+  bool calModelDiscrepancy;
+  /// set discrepancy type
+  String discrepancyType; 
+  /// filename for corrected model (model+discrepancy) calculations output
+  String exportCorrModelFile;
+  /// filename for discrepancy calculations output
+  String exportDiscrepFile;
+  /// filename for corrected model variance calculations 
+  String exportCorrVarFile;
+  /// format options for corrected model output
+  unsigned short exportCorrModelFormat;
+  /// format options for discrepancy output
+  unsigned short exportDiscrepFormat;
+  /// format options for corrected model variance output
+  unsigned short exportCorrVarFormat;
+  /// specify polynomial or trend order for discrepancy correction
+  short approxCorrectionOrder;
+  /// number of prediction configurations at which to calculate model 
+  /// discrepancy
+  size_t numPredConfigs;
+  /// lower bounds on configuration domain
+  RealVector configLowerBnds;
+  /// upper bounds on configuration domain
+  RealVector configUpperBnds;
+  /// array containing predicted of model+discrepancy
+  ResponseArray discrepancyResponses;
+  /// array containing predicted of model+discrepancy
+  ResponseArray correctedResponses;
+  /// matrix containing variances of model+discrepancy
+  RealMatrix correctedVariances;
+  /// list of prediction configurations at which to calculate model discrepancy
+  RealVector predictionConfigList;
+  /// whether to import prediction configurations at which to calculate model
+  /// discrepancy
+  String importPredConfigs;
+  /// tabular format for prediction configurations import file
+  unsigned short importPredConfigFormat;
+  /// print tabular files containing model+discrepancy responses and variances
+  void export_discrepancy(RealMatrix& pred_config_mat); 
+
   /// a high-fidelity model data source (given by pointer in input)
   Model hifiModel;
   /// initial high-fidelity model samples
@@ -262,6 +327,10 @@ protected:
   /// cached function values corresponding to acceptanceChain for
   /// final statistics reporting
   RealMatrix acceptedFnVals;
+
+  /// container for managing best MCMC samples (points and associated
+  /// log posterior) collected across multiple (restarted) chains
+  std::/*multi*/map<Real, RealVector> bestSamples;
 
   /// number of MCMC samples to discard from acceptance chain
   int burnInSamples;
@@ -409,6 +478,57 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
   // the estimated param is mult^2 ~ invgamma(alpha,beta)
   for (size_t i=0; i<numHyperparams; ++i)
     prior_samples[numContinuousVars + i] = invGammaDists[i].draw_sample(rng);
+}
+
+
+/** Assume the target mean_vec is sized by client */
+template <typename VectorType>
+void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
+{
+  if (standardizedSpace) {
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = u_moments[i].first;
+  }
+  else {
+    RealVector x_means = natafTransform.x_means();
+    for (size_t i=0; i<numContinuousVars; ++i)
+      mean_vec[i] = x_means[i];
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    mean_vec[numContinuousVars + i] = invGammaDists[i].mean();
+}
+
+
+/** Assumes the target var_mat is sized by client */
+template <typename MatrixType>
+void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
+{
+  if (standardizedSpace) {
+    RealRealPairArray u_moments = natafTransform.u_moments();
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      const Real& u_std_i = u_moments[i].second;
+      var_mat(i,i) = u_std_i * u_std_i;
+    }
+  }
+  else {
+    RealVector x_std = natafTransform.x_std_deviations();
+    if (natafTransform.x_correlation()) {
+      const RealSymMatrix& x_correl = natafTransform.x_correlation_matrix();
+      for (size_t i=0; i<numContinuousVars; ++i) {
+	var_mat(i,i) = x_std[i] * x_std[i];
+	for (size_t j=1; j<numContinuousVars; ++j)
+	  var_mat(i,j) = var_mat(j,i) = x_correl(i,j) * x_std[i] * x_std[j];
+      }
+    }
+    else {
+      for (size_t i=0; i<numContinuousVars; ++i)
+	var_mat(i,i) = x_std[i] * x_std[i];
+    }
+  }
+  for (size_t i=0; i<numHyperparams; ++i)
+    var_mat(numContinuousVars + i, numContinuousVars + i) = 
+      invGammaDists[i].variance();
 }
 
 

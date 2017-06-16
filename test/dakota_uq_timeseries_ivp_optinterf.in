@@ -18,7 +18,7 @@ method,
 	global_interval_est
 	  ego						#s0
 #	  lhs						#s1
-	  samples = 100 seed = 1234567 rng rnum2
+	  samples = 100 seed = 1234567 
 	  output verbose
 
 model,

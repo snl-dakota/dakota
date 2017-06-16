@@ -29,12 +29,19 @@ set(QUESO_EXTPROJ_LIBS)
 # QUESO external LIBS to be linked last
 set(QUESO_TPL_LIBS)
 
-set(C3_FUNCTION_TRAIN_LIBS)
-list(APPEND EXT_TPL_INCDIRS ${C3_INCLUDE_DIR})
+option(HAVE_FUNCTION_TRAIN "Link to the C3 Library for Function-Train support" OFF)
+if (${HAVE_FUNCTION_TRAIN})
+  list(APPEND EXT_TPL_INCDIRS ${C3_INCLUDE_DIR})
+endif()
 
+list(APPEND DAKOTA_INCDIRS 
+  ${Dakota_BINARY_DIR}/generated/src
+  # Consider removing these two paths and moving to generated...
+  ${Dakota_BINARY_DIR}
+  ${Dakota_BINARY_DIR}/src
+  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
+  )
 
-list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/generated ${Dakota_BINARY_DIR}/src
-  ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages)
 
 list(APPEND EXT_TPL_INCDIRS
   ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
@@ -50,6 +57,7 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
 endif()
 include(DakotaSpecMaint)
 if(ENABLE_SPEC_MAINT)
+  # dakota.xml to dakota.input.nspec is conditional as it requires Java
   DakotaXml2Nspec()
 endif()
 DakotaNidrgen()
@@ -57,8 +65,6 @@ DakotaNidrgen()
 # Use TPL_LIBS for libraries built as part of this project
 list(APPEND DAKOTA_PKG_LIBS nidr)
 
-# WJB - ToDo:  convince myself that dakota_src_fortran should have a
-#              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src nidr)
 
 # We don't want to export Teuchos libs unless we're building in our
@@ -259,7 +265,6 @@ if(DAKOTA_DL_SOLVER)
   check_include_file(dlfcn.h DAKOTA_HAVE_DLFCN_H)
 
   if(DAKOTA_HAVE_DLFCN_H)
-    # WJB - ToDo:  Test/debug on cygwin ("lgdi32" vs "" ?)
     message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
     add_definitions("-DDAKOTA_DL_SOLVER")
     add_definitions("-DDAKOTA_HAVE_DLFCN_H")
@@ -435,7 +440,8 @@ endif(HAVE_PECOS)
 
 
 ## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
-set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp NIDR_keywds.hpp)
+set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp 
+  ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -817,10 +823,6 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${env_src}
     ${iterator_src})
 
-if(MSVC)
-  list(APPEND Dakota_src dirent.h dirent.c)
-endif()
-
 # Experiment with moving AMPL here; if cross-platform link errors, revert
 if(HAVE_AMPL)
   add_definitions("-DHAVE_AMPL")
@@ -854,8 +856,10 @@ if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_LIBS ${QUESO_TPL_LIBS})
 endif(DAKOTA_HAVE_GSL)
 
+if (${HAVE_FUNCTION_TRAIN})
+  list(APPEND EXT_TPL_LIBS ${C3_FUNCTION_TRAIN_LIBS})
+endif()
 
-list(APPEND EXT_TPL_LIBS ${C3_FUNCTION_TRAIN_LIBS})
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 
 # Now that packages and TPLs are processed, set include/link directories
@@ -906,17 +910,6 @@ endif()
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
 if (DAKOTA_MODELCENTER)
   target_link_libraries(dakota_src PHXCppApi)
-endif()
-
-if(MSVC)
-  # Create "Native Windows dirent" source files in the binary tree so they
-  # will only be seen by Native Windows builds.
-
-  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.c.in
-                 ${Dakota_BINARY_DIR}/src/dirent.c COPYONLY)
-
-  configure_file(${Dakota_SOURCE_DIR}/cmake/win_dirent.h.in
-                 ${Dakota_BINARY_DIR}/src/dirent.h COPYONLY)
 endif()
 
 
@@ -979,7 +972,8 @@ install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.hpp *.h)
-install(FILES ${Dakota_hdr} ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds.hpp
+# We don't install NIDR_keywds0.hpp as is not needed by clients
+install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
   DESTINATION include)
 install(FILES dakota.xsd dakota.xml dakota.input.nspec
   ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary

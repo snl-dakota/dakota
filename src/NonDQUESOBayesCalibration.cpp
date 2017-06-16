@@ -72,6 +72,11 @@ public:
   double computeLogOfNormalizationFactor(unsigned int numSamples,
 					 bool m_logOfNormalizationFactor) const;
 
+  //! Mean value of underlying random variable
+  void distributionMean(V & meanVector) const;
+
+  void distributionVariance(M & covMatrix) const;
+
 private:
   using QUESO::BaseScalarFunction<V,M>::m_env;
   using QUESO::BaseScalarFunction<V,M>::m_prefix;
@@ -124,6 +129,23 @@ double QuesoJointPdf<V,M>::
 computeLogOfNormalizationFactor(unsigned int numSamples, 
 				bool m_logOfNormalizationFactor) const
 { }
+
+// Assumes meanVector is sized
+template<class V,class M>
+void QuesoJointPdf<V,M>::
+distributionMean(V & meanVector) const
+{ 
+  nonDQUESOInstance->prior_mean(meanVector);
+}
+
+// Assumes covMatrix is sized
+template<class V,class M>
+void QuesoJointPdf<V,M>::
+distributionVariance(M & covMatrix) const
+{ 
+  nonDQUESOInstance->prior_variance(covMatrix);
+}
+
 
 /// Dakota specialization of QUESO vector-valued random variable
 template <class V, class M>
@@ -212,11 +234,8 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
-  ////////////////////////////////////////////////////////
-  // Step 1 of 5: Instantiate the QUESO environment 
-  ////////////////////////////////////////////////////////
   init_queso_environment();
- 
+
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
@@ -249,36 +268,9 @@ void NonDQUESOBayesCalibration::calibrate()
   // BMA TODO: make sure Recast is setup properly to have the right request val
   //  init_residual_response(request_value_needed);
 
-  ////////////////////////////////////////////////////////
-  // Step 2 of 5: Instantiate the parameter domain
-  ////////////////////////////////////////////////////////
   init_parameter_domain();
 
-  // Size our Queso covariance matrix and initialize trailing diagonal if
-  // calibrating error hyperparams
-  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
-  if (numHyperparams > 0) {
-    // all hyperparams utilize inverse gamma priors, which may not
-    // have finite variance; use std_dev = 0.05 * mode
-    for (int i=0; i<numHyperparams; ++i) {
-      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
-          invGammaDists[i].variance();
-      else
-        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
-          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
-    }
-  }
-
-  // initialize proposal covariance (must follow parameter domain init)
-  // This is the leading sub-matrix in the case of calibrating sigma terms
-  if (proposalCovarType == "user") // either filename OR data values defined
-    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
-			     proposalCovarFilename);
-  else if (proposalCovarType == "prior")
-    prior_proposal_covariance(); // prior selection or default for no emulator
-  else // misfit Hessian-based proposal with prior preconditioning
-    prior_cholesky_factorization();
+  init_proposal_covariance();
 
   // init likelihoodFunctionObj, prior/posterior random vectors, inverse problem
   init_queso_solver();
@@ -425,19 +417,37 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
   }
 }
 
-void NonDQUESOBayesCalibration::init_queso_environment()
+
+/** The input filename is only passed by GPMSA as there's no way to
+    override the C++ options with file-based options for the QUESO
+    ctors. */
+void NonDQUESOBayesCalibration::
+init_queso_environment(const String& input_filename)
 {
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
   // and send QUESO the proper MPI subenvironments.
 
-  // TODO: see if this can be a local, or if the env retains a pointer
-  envOptionsValues.reset(new QUESO::EnvOptionsValues());
-  envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
-  envOptionsValues->m_subDisplayAllowedSet.insert(0);
-  envOptionsValues->m_subDisplayAllowedSet.insert(1);
-  envOptionsValues->m_displayVerbosity = 2;
-  envOptionsValues->m_seed = randomSeed; 
+  // NOTE: To make this function re-entrant, have to free quesoEnv
+  // first, then reset envOptionsValues, since destructor of quesoEnv
+  // needs envOptionsValues:
+  quesoEnv.reset();
+
+  // Unfortunately, if we set these options, can't load the GPMSA options!
+  // For now, require all options from file when using it
+  if (input_filename.empty()) {
+    // TODO: see if this can be a local, or if the env retains a pointer
+    envOptionsValues.reset(new QUESO::EnvOptionsValues());
+    envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
+    envOptionsValues->m_subDisplayAllowedSet.insert(0);
+    envOptionsValues->m_subDisplayAllowedSet.insert(1);
+    envOptionsValues->m_displayVerbosity = 2;  
+    // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
+    envOptionsValues->m_seed = randomSeed; 
+    // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
+  }
+  else
+    envOptionsValues.reset();
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -445,21 +455,22 @@ void NonDQUESOBayesCalibration::init_queso_environment()
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"","",
-						envOptionsValues.get()));
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,
+						input_filename.c_str(),
+						"", envOptionsValues.get()));
   }
   else {
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment("","",
+      quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
 						envOptionsValues.get()));
   }
 #else
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment("","",
+    quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
 					      envOptionsValues.get()));
 #endif
 
@@ -490,23 +501,12 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
 
 void NonDQUESOBayesCalibration::init_queso_solver()
 {
-  ////////////////////////////////////////////////////////
-  // Step 3 of 5: Instantiate the likelihood function object
-  ////////////////////////////////////////////////////////
-  // routine computes [ln(function)]
+  // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj.reset(new
     QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>("like_",
     *paramDomain, &dakotaLogLikelihood, (void *)NULL, true));
 
-  ////////////////////////////////////////////////////////
-  // Step 4 of 5: Instantiate the inverse problem
-  ////////////////////////////////////////////////////////
-  // initial approach was restricted to uniform priors
-  //priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-  //		  ("prior_", *paramDomain));
-  // new approach supports arbitrary priors:
-  priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
-   		("prior_", *paramDomain, nonDQUESOInstance));
+  // Instantiate the inverse problem
 
   postRv.reset(new QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix>
 	       ("post_", *paramSpace));
@@ -642,12 +642,16 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
   const QUESO::BaseVectorSequence<QUESO::GslVector,QUESO::GslMatrix>&
     mcmc_chain = inverseProb->chain();
   unsigned int num_mcmc = mcmc_chain.subSequenceSize();
-  QUESO::GslVector qv(paramSpace->zeroVector());
+
+  // The posterior may include GPMSA hyper-parameters, so use the postRv space
+  //  QUESO::GslVector qv(paramSpace->zeroVector());
+  QUESO::GslVector qv(postRv->imageSet().vectorSpace().zeroVector());
   
   int lookup_failures = 0, num_params = numContinuousVars + numHyperparams,
     sample_index = (cycle_num - 1) * chainSamples,
     //stop_index   = sample_index + chainSamples;
     start = (cycle_num == 1) ? 0 : 1; // 1st chain pt is redundant
+
   for (int i=start; i<num_mcmc; ++i, ++sample_index) {
 
     // translate the QUESO vector into x- or u-space lookup vars and
@@ -670,14 +674,30 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
 	lookup_vars.continuous_variables(x_rv);
     }
     else {
-      copy_gsl(qv, acceptanceChain, sample_index);
+      // A view that includes calibration params and Dakota-managed
+      // hyper-parameters, to facilitate copying from the longer qv
+      // into acceptanceChain:
+      RealVector theta_hp(Teuchos::View, acceptanceChain[sample_index], 
+			  numContinuousVars + numHyperparams);
+      copy_gsl_partial(qv, 0, theta_hp);
+      // lookup vars only need the calibration parameters
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
       lookup_vars.continuous_variables(x_rv);
     }
 
     // now retreive function values
-    if (mcmcModel.model_type() == "surrogate") {
+
+    // NOTE: The MCMC may be PCE/SC model, DataFitSurrModel, or raw
+    // model, but it's type may be a ProbabilityTransform wrapper if
+    // standardizedSpace is active.  mcmcModelHasSurrogate controls
+    // model re-evals.  This is not sufficiently general, e.g., if the
+    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+
+    // TODO: Consider doing lookup first, then surrogate re-eval, or
+    // querying a more complete eval database when available...
+
+    if (mcmcModelHasSurrogate) {
       mcmcModel.active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
@@ -686,8 +706,13 @@ void NonDQUESOBayesCalibration::aggregate_acceptance_chain(size_t cycle_num)
     else {
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
-      if (cache_it == data_pairs.get<hashed>().end())
+      if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
+	// Set NaN in the chain points to avoid misleading the user
+	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
+      }
       else {
 	const RealVector& fn_vals = cache_it->response().function_values();
 	Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);
@@ -857,10 +882,12 @@ local_to_aggregated(unsigned short batch_size,
     mcmc_chain = inverseProb->chain();
   std::/*multi*/map<Real, size_t>::const_iterator cit;
   QUESO::GslVector mcmc_sample(paramSpace->zeroVector());
+  RealVector mcmc_sample_rv;
   for (cit=local_best.begin(); cit!=local_best.end(); ++cit) {
     mcmc_chain.getPositionValues(cit->second, mcmc_sample);
+    copy_gsl(mcmc_sample, mcmc_sample_rv);
     bestSamples.insert(
-      std::pair<Real, QUESO::GslVector>(cit->first, mcmc_sample));
+      std::pair<Real, RealVector>(cit->first, mcmc_sample_rv));
     // continuously maintain length to reduce sorting cost
     if (bestSamples.size() > batch_size)
       bestSamples.erase(bestSamples.begin()); // pop front
@@ -876,10 +903,12 @@ void NonDQUESOBayesCalibration::aggregated_to_all()
   size_t num_best = bestSamples.size();
   if (allSamples.numCols() != num_best)
     allSamples.shapeUninitialized(numContinuousVars, num_best);
-  std::/*multi*/map<Real, QUESO::GslVector>::iterator it; size_t i;
+  std::/*multi*/map<Real, RealVector>::iterator it; size_t i;
   if (outputLevel >= NORMAL_OUTPUT) Cout << "Chain filtering results:\n";
   for (it=bestSamples.begin(), i=0; it!=bestSamples.end(); ++it, ++i) {
-    copy_gsl(it->second, allSamples, i);
+
+    Teuchos::setCol(it->second, (int) i, allSamples);
+
     if (outputLevel >= NORMAL_OUTPUT) {
       Cout << "Best point " << i+1 << ": Log posterior = " << it->first
 	   << " Sample:";
@@ -1080,6 +1109,8 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 }
 
 
+/** Initialize the calibration parameter domain (paramSpace,
+    paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
 void NonDQUESOBayesCalibration::init_parameter_domain()
 {
   // If calibrating error multipliers, the parameter domain is expanded to
@@ -1132,6 +1163,44 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
     Cout << "Initial Parameter values sent to QUESO (may be in scaled)\n"
 	 << *paramInitials << "\nParameter bounds sent to QUESO (may be scaled)"
 	 << ":\nparamMins " << paramMins << "\nparamMaxs " << paramMaxs << '\n';
+
+  // initial approach was restricted to uniform priors
+  //priorRv.reset(new QUESO::UniformVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+  //		  ("prior_", *paramDomain));
+  // new approach supports arbitrary priors:
+  priorRv.reset(new QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix> 
+   		("prior_", *paramDomain, nonDQUESOInstance));
+
+}
+
+
+void NonDQUESOBayesCalibration::init_proposal_covariance()
+{
+  // Size our Queso covariance matrix and initialize trailing diagonal if
+  // calibrating error hyperparams
+  proposalCovMatrix.reset(new QUESO::GslMatrix(paramSpace->zeroVector()));
+  if (numHyperparams > 0) {
+    // all hyperparams utilize inverse gamma priors, which may not
+    // have finite variance; use std_dev = 0.05 * mode
+    for (int i=0; i<numHyperparams; ++i) {
+      if (invGammaDists[i].parameter(Pecos::IGA_ALPHA) > 2.0)
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) = 
+          invGammaDists[i].variance();
+      else
+        (*proposalCovMatrix)(numContinuousVars + i, numContinuousVars + i) =
+          std::pow(0.05*(*paramInitials)[numContinuousVars + i], 2.0);
+    }
+  }
+
+  // initialize proposal covariance (must follow parameter domain init)
+  // This is the leading sub-matrix in the case of calibrating sigma terms
+  if (proposalCovarType == "user") // either filename OR data values defined
+    user_proposal_covariance(proposalCovarInputType, proposalCovarData,
+			     proposalCovarFilename);
+  else if (proposalCovarType == "prior")
+    prior_proposal_covariance(); // prior selection or default for no emulator
+  else // misfit Hessian-based proposal with prior preconditioning
+    prior_cholesky_factorization();
 }
 
 
@@ -1378,19 +1447,18 @@ void NonDQUESOBayesCalibration::set_mh_options()
   if (logitTransform) {
     calIpMhOptionsValues->m_algorithm = "logit_random_walk";
     calIpMhOptionsValues->m_tk = "logit_random_walk";
-    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+    //calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
   }
   else {
     calIpMhOptionsValues->m_algorithm = "random_walk";
     calIpMhOptionsValues->m_tk = "random_walk";
-    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+    //calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
   }
 }
 
 
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
-
 
 void NonDQUESOBayesCalibration::print_results(std::ostream& s)
 {
@@ -1406,29 +1474,33 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // ----------------------------------------
   // Output best sample which appoximates MAP
   // ----------------------------------------
-  std::/*multi*/map<Real, QUESO::GslVector>::iterator it = --bestSamples.end();
-  //std::pair<Real, QUESO::GslVector>& best = bestSamples.back();
-  QUESO::GslVector& qv = it->second; 
+  std::/*multi*/map<Real, RealVector>::const_iterator it = --bestSamples.end();
+  //std::pair<Real, RealVector>& best = bestSamples.back();
+  const RealVector& best_sample = it->second;
+
   size_t wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
   // print MAP for continuous random variables
   if (standardizedSpace) {
-    RealVector u_rv(numContinuousVars, false), x_rv;
-    copy_gsl_partial(qv, 0, u_rv);
+    RealVector u_rv(Teuchos::View, best_sample.values(), numContinuousVars);
+    RealVector x_rv;
     natafTransform.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
     for (size_t j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j]
+      s << "                     " << std::setw(wpp7) << best_sample[j]
 	<< ' ' << cv_labels[j] << '\n';
   // print MAP for hyper-parameters (e.g., observation error params)
   for (size_t j=0; j<numHyperparams; ++j)
-    s << "                     " << std::setw(wpp7) << qv[numContinuousVars+j] 
-      << ' ' << combined_labels[numContinuousVars + j] << '\n';
+    s << "                     " << std::setw(wpp7) 
+      << best_sample[numContinuousVars+j] << ' ' 
+      << combined_labels[numContinuousVars + j] << '\n';
 
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
+  QUESO::GslVector qv(paramSpace->zeroVector());
+  copy_gsl(best_sample, qv);
   Real log_prior = log_prior_density(qv), log_post = it->first;
   size_t num_total_calib_terms = residualModel.num_primary_fns();
   Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
@@ -1450,15 +1522,15 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   // --------------------------
   // Multipoint results summary
   // --------------------------
-  std::map<Real, QUESO::GslVector>::iterator it;
+  std::map<Real, RealVector>::const_iterator it;
   size_t i, j, num_best = bestSamples.size(), wpp7 = write_precision+7;
   for (it=bestSamples.begin(), i=1; it!=bestSamples.end(); ++it, ++i) {
     s << "<<<<< Best parameters          ";
     if (num_best > 1) s << "(set " << i << ") ";
     s << "=\n";
-    QUESO::GslVector& qv = it->second;
+    RealVector best_sample = it->second;
     for (j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << qv[j] << '\n';
+      s << "                     " << std::setw(wpp7) << best_sample[j] << '\n';
     s << "<<<<< Best log posterior       ";
     if (num_best > 1) s << "(set " << i << ") ";
     s << "=\n                     " << std::setw(wpp7) << it->first << '\n';

@@ -4,7 +4,7 @@ method,
 	  collocation_ratio = 2
 #	  use_derivatives				#s2,#s3
 #         probability_refinement import                 #s4
-	  samples_on_emulator = 10000 seed = 1234567 rng rnum2
+	  samples_on_emulator = 10000 seed = 1234567 
 	  num_response_levels = 0 11 11
 	  response_levels =
 	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0

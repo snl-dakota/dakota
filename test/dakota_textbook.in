@@ -34,15 +34,15 @@ variables
     descriptors      'x1'   'x2'
 
 interface
-  fork                                  #s0,#s1,#s2,#s3
-#  system 				                      #s4,#s5,#s6,#s7
-#  direct				                        #s8,#s9
-#    asynchronous			                  #s2,#s3,#s6,#s7
-    analysis_driver =       'text_book'
-#    parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
-#    results_file=           'tb.out'	  #s1,#s3,#s5,#s7
-     labeled                               #s0,#s1,#s2,#s3
-#    file_tag				                    #s3,#s7
+  analysis_drivers =       'text_book'
+    fork                              #s0,#s1,#s2,#s3
+#    system 				                  #s4,#s5,#s6,#s7
+#    direct				                    #s8,#s9
+#      parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
+#      results_file=           'tb.out'	  #s1,#s3,#s5,#s7
+       labeled                               #s0,#s1,#s2,#s3
+#      file_tag				                    #s3,#s7
+#  asynchronous			                  #s2,#s3,#s6,#s7
 
 responses
   objective_functions = 1
@@ -51,5 +51,5 @@ responses
   numerical_gradients
     method_source dakota
     interval_type central
-    fd_gradient_step_size = 1.e-4
+    fd_step_size = 1.e-4
   no_hessians

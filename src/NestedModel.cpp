@@ -1828,6 +1828,54 @@ iterator_response_overlay(const Response& sub_iterator_response,
 }
 
 
+void NestedModel::
+iterator_error_estimation(const RealVector& sub_iterator_errors,
+			  RealVector& mapped_errors)
+{
+  // In the future, could be overlaid with optional interface error estimates,
+  // but for now, assume these are zero (e.g., deterministic mappings have no
+  // estimator variance)
+
+  size_t i, j, m_index, num_mapped_fns = currentResponse.num_functions();
+  if (mapped_errors.length() != num_mapped_fns)
+    mapped_errors.size(num_mapped_fns); // init to 0 
+  else
+    mapped_errors = 0.;
+
+  // Assume independent Gaussian errors: then std error from linear combination
+  // of Gaussian errors = Sqrt[ Sum [ coeff^2 sigma_i^2 ] ]
+  // Note: final moments may be central or standard, but error estimates are
+  //       always standard (sqrt of estimator variance of central/std moment)
+
+  // [W]{S}:
+  size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
+  Real sum, term;
+  for (i=0; i<num_sub_iter_mapped_1; ++i) {
+    sum = 0.;
+    for (j=0; j<numSubIterFns; ++j) {
+      term = primaryRespCoeffs(i,j) * sub_iterator_errors[j]; // [W]{S}
+      sum += term * term;
+    }
+    mapped_errors[i] = std::sqrt(sum);
+  }
+
+  // [A]{S}:
+  size_t num_sub_iter_mapped_2 = secondaryRespCoeffs.numRows(),
+    num_mapped_1 = std::max(numOptInterfPrimary, num_sub_iter_mapped_1);
+  for (i=0; i<num_sub_iter_mapped_2; ++i) {
+    m_index = num_mapped_1 + numOptInterfIneqCon + i;// {a_l} <= [A]{S} <= {a_u}
+    if (i>=numSubIterMappedIneqCon)
+      m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
+    sum = 0.;
+    for (j=0; j<numSubIterFns; ++j) {
+      term = secondaryRespCoeffs(i,j) * sub_iterator_errors[j]; // [W]{S}
+      sum += term * term;
+    }
+    mapped_errors[m_index] = std::sqrt(sum);
+  }
+}
+
+
 void NestedModel::check_response_map(const ShortArray& mapped_asv)
 {
   // counter initialization & sanity checking

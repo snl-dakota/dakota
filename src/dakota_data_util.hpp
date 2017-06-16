@@ -241,17 +241,6 @@ inline void build_labels_partial(StringArray& label_array,
 // non-templated copy functions
 // ----------------------------
 
-/// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
-inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
-			    std::vector<Real>& row)
-{
-  RealMatrix::ordinalType j, num_items = m.numCols();
-  if (row.size() != num_items)
-    row.resize(num_items);
-  for(j=0; j<num_items; ++j)
-    row[j] = m(i,j);
-}
-
 // ------------------------
 // templated copy functions
 // ------------------------
@@ -260,82 +249,93 @@ inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 // built in/pointer data types
 
 
-/// copy Array<T> to T*
-template <typename T>
-void copy_data(const std::vector<T>& vec, T* ptr, const size_t ptr_len)
-{
-  if (ptr_len != vec.size()) { // could use <, but enforce exact match
-    Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<T>, T* ptr)."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  for (size_t i=0; i<ptr_len; ++i)
-    ptr[i] = vec[i];
-}
-
-
-/// copy T* to Array<T>
-template <typename T>
-void copy_data(const T* ptr, const size_t ptr_len, std::vector<T>& vec)
-{
-  if (ptr_len != vec.size())
-    vec.resize(ptr_len);
-  for (size_t i=0; i<ptr_len; ++i)
-    vec[i] = ptr[i];
-}
-
-
-/// copy Array<Teuchos::SerialDenseVector<OT,ST> > to ST*
-template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
-void copy_data(
-  const std::vector<Teuchos::SerialDenseVector<OrdinalType1, ScalarType> >& va,
-  ScalarType* ptr, const OrdinalType2 ptr_len, const String& ptr_type)
-{
-  bool c_type;
-  if (strtolower(ptr_type) == "c") // case insensitive
-    c_type = true;
-  else if (strtolower(ptr_type) == "fortran") // case insensitive
-    c_type = false;
-  else {
-    Cerr << "Error: invalid ptr_type in copy_data(Dakota::Array<SDV<OT,ST> >, "
-	 << "ST* ptr)" << std::endl;
-    abort_handler(-1);
-  }
-  OrdinalType2 i, j, num_vec = va.size(), total_len = 0, max_vec_len = 0;
-  for (i=0; i<num_vec; ++i) { // loop over vectors in array
-    OrdinalType1 vec_len = va[i].length();
-    total_len += vec_len;
-    if (!c_type && vec_len > max_vec_len)
-      max_vec_len = vec_len;
-  }
-  if (ptr_len != total_len) {
-    Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<Vector<T> >, T* "
-	 << "ptr)." << std::endl;
-    abort_handler(-1);
-  }
-  int cntr = 0;
-  if (c_type) {
-    for (i=0; i<num_vec; ++i) { // loop over rows
-      OrdinalType1 vec_len = va[i].length(); // allowed to vary
-      for (j=0; j<vec_len; ++j) // loop over columns
-        ptr[cntr++] = va[i][j];
-    }
-  }
-  else {
-    for (j=0; j<max_vec_len; ++j) // loop over longest column
-      for (i=0; i<num_vec; ++i) // loop over rows
-	if (j < va[i].length())
-	  ptr[cntr++] = va[i][j];
-  }
-}
+///// copy Array<T> to T*
+//template <typename T>
+//void copy_data(const std::vector<T>& vec, T* ptr, const size_t ptr_len)
+//{
+//  if (ptr_len != vec.size()) { // could use <, but enforce exact match
+//    Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<T>, T* ptr)."
+//	 << std::endl;
+//    abort_handler(-1);
+//  }
+//  for (size_t i=0; i<ptr_len; ++i)
+//    ptr[i] = vec[i];
+//}
+//
+//template <typename ScalarType1> //, typename ScalarType1, typename ScalarType2>
+//void copy_data(const RealVector& vec, ScalarType1* Sptr, const size_t ptr_len, size_t dummy)
+//{
+//  if (ptr_len != vec.length()) { // could use <, but enforce exact match
+//    Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<T>, T* ptr)."
+//	 << std::endl;
+//    abort_handler(-1);
+//  }
+//  for (size_t i=0; i<ptr_len; ++i)
+//    Sptr[i] = vec[i];
+//}
+//
+///// copy T* to Array<T>
+//template <typename T>
+//void copy_data(const T* ptr, const size_t ptr_len, std::vector<T>& vec)
+//{
+//  if (ptr_len != vec.size())
+//    vec.resize(ptr_len);
+//  for (size_t i=0; i<ptr_len; ++i)
+//    vec[i] = ptr[i];
+//}
+//
+//
+///// copy Array<Teuchos::SerialDenseVector<OT,ST> > to ST*
+//template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
+//void copy_data(
+//  const std::vector<Teuchos::SerialDenseVector<OrdinalType1, ScalarType> >& va,
+//  ScalarType* ptr, const OrdinalType2 ptr_len, const String& ptr_type)
+//{
+//  bool c_type;
+//  if (strtolower(ptr_type) == "c") // case insensitive
+//    c_type = true;
+//  else if (strtolower(ptr_type) == "fortran") // case insensitive
+//    c_type = false;
+//  else {
+//    Cerr << "Error: invalid ptr_type in copy_data(Dakota::Array<SDV<OT,ST> >, "
+//	 << "ST* ptr)" << std::endl;
+//    abort_handler(-1);
+//  }
+//  OrdinalType2 i, j, num_vec = va.size(), total_len = 0, max_vec_len = 0;
+//  for (i=0; i<num_vec; ++i) { // loop over vectors in array
+//    OrdinalType1 vec_len = va[i].length();
+//    total_len += vec_len;
+//    if (!c_type && vec_len > max_vec_len)
+//      max_vec_len = vec_len;
+//  }
+//  if (ptr_len != total_len) {
+//    Cerr << "Error: bad ptr_len in copy_data(Dakota::Array<Vector<T> >, T* "
+//	 << "ptr)." << std::endl;
+//    abort_handler(-1);
+//  }
+//  int cntr = 0;
+//  if (c_type) {
+//    for (i=0; i<num_vec; ++i) { // loop over rows
+//      OrdinalType1 vec_len = va[i].length(); // allowed to vary
+//      for (j=0; j<vec_len; ++j) // loop over columns
+//        ptr[cntr++] = va[i][j];
+//    }
+//  }
+//  else {
+//    for (j=0; j<max_vec_len; ++j) // loop over longest column
+//      for (i=0; i<num_vec; ++i) // loop over rows
+//	if (j < va[i].length())
+//	  ptr[cntr++] = va[i][j];
+//  }
+//}
 
 
 /// copy Array<Teuchos::SerialDenseVector<OT,ST> > to
-/// Teuchos::SerialDenseMatrix<OT,ST>
+/// Teuchos::SerialDenseMatrix<OT,ST> - used by read_data_tabular - RWH
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(
   const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+        Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
 {
   OrdinalType i, j, num_vec = sdva.size(), max_vec_len = 0;
   for (i=0; i<num_vec; ++i) { // loop over vectors in array
@@ -357,7 +357,7 @@ void copy_data(
 
 
 /// copy Array<Teuchos::SerialDenseVector<OT,ST> > to transposed
-/// Teuchos::SerialDenseMatrix<OT,ST>
+/// Teuchos::SerialDenseMatrix<OT,ST> - used by read_data_tabular - RWH
 template <typename OrdinalType, typename ScalarType> 
 void copy_data_transpose(
   const std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva,
@@ -383,44 +383,44 @@ void copy_data_transpose(
 }
 
 
-/// copy Teuchos::SerialDenseMatrix<OT,ST> to
-/// Array<Teuchos::SerialDenseVector<OT,ST> >
-template <typename OrdinalType, typename ScalarType> 
-void copy_data(
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
-  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
-{
-  OrdinalType i, j, num_vec = sdm.numRows(), vec_len = sdm.numCols();
-  sdva.resize(num_vec);
-  for (i=0; i<num_vec; ++i) {
-    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
-    vec_i.sizeUninitialized(vec_len);
-    for (j=0; j<vec_len; ++j)
-      vec_i[j] = sdm(i,j);
-  }
-}
+///// copy Teuchos::SerialDenseMatrix<OT,ST> to
+///// Array<Teuchos::SerialDenseVector<OT,ST> >
+//template <typename OrdinalType, typename ScalarType> 
+//void copy_data(
+//  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+//  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
+//{
+//  OrdinalType i, j, num_vec = sdm.numRows(), vec_len = sdm.numCols();
+//  sdva.resize(num_vec);
+//  for (i=0; i<num_vec; ++i) {
+//    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+//    vec_i.sizeUninitialized(vec_len);
+//    for (j=0; j<vec_len; ++j)
+//      vec_i[j] = sdm(i,j);
+//  }
+//}
+//
+//
+///// copy Teuchos::SerialDenseMatrix<OT,ST> to transposed
+///// Array<Teuchos::SerialDenseVector<OT,ST> >
+//template <typename OrdinalType, typename ScalarType> 
+//void copy_data_transpose(
+//  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+//  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
+//{
+//  OrdinalType i, j, num_vec = sdm.numCols(), vec_len = sdm.numRows();
+//  sdva.resize(num_vec);
+//  for (i=0; i<num_vec; ++i) {
+//    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
+//    const ScalarType* sdm_i = sdm[i]; // ith column
+//    vec_i.sizeUninitialized(vec_len);
+//    for (j=0; j<vec_len; ++j)
+//      vec_i[j] = sdm_i[j];
+//  }
+//}
 
 
-/// copy Teuchos::SerialDenseMatrix<OT,ST> to transposed
-/// Array<Teuchos::SerialDenseVector<OT,ST> >
-template <typename OrdinalType, typename ScalarType> 
-void copy_data_transpose(
-  const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
-  std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& sdva)
-{
-  OrdinalType i, j, num_vec = sdm.numCols(), vec_len = sdm.numRows();
-  sdva.resize(num_vec);
-  for (i=0; i<num_vec; ++i) {
-    Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec_i = sdva[i];
-    const ScalarType* sdm_i = sdm[i]; // ith column
-    vec_i.sizeUninitialized(vec_len);
-    for (j=0; j<vec_len; ++j)
-      vec_i[j] = sdm_i[j];
-  }
-}
-
-
-/// copy Teuchos::SerialDenseVector<OT,ST> to Teuchos::SerialDenseMatrix<OT,ST>
+/// copy Teuchos::SerialDenseVector<OT,ST> to Teuchos::SerialDenseMatrix<OT,ST> - used by NestedModel::update_sub_iterator - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
                Teuchos::SerialDenseMatrix<OrdinalType1, ScalarType>& sdm,
@@ -472,69 +472,69 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
       sdm(i,j) = sdv[counter];
 }
 
-/// copy std::list<T> to std::vector<T>
-template <typename T> 
-void copy_data(const std::list<T>& dl, std::vector<T>& da)
-{
-  size_t size_dl = dl.size();
-  if (size_dl != da.size())
-    da.resize(size_dl);
-  std::copy(dl.begin(), dl.end(), da.begin());
-}
+///// copy std::list<T> to std::vector<T>
+//template <typename T> 
+//void copy_data(const std::list<T>& dl, std::vector<T>& da)
+//{
+//  size_t size_dl = dl.size();
+//  if (size_dl != da.size())
+//    da.resize(size_dl);
+//  std::copy(dl.begin(), dl.end(), da.begin());
+//}
+//
+///// copy std::list<T> to std::vector<std::vector<T> >
+//template <typename T>
+//void copy_data(const std::list<T>& dl, std::vector<std::vector<T> >& d2a,
+//	       size_t num_a, size_t a_len)
+//{
+//  size_t i, j, size_dl = dl.entries();
+//
+//  // This function is set up to do the copy with either num_a or a_len or both
+//  // specified.  To omit num_a or a_len specification, a 0 is passed.
+//  if (num_a && a_len) { // both specified
+//    if (size_dl != num_a*a_len) {
+//      Cerr << "Error: dl length (" << size_dl <<") does not equal num_a*a_len ("
+//	   << num_a << '*' << a_len << ") in copy_data(std::list<T>, "
+//	   << "std::vector<vector<T> >)." << std::endl;
+//      abort_handler(-1);
+//    }
+//  }
+//  else if (num_a) { // only num_a is non-zero
+//    if (size_dl%num_a) {
+//      Cerr << "Error: dl length (" << size_dl << ") not evenly divisible by "
+//	   << "number of arrays (" << num_a << ") in copy_data(std::list<T>"
+//	   << ", std::vector<vector<T> >)." << std::endl;
+//      abort_handler(-1);
+//    }
+//    a_len = size_dl/num_a;
+//  }
+//  else if (a_len) { // only a_len is non-zero
+//    if (size_dl%a_len) {
+//      Cerr << "Error: dl length (" << size_dl << ") not evenly divisible by "
+//	   << "array length (" << a_len << ") in copy_data(std::list<T>, "
+//	   << "std::vector<vector<T> >)." << std::endl;
+//      abort_handler(-1);
+//    }
+//    num_a = size_dl/a_len;
+//  }
+//  else { // neither specified
+//    Cerr << "Error: either num_a or a_len must be specified in "
+//	 << "copy_data(std::list<T>,std::vector<vector<T> >)." << std::endl;
+//    abort_handler(-1);
+//  }
+//
+//  if (d2a.size() != num_a)
+//    d2a.reshape(num_a);
+//  typename std::list<T>::const_iterator dl_cit = dl.begin();
+//  for (i=0; i<num_a; ++i) {
+//    if (d2a[i].size() != a_len)
+//      d2a[i].reshape(a_len);
+//    for (j=0; j<a_len; ++j, ++dl_cit)
+//      d2a[i][j] = *dl_cit;
+//  }
+//}
 
-/// copy std::list<T> to std::vector<std::vector<T> >
-template <typename T>
-void copy_data(const std::list<T>& dl, std::vector<std::vector<T> >& d2a,
-	       size_t num_a, size_t a_len)
-{
-  size_t i, j, size_dl = dl.entries();
-
-  // This function is set up to do the copy with either num_a or a_len or both
-  // specified.  To omit num_a or a_len specification, a 0 is passed.
-  if (num_a && a_len) { // both specified
-    if (size_dl != num_a*a_len) {
-      Cerr << "Error: dl length (" << size_dl <<") does not equal num_a*a_len ("
-	   << num_a << '*' << a_len << ") in copy_data(std::list<T>, "
-	   << "std::vector<vector<T> >)." << std::endl;
-      abort_handler(-1);
-    }
-  }
-  else if (num_a) { // only num_a is non-zero
-    if (size_dl%num_a) {
-      Cerr << "Error: dl length (" << size_dl << ") not evenly divisible by "
-	   << "number of arrays (" << num_a << ") in copy_data(std::list<T>"
-	   << ", std::vector<vector<T> >)." << std::endl;
-      abort_handler(-1);
-    }
-    a_len = size_dl/num_a;
-  }
-  else if (a_len) { // only a_len is non-zero
-    if (size_dl%a_len) {
-      Cerr << "Error: dl length (" << size_dl << ") not evenly divisible by "
-	   << "array length (" << a_len << ") in copy_data(std::list<T>, "
-	   << "std::vector<vector<T> >)." << std::endl;
-      abort_handler(-1);
-    }
-    num_a = size_dl/a_len;
-  }
-  else { // neither specified
-    Cerr << "Error: either num_a or a_len must be specified in "
-	 << "copy_data(std::list<T>,std::vector<vector<T> >)." << std::endl;
-    abort_handler(-1);
-  }
-
-  if (d2a.size() != num_a)
-    d2a.reshape(num_a);
-  typename std::list<T>::const_iterator dl_cit = dl.begin();
-  for (i=0; i<num_a; ++i) {
-    if (d2a[i].size() != a_len)
-      d2a[i].reshape(a_len);
-    for (j=0; j<a_len; ++j, ++dl_cit)
-      d2a[i][j] = *dl_cit;
-  }
-}
-
-/// copy std::vector<vector<T> > to std::vector<T>(unroll vecOfvecs into vector)
+/// copy std::vector<vector<T> > to std::vector<T>(unroll vecOfvecs into vector) - used by ProcessApplicInterface::write_parameters_files - RWH
 template <typename T> 
 void copy_data(const std::vector<std::vector<T> >& d2a, std::vector<T>& da)
 {
@@ -551,7 +551,7 @@ void copy_data(const std::vector<std::vector<T> >& d2a, std::vector<T>& da)
   }
 }
 
-/// copy map<int, T> to std::vector<T> (discard integer keys)
+/// copy map<int, T> to std::vector<T> (discard integer keys) - used by SurrBasedGlobalMinimizer::core_run - RWH
 template <typename T> 
 void copy_data(const std::map<int, T>& im, std::vector<T>& da)
 {
@@ -564,7 +564,7 @@ void copy_data(const std::map<int, T>& im, std::vector<T>& da)
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to same
-/// (used in place of operator= when a deep copy of a vector view is needed)
+/// (used in place of operator= when a deep copy of a vector view is needed) - used by SensAnalysisGlobal::valid_sample_matrix - RWH
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv2)
@@ -577,33 +577,33 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
 }
 
 /// copy Teuchos::SerialDenseVector<OrdinalType, ScalarType> to
-/// std::vector<ScalarType>
-template <typename OrdinalType, typename ScalarType> 
+/// std::vector<ScalarType> - used by SurfpackApproximation constructor - RWH
+template <typename OrdinalType, typename ScalarType, typename VectorType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
-	       std::vector<ScalarType>& da)
+	             VectorType& vec)
 {
   OrdinalType size_sdv = sdv.length();
-  if (size_sdv != da.size())
-    da.resize(size_sdv);
+  if (size_sdv > vec.size())
+    vec.resize(size_sdv);
   for (OrdinalType i=0; i<size_sdv; ++i)
-    da[i] = sdv[i];
+    vec[i] = sdv[i];
 }
 
 
 /// copy Array<ScalarType> to
-/// Teuchos::SerialDenseVector<OrdinalType, ScalarType>
+/// Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NOWPACOptimizer - MSE
 template <typename OrdinalType, typename ScalarType> 
 void copy_data(const std::vector<ScalarType>& da,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv)
 {
-  size_t size_da = da.size();
-  if (sdv.length() != size_da)
-    sdv.sizeUninitialized(size_da);
-  for (OrdinalType i=0; i<size_da; ++i)
-    sdv[i] = da[i];
+ size_t size_da = da.size();
+ if (sdv.length() != size_da)
+   sdv.sizeUninitialized(size_da);
+ for (OrdinalType i=0; i<size_da; ++i)
+   sdv[i] = da[i];
 }
 
-/// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType>
+/// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by ScalingModel::response_modify_n2s - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
 void copy_data(const ScalarType* ptr, const OrdinalType2 ptr_len,
 	       Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv)
@@ -618,7 +618,7 @@ void copy_data(const ScalarType* ptr, const OrdinalType2 ptr_len,
   // approach if a reference counting scheme was used for operator=.
 }
 
-/// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType>
+/// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NL2SOLLeastSq::core_run - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType> 
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
 	       ScalarType* ptr, const OrdinalType2 ptr_len)
@@ -633,7 +633,7 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
 }
 
 
-/// copy SerialDenseVector<> to Array<SerialDenseVector<> >
+/// copy SerialDenseVector<> to Array<SerialDenseVector<> > - used by ConcurrentMetaIterator constructor - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
   std::vector<Teuchos::SerialDenseVector<OrdinalType1, ScalarType> >& sdva,
@@ -695,7 +695,24 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
 
 // Partial copy functions
 
-/// copy portion of first SerialDenseVector to all of second SerialDenseVector
+/// copy a portion arbitrary vector to all of another arbitrary vector
+template <typename vecType1, typename vecType2>
+void copy_data_partial(
+  const vecType1& source,
+        vecType2& target,
+	size_t start_idx,
+        size_t len)
+{
+  // This requires that the target type supports tghe size() method, which RealVectors don't
+  //if( len != target.size()) { // could use <, but enforce exact match
+  //  Cerr << "Error: bad target vector length copy_data_partial." << std::endl;
+  //  abort_handler(-1);
+  //}
+  for( size_t i=0; i<len; ++i)
+    target[i] = source[i+start_idx];
+}
+
+/// copy portion of first SerialDenseVector to all of second SerialDenseVector - used by DataTransformModel::vars_mapping - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,
@@ -716,7 +733,7 @@ void copy_data_partial(
     sdv2[i] = sdv1[start_index1+i];
 }
 
-/// copy all of first SerialDenseVector to portion of second SerialDenseVector
+/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by MixedVariables - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,
@@ -738,7 +755,7 @@ void copy_data_partial(
 }
 
 /// copy portion of first SerialDenseVector to portion of second
-/// SerialDenseVector
+/// SerialDenseVector - used by ScalingModel::secondary_resp_scaled2native - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,
@@ -761,7 +778,7 @@ void copy_data_partial(
     sdv2[start_index2+i] = sdv1[start_index1+i];
 }
 
-/// copy all of first SerialDenseVector to portion of second SerialDenseVector
+/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by SharedSurfpackApproxData::merge_variable_arrays - RWH
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,
@@ -780,7 +797,7 @@ void copy_data_partial(
     da2[start_index2+i] = sdv1[i];
 }
 
-/// copy portion of first Array<T> to all of second Array<T>
+/// copy portion of first Array<T> to all of second Array<T> - used by SharedResponseDataRep constructor - RWH
 template <typename T>
 void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 		       size_t num_items, std::vector<T>& da2)
@@ -797,7 +814,7 @@ void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
     da2[i] = da1[start_index1+i];
 }
 
-/// copy all of first Array<T> to portion of second Array<T>
+/// copy all of first Array<T> to portion of second Array<T> - used by ParamStudy::multidim_loop - RWH
 template <typename T>
 void copy_data_partial(const std::vector<T>& da1, std::vector<T>& da2,
                        size_t start_index2)
@@ -814,7 +831,7 @@ void copy_data_partial(const std::vector<T>& da1, std::vector<T>& da2,
     da2[start_index2+i] = da1[i];
 }
 
-/// copy all of first Array<T> to portion of boost::multi_array<T, 1>
+/// copy all of first Array<T> to portion of boost::multi_array<T, 1> - used by RelaxedVariables - RWH
 template <typename T>
 void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
 		       size_t start_index_bma)
@@ -831,22 +848,47 @@ void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
     bma[start_index_bma+i] = da[i];
 }
 
-/// copy portion of first Array<T> to portion of second Array<T>
-template <typename T>
-void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
-		       size_t num_items,std::vector<T>& da2,size_t start_index2)
+///// copy portion of first Array<T> to portion of second Array<T>
+//template <typename T>
+//void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
+//		       size_t num_items,std::vector<T>& da2,size_t start_index2)
+//{
+//  // In this case, incoming da2 must already be sized and will be
+//  // indexed from start_index2 to start_index2+num_items-1.  da1 will
+//  // be indexed from start_index1 to start_index1+num_items-1
+//  if (start_index1 + num_items > da1.size() ||
+//      start_index2 + num_items > da2.size()) {
+//    Cerr << "Error: indexing out of bounds in copy_data_partial(Dakota::"
+//	 << "Array<T>, size_t, size_t, Dakota::Array<T>, size_t)." << std::endl;
+//    abort_handler(-1);
+//  }
+//  for (size_t i=0; i<num_items; ++i)
+//    da2[start_index2+i] = da1[start_index1+i];
+//}
+
+/// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+template<typename VectorType>
+void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
+			   VectorType& row)
 {
-  // In this case, incoming da2 must already be sized and will be
-  // indexed from start_index2 to start_index2+num_items-1.  da1 will
-  // be indexed from start_index1 to start_index1+num_items-1
-  if (start_index1 + num_items > da1.size() ||
-      start_index2 + num_items > da2.size()) {
-    Cerr << "Error: indexing out of bounds in copy_data_partial(Dakota::"
-	 << "Array<T>, size_t, size_t, Dakota::Array<T>, size_t)." << std::endl;
-    abort_handler(-1);
-  }
-  for (size_t i=0; i<num_items; ++i)
-    da2[start_index2+i] = da1[start_index1+i];
+  RealMatrix::ordinalType j, num_items = m.numCols();
+  if (row.size() != num_items)
+    row.resize(num_items);
+  for(j=0; j<num_items; ++j)
+    row[j] = m(i,j);
+}
+
+
+/// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+template<typename ScalarType>
+void insert_row_vector(const std::vector<ScalarType>& row, 
+                             RealMatrix::ordinalType i,
+                             RealMatrix& m)
+{
+  if( (m.numRows() < i+1) || (m.numCols() != row.size()) )
+    m.reshape(i+1, row.size());
+  for( size_t j=0; j<row.size(); ++j)
+    m(i,j) = row[j];
 }
 
 
@@ -861,7 +903,8 @@ inline void merge_data_partial(const IntVector& d_vec,
   size_t i, num_items = d_vec.length();
   // In this case, incoming m_vec must already be sized and will be
   // indexed from start_index_ma to start_index_ma+num_items-1
-  if (start_index_ma + num_items > m_vec.length()) {
+  size_t m_vec_len = m_vec.length();
+  if (start_index_ma + num_items > m_vec_len) {
     Cerr << "Error: indexing out of bounds in merge_data_partial(IntVector, "
 	 << "RealVector, size_t)." << std::endl;
     abort_handler(-1);
@@ -1031,16 +1074,16 @@ size_t find_index(const ContainerType& c,
 }
 
 
-/// generic copy (inactive)
-template <typename MultiArrayType, typename DakArrayType>
-void copy_data(const MultiArrayType& ma, DakArrayType& da)
-{
-  size_t size_ma = ma.size();
-  if (size_ma != da.size())
-    da.resize(size_ma);
-  for (size_t i=0; i<size_ma; ++i)
-    da[i] = ma[i];
-}
+///// generic copy (inactive)
+//template <typename MultiArrayType, typename DakArrayType>
+//void copy_data(const MultiArrayType& ma, DakArrayType& da)
+//{
+//  size_t size_ma = ma.size();
+//  if (size_ma != da.size())
+//    da.resize(size_ma);
+//  for (size_t i=0; i<size_ma; ++i)
+//    da[i] = ma[i];
+//}
 
 
 #else
@@ -1111,28 +1154,6 @@ size_t find_index(const ListT& l, const typename ListT::value_type& val)
 // TO DO: difficulty with compilation of ::type --> work-around by enumeration
 
 
-/// copy boost::multi_array view to Array
-inline void copy_data(SizetMultiArrayConstView ma, SizetArray& da)
-{
-  size_t size_ma = ma.size();
-  if (size_ma != da.size())
-    da.resize(size_ma);
-  for (size_t i=0; i<size_ma; ++i)
-    da[i] = ma[i];
-}
-
-
-/// copy boost::multi_array view to Array
-inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
-{
-  size_t size_ma = ma.size();
-  if (size_ma != da.size())
-    da.resize(size_ma);
-  for (size_t i=0; i<size_ma; ++i)
-    da[i] = ma[i];
-}
-
-
 /// return an iterator to the first list element satisfying the
 /// predicate test_fn w.r.t. the passed test_fn_data; end if not found
 template <typename ListT>
@@ -1153,6 +1174,50 @@ find_if(const ListT& c,
 }
 
 #endif
+
+// copy std::vector<VecType> to Real*
+// VectorType must support the length() method. 
+template<typename VectorType, typename ScalarType>
+void copy_data(const std::vector<VectorType>& va,
+               ScalarType * ptr,
+               int ptr_len)
+{
+  size_t total_len=0, cntr=0, num_vec = va.size();
+  for( size_t i=0; i<num_vec; ++i)
+    total_len += va[i].length();
+  if (total_len != ptr_len) {
+    Cerr << "copy_data Error: pointer allocation (" << ptr_len << ") does not equal "
+	 << "total std::vector<VecType> length (" << total_len << ")." << std::endl;
+    abort_handler(-1);
+  }
+  for( size_t i=0; i<num_vec; ++i)
+  {
+    int vec_len = va[i].length();
+    for(int j=0; j<vec_len; ++j)
+      ptr[cntr++] = va[i][j];
+  }
+}
+
+/// copy boost::multi_array view to Array - used by ActiveSet::derivative_vector - RWH
+inline void copy_data(SizetMultiArrayConstView ma, SizetArray& da)
+{
+  size_t size_ma = ma.size();
+  if (size_ma != da.size())
+    da.resize(size_ma);
+  for (size_t i=0; i<size_ma; ++i)
+    da[i] = ma[i];
+}
+
+
+/// copy boost::multi_array view to Array - used by Pecos::copy_data - RWH
+inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
+{
+  size_t size_ma = ma.size();
+  if (size_ma != da.size())
+    da.resize(size_ma);
+  for (size_t i=0; i<size_ma; ++i)
+    da[i] = ma[i];
+}
 
 
 /// return true if the item val appears in container v

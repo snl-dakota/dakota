@@ -541,49 +541,4 @@ void DDACEDesignCompExp::compute_main_effects()
   }
 }
 
-
-  // inactive copy functions -- remove?
-
-// copy DDACE point to RealVector
-//void copy_data(const DDaceSamplePoint& dsp, RealVector& rv)
-// {
-//   int j, vec_len = dsp.length();
-//   if (rv.length() != vec_len)
-//     rv.sizeUninitialized(vec_len);
-//   for (j=0; j<vec_len; ++j)
-//     rv[j] = dsp[j];
-// }
-
-// copy DDACE point array to RealVectorArray
-// void copy_data(const std::vector<DDaceSamplePoint>& dspa,
-// 	       RealVectorArray& rva)
-// {
-//   int i, num_vec = dspa.size();
-//   if (rva.size() != num_vec)
-//     rva.resize(num_vec);
-//   for (i=0; i<num_vec; ++i)
-//     copy_data(dspa[i], rva[i]);
-// }
-
-// copy DDACE point array to Real*
-void DDACEDesignCompExp::
-copy_data(const std::vector<DDaceSamplePoint>& dspa, Real* ptr,
-	  const int ptr_len)
-{
-  int i, j, num_vec = dspa.size(), total_len = 0, cntr = 0;
-  for (i=0; i<num_vec; ++i)
-    total_len += dspa[i].length();
-  if (total_len != ptr_len) {
-    Cerr << "Error: pointer allocation (" << ptr_len << ") does not equal "
-	 << "total Array<DDaceSamplePoint> length (" << total_len << ") in "
-	 << "copy_data(Array<DDaceSamplePoint>, Real*)." << std::endl;
-    abort_handler(-1);
-  }
-  for (i=0; i<num_vec; ++i) {
-    int vec_len = dspa[i].length();
-    for (j=0; j<vec_len; ++j)
-      ptr[cntr++] = dspa[i][j];
-  }
-}
-
 } // namespace Dakota

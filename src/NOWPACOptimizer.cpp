@@ -13,6 +13,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NOWPACOptimizer.hpp"
+#include "PostProcessModels.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
@@ -21,79 +22,63 @@ static const char rcsId[]="@(#) $Id: NOWPACOptimizer.cpp 7029 2010-10-22 00:17:0
 namespace Dakota {
 
 
-void NOWPACBlackBoxEvaluator::
-evaluate(std::vector<double> const &x, std::vector<double> &vals, void *param)
-{
-  RealVector c_vars = iteratedModel.continuous_variables_view();
-  copy_data(x, c_vars);
-  iteratedModel.compute_response(); // no ASV control, use default
-  copy_data(iteratedModel.current_response().function_values(), vals);
-
-  // TO DO: apply optimization sense mapping...
-
-  // TO DO: apply constraint mapping...
-}
-
-// TO DO: asynchronous evaluate() + synchronize() ???
-
 NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model),
-  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat")
-{ initialize(); }
-
-
-NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(NOWPAC_OPT, model),
-  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat")
-{ initialize(); }
-
-
-void NOWPACOptimizer::initialize()
+  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
+  nowpacEvaluator(iteratedModel)
 {
-  // NOWPAC does not support internal calculation of numerical derivatives
-  if (vendorNumericalGradFlag) {
-    Cerr << "\nError: vendor numerical gradients not supported by NOWPAC."
-	 << "\n       Please select dakota numerical instead." << std::endl;
-    abort_handler(-1);
-  }
+  nowpacEvaluator.allocate_constraints();
+  nowpacSolver.set_blackbox(nowpacEvaluator,
+			    nowpacEvaluator.num_ineq_constraints());
+  initialize_options();
+}
 
-  allocate_constraints();
 
-  // plug in derived evaluator instance
-  nowpacSolver.set_blackbox(nowpacEvaluator, numNowpacIneqConstr );
+NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(MIT_NOWPAC, model),
+  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
+  nowpacEvaluator(iteratedModel)
+{
+  nowpacEvaluator.allocate_constraints();
+  nowpacSolver.set_blackbox(nowpacEvaluator,
+			    nowpacEvaluator.num_ineq_constraints());
+  initialize_options();
+}
 
-  // Set lower bound constraints (optional)
-  RealArray l_bnds, u_bnds;
-  copy_data(iteratedModel.continuous_lower_bounds(), l_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), u_bnds);
-  nowpacSolver.set_lower_bounds(l_bnds);
-  nowpacSolver.set_upper_bounds(u_bnds);
 
+NOWPACOptimizer::~NOWPACOptimizer()
+{
+  // Virtual destructor handles referenceCount at Iterator level
+}
+
+
+void NOWPACOptimizer::initialize_options()
+{
   // Refer to bit bucket docs: https://bitbucket.org/fmaugust/nowpac
 
   // Optional: note that we are overridding NOWPAC defaults with Dakota defaults
   // May want to leave NOWPAC defaults in place if there is no user spec.
   nowpacSolver.set_option("eta_0",
-    probDescDB.get_real("method.sbl.trust_region.contract_threshold") );
+    probDescDB.get_real("method.trust_region.contract_threshold") );
   nowpacSolver.set_option("eta_1",
-    probDescDB.get_real("method.sbl.trust_region.expand_threshold") );
+    probDescDB.get_real("method.trust_region.expand_threshold") );
   // Criticality measures:
   //nowpacSolver.set_option("eps_c"                         , 1e-6 );
   //nowpacSolver.set_option("mu"                            , 1e1  );
   // Upper bound on poisedness constant augmented with distance penalty:
   //nowpacSolver.set_option("geometry_threshold"            , 5e2  );
   nowpacSolver.set_option("gamma_inc",
-    probDescDB.get_real("method.sbl.trust_region.expansion_factor") );
+    probDescDB.get_real("method.trust_region.expansion_factor") );
   nowpacSolver.set_option("gamma",
-    probDescDB.get_real("method.sbl.trust_region.contraction_factor") );
+    probDescDB.get_real("method.trust_region.contraction_factor") );
   // Reduction factors:
   //nowpacSolver.set_option("omega"                         , 0.8  );
   //nowpacSolver.set_option("theta"                         , 0.8  );
   // Inner boundary path constant: (default should be good and will be adapted)
-  //if ( numNowpacIneqConstr > 0)
+  //if (nowpacEvaluator.num_ineq_constraints() > 0)
   //  nowpacSolver.set_option("eps_b"                       , 1e1  );
 
   // NOWPAC output verbosity is 0 (least) to 3 (most)
-  nowpacSolver.set_option("verbose", std::min(outputLevel,3) );
+  nowpacSolver.set_option("verbose", std::min(outputLevel, (short)3) );
 
   //nowpacSolver.set_max_trustregion( 1e0 ); // scale dependent
 
@@ -101,15 +86,24 @@ void NOWPACOptimizer::initialize()
   // (a) links TR size to noise returned from evaluator
   // (b) feasibility restoration (on but not active in deterministic mode)
   // (c) outer Gaussian process approximation (smooths noisy evaluations)
-  nowpacSolver.set_option("stochastic_optimization"       , false);
-  // This is tied to the other BlackBoxBaseClass::evaluate() function redefinition.
+  bool stochastic = (methodName == MIT_SNOWPAC);
+  nowpacSolver.set_option("stochastic_optimization", stochastic);
+  // This is tied to the other BlackBoxBaseClass::evaluate() fn redefinition.
+  if (stochastic) {
+    // SNOWPAC picks random points in the trust region to improve the
+    // distribution of the Gaussian Process regression
+    int random_seed = probDescDB.get_int("method.random_seed");
+    if (random_seed) // default for no user spec is zero
+      nowpacSolver.set_option("seed",                random_seed);
+    //else SNOWPAC uses a machine generated seed and is non-repeatable
+  }
 
   // Maximum number of total accepted steps
-  nowpacSolver.set_option("max_nb_accepted_steps", maxIterations); // default is +inf
+  nowpacSolver.set_option("max_nb_accepted_steps", maxIterations);// inf default
   // Within special context of meta-iteration like MG/Opt, ensure that we
   // have at least 2 successful steps
   //if (subIteratorFlag && ...)
-  //  nowpacSolver.set_option("max_nb_accepted_steps"         , 2    );
+  //  nowpacSolver.set_option("max_nb_accepted_steps", 2    );
 
   // This is also a termination criterion, but not one of the required ones.
   // NOWPAC stops if the Frobenius norm of the Hessian blows up, indicating
@@ -123,18 +117,35 @@ void NOWPACOptimizer::initialize()
 
   // Required:
   // Must specify one or more stopping criteria: min TR size or maxFnEvals
-  //nowpacSolver.set_trustregion(initial_tr_radius); // if only initial
-  // TO DO: these are not relative to global bounds, they are absolute values
-  //        this is a hyper-sphere of constant dimensional radius.
-  // Therefore, it is advisable to present a scaled problem to NOWPAC in terms 
-  // of these optional inputs, and then perform a descaling to user-space within
-  // the BBEvaluator (scaling data can be passed by the "void* params").
-  const RealVector& tr_init
-    = probDescDB.get_rv("method.sbl.trust_region.initial_size");
-  Real tr_init0 = (tr_init.empty()) ? 0.5 : tr_init[0];
-  nowpacSolver.set_trustregion(tr_init0,
-    probDescDB.get_real("method.sbl.trust_region.minimum_size"));
+
   nowpacSolver.set_max_number_evaluations(maxFunctionEvals); // default is +inf
+
+  // NOWPAC trust region controls are not relative to global bounds; rather,
+  // they are absolute values for a hyper-sphere of constant dimensional radius.
+  // Therefore, we present a scaled problem to NOWPAC as consistent with these 
+  // trust region controls (see use of {un,}scale() within this file).
+  const RealVector& tr_init
+    = probDescDB.get_rv("method.trust_region.initial_size");
+  size_t num_factors = tr_init.length();
+  Real   min_factor  = probDescDB.get_real("method.trust_region.minimum_size"),
+          tr_factor  = (num_factors) ? tr_init[0] : 0.5;
+  if (num_factors > 1)
+    Cerr << "\nWarning: ignoring trailing trust_region initial_size content "
+	 << "for NOWPACOptimizer.\n" << std::endl;
+  // domain is [0,1]; default max radius is 1; {init,min}_radius are required
+  // NOWPAC inputs (no defaults) --> use Dakota defaults for {init,min}_radius
+  if (min_factor < 0.)        min_factor = 0.; // Dakota default is 1.e-6
+  if (tr_factor < min_factor) tr_factor  = min_factor;
+  else if (tr_factor > 1.)    tr_factor  = 1.;
+  nowpacSolver.set_trustregion(tr_factor, min_factor);
+  //nowpacSolver.set_trustregion(tr_factor); // if only initial
+
+  // Scale the design variables since the TR size controls are absolute, not
+  // relative.  Based on the default max TR size of 1., scale to [0,1].
+  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.cv();
+  l_bnds.assign(num_v, 0.); u_bnds.assign(num_v, 1.);
+  nowpacSolver.set_lower_bounds(l_bnds);
+  nowpacSolver.set_upper_bounds(u_bnds);
 
   // NOTES from 7/29/15 discussion:
   // For Lagrangian minimization within MG/Opt:
@@ -150,157 +161,270 @@ void NOWPACOptimizer::initialize()
 }
 
 
-NOWPACOptimizer::~NOWPACOptimizer()
+//void NOWPACOptimizer::initialize_run()
+//{
+//  Optimizer::initialize_run();
+//}
+
+
+void NOWPACOptimizer::core_run()
 {
-  // Virtual destructor handles referenceCount at Iterator level
+  //////////////////////////////////////////////////////////////////////////
+  // Set bound constraints at run time to catch late updates
+  nowpacEvaluator.set_unscaled_bounds(iteratedModel.continuous_lower_bounds(), 
+				      iteratedModel.continuous_upper_bounds());
+
+  // allocate arrays passed to optimization solver
+  RealArray x_star; Real obj_star;
+  nowpacEvaluator.scale(iteratedModel.continuous_variables(), x_star);
+  // create data object for nowpac output ( required for warm start )
+  BlackBoxData bb_data(numFunctions, numContinuousVars);
+
+  //////////////////////////////////////////////////////////////////////////
+  // start optimization (on output: bbdata contains data that allows warmstart
+  // and enables post-processing to get model values, gradients and hessians)
+  nowpacSolver.optimize(x_star, obj_star, bb_data);
+    
+  // create post-processing object to compute surrogate models
+  PostProcessModels<> PPD( bb_data );
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "\n----------------------------------------"
+	 << "\nSolution returned from nowpacSolver:\n  optimal value = "
+	 << obj_star << "\n  optimal point =\n" << x_star
+	 << "\nData from PostProcessModels:\n"
+	 << "  tr size = " << PPD.get_trustregion() << '\n';
+    // model value    = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
+    // model gradient = g + H (x-x_c)
+    // model Hessian  = H
+    for ( int i = 0; i < numFunctions; ++i)
+      Cout <<    "\n  model number "  << i+1
+	   <<    "\n  value    = "    << PPD.get_c(i, x_star)
+	   <<    "\n  gradient = [\n" << PPD.get_g(i, x_star)
+	   << "  ]\n  hessian  = [\n" << PPD.get_H(i) << "  ]\n";
+    Cout << "----------------------------------------" << std::endl;
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+  // Publish optimal variables
+  RealVector c_vars = bestVariablesArray.front().continuous_variables_view();
+  nowpacEvaluator.unscale(x_star, c_vars);
+  // Publish optimal response
+  if (!localObjectiveRecast) {
+    RealVector best_fns(numFunctions);
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star : obj_star;
+
+    const SizetList& nln_ineq_map_indices
+      = nowpacEvaluator.nonlinear_inequality_mapping_indices();
+    const RealList&  nln_ineq_map_mult
+      = nowpacEvaluator.nonlinear_inequality_mapping_multipliers();
+    const RealList&  nln_ineq_map_offsets
+      = nowpacEvaluator.nonlinear_inequality_mapping_offsets();
+    StLCIter i_iter; RLCIter m_iter, o_iter;
+    size_t cntr = 0;//numEqConstraints;
+    for (i_iter  = nln_ineq_map_indices.begin(),
+	 m_iter  = nln_ineq_map_mult.begin(),
+	 o_iter  = nln_ineq_map_offsets.begin();
+	 i_iter != nln_ineq_map_indices.end(); ++i_iter, ++m_iter, ++o_iter)
+      best_fns[(*i_iter)+1] = (PPD.get_c(++cntr, x_star) - (*o_iter))/(*m_iter);
+
+    /*
+    size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
+      num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
+    const RealVector& nln_eq_targets
+      = iteratedModel.nonlinear_eq_constraint_targets();
+    for (i=0; i<num_nln_eq; i++)
+      best_fns[i+offset] = PPD.get_c(++cntr, x_star) + nln_eq_targets[i];
+    */
+
+    bestResponseArray.front().function_values(best_fns);
+  }
+  // else local_objective_recast_retrieve() used in Optimizer::post_run()
 }
 
 
-void NOWPACOptimizer::allocate_constraints()
+void NOWPACBlackBoxEvaluator::allocate_constraints()
 {
-  // NOWPAC handles equality constraints = 0 and 1-sided inequalities >= 0.
-  // Compute the number of equalities and 1-sided inequalities to pass to NOWPAC
-  // as well as the mappings (indices, multipliers, offsets) between the DAKOTA
-  // constraints and the NOWPAC constraints.
-  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-            num_lin_ineq = iteratedModel.num_linear_ineq_constraints();
+  // NOWPAC handles 1-sided inequalities <= 0.  Equalities cannot be mapped to
+  // two oppositely-signed inequalities due to the interior path requirement.
+  // Hard error for now...
+  bool constraint_err = false;
+  if (iteratedModel.num_nonlinear_eq_constraints()) {
+    Cerr << "Error: NOWPAC does not support nonlinear equality constraints."
+	 << std::endl;
+    constraint_err = true;
+  }
+  if (iteratedModel.num_linear_eq_constraints()) {
+    Cerr << "Error: NOWPAC does not support linear equality constraints."
+	 << std::endl;
+    constraint_err = true;
+  }
+  if (constraint_err)
+    abort_handler(METHOD_ERROR);
+
+  nonlinIneqConMappingIndices.clear();
+  nonlinIneqConMappingMultipliers.clear();
+  nonlinIneqConMappingOffsets.clear();
+
+  linIneqConMappingIndices.clear();
+  linIneqConMappingMultipliers.clear();
+  linIneqConMappingOffsets.clear();
+
+  // Compute number of 1-sided inequalities to pass to NOWPAC and the mappings
+  // (indices, multipliers, offsets) between DAKOTA and NOWPAC constraints.
   numNowpacIneqConstr = 0;
+  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
   const RealVector& nln_ineq_lwr_bnds
     = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds
     = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+  for (i=0; i<num_nln_ineq; i++) {
+    if (nln_ineq_lwr_bnds[i] > -BIG_REAL_BOUND) {
+      ++numNowpacIneqConstr;
+      // nln_ineq_lower_bnd - dakota_constraint <= 0
+      nonlinIneqConMappingIndices.push_back(i);
+      nonlinIneqConMappingMultipliers.push_back(-1.);
+      nonlinIneqConMappingOffsets.push_back(nln_ineq_lwr_bnds[i]);
+    }
+    if (nln_ineq_upr_bnds[i] <  BIG_REAL_BOUND) {
+      ++numNowpacIneqConstr;
+      // dakota_constraint - nln_ineq_upper_bnd <= 0
+      nonlinIneqConMappingIndices.push_back(i);
+      nonlinIneqConMappingMultipliers.push_back(1.);
+      nonlinIneqConMappingOffsets.push_back(-nln_ineq_upr_bnds[i]);
+    }
+  }
+  size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints();
   const RealVector& lin_ineq_lwr_bnds
     = iteratedModel.linear_ineq_constraint_lower_bounds();
   const RealVector& lin_ineq_upr_bnds
     = iteratedModel.linear_ineq_constraint_upper_bounds();
-
-  /* NOTE: no support for linear/nonlinear equality constraints due to
-     interior path construction. */
-
-  for (i=0; i<num_nln_ineq; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      ++numNowpacIneqConstr;
-      // nln_ineq_lower_bnd - dakota_constraint <= 0
-      nonlinIneqConMappingIndices.push_back(i);
-      nonlinIneqConMappingMultipliers.push_back(-1.0);
-      nonlinIneqConMappingOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      ++numNowpacIneqConstr;
-      // dakota_constraint - nln_ineq_upper_bnd <= 0
-      nonlinIneqConMappingIndices.push_back(i);
-      nonlinIneqConMappingMultipliers.push_back(1.0);
-      nonlinIneqConMappingOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
   for (i=0; i<num_lin_ineq; i++) {
-    if (lin_ineq_lwr_bnds[i] > -bigRealBoundSize) {
+    if (lin_ineq_lwr_bnds[i] > -BIG_REAL_BOUND) {
       ++numNowpacIneqConstr;
       // lin_ineq_lower_bnd - Ax <= 0
       linIneqConMappingIndices.push_back(i);
-      linIneqConMappingMultipliers.push_back(-1.0);
+      linIneqConMappingMultipliers.push_back(-1.);
       linIneqConMappingOffsets.push_back(lin_ineq_lwr_bnds[i]);
     }
-    if (lin_ineq_upr_bnds[i] < bigRealBoundSize) {
+    if (lin_ineq_upr_bnds[i] <  BIG_REAL_BOUND) {
       ++numNowpacIneqConstr;
       // Ax - lin_ineq_upper_bnd <= 0
       linIneqConMappingIndices.push_back(i);
-      linIneqConMappingMultipliers.push_back(1.0);
+      linIneqConMappingMultipliers.push_back(1.);
       linIneqConMappingOffsets.push_back(-lin_ineq_upr_bnds[i]);
     }
   }
 }
 
 
-void NOWPACOptimizer::initialize_run()
+void NOWPACBlackBoxEvaluator::
+evaluate(RealArray const &x, RealArray &vals, void *param)
 {
-  Optimizer::initialize_run();
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
 
-}
+  iteratedModel.evaluate(); // no ASV control, use default
 
+  const RealVector& dakota_fns
+    = iteratedModel.current_response().function_values();
+  // If no mappings...
+  //copy_data(dakota_fns, vals);
 
-void NOWPACOptimizer::core_run()
-{
-  // TO DO: utilize L concurrency with evaluate_nowait()/synchronize()
+  // apply optimization sense mapping.  Note: Any MOO/NLS recasting is
+  // responsible for setting the scalar min/max sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  Real obj_fn = dakota_fns[0];
+  vals[0] = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
 
-  const RealVector& cdv_lower_bnds
-    = iteratedModel.continuous_lower_bounds();
-  const RealVector& cdv_upper_bnds
-    = iteratedModel.continuous_upper_bounds();
-  size_t i, j, fn_eval_cntr,
-    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  // apply nonlinear inequality constraint mappings
+  StLIter i_iter; RLIter m_iter, o_iter; size_t cntr = 0;
+  for (i_iter  = nonlinIneqConMappingIndices.begin(),
+       m_iter  = nonlinIneqConMappingMultipliers.begin(),
+       o_iter  = nonlinIneqConMappingOffsets.begin();
+       i_iter != nonlinIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter)   // nonlinear ineq
+    vals[++cntr] = (*o_iter) + (*m_iter) * dakota_fns[(*i_iter)+1];
+
+  // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
     = iteratedModel.linear_ineq_constraint_coeffs();
-
-  // Any MOO/NLS recasting is responsible for setting the scalar min/max
-  // sense within the recast.
-  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-  bool max_flag = (!max_sense.empty() && max_sense[0]);
-
-  //////////////////////////////////////////////////////////////////////
-
-  // start optimization
-  nowpacSolver.optimize(x_star, obj_star);
-
-  // output ...
-  std::cout << "optimal value = " << obj_star << std::endl;
-  std::cout << "optimal point = [" << x_star << "]" << std::endl;
-    
-  double                             trustregion;
-  double                             c;
-  std::vector<double>                g(dim);
-  std::vector< std::vector<double> > H(dim);
-  for ( int i = 0; i < dim; ++i )    H[i].resize(dim);
-    
-  trustregion = nowpacSolver.get_trustregion();
-  std::cout << std::endl << "----------------------------------------" << std::endl;
-  std::cout << "tr size = " << trustregion << std::endl;
-  std::cout << "----------------------------------------" << std::endl;
-  // model = c + g'(x-x_c) + (x-x_c)'H(x-x_c) / 2
-  for ( int i = 0; i < numFunctions; ++i) {
-    fn   = nowpacSolver.get_c(i, x_star); // get model value at x_star
-    grad = nowpacSolver.get_g(i, x_star); // get model gradient at x_star (center of final TR) = g + H (x-x_c)
-    Hess = nowpacSolver.get_H(i);    // get model Hessian = H
-    std::cout << "model number " << i << std::endl;
-    std::cout << "value   = " << c << std::endl;
-    std::cout << "grad    = [" << g[0] << ", " << g[1] << "]" << std::endl;
-    std::cout << "hess    = [" << H[0][0] << ", " << H[0][1] << std::endl;
-    std::cout << "           " << H[1][0] << ", " << H[1][1] << "]" <<std::endl;
-  }
-
-  //////////////////////////////////////////
-
-  // Publish optimal solution
-  RealVector local_cdv(N, false);
-  copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
-  bestVariablesArray.front().continuous_variables(local_cdv);
-  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
-                               // is used in Optimizer::post_run()
-    RealVector best_fns(numFunctions);
-    best_fns[0] = (max_flag) ? -F[0] : F[0];
-
-    StLIter i_iter;
-    RLIter  m_iter, o_iter;
-    size_t  cntr = numEqConstraints;
-    for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	 m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	 o_iter  = nonlinIneqConMappingOffsets.begin();
-	 i_iter != nonlinIneqConMappingIndices.end();
-	 i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-      best_fns[(*i_iter)+1] = (G[cntr++] - (*o_iter))/(*m_iter);
-
-    size_t i, 
-      num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-      num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
-    const RealVector& nln_eq_targets
-      = iteratedModel.nonlinear_eq_constraint_targets();
-    for (i=0; i<num_nln_eq; i++)
-      best_fns[i+num_nln_ineq+1] = G[i] + nln_eq_targets[i];
-
-    bestResponseArray.front().function_values(best_fns);
+  size_t j, num_cv = x.size();
+  for (i_iter  = linIneqConMappingIndices.begin(),
+       m_iter  = linIneqConMappingMultipliers.begin(),
+       o_iter  = linIneqConMappingOffsets.begin();
+       i_iter != linIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter) { // linear ineq
+    size_t index = *i_iter;
+    Real Ax = 0.;
+    for (j=0; j<num_cv; ++j)
+      Ax += lin_ineq_coeffs(index,j) * x[j];
+    vals[++cntr] = (*o_iter) + (*m_iter) * Ax;
   }
 }
+// TO DO: asynchronous evaluate_nowait()/synchronize()
+
+
+void NOWPACBlackBoxEvaluator::
+evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
+{
+  // NOWPACOptimizer enforces an embedded scaling: incoming x is scaled on [0,1]
+  // -->  unscale for posting to iteratedModel
+  RealVector& c_vars
+    = iteratedModel.current_variables().continuous_variables_view();
+  unscale(x, c_vars);
+
+  iteratedModel.evaluate(); // no ASV control, use default
+
+  const RealVector& dakota_fns
+    = iteratedModel.current_response().function_values();
+  // NonD implements std error estimates for selected QoI statistics (see, e.g.,
+  // Harting et al. for MC error estimates).  NestedModel implements
+  // sub-iterator mappings for both fn vals & std errors.
+  const RealVector& errors = iteratedModel.error_estimates();
+
+  // apply optimization sense mapping.  Note: Any MOO/NLS recasting is
+  // responsible for setting the scalar min/max sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  Real obj_fn = dakota_fns[0], mult;
+  size_t index, cntr = 0;
+  vals[cntr]  = (!max_sense.empty() && max_sense[0]) ? -obj_fn : obj_fn;
+  noise[cntr] = errors[0]; // for now; TO DO: mapping of noise for MOO/NLS...
+  ++cntr;
+
+  // apply nonlinear inequality constraint mappings
+  StLIter i_iter; RLIter m_iter, o_iter;
+  for (i_iter  = nonlinIneqConMappingIndices.begin(),
+       m_iter  = nonlinIneqConMappingMultipliers.begin(),
+       o_iter  = nonlinIneqConMappingOffsets.begin();
+       i_iter != nonlinIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter, ++cntr) {  // nonlinear ineq
+    index       = (*i_iter)+1; // offset single objective
+    mult        = (*m_iter);
+    vals[cntr]  = (*o_iter) + mult * dakota_fns[index];
+    noise[cntr] = std::abs(mult) * errors[index];
+  }
+  // apply linear inequality constraint mappings
+  const RealMatrix& lin_ineq_coeffs
+    = iteratedModel.linear_ineq_constraint_coeffs();
+  size_t j, num_cv = x.size();
+  for (i_iter  = linIneqConMappingIndices.begin(),
+       m_iter  = linIneqConMappingMultipliers.begin(),
+       o_iter  = linIneqConMappingOffsets.begin();
+       i_iter != linIneqConMappingIndices.end();
+       ++i_iter, ++m_iter, ++o_iter, ++cntr) { // linear ineq
+    size_t index = *i_iter;
+    Real Ax = 0.;
+    for (j=0; j<num_cv; ++j)
+      Ax += lin_ineq_coeffs(index,j) * x[j];
+    vals[cntr]  = (*o_iter) + (*m_iter) * Ax;
+    noise[cntr] = 0.; // no error in linear case
+  }
+}
+// TO DO: asynchronous evaluate_nowait()/synchronize()
 
 
 #ifdef HAVE_DYNLIB_FACTORIES

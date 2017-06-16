@@ -1,0 +1,102 @@
+#@ s0: DakotaConfig=HAVE_NPSOL
+
+environment,
+	graphics tabular_data
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	  approx_method_pointer = 'NLP'
+	  model_pointer = 'SURROGATE'
+	trust_region
+#	  initial_size = 0.5
+	  contract_threshold = 0.25
+	  expand_threshold   = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+	output debug
+
+method,
+	id_method = 'NLP'
+	npsol_sqp				#s0
+# OPT++ full Newton solver combined with warm-started quasi-Hessians from Dakota
+#	optpp_q_newton	   	    	 	#s1
+#	optpp_newton	   	    	 	#s2
+	  max_iterations = 50
+	  convergence_tolerance = 1e-10
+
+model,
+	id_model = 'SURROGATE'
+	variables_pointer = 'HF_VARS'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LOW_FID' 'MED_FID' 'HIGH_FID'
+	  correction additive first_order
+
+model,
+	id_model = 'LOW_FID'
+	simulation
+	  variables_pointer = 'LF_VARS'
+
+model,
+	id_model = 'MED_FID'
+	simulation
+	  variables_pointer = 'MF_VARS'
+
+model,
+	id_model = 'HIGH_FID'
+	simulation
+	  variables_pointer = 'HF_VARS'
+
+variables,
+	id_variables = 'LF_VARS'
+# avoid discontinuity at x_{5,6,7} = 0 -> xi_{5,6,7} = 1/2 -> |4xi-2| = 0
+	continuous_design = 7
+	  initial_point   = 4* 0. 3*.5
+	  lower_bounds    = 4*-1. 3* 0.
+	  upper_bounds    = 7* 1.
+	discrete_state_set integer = 2
+	  num_set_values = 4 2
+	  set_values = 30 60 100 200	  # number of spatial coords
+	  	       3 21    	      	  # number of Fourier solution modes
+	  initial_state = 30 21
+	  descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'MF_VARS'
+	continuous_design = 7
+	  initial_point   = 4* 0. 3*.5
+	  lower_bounds    = 4*-1. 3* 0.
+	  upper_bounds    = 7* 1.
+	discrete_state_set integer = 2
+	  num_set_values = 4 2
+	  set_values = 30 60 100 200	  # number of spatial coords
+	  	       3 21    	      	  # number of Fourier solution modes
+	  initial_state = 100 21
+	  descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_VARS'
+	continuous_design = 7
+	  initial_point   = 4* 0. 3*.5
+	  lower_bounds    = 4*-1. 3*0.
+	  upper_bounds    = 7* 1.
+	discrete_state_set integer = 2
+	  num_set_values = 4 2
+	  set_values = 30 60 100 200	  # number of spatial coords
+	  	       3 21    	      	  # number of Fourier solution modes
+	  initial_state = 200 21
+	  descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+
+responses,
+	objective_functions = 1
+ 	numerical_gradients
+#	  interval_type central
+	  method_source dakota
+	  fd_step_size = 1.e-6
+	no_hessians				#s0,#s1
+#	quasi_hessians bfgs			#s2

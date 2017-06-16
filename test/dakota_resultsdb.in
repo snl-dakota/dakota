@@ -24,7 +24,7 @@ method,
 #	  quadrature_order   = 5			#s2
 #	  dimension_preference = 5 3			#s2
 #	  samples_on_emulator = 10000				#s2
-#	  seed = 12347 rng rnum2			#s2
+#	  seed = 12347 			#s2
 #	  response_levels =				#s2
 #	  .1 1. 50. 100. 500. 1000.			#s2
 #	  variance_based_decomp #interaction_order = 1	#s2

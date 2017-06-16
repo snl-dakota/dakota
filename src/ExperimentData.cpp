@@ -687,6 +687,12 @@ num_fields() const
 }
 
 
+size_t ExperimentData::num_config_vars() const
+{
+  return numConfigVars; 
+}
+
+
 const std::vector<RealVector>& ExperimentData::config_vars() const
 {
   return allConfigVars;
@@ -716,6 +722,15 @@ const RealVector& ExperimentData::all_data(size_t experiment)
     abort_handler(-1);
   }
   return allExperiments[experiment].function_values();
+}
+
+const Response& ExperimentData::response(size_t experiment) 
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment];
 }
 
 size_t ExperimentData::num_total_exppoints() const
@@ -906,6 +921,13 @@ void ExperimentData::cov_as_correlation(RealSymMatrixArray& corr_matrices) const
       allExperiments[exp_ind].experiment_covariance();
     exp_cov.as_correlation(corr_matrices[exp_ind]);
   }
+}
+
+void ExperimentData::covariance(int exp_ind, RealSymMatrix& cov_mat) const
+{
+  const ExperimentCovariance& exp_cov = 
+    allExperiments[exp_ind].experiment_covariance();
+  exp_cov.dense_covariance(cov_mat);
 }
 
 

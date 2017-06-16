@@ -13,9 +13,8 @@ project("Dakota" NONE)
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 5)
+set(Dakota_VERSION_MINOR 6)
 set(Dakota_VERSION_PATCH 0)
-# TODO?: set(Dakota_VERSION_TWEAK SVNREV)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
 set(Dakota_VERSION_TRIPLE
@@ -47,8 +46,13 @@ else()
 endif()
 
 # Location for generated files
-execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory 
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
   "${Dakota_BINARY_DIR}/generated")
+# TODO: Consistent generated file locations and directory creation.  For now:
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
+  "${Dakota_BINARY_DIR}/generated/src")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
+  "${Dakota_BINARY_DIR}/generated/VERSION")
 
 # Buiding in an SVN checkout or a source package? 
 set(DAKOTA_VERSION_file_path)

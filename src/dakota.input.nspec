@@ -164,14 +164,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     model_pointer ALIAS approx_model_pointer STRING {N_mdm(str,modelPointer)}
     [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
     [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
-    [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
-      [ initial_size REALLIST {N_mdm(RealDL,surrBasedLocalTRInitSize)} ]
-      [ minimum_size REAL {N_mdm(Real,surrBasedLocalTRMinSize)} ]
-      [ contract_threshold REAL {N_mdm(Real,surrBasedLocalTRContractTrigger)} ]
-      [ expand_threshold REAL {N_mdm(Real,surrBasedLocalTRExpandTrigger)} ]
-      [ contraction_factor REAL {N_mdm(Real,surrBasedLocalTRContract)} ]
-      [ expansion_factor REAL {N_mdm(Real,surrBasedLocalTRExpand)} ]
-     ]
     [ approx_subproblem {0}
       original_primary {N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
       |
@@ -202,6 +194,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ constraint_relax {0}
       homotopy {N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
+     ]
+    [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+      [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+      [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+      [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+      [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+      [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+      [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
@@ -392,6 +392,35 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         inform_search {N_mdm(lit,useSurrogate_inform_search)}
         |
         optimize {N_mdm(lit,useSurrogate_optimize)}
+       ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( nowpac {N_mdm(utype,methodName_MIT_NOWPAC)}
+      [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+        [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+        [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+        [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+        [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+        [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+        [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
+       ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
+    ( snowpac {N_mdm(utype,methodName_MIT_SNOWPAC)}
+      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+      [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+        [ initial_size REALLIST {N_mdm(RealDL,trustRegionInitSize)} ]
+        [ minimum_size REAL {N_mdm(Real,trustRegionMinSize)} ]
+        [ contract_threshold REAL {N_mdm(Real,trustRegionContractTrigger)} ]
+        [ expand_threshold REAL {N_mdm(Real,trustRegionExpandTrigger)} ]
+        [ contraction_factor REAL {N_mdm(Real,trustRegionContract)} ]
+        [ expansion_factor REAL {N_mdm(Real,trustRegionExpand)} ]
        ]
       [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
       [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
@@ -790,6 +819,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
           [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
             uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
             |
@@ -975,6 +1011,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
           [ 
             ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
               uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
@@ -1116,6 +1159,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
             [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
            ]
+          [ final_moments {0}
+            none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+            |
+            standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+            |
+            central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+           ]
          )
         [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
           [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
@@ -1163,6 +1213,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
        )
       |
       ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
@@ -1504,16 +1561,42 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(utype,methodName_BAYES_CALIBRATION)}
-      ( 
-        ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
-          chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          [ emulator {0}
-            ( gaussian_process ALIAS kriging {0}
-              surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+      ( queso {N_mdm(utype,subMethod_SUBMETHOD_QUESO)}
+        chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+        [ emulator {0}
+          ( gaussian_process ALIAS kriging {0}
+            surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+            |
+            dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+            [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
+            [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+              [ 
+                annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+               ]
+              [ active_only {N_mdm(true,importBuildActive)} ]
+             ]
+           )
+          |
+          ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
+            sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+            |
+            ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               |
-              dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-              [ build_samples INTEGER {N_mdm(int,buildSamples)} ]
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ cross_validation {N_mdm(true,crossValidation)} ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
               [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
                 [ 
@@ -1533,99 +1616,50 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
              )
             |
-            ( pce {N_mdm(type,emulatorType_PCE_EMULATOR)}
-              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
-              |
-              ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
-                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-                |
-                collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-                [ cross_validation {N_mdm(true,crossValidation)} ]
-                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-                  [ 
-                    annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-                    |
-                    ( 
-                      ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                        [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                        [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                        [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                       )
+            ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+                [ 
+                  annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                  |
+                  ( 
+                    ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
                      )
-                    |
-                    freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                   ]
-                  [ active_only {N_mdm(true,importBuildActive)} ]
+                   )
+                  |
+                  freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                  ]
-               )
-              |
-              ( orthogonal_least_interpolation {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-                [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
-                [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-                  [ 
-                    annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-                    |
-                    ( 
-                      ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                        [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                        [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                        [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                       )
-                     )
-                    |
-                    freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                   ]
-                  [ active_only {N_mdm(true,importBuildActive)} ]
-                 ]
+                [ active_only {N_mdm(true,importBuildActive)} ]
+               ]
+             )
+           )
+          |
+          ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
+            sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+           )
+          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+         ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
+        [ logit_transform {N_mdm(true,logitTransform)} ]
+        [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
                )
              )
             |
-            ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
-              sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
-             )
-            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
            ]
-          [ logit_transform {N_mdm(true,logitTransform)} ]
-          [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
-            [ 
-              annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-             ]
-           ]
-         )
-        |
-        ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
-          chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          build_samples INTEGER {N_mdm(int,buildSamples)}
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
+         ]
         [ 
           dram {N_mdm(lit,mcmcType_dram)}
           |
@@ -1668,6 +1702,79 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             matrix {N_mdm(lit,proposalCovInputType_matrix)}
            )
          ]
+       )
+      |
+      ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
+        chain_samples ALIAS samples INTEGER {N_mdm(int,chainSamples)}
+        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+        build_samples INTEGER {N_mdm(int,buildSamples)}
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
+        [ logit_transform {N_mdm(true,logitTransform)} ]
+        [ gpmsa_normalize {N_mdm(true,gpmsaNormalize)} ]
+        [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ 
+          dram {N_mdm(lit,mcmcType_dram)}
+          |
+          delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+          |
+          adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+          |
+          metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+         ]
+        [ rng {0}
+          mt19937 {N_mdm(lit,rngName_mt19937)}
+          |
+          rnum2 {N_mdm(lit,rngName_rnum2)}
+         ]
+        [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
+          ( derivatives {N_mdm(lit,proposalCovType_derivatives)}
+            [ proposal_updates INTEGER {N_mdm(int,proposalCovUpdates)} ]
+           )
+          |
+          prior {N_mdm(lit,proposalCovType_prior)}
+          |
+          ( values REALLIST {N_mdm(RealDL,proposalCovData)}
+            diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+            |
+            matrix {N_mdm(lit,proposalCovInputType_matrix)}
+           )
+          |
+          ( filename STRING {N_mdm(str,proposalCovFile)}
+            diagonal {N_mdm(lit,proposalCovInputType_diagonal)}
+            |
+            matrix {N_mdm(lit,proposalCovInputType_matrix)}
+           )
+         ]
+        [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
        )
       |
       ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
@@ -1751,6 +1858,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
         ( data_distribution {0}
           ( 
             ( gaussian {0}
@@ -1865,6 +1973,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            )
           [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
+        [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
           [ 
             annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
@@ -1883,8 +1992,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ experimental_design {N_mdm(true,adaptExpDesign)}
         initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
-        num_candidates INTEGER >= 0 {N_mdm(sizet,numCandidates)}
-        [ max_hifi_evaluations INTEGER >= 0 {N_mdm(sizet,maxHifiEvals)} ]
+        num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
+        [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
         [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
           [ 
             annotated {N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}
@@ -1901,7 +2010,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
          ]
        ]
-      [ standardized_space {N_mdm(true,standardizedSpace)} ]
       [ calibrate_error_multipliers {0}
         one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}
         |
@@ -1919,6 +2027,82 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ posterior_stats {0}
         [ kl_divergence {N_mdm(true,posteriorStatsKL)} ]
         [ mutual_info {N_mdm(true,posteriorStatsMutual)} ]
+       ]
+      [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
+        [ discrepancy_type {0}
+          gaussian_process ALIAS kriging {N_mdm(lit,discrepancyType_global_kriging)}
+          |
+          polynomial {N_mdm(lit,discrepancyType_global_polynomial)}
+          [ correction_order {0}
+            constant {N_mdm(order,approxCorrectionOrder_0)}
+            |
+            linear {N_mdm(order,approxCorrectionOrder_1)}
+            |
+            quadratic {N_mdm(order,approxCorrectionOrder_2)}
+           ]
+         ]
+        [ num_prediction_configs INTEGER >= 0 {N_mdm(sizet,numPredConfigs)} ]
+        [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]
+        [ import_prediction_configs STRING {N_mdm(str,importPredConfigs)}
+          [ 
+            annotated {N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ export_discrepancy_file STRING {N_mdm(str,exportDiscrepFile)}
+          [ 
+            annotated {N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ export_corrected_model_file STRING {N_mdm(str,exportCorrModelFile)}
+          [ 
+            annotated {N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}
+           ]
+         ]
+        [ export_corrected_variance_file STRING {N_mdm(str,exportCorrVarFile)}
+          [ 
+            annotated {N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}
+           ]
+         ]
        ]
       [ sub_sampling_period INTEGER {N_mdm(int,subSamplingPeriod)} ]
       [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
@@ -2076,6 +2260,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
         [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+        [ final_moments {0}
+          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+          |
+          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          |
+          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+         ]
        )
       |
       ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
@@ -2906,23 +3097,16 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 
 KEYWORD12 interface {N_ifm3(start,0,stop)}
   [ id_interface STRING {N_ifm(str,idInterface)} ]
-  [ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]
   [ analysis_drivers STRINGLIST {N_ifm(strL,analysisDrivers)}
-    [ analysis_components STRINGLIST {N_ifm(str2D,analysisComponents)} ]
     [ input_filter STRING {N_ifm(str,inputFilter)} ]
     [ output_filter STRING {N_ifm(str,outputFilter)} ]
-    ( 
-      system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
-      |
-      fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
+    ( system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
-      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
-      [ verbatim {N_ifm(true,verbatimFlag)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
+      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
+      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
@@ -2931,6 +3115,27 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
         [ copy_files STRINGLIST {N_ifm(strL,copyFiles)} ]
         [ replace {N_ifm(true,templateReplace)} ]
        ]
+      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
+      [ verbatim {N_ifm(true,verbatimFlag)} ]
+     )
+    |
+    ( fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
+      [ parameters_file STRING {N_ifm(str,parametersFile)} ]
+      [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ file_tag {N_ifm(true,fileTagFlag)} ]
+      [ file_save {N_ifm(true,fileSaveFlag)} ]
+      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
+      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
+      [ work_directory {N_ifm(true,useWorkdir)}
+        [ named STRING {N_ifm(str,workDir)} ]
+        [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
+        [ directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
+        [ link_files STRINGLIST {N_ifm(strL,linkFiles)} ]
+        [ copy_files STRINGLIST {N_ifm(strL,copyFiles)} ]
+        [ replace {N_ifm(true,templateReplace)} ]
+       ]
+      [ allow_existing_results {N_ifm(true,allowExistingResultsFlag)} ]
+      [ verbatim {N_ifm(true,verbatimFlag)} ]
      )
     |
     ( direct {N_ifm(type,interfaceType_TEST_INTERFACE)}
@@ -2946,23 +3151,25 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
     scilab {N_ifm(type,interfaceType_SCILAB_INTERFACE)}
     |
     grid {N_ifm(type,interfaceType_GRID_INTERFACE)}
-    [ failure_capture {0}
-      abort {N_ifm(lit,failAction_abort)}
-      |
-      retry INTEGER {N_ifm(ilit,TYPE_DATA_failAction_retry)}
-      |
-      recover REALLIST {N_ifm(Rlit,TYPE_DATA_failAction_recover)}
-      |
-      continuation {N_ifm(lit,failAction_continuation)}
+    [ analysis_components STRINGLIST {N_ifm(str2D,analysisComponents)} ]
+   ]
+  [ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]
+  [ failure_capture {0}
+    abort {N_ifm(lit,failAction_abort)}
+    |
+    retry INTEGER {N_ifm(ilit,TYPE_DATA_failAction_retry)}
+    |
+    recover REALLIST {N_ifm(Rlit,TYPE_DATA_failAction_recover)}
+    |
+    continuation {N_ifm(lit,failAction_continuation)}
+   ]
+  [ deactivate {0}
+    [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
+    [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
+    [ strict_cache_equality {N_ifm(true,nearbyEvalCacheFlag)}
+      [ cache_tolerance REAL {N_ifm(Real,nearbyEvalCacheTol)} ]
      ]
-    [ deactivate {0}
-      [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
-      [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
-      [ strict_cache_equality {N_ifm(true,nearbyEvalCacheFlag)}
-        [ cache_tolerance REAL {N_ifm(Real,nearbyEvalCacheTol)} ]
-       ]
-      [ restart_file {N_ifm(false,restartFileFlag)} ]
-     ]
+    [ restart_file {N_ifm(false,restartFileFlag)} ]
    ]
   [ asynchronous {N_ifm(type,interfaceSynchronization_ASYNCHRONOUS_INTERFACE)}
     [ evaluation_concurrency INTEGER > 0 {N_ifm(pint,asynchLocalEvalConcurrency)} ]

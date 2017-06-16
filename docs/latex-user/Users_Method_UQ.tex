@@ -2418,7 +2418,7 @@ standard deviation.
 Markov Chain Monte Carlo (MCMC) is the prototypical method used to
 estimate posterior parameter densities, given the observational data
 and the priors. There are many references that describe the basic
-algorithm~\cite{Gilks}, though this is an active research area.  MCMC
+algorithm~\cite{Gilks} and this is an active research area.  MCMC
 algorithms may require hundreds of thousands of steps to converge,
 depending on dimensionality, response nonlinearity, and the desired
 set of posterior statistics.  Since each iteration involves an
@@ -2426,27 +2426,27 @@ evaluation of the model to obtain $q(\boldsymbol{\theta})$, surrogate
 models of expensive simulations are often employed to make the MCMC
 process tractable.
  
-Dakota offers three approaches for Bayesian calibration: QUESO, DREAM,
-and GPMSA.  They are specified with the \texttt{bayes\_calibration}
-keyword in combination with the \texttt{queso}, \texttt{dream}, or
-\texttt{gpmsa} selections, respectively.  The QUESO method uses
-components from the QUESO library (Quantification of Uncertainty for
-Estimation, Simulation, and Optimization) developed at The University
-of Texas at Austin.  It implements the Delayed Rejection and Adaptive
+Dakota offers four approaches for Bayesian calibration: QUESO, DREAM,
+GPMSA, and WASABI.  They are specified with the
+\texttt{bayes\_calibration} keyword in combination with the
+\texttt{queso}, \texttt{dream}, \texttt{gpmsa}, or \texttt{wasabi}
+selections, respectively.  The QUESO and GPMSA methods use components
+from the QUESO library (Quantification of Uncertainty for Estimation,
+Simulation, and Optimization) developed at The University of Texas at
+Austin.  It implements the Delayed Rejection and Adaptive
 Metropolis~\cite{Haario} (DRAM) algorithm, among others.  Algorithm
 variants selectively combine the delayed rejection and adaptive
-elements.
-%
-DREAM uses an implementation of DiffeRential Evolution Adaptive
-Metropolis developed by John Burkardt.  The DREAM approach runs
-concurrent chains for global exploration, and automatically tunes the
-proposal covariance during the process by a self-adaptive randomized
-subspace sampling~\cite{Vrugt}.
-%
-The GPMSA capability is based on the GPMSA Matlab toolbox developed at
-Los Alamos National Laboratory. At this point, the QUESO
-implementation is the most well-developed within Dakota and is the one
-that we recommend.
+elements.  The QUESO/GPMSA capability is based on the GPMSA Matlab
+toolbox developed at Los Alamos National Laboratory and uses tightly
+integrated Gaussian process models during calibration.  It's Dakota
+implementation is in an early prototype stage.  DREAM uses an
+implementation of DiffeRential Evolution Adaptive Metropolis developed
+by John Burkardt.  The DREAM approach runs concurrent chains for
+global exploration, and automatically tunes the proposal covariance
+during the process by a self-adaptive randomized subspace
+sampling~\cite{Vrugt}.  The prototype WASABI method is an MCMC-free
+Bayesian calibration approach based on interval analysis.  QUESO/DRAM
+and variants are the most well-developed within Dakota.
 
 \subsection{QUESO}\label{uq:bayesian:queso}
 The QUESO library includes several sampling algorithm variants.  One
@@ -2543,7 +2543,7 @@ of $D_{KL}$ can be found in~\cite{TheoMan}.
 
 \subsection{DREAM}
 For the DREAM method, one can define the number of chains used with the
-\texttt{chains} specification.  The total number of generations per chain in i
+\texttt{chains} specification.  The total number of generations per chain in
 DREAM is the number of samples divided by the number of chains.
 %The minimum number of chains is three.
 The number of chains randomly selected to be used in the crossover
@@ -2565,23 +2565,23 @@ calculated by specifying \texttt{posterior\_stats}, as described in
 Section~\ref{uq:bayesian:queso}. 
 
 \subsection{GPMSA}
-For the GPMSA capability, a key part of the algorithm involves the 
-construction of an emulator from simulation runs 
-collected at various settings of input parameters. The emulator is a 
-statistical model of the system response, and it is used to incorporate 
-the observational data to improve system predictions and constrain or 
-calibrate the unknown parameters. The GPMSA code draws heavily 
-on the theory developed in the seminal Bayesian calibration paper 
-by Kennedy and O'Hagan~\cite{Kenn01}. The particular approach developed 
-by the Los Alamos group is provided in~\cite{Hig08}. GPMSA uses 
-Gaussian process models in the emulation, but the emulator is 
-actually a set of basis functions (e.g. from a singular value 
-decomposition) which have GPs as the coefficients. 
-At this point, the GPMSA implementation in Dakota is an early 
-prototype. The user will have to edit the GPMSA class in the Dakota 
-source to tailor it to their problem and recompile before running GPMSA.
+Core to GPMSA is the construction of a Gaussian process emulator from
+simulation runs collected at various settings of input parameters. The
+emulator is a statistical model of the system response, and it is used
+to incorporate the observational data to improve system predictions
+and constrain or calibrate the unknown parameters. The GPMSA code
+draws heavily on the theory developed in the seminal Bayesian
+calibration paper by Kennedy and O'Hagan~\cite{Kenn01}. The particular
+approach developed by the Los Alamos group, and implemented in QUESO
+and therefore Dakota, is provided in~\cite{Hig08}.  It includes an
+embedded discrepancy model and the ability to estimate various
+hyper-parameters of the Gaussian process, observation error model, and
+discrepancy model.  Dakota's GPMSA capability is an experimental
+prototype with a number of limitations.  See the Dakota Reference
+Manual~\cite{RefMan} for more information.
 
-\subsection{Comparison of features for Bayesian Methods}
+
+\subsection{Feature Comparison}
 Table~\ref{tab:bayes_comparison} compares the options available 
 with the QUESO and DREAM implementations in Dakota. 
 
@@ -2589,86 +2589,63 @@ with the QUESO and DREAM implementations in Dakota.
 \centering
 \caption{Capabilities of Bayesian methods in Dakota}
 \label{tab:bayes_comparison}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-Capability           &  QUESO  & DREAM \\
+Capability           &  QUESO  & GPMSA & DREAM & WASABI \\
 \hline
-Prior Distribution Types                &  Any continuous uncertain & Only uniform priors \\
-                                        &  distributions in Dakota  &                    \\
+Prior Distributions  &  Any continuous &  Any continuous & Uniform only & Uniform only \\
+                     &  variable type  &  variable type  &              &              \\
 \hline
-MCMC Type                               &  Delayed Rejection or &  DREAM (Differential \\
-                               &  Adaptive Metropolis  or &  Evolution Adaptive  \\
-                               &  Metropolis Hastings  or &  Metropolis) \\
-                               &  Delayed Rejection  &   \\
-                               &  Adaptive Metropolis (DRAM)  &   \\
+Inference Type                 & MCMC with DR,   & MCMC with DR,   & MCMC with              & MCMC-free         \\
+                               & AM, DRAM, or MH & AM, DRAM, or MH & Differential Evolution & interval analysis \\
+                               &                 &                 & Adaptive Metropolis    &                   \\
 \hline
-Can use PCE/SC Emulator                 &  Yes                      &  Yes               \\
+Can use PCE/SC Emulator        &  Yes            & No              & Yes                    & Yes \\
 \hline
-Can use a GP Emulator                   &  Yes                      &  Yes               \\
+Can use GP Emulator            &  Yes            & Yes (required)  & Yes                    & Yes \\
 \hline
-Can update the emulator adaptively            &  Yes                      &  No          \\     
-to focus on high likelihood points            &                       &                \\
+Likelihood-based adaptive      &  Yes            &  No             & No                     & No \\     
+emulator update                &                 &                 &                        &    \\
 \hline
-Use MAP optimal point           &  Yes                      &  No               \\
-as starting point for MCMC chain             &                       &                \\
-(optimization can use emulator or actual model)   &                       &                \\
+Initialize with MAP pre-solve  &  Yes            &  No             & No                     & No \\
 \hline
-Can import build points for emulator            &  Yes                      &  Yes               \\             
+Proposal covariance            &  prior, user,     &  prior, user  & n/a                    & n/a \\            
+options                        &  derivative-based &               &                        & \\
 \hline
-Can specify proposal covariance from            &  Yes                      &  No             \\            
-prior, user data, or derivatives               &                       &                \\
+Can calibrate error            &  Yes            &  Yes (internal) & Yes                    & No          \\                
+covariance multipliers         &                 &                 &                        &              \\
 \hline
-Can calibrate error covariance multipliers           &  Yes                      &  Yes         \\                
-which multiply the $\Sigma$ matrix used                &                       &                \\
-in the log-likelihood function                 &                       &                 \\             
+Supports standardized space    &  Yes            & Yes             & Yes                    & Yes           \\             
 \hline
-Can be used in standardized space           &  Yes                    &  Yes               \\             
+Logit transform                &  Yes            & Yes             &  No                    & No            \\             
 \hline
-Logit transform           &  Yes                     &  No              \\             
-\hline
-Can export samples from the chain           &  Yes                     &  Yes              \\             
-%Can export samples from the posterior density           &  No                     &  No              \\             
+Posterior export               &  samples        & samples         &  samples               & samples, density \\             
 \hline
 \end{tabular}
 \end{table}
 
 
-%One major difference between the GPMSA toolbox and the current
-%implementation in Dakota is that the current Dakota implementation
-%does not have an explicit ``discrepancy'' function $\delta$ which
-%models the difference between the simulation and the observational
-%data results in addition to the error term $\epsilon$, but GPMSA has a
-%sophisticated model for the discrepancy term.
-
-%At this point, the GPMSA library is a standalone C++ library which has 
-%its own methods to create Gaussian process models, perform MCMC updating, 
-%etc. The GPMSA C++ library is an alpha-version and undergoing development, 
-%so a user is cautioned to obtain the latest version (e.g. Version-of-the-Day)
-%to have the latest updates. We expect that future Dakota-GPMSA integration 
-%will involve more interoperability and sharing of optimization 
-%algorithms and surrogate models between Dakota and GPMSA, for example. 
-
 \subsection{Bayesian Calibration Example}\label{uq:bayesian:ex}
 
 To run a QUESO-based Bayesian calibration in Dakota, create a Dakota
-input file such as the one shown in~\ref{uq:figure18}.  Here, the
-QUESO DRAM (delayed rejection adaptive metropolis) solver is
+input file such as the one shown in Figure~\ref{uq:figure18}.  Here,
+the QUESO DRAM (delayed rejection adaptive metropolis) solver is
 selected. The number of samples = 1000 indicates how many points to
 generate in the acceptance chain\footnote{If delayed rejection is
   active, the number of simulation evaluations will typically be
   higher due to backtracking.}.  This example uses the
-\texttt{mod\_cantilever} algebraic model, so an emulator is not warranted,
-but the commented lines hint at related user options.  The proposal
-covariance used has diagonal element values of 1.e6 and 0.1. Two credible and
-prediction intervals will be calculated for each model output: a 5/95 interval
-and a 10/90 interval. The calibration terms in the responses section refers to 
-the number of outputs that will be used in the calibration process: in this 
-case, it is just two. The calibration data file has the observational data: in
-this case, it is a freeform file (e.g. no header or annotation) with
-ten experiments. For each experiment, there are two experiment values,
-one for stress and one for displacement, followed by two variance
-values for the error associated with that experiment for each quantity
-of interest. 
+\texttt{mod\_cantilever} algebraic model, so an emulator is not
+warranted.  The proposal covariance used has diagonal element values
+of 1.e6 and 0.1. Two credible and prediction intervals will be
+calculated for each model output: a 5/95 interval and a 10/90
+interval. The calibration terms in the responses section refers to the
+number of outputs that will be used in the calibration process: in
+this case, it is just two. The calibration data file has the
+observational data: in this case, it is a freeform file (e.g. no
+header or annotation) with ten experiments. For each experiment, there
+are two experiment values, one for stress and one for displacement,
+followed by two variance values for the error associated with that
+experiment for each quantity of interest.
 
 \begin{figure}[htbp!]
   \centering
@@ -2682,50 +2659,39 @@ of interest.
 \end{figure}
 
 When the input file shown in~\ref{uq:figure18} is run, Dakota will run
-the MCMC algorithm and generate a posterior sample of $\boldsymbol{\theta}$ in
-accordance with Bayes Theorem~\ref{eq:BayesThm} and the likelihood
-function~\ref{eqn:Likelihood}. Dakota's final output summary will
-currently report an evaluation count summary and the best sample point
-that was visited during the MCMC process, as measured by maximum
-posterior probability (an estimate of the MAP point).  The final output 
-also summarizes the moments of the posterior samples from the chain (e.g. 
-mean of the chain, standard deviation of the chain samples, etc.), as well as
-the credible and prediction intervals for each model output.
+the MCMC algorithm and generate a posterior sample of
+$\boldsymbol{\theta}$ in accordance with Bayes
+Theorem~\ref{eq:BayesThm} and the likelihood
+function~\ref{eqn:Likelihood}. Dakota's final output summary reports
+an evaluation count summary and the best sample point visited during
+the MCMC process as measured by maximum posterior probability (an
+estimate of the MAP point).  The final output also summarizes the
+moments of the posterior samples from the chain (e.g.  mean of the
+chain, standard deviation of the chain samples, etc.), as well as the
+credible and prediction intervals for each model output.
 
-A variety of auxilliary output also exists.  The MCMC sample output is
-put into a directory called \texttt{QuesoDiagnostics} in the directory from
-which Dakota is run.  The file \texttt{display\_sub0.txt} contains
-information regarding the MCMC process.  The Matlab files contained in
-the \texttt{QuesoDiagnostics} directory contain the chain files.  The files
-to load in Matlab are \texttt{raw\_chain.m} or
+Auxilliary output is also generated to a directory called
+\texttt{QuesoDiagnostics/} in the directory from which Dakota is run.
+The file \texttt{display\_sub0.txt} contains diagnostic information
+regarding the MCMC process.  The Matlab files contained in the
+\texttt{QuesoDiagnostics} directory contain the chain files.  The
+files to load in Matlab are \texttt{raw\_chain.m} or
 \texttt{filtered\_chain.m}, containing the full chain or the filtered
 chain values of the parameters\footnote{The full chain will be output
   in cases of adaptive posterior refinement or proposal updating,
   since these use cases access the entire acceptance chain to identify
-  refinement data or restarting points, respectively.}. 
-In addition, the accepted chain values that Dakota
-generates are written to a file in the run directory called
+  refinement data or restarting points, respectively.}.  In addition,
+the accepted chain values that Dakota generates are written to a file
+in the run directory called (by default)
 \texttt{dakota\_mcmc\_tabular.dat}. The first columns of this file are
-the posterior values of the input variables. If \texttt{burn\_in} or 
-\texttt{sub\_sampling\_period} are specified, the filtered acceptance chain
-is written to the file \texttt{dakota\_mcmc\_tabular.dat}. This file 
-contains the posterior values of the filtered MCMC chain, as well as the values 
-of state variables and the resulting model responses. Finally, if one wants to 
-see the likelihood of each point, specifying verbose output in the method 
-section will result in the likelihoods being printed. 
-
-%We expect to continue development of Bayesian calibration methods, 
-%so check for updates to this capability. The QUESO and GPMSA capabilities
-%in Dakota currently rely on the QUESO library developed by The University of 
-%Texas at Austin. This integrated capability is still in prototype form and 
-%available to close collaborators of the Dakota team.  DREAM is distributed 
-%with Dakota.
-%
-%Bayesian methods are currently an active development area within
-%Dakota, so we recommend monitoring our updates to these capabilities.
-%If you would like additional information on emerging capabilities, 
-%contact the Dakota developers at dakota-developers@development.sandia.gov.
-
+the posterior values of the input variables. If \texttt{burn\_in} or
+\texttt{sub\_sampling\_period} are specified, the filtered acceptance
+chain is instead written to the file
+\texttt{dakota\_mcmc\_tabular.dat}. This file contains the posterior
+values of the filtered MCMC chain, as well as the values of state
+variables and the resulting model responses. Finally, if one wants to
+see the likelihood of each point, specifying verbose output in the
+method section will result in the likelihoods being printed.
 
 \subsection{Calibrating the Observation Error Model}
 
@@ -2770,6 +2736,117 @@ deviation approximately 0.1.
   \label{fig:uq:obs_err_mult}
 \end{figure}
 
+\subsection{Model Discrepancy}
+%kam
+Whether in a Bayesian setting or otherwise, the goal of model calibration
+is to minimize the difference between the observational data $d_i$ and 
+the corresponding model response $q_i(\boldsymbol{\theta})$. In the 
+presence of scenario or configuration variables $x$, Eq.~\ref{eq:model} can
+be modified,
+\begin{equation}
+d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \epsilon_i,
+\end{equation} 
+with the ensuing equations of the likelihood and Bayes Theorem updated 
+likewise. The configuration variables represent experimental settings, such 
+as temperature or pressure, that may vary between experiments. 
+
+However, it is often the case that the agreement between the 
+data and the model after calibration is not sufficiently close. This is 
+generally attributed to model form or structural error, and can be corrected 
+to some extent with the use of model discrepancy. The Kennedy and 
+O'Hagan~\cite{Kenn01} formulation takes the form
+\begin{equation}
+d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
+\end{equation} 
+where $\delta_i(x)$ represents the model discrepancy. It should be noted that
+the discrepancy depends \textit{only} on the configuration variables. 
+Furthermore, one discrepancy model is calculated for \textit{each} observable
+$d_i$, $i = 1, \ldots, n$, yielding $\delta_1, \ldots, \delta_n$. Future 
+work includes developing a discrepancy model that accounts for field data so
+that a single, global $\delta(x)$ will be approximated.
+
+The current implementation of the model discrepancy capability in Dakota 
+serves as a post-processing mechanism after the completion of a Bayesian update.
+If \texttt{model\_discrepancy} is specified in the input file, Dakota will 
+perform the Bayesian update as detailed in the section above, and then begin 
+the process of approximating $\delta_i$. For each observable $d_i$ and for 
+each configuration $x_j$,
+\begin{equation}
+\delta_i \left( x_j \right) = d_i \left( x_j \right) - 
+q_i \left(\boldsymbol{\theta}^*, x_j \right),
+\end{equation}
+where $\boldsymbol{\theta}^*$ is the average of the calibrated posterior 
+distribution of the model parameters. The $i^{th}$ discrepancy function
+will be built over the computed $\delta_i \left( x_j \right)$, $j = 1, \ldots,
+m$. Within the Dakota input file, the user may specify the 
+\texttt{discrepancy\_type} to be either a Gaussian process or polynomial
+regression model with the \texttt{gaussian\_process} or \texttt{polynomial}
+commands, respectively. Additionally, the order of the trend function may be
+selected using the \texttt{correction\_order} command and choosing one of
+\texttt{constant}, \texttt{linear}, or \texttt{quadratic}. Any specifications
+using these keywords will apply to all $\delta_i$. By default, Dakota will 
+build a Gaussian process discrepancy model with a quadratic trend function.
+Information regarding how polynomial and Gaussian process models are built
+can be found in Sections~\ref{models:surf:polynomial} 
+and~\ref{models:surf:kriging}, respectively. 
+
+The user may specify new ``prediction" configurations at which the 
+corrected model should be calculated. For each response and for each new
+configuration, $q_i(\boldsymbol{\theta}, x_{k,new}) + \delta_i(x_{k,new})$ 
+will be computed. The prediction configurations can be specified in one of
+three ways. If \texttt{num\_prediction\_configs} is included, Dakota will 
+uniformly distribute the indicated number of prediction configurations 
+throughout the domain of the configuration variable that is given in the 
+\texttt{variables} block of the input file. Alternatively, the user may 
+explicitly list desired prediction configuration locations within the input
+file following the \texttt{prediction\_configs} keyword, or in an external
+file to be read in with the \texttt{import\_prediction\_configs} option. If 
+none of these three options is selected, Dakota will automatically calculate
+corrected model predictions at ten configurations, spread uniformly in the
+configuration variable domain. 
+
+Calculations corresponding to each prediction configuration and to each
+observable will be output to tabular files. The responses from the discrepancy
+model itself is output to \texttt{dakota\_discrepancy\_tabular.dat}. Those
+from the corrected model are output to \texttt{dakota\_corrected\_tabular.dat}.
+The user may specify the output file names for the discrepancy and corrected
+model tabular files using the \texttt{export\_discrepancy\_file} and
+\texttt{export\_corrected\_model\_file} keywords, respectively. 
+
+Variance information corresponding to each specified configuration location 
+and for each observable is also computed. In a prediction setting, the 
+variance calculated from the discrepancy model is additively combined with 
+the variance information provided with the experimental data, such that
+\begin{equation}
+\label{eq:discrep_var}
+\Sigma_{total,i}(x) = \Sigma_{\delta, i}(x) + \sigma^{2}_{exp,i} I
+\end{equation}
+for each observable $i$. Further details of how the variance 
+$\Sigma_{\delta,i}(x)$ is computed for Gaussian process and polynomial 
+regression models can be found in the Dakota Theory Manual~\cite{TheoMan}. The 
+experimental variance provided for parameter calibration may vary for the
+same observable from experiment to experiment, thus $\sigma^{2}_{exp,i}$ is
+taken to be the maximum variance given for each observable. That is,
+\begin{equation}
+\sigma^2_{exp,i} = \max_{j} \sigma^2_{i}(x_j), 
+\end{equation}
+where $\sigma^2_{i}(x_j)$ is the variance provided for the $i^{th}$ observable
+$d_i$, computed or measured with the configuration variable $x_j$. 
+
+When each corrected model value $q_i(\boldsymbol{\theta}^{*}, x_{k, new}) +
+\delta_i(x_{k,new})$ is considered, the variance calculated 
+via~\ref{eq:discrep_var} provides a prediction interval, similar to those 
+described in Section~\ref{uq:bayesian:queso}. Including $\sigma^{2}_{exp,i}$ 
+in the variance calculation accounts for the uncertainty in the model 
+predictions that arise due to uncertainties in the calibration data. These
+prediction variances are output to the file 
+\texttt{dakota\_discrepancy\_variance\_tabular.dat} by default. The name of 
+this file can be modified using the \texttt{export\_corrected\_variance\_file} 
+keyword in the input script. 
+
+Additional details and an illustrative example of these calculations are given 
+in the Dakota Theory Manual~\cite{TheoMan}.
+
 \subsection{Bayesian Experimental Design}
 \label{sec:bayes_expdesign}
 
@@ -2782,10 +2859,10 @@ data in a low-fidelity model calibration. This can be done in with a single
 Bayesian calibration, or it can be done iteratively with the use of 
 experimental design, where an initial set of high-fidelity runs is 
 augmented sequentially to find the next ``best" high-fidelity design point at
-which to run the high-fidelity model to add to the calibration data. The low-
-fidelity posterior parameter distribution is then updated again using Bayesian
-calibration. The mutual information is used as the selection criterion to guide
-the process of high-fidelity data acquisition.
+which to run the high-fidelity model to add to the calibration data. The 
+low-fidelity posterior parameter distribution is then updated again using 
+Bayesian calibration. The mutual information is used as the selection criterion 
+to guide the process of high-fidelity data acquisition.
 
 In Dakota, design conditions, such as temperature or spatial location, can be 
 specified using so-called configuration
@@ -2814,6 +2891,32 @@ block should point to the appropriate high- or low-fidelity code, and the
 \texttt{responses} blocks should contain consistent details about the responses 
 from each code. For example, both of the models should return the same number 
 of \texttt{calibration\_terms}.  
+
+\stepcounter{figure}
+\renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
+\lstinputlisting
+[
+float=htbp,
+lastline=53,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign1},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
+\stepcounter{figure}
+\lstinputlisting
+[
+float=htbp,
+firstline=54,
+caption={Dakota input file for Bayesian Experimental Design.}, 
+label={figure:uq_expdesign2},
+captionpos=b,
+basicstyle=\small,
+frame=single
+]
+{bayes_experimental_design.in}
 
 The mutual information experimental design algorithm is selected by specifying 
 \texttt{bayesian\_calibration}, \texttt{queso}, and 
@@ -2857,48 +2960,43 @@ the low-fidelity model parameters. Alternatively, if the change in the mutual
 information from one iteration to the next is sufficiently small or if all 
 candidate points have been exhausted, the algorithm will terminate. 
 
-%Further theoretical and implementation details of this algorithm may be found 
-%in~\cite{TheoMan}.
-%From these candidate designs, that which maximizes the mutual information with 
-%respect to the current state of the low-fidelity model parameters is deemed 
-%``optimal." The mutual information between low-fidelity model parameters 
-%$\boldsymbol{\theta}$ and the high-fidelity data $\textbf{d}(\xi)$, gathered at 
-%design conditions $\xi$, is given by
-%\begin{equation}
-%I(\boldsymbol{\theta}, \textbf{d}(\xi)) = \iint p(\boldsymbol{\theta}, 
-	%\textbf{d}(\xi)) \log \frac{ p(\boldsymbol{\theta}, \textbf{d}(\xi)) }
-	%{p(\boldsymbol{\theta}) p(\textbf{d}(\xi))} d\boldsymbol{\theta}
-	%d\textbf{d}.
-%\end{equation}
-%This quantity is approximated using the low-fidelity model and the $k$-nearest
-%neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed 
-%in~\cite{Lew16}. %and the Dakota Theory Manual \ref{}.
+Progress of the algorithm will be reported to the screen with the rest of the
+Dakota output. Furthermore, a summary of the algorithm's results, including, 
+for each iteration, the optimal design, the mutual information, and the 
+corresponding high-fidelity model response, can be found in the file 
+\texttt{experimental\_design\_output.txt}.  
 
-\stepcounter{figure}
-\renewcommand{\thelstlisting}{\thechapter.\arabic{figure}}
-\lstinputlisting
-[
-float=htbp,
-lastline=53,
-caption={Dakota input file for Bayesian Experimental Design.}, 
-label={figure:uq_expdesign1},
-captionpos=b,
-basicstyle=\small,
-frame=single
-]
-{bayes_experimental_design.in}
-\stepcounter{figure}
-\lstinputlisting
-[
-float=htbp,
-firstline=54,
-caption={Dakota input file for Bayesian Experimental Design.}, 
-label={figure:uq_expdesign2},
-captionpos=b,
-basicstyle=\small,
-frame=single
-]
-{bayes_experimental_design.in}
+\subsubsection{One-at-a-time Implementation}
+
+There may be some applications for which the high-fidelity model must be run
+independently of Dakota. This algorithm may still be implemented in this case,
+however, it requires some extra work by the user to ensure that the 
+high-fidelity model information is properly communicated to Dakota, as a 
+"dummy" high-fidelity model code must be supplied to Dakota. The data to be 
+used in the initial Bayesian calibration should be gathered from the 
+high-fidelity model or physical experiment and imported via the 
+\texttt{calibration\_data\_file} in the high-fidelity \texttt{responses} block, 
+and extra care should be taken to ensure that \texttt{initial\_samples} matches 
+the number of experiments in this file. It is also best, for this use-case, to 
+use \texttt{import\_candidate\_points\_file}, with \texttt{num\_candidates} 
+exactly matching the number of candidate points in the file.
+
+By setting \texttt{max\_hifi\_evaluations} to zero, Dakota will run the initial
+calibration of the low-fidelity model, select the ``optimal" design from
+those provided in \texttt{import\_candidate\_points\_file}, and exit 
+\textit{without} running the ``dummy" high-fidelity model code. The selected
+design will be output to the screen, as well as to 
+\texttt{experimental\_design\_output.txt}, as detailed above. The high-fidelity
+model may then be run offline with the newly selected design point.
+
+The user must update \texttt{calibration\_data\_file} with the new 
+high-fidelity data when it becomes available, as well as remove the previously
+selected design point from \texttt{import\_candidate\_points\_file}. Within the Dakota input file, \texttt{initial\_samples}, \texttt{num\_experiments}, and 
+\texttt{num\_candidates} should be correspondingly updated. Dakota may then be
+run again to yield the next optimal experimental design. It should be noted 
+that the stopping criteria will not be automatically evaluated by Dakota when 
+one-at-a-time implementation is used. The user must determine when the 
+algorithm should be terminated.
 
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
 

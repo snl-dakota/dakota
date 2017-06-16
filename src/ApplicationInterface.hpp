@@ -469,6 +469,9 @@ private:
   /// insertions into write_restart).
   bool restartFileFlag;
 
+  /// SharedResponseData of associated Response
+  SharedResponseData sharedRespData;
+
   /// type of gradients present in associated Response
   String gradientType;
 

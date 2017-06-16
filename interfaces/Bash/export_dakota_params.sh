@@ -10,8 +10,9 @@
 # formatted.
 #
 # * To provide some low-rent namespacing, environment variables are prefixed with DP_.
-# * Colons (:) in expressions like "ASV:response_fn_1" are converted to underscores (_) to obey 
-#   environment variable naming rules. 
+# * Bash variable names are restricted to contain alphanumeric characters and understcores, so 
+#   characters such as colons (:) in expressions like "ASV:response_fn_1" are converted to 
+#   underscores (_).
 # * The double-quotes that string variables in aprepro formatted files are surrounded by are 
 #   removed.
 #
@@ -20,8 +21,8 @@
 #
 #    params=$1
 #    source <this file>
-#    export_data_params $params
-#    echo $DP_eval_id
+#    export_dakota_params $params
+#    echo ${DAK_eval_id}
 #
 ###################################################################################################
 
@@ -61,7 +62,7 @@ export_dakota_params()
   while read line; do
     key=$(_keyfunc "$line")
     value=$(_valfunc "$line" "$key")
-    key="DP_"$(echo $key | sed -e "s/:/_/")
+    key="DAK_"$(echo $key | sed -r "s/[^[:alnum:]]/_/g")
     eval export $key=\"${value}\"
   done < $params
 }

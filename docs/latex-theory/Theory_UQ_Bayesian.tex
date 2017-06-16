@@ -320,6 +320,156 @@ from the two Hessian-based proposals, with average rejection rates of
 70\%, 19.5\%, and 16.4\% for prior-based, misfit Hessian-based, and
 posterior Hessian-based cases, respectively.
 
+\section{Model Discrepancy}
+
+Whether in a Bayesian setting or otherwise, the goal of model calibration
+is to minimize the difference between the observational data $d_i$ and 
+the corresponding model response $q_i(\boldsymbol{\theta})$. That is, one seeks
+to minimize the misfit~\ref{eq:misfit}. For a given set of data, this 
+formulation explicitly depends on model parameters that are to be adjusted and
+implicitly on conditions that may vary between experiments, such as temperature
+or pressure. These experimental conditions can be represented in Dakota by
+configuration variables, in which case Eq.~\ref{eq:model} can be rewritten,
+\begin{equation}
+d_i(x) = q_i(\boldsymbol{\theta}, x) + \epsilon_i, 
+\end{equation} 
+where $x$ represents the configuration variables. Updated forms of the 
+likelihood~\ref{eq:Likelihood} and misfit~\ref{eq:misfit} are easily obtained.
+
+It is often the case that the calibrated model provides an insufficient fit to
+the experimental data. This is generally attributed to model form or 
+structural error, and can be corrected to some extent with the use of a model 
+discrepancy term. The seminal work in model discrepancy techniques, Kennedy and 
+O'Hagan~\cite{Kenn01} introduces an additive formulation 
+\begin{equation}
+d_i(x) = q_i\left(\boldsymbol{\theta}, x\right) + \delta_i(x) + \epsilon_i,
+\end{equation} 
+where $\delta_i(x)$ represents the model discrepancy. It should be noted and
+stressed that $\delta_i$ depends \textit{only} on the configuration variables.
+Future work includes expanding the model discrepancy capability in Dakota to
+account for field data, so that the discrepancy may also be a function of
+independent variables such as time or spacial location. Currently, one
+discrepancy model is calculated for \textit{each} observable $d_i$, $i = 1, 
+\ldots, n$, yielding $\delta_1, \ldots, \delta_n$.
+
+The Dakota implementation of model discrepancy also includes the calculation
+of prediction intervals for each prediction configuration $x_{k,new}$. These
+intervals capture the uncertainty in the discrepancy approximation as well as
+the experimental uncertainty in the response functions. It is assumed that the
+uncertainties, representated by their respective variance values, are combined 
+additively for each observable $i$ such that
+\begin{equation}\label{eq:md_totalvar}
+\Sigma_{total,i}(x) = \Sigma_{\delta,i}(x) + \sigma^2_{exp,i}(x)I,
+\end{equation} 
+where $\Sigma_{\delta,i}$ is the variance of the discrepancy function, and
+$\sigma^2_{exp,i}$ is taken from the user-provided experimental variances.
+The experimental variance provided for parameter calibration may vary for the
+same observable from experiment to experiment, thus $\sigma^{2}_{exp,i}$ is
+taken to be the maximum variance given for each observable. That is,
+\begin{equation}
+\sigma^2_{exp,i} = \max_{j} \sigma^2_{i}(x_j), 
+\end{equation}
+where $\sigma^2_{i}(x_j)$ is the variance provided for the $i^{th}$ observable
+$d_i$, computed or measured with the configuration variable $x_j$. 
+When a Gaussian process discrepancy function is used, the variance is calculated
+according to Eq.~\ref{Eq:KrigVar}. For polynomial discrepancy functions, the
+variance is given by Eq.~\ref{eq:poly_var}. 
+
+%Introducing a discrepancy term gives rise to practical, as well as 
+%philosphical, issues: What model form is most appropriate for $\delta_i$? How
+%should $\delta_i$ be estimated? How does including $\delta_i$ change the 
+%meaning or interpretation of the model responses? What is the appropriate way
+%of using $\delta_i$ to improve the predictive capability of the model? 
+
+%%add comments regarding interpolation vs extrapolation?
+%kam
+
+\subsection{Example}
+
+For the purposes of illustrating the model discrepancy capability implemented
+in Dakota, consider the following example. Let the ``truth" be given by
+\begin{equation}\label{eq:md_truth}
+y(t,x) = 10.5 x \log(t-0.1) - \frac{x}{(t-0.1-\theta^{*})^2},
+\end{equation}
+where $t$ is the independent variable, $x$ is the configuration parameter, and
+$\theta^{*}$ is $7.75$, the ``true" value of the parameter $\theta$. Let the
+``model" be given by
+\begin{equation}\label{eq:md_model}
+m(t,\theta, x) = \frac{10 x \log(t) (t-\theta)^2 - x}{(t-8)^2}. 
+\end{equation}
+Again, $t$ is the independent variable and $x$ is the configuration parameter,
+and $\theta$ now represents the model parameter to be calibrated. It is clear
+from the given formulas that the model is structurally different from the truth
+and will be inadequate. 
+
+The ``experimental" data is produced by considering two configurations, $x=10$
+and $x=15$. Data points are taken over the range $t \in [1.2, 7.6]$ at 
+intervals of length $\Delta t = 0.4$. Normally distributed noise $\epsilon_i$ 
+is added such that
+\begin{equation}\label{eq:md_data}
+d_i(x_j) = y(t_i, x_j) + \epsilon_i,
+\end{equation} 
+with $i = 1, \ldots, 17$ and $j = 1,2$. Performing a 
+Bayesian update in Dakota yields a posterior distribution of $\theta$ that is 
+tightly peaked around the value $\bar{\theta} = 7.9100$. Graphs of 
+$m(t, \bar{\theta}, 10)$ and $m(t, \bar{\theta}, 15)$ are compared to 
+$y(t, 10)$ and $y(t, 15)$, respectively, for $t \in [1.2, 7.6]$ in 
+Figure~\ref{fig:md_uncorr}, from which it is clear that the model insufficiently
+captures the given experimental data.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=.6\textwidth]{images/moddiscrep_TruthExpModel.png}
+\end{center}
+\vspace{-0.5cm}
+\caption{Graphs of the uncorrected model output $m(t,x)$, the truth $y(t,x)$,
+and experimental data $d(t,x)$ for configurations $x = 10$ and $x = 15$.}
+\label{fig:md_uncorr}
+\end{figure}
+
+Following the Bayesian update, Dakota calculates the model discrepancy values
+\begin{equation}\label{eq:md_discrep}
+\delta_i(x_j) = d_i(x_j) - m_i(\bar{\theta}, x_j)
+\end{equation}
+for the experimental data points, \textit{i.e.}\ for $i = 1, \ldots, 17$ and
+$j = 1,2$. Dakota then approximates the model discrepancy functions 
+$\delta_1(x), \ldots \delta_{17}(x)$, and computes the responses and
+prediction intervals of the corrected model $m_i(\bar{\theta}, x_{j,new}) 
++ \delta_i(x_{j,new})$ for each prediction configuration. The prediction
+intervals have a radius of two times the standard deviation calculated 
+with~\ref{eq:md_totalvar}. The discrepancy function in this example was taken
+to be a Gaussian process with a quadratic trend, which is the default setting
+for the model discrepancy capability in Dakota.
+
+The prediction configurations are taken to be $x_{new} = 5, 5.5, \ldots, 20$. 
+Examples of two corrected models are shown in Figure~\ref{fig:md_corr}. The
+substantial overlap in the measurement error bounds and the corrected model
+prediction intervals indicate that the corrected model is sufficiently accurate.
+This conclusion is supported by Figure~\ref{fig:md_pred}, in which the
+``truth" models for three prediction figurations are compared to the corrected
+model output. In each case, the truth falls within the prediction intervals.
+
+\begin{figure}[htbp]
+\begin{center}
+\subfigure[Locations of the corrected models shown in (b) and (c) below.]{\includegraphics[width=0.6\linewidth]{images/moddiscrep_TruthExpModelGPlines.png}}
+\end{center}
+  \begin{subfigmatrix}{2}
+  \subfigure[Corrected model values with prediction intervals for t = 5.2]{\includegraphics[width=0.49\textwidth]{images/moddiscrep_GPt5.png}}
+  \subfigure[Corrected model values with prediction intervals for t = 7.2]{\includegraphics[width=0.49\textwidth]{images/moddiscrep_GPt7.png}}
+  \end{subfigmatrix}
+  \caption{Illustrated of corrected model for two observables. Note that the models shown in (b) and (c) are functions of the configuration variable $x$. Therefore, they traverse the vertical lines shown in (a).}
+\label{fig:md_corr}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{images/moddiscrep_correctedlowmidhigh.png}
+\end{center}
+\label{fig:md_pred}
+\vspace{-0.5cm}
+\caption{The graphs of $y(t,x)$ for $x = 7.5, 12.5, 17.5$ are compared to the corrected model and its prediction intervals. The uncorrected model is also shown to illustrate its inadequacy.}
+\end{figure}
+ 
 \section{Experimental Design}
 \label{uq:bayes_experimental_design}
 

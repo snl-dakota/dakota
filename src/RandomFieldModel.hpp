@@ -48,8 +48,9 @@ public:
 
   /// for KL models, the model is augmented with the random coeffs of the KL
   bool initialize_mapping(ParLevLIter pl_iter);
-  /// currently no-op
   bool finalize_mapping();
+  bool mapping_initialized() const;
+  bool resize_pending() const;
 
 protected:
 
@@ -234,7 +235,17 @@ protected:
   /// (corresponding to ParallelConfiguration::miPLIters) used at runtime
   //  size_t miPLIndex;
 
+  /// track use of initialize_mapping() and finalize_mapping()
+  bool mappingInitialized;
 };
+
+
+inline bool RandomFieldModel::mapping_initialized() const
+{ return mappingInitialized; }
+
+
+inline bool RandomFieldModel::resize_pending() const
+{ return (expansionForm == RF_KARHUNEN_LOEVE && !mappingInitialized); }
 
 } // namespace Dakota
 

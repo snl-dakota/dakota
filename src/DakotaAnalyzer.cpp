@@ -147,14 +147,17 @@ void Analyzer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator()
+    // are not called through IteratorScheduler::run_iterator().  Within a
+    // recursion, it will correspond to the first initialize_run() with an
+    // uninitialized mapping, such as the outer-iterator on the first pass
+    // of a recursion.  On subsequent passes, it may correspond to the inner
+    // iterator.  The Iterator scope should not matter for the iteratedModel
+    // mapping initialize/finalize.
     if (!iteratedModel.mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
       bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
-      if (var_size_changed) {
-        // Ignore return value
-        bool reinit_comms = resize();
-      }
+      if (var_size_changed)
+        /*bool reinit_comms =*/ resize(); // Ignore return value
     }
 
     // Do not reset the evaluation reference for sub-iterators
@@ -182,6 +185,21 @@ void Analyzer::post_run(std::ostream& s)
   }
 
   resultsDB.write_databases();
+}
+
+
+void Analyzer::finalize_run()
+{
+  // Finalize an initialized mapping.  This will correspond to the first
+  // finalize_run() with an uninitialized mapping, such as the inner-iterator
+  // in a recursion.
+  if (iteratedModel.mapping_initialized()) {
+    bool var_size_changed = iteratedModel.finalize_mapping();
+    if (var_size_changed)
+      /*bool reinit_comms =*/ resize(); // Ignore return value
+  }
+
+  Iterator::finalize_run(); // included for completeness
 }
 
 

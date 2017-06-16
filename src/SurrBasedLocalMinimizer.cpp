@@ -47,19 +47,18 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),
   acceptLogic(probDescDB.get_short("method.sbl.acceptance_logic")),
   trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
-  penaltyIterOffset(-200), 
+  minimizeCycles(0), penaltyIterOffset(-200), 
   origTrustRegionFactor(
-    probDescDB.get_rv("method.sbl.trust_region.initial_size")),
+    probDescDB.get_rv("method.trust_region.initial_size")),
   minTrustRegionFactor(
-    probDescDB.get_real("method.sbl.trust_region.minimum_size")),
+    probDescDB.get_real("method.trust_region.minimum_size")),
   trRatioContractValue(
-    probDescDB.get_real("method.sbl.trust_region.contract_threshold")),
+    probDescDB.get_real("method.trust_region.contract_threshold")),
   trRatioExpandValue(
-    probDescDB.get_real("method.sbl.trust_region.expand_threshold")),
+    probDescDB.get_real("method.trust_region.expand_threshold")),
   gammaContract(
-    probDescDB.get_real("method.sbl.trust_region.contraction_factor")),
-  gammaExpand(probDescDB.get_real("method.sbl.trust_region.expansion_factor")),
-  convergenceFlag(0), softConvCount(0),
+    probDescDB.get_real("method.trust_region.contraction_factor")),
+  gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
   softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit")),
   correctionType(probDescDB.get_short("model.surrogate.correction_type"))
 {
@@ -72,14 +71,12 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // alert user to constraint settings
-#ifdef DEBUG
-  if (numNonlinearConstraints)
+  if (outputLevel >= DEBUG_OUTPUT && numNonlinearConstraints)
     Cout << "\n<<<<< approxSubProbObj  = " << approxSubProbObj
 	 << "\n<<<<< approxSubProbCon  = " << approxSubProbCon
 	 << "\n<<<<< meritFnType       = " << meritFnType
 	 << "\n<<<<< acceptLogic       = " << acceptLogic
 	 << "\n<<<<< trConstraintRelax = " << trConstraintRelax << "\n\n";
-#endif
   // sanity checks
   if ( (approxSubProbCon == NO_CONSTRAINTS || !numNonlinearConstraints) &&
        trConstraintRelax != NO_RELAX) {
@@ -147,7 +144,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     BoolDequeArray nonlinear_resp_map(num_recast_primary+num_recast_secondary);
     if (approxSubProbObj == ORIGINAL_PRIMARY) {
-      for (i=0; i<num_recast_primary; i++) {
+      for (i=0; i<num_recast_primary; ++i) {
 	recast_primary_resp_map[i].resize(1);
 	recast_primary_resp_map[i][0] = i;
 	nonlinear_resp_map[i].resize(1);
@@ -157,7 +154,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     else if (approxSubProbObj == SINGLE_OBJECTIVE) {
       recast_primary_resp_map[0].resize(numUserPrimaryFns);
       nonlinear_resp_map[0].resize(numUserPrimaryFns);
-      for (i=0; i<numUserPrimaryFns; i++) {
+      for (i=0; i<numUserPrimaryFns; ++i) {
 	recast_primary_resp_map[0][i] = i;
 	nonlinear_resp_map[0][i] = !optimizationFlag; // nonlinear if NLS->Opt
       }
@@ -165,7 +162,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     else { // LAGRANGIAN_OBJECTIVE or AUGMENTED_LAGRANGIAN_OBJECTIVE
       recast_primary_resp_map[0].resize(numFunctions);
       nonlinear_resp_map[0].resize(numFunctions);
-      for (i=0; i<numFunctions; i++) {
+      for (i=0; i<numFunctions; ++i) {
 	recast_primary_resp_map[0][i] = i;
 	nonlinear_resp_map[0][i]
 	  = (approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE &&
@@ -173,7 +170,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
       }
     }
     if (approxSubProbCon != NO_CONSTRAINTS) {
-      for (i=0; i<num_recast_secondary; i++) {
+      for (i=0; i<num_recast_secondary; ++i) {
 	recast_secondary_resp_map[i].resize(1);
 	recast_secondary_resp_map[i][0] = i + numUserPrimaryFns;
 	nonlinear_resp_map[i+num_recast_primary].resize(1);
@@ -201,6 +198,11 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     if (approxSubProbObj != ORIGINAL_PRIMARY)
       approxSubProbModel.primary_fn_type(OBJECTIVE_FNS);
   }
+
+  // activate warm starting of accumulated data (i.e., quasi-Newton Hessians).
+  // Note: this is best done at the iteratedModel level, to avoid any
+  // interaction with penalty and multiplier states in approxSubProbModel.
+  approxSubProbModel.warm_start_flag(true);
 }
 
 
@@ -265,7 +267,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 {
   // initialize Lagrange multipliers
   size_t num_multipliers = numNonlinearEqConstraints;
-  for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+  for (size_t i=0; i<numNonlinearIneqConstraints; ++i) {
     if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
       ++num_multipliers;
     if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
@@ -287,7 +289,7 @@ void SurrBasedLocalMinimizer::initialize_multipliers()
 void SurrBasedLocalMinimizer::pre_run()
 {
   // reset convergence controls in case of multiple executions
-  if (convergenceFlag)
+  if (converged())
     reset();
 
   // need copies of initial point and initial global bounds, since iteratedModel
@@ -312,7 +314,7 @@ void SurrBasedLocalMinimizer::core_run()
   // --> longer term, lower priority: defer for now
 
   sblmInstance = this;
-  while (!convergenceFlag) {
+  while (!converged()) {
 
     // Compute trust region bounds.  If the trust region extends outside
     // the global bounds, then truncate to the global bounds.
@@ -320,14 +322,11 @@ void SurrBasedLocalMinimizer::core_run()
 
     // Build new approximations and compute corrections for use within
     // approxSubProbMinimizer.run() (unless previous build can be reused)
-    // > Build the approximation
-    // > Evaluate/retrieve responseCenterTruth
-    // > Perform hard convergence check
-    build();
+    build(); // Build the approximation and perform hard convergence check
 
-    if (!convergenceFlag) { // check for hard convergence within build()
+    if (!converged()) {
       minimize(); // run approxSubProbMinimizer and update responseStarApprox
-      verify();   // evaluate responseStarTruth and update trust region
+      verify(); // eval responseStarTruth, update TR, perform other conv checks
     }
   }
 }
@@ -335,27 +334,31 @@ void SurrBasedLocalMinimizer::core_run()
 
 void SurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
-  // SBLM is complete: write out the convergence condition and final results
-  // from the center point of the last trust region.
-  Cout << "\nSurrogate-Based Optimization Complete - ";
-  if ( convergenceFlag == 1 )
-    Cout << "Minimum Trust Region Bounds Reached\n";
-  else if ( convergenceFlag == 2 )
-    Cout << "Exceeded Maximum Number of Iterations\n";
-  else if ( convergenceFlag == 3 )  
-    Cout << "Soft Convergence Tolerance Reached\nProgress Between "
-	 << softConvLimit <<" Successive Iterations <= Convergence Tolerance\n";
-  else if ( convergenceFlag == 4 )
-    Cout << "Hard Convergence Reached\nNorm of Projected Lagrangian Gradient "
-	 << "<= Convergence Tolerance\n";
-  else {
-    Cout << "\nError: bad convergenceFlag in SurrBasedLocalMinimizer."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  Cout << "Total Number of Iterations = " << sbIterNum << '\n';
+  // SBLM is complete: write out the convergence condition
+  // (final results output in derived post_run())
+  s << "\nSurrogate-Based Optimization Complete:\n";
+  print_convergence_code(s, converged());
+  s << "Total Number of Trust Region Minimizations Performed = "
+    << globalIterCount << std::endl;
 
   Minimizer::post_run(s);
+}
+
+
+void SurrBasedLocalMinimizer::
+print_convergence_code(std::ostream& s, unsigned short code)
+{
+  // these can be overlaid:
+  if (code & MIN_TR_CONVERGED)   s << "Minimum Trust Region Bounds Reached\n";
+  if (code & MAX_ITER_CONVERGED) s << "Exceeded Maximum Number of Iterations\n";
+
+  // these two are exclusive:
+  if (code & HARD_CONVERGED)
+    s << "Hard Convergence: Norm of Projected Lagrangian Gradient <= "
+      << "Conv Tol\n";
+  else if (code & SOFT_CONVERGED)
+    s << "Soft Convergence: Progress Between " << softConvLimit
+      << " Successive Iterations <= Conv Tol\n";
 }
 
 
@@ -372,7 +375,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   size_t i;
   bool cv_truncation = false, tr_lower_truncation = false,
     tr_upper_truncation = false;
-  for (i=0; i<numContinuousVars; i++) {
+  for (i=0; i<numContinuousVars; ++i) {
     // verify that varsCenter is within global bounds
     Real cv_center = tr_data.c_var_center(i);
     if ( cv_center > parent_u_bnds[i] ) {
@@ -401,8 +404,8 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
       tr_lower_truncation = true;
     }
   }
-  if (cv_truncation)
-    tr_data.new_center(true);
+  //if (cv_truncation) tr_data.set_status_bits(NEW_CENTER);//handled in SBLD set
+  tr_data.reset_status_bits(NEW_TR_FACTOR); // TR updates applied; reset bit
 
   // a flag for global approximations defining the availability of the
   // current iterate in the DOE/DACE evaluations: CCD/BB DOE evaluates the
@@ -410,21 +413,15 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   //daceCenterPtFlag
   //  = (daceCenterEvalFlag && !tr_lower_truncation && !tr_upper_truncation);
 
-  const RealVector&     cv_center = tr_data.c_vars_center();
-  const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
-  const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
-  // Set the trust region center and bounds for approxSubProbOptimizer
-  approxSubProbModel.continuous_variables(cv_center);
-  approxSubProbModel.continuous_lower_bounds(tr_lower_bnds);
-  approxSubProbModel.continuous_upper_bounds(tr_upper_bnds);
-
   // Output the trust region bounds
   size_t wpp9 = write_precision+9;
   Cout << "\n**************************************************************"
-       << "************\nBegin SBLM Iteration Number " << sbIterNum+1
+       << "************\nBegin SBLM Iteration Number " << globalIterCount+1
        << "\n\nCurrent Trust Region for surrogate model (form "
-       << tr_data.approx_model_form() << ", level "
-       << tr_data.approx_model_level() << ")\n                 ";
+       << tr_data.approx_model_form() + 1;
+  if (tr_data.approx_model_level() != _NPOS)
+    Cout << ", level " << tr_data.approx_model_level() + 1;
+  Cout << ")\n                 ";
   if (tr_lower_truncation) Cout << std::setw(wpp9) << "Lower (truncated)";
   else                     Cout << std::setw(wpp9) << "Lower";
   if (cv_truncation)       Cout << std::setw(wpp9) << "Center (truncated)";
@@ -432,14 +429,44 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   if (tr_upper_truncation) Cout << std::setw(wpp9) << "Upper (truncated)";
   else                     Cout << std::setw(wpp9) << "Upper";
   Cout << '\n';
+  const RealVector&     cv_center = tr_data.c_vars_center();
+  const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
+  const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   StringMultiArrayConstView c_vars_labels
     = iteratedModel.continuous_variable_labels();
-  for (i=0; i<numContinuousVars; i++)
+  for (i=0; i<numContinuousVars; ++i)
     Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
 	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]
 	 << std::setw(wpp9) << tr_upper_bnds[i] << '\n';
   Cout << "****************************************************************"
        << "**********\n";
+}
+
+
+void SurrBasedLocalMinimizer::
+update_approx_sub_problem(SurrBasedLevelData& tr_data)
+{
+  approxSubProbModel.active_variables(tr_data.vars_center());
+  approxSubProbModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
+  approxSubProbModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+
+  if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
+    relax_constraints(tr_data);
+}
+
+
+void SurrBasedLocalMinimizer::minimize()
+{
+  Cout << "\n>>>>> Starting approximate optimization cycle.\n";
+  iteratedModel.component_parallel_mode(SURROGATE_MODEL);
+  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
+
+  Cout << "\n<<<<< Approximate optimization cycle completed.\n";
+  ++minimizeCycles;  // number of trust-region minimization cycles
+  ++globalIterCount; // total iterations performed
 }
 
 
@@ -451,8 +478,21 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
 void SurrBasedLocalMinimizer::
 compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 {
-  // TO DO: see correction notes (all levels vs. 1 level) in 
-  // HierarchSurrBasedLocalMinimizer::compute_trust_region_ratio()
+  /*
+  // We need both data sets consistently corrected, but for > 2 levels, do
+  // we want both sets corrected all the way to HF, or the approx corrected
+  // 1 level only for consistency with uncorrected truth?
+  const RealVector& fns_center_truth
+    = tr_data.response_center(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_star_truth
+    = tr_data.response_star(UNCORR_TRUTH_RESPONSE).function_values();
+  const RealVector& fns_center_approx
+    = tr_data.response_center(CORR_APPROX_RESPONSE).function_values();
+  const RealVector& fns_star_approx
+    = tr_data.response_star(CORR_APPROX_RESPONSE).function_values();
+  */
+
+  // Current approach corrects all the way to the top of the hierarchy:
   const RealVector& fns_center_truth
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
   const RealVector& fns_star_truth
@@ -514,9 +554,9 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT) {
 
     // evaluate each merit function with the same augLagrangeMult estimates
-    // (updated from fns_center_truth for sbIterNum == 1 and from
-    // fns_star_truth for accepted steps) and penaltyParameter (updated if
-    // no reduction in constraint violation).
+    // (updated from fns_center_truth on initial iteration and from
+    // fns_star_truth for accepted steps) and penaltyParameter (updated
+    // if no reduction in constraint violation).
     merit_fn_center_truth = augmented_lagrangian_merit(fns_center_truth,
       sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
       origNonlinEqTargets);
@@ -539,8 +579,9 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     // An adaptive penalty is computed based on the ratio of the objective fn
     // change to the constraint violation change at each obj/cv trade-off.
     // For basic penalties and between adaptive trade-offs, penaltyParameter
-    // is ramped exponentially using the sbIterNum counter.
-    update_penalty(fns_center_truth, fns_star_truth);
+    // is ramped exponentially using an iteration counter.
+    if (numNonlinearConstraints)
+      update_penalty(fns_center_truth, fns_star_truth);
 
     // evaluate each merit function with updated/adapted penaltyParameter
     merit_fn_center_truth  = penalty_merit(fns_center_truth, sense, wts);
@@ -549,17 +590,16 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     merit_fn_star_approx   = penalty_merit(fns_star_approx, sense, wts);
   }
 
-#ifdef DEBUG
-  Cout << "Response truth:\ncenter = "
-       << tr_data.response_center(CORR_TRUTH_RESPONSE) << "star = "
-       << tr_data.response_star(CORR_TRUTH_RESPONSE)
-       << "Response approx:\ncenter = "
-       << tr_data.response_center(CORR_APPROX_RESPONSE) << "star = "
-       << tr_data.response_star(CORR_APPROX_RESPONSE);
-  Cout << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
-       << merit_fn_star_truth << "\nMerit fn approx: center = "
-       << merit_fn_center_approx << " star = " << merit_fn_star_approx << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Response truth:\ncenter = "
+	 << tr_data.response_center(CORR_TRUTH_RESPONSE) << "star = "
+	 << tr_data.response_star(CORR_TRUTH_RESPONSE)
+	 << "Response approx:\ncenter = "
+	 << tr_data.response_center(CORR_APPROX_RESPONSE) << "star = "
+	 << tr_data.response_star(CORR_APPROX_RESPONSE)
+	 << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
+	 << merit_fn_star_truth << "\nMerit fn approx: center = "
+	 << merit_fn_center_approx << " star = " << merit_fn_star_approx <<'\n';
 
   // Compute numerator/denominator for the TR ratio using merit fn values.
   // NOTE 1: this formulation generalizes to the case where correction is not
@@ -578,8 +618,11 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
                                                      : numerator;
 
   bool accept_step;
-  if (acceptLogic == FILTER)
-    accept_step = update_filter(fns_star_truth);
+  if (acceptLogic == FILTER) {
+    if (tr_data.filter_size() == 0) // initialize if needed
+      initialize_filter(tr_data, fns_center_truth);
+    accept_step = update_filter(tr_data, fns_star_truth);
+  }
   else if (acceptLogic == TR_RATIO)
     // Accept the step based on simple decrease in the truth merit functions.
     // This avoids any issues with denominator < 0 in tr_ratio:
@@ -592,8 +635,6 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // ------------------------------------------
 
   if (accept_step) {
-    tr_data.new_center(true);
-
     // Update the trust region size depending on the accuracy of the approximate
     // model. Note: If eta_1 < tr_ratio < eta_2, trustRegionFactor does not
     // change where eta_1 = trRatioContractValue and eta_2 = trRatioExpandValue
@@ -624,7 +665,7 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
 	const RealVector& c_vars_star   = tr_data.c_vars_star();
 	const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
 	const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
-	for (size_t i=0; i<numContinuousVars; i++)
+	for (size_t i=0; i<numContinuousVars; ++i)
 	  if ( c_vars_star[i] > tr_upper_bnds[i] - constraintTol ||
 	       c_vars_star[i] < tr_lower_bnds[i] + constraintTol )
 	    boundary_pt_flag = true;
@@ -641,11 +682,34 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     }
     else // accept optimum, retain current TR
       Cout <<"Satisfactory Accuracy, ACCEPT Step, RETAIN Trust Region Size\n\n";
+
+    // update center vars, set NEW_CENTER, unset CANDIDATE_STATE
+    tr_data.vars_center(tr_data.vars_star());
+    // update response center from star, allowing for inconsistent data sets.
+    // Note: we always do this even though build() may supplant with full center
+    // data set on the next iteration, in order to simplify conditional logic,
+    // e.g., iter results to OutputManager, final results to bestResponseArray
+    // at convergence.
+    Response& uncorr_resp_star = tr_data.response_star(UNCORR_TRUTH_RESPONSE);
+    if (!uncorr_resp_star.is_null()) {
+      Response& uncorr_resp_center
+	= tr_data.response_center(UNCORR_TRUTH_RESPONSE);
+      uncorr_resp_center.reset(); // zero out all data
+      uncorr_resp_center.function_values(uncorr_resp_star.function_values());
+    }
+    IntResponsePair& corr_pair_star
+      = tr_data.response_star_pair(CORR_TRUTH_RESPONSE);
+    if (!corr_pair_star.second.is_null()) {
+      tr_data.response_center_id(corr_pair_star.first, CORR_TRUTH_RESPONSE);
+      Response& corr_resp_center = tr_data.response_center(CORR_TRUTH_RESPONSE);
+      corr_resp_center.reset(); // zero out all data
+      corr_resp_center.function_values(corr_pair_star.second.function_values());
+    }
   }
   else {
     // If the step is rejected, then retain the current design variables
     // and shrink the TR size.
-    tr_data.new_center(false);
+    tr_data.reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
     tr_data.scale_trust_region_factor(gammaContract);
     if (acceptLogic == FILTER)
       Cout << "\n<<<<< Iterate rejected by Filter, Trust Region Ratio = "
@@ -688,17 +752,22 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   // rejected or insufficient filter metric improvement in actual or approx.
   //if ( !accept_step || std::fabs(numerator)   < convergenceTol ||
   //	                 std::fabs(denominator) < convergenceTol )
+  //
   // Merit fn case: soft convergence counter is incremented if insufficient
   // relative or absolute improvement in actual or approx.
-  Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
-    std::fabs( numerator / merit_fn_center_truth ) : std::fabs(numerator);
-  Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
-    std::fabs( denominator / merit_fn_center_approx ) : std::fabs(denominator);
-  if ( !accept_step || numerator   <= 0. || rel_numer < convergenceTol ||
-                       denominator <= 0. || rel_denom < convergenceTol )
-    ++softConvCount;
+  if (accept_step) {
+    Real rel_numer = ( std::fabs(merit_fn_center_truth) > DBL_MIN ) ?
+      std::fabs(numerator / merit_fn_center_truth)    : std::fabs(numerator);
+    Real rel_denom = ( std::fabs(merit_fn_center_approx) > DBL_MIN ) ?
+      std::fabs(denominator / merit_fn_center_approx) : std::fabs(denominator);
+    if ( numerator   <= 0. || rel_numer < convergenceTol ||
+	 denominator <= 0. || rel_denom < convergenceTol )
+      tr_data.increment_soft_convergence_count(); // ++ soft conv counter
+    else
+      tr_data.reset_soft_convergence_count();     // reset soft conv cntr to 0
+  }
   else
-    softConvCount = 0; // reset counter to zero
+    tr_data.increment_soft_convergence_count();   // ++ soft conv counter
 }
 
 
@@ -708,44 +777,37 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
     into an active bound), and signals convergence if the 2-norm of
     this projected gradient is less than convergenceTol. */
 void SurrBasedLocalMinimizer::
-hard_convergence_check(const Response& response_truth,
-		       const RealVector& c_vars,
+hard_convergence_check(SurrBasedLevelData& tr_data,
 		       const RealVector& lower_bnds,
 		       const RealVector& upper_bnds)
 {
-  const RealVector& fns_truth   = response_truth.function_values();
-  const RealMatrix& grads_truth = response_truth.function_gradients();
+  const Response& response_truth = tr_data.response_center(CORR_TRUTH_RESPONSE);
+  const RealVector&    fns_truth = response_truth.function_values();
 
-  // -------------------------------------------------
-  // Initialize/update Lagrange multipliers and filter
-  // -------------------------------------------------
+  // --------------------------------------
+  // Initialize/update Lagrange multipliers
+  // --------------------------------------
   // These updates are only performed for new iterates from accepted steps
   // (hard_convergence_check() invoked only if trustRegionData.new_center()).
 
-  // initialize augmented Lagrangian multipliers and filter
-  if (sbIterNum == 0) {
-    if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
-      update_augmented_lagrange_multipliers(fns_truth);
-    if (acceptLogic == FILTER)
-      update_filter(fns_truth);
-  }
+  // initialize augmented Lagrangian multipliers
+  if (minimizeCycles == 0 && numNonlinearConstraints &&
+      ( meritFnType       == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj  == AUGMENTED_LAGRANGIAN_OBJECTIVE ) )
+    update_augmented_lagrange_multipliers(fns_truth);
 
-  // hard convergence assessment requires gradients
+  // hard convergence requires truth gradients and zero constraint violation
   if ( !(truthSetRequest & 2) )
     return;
-
-  // update standard Lagrangian multipliers
-  if (numNonlinearConstraints) {
-    Real constraint_viol = constraint_violation(fns_truth, constraintTol);
-    // solve non-negative/bound-constrained LLS for lagrangeMult
-    if (meritFnType      == LAGRANGIAN_MERIT     ||
-	approxSubProbObj == LAGRANGIAN_OBJECTIVE || constraint_viol < DBL_MIN)
-      update_lagrange_multipliers(fns_truth, grads_truth);
-    // avoid merit fn gradient calculations if constraints are violated
-    if (constraint_viol > 0.)
-      return;
-  }
+  // update standard Lagrangian multipliers: solve non-negative/
+  // bound-constrained LLS for lagrangeMult
+  bool constraint_viol = (constraint_violation(fns_truth, constraintTol) > 0.);
+  if (meritFnType      == LAGRANGIAN_MERIT     ||
+      approxSubProbObj == LAGRANGIAN_OBJECTIVE || !constraint_viol)
+    update_lagrange_multipliers(fns_truth,
+				response_truth.function_gradients());
+  if (constraint_viol)
+    return;
 
   // -----------------------------------
   // Compute the merit function gradient
@@ -759,23 +821,25 @@ hard_convergence_check(const Response& response_truth,
   // updates are computed directly from the objective/constraint gradients at
   // the current iterate.
   RealVector merit_fn_grad(numContinuousVars, true);
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
   //if (meritFnType == LAGRANGIAN_MERIT)
-  lagrangian_gradient(fns_truth, grads_truth, sense, wts,
-    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-    merit_fn_grad);
+  lagrangian_gradient(fns_truth, response_truth.function_gradients(),
+		      iteratedModel.primary_response_fn_sense(),
+		      iteratedModel.primary_response_fn_weights(),
+		      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+		      origNonlinEqTargets, merit_fn_grad);
   //else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT)
-  //  augmented_lagrangian_gradient(fns_truth, grads_truth, wts,
-  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-  //    merit_fn_grad);
+  //  augmented_lagrangian_gradient(fns_truth, grads_truth, sense, wts,
+  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+  //    origNonlinEqTargets, merit_fn_grad);
   //else
-  //  penalty_gradient(fns_truth, grads_truth, wts, origNonlinIneqLowerBnds,
-  //    origNonlinIneqUpperBnds, origNonlinEqTargets, merit_fn_grad);
+  //  penalty_gradient(fns_truth, grads_truth, sense, wts,
+  //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+  //    origNonlinEqTargets, merit_fn_grad);
 
   // Compute norm of projected merit function gradient
   Real merit_fn_grad_norm = 0.0;
-  for (size_t i=0; i<numContinuousVars; i++) {
+  const RealVector& c_vars = tr_data.c_vars_center();
+  for (size_t i=0; i<numContinuousVars; ++i) {
     Real c_var = c_vars[i], l_bnd = lower_bnds[i], u_bnd = upper_bnds[i];
     // Determine if the calculated gradient component dp/dx_i is directed into
     // an active bound constraint.  If not, include it in the gradient norm.
@@ -791,13 +855,11 @@ hard_convergence_check(const Response& response_truth,
   // Terminate SBLM if the norm of the projected merit function gradient
   // at x_c is less than convTol (hard convergence).
   merit_fn_grad_norm = std::sqrt( merit_fn_grad_norm );
-  if ( merit_fn_grad_norm < convergenceTol ) 
-    convergenceFlag = 4; // hard convergence
-
-#ifdef DEBUG
-  Cout << "In hard convergence check: merit_fn_grad_norm =  "
-       << merit_fn_grad_norm << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In hard convergence check: merit_fn_grad_norm =  "
+	 << merit_fn_grad_norm << '\n';
+  if (merit_fn_grad_norm < convergenceTol)
+    tr_data.set_status_bits(HARD_CONVERGED);
 }
 
 
@@ -819,7 +881,7 @@ update_penalty(const RealVector& fns_center_truth,
     // Set the value of the penalty parameter in the penalty function.  An
     // offset of e^2.1 is used; this equates to constraint violation reduction
     // initially being ~8 times as important as objective reduction.
-    penaltyParameter = std::exp( 2.1 + (double)sbIterNum/10.0 );
+    penaltyParameter = std::exp( 2.1 + (double)minimizeCycles/10.0 );
     // this penalty schedule can be inconsistent with the final result of the
     // minimizer applied to the surrogate model.  That is, the minimizer should
     // return a large penalty solution (minimal constraint violation) by the end
@@ -867,7 +929,7 @@ update_penalty(const RealVector& fns_center_truth,
       // relative improvement in constraint violation is extremely small (and
       // avoids corrupting the penalty schedule in that case); however, it could
       // cause problems in making it difficult to achieve an offset near 200.
-      int new_offset = min_iter - sbIterNum;
+      int new_offset = min_iter - minimizeCycles;
       //int delta_offset = new_offset - penaltyIterOffset;
       if (new_offset > penaltyIterOffset && new_offset < 200)
 	penaltyIterOffset = new_offset;
@@ -879,10 +941,10 @@ update_penalty(const RealVector& fns_center_truth,
     // approx penalty fn.  This can lead to premature soft convergence.
     // Therefore, increase the penalty beyond the minimum by a small amount
     // (5 iters = half an exponential power = 65% additional penalty).  Both
-    // penaltyIterOffset and sbIterNum are capped at 200 (e^20 =~ 5e8) to
+    // penaltyIterOffset and minimizeCycles are capped at 200 (e^20 =~ 5e8) to
     // reduce problems w/ small infeasibilities and prevent numerical overflow.
-    penaltyParameter = (sbIterNum < 200)
-      ? std::exp((double)(sbIterNum + penaltyIterOffset + 5)/10.)
+    penaltyParameter = (minimizeCycles < 200)
+      ? std::exp((double)(minimizeCycles + penaltyIterOffset + 5)/10.)
       : std::exp(20.5 + (double)penaltyIterOffset/10.);
     //Cout << "penaltyIterOffset = " << penaltyIterOffset
     //     << " penaltyParameter = " << penaltyParameter << '\n';
@@ -907,12 +969,12 @@ update_penalty(const RealVector& fns_center_truth,
     etaSequence = eta*std::pow(mu, alphaEta);
   }
 
-#ifdef DEBUG
-  Cout << "Penalty updated: " << penaltyParameter << '\n';
-  if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
-      approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
-    Cout << "eta updated: " << etaSequence << '\n';
-#endif
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Penalty updated: " << penaltyParameter << '\n';
+    if (meritFnType      == AUGMENTED_LAGRANGIAN_MERIT ||
+	approxSubProbObj == AUGMENTED_LAGRANGIAN_OBJECTIVE)
+      Cout << "eta updated: " << etaSequence << '\n';
+  }
 }
 
 
@@ -925,16 +987,18 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 			      Response& recast_response)
 {
   // RecastModel evaluates its subModel response and then invokes this fn
-  const RealVector& surrogate_fns   = surrogate_response.function_values();
-  const RealMatrix& surrogate_grads = surrogate_response.function_gradients();
+  const RealVector& surrogate_fns = surrogate_response.function_values();
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (sblmInstance->approxSubProbObj == ORIGINAL_PRIMARY) {
-    for (size_t i=0; i<sblmInstance->numUserPrimaryFns; i++) {
+    for (size_t i=0; i<sblmInstance->numUserPrimaryFns; ++i) {
       if (recast_asv[i] & 1)
 	recast_response.function_value(surrogate_fns[i], i);
       if (recast_asv[i] & 2)
 	recast_response.function_gradient(
 	  surrogate_response.function_gradient_view(i), i );
+      if (recast_asv[i] & 4)
+	recast_response.function_hessian(
+	  surrogate_response.function_hessian(i), i );
     }
   }
   else {
@@ -978,6 +1042,8 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 
     if (recast_asv[0] & 2) {
       RealVector recast_grad;
+      const RealMatrix& surrogate_grads
+	= surrogate_response.function_gradients();
       switch (sblmInstance->approxSubProbObj) {
       case SINGLE_OBJECTIVE:
 	sblmInstance->objective_gradient(surrogate_fns, surrogate_grads, sense,
@@ -994,6 +1060,31 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 	break;
       }
       recast_response.function_gradient(recast_grad, 0);
+    }
+
+    if (recast_asv[0] & 4) {
+      RealSymMatrix recast_hess;
+      const RealMatrix& surrogate_grads
+	= surrogate_response.function_gradients();
+      const RealSymMatrixArray& surrogate_hessians
+	= surrogate_response.function_hessians();
+      switch (sblmInstance->approxSubProbObj) {
+      case SINGLE_OBJECTIVE:
+	sblmInstance->objective_hessian(surrogate_fns, surrogate_grads,
+	  surrogate_hessians, sense, wts, recast_hess);
+	break;
+      case LAGRANGIAN_OBJECTIVE:
+	sblmInstance->lagrangian_hessian(surrogate_fns, surrogate_grads,
+	  surrogate_hessians, sense,
+	  wts, nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts, recast_hess);
+	break;
+      case AUGMENTED_LAGRANGIAN_OBJECTIVE:
+	sblmInstance->augmented_lagrangian_hessian(surrogate_fns,
+	  surrogate_grads, surrogate_hessians, sense, wts, nln_ineq_l_bnds,
+	  nln_ineq_u_bnds, nln_eq_tgts, recast_hess);
+	break;
+      }
+      recast_response.function_hessian(recast_hess, 0);
     }
   }
 }
@@ -1024,7 +1115,7 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
     //
     // Note: constraints are NOT converted to std form as done within merit fns
     //
-    for (i=0; i<num_recast_cons; i++) {
+    for (i=0; i<num_recast_cons; ++i) {
       size_t recast_i = i + num_recast_primary,
 	     surr_i   = i + sblmInstance->numUserPrimaryFns;
       if (recast_asv[recast_i] & 1)
@@ -1032,6 +1123,9 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
 	  surrogate_response.function_gradient_view(surr_i), recast_i );
+      if (recast_asv[recast_i] & 4)
+	recast_response.function_hessian(
+	  surrogate_response.function_hessian(surr_i), recast_i );
     }
     break;
   }
@@ -1054,18 +1148,23 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 
     size_t j, num_recast_vars
       = recast_response.active_set_derivative_vector().size();
-    for (i=0; i<num_recast_cons; i++) {
+    for (i=0; i<num_recast_cons; ++i) {
       size_t recast_i = i + num_recast_primary,
 	     surr_i   = i + sblmInstance->numUserPrimaryFns;
       if (recast_asv[recast_i] & 1) {
 	Real sum = center_approx_fns[surr_i];
-	for (j=0; j<num_recast_vars; j++)
+	for (j=0; j<num_recast_vars; ++j)
 	  sum += center_approx_grads(j,surr_i) * (c_vars[j] - center_c_vars[j]);
 	recast_response.function_value(sum, recast_i);
       }
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
 	  center_approx_resp.function_gradient_view(surr_i), recast_i);
+      if (recast_asv[recast_i] & 4) {
+	RealSymMatrix recast_hess
+	  = recast_response.function_hessian_view(recast_i);
+	recast_hess = 0.; // linearized constraints
+      }
     }
 #ifdef DEBUG
     Cout << "center_c_vars =\n" << center_c_vars << "c_vars =\n" << c_vars
@@ -1083,7 +1182,8 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 
 
 bool SurrBasedLocalMinimizer::
-find_approx_response(const Variables& search_vars, Response& search_resp)
+find_response(const Variables& search_vars, Response& search_resp,
+	      const String& search_id, short set_request)
 {
   bool found = false;
 
@@ -1091,18 +1191,17 @@ find_approx_response(const Variables& search_vars, Response& search_resp)
   // be different fn evals
   ActiveSet search_set = search_resp.active_set(); // copy
   search_set.request_values(1);
-  const String& search_id = iteratedModel.surrogate_model().interface_id();
   PRPCacheHIter cache_it
     = lookup_by_val(data_pairs, search_id, search_vars, search_set);
   if (cache_it != data_pairs.get<hashed>().end()) {
     search_resp.function_values(cache_it->response().function_values());
-    if (approxSetRequest & 2) {
+    if (set_request & 2) {
       search_set.request_values(2);
       cache_it = lookup_by_val(data_pairs, search_id, search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
 	search_resp.function_gradients(
 	  cache_it->response().function_gradients());
-	if (approxSetRequest & 4) {
+	if (set_request & 4) {
 	  search_set.request_values(4);
 	  cache_it
 	    = lookup_by_val(data_pairs, search_id, search_vars, search_set);
@@ -1139,7 +1238,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     = tr_data.response_center(CORR_TRUTH_RESPONSE).function_values();
 
   // initial relaxation data during the first SBLM iteration
-  if (sbIterNum == 0) {
+  if (minimizeCycles == 0) {
 
     // initialize inequality constraint slack vectors
     if (numNonlinearIneqConstraints) {
@@ -1147,7 +1246,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
       nonlinIneqLowerBndsSlack = 0.;
       nonlinIneqUpperBndsSlack.sizeUninitialized(numNonlinearIneqConstraints);
       nonlinIneqUpperBndsSlack = 0.;
-      for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
+      for (size_t i=0; i<numNonlinearIneqConstraints; ++i) {
 	const Real& nln_ineq_con = fns_center_truth[numUserPrimaryFns+i];
 	const Real& l_bnd = origNonlinIneqLowerBnds[i];
 	const Real& u_bnd = origNonlinIneqUpperBnds[i];
@@ -1168,7 +1267,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     if (numNonlinearEqConstraints) {
       nonlinEqTargetsSlack.sizeUninitialized(numNonlinearEqConstraints);
       nonlinEqTargetsSlack = 0.;
-      for (size_t i=0; i<numNonlinearEqConstraints; i++) {
+      for (size_t i=0; i<numNonlinearEqConstraints; ++i) {
 	const Real& nln_eq_con
 	  = fns_center_truth[numUserPrimaryFns+numNonlinearIneqConstraints+i];
 	const Real& tgt = origNonlinEqTargets[i];
@@ -1251,7 +1350,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	           nln_ineq_u_bnds(origNonlinIneqUpperBnds);
 
 	// update constraint bounds to be used with SBLM iteration
-	for(size_t i=0; i<numNonlinearIneqConstraints; i++) {
+	for(size_t i=0; i<numNonlinearIneqConstraints; ++i) {
 	  nln_ineq_l_bnds[i] += (1.-tau)*nonlinIneqLowerBndsSlack[i];
 	  nln_ineq_u_bnds[i] += (1.-tau)*nonlinIneqUpperBndsSlack[i];
 	}
@@ -1267,7 +1366,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	RealVector nln_eq_targets(origNonlinEqTargets);
       
 	// update constraint bounds to be used with SBLM iteration
-	for(size_t i=0; i<numNonlinearEqConstraints; i++)
+	for(size_t i=0; i<numNonlinearEqConstraints; ++i)
 	  nln_eq_targets[i] += (1.-tau)*nonlinEqTargetsSlack[i];
        	approxSubProbModel.nonlinear_eq_constraint_targets(nln_eq_targets);
       }
@@ -1305,10 +1404,10 @@ hom_objective_eval(int& mode, int& n, double* tau_and_x, double& f,
   }
   if (asv_request & 2) {
     grad_f[0] = -1.;   // d(-tau)/dtau
-    for (int i=1; i<n; i++)
+    for (int i=1; i<n; ++i)
       grad_f[i] = 0.;  // d(-tau)/dx = 0 (tau does not depend on other vars)
 #ifdef DEBUG
-    for (int i=0; i<n; i++)
+    for (int i=0; i<n; ++i)
       Cout << "grad_f[" << i << "] = " << grad_f[i] << std::endl;
 #endif // DEBUG
   }
@@ -1341,7 +1440,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   size_t num_fns = sblmInstance->approxSubProbModel.num_functions(),
      num_obj_fns = num_fns - ncnln; // 1 if recast, numUserPrimaryFns if not
   ShortArray local_asv(num_fns, 0);
-  for (int i=0; i<ncnln; i++)
+  for (int i=0; i<ncnln; ++i)
     local_asv[num_obj_fns+i] = (needc[i] > 0) ? asv_request : 0;
   ActiveSet local_set
     = sblmInstance->approxSubProbModel.current_response().active_set();
@@ -1377,16 +1476,16 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
     const RealVector& resp_fn = resp.function_values();
 
     // nonlinear constraints (based on tau parameter)
-    for (i=0; i<num_nli_constr; i++)
+    for (i=0; i<num_nli_constr; ++i)
       c[i] = resp_fn[nli_offset+i]
 	- (1.-tau)*(nli_lower_slack[i] + nli_upper_slack[i]);
   
     // equality targets (based on tau parameter)
-    for (i=0; i<num_nle_constr; i++)
+    for (i=0; i<num_nle_constr; ++i)
       c[num_nli_constr+i] = resp_fn[nle_offset+i]
 	- (1.-tau)*nle_targets_slack[i];
 #ifdef DEBUG
-    for (i=0; i<ncnln; i++)
+    for (i=0; i<ncnln; ++i)
       Cout << "c[" << i << "] = " << c[i] << std::endl;
 #endif // DEBUG
   } // function value computation
@@ -1396,18 +1495,18 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   
     // gradients of constraints
     size_t cntr = 0;
-    for (j=0; j<n; j++) {
+    for (j=0; j<n; ++j) {
       // nonlinear inequality constraints
-      for(i=0; i<num_nli_constr; i++)
+      for(i=0; i<num_nli_constr; ++i)
 	cjac[cntr++] = (j == 0) ? nli_lower_slack[i] + nli_upper_slack[i]
 	                        : resp_grad(j-1,nli_offset+i);
       // nonlinear equality constraints
-      for(i=0; i<num_nle_constr; i++)
+      for(i=0; i<num_nle_constr; ++i)
 	cjac[cntr++] = (j == 0) ? nle_targets_slack[i]
 	                        : resp_grad(j-1,nle_offset+i);
     }
 #ifdef DEBUG
-    for (i=0; i<cntr; i++)
+    for (i=0; i<cntr; ++i)
       Cout << "cjac[" << i << "] = " << cjac[i] << std::endl;
 #endif // DEBUG
   } // gradient computation

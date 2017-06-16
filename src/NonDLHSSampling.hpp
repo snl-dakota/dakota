@@ -94,6 +94,9 @@ protected:
 
   void post_input();
 
+  /// update finalStatistics and (if MC sampling) finalStatErrors
+  void update_final_statistics();
+
   /// compute a principal components analysis on the sample set
   void compute_pca(std::ostream& s);
 

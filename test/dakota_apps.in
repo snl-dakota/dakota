@@ -77,7 +77,7 @@ method,
 #		solution_target = 1.e-6		#p21,#p22,#p23,#p24,#p25,#p26
 #		solution_target = 1.e-6		#p27,#p28,#p29
 #		synchronization blocking	#s1,#s6,#s8,#s11,#s12,#s13,#s14
-#		synchronization blocking	#s15,#s16,#s17,#s18,#s19,#s20,#s22
+#		synchronization blocking	#s15,#s16,#s17,#s18,#s19,#s20,#s22,#s23,#s24
 		synchronization blocking	#s0,#p0,#p1,#p6,#p8,#p11,#p12
 #		synchronization blocking	#p13,#p14,#p15,#p16,#p17,#p18
 #		synchronization blocking	#p19,#p20,#p22,#p23,#p24,#p25
@@ -103,8 +103,28 @@ method,
 #		smoothing_factor = 1.0			#p11,#p14,#p15,#p17
 
 variables,
-	continuous_design = 3
-		initial_point	-1.0    1.5   2.0
+	continuous_design = 3                   #s0,#s1,#s2,#s3,#s4,#s5
+#	continuous_design = 3                   #s6,#s7,#s8,#s9,#s10
+#	continuous_design = 3                   #s11,#s12,#s13,#s14,#s15
+#	continuous_design = 3                   #s16,#s17,#s18,#s19,#s20
+#	continuous_design = 3                   #s21,#s22
+#	continuous_design = 3                   #p0,#p1,#p2,#p3,#p4,#p5
+#	continuous_design = 3                   #p6,#p7,#p8,#p9,#p10
+#	continuous_design = 3                   #p11,#p12,#p13,#p14,#p15
+#	continuous_design = 3                   #p16,#p17,#p18,#p19,#p20
+#	continuous_design = 3                   #p21,#p22,#p23,#p24,#p25
+#	continuous_design = 3                   #p26,#p27,#p28,#p29
+		initial_point	-1.0    1.5   2.0	#s0,#s1,#s2,#s3,#s4,#s5
+#		initial_point	-1.0    1.5   2.0	#s6,#s7,#s8,#s9,#s10
+#		initial_point	-1.0    1.5   2.0	#s11,#s12,#s13,#s14,#s15
+#		initial_point	-1.0    1.5   2.0	#s16,#s17,#s18,#s19,#s20
+#		initial_point	-1.0    1.5   2.0	#s21,#s22
+#		initial_point	-1.0    1.5   2.0	#p0,#p1,#p2,#p3,#p4,#p5
+#		initial_point	-1.0    1.5   2.0	#p6,#p7,#p8,#p9,#p10
+#		initial_point	-1.0    1.5   2.0	#p11,#p12,#p13,#p14,#p15
+#		initial_point	-1.0    1.5   2.0	#p16,#p17,#p18,#p19,#p20
+#		initial_point	-1.0    1.5   2.0	#p21,#p22,#p23,#p24,#p25
+#		initial_point	-1.0    1.5   2.0	#p26,#p27,#p28,#p29
 		upper_bounds	10.0   10.0  10.0	#s0,#p0
 #		upper_bounds	10.0   10.0  10.0	#s1,#s2,#s4,#s8,#s9,#s11
 #		upper_bounds	10.0   10.0  10.0	#s17,#s18,#s20,#s21,#s22
@@ -130,7 +150,17 @@ variables,
 #		scales		5.0   1.5   2.0		#p1,#p3,#p5,#p8
 #		scales		5.0   1.5   2.0		#p10,#p11,#p12,#p15
 #		scales		5.0   1.5   2.0		#p17,#p19,#p20,#p21
-		descriptors	'x1'  'x2'  'x3'
+		descriptors	'x1'  'x2'  'x3'	#s0,#s1,#s2,#s3,#s4,#s5
+#		descriptors	'x1'  'x2'  'x3'	#s6,#s7,#s8,#s9,#s10
+#		descriptors	'x1'  'x2'  'x3'	#s11,#s12,#s13,#s14,#s15
+#		descriptors	'x1'  'x2'  'x3'	#s16,#s17,#s18,#s19,#s20
+#		descriptors	'x1'  'x2'  'x3'	#s21,#s22
+#		descriptors	'x1'  'x2'  'x3'	#p0,#p1,#p2,#p3,#p4,#p5
+#		descriptors	'x1'  'x2'  'x3'	#p6,#p7,#p8,#p9,#p10
+#		descriptors	'x1'  'x2'  'x3'	#p11,#p12,#p13,#p14,#p15
+#		descriptors	'x1'  'x2'  'x3'	#p16,#p17,#p18,#p19,#p20
+#		descriptors	'x1'  'x2'  'x3'	#p21,#p22,#p23,#p24,#p25
+#		descriptors	'x1'  'x2'  'x3'	#p26,#p27,#p28,#p29
 #		linear_equality_constraint_matrix = 2. 1. 1.	#s3,#s5,#s8,#s9
 #		linear_equality_constraint_matrix = 2. 1. 1.	#s11,#s13,#s15,#s16
 #		linear_equality_constraint_matrix = 2. 1. 1.	#s17,#s18,#s21,#s22
@@ -159,6 +189,17 @@ variables,
 #		linear_inequality_upper_bounds = 5.0		#p10,#p11,#p14
 #		linear_inequality_upper_bounds = 5.0		#p16,#p18
 #		linear_inequality_upper_bounds = 5.0		#p19,#p21
+#  	discrete_design_range = 3       			#s23
+#    	initial_point      2     2     2    	#s23
+#    	lower_bounds       -4     -9     -9    	#s23
+#    	upper_bounds       4     9     9    	#s23
+#    	descriptors      'y1'   'y2'   'y3'  	#s23
+#  discrete_design_set              						#s24
+#    integer = 3              								#s24
+#      initial_point     -2   -4	 2						#s24
+#      num_set_values =  5   5   5       					#s24
+#      set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 1 2 4 	#s24
+#    	descriptors      'y1'   'y2'   'y3'  				#s24
 
 interface,
 	system					#s0,#s2,#s3,#s13,#s18
@@ -167,7 +208,7 @@ interface,
 #	fork					#s1,#s4,#s7,#s8
 #	fork					#p1,#p4,#p7,#p8,
 #	fork					#p23,#p25,#p27,#p29
-#       direct					#s5,#s6,#s9,#s10,#s11,#s12,#s14,#s15,#s16,#s17,#s19,#s20,#s21,#s22
+#       direct					#s5,#s6,#s9,#s10,#s11,#s12,#s14,#s15,#s16,#s17,#s19,#s20,#s21,#s22,#s23,#s24
 #       direct					#p5,#p6,#p9,#p10,#p11,#p12,#p14,#p15,#p16,#p17,#p19,#p20,#p21
 		asynchronous			#s0,#s3,#s7,#s8,#s18
 #		asynchronous			#p0,#p3,#p7,#p8,#p11,#p18,#p19
@@ -177,7 +218,7 @@ interface,
 #		evaluation_concurrency 2	#p22,#p23,#p24,#p25
 #		evaluation_concurrency 2	#p26,#p27,#p28,#p29
 #		evaluation_scheduling master	#p5,#p24,#p25,#p28,#p29
-		analysis_driver = 'text_book'   #s0,#p0
+		analysis_driver = 'text_book'   #s0,#p0,#s23,#s24
 #		analysis_driver = 'text_book'   #s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,
 #		analysis_driver = 'text_book'   #s14,#s16,#s17,#s18,#s19,#s20,#s21,#s22
 #		analysis_driver = 'text_book'   #p1,#p2,#p3,#p4,#p6,#p7,#p8,#p9,#p10,#p11,#p12,#p13,#p14

@@ -6,7 +6,7 @@ variables
 	  initial_point   -1.0      1.0
 	  lower_bounds    -2.0     -2.0
 	  upper_bounds     2.0      2.0
-	  descriptor       'x1'     'x2'
+	  descriptors      'x1'     'x2'
 
 interface
   analysis_drivers = 'simulator_script.sh'

@@ -95,10 +95,17 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     expt_data_reader.cpp
     file_reader.cpp
     data_conversions.cpp
+    opt_api_core_data_xfers.cpp
+    opt_tpl_api.cpp
     reduced_basis.cpp
+    restart_test.cpp
     stat_utils.cpp
     wilks_sampling.cpp
     )
+  if (DAKOTA_HAVE_MPI)
+    list(REMOVE_ITEM dakota_teuchos_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
+  endif(DAKOTA_HAVE_MPI)
+
   dakota_add_unit_test(NAME teuchos_unit_tests
     SOURCES teuchos_unit_test_driver.cpp ${dakota_teuchos_unit_tests}
     LINK_DAKOTA_LIBS

@@ -57,17 +57,17 @@ variables,
 
 interface,
 	id_interface = 'I1'
+  analysis_drivers = 'text_book'
+	  system
 #	evaluation_scheduling master
 # Force following line as comment in test 0 for examples/advanced
 #	evaluation_scheduling master	    	#s0
 #	evaluation_scheduling peer dynamic	#p1,#p4
 #	evaluation_servers = 4	   		#p4
 #	processors_per_evaluation = 1		#p4
-	system
-	  asynchronous			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p2,#p3
-	    evaluation_concurrency = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p2
-#	    evaluation_concurrency = 10	#p3
-	  analysis_driver = 'text_book'
+	asynchronous			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p2,#p3
+	  evaluation_concurrency = 5	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p2
+#	  evaluation_concurrency = 10	#p3
 
 responses,
 	objective_functions = 1

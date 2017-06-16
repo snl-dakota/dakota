@@ -482,6 +482,15 @@ partial_corr(RealMatrix& total_data, const int num_in,
       correl_adjust(corr_matrix(i,j));
 }
 
+// Return true if any correlation coefficient is NaN or Inf, false otherwise
+bool SensAnalysisGlobal::has_nan_or_inf(const RealMatrix &corr) const {
+  int num_rows = corr.numRows(), num_cols = corr.numCols();
+  for(int j = 0; j < num_cols; ++j) 
+    for(int i = 0; i < num_rows; ++i) 
+      if( ! boost::math::isfinite(corr(i,j)))
+        return true;
+  return false;
+}
 
 // TODO: combine archive with print
 void SensAnalysisGlobal::
@@ -582,6 +591,17 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
     return;
   }
 
+  if( has_nan_or_inf(simpleCorr) ||
+      has_nan_or_inf(partialCorr) ||
+      has_nan_or_inf(simpleRankCorr) ||
+      has_nan_or_inf(partialRankCorr) )
+    s << "\n\nAt least one correlation coefficient is nan or inf. This " <<
+      "commonly occurs when\ndiscrete variables (including histogram " <<
+      "variables) are present, a response is\ncompletely insensitive to " <<
+      "variables (response variance equal to 0), there are\nfewer samples " <<
+      "than variables, or some samples are approximately collinear." << 
+      std::endl;
+  
   s << std::scientific << std::setprecision(5);
 
   if (resp_labels.size() != numFns) { 
@@ -676,13 +696,14 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
       s << '\n';
     }
   }
-
-  if (numericalIssuesRaw)
-    s << "\nThere may be some numerical issues associated with the calculation "
-      << "of the \npartial correlation coefficients above.  This can be due to "
-      << "very small \nnumbers of input samples, or to ill-conditioned matrices"
-      << ", \nin situations where the partials are very close to zero, -1, or "
-      << "+1.\n";
+  //  This warning message has been supplanted by more generic tests for NaNs and
+  //  Infs
+  //if (numericalIssuesRaw)
+  //  s << "\nThere may be some numerical issues associated with the calculation "
+  //    << "of the \npartial correlation coefficients above.  This can be due to "
+  //    << "very small \nnumbers of input samples, or to ill-conditioned matrices"
+  //    << ", \nin situations where the partials are very close to zero, -1, or "
+  //    << "+1.\n";
 
   if (simpleRankCorr.numRows() == num_in_out &&
       simpleRankCorr.numCols() == num_in_out) {
@@ -759,12 +780,14 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
     }
   }
 
-  if (numericalIssuesRank)
-    s << "\nThere may be some numerical issues associated with the calculation "
-      << "of the \npartial rank correlation coefficients above.  This can be "
-      << "due to very small \nnumbers of input samples, or to ill-conditioned "
-      << "matrices, \nin situations where the partials are very close to zero, "
-      << "-1, or +1.\n";
+  //  This warning message has been supplanted by more generic tests for NaNs and
+  //  Infs
+  //if (numericalIssuesRank)
+  //  s << "\nThere may be some numerical issues associated with the calculation "
+  //    << "of the \npartial rank correlation coefficients above.  This can be "
+  //    << "due to very small \nnumbers of input samples, or to ill-conditioned "
+  //    << "matrices, \nin situations where the partials are very close to zero, "
+  //    << "-1, or +1.\n";
    
   s << std::setprecision(write_precision)  // return to previous precision
     << std::endl;

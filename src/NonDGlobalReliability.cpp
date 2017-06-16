@@ -63,11 +63,6 @@ namespace Dakota {
 // initialization of statics
 NonDGlobalReliability* NonDGlobalReliability::nondGlobRelInstance(NULL);
 
-// define special values for componentParallelMode
-//#define SURROGATE_MODEL 1
-#define TRUTH_MODEL     2
-
-using std::setw;
 
 NonDGlobalReliability::
 NonDGlobalReliability(ProblemDescDB& problem_db, Model& model): 
@@ -585,31 +580,30 @@ void NonDGlobalReliability::optimize_gaussian_process()
     
 	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n";
 	write_data(Cout, c_vars_u);
+	size_t wpp7 = write_precision+7;
 	if (ria_flag) {
 	  Cout << "Expected Feasibility    =\n                     "
-	       << setw(write_precision+7) << -exp_fns_star << "\n"
-	       << "                     " << setw(write_precision+7)
-	       << g_hat_fns[respFnCount] - requestedTargetLevel
+	       << std::setw(wpp7) << -exp_fns_star << "\n                     "
+	       << std::setw(wpp7) << g_hat_fns[respFnCount]-requestedTargetLevel
 	       << " [G_hat(u) - z]\n";
-	//     << "                     " << setw(write_precision+7)
-	//     << beta_star                 << " [beta*]\n";
+	//     << "                     " << std::setw(wpp7) << beta_star
+	//     << " [beta*]\n";
 	//Cout << "RIA optimum             =\n                     "
-	//     << setw(write_precision+7) << exp_fns_star << " [u'u]\n"
-	//     << "                     " << setw(write_precision+7)
-	//     << exp_fns_star[1] << " [G(u) - z]\n";
+	//     << std::setw(wpp7) << exp_fns_star << " [u'u]\n"
+	//     << "                     " << std::setw(wpp7) << exp_fns_star[1]
+	//     << " [G(u) - z]\n";
 	}
 	else {
 	  // Calculate beta^2 for output (and aug_lag update)
 	  Cout << "Expected Improvement    =\n                     "
-	       << setw(write_precision+7)          << -exp_fns_star << "\n"
-	       << "                     "          << setw(write_precision+7)
-	       << beta_star - requestedTargetLevel << " [beta* - bar-beta*]\n"
-	       << "                     "          << setw(write_precision+7)
-	       << g_hat_fns[respFnCount]           << " [G_hat(u)]\n";
+	       << std::setw(wpp7) << -exp_fns_star << "\n                     "
+	       << std::setw(wpp7) << beta_star - requestedTargetLevel
+	       << " [beta* - bar-beta*]\n                     "
+	       << std::setw(wpp7) << g_hat_fns[respFnCount] << " [G_hat(u)]\n";
 	//Cout << "PMA optimum             =\n                     "
-	//     << setw(write_precision+7) << exp_fns_star << " [";
+	//     << std::setw(wpp7) << exp_fns_star << " [";
 	//if (pmaMaximizeG) Cout << '-';
-	//Cout << "G(u)]\n                     " << setw(write_precision+7)
+	//Cout << "G(u)]\n                     " << std::setw(wpp7)
 	//     << exp_fns_star[1] << " [u'u - B^2]\n";
 	}
 
@@ -623,7 +617,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	}
     
 	// Check for convergence based on max EIF/EFF
-	convergenceTol = .001;
+	// BMA: was previously hard-wired: convergenceTol = .001;
         if (maxIterations < 0) 
           maxIterations  = 25*numContinuousVars;
 	if (approxIters >= maxIterations || -exp_fns_star < convergenceTol)
@@ -685,14 +679,14 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
-	    samsOut << setw(13) << sams_u[j] << ' ';
-	  samsOut<< setw(13) << true_fn;
+	    samsOut << std::setw(13) << sams_u[j] << ' ';
+	  samsOut<< std::setw(13) << true_fn;
 	}
 	else {
 	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
-	    samsOut << setw(13) << sams[j] << ' ';
-	  samsOut<< setw(13) << true_fn;
+	    samsOut << std::setw(13) << sams[j] << ' ';
+	  samsOut<< std::setw(13) << true_fn;
 	}
       }
       samsOut << std::endl;
@@ -727,8 +721,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    const Response& gp_resp = uSpaceModel.current_response();
 	    const RealVector& gp_fn = gp_resp.function_values();
 	    
-	    gpOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
-		  << u_pt[1] << ' ' << setw(13) << gp_fn[respFnCount];
+	    gpOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
+		  << u_pt[1] << ' ' << std::setw(13) << gp_fn[respFnCount];
 	    
 	    RealVector variance;
 	    if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
@@ -741,13 +735,13 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	      variance = uSpaceModel.approximation_variances(
 		uSpaceModel.current_variables()); // u_pt
 	    
-	    varOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
-		   << u_pt[1] << ' ' << setw(13) << variance[respFnCount];
+	    varOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
+		   << u_pt[1] << ' ' << std::setw(13) << variance[respFnCount];
 	    
 	    Real eff = expected_feasibility(gp_fn, u_pt);
 	    
-	    effOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
-		   << u_pt[1] << ' ' << setw(13) << -eff;
+	    effOut << '\n' << std::setw(13) << u_pt[0] << ' ' << std::setw(13)
+		   << u_pt[1] << ' ' << std::setw(13) << -eff;
 
 	    // plotting the true function can be expensive, but is available
 	    if (true_plot) {
@@ -760,8 +754,9 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	      const Response& true_resp = iteratedModel.current_response();
 	      const RealVector& true_fn = true_resp.function_values();
 	      
-	      trueOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
-		      << u_pt[1] << ' ' << setw(13) << true_fn[respFnCount];
+	      trueOut << '\n' << std::setw(13) << u_pt[0] << ' '
+		      << std::setw(13) << u_pt[1] << ' '
+		      << std::setw(13) << true_fn[respFnCount];
 	    }
 	  }
 	  gpOut << std::endl; varOut << std::endl; effOut << std::endl;
@@ -1092,7 +1087,7 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
 
 void NonDGlobalReliability::print_results(std::ostream& s)
 {
-  size_t i, j;
+  size_t i, j, wpp7 = write_precision + 7;
   const StringArray& fn_labels = iteratedModel.response_labels();
   s << "-----------------------------------------------------------------------"
     << "------";
@@ -1114,9 +1109,10 @@ void NonDGlobalReliability::print_results(std::ostream& s)
 	<< "Reliability Index  General Rel Index\n     --------------  "
 	<< "-----------------  -----------------  -----------------\n";
       for (j=0; j<num_levels; j++)
-        s << "  " << setw(write_precision+7) << computedRespLevels[i][j]
-	  << "  " << setw(write_precision+7) << computedProbLevels[i][j]
-	  << setw(2*write_precision+18) << computedGenRelLevels[i][j]  << '\n';
+        s << "  " << std::setw(wpp7) << computedRespLevels[i][j]
+	  << "  " << std::setw(wpp7) << computedProbLevels[i][j]
+	  << std::setw(2*write_precision+18) << computedGenRelLevels[i][j]
+	  << '\n';
     }
   }
 

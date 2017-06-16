@@ -18,10 +18,10 @@ variables
     upper_bounds      5*2.0   # use 5 copies of 2.0 for bound
 
 interface
-  direct
-#    analysis_driver = 'herbie'       # use this for herbie         #s0
-    analysis_driver = 'smooth_herbie' # use this for smooth_herbie
-#    analysis_driver = 'shubert'      # use this for shubert        #s0
+#  analysis_drivers = 'herbie'       # use this for herbie         #s0
+  analysis_drivers = 'smooth_herbie' # use this for smooth_herbie
+#  analysis_drivers = 'shubert'      # use this for shubert        #s0
+    direct
 
 responses
   objective_functions = 1

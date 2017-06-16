@@ -64,6 +64,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
       tinyxml	    ZLib license
       vpykit/pyutilib.virtualenv  BSD License  
   ampl		    MIT License (old style with disclaimer)
+  approxnn          GNU Lesser General Public License(LGPL)
   CONMIN	    Public Domain
   DDACE		    GNU Lesser General Public License (LGPL) [SNL]
   dfftpack	    Public Domain
@@ -166,7 +167,9 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
-6.4		   05/16/15 (refer to svn externals for TPL tags)
+6.6		   05/15/17 (refer to git submodules for TPL SHA1s)
+6.5		   11/16/16 (refer to git submodules for TPL SHA1s)
+6.4		   05/16/16 (refer to svn externals for TPL tags)
 6.3		   11/16/15 (refer to svn externals for TPL tags)
 6.2		   05/15/15 (refer to svn externals for TPL tags)
 6.1		   11/15/14 (refer to svn externals for TPL tags)

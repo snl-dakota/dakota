@@ -1,0 +1,115 @@
+#@ *: DakotaConfig=HAVE_NOWPAC
+
+environment,
+#	graphics
+	  method_pointer = 'OPTIM'
+
+###########################
+# begin opt specification #
+###########################
+method,
+	id_method = 'OPTIM'
+	model_pointer = 'OPTIM_M'
+	snowpac
+	  seed = 25041981
+#	  max_iterations = 500
+#	  convergence_tolerance = 1e-4
+#	  max_function_evaluations = 500
+	  trust_region
+	    initial_size = 0.10
+	    minimum_size = 1.0e-6
+	    contract_threshold = 0.25
+	    expand_threshold   = 0.75
+	    contraction_factor = 0.50
+	    expansion_factor   = 1.50
+#	  output debug
+
+model,
+	id_model = 'OPTIM_M'
+	nested
+	  variables_pointer  = 'OPTIM_V'
+	  sub_method_pointer = 'UQ'
+	  responses_pointer  = 'OPTIM_R'
+	  primary_response_mapping   = 0. 1.e+6 0. 1.e+6 0. 1.e+6
+	  secondary_response_mapping = 1. 0. 0. 0. 0. 0.
+	  			       0. 0. 1. 0. 0. 0.
+                                       0. 0. 0. 0. 1. 0.
+
+variables,
+	id_variables = 'OPTIM_V'
+	continuous_design = 3
+	  initial_point    3*.5
+	  lower_bounds     3*-1.
+	  upper_bounds     3* 1.
+
+responses,
+	id_responses = 'OPTIM_R'
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
+	nonlinear_inequality_upper_bounds = .02 .2 .02
+	no_gradients
+	no_hessians
+
+
+##########################
+# begin UQ specification #
+##########################
+method,
+	id_method = 'UQ'
+	model_pointer = 'HIERARCH'
+        multilevel_sampling
+#	  sample_type lhs
+	  pilot_samples = 20 seed = 1237
+	  max_iterations = 2
+#	  convergence_tolerance =    .1
+	  convergence_tolerance =   .01
+#	  convergence_tolerance =  .001
+#	  convergence_tolerance = .0001
+	output silent
+	final_moments central
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'SIM1'
+
+model,
+	id_model = 'SIM1'
+	simulation
+	  solution_level_control = 'mesh_size'
+# dense matrices --> direct solvers --> cubic growth in expense
+	  solution_level_cost = 1. 8. 64. 512. 4096.
+
+variables,
+	continuous_design = 3	 # number of cosine terms in soln expansion
+	uniform_uncertain = 6	 # number of cosine terms in soln expansion
+	  lower_bounds      =  6*-1.
+	  upper_bounds      =  6* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+      	  set_values = 4 8 16 32 64
+      	  descriptors = 'mesh_size'
+    	real = 4
+      	  elements_per_variable = 2 2 1 1
+      	  set_values = 0.1 1 # field mean
+                       0.5 4 # field std dev
+                       1     # kernel order
+                       0.2   # kernel length
+      	  descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      	  initial_state = 1 4 1 0.2
+	string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	  elements_per_variable = 2 2
+	  initial_state = 'cosine' 'off'
+      	  set_values = 'cosine' 'exponential'
+                       'off' 'on'
+      	  descriptors = 'kernel_type' 'positivity'
+
+interface,
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
+	no_gradients
+	no_hessians

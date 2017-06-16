@@ -613,8 +613,10 @@ void NonDExpansion::update_final_statistics()
   // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
   // for NonDExpansion since Pecos manages the moment arrays), such that all
   // that remains are system final stats and additional gradient scaling.
-  update_system_final_statistics();
-  update_system_final_statistics_gradients();
+  if (respLevelTargetReduce) {
+    update_system_final_statistics();
+    update_system_final_statistics_gradients();
+  }
   update_final_statistics_gradients();
 }
 
@@ -623,7 +625,7 @@ void NonDExpansion::initialize_expansion()
 {
   // update ranVar info to capture any distribution param insertions
   initialize_random_variable_parameters();
-  initialize_final_statistics_gradients();
+  resize_final_statistics_gradients(); // finalStats ASV available at run time
   transform_correlations();
 
   // now that data has flowed down at run-time from any higher level recursions
@@ -698,15 +700,13 @@ void NonDExpansion::compute_expansion()
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0,
-    num_final_stats = final_asv.size(), num_final_grad_vars = final_dvv.size();
-  bool final_stat_value_flag = false, final_stat_grad_flag = false;
-  for (i=0; i<num_final_stats; ++i)
-    if (final_asv[i] & 1)
-      { final_stat_value_flag = true; break; }
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, total_i, cntr = 0,
+    num_final_stats = final_asv.size(), num_final_grad_vars = final_dvv.size(),
+    moment_offset   = (finalMomentsType) ? 2 : 0;
+  bool final_stat_grad_flag = false;
   for (i=0; i<num_final_stats; ++i)
     if (final_asv[i] & 2)
-      { final_stat_grad_flag  = true; break; }
+      { final_stat_grad_flag = true; break; }
 
   // define ASV for u_space_sampler and expansion coefficient/gradient
   // data flags for PecosApproximation
@@ -716,8 +716,7 @@ void NonDExpansion::compute_expansion()
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* poly_approx_rep
       = (PecosApproximation*)poly_approxs[i].approx_rep();
-    bool expansion_coeff_flag = false, expansion_grad_flag = false,
-         mean_grad_flag       = false, std_dev_grad_flag   = false;
+    bool expansion_coeff_flag = false, expansion_grad_flag = false;
     if (totalLevelRequests) {
       rl_len = requestedRespLevels[i].length();
       pl_len = requestedProbLevels[i].length();
@@ -727,60 +726,66 @@ void NonDExpansion::compute_expansion()
     else
       rl_len = pl_len = bl_len = gl_len = 0;
 
-    if (final_stat_value_flag)
-      // map final_asv value bits into expansion_coeff_flag requirements
-      for (j=0; j<2+rl_len+pl_len+bl_len+gl_len; ++j)
-	if (final_asv[cntr+j] & 1)
-	  { expansion_coeff_flag = true; break; }
+    // map final_asv value bits into expansion_coeff_flag requirements
+    total_i = moment_offset+rl_len+pl_len+bl_len+gl_len;
+    for (j=0; j<total_i; ++j)
+      if (final_asv[cntr+j] & 1)
+        { expansion_coeff_flag = true; break; }
 
     if (final_stat_grad_flag) {
+      // moment grad flags manage requirements at a higher level
+      // --> mapped into expansion value/grad flags at bottom
+      bool moment1_grad = false, moment2_grad = false;
       // map final_asv gradient bits into moment grad requirements
-      if (final_asv[cntr++] & 2)
-	mean_grad_flag    = true;
-      if (final_asv[cntr++] & 2)
-	std_dev_grad_flag = true;
+      if (finalMomentsType) {
+	if (final_asv[cntr++] & 2) moment1_grad = true;
+	if (final_asv[cntr++] & 2) moment2_grad = true;
+      }
       if (respLevelTarget == RELIABILITIES)
-	for (j=0; j<rl_len; ++j)
+	for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
 	  if (final_asv[cntr+j] & 2)
-	    { mean_grad_flag = std_dev_grad_flag = true; break; }
+	    { moment1_grad = moment2_grad = expansion_coeff_flag = true; break;}
       cntr += rl_len + pl_len;
-      for (j=0; j<bl_len; ++j)
+      for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds, dsigma/ds
 	if (final_asv[cntr+j] & 2)
-	  { mean_grad_flag = std_dev_grad_flag = true; break; }
+	  { moment1_grad = moment2_grad = true; break; }
       cntr += bl_len + gl_len;
+
       // map moment grad requirements into expansion_{coeff,grad}_flag reqmts
       // (refer to *PolyApproximation::get_*_gradient() implementations)
+      // aleatory vars requirements:
+      //   mean grad:          coeff grads
+      //   var  grad: coeffs & coeff grads
+      // all vars requirements:
+      //   mean grad: coeffs (nonrandom v),          coeff grads (random v)
+      //   var  grad: coeffs (nonrandom v), coeffs & coeff grads (random v)
       if (all_vars) { // aleatory + design/epistemic
-	if (std_dev_grad_flag)
-	  expansion_coeff_flag = true;
 	size_t deriv_index, num_deriv_vars = final_dvv.size();
 	for (j=0; j<num_deriv_vars; ++j) {
 	  deriv_index = final_dvv[j] - 1; // OK since we are in an "All" view
+	  // random variable
 	  if (deriv_index >= numContDesVars &&
-	      deriv_index <  numContDesVars + numContAleatUncVars) { // ran var
-	    if (mean_grad_flag || std_dev_grad_flag)
-	      expansion_grad_flag = true;
+	      deriv_index <  numContDesVars + numContAleatUncVars) {
+	    if (moment1_grad) expansion_grad_flag = true;
+	    if (moment2_grad) expansion_grad_flag = expansion_coeff_flag = true;
 	  }
-	  else if (mean_grad_flag)
+	  // non-random variable
+	  else if (moment1_grad || moment2_grad)
 	    expansion_coeff_flag = true;
 	}
       }
       else { // aleatory expansion variables
-	if (mean_grad_flag)
-	  expansion_grad_flag = true;
-	if (std_dev_grad_flag)
-	  expansion_coeff_flag = expansion_grad_flag = true;
+	if (moment1_grad) expansion_grad_flag = true;
+	if (moment2_grad) expansion_grad_flag = expansion_coeff_flag = true;
       }
     }
     else
-      cntr += 2 + rl_len + pl_len + bl_len + gl_len;
+      cntr += moment_offset + rl_len + pl_len + bl_len + gl_len;
 
     // map expansion_{coeff,grad}_flag requirements into ASV and
     // PecosApproximation settings
-    if (expansion_coeff_flag)
-      sampler_asv[i] |= 1;
-    if (expansion_grad_flag || useDerivs)
-      sampler_asv[i] |= 2;
+    if (expansion_coeff_flag)             sampler_asv[i] |= 1;
+    if (expansion_grad_flag || useDerivs) sampler_asv[i] |= 2;
     poly_approx_rep->expansion_coefficient_flag(expansion_coeff_flag);
     poly_approx_rep->expansion_gradient_flag(expansion_grad_flag);
   }
@@ -1331,6 +1336,7 @@ Real NonDExpansion::compute_covariance_metric()
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector delta_resp_var = respVariance; // deep copy
+    Real scale = respVariance.normFrobenius();
     compute_covariance();                     // update
     delta_resp_var -= respVariance;           // compute change
 #ifdef DEBUG
@@ -1339,11 +1345,16 @@ Real NonDExpansion::compute_covariance_metric()
     Cout << "norm of delta_resp_var = " << delta_resp_var.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
-    return delta_resp_var.normFrobenius();
+    // For adaptation started from level = 0, reference covariance = 0.
+    // Trap this and also avoid possible bogus termination from using absolute
+    // change compared against relative conv tol.
+    return (scale > 0.) ? delta_resp_var.normFrobenius() / scale :
+                          delta_resp_var.normFrobenius() / Pecos::SMALL_NUMBER;
     break;
   }
   case FULL_COVARIANCE: {
     RealSymMatrix delta_resp_covar = respCovariance; // deep copy
+    Real scale = respCovariance.normFrobenius();
     compute_covariance();                            // update
     delta_resp_covar -= respCovariance;              // compute change
 #ifdef DEBUG
@@ -1354,7 +1365,12 @@ Real NonDExpansion::compute_covariance_metric()
     Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
-    return delta_resp_covar.normFrobenius();
+    // For adaptation started from level = 0, reference covariance = 0.
+    // Trap this and also avoid possible bogus termination from using absolute
+    // change compared against relative conv tol.
+    return (scale > 0.) ?
+      delta_resp_covar.normFrobenius() / scale :
+      delta_resp_covar.normFrobenius() / Pecos::SMALL_NUMBER;
     break;
   }
   default: // NO_COVARIANCE or failure to redefine DEFAULT_COVARIANCE
@@ -1370,44 +1386,51 @@ Real NonDExpansion::compute_final_statistics_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
-  RealVector delta_final_stats = finalStatistics.function_values(); // deep copy
-  compute_statistics();                                             //    update
-  delta_final_stats -= finalStatistics.function_values();      // compute change
-
+  RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
+  compute_statistics();                                           //    update
+  const RealVector& final_stats_new = finalStatistics.function_values();
 #ifdef DEBUG
   Cout << "final_stats_ref:\n" << final_stats_ref
-       << "final_stats:\n" << finalStatistics.function_values()
-       << "delta_final_stats:\n" << delta_final_stats << std::endl;
+       << "final_stats_new:\n" << final_stats_new << std::endl;
 #endif // DEBUG
 
   // sum up only the level mapping stats (don't mix with mean and variance due
   // to scaling issues)
   // TO DO: if the level mappings are of mixed type, then would need to scale
   //        with a target value or measure norm of relative change.
-  Real sum_sq = 0.; size_t i, j, cntr = 0, num_levels_i;
+  Real sum_sq = 0., scale_sq = 0.;
+  size_t i, j, cntr = 0, num_lev_i, moment_offset = (finalMomentsType) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
 
     /* this modification can be used to mirror the metrics in Gerstner & Griebel
        2003.  However, their approach uses a hierarchical integral contribution
        evaluation which is less prone to roundoff (and is refined to very tight
        tolerances in the paper).
+    if (!finalMomentsType) { Cerr << ; abort_handler(METHOD_ERROR); }
     sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
-    cntr += 1 + requestedRespLevels[i].length() +
+    cntr += moment_offset + requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
     */
 
     // simple approach takes 2-norm of level mappings (no relative scaling),
     // which should be fine for mappings that are not of mixed type
-    cntr += 2; // skip moments
-    num_levels_i = requestedRespLevels[i].length() +
+    cntr += moment_offset; // skip moments
+    num_lev_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
-    for (j=0; j<num_levels_i; ++j, ++cntr)
-      sum_sq += std::pow(delta_final_stats[cntr], 2.);
+    for (j=0; j<num_lev_i; ++j, ++cntr) {
+      Real ref  = final_stats_ref[cntr], delta = final_stats_new[cntr] - ref;
+      scale_sq +=   ref *   ref;
+      sum_sq   += delta * delta;
+    }
   }
 
-  return std::sqrt(sum_sq);
+  // Risk of zero reference is reduced relative to covariance control, but not
+  // eliminated. Trap this and also avoid possible bogus termination from using
+  // absolute change compared against relative conv tol.
+  return (scale_sq > 0.) ? std::sqrt(sum_sq / scale_sq) :
+                           std::sqrt(sum_sq / Pecos::SMALL_NUMBER);
 }
 
 
@@ -1605,11 +1628,12 @@ void NonDExpansion::compute_analytic_statistics()
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0,
-    num_final_grad_vars = final_dvv.size();
+    num_final_grad_vars = final_dvv.size(), total_offset,
+    moment_offset = (finalMomentsType) ? 2 : 0;
 
   // loop over response fns and compute/store analytic stats/stat grads
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real mu, sigma, beta, z;
+  Real mu, var, sigma, beta, z;
   RealVector mu_grad, sigma_grad, final_stat_grad;
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
@@ -1624,15 +1648,18 @@ void NonDExpansion::compute_analytic_statistics()
 
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
 
+    // Note: corresponding logic in NonDExpansion::compute_expansion() defines
+    // expansionCoeffFlag as needed to support final data requirements.
     if (poly_approx_rep->expansion_coefficient_flag()) {
       if (all_vars) poly_approx_rep->compute_moments(initialPtU);
       else          poly_approx_rep->compute_moments();
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
-      // Pecos provides central moments
-      mu = moments[0]; const Real& var = moments[1];
+      mu = moments[0]; var = moments[1]; // Pecos provides central moments
+
       if (covarianceControl ==  DIAGONAL_COVARIANCE) respVariance[i]     = var;
       else if (covarianceControl == FULL_COVARIANCE) respCovariance(i,i) = var;
+
       if (var >= 0.)
 	sigma = std::sqrt(var);
       else { // negative variance can happen with SC on sparse grids
@@ -1645,57 +1672,84 @@ void NonDExpansion::compute_analytic_statistics()
 
     // compute moment gradients if needed for beta mappings
     bool moment_grad_mapping_flag = false;
-    if (respLevelTarget == RELIABILITIES)
-      for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
-	if (final_asv[cntr+2+j] & 2)
+    if (respLevelTarget == RELIABILITIES) {
+      total_offset = cntr + moment_offset;
+      for (j=0; j<rl_len; ++j) // dbeta/ds requires mu, sigma, dmu/ds, dsigma/ds
+	if (final_asv[total_offset+j] & 2)
 	  { moment_grad_mapping_flag = true; break; }
-    if (!moment_grad_mapping_flag)
-      for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds,dsigma/ds
-	if (final_asv[cntr+2+pl_len+j] & 2)
+    }
+    if (!moment_grad_mapping_flag) {
+      total_offset = cntr + moment_offset + rl_len + pl_len;
+      for (j=0; j<bl_len; ++j) // dz/ds requires dmu/ds, dsigma/ds
+	if (final_asv[total_offset+j] & 2)
 	  { moment_grad_mapping_flag = true; break; }
+    }
 
-    // *** mean
-    if (final_asv[cntr] & 1)
+    bool final_mom1_flag = false, final_mom1_grad_flag = false;
+    if (finalMomentsType) {
+      final_mom1_flag      = (final_asv[cntr] & 1);
+      final_mom1_grad_flag = (final_asv[cntr] & 2);
+    }
+    bool mom1_grad_flag = (final_mom1_grad_flag || moment_grad_mapping_flag);
+    // *** mean (Note: computation above not based on final ASV)
+    if (final_mom1_flag)
       finalStatistics.function_value(mu, cntr);
     // *** mean gradient
-    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
+    if (mom1_grad_flag) {
       const RealVector& grad = (all_vars) ?
 	poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->mean_gradient();
-      if (final_asv[cntr] & 2)
+      if (final_mom1_grad_flag)
 	finalStatistics.function_gradient(grad, cntr);
       if (moment_grad_mapping_flag)
 	mu_grad = grad; // transfer to code below
     }
-    ++cntr;
+    if (finalMomentsType)
+      ++cntr;
 
-    // *** std deviation
-    if (final_asv[cntr] & 1)
-      finalStatistics.function_value(sigma, cntr);
-    // *** std deviation gradient
-    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
-      sigma_grad = (all_vars) ?
+    bool final_mom2_flag = false, final_mom2_grad_flag = false;
+    if (finalMomentsType) {
+      final_mom2_flag      = (final_asv[cntr] & 1);
+      final_mom2_grad_flag = (final_asv[cntr] & 2);
+    }
+    bool mom2_grad_flag = (final_mom2_grad_flag || moment_grad_mapping_flag);
+    bool std_moments    = (finalMomentsType == STANDARD_MOMENTS);
+    // *** std dev / variance (Note: computation above not based on final ASV)
+    if (final_mom2_flag) {
+      if (std_moments) finalStatistics.function_value(sigma, cntr);
+      else             finalStatistics.function_value(var,   cntr);
+    }
+    // *** std deviation / variance gradient
+    if (mom2_grad_flag) {
+      const RealVector& grad = (all_vars) ?
 	poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->variance_gradient();
-      if (sigma > 0.)
-	for (j=0; j<num_final_grad_vars; ++j)
-	  sigma_grad[j] /= 2.*sigma;
-      else {
-	Cerr << "Warning: stochastic expansion std deviation is zero in "
-	     << "computation of std deviation gradient.\n         Setting "
-	     << "gradient to zero." << std::endl;
-	sigma_grad = 0.;
+      if (std_moments || moment_grad_mapping_flag) {
+	if (sigma_grad.empty())
+	  sigma_grad.sizeUninitialized(num_final_grad_vars);
+	if (sigma > 0.)
+	  for (j=0; j<num_final_grad_vars; ++j)
+	    sigma_grad[j] = grad[j] / (2.*sigma);
+	else {
+	  Cerr << "Warning: stochastic expansion std deviation is zero in "
+	       << "computation of std deviation gradient.\n         Setting "
+	       << "gradient to zero." << std::endl;
+	  sigma_grad = 0.;
+	}
       }
-      if (final_asv[cntr] & 2)
-	finalStatistics.function_gradient(sigma_grad, cntr);
+      if (final_mom2_grad_flag) {
+	if (std_moments) finalStatistics.function_gradient(sigma_grad, cntr);
+	else             finalStatistics.function_gradient(grad,       cntr);
+      }
     }
-    ++cntr;
+    if (finalMomentsType)
+      ++cntr;
 
     if (respLevelTarget == RELIABILITIES) {
       for (j=0; j<rl_len; ++j, ++cntr) {
 	// *** beta
 	if (final_asv[cntr] & 1) {
-	  const Real& z_bar = requestedRespLevels[i][j];
+	  Real z_bar = requestedRespLevels[i][j];
 	  if (sigma > Pecos::SMALL_NUMBER) {
 	    Real ratio = (mu - z_bar)/sigma;
 	    computedRelLevels[i][j] = beta = (cdfFlag) ? ratio : -ratio;
@@ -1711,10 +1765,10 @@ void NonDExpansion::compute_analytic_statistics()
 	  if (final_stat_grad.empty())
 	    final_stat_grad.sizeUninitialized(num_final_grad_vars);
 	  if (sigma > Pecos::SMALL_NUMBER) {
-	    const Real& z_bar = requestedRespLevels[i][j];
+	    Real z_bar = requestedRespLevels[i][j];
 	    for (k=0; k<num_final_grad_vars; ++k) {
-	      Real dratio_dx = (sigma*mu_grad[k] - (mu - z_bar)*
-				sigma_grad[k]) / std::pow(sigma, 2);
+	      Real dratio_dx = (sigma*mu_grad[k] - (mu-z_bar)*sigma_grad[k])
+		             / std::pow(sigma, 2);
 	      final_stat_grad[k] = (cdfFlag) ? dratio_dx : -dratio_dx;
 	    }
 	  }
@@ -1731,7 +1785,7 @@ void NonDExpansion::compute_analytic_statistics()
     cntr += pl_len;
 
     for (j=0; j<bl_len; ++j, ++cntr) {
-      const Real& beta_bar = requestedRelLevels[i][j];
+      Real beta_bar = requestedRelLevels[i][j];
       if (final_asv[cntr] & 1) {
 	// *** z
 	computedRespLevels[i][j+pl_len] = z = (cdfFlag) ?
@@ -1804,8 +1858,9 @@ void NonDExpansion::compute_numerical_statistics()
   else {
     sampler_asv.assign(numFunctions, 0); cntr = 0;
     // response fn is active for z->p, z->beta*, p->z, or beta*->z
+    size_t moment_offset = (finalMomentsType) ? 2 : 0;
     for (i=0; i<numFunctions; ++i) {
-      cntr += 2;
+      cntr += moment_offset;
       size_t rl_len = requestedRespLevels[i].length();
       if (respLevelTarget != RELIABILITIES)
 	for (j=0; j<rl_len; ++j)
@@ -1852,11 +1907,13 @@ void NonDExpansion::compute_numerical_statistics()
 
   // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
   // are not recomputed since empty level arrays are passed in construct_
-  // expansion_sampler() and these levels are omitting from sampler_cntr.
+  // expansion_sampler() and these levels are omitted from sampler_cntr.
   archive_allocate_mappings();
   cntr = sampler_cntr = 0;
+  size_t moment_offset = (finalMomentsType) ? 2 : 0,
+    sampler_moment_offset = (exp_sampler_rep->final_moments_type()) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
-    cntr += 2; sampler_cntr += 2;
+    cntr += moment_offset; sampler_cntr += sampler_moment_offset;
 
     if (respLevelTarget == RELIABILITIES)
       cntr += requestedRespLevels[i].length();
@@ -1949,8 +2006,10 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
     = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
   bool x_data_flag = false;
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  size_t sampler_moment_offset
+    = (imp_sampler_rep->final_moments_type()) ? 2 : 0;
   for (i=0; i<numFunctions; ++i) {
-    sampler_cntr += 2;
+    sampler_cntr += sampler_moment_offset;
     size_t rl_len = requestedRespLevels[i].length();
     if (rl_len && respLevelTarget != RELIABILITIES) {
       imp_sampler_stats[i].resize(rl_len);
@@ -2131,7 +2190,8 @@ void NonDExpansion::print_moments(std::ostream& s)
   //   exp only:     PCE with unstructured grids (regression, exp sampling)
   // Also handle numerical exception of negative variance in either exp or num
   PecosApproximation* poly_approx_rep;
-  size_t exp_mom, num_int_mom; bool exception = false, prev_exception = false;
+  size_t exp_mom, num_int_mom;
+  bool exception = false, curr_exception, prev_exception = false;
   RealVector std_exp_moments, std_num_int_moments;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
@@ -2141,10 +2201,12 @@ void NonDExpansion::print_moments(std::ostream& s)
       const RealVector& num_int_moments
 	= poly_approx_rep->numerical_integration_moments();
       exp_mom = exp_moments.length(); num_int_mom = num_int_moments.length();
-      if ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
-	   (num_int_mom == 2 && num_int_moments[1] <  0.) ||
-	   (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
-	   (num_int_mom >  2 && num_int_moments[1] <= 0.) ) {
+      curr_exception
+	= ( (exp_mom     == 2 && exp_moments[1]     <  0.) ||
+	    (num_int_mom == 2 && num_int_moments[1] <  0.) ||
+	    (exp_mom     >  2 && exp_moments[1]     <= 0.) ||
+	    (num_int_mom >  2 && num_int_moments[1] <= 0.) );
+      if (curr_exception || finalMomentsType == CENTRAL_MOMENTS) {
 	if (i==0 || !prev_exception)
 	  s << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
 	    << std::setw(width+1)  << "3rdCentral" << std::setw(width+2)
@@ -2161,7 +2223,9 @@ void NonDExpansion::print_moments(std::ostream& s)
 	  for (j=0; j<num_int_mom; ++j)
 	    s << ' ' << std::setw(width) << num_int_moments[j];
 	}
-	exception = prev_exception = true;
+	prev_exception = curr_exception;
+	if (curr_exception && finalMomentsType == STANDARD_MOMENTS)
+	  exception = true;
       }
       else {
 	if (i==0 || prev_exception)
@@ -2309,7 +2373,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 	  }
 	  else {
 	    Pecos::ULULMIter it = ++sparse_sobol_map.begin(); // skip 0-way
-	    std::advance(it, main_cntr);                // advance past 1-way
+	    std::advance(it, main_cntr);               // advance past 1-way
 	    for (; it!=sparse_sobol_map.end(); ++it) { // 2-way and above
 	      sobol = sobol_indices[it->second];
 	      if (std::abs(sobol) > vbdDropTol) // print interaction

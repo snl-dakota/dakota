@@ -1,18 +1,22 @@
 #!/bin/bash
-# job submission script for parallel Case 3 OpenMPI relative node scheduling
+#SBATCH --time=00:02:00
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=4
+#SBATCH --account=fy140235
 
-# M=8 processors
-#PBS -l nodes=4:ppn=2:compute
-#PBS -l walltime=00:05:00
-#PBS -N DAKOTA_Case3_OpenMPI
+# 4 nodes and 4 tasks per node are reserved, a total of 16 MPI tasks.
 
-. $HOME/.bash_profile
+# Load the Dakota module OR do other setup to:
+# 1. Add the Dakota install's bin and test folders on the path
+# 2. Make mpirun available on the PATH (e.g. load an openmpi module
+# 3. Add the folder containing the dakota Python package to PYTHONPATH.
+module load dakota
 
-# for convenience, set DAKOTA and PATH environment variables
-# put MPI-enabled, simulator executable in $HOME/bin and add to path
-# also, put . on path to pickup the simulator driver script
-export DAKOTA=/path/to/dakota
-export PATH=$HOME/bin:$PATH:.
+# Run Dakota in serial and launch 4 parallel analysis jobs at a time
+dakota -i dakota_pstudy.in
 
-# Case 3: Run DAKOTA in serial and launch 4 parallel analysis jobs at a time
-$DAKOTA/bin/dakota -i dakota_pstudy.in
+# optional: when using mpitile or dakota.interfacing.parallel, make sure the 
+# lock files used to manage the tiles during dynamic scheduling are cleaned
+# up.
+
+rm -f ${HOME}/.DakotaEvalTiling/${SLURM_JOBID}.*

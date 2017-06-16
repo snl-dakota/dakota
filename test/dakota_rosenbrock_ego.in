@@ -17,8 +17,8 @@ variables
     descriptors     'x1' 'x2'
 
 interface
-  direct
-    analysis_driver = 'rosenbrock'
+  analysis_drivers = 'rosenbrock'
+    direct
 
 responses
   objective_functions = 1

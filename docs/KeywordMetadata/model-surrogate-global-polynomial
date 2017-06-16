@@ -19,6 +19,16 @@ polynomial surface fit may not be the best choice for modeling data
 trends globally over the entire parameter space, unless it is known a
 priori that the true data trends are close to linear, quadratic, or
 cubic. See \cite Mye95 for more information on polynomial models.
+  
+<em>Known Issue: When using discrete variables, there have been
+sometimes significant differences in surrogate behavior observed
+across computing platforms in some cases.  The cause has not yet been
+fully diagnosed and is currently under investigation.  In addition,
+guidance on appropriate construction and use of surrogates with
+discrete variables is under development.  In the meantime, users
+should therefore be aware that there is a risk of inaccurate results
+when using surrogates with discrete variables.</em>
+
 
 Topics::	
 Examples::

@@ -3,42 +3,43 @@
 # DAKOTA INPUT FILE - dakota_uq_cantilever_ivp_exp.in
 
 environment,    
-   tabular_data    
-   method_pointer = 'EPISTEMIC'
+ tabular_data    
+ top_method_pointer = 'EPISTEMIC'
 
 #################################
 # begin EPISTEMIC specification #
 #################################
 method,									 
-        id_method = 'EPISTEMIC'
-        model_pointer = 'EPIST_M'
+  id_method = 'EPISTEMIC'
 	global_interval_est		#s0,#s1,#s2,#s3
-	  seed = 1234567 rng rnum2		#s0,#s1,#s2,#s3
+	  seed = 1234567 		#s0,#s1,#s2,#s3
 #	local_interval_est			#s4,#s5,#s6,#s7
-	  output verbose
+    model_pointer = 'EPIST_M'
+  output verbose
 
 model,
         id_model = 'EPIST_M'
         nested
-          variables_pointer  = 'EPIST_V'
           sub_method_pointer = 'ALEATORY'
-          responses_pointer  = 'EPIST_R'
           primary_variable_mapping   = 'w' 't'
           primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
                                        0. 0. 0. 0. 1. 0. 0. 0.
                                        0. 0. 0. 0. 0. 0. 0. 1.
+          variables_pointer  = 'EPIST_V'
+          responses_pointer  = 'EPIST_R'
+
 variables,	
         id_variables = 'EPIST_V'
         continuous_interval_uncertain = 2
 	  num_intervals   = 1 1
-          interval_probs  = 1.0 1.0
+          interval_probabilities  = 1.0 1.0
           lower_bounds    = 1.  1.
           upper_bounds    = 10. 10
 
 responses,
         id_responses = 'EPIST_R'
         response_functions = 3
-        response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
+        descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
         no_gradients				#s0,#s1,#s2,#s3
 #	analytic_gradients			#s4,#s5,#s6,#s7
         no_hessians
@@ -48,22 +49,23 @@ responses,
 ################################
 method,
         id_method = 'ALEATORY'
-        model_pointer = 'ALEAT_M'
-	polynomial_chaos non_nested	#s0,#s1,#s4,#s5
-#	stoch_collocation non_nested	#s2,#s3,#s6,#s7
-	  sparse_grid_level = 2			#s0,#s2,#s4,#s6
-#	  sparse_grid_level = 4			#s1,#s3,#s5,#s7
-          num_response_levels = 0 1 1
-          response_levels = 0.0 0.0
-          compute reliabilities
-          complementary distribution
+	polynomial_chaos                      #s0,#s1,#s4,#s5
+#	stoch_collocation                     #s2,#s3,#s6,#s7
+	  sparse_grid_level_sequence = 2			#s0,#s2,#s4,#s6
+#	  sparse_grid_level_sequence = 4			#s1,#s3,#s5,#s7
+      non_nested
+    response_levels = 0.0 0.0
+      num_response_levels = 0 1 1
+      compute reliabilities
+    distribution complementary 
+    model_pointer = 'ALEAT_M'
 
 model,
         id_model = 'ALEAT_M'
         single
-          variables_pointer = 'ALEAT_V'
           interface_pointer = 'ALEAT_I'
-          responses_pointer = 'ALEAT_R'
+        variables_pointer = 'ALEAT_V'
+        responses_pointer = 'ALEAT_R'
 
 variables,
         id_variables = 'ALEAT_V'
@@ -81,14 +83,14 @@ variables,
 
 interface,
         id_interface = 'ALEAT_I'
-        direct
-          analysis_driver = 'mod_cantilever'
-#	  deactivate evaluation_cache		#s1,#s3,#s5,#s7
+        analysis_drivers = 'mod_cantilever'
+          direct
+#	      deactivate evaluation_cache		#s1,#s3,#s5,#s7
 
 responses,
         id_responses = 'ALEAT_R'
         response_functions = 3
-        response_descriptors = 'weight' 'stress' 'displ'
+        descriptors = 'weight' 'stress' 'displ'
         no_gradients				#s0,#s1,#s2,#s3,#s5,#s7
 #	analytic_gradients			#s4,#s6
         no_hessians

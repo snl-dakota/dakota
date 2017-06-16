@@ -287,6 +287,7 @@ private:
   //
   //- Heading: Data
   //
+
 };
 
 
@@ -304,14 +305,6 @@ inline void Minimizer::constraint_tolerance(Real constr_tol)
 
 inline Real Minimizer::constraint_tolerance() const
 { return constraintTol; }
-
-
-inline void Minimizer::finalize_run()
-{
-  // Restore previous object instance in case of recursion.
-  minimizerInstance = prevMinInstance;
-  Iterator::finalize_run(); // included for completeness
-}
 
 
 /** default definition that gets redefined in selected derived Minimizers */

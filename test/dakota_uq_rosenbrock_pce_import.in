@@ -18,7 +18,7 @@ method,
 #	  import_approx_points_file = 'dakota_uq_rosenbrock_pce_import.mcmc_free.dat'  freeform	    #s8
 #	  normalized		  					       	    #s5,#s6
 	  collocation_points = 0 						    #s0,#s1,#s2,#s3,#s5,#s7,#s8
-	  samples_on_emulator = 10000 seed = 12347 rng rnum2				    #s0,#s1,#s2,#s3,#s4,#s5,#s6
+	  samples_on_emulator = 10000 seed = 12347 				    #s0,#s1,#s2,#s3,#s4,#s5,#s6
 	  response_levels = .1 1. 50. 100. 500. 1000.
 	  variance_based_decomp #interaction_order = 1
 #	  output debug
