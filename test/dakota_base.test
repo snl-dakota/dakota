@@ -26189,6 +26189,20 @@ Test Number 5 succeeded
                      -4.7900276374e-01
                      -9.3574850518e-02
 <<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0011598866e+00 x1
+                      1.9766117810e+00 x2
+<<<<< Best model responses =
+                      8.2035018718e+01
+                      1.5020974547e+01
+                      1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
+<<<<< Best data captured at function evaluation 11
 dakota_textbook_nips.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)

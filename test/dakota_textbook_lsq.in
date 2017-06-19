@@ -8,6 +8,7 @@
 #   5: nl2sol, with surrogate(model) - data
 #      - Optimization points to a response that differences with data
 #      - DACE points to a response that just returns the raw responses
+#   6: nl2sol, freeform data, scaling enabled
 #
 # Can't do surrogate on model-data as DACE method has no knowledge of
 # the data transformation!
@@ -17,17 +18,18 @@
 # Best Residuals [ 0.0, -0.5, 0.0]
 
 method
-  model_pointer = 'TEXTBOOK_MINUS_DATA'		#s0,#s1,#s2,#s3,#s4
+  model_pointer = 'TEXTBOOK_MINUS_DATA'		#s0,#s1,#s2,#s3,#s4,#s6
 #  model_pointer = 'SURROGATE_MINUS_DATA'	#s5
-  max_iterations = 50				#s0,#s1,#s2,#s3
+  max_iterations = 50				#s0,#s1,#s2,#s3,#s6
   convergence_tolerance = 1e-8
-  nl2sol					#s0,#s1,#s5
+  nl2sol					#s0,#s1,#s5,#s6
 #  optpp_q_newton				#s2
 #  optpp_g_newton				#s3
 #  coliny_ea					#s4
 #    max_function_evaluations = 10000 		#s4
 #    max_iterations = 5000	     		#s4
 #    seed = 1234	   			#s4
+#  scaling                                      #s6
 
 # All the models and responses are defined for all the tests, so must specify
 model						
@@ -74,8 +76,8 @@ responses
   calibration_terms = 3
     calibration_data_file = 'dakota_textbook_lsq.dat'	#s0,#s5
       freeform						#s0,#s5
-#     calibration_data_file = 'dakota_textbook_lsq.ann'	#s1,#s2,#s3,#s4
-  analytic_gradients					#s0,#s1,#s2,#s3,#s5
+#     calibration_data_file = 'dakota_textbook_lsq.ann'	#s1,#s2,#s3,#s4,#s6
+  analytic_gradients					#s0,#s1,#s2,#s3,#s5,#s6
 #  no_gradients	   	   				#s4
   no_hessians				
 
