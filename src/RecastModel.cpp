@@ -948,7 +948,7 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   // avoid modifying submodel state during the lookup
   Response sub_model_resp(subModel.current_response().copy());
   bool eval_found
-    = Model::db_lookup(sub_model_vars, search_set, sub_model_resp);
+    = subModel.db_lookup(sub_model_vars, search_set, sub_model_resp);
   if (!eval_found)
     return false;
 
