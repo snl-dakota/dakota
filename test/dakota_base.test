@@ -65260,7 +65260,7 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 54 total (51 new, 3 duplicate)
+<<<<< Function evaluation summary: 57 total (55 new, 2 duplicate)
 response_fn_1:  Min = 6.0000000497e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
