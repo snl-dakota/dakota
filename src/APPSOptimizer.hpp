@@ -24,6 +24,7 @@
 #include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
 #include "APPSOptimizer.hpp"
+#include "DakotaOptTraits.hpp"
 
 
 namespace Dakota {
@@ -79,29 +80,29 @@ public:
   /// compute the optimal solution
   void core_run();
 
-  /// Return the value of supportsContinuousVariables
-  virtual bool supports_continuous_variables() { return true; }
+  // /// Return the value of supportsContinuousVariables
+  // virtual bool supports_continuous_variables() { return true; }
 
-  /// Return the value of supportsIntegerVariables
-  virtual bool supports_integer_variables() { return true; }
+  // /// Return the value of supportsIntegerVariables
+  // virtual bool supports_integer_variables() { return true; }
 
-  /// Return the value of supportsRelaxableDiscreteVariables
-  virtual bool supports_relaxable_discrete_variables() { return true; }
+  // /// Return the value of supportsRelaxableDiscreteVariables
+  // virtual bool supports_relaxable_discrete_variables() { return true; }
 
-  /// Return the value of supportsCategoricalVariables
-  virtual bool supports_categorical_variables() { return true; }
+  // /// Return the value of supportsCategoricalVariables
+  // virtual bool supports_categorical_variables() { return true; }
 
-  /// Return the value of supportsLinearEquality
-  virtual bool supports_linear_equality() { return true; }
+  // /// Return the value of supportsLinearEquality
+  // virtual bool supports_linear_equality() { return true; }
 
-  /// Return the value of supportsLinearInequality
-  virtual bool supports_linear_inequality() { return true; }
+  // /// Return the value of supportsLinearInequality
+  // virtual bool supports_linear_inequality() { return true; }
 
-  /// Return the value of supportsNonlinearEquality
-  virtual bool supports_nonlinear_equality() { return true; }
+  // /// Return the value of supportsNonlinearEquality
+  // virtual bool supports_nonlinear_equality() { return true; }
 
-  /// Return the value of supportsNonlinearInequality
-  virtual bool supports_nonlinear_inequality() { return true; }
+  // /// Return the value of supportsNonlinearInequality
+  // virtual bool supports_nonlinear_inequality() { return true; }
 
 
 protected:
@@ -155,6 +156,44 @@ protected:
   /// offsets for constraint transformations
   std::vector<double> constraintMapOffsets;
 };
+
+// --------------------------------------------------
+
+class AppsTraits: public TraitsBase {
+  public:
+/// default constructor
+  AppsTraits();
+
+  /// destructor
+  virtual ~AppsTraits();
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return true; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return true; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return true; }
+
+  /// Return the value of supportsLinearEquality
+  virtual bool supports_linear_equality() { return true; }
+
+  /// Return the value of supportsLinearInequality
+  virtual bool supports_linear_inequality() { return true; }
+
+  /// Return the value of supportsNonlinearEquality
+  virtual bool supports_nonlinear_equality() { return true; }
+
+  /// Return the value of supportsNonlinearInequality
+  virtual bool supports_nonlinear_inequality() { return true; }
+};
+
+inline AppsTraits::~AppsTraits()
+{ }
 
 // --------------------------------------------------
 

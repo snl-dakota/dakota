@@ -22,18 +22,22 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
+   Cout << "APPSOptimizer:: called 1\n";
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
+  methodTraits.reset(new AppsTraits());
 }
 
 APPSOptimizer::APPSOptimizer(Model& model):
   Optimizer(ASYNCH_PATTERN_SEARCH, model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
+   Cout << "APPSOptimizer:: called 2\n";
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
+  methodTraits.reset(new AppsTraits());
 }
 
 /** core_run redefines the Optimizer virtual function to perform
@@ -411,6 +415,12 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   problemParams->setParameter("Number Nonlinear Eqs", (int) numNonlinearEqConstraints);
   problemParams->setParameter("Number Nonlinear Ineqs", (int) numAPPSNonlinearIneqConstraints);
+}
+
+AppsTraits::AppsTraits()
+{
+  std::cout << "AppsTraits::AppsTraits() called to build letter object."
+    << std::endl;
 }
 
 } // namespace Dakota

@@ -20,6 +20,71 @@
 namespace Dakota {
 
 
+class TraitsBase
+{
+public:
+
+  /// default constructor
+  TraitsBase();
+
+  /// destructor
+  virtual ~TraitsBase();
+
+  /// Return the value of requiresBounds
+  virtual bool requires_bounds() { return false; }
+
+  /// Return the value of supportsLinearEquality
+  virtual bool supports_linear_equality() { return false; }
+
+  /// Return the value of supportsLinearInequality
+  virtual bool supports_linear_inequality() { return false; }
+
+  /// Return the value of supportsNonlinearEquality
+  virtual bool supports_nonlinear_equality() { return false; }
+
+  /// Return the value of supportsNonlinearInequality
+  virtual bool supports_nonlinear_inequality() { return false; }
+
+  /// Return the value of supportsScaling
+  virtual bool supports_scaling() { return false; }
+
+  /// Return the value of supportsLeastSquares
+  virtual bool supports_least_squares() { return false; }
+
+  /// Return the value of supportsMultiobjectives
+  virtual bool supports_multiobjectives() { return false; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return false; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return false; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return false; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return false; }
+
+  /// Return the value of providesBestObjective
+  virtual bool provides_best_objective() { return false; }
+
+  /// Return the value of providesBestParameters
+  virtual bool provides_best_parameters() { return false; }
+
+  /// Return the value of providesBestConstraint
+  virtual bool provides_best_constraint() { return false; }
+
+  /// Return the value of providesFinalGradient
+  virtual bool provides_final_gradient() { return false; }
+
+  /// Return the value of providesFinalHessian
+  virtual bool provides_final_hessian() { return false; }
+};
+
+inline TraitsBase::~TraitsBase()
+{ }
+
 /// Base class for the optimizer branch of the iterator hierarchy.
 
 /** The Optimizer class provides common data and functionality for

@@ -19,6 +19,7 @@
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaOptTraits.hpp"
+#include <memory>
 
 
 namespace Dakota {
@@ -39,7 +40,7 @@ class Response;
     class (Iterator) serves as the envelope and one of the derived
     classes (selected in Iterator::get_iterator()) serves as the letter. */
 
-class Iterator: public InheritableSingleton_OptTraits
+class Iterator
 {
 public:
 
@@ -464,6 +465,10 @@ protected:
   /// valid names for iterator results
   ResultsNames resultsNames;
 
+  std::shared_ptr<TraitsBase> methodTraits;
+
+  TraitsBase& traits();
+
 private:
 
   //
@@ -499,6 +504,10 @@ private:
   int referenceCount;
 };
 
+inline TraitsBase& Iterator::traits()
+{
+    return (iteratorRep) ? iteratorRep->traits() : *methodTraits;
+}
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
