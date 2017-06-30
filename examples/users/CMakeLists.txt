@@ -2,17 +2,22 @@
 include(AddFileCopyCommand)
 
 set(test_path ${Dakota_SOURCE_DIR}/test)
+set(all_generated_files)
 
 # Each line is "generated file source file test number"
 file(STRINGS "${Dakota_BINARY_DIR}/test/dakota_usersexamples.props"
   users_test_inputs)
 
 # Supplementary data files needed and copied files below
-add_file_copy_command(${test_path}/dakota_textbook_nips.lsq.dat
-  ${CMAKE_CURRENT_BINARY_DIR}/dakota_textbook_nips.lsq.dat)
+set(test_data_files dakota_bayes_expdesign.cand.dat dakota_bayes_expdesign.dat 
+  dakota_textbook_nips.lsq.dat)
 
-set(all_generated_files 
-  ${CMAKE_CURRENT_BINARY_DIR}/dakota_textbook_nips.lsq.dat)
+foreach(data_file ${test_data_files})
+
+  add_file_copy_command(${test_path}/${data_file} ${CMAKE_CURRENT_BINARY_DIR}/${data_file})
+  list(APPEND all_generated_files ${CMAKE_CURRENT_BINARY_DIR}/${data_file})
+
+endforeach()
 
 # Now iterate over the list, copying to build tree
 # Also create all_generated_inputs to use in dependency management
