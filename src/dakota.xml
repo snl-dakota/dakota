@@ -191,7 +191,130 @@
       &default_max_function_evaluations;
       &default_scaling;"
       >
+    <!ENTITY numerical_gradient_options '
+      <!-- # formerly required for dakota | vendor -->
+      <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" default="dakota" />
+      <optional>
+        <oneOf>
+          <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota" help="" minOccurs="1" default="relative" >
+            <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds" help="" minOccurs="0" default="bounds respected" />
+            <optional>
+              <oneOf label="step scaling" >
+                <keyword  id="relative" name="relative" code="{N_rem(lit,fdGradStepType_relative)}" label="relative" help=""  />
+                <keyword  id="absolute" name="absolute" code="{N_rem(lit,fdGradStepType_absolute)}" label="absolute" help=""  default="relative" />
+                <keyword  id="bounds" name="bounds" code="{N_rem(lit,fdGradStepType_bounds)}" label="bounds" help=""  />
+              </oneOf>
+            </optional>
+          </keyword>
+          <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor" help=""  />
+        </oneOf>
+      </optional>
+      <!-- # formerly required for forward or central -->
+      <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type" help="" minOccurs="0" default="forward" />
+      <optional>
+        <oneOf>
+          <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward" help=""  default="forward" />
+          <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central" help=""  />
+        </oneOf>
+      </optional>
+      <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" default="0.001" >
+        <alias name="fd_gradient_step_size"/>
+        <param type="REALLIST" />
+      </keyword>
+      '>
+    <!ENTITY response_gradients '
+      <oneOf label="gradient type">
+        <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients" help=""  />
+        <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients" help=""  />
+        <required>
+          <oneOf>
+            <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
+              <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
+                <param type="INTEGERLIST" />
+              </keyword>
+              <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
+                <param type="INTEGERLIST" />
+              </keyword>
+	      &numerical_gradient_options;
+            </keyword>
+            <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum">
+	      &numerical_gradient_options;
+	    </keyword>
+          </oneOf>
+        </required>
+      </oneOf>
+      ' >
+    <!ENTITY response_hessians '
+      <oneOf label="Hessian type">
+        <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians" help=""  />
+        <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians" help="RespCommands.html#RespHessNum" minOccurs="1" >
+          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
+            <alias name="fd_hessian_step_size"/>
+            <param type="REALLIST" />
+          </keyword>
+          <optional>
+            <oneOf label="step scaling" >
+              <keyword  id="relative1" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
+              <keyword  id="absolute1" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
+              <keyword  id="bounds1" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
+            </oneOf>
+          </optional>
+          <optional>
+            <oneOf label="difference interval">
+              <keyword  id="forward1" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
+              <keyword  id="central1" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
+            </oneOf>
+          </optional>
+        </keyword>
+        <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians" help="RespCommands.html#RespHessQuasi" minOccurs="1" >
+          <oneOf>
+            <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
+              <keyword  id="damped" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessQuasi" minOccurs="0" default="undamped BFGS" />
+            </keyword>
+            <keyword  id="sr1" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
+          </oneOf>
+        </keyword>
+        <keyword  id="analytic_hessians" name="analytic_hessians" code="{N_rem(lit,hessianType_analytic)}" label="analytic_hessians" help=""  />
+        <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians" help="RespCommands.html#RespHessMixed" minOccurs="1" >
+          <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
+              <alias name="fd_hessian_step_size"/>
+              <param type="REALLIST" />
+            </keyword>
+          </keyword>
+          <optional>
+            <oneOf label="step scaling">
+              <keyword  id="relative2" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
+              <keyword  id="absolute2" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
+              <keyword  id="bounds2" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
+            </oneOf>
+          </optional>
+          <optional>
+            <oneOf label="difference interval">
+              <keyword  id="forward2" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
+              <keyword  id="central2" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
+            </oneOf>
+          </optional>
+          <keyword  id="id_quasi_hessians" name="id_quasi_hessians" code="{N_rem(intset,idQuasiHessians)}" label="Quasi Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+            <oneOf>
+              <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
+                <keyword  id="damped1" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessMixed" minOccurs="0" default="undamped BFGS" />
+              </keyword>
+              <keyword  id="sr11" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
+            </oneOf>
+          </keyword>
+          <keyword  id="id_analytic_hessians" name="id_analytic_hessians" code="{N_rem(intset,idAnalyticHessians)}" label="Analytic Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+          </keyword>
+        </keyword>
+      </oneOf>
+      '>
+
+
 ]>
+
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
   <input>
@@ -4667,6 +4790,8 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
+          &response_gradients;
+          &response_hessians;
         </keyword>
         <keyword  id="calibration_terms" name="calibration_terms" code="{N_rem(sizet,numLeastSqTerms)}" label="Calibration (Least squares)" help="RespCommands.html#RespFnLS" minOccurs="1" >
           <alias name="least_squares_terms"/>
@@ -4787,6 +4912,8 @@
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
           </keyword>
+          &response_gradients;
+          &response_hessians;
         </keyword>
         <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses" help="RespCommands.html#RespFnGen" minOccurs="1" >
           <alias name="num_response_functions"/>
@@ -4806,120 +4933,11 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
+          &response_gradients;
+          &response_hessians;
         </keyword>
       </oneOf>
-      <oneOf label="gradient type">
-        <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients" help=""  />
-        <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients" help=""  />
-        <required>
-          <oneOf>
-            <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
-              <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-              <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-            </keyword>
-            <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum"  />
-          </oneOf>
-          <!-- # formerly required for dakota | vendor -->
-          <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" default="dakota" />
-          <optional>
-            <oneOf>
-              <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota" help="" minOccurs="1" default="relative" >
-                <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds" help="" minOccurs="0" default="bounds respected" />
-                <optional>
-                  <oneOf label="step scaling" >
-                    <keyword  id="relative" name="relative" code="{N_rem(lit,fdGradStepType_relative)}" label="relative" help=""  />
-                    <keyword  id="absolute" name="absolute" code="{N_rem(lit,fdGradStepType_absolute)}" label="absolute" help=""  default="relative" />
-                    <keyword  id="bounds" name="bounds" code="{N_rem(lit,fdGradStepType_bounds)}" label="bounds" help=""  />
-                  </oneOf>
-                </optional>
-              </keyword>
-              <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor" help=""  />
-            </oneOf>
-          </optional>
-          <!-- # formerly required for forward or central -->
-          <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type" help="" minOccurs="0" default="forward" />
-          <optional>
-            <oneOf>
-              <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward" help=""  default="forward" />
-              <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-          <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" default="0.001" >
-            <alias name="fd_gradient_step_size"/>
-            <param type="REALLIST" />
-          </keyword>
-        </required>
-      </oneOf>
-      <oneOf label="Hessian type">
-        <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians" help=""  />
-        <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians" help="RespCommands.html#RespHessNum" minOccurs="1" >
-          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
-            <alias name="fd_hessian_step_size"/>
-            <param type="REALLIST" />
-          </keyword>
-          <optional>
-            <oneOf label="step scaling" >
-              <keyword  id="relative1" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
-              <keyword  id="absolute1" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
-              <keyword  id="bounds1" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
-            </oneOf>
-          </optional>
-          <optional>
-            <oneOf label="difference interval">
-              <keyword  id="forward1" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
-              <keyword  id="central1" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-        </keyword>
-        <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians" help="RespCommands.html#RespHessQuasi" minOccurs="1" >
-          <oneOf>
-            <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
-              <keyword  id="damped" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessQuasi" minOccurs="0" default="undamped BFGS" />
-            </keyword>
-            <keyword  id="sr1" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
-          </oneOf>
-        </keyword>
-        <keyword  id="analytic_hessians" name="analytic_hessians" code="{N_rem(lit,hessianType_analytic)}" label="analytic_hessians" help=""  />
-        <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians" help="RespCommands.html#RespHessMixed" minOccurs="1" >
-          <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
-              <alias name="fd_hessian_step_size"/>
-              <param type="REALLIST" />
-            </keyword>
-          </keyword>
-          <optional>
-            <oneOf label="step scaling">
-              <keyword  id="relative2" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
-              <keyword  id="absolute2" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
-              <keyword  id="bounds2" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
-            </oneOf>
-          </optional>
-          <optional>
-            <oneOf label="difference interval">
-              <keyword  id="forward2" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
-              <keyword  id="central2" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-          <keyword  id="id_quasi_hessians" name="id_quasi_hessians" code="{N_rem(intset,idQuasiHessians)}" label="Quasi Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-            <oneOf>
-              <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
-                <keyword  id="damped1" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessMixed" minOccurs="0" default="undamped BFGS" />
-              </keyword>
-              <keyword  id="sr11" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
-            </oneOf>
-          </keyword>
-          <keyword  id="id_analytic_hessians" name="id_analytic_hessians" code="{N_rem(intset,idAnalyticHessians)}" label="Analytic Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-          </keyword>
-        </keyword>
-      </oneOf>
-    </keyword>
+     </keyword>
     
   </input>
 </document>
