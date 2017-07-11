@@ -226,22 +226,18 @@
       <oneOf label="gradient type">
         <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients" help=""  />
         <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients" help=""  />
-        <required>
-          <oneOf>
-            <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
-              <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-              <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-	      &numerical_gradient_options;
-            </keyword>
-            <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum">
-	      &numerical_gradient_options;
-	    </keyword>
-          </oneOf>
-        </required>
+        <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
+          <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
+            <param type="INTEGERLIST" />
+          </keyword>
+          <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
+            <param type="INTEGERLIST" />
+          </keyword>
+	  &numerical_gradient_options;
+        </keyword>
+        <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum">
+	  &numerical_gradient_options;
+	</keyword>
       </oneOf>
       ' >
     <!ENTITY response_hessians '

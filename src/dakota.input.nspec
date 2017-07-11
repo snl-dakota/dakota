@@ -3184,58 +3184,56 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     |
     analytic_gradients {N_rem(lit,gradientType_analytic)}
     |
-    ( 
-      ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-        id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-        id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
-      |
-      ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
+    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+     )
+    |
+    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
      )
     no_hessians {N_rem(lit,hessianType_none)}
     |
@@ -3357,58 +3355,56 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     |
     analytic_gradients {N_rem(lit,gradientType_analytic)}
     |
-    ( 
-      ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-        id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-        id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
-      |
-      ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
+    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+     )
+    |
+    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
      )
     no_hessians {N_rem(lit,hessianType_none)}
     |
@@ -3476,58 +3472,56 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
     |
     analytic_gradients {N_rem(lit,gradientType_analytic)}
     |
-    ( 
-      ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-        id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-        id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
-      |
-      ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-        [ method_source {0} ]
-        [ 
-          ( dakota {N_rem(lit,methodSource_dakota)}
-            [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-            [ 
-              relative {N_rem(lit,fdGradStepType_relative)}
-              |
-              absolute {N_rem(lit,fdGradStepType_absolute)}
-              |
-              bounds {N_rem(lit,fdGradStepType_bounds)}
-             ]
-           )
-          |
-          vendor {N_rem(lit,methodSource_vendor)}
-         ]
-        [ interval_type {0} ]
-        [ 
-          forward {N_rem(lit,intervalType_forward)}
-          |
-          central {N_rem(lit,intervalType_central)}
-         ]
-        [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-       )
+    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+     )
+    |
+    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
+      [ method_source {0} ]
+      [ 
+        ( dakota {N_rem(lit,methodSource_dakota)}
+          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+          [ 
+            relative {N_rem(lit,fdGradStepType_relative)}
+            |
+            absolute {N_rem(lit,fdGradStepType_absolute)}
+            |
+            bounds {N_rem(lit,fdGradStepType_bounds)}
+           ]
+         )
+        |
+        vendor {N_rem(lit,methodSource_vendor)}
+       ]
+      [ interval_type {0} ]
+      [ 
+        forward {N_rem(lit,intervalType_forward)}
+        |
+        central {N_rem(lit,intervalType_central)}
+       ]
+      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
      )
     no_hessians {N_rem(lit,hessianType_none)}
     |
