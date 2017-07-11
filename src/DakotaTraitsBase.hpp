@@ -32,55 +32,59 @@ public:
   /// destructor
   virtual ~TraitsBase();
 
-  /// Return the value of requiresBounds
+  /// Return the flag indicating whether method requires bounds
   virtual bool requires_bounds() { return false; }
 
-  /// Return the value of supportsLinearEquality
+  /// Return the flag indicating whether method supports linear equalities
   virtual bool supports_linear_equality() { return false; }
 
-  /// Return the value of supportsLinearInequality
+  /// Return the flag indicating whether method supports linear inequalities
   virtual bool supports_linear_inequality() { return false; }
 
-  /// Return the value of supportsNonlinearEquality
+  /// Return the flag indicating whether method supports nonlinear equalities
   virtual bool supports_nonlinear_equality() { return false; }
 
-  /// Return the value of supportsNonlinearInequality
+  /// Return the flag indicating whether method supports nonlinear inequalities
   virtual bool supports_nonlinear_inequality() { return false; }
 
-  /// Return the value of supportsScaling
+  /// Return the flag indicating whether method expects nonlinear inequality
+  /// constraints followed by nonlinear equality constraints
+  virtual bool expects_nonlinear_inequalities_first() { return true; }
+
+  /// Return the flag indicating whether method supports parameter scaling
   virtual bool supports_scaling() { return false; }
 
-  /// Return the value of supportsLeastSquares
+  /// Return the flag indicating whether method supports least squares
   virtual bool supports_least_squares() { return false; }
 
-  /// Return the value of supportsMultiobjectives
+  /// Return flag indicating whether method supports multiobjective optimization
   virtual bool supports_multiobjectives() { return false; }
 
-  /// Return the value of supportsContinuousVariables
+  /// Return the flag indicating whether method supports continuous variables
   virtual bool supports_continuous_variables() { return false; }
 
-  /// Return the value of supportsIntegerVariables
+  /// Return the flag indicating whether method supports integer variables
   virtual bool supports_integer_variables() { return false; }
 
-  /// Return the value of supportsRelaxableDiscreteVariables
+  /// Return the flag indicating whether method supports relaxable discrete variables
   virtual bool supports_relaxable_discrete_variables() { return false; }
 
-  /// Return the value of supportsCategoricalVariables
+  /// Return the flag indicating whether method supports categorical variables
   virtual bool supports_categorical_variables() { return false; }
 
-  /// Return the value of providesBestObjective
+  /// Return the flag indicating whether method provides best objective result
   virtual bool provides_best_objective() { return false; }
 
-  /// Return the value of providesBestParameters
+  /// Return the flag indicating whether method provides best parameters result
   virtual bool provides_best_parameters() { return false; }
 
-  /// Return the value of providesBestConstraint
+  /// Return the flag indicating whether method provides best constraint result
   virtual bool provides_best_constraint() { return false; }
 
-  /// Return the value of providesFinalGradient
+  /// Return the flag indicating whether method provides final gradient result
   virtual bool provides_final_gradient() { return false; }
 
-  /// Return the value of providesFinalHessian
+  /// Return the flag indicating whether method provides final hessian result
   virtual bool provides_final_hessian() { return false; }
 };
 
