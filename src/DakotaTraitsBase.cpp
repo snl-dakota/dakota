@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       OptTraits
-//- Description: Implementation code for the OptTraits class
+//- Class:       TraitsBase
+//- Description: Implementation code for the TraitsBase class
 //- Owner:       Moe Khalil
 //- Checked by:
 
@@ -22,7 +22,6 @@
 
 static const char rcsId[]="@(#) $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:14Z mkhalil $";
 
-Cout
 namespace Dakota {
 
 TraitsBase::TraitsBase()

@@ -53,7 +53,6 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
   numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(probDescDB.get_bool("method.scaling"))
 {
-   Cout << "Minimizer:: called 1\n";
   iteratedModel = model;
   // iteratorRep = get_iterator(problem_db, model);
   update_from_model(iteratedModel); // variable/response counts & checks
@@ -75,8 +74,6 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
 {
-   Cout << "Minimizer:: called 2\n";
-  // iteratorRep = get_iterator(method_enum_to_string(method_name), model);
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
 
@@ -96,7 +93,7 @@ Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false)
 { 
-   Cout << "Minimizer:: called 3\n";}
+}
 
 
 bool Minimizer::resize()
@@ -180,36 +177,36 @@ void Minimizer::check_model(const Model& model)
       Cout << "\nDakota Minimizer in check_model: " << method_enum_to_string(methodName)
      << " doesn't supports continuous variables.\n";
 
-  // // MK: APPS-specific traits check using traits class
-  // // Check for active design variables and discrete variable support
-  // if (methodName == ASYNCH_PATTERN_SEARCH){
-  //   if (traits().supports_continuous_variables() && traits().supports_integer_variables() &&
-  //     traits().supports_relaxable_discrete_variables() &&
-  //     traits().supports_categorical_variables()){
-  //     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
-  //     !numDiscreteRealVars) {
-  //       Cerr << "\nError: " << method_enum_to_string(methodName)
-  //       << " requires active variables." << std::endl;
-  //       err_flag = true;
-  //     }
-  //   }
-  //   else{ // methods supporting only continuous design variables
-  //     if (!numContinuousVars) {
-  //       Cerr << "\nError: " << method_enum_to_string(methodName)
-  //      << " requires active continuous variables." << std::endl;
-  //       err_flag = true;
-  //     }
-  //     if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
-  //       Cerr << "\nWarning: discrete design variables ignored by "
-  //      << method_enum_to_string(methodName) << std::endl;
-  //   }
-  // }
+  // MK: APPS-specific traits check using traits class
+  // Check for active design variables and discrete variable support
+  if (methodName == ASYNCH_PATTERN_SEARCH){
+    if (traits().supports_continuous_variables() && traits().supports_integer_variables() &&
+      traits().supports_relaxable_discrete_variables() &&
+      traits().supports_categorical_variables()){
+      if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
+      !numDiscreteRealVars) {
+        Cerr << "\nError: " << method_enum_to_string(methodName)
+        << " requires active variables." << std::endl;
+        err_flag = true;
+      }
+    }
+    else{ // methods supporting only continuous design variables
+      if (!numContinuousVars) {
+        Cerr << "\nError: " << method_enum_to_string(methodName)
+       << " requires active continuous variables." << std::endl;
+        err_flag = true;
+      }
+      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
+        Cerr << "\nWarning: discrete design variables ignored by "
+       << method_enum_to_string(methodName) << std::endl;
+    }
+  }
 
   // Check for active design variables and discrete variable support
   if (methodName == MOGA        || methodName == SOGA ||
       methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
       methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
-      methodName == ASYNCH_PATTERN_SEARCH || methodName == BRANCH_AND_BOUND) {
+      methodName == BRANCH_AND_BOUND) {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
   !numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
@@ -260,39 +257,39 @@ void Minimizer::check_model(const Model& model)
   // TO DO: hard error if not supported; warning if promoted;
   //        quiet if natively supported
 
-  // // MK: APPS-specific traits check using traits class
-  // // Check for linear constraint support in method selection
-  // if (methodName == ASYNCH_PATTERN_SEARCH){
-  //   if ( numLinearEqConstraints && !traits().supports_linear_equality()){
-  //     Cerr << "\nError: linear equality constraints not currently supported by "
-  //    << method_enum_to_string(methodName) << ".\n       Please select a "
-  //    << "different method." << std::endl;
-  //     err_flag = true;
-  //   }
-  //   if ( numLinearIneqConstraints && !traits().supports_linear_inequality()){
-  //     Cerr << "\nError: linear inequality constraints not currently supported by "
-  //    << method_enum_to_string(methodName) << ".\n       Please select a "
-  //    << "different method." << std::endl;
-  //     err_flag = true;
-  //   }
-  // }
+  // MK: APPS-specific traits check using traits class
+  // Check for linear constraint support in method selection
+  if (methodName == ASYNCH_PATTERN_SEARCH){
+    if ( numLinearEqConstraints && !traits().supports_linear_equality()){
+      Cerr << "\nError: linear equality constraints not currently supported by "
+     << method_enum_to_string(methodName) << ".\n       Please select a "
+     << "different method." << std::endl;
+      err_flag = true;
+    }
+    if ( numLinearIneqConstraints && !traits().supports_linear_inequality()){
+      Cerr << "\nError: linear inequality constraints not currently supported by "
+     << method_enum_to_string(methodName) << ".\n       Please select a "
+     << "different method." << std::endl;
+      err_flag = true;
+    }
+  }
 
-  // // MK: APPS-specific traits check using traits class
-  // // Check for nonlinear constraint support in method selection
-  // if (methodName == ASYNCH_PATTERN_SEARCH){
-  //   if ( numNonlinearEqConstraints && !traits().supports_nonlinear_equality()){
-  //     Cerr << "\nError: nonlinear equality constraints not currently supported by "
-  //    << method_enum_to_string(methodName) << ".\n       Please select a "
-  //    << "different method." << std::endl;
-  //     err_flag = true;
-  //   }
-  //   if ( numNonlinearIneqConstraints && !traits().supports_nonlinear_inequality()){
-  //     Cerr << "\nError: nonlinear inequality constraints not currently supported by "
-  //    << method_enum_to_string(methodName) << ".\n       Please select a "
-  //    << "different method." << std::endl;
-  //     err_flag = true;
-  //   }
-  // }
+  // MK: APPS-specific traits check using traits class
+  // Check for nonlinear constraint support in method selection
+  if (methodName == ASYNCH_PATTERN_SEARCH){
+    if ( numNonlinearEqConstraints && !traits().supports_nonlinear_equality()){
+      Cerr << "\nError: nonlinear equality constraints not currently supported by "
+     << method_enum_to_string(methodName) << ".\n       Please select a "
+     << "different method." << std::endl;
+      err_flag = true;
+    }
+    if ( numNonlinearIneqConstraints && !traits().supports_nonlinear_inequality()){
+      Cerr << "\nError: nonlinear inequality constraints not currently supported by "
+     << method_enum_to_string(methodName) << ".\n       Please select a "
+     << "different method." << std::endl;
+      err_flag = true;
+    }
+  }
 
   // Check for linear constraint support in method selection
   if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
@@ -327,6 +324,7 @@ void Minimizer::check_model(const Model& model)
 void Minimizer::initialize_run()
 {
   check_model(iteratedModel);
+  
   // MK: testing inheritance of traits
   if (traits().supports_continuous_variables())
       Cout << "\nDakota Minimzer in initialize_run: " << method_enum_to_string(methodName)

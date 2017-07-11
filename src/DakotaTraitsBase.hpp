@@ -9,8 +9,8 @@
 //- Class:        TraitsBase
 //- Description:  Traits class used in registering the various functionalities
 //                supported by individual Dakota optimization TPLs.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:14Z mkhalil $
+//- Owner:        Moe Khalil
+//- Version: $Id: DakotaTraitsBase.hpp 0001 2017-02-21 10:35:14Z mkhalil $
 
 
 #ifndef DAKOTA_TRAITS_BASE_H
@@ -18,6 +18,9 @@
 
 namespace Dakota {
 
+/// Base class for traits.
+
+/** TraitsBase provides default traits through various accessors . */
 
 class TraitsBase
 {

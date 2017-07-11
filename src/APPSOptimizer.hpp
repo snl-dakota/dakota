@@ -157,7 +157,10 @@ protected:
   std::vector<double> constraintMapOffsets;
 };
 
-// --------------------------------------------------
+/// HOPSPACK-specific traits class.
+
+/** AppsTraits specializes some traits accessors by over-riding the default 
+accessors in TraitsBase. */
 
 class AppsTraits: public TraitsBase {
   public:

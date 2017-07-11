@@ -13,7 +13,7 @@
 
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
-#include "DakotaOptTraits.hpp"
+#include "DakotaTraitsBase.hpp"
 #include "MetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "CollabHybridMetaIterator.hpp"
@@ -162,7 +162,6 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
 {
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
-  Cout << "Iterator::Iterator() called 1\n";
     // iteratorRep = get_iterator(problem_db);
 
 #ifdef REFCOUNT_DEBUG
@@ -188,7 +187,6 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
-Cout << "Iterator::Iterator() called 2\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
        << "class\n";
@@ -211,7 +209,6 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
   resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
   iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
 {
-  Cout << "Iterator::Iterator() called 3\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
        << "class\n";
@@ -228,7 +225,6 @@ Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
   iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
 {
-  Cout << "Iterator::Iterator() called 4\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
        << "base class object." << std::endl;
@@ -246,7 +242,6 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
   // bypass some logic in assign_rep():
   iteratorRep(iterator_rep), referenceCount(1), methodTraits(new TraitsBase())
 {
-  Cout << "Iterator::Iterator() called 5\n";
   // relevant portion of assign_rep():
   if (iteratorRep && ref_count_incr)
     ++iteratorRep->referenceCount;
@@ -268,51 +263,9 @@ Iterator::Iterator(ProblemDescDB& problem_db):
   resultsDB(iterator_results_db), methodTraits(new TraitsBase()),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-  Cout << "Iterator::Iterator() called 6\n";
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(ProblemDescDB&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
-       // Cout << "\nDakota Iterator in Iterator, here 1: \n";
-
-<<<<<<< 91646351cd69314d22443b974d57ad29f76b3b26
-           // MK: testing inheritance of traits
-  if (supports_continuous_variables())
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOESN'T support continuous variables.\n";
 
   iteratorRep = get_iterator(problem_db);
   
-           // MK: testing inheritance of traits
-  if (iteratorRep->supports_continuous_variables())
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOESN'T support continuous variables.\n";
-=======
-  //          // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 1: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " doesn't supports continuous variables.\n";
-
-  iteratorRep = get_iterator(problem_db);
-  
-  //          // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 2: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " doesn't supports continuous variables.\n";
->>>>>>> DAK-1327 & DAK-1627: Inheritance-based traits class in APPS
-
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -339,7 +292,6 @@ bool Iterator::resize()
     the use of BaseConstructor. */
 Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
 {
-  Cout << "Iterator::get_iterator called 1\n";
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: getting iterator case " << method_name
@@ -388,50 +340,13 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
   resultsDB(iterator_results_db), methodTraits(new TraitsBase()),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-  Cout << "Iterator::Iterator() called 7\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Model&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-<<<<<<< 91646351cd69314d22443b974d57ad29f76b3b26
-         // MK: testing inheritance of traits
-  if (supports_continuous_variables())
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOESN'T support continuous variables.\n";
-=======
-  //        // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 3: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " doesn't supports continuous variables.\n";
->>>>>>> DAK-1327 & DAK-1627: Inheritance-based traits class in APPS
-
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(problem_db, model);
-
-<<<<<<< 91646351cd69314d22443b974d57ad29f76b3b26
-           // MK: testing inheritance of traits
-  if (iteratorRep->supports_continuous_variables())
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-           << " DOESN'T support continuous variables.\n";
-=======
-  //          // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 4: " << method_enum_to_string(problem_db.get_ushort("method.algorithm"))
-  //    << " doesn't supports continuous variables.\n";
->>>>>>> DAK-1327 & DAK-1627: Inheritance-based traits class in APPS
 
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
@@ -445,7 +360,6 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
     constructor due to the use of BaseConstructor. */
 Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 {
-  Cout << "Iterator::get_iterator called 2\n";
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: getting iterator case " << method_name
@@ -631,50 +545,13 @@ Iterator::Iterator(const String& method_string, Model& model):
   methodTraits(new TraitsBase()), 
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-  Cout << "Iterator::Iterator() called 8\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(Model&) called to instantiate "
        << "envelope." << std::endl;
 #endif
 
-<<<<<<< 91646351cd69314d22443b974d57ad29f76b3b26
-           // MK: testing inheritance of traits
-  if (supports_continuous_variables())
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 5: " << method_string
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Envelope\" Iterator in Iterator, 5: " << method_string
-           << " DOESN'T support continuous variables.\n";
-=======
-  //          // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 5: " << method_string
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 5: " << method_string
-  //    << " doesn't supports continuous variables.\n";
->>>>>>> DAK-1327 & DAK-1627: Inheritance-based traits class in APPS
-
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(method_string, model);
-
-<<<<<<< 91646351cd69314d22443b974d57ad29f76b3b26
-             // MK: testing inheritance of traits
-  if (iteratorRep->supports_continuous_variables())
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 6: " << method_string
-           << " DOES support continuous variables.\n";
-  else
-      Cout << "\nDakota \"Letter\" Iterator in Iterator, 6: " << method_string
-           << " DOESN'T support continuous variables.\n";
-=======
-  //            // MK: testing inheritance of traits
-  // if (traits().supports_continuous_variables())
-  //     Cout << "\nDakota Iterator in Iterator, 6: " << method_string
-  //    << " supports continuous variables.\n";
-  // else
-  //     Cout << "\nDakota Iterator in Iterator, 6: " << method_string
-  //    << " doesn't supports continuous variables.\n";
->>>>>>> DAK-1327 & DAK-1627: Inheritance-based traits class in APPS
 
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
@@ -687,7 +564,6 @@ Iterator::Iterator(const String& method_string, Model& model):
     Iterators (primarily Minimizers). */
 Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 {
-  Cout << "Iterator::get_iterator called 3\n";
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: getting iterator " <<  method_string
        << " by name." << std::endl;
@@ -786,7 +662,6 @@ Iterator::Iterator(const Iterator& iterator):
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db),
   methodTraits(new TraitsBase())
 {
-  Cout << "Iterator::Iterator() called 9\n";
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
   if (iteratorRep) // Check for an assignment of NULL

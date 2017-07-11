@@ -22,7 +22,6 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
-   Cout << "APPSOptimizer:: called 1\n";
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
@@ -33,7 +32,6 @@ APPSOptimizer::APPSOptimizer(Model& model):
   Optimizer(ASYNCH_PATTERN_SEARCH, model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
-   Cout << "APPSOptimizer:: called 2\n";
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
@@ -419,8 +417,9 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
 AppsTraits::AppsTraits()
 {
-  std::cout << "AppsTraits::AppsTraits() called to build letter object."
-    << std::endl;
+#ifdef REFCOUNT_DEBUG
+  Cout << "AppsTraits::AppsTraits() called to build letter object.\n";
+#endif
 }
 
 } // namespace Dakota

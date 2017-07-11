@@ -18,7 +18,7 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
-#include "DakotaOptTraits.hpp"
+#include "DakotaTraitsBase.hpp"
 #include <memory>
 
 
@@ -465,8 +465,12 @@ protected:
   /// valid names for iterator results
   ResultsNames resultsNames;
 
+  /// pointer that retains shared ownership of a TraitsBase object,
+  /// or child thereof
   std::shared_ptr<TraitsBase> methodTraits;
 
+  /// returns methodTraits for access to derived class member functions
+  /// that are not mapped to the top TraitsBase level
   TraitsBase& traits();
 
 private:
