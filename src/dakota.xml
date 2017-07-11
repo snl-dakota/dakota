@@ -4786,8 +4786,6 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
-          &response_gradients;
-          &response_hessians;
         </keyword>
         <keyword  id="calibration_terms" name="calibration_terms" code="{N_rem(sizet,numLeastSqTerms)}" label="Calibration (Least squares)" help="RespCommands.html#RespFnLS" minOccurs="1" >
           <alias name="least_squares_terms"/>
@@ -4908,8 +4906,6 @@
               <param type="REALLIST" constraint="LEN1 nonlinear_equality_constraints" />
             </keyword>
           </keyword>
-          &response_gradients;
-          &response_hessians;
         </keyword>
         <keyword  id="response_functions" name="response_functions" code="{N_rem(sizet,numResponseFunctions)}" label="Generic responses" help="RespCommands.html#RespFnGen" minOccurs="1" >
           <alias name="num_response_functions"/>
@@ -4929,10 +4925,10 @@
             </keyword>
 	    <keyword  id="read_field_coordinates1" name="read_field_coordinates" code="{N_rem(true,readFieldCoords)}" label="whether to read field coordinate files" help="" minOccurs="0" />
           </keyword>
-          &response_gradients;
-          &response_hessians;
         </keyword>
       </oneOf>
+      &response_gradients;
+      &response_hessians;
      </keyword>
     
   </input>

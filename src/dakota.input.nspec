@@ -3180,114 +3180,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
-    no_gradients {N_rem(lit,gradientType_none)}
-    |
-    analytic_gradients {N_rem(lit,gradientType_analytic)}
-    |
-    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-     )
-    |
-    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-     )
-    no_hessians {N_rem(lit,hessianType_none)}
-    |
-    ( numerical_hessians {N_rem(lit,hessianType_numerical)}
-      [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-     )
-    |
-    ( quasi_hessians {N_rem(lit,hessianType_quasi)}
-      ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
-        [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
-       )
-      |
-      sr1 {N_rem(lit,quasiHessianType_sr1)}
-     )
-    |
-    analytic_hessians {N_rem(lit,hessianType_analytic)}
-    |
-    ( mixed_hessians {N_rem(lit,hessianType_mixed)}
-      [ id_numerical_hessians INTEGERLIST {N_rem(intset,idNumericalHessians)}
-        [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-       ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-      [ id_quasi_hessians INTEGERLIST {N_rem(intset,idQuasiHessians)}
-        ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
-          [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
-         )
-        |
-        sr1 {N_rem(lit,quasiHessianType_sr1)}
-       ]
-      [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
-     )
    )
   |
   ( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(sizet,numLeastSqTerms)}
@@ -3351,114 +3243,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
       [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
      ]
-    no_gradients {N_rem(lit,gradientType_none)}
-    |
-    analytic_gradients {N_rem(lit,gradientType_analytic)}
-    |
-    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-     )
-    |
-    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-     )
-    no_hessians {N_rem(lit,hessianType_none)}
-    |
-    ( numerical_hessians {N_rem(lit,hessianType_numerical)}
-      [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-     )
-    |
-    ( quasi_hessians {N_rem(lit,hessianType_quasi)}
-      ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
-        [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
-       )
-      |
-      sr1 {N_rem(lit,quasiHessianType_sr1)}
-     )
-    |
-    analytic_hessians {N_rem(lit,hessianType_analytic)}
-    |
-    ( mixed_hessians {N_rem(lit,hessianType_mixed)}
-      [ id_numerical_hessians INTEGERLIST {N_rem(intset,idNumericalHessians)}
-        [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-       ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-      [ id_quasi_hessians INTEGERLIST {N_rem(intset,idQuasiHessians)}
-        ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
-          [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
-         )
-        |
-        sr1 {N_rem(lit,quasiHessianType_sr1)}
-       ]
-      [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
-     )
    )
   |
   ( response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(sizet,numResponseFunctions)}
@@ -3468,113 +3252,113 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       [ num_coordinates_per_field INTEGERLIST {N_rem(ivec,numCoordsPerField)} ]
       [ read_field_coordinates {N_rem(true,readFieldCoords)} ]
      ]
-    no_gradients {N_rem(lit,gradientType_none)}
-    |
-    analytic_gradients {N_rem(lit,gradientType_analytic)}
-    |
-    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+   )
+  no_gradients {N_rem(lit,gradientType_none)}
+  |
+  analytic_gradients {N_rem(lit,gradientType_analytic)}
+  |
+  ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+    id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+    id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
+    [ method_source {0} ]
+    [ 
+      ( dakota {N_rem(lit,methodSource_dakota)}
+        [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+        [ 
+          relative {N_rem(lit,fdGradStepType_relative)}
+          |
+          absolute {N_rem(lit,fdGradStepType_absolute)}
+          |
+          bounds {N_rem(lit,fdGradStepType_bounds)}
+         ]
+       )
+      |
+      vendor {N_rem(lit,methodSource_vendor)}
+     ]
+    [ interval_type {0} ]
+    [ 
+      forward {N_rem(lit,intervalType_forward)}
+      |
+      central {N_rem(lit,intervalType_central)}
+     ]
+    [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+   )
+  |
+  ( numerical_gradients {N_rem(lit,gradientType_numerical)}
+    [ method_source {0} ]
+    [ 
+      ( dakota {N_rem(lit,methodSource_dakota)}
+        [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+        [ 
+          relative {N_rem(lit,fdGradStepType_relative)}
+          |
+          absolute {N_rem(lit,fdGradStepType_absolute)}
+          |
+          bounds {N_rem(lit,fdGradStepType_bounds)}
+         ]
+       )
+      |
+      vendor {N_rem(lit,methodSource_vendor)}
+     ]
+    [ interval_type {0} ]
+    [ 
+      forward {N_rem(lit,intervalType_forward)}
+      |
+      central {N_rem(lit,intervalType_central)}
+     ]
+    [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+   )
+  no_hessians {N_rem(lit,hessianType_none)}
+  |
+  ( numerical_hessians {N_rem(lit,hessianType_numerical)}
+    [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
+    [ 
+      relative {N_rem(lit,fdHessStepType_relative)}
+      |
+      absolute {N_rem(lit,fdHessStepType_absolute)}
+      |
+      bounds {N_rem(lit,fdHessStepType_bounds)}
+     ]
+    [ 
+      forward {N_rem(false,centralHess)}
+      |
+      central {N_rem(true,centralHess)}
+     ]
+   )
+  |
+  ( quasi_hessians {N_rem(lit,hessianType_quasi)}
+    ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
+      [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
      )
     |
-    ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-      [ method_source {0} ]
-      [ 
-        ( dakota {N_rem(lit,methodSource_dakota)}
-          [ ignore_bounds {N_rem(true,ignoreBounds)} ]
-          [ 
-            relative {N_rem(lit,fdGradStepType_relative)}
-            |
-            absolute {N_rem(lit,fdGradStepType_absolute)}
-            |
-            bounds {N_rem(lit,fdGradStepType_bounds)}
-           ]
-         )
-        |
-        vendor {N_rem(lit,methodSource_vendor)}
-       ]
-      [ interval_type {0} ]
-      [ 
-        forward {N_rem(lit,intervalType_forward)}
-        |
-        central {N_rem(lit,intervalType_central)}
-       ]
-      [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
-     )
-    no_hessians {N_rem(lit,hessianType_none)}
-    |
-    ( numerical_hessians {N_rem(lit,hessianType_numerical)}
+    sr1 {N_rem(lit,quasiHessianType_sr1)}
+   )
+  |
+  analytic_hessians {N_rem(lit,hessianType_analytic)}
+  |
+  ( mixed_hessians {N_rem(lit,hessianType_mixed)}
+    [ id_numerical_hessians INTEGERLIST {N_rem(intset,idNumericalHessians)}
       [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-     )
-    |
-    ( quasi_hessians {N_rem(lit,hessianType_quasi)}
+     ]
+    [ 
+      relative {N_rem(lit,fdHessStepType_relative)}
+      |
+      absolute {N_rem(lit,fdHessStepType_absolute)}
+      |
+      bounds {N_rem(lit,fdHessStepType_bounds)}
+     ]
+    [ 
+      forward {N_rem(false,centralHess)}
+      |
+      central {N_rem(true,centralHess)}
+     ]
+    [ id_quasi_hessians INTEGERLIST {N_rem(intset,idQuasiHessians)}
       ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
         [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
        )
       |
       sr1 {N_rem(lit,quasiHessianType_sr1)}
-     )
-    |
-    analytic_hessians {N_rem(lit,hessianType_analytic)}
-    |
-    ( mixed_hessians {N_rem(lit,hessianType_mixed)}
-      [ id_numerical_hessians INTEGERLIST {N_rem(intset,idNumericalHessians)}
-        [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
-       ]
-      [ 
-        relative {N_rem(lit,fdHessStepType_relative)}
-        |
-        absolute {N_rem(lit,fdHessStepType_absolute)}
-        |
-        bounds {N_rem(lit,fdHessStepType_bounds)}
-       ]
-      [ 
-        forward {N_rem(false,centralHess)}
-        |
-        central {N_rem(true,centralHess)}
-       ]
-      [ id_quasi_hessians INTEGERLIST {N_rem(intset,idQuasiHessians)}
-        ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
-          [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
-         )
-        |
-        sr1 {N_rem(lit,quasiHessianType_sr1)}
-       ]
-      [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
-     )
+     ]
+    [ id_analytic_hessians INTEGERLIST {N_rem(intset,idAnalyticHessians)} ]
    )
 
