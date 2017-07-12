@@ -3986,25 +3986,25 @@ Test Number 2 succeeded
                       2.2583705918e+00
 <<<<< Best data captured at function evaluation 14
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 126 total (125 new, 1 duplicate)
+<<<<< Function evaluation summary: 116 total (115 new, 1 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -5.3735860403e-01   2.0000000000e-01   7.0120761932e-02
-   2.0000000000e-01   6.0000000000e-01   1.9664300671e+00
-   6.0000000000e-01   1.2610770826e+00   2.4463686653e-01
+  -5.6041317935e-01   2.0000000000e-01   6.9595989033e-02
+   2.0000000000e-01   6.0000000000e-01   2.0748468096e+00
+   6.0000000000e-01   1.2641056198e+00   1.7638695618e-01
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -3.3602360279e-01   2.0000000000e-01   8.1579713735e-04
-   2.0000000000e-01   6.0000000000e-01   4.6680741792e-01
-   6.0000000000e-01   1.8181933648e+00   6.6725018361e-01
+  -3.0568723060e-01   2.0000000000e-01   8.5655939606e-04
+   2.0000000000e-01   6.0000000000e-01   4.5806319815e-01
+   6.0000000000e-01   1.8181933648e+00   6.7012478742e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   5.1704147132e-02                      1.6285501041e+00
-   6.0000000000e-01   8.3827617398e-01                     -9.8739782126e-01
+   2.0000000000e-01   5.2921707291e-02                      1.6171615457e+00
+   6.0000000000e-01   8.8286043114e-01                     -1.1894080421e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   4.3728652071e-04                      3.3280463828e+00
-   6.0000000000e-01   1.8716025369e-01                      8.8840951802e-01
+   2.0000000000e-01   4.3315114884e-04                      3.3306925389e+00
+   6.0000000000e-01   1.8365843041e-01                      9.0151067458e-01
 dakota_cantilever_examples.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -16147,13 +16147,13 @@ Test Number 19 succeeded
 <<<<< Best data captured at function evaluation 74
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
+<<<<< Function evaluation summary: 45 total (44 new, 1 duplicate)
 <<<<< Best parameters          =
-                      9.8765432099e-01 x1
-                      9.7546105777e-01 x2
+                      9.8686903469e-01 x1
+                      9.7394568102e-01 x2
 <<<<< Best objective function  =
-                      1.5241579028e-04
-<<<<< Best data captured at function evaluation 27
+                      1.7254607914e-04
+<<<<< Best data captured at function evaluation 23
 dakota_rosenbrock_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -26189,6 +26189,20 @@ Test Number 5 succeeded
                      -4.7900276374e-01
                      -9.3574850518e-02
 <<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      4.0011598866e+00 x1
+                      1.9766117810e+00 x2
+<<<<< Best model responses =
+                      8.2035018718e+01
+                      1.5020974547e+01
+                      1.9064141894e+00
+<<<<< Best residual terms =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
+<<<<< Best data captured at function evaluation 11
 dakota_textbook_nips.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -32459,10 +32473,10 @@ Surrogate quality metrics for function 3:
    root_mean_squared    4.1939600176e-13
             mean_abs    4.0952426635e-13
             rsquared    1.0000000000e+00
-<<<<< Function evaluation summary (ALEAT_I): 3577 total (3577 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
          weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 1617 val (1617 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
 ccdf_beta_s:  Min = -1.0278944801e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345245456e+00  Max = 1.4095788060e+03
@@ -32489,7 +32503,7 @@ Surrogate quality metrics for function 3:
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
 ccdf_beta_s:  Min = -1.3732158310e+01  Max = 1.9816756874e+01
-ccdf_beta_d:  Min = -1.4545757332e+01  Max = 8.2073447924e+02
+ccdf_beta_d:  Min = -1.4545757332e+01  Max = 8.8086849531e+02
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 294 total (294 new, 0 duplicate)
          weight: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -32507,10 +32521,10 @@ Surrogate quality metrics for function 3:
    root_mean_squared    4.0303764727e-13
             mean_abs    3.2951419371e-13
             rsquared    1.0000000000e+00
-<<<<< Function evaluation summary (ALEAT_I): 3577 total (3577 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
          weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 1617 val (1617 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
 ccdf_beta_s:  Min = -1.0278944801e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791165e+03
@@ -42287,8 +42301,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 300 total (300 new, 0 duplicate)
   response_fn_1: 300 val (300 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (ALEAT_I): 14300 total (13100 new, 1200 duplicate)
-  response_fn_1: 14300 val (13100 n, 1200 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 15800 total (14800 new, 1000 duplicate)
+  response_fn_1: 15800 val (14800 n, 1000 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -42301,8 +42315,8 @@ Surrogate quality metrics for function 1:
    root_mean_squared    8.2046407952e-15
             mean_abs    4.7369515717e-15
             rsquared    1.0000000000e+00
-<<<<< Function evaluation summary (ALEAT_I): 6100 total (5800 new, 300 duplicate)
-  response_fn_1: 6100 val (5800 n, 300 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 5300 total (5100 new, 200 duplicate)
+  response_fn_1: 5300 val (5100 n, 200 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -42869,48 +42883,48 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 27 total (27 new, 0 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.5704442775e-02   5.0000000000e-01   1.8914766415e-02
-   5.0000000000e-01   1.0000000000e+00   2.2744654464e-02
-   1.0000000000e+00   5.0000000000e+00   2.0079833004e-02
-   5.0000000000e+00   1.0000000000e+01   1.2062973580e-02
-   1.0000000000e+01   5.0000000000e+01   5.1292003996e-03
-   5.0000000000e+01   1.0000000000e+02   2.5922820947e-03
-   1.0000000000e+02   5.0000000000e+02   8.0008746634e-04
-   5.0000000000e+02   1.0000000000e+03   1.7577169313e-04
-   1.0000000000e+03   6.9468210906e+04   1.3870472984e-06
+  -7.3642089847e-03   5.0000000000e-01   1.9286037619e-02         
+   5.0000000000e-01   1.0000000000e+00   2.3863446131e-02
+   1.0000000000e+00   5.0000000000e+00   2.0542230592e-02        
+   5.0000000000e+00   1.0000000000e+01   1.1505655066e-02
+   1.0000000000e+01   5.0000000000e+01   5.1588998954e-03        
+   5.0000000000e+01   1.0000000000e+02   2.6104805925e-03
+   1.0000000000e+02   5.0000000000e+02   7.9645081349e-04
+   5.0000000000e+02   1.0000000000e+03   1.7525305180e-04
+   1.0000000000e+03   6.3430135577e+04   1.5296964582e-06
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0321872067e-02                      2.3144373494e+00
-   1.0000000000e+00   2.1694199298e-02                      2.0199516923e+00
-   5.0000000000e+00   1.0201353131e-01                      1.2701616288e+00
-   1.0000000000e+01   1.6232839922e-01                      9.8493337461e-01
-   5.0000000000e+01   3.6749641520e-01                      3.3849150145e-01
-   1.0000000000e+02   4.9711051993e-01                      7.2429157593e-03
-   5.0000000000e+02   8.1714550647e-01                     -9.0454027758e-01
-   1.0000000000e+03   9.0503135303e-01                     -1.3107646354e+00
+   5.0000000000e-01   9.7850452208e-03                      2.3344897829e+00
+   1.0000000000e+00   2.1716768287e-02                      2.0195167652e+00
+   5.0000000000e+00   1.0388569065e-01                      1.2597172472e+00
+   1.0000000000e+01   1.6141396598e-01                      9.8866324384e-01
+   5.0000000000e+01   3.6776996180e-01                      3.3776548259e-01
+   1.0000000000e+02   4.9829399143e-01                      4.2763423622e-03
+   5.0000000000e+02   8.1687431682e-01                     -9.0351738375e-01
+   1.0000000000e+03   9.0450084272e-01                     -1.3076315377e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 147 total (107 new, 40 duplicate)
+<<<<< Function evaluation summary: 157 total (90 new, 67 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -3.2642758139e-02   5.0000000000e-01   1.9972133410e-02
-   5.0000000000e-01   1.0000000000e+00   2.2227400318e-02
-   1.0000000000e+00   5.0000000000e+00   2.0432679358e-02
-   5.0000000000e+00   1.0000000000e+01   1.1480013977e-02
-   1.0000000000e+01   5.0000000000e+01   5.2135693375e-03
-   5.0000000000e+01   1.0000000000e+02   2.4969741886e-03
-   1.0000000000e+02   5.0000000000e+02   8.0753742630e-04
-   5.0000000000e+02   1.0000000000e+03   1.7766211767e-04
-   1.0000000000e+03   9.0015378973e+04   1.0546490854e-06
+   7.5137179447e-03   5.0000000000e-01   2.0308131070e-02         
+   5.0000000000e-01   1.0000000000e+00   2.3644543918e-02
+   1.0000000000e+00   5.0000000000e+00   2.0281129094e-02         
+   5.0000000000e+00   1.0000000000e+01   1.1903333037e-02
+   1.0000000000e+01   5.0000000000e+01   5.1331445051e-03         
+   5.0000000000e+01   1.0000000000e+02   2.5798364075e-03
+   1.0000000000e+02   5.0000000000e+02   8.0024830422e-04         
+   5.0000000000e+02   1.0000000000e+03   1.7553423227e-04
+   1.0000000000e+03   9.0015378973e+04   1.0711748151e-06
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0638012225e-02                      2.3030500994e+00
-   1.0000000000e+00   2.1751712384e-02                      2.0188441100e+00
-   5.0000000000e+00   1.0348242982e-01                      1.2619553327e+00
-   1.0000000000e+01   1.6088249970e-01                      9.9083736791e-01
-   5.0000000000e+01   3.6942527320e-01                      3.3337590835e-01
-   1.0000000000e+02   4.9427398263e-01                      1.4353489888e-02
-   5.0000000000e+02   8.1728895315e-01                     -9.0508172362e-01
-   1.0000000000e+03   9.0612001198e-01                     -1.3172346698e+00
+   5.0000000000e-01   1.0001475966e-02                      2.3262924987e+00
+   1.0000000000e+00   2.1823747925e-02                      2.0174603398e+00
+   5.0000000000e+00   1.0294826430e-01                      1.2649297028e+00
+   1.0000000000e+01   1.6246492949e-01                      9.8437765819e-01
+   5.0000000000e+01   3.6779070969e-01                      3.3771042297e-01
+   1.0000000000e+02   4.9678253007e-01                      8.0650885430e-03
+   5.0000000000e+02   8.1688185175e-01                     -9.0354579180e-01
+   1.0000000000e+03   9.0464896789e-01                     -1.3085050459e+00
 dakota_uq_rosenbrock_ivp_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
@@ -61957,7 +61971,7 @@ Surrogate quality metrics for function 2:
    8.0000000000e-01   7.2000000000e-01   1.0000000000e+00
   Probability Level  Belief Resp Level   Plaus Resp Level
   -----------------  -----------------   ----------------
-   2.5000000000e-01   6.5999819359e-01   5.0805442674e-06
+   2.5000000000e-01   6.5999819359e-01   1.6935107724e-06
    5.0000000000e-01   6.9999689524e-01   1.1000129836e-01
    7.5000000000e-01   8.4999068572e-01   1.1000129836e-01
 Test Number 5 succeeded
@@ -63642,10 +63656,10 @@ Surrogate quality metrics for function 1:
    root_mean_squared    9.2298974740e-16
             mean_abs    7.1345707120e-16
             rsquared    1.0000000000e+00
-<<<<< Function evaluation summary (OPTIONAL_I): 175 total (175 new, 0 duplicate)
-<<<<< Function evaluation summary (ALEAT_I): 7875 total (7875 new, 0 duplicate)
-      DeltaTime: 7875 val (7875 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-PLOAS:  Min = 2.8600000000e-02  Max = 8.6220000000e-01
+<<<<< Function evaluation summary (OPTIONAL_I): 171 total (171 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 7695 total (7695 new, 0 duplicate)
+      DeltaTime: 7695 val (7695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+PLOAS:  Min = 2.8600000000e-02  Max = 8.6380000000e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (ALEAT_I): 4500 total (4500 new, 0 duplicate)
@@ -65138,18 +65152,18 @@ Test Number 1 succeeded
    1.6800000000e+02   1.0000000000e+00  -1.2637465622e+01  -1.0000000000e+50
    1.6800000000e+02   1.0000000000e+00  -1.4142135624e+01  -1.0000000000e+50
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 47 total (45 new, 2 duplicate)
+<<<<< Function evaluation summary: 47 total (44 new, 3 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.9411506059e+00   1.0000000000e+01   8.7242198469e-02
-   1.0000000000e+01   4.0000000000e+01   1.1569048095e-02
-   4.0000000000e+01   1.0000000000e+02   4.6149952487e-03
-   1.0000000000e+02   1.6742908094e+02   3.2516975657e-04
+   5.9800829122e+00   1.0000000000e+01   8.7668244693e-02
+   1.0000000000e+01   4.0000000000e+01   1.1642329314e-02
+   4.0000000000e+01   1.0000000000e+02   4.6123202283e-03
+   1.0000000000e+02   1.6724582845e+02   3.2079063460e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   1.0000000000e+01   3.5410294439e-01                      3.7426672082e-01
-   4.0000000000e+01   7.0117438724e-01                     -5.2778117347e-01
-   1.0000000000e+02   9.7807410216e-01                     -2.0155046850e+00
+   1.0000000000e+01   3.5241907490e-01                      3.7879762683e-01
+   4.0000000000e+01   7.0168895432e-01                     -5.2926433708e-01
+   1.0000000000e+02   9.7842816802e-01                     -2.0223165110e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -65246,7 +65260,7 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 54 total (51 new, 3 duplicate)
+<<<<< Function evaluation summary: 57 total (55 new, 2 duplicate)
 response_fn_1:  Min = 6.0000000497e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00

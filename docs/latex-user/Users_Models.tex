@@ -516,9 +516,16 @@ and for the cubic polynomial:
 \end{equation}
 
 There must be at least $n_{c}$ data samples in order to form a fully
-determined linear system and solve for the polynomial coefficients. In
-Dakota, a least-squares approach involving a singular value
-decomposition numerical method is applied to solve the linear system.
+determined linear system and solve for the polynomial coefficients. For
+discrete design variables, a further requirement for a well-posed
+problem is for the number of distinct values that each discrete
+variable can take must be greater than the order of polynomial model
+(by at least one level). For the special case involving anisotropy in
+which the degree can be specified differently per dimension, the number
+of values for each discrete variable needs to be greater than the 
+corresponding order along the respective dimension. In Dakota, a
+least-squares approach involving a singular value decomposition
+numerical method is applied to solve the linear system.
 
 The utility of the polynomial models stems from two sources: (1) over
 a small portion of the parameter space, a low-order polynomial model

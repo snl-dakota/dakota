@@ -298,8 +298,10 @@ void NCSUOptimizer::core_run()
   else
     local_des_vars.size(num_cv);
 
+  int max_iter = maxIterations;
+  int max_eval = maxFunctionEvals;
   NCSU_DIRECT_F77(objective_eval, local_des_vars.values(), num_cv, eps,
-		  maxFunctionEvals, maxIterations, fmin, lowerBounds.values(),
+		  max_eval, max_iter, fmin, lowerBounds.values(),
 		  upperBounds.values(), algmethod, ierror, logfile,
 		  solutionTarget, fglper, volper, sigmaper, idata, isize,
 		  ddata, dsize, cdata, csize, quiet_flag);
