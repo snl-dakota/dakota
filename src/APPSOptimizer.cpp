@@ -89,7 +89,7 @@ void APPSOptimizer::core_run()
 //     Has to map format of constraints.
 //     Then populate bestResponseArray.
 
-    set_best_responses<APPSOptimizerAdapter>( optimizer, iteratedModel, 
+    set_best_responses<AppsTraits>( optimizer, iteratedModel, 
                                               constraintMapIndices, 
                                               constraintMapMultipliers, 
                                               constraintMapOffsets,
@@ -328,7 +328,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // For now this requires that the target vector, eg init_point, be allocated properly.
   get_variables<HOPSPACK::Vector>(iteratedModel, init_point);
 
-  bool setScales = !get_bounds<APPSOptimizerAdapter>
+  bool setScales = !get_bounds<AppsTraits>
                     (iteratedModel, bigRealBoundSize, bigIntBoundSize, 
                      lower, upper);
 
@@ -355,7 +355,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
   // Need to make pre-allocation requirement consistent, eg vectors are allocated, matrices are not
-  get_linear_constraints<APPSOptimizerAdapter>
+  get_linear_constraints<AppsTraits>
                 ( iteratedModel, bigRealBoundSize,
                   lin_ineq_lower_bnds,
                   lin_ineq_upper_bnds,

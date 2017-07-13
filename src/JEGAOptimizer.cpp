@@ -933,7 +933,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA variables to Dakota variables.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 
     // The first numContinuousVars of a design will be all the continuous
     // variables of the problem (see LoadTheDesignVariables).
@@ -957,7 +957,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA variables to Dakota variables.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     String variables also need to be remapped.
 
     const StringSetArray& dssv_values = 
@@ -975,7 +975,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA responses to Dakota responses.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Need to respect constraint ordering.
 
     // BMA TODO: Could always populate constraints and just get
@@ -1526,7 +1526,7 @@ JEGAOptimizer::LoadTheConstraints(
 
 //PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Looks like we don't have to worry about (JEGA) order.  Need to
 //     determine if they have to be two-sided for JEGA.
 
@@ -1548,7 +1548,7 @@ JEGAOptimizer::LoadTheConstraints(
 
 //PDH: Dakota linear constraints to JEGA linear constraints.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Looks like we don't have to worry about (JEGA) order.  Need to
 //     determine if they have to be two-sided for JEGA.
 

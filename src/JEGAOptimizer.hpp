@@ -587,6 +587,63 @@ Include Inlined Methods File
 // Not using an Inlined Functions File.
 
 
+/*
+===============================================================================
+Class Definition
+===============================================================================
+*/
+
+/**
+ * \brief A version of TraitsBase specialized for John Eddy's
+ *        Genetic Algorithms (JEGA).
+ *
+ */
+
+class JEGATraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  JEGATraits();
+
+  //typedef HOPSPACK::Hopspack OptT;
+  //typedef HOPSPACK::Vector VecT;
+  //typedef HOPSPACK::Matrix MatT;
+
+  //static double noValue();
+
+  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
+  //static double getBestObj(const OptT &);
+
+  //static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
+
+  /// destructor
+  virtual ~JEGATraits();
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return true; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return true; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return true; }
+
+  /// Return the value of supportsLinearEquality
+  virtual bool supports_linear_equality() { return true; }
+
+  /// Return the value of supportsLinearInequality
+  virtual bool supports_linear_inequality() { return true; }
+
+  /// Return the value of supportsNonlinearEquality
+  virtual bool supports_nonlinear_equality() { return true; }
+
+  /// Return the value of supportsNonlinearInequality
+  virtual bool supports_nonlinear_inequality() { return true; }
+};
 
 
 /*

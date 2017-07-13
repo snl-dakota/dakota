@@ -23,7 +23,6 @@
 #include "HOPSPACK_LinConstr.hpp"
 #include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
-#include "APPSOptimizer.hpp"
 #include "DakotaTraitsBase.hpp"
 
 
@@ -79,31 +78,6 @@ public:
 
   /// compute the optimal solution
   void core_run();
-
-  // /// Return the value of supportsContinuousVariables
-  // virtual bool supports_continuous_variables() { return true; }
-
-  // /// Return the value of supportsIntegerVariables
-  // virtual bool supports_integer_variables() { return true; }
-
-  // /// Return the value of supportsRelaxableDiscreteVariables
-  // virtual bool supports_relaxable_discrete_variables() { return true; }
-
-  // /// Return the value of supportsCategoricalVariables
-  // virtual bool supports_categorical_variables() { return true; }
-
-  // /// Return the value of supportsLinearEquality
-  // virtual bool supports_linear_equality() { return true; }
-
-  // /// Return the value of supportsLinearInequality
-  // virtual bool supports_linear_inequality() { return true; }
-
-  // /// Return the value of supportsNonlinearEquality
-  // virtual bool supports_nonlinear_equality() { return true; }
-
-  // /// Return the value of supportsNonlinearInequality
-  // virtual bool supports_nonlinear_inequality() { return true; }
-
 
 protected:
 
@@ -162,10 +136,23 @@ protected:
 /** AppsTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
 
-class AppsTraits: public TraitsBase {
+class AppsTraits: public TraitsBase
+{
   public:
-/// default constructor
+
+  /// default constructor
   AppsTraits();
+
+  typedef HOPSPACK::Hopspack OptT;
+  typedef HOPSPACK::Vector VecT;
+  typedef HOPSPACK::Matrix MatT;
+
+  static double noValue();
+
+  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
+  static double getBestObj(const OptT &);
+
+  static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
 
   /// destructor
   virtual ~AppsTraits();
@@ -198,33 +185,12 @@ class AppsTraits: public TraitsBase {
 inline AppsTraits::~AppsTraits()
 { }
 
-// --------------------------------------------------
 
-struct APPSOptimizerAdapter {
-
-  typedef HOPSPACK::Hopspack OptT;
-  typedef HOPSPACK::Vector VecT;
-  typedef HOPSPACK::Matrix MatT;
-
-  static double noValue();
-
-  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
-  static double getBestObj(const OptT &);
-
-  static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
-
-}; // namespace APPSOptimizerAdapter
-
-
-// --------------------------------------------------
-
-inline double APPSOptimizerAdapter::noValue()
+inline double AppsTraits::noValue()
 { return HOPSPACK::dne(); }
 
 
-// --------------------------------------------------
-
-inline void APPSOptimizerAdapter::copy_data(const RealMatrix& source, HOPSPACK::Matrix& target)
+inline void AppsTraits::copy_data(const RealMatrix& source, HOPSPACK::Matrix& target)
 {
   HOPSPACK::Vector tmp_vector;
   for (int i=0; i<source.numRows(); ++i) {
@@ -233,14 +199,11 @@ inline void APPSOptimizerAdapter::copy_data(const RealMatrix& source, HOPSPACK::
   }
 }
 
-// --------------------------------------------------
 
-inline double APPSOptimizerAdapter::getBestObj(const OptT & optimizer)
+inline double AppsTraits::getBestObj(const OptT & optimizer)
 {
   return optimizer.getBestF();
 }
-
-// --------------------------------------------------
 
 } // namespace Dakota
 #endif

@@ -318,6 +318,11 @@ public:
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
+
+  /// returns methodTraits for access to derived class member functions
+  /// that are not mapped to the top TraitsBase level
+  std::shared_ptr<TraitsBase> traits();
+
   //
   //- Heading: Operator overloaded functions
   //
@@ -469,10 +474,6 @@ protected:
   /// or child thereof
   std::shared_ptr<TraitsBase> methodTraits;
 
-  /// returns methodTraits for access to derived class member functions
-  /// that are not mapped to the top TraitsBase level
-  TraitsBase& traits();
-
 private:
 
   //
@@ -508,9 +509,9 @@ private:
   int referenceCount;
 };
 
-inline TraitsBase& Iterator::traits()
+inline std::shared_ptr<TraitsBase> Iterator::traits()
 {
-    return (iteratorRep) ? iteratorRep->traits() : *methodTraits;
+    return (iteratorRep) ? iteratorRep->traits() : methodTraits;
 }
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
