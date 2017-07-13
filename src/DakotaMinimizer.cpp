@@ -221,11 +221,11 @@ void Minimizer::check_model(const Model& model)
   // Check for response functions
   if ( numFunctions <= 0 ) {
     Cerr << "\nError: number of response functions must be greater than zero."
-   << std::endl;
+	 << std::endl;
     err_flag = true;
   }
 
-    // check for gradient/Hessian/minimizer match: abort with an error for cases
+  // check for gradient/Hessian/minimizer match: abort with an error for cases
   // where insufficient derivative data is available (e.g., full Newton methods
   // require Hessians), but only echo warnings in other cases (e.g., if more
   // derivative data is specified than is needed --> for example, don't enforce
@@ -234,7 +234,7 @@ void Minimizer::check_model(const Model& model)
   const String& hess_type = model.hessian_type();
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "Gradient type = " << grad_type << " Hessian type = " << hess_type
-   << '\n';
+	 << '\n';
   if ( grad_type == "none" && ( ( methodName & LEASTSQ_BIT ) ||
        ( ( methodName & OPTIMIZER_BIT ) && methodName >= NONLINEAR_CG ) ) ) {
     Cerr << "\nError: gradient-based minimizers require a gradient "

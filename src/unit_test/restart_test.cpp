@@ -2,8 +2,13 @@
 #include "ParamResponsePair.hpp"
 #include "SimulationResponse.hpp"
 
+#ifdef _WIN32
+#include "dakota_windows.h"
+#endif
+
 #include <Teuchos_UnitTestHarness.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <cmath>
 
 using namespace Dakota;
 

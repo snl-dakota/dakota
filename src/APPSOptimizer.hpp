@@ -24,7 +24,7 @@
 #include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
 #include "APPSOptimizer.hpp"
-#include "DakotaOptTraits.hpp"
+#include "DakotaTraitsBase.hpp"
 
 
 namespace Dakota {

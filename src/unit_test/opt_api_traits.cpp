@@ -1,6 +1,6 @@
 
 #include "dakota_data_util.hpp"
-#include "DakotaOptTraits.hpp"
+#include "DakotaTraitsBase.hpp"
 
 #include <limits>
 #include <string>
