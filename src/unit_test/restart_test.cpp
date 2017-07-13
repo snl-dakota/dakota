@@ -10,6 +10,14 @@
 #include <boost/filesystem/operations.hpp>
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_LOG2E
+#define M_LOG2E 1.4426950408889634074
+#endif
+
 using namespace Dakota;
 
 /** In-core test with 1 variable/response */
