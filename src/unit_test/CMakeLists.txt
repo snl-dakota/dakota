@@ -98,6 +98,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     opt_api_core_data_xfers.cpp
     opt_tpl_api.cpp
     opt_tpl_apps_test.cpp
+    opt_api_traits.cpp
     reduced_basis.cpp
     restart_test.cpp
     stat_utils.cpp

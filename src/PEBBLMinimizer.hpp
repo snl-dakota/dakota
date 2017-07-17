@@ -4,6 +4,39 @@
 namespace Dakota
 {
 /// Wrapper class for experimental PebbldMinimizer.
+
+/**
+ * \brief A version of TraitsBase specialized for Pebbld mptimizers
+ *
+ */
+
+class PebbldTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  PebbldTraits() { }
+
+  /// destructor
+  virtual ~PebbldTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return true; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return true; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return true; }
+};
+
+
 class PebbldMinimizer : public Minimizer
 {
 public:

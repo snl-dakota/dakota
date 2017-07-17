@@ -48,6 +48,42 @@ namespace Dakota {
     [Hart, W.E., 2006] for additional information on COLIN objects and
     controls. */
 
+/**
+ * \brief A version of TraitsBase specialized for COLIN optimizers
+ *
+ */
+
+  // Should these traits have any dependence on the particular useage of the 
+  // COLIN optimizer?  For example, should the queries for which variables
+  // are supported depend on any of:
+  // COLINY_BETA, COLINY_COBYLA, COLINY_DIRECT, COLINY_EA, COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS? - RWH
+
+class COLINTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  COLINTraits() { }
+
+  /// destructor
+  virtual ~COLINTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return true; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return true; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return true; }
+};
+
 class COLINOptimizer : public Optimizer
 {
 public:

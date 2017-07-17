@@ -1,6 +1,17 @@
 
 #include "dakota_data_util.hpp"
 #include "DakotaTraitsBase.hpp"
+#include "DakotaIterator.hpp"
+#include "DataMethod.hpp"
+#include "DataModel.hpp"
+
+#include "APPSOptimizer.hpp"
+#include "COLINOptimizer.hpp"
+#include "JEGAOptimizer.hpp"
+#include "NomadOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
+#include "SNLLOptimizer.hpp"
+#include "SurrBasedGlobalMinimizer.hpp"
 
 #include <limits>
 #include <string>
@@ -16,127 +27,101 @@ using namespace Dakota;
 
 namespace {
 
-  class dummyGradFreeOpt1 {
-
-    public:
-
-      struct Traits {
-          typedef double scalarType;
-          typedef std::vector<double> vectorType;
-          static const bool supportsGradients           = false;
-          static const bool supportsLinearEquality      = false;
-          static const bool supportsLinearInequality    = false;
-          static const bool supportsNonlinearEquality   = false;
-          static const bool supportsNonlinearInequality = false;
-          static const bool supportsScaling             = false;
-          static const bool supportsLeastSquares        = false;
-          static const bool supportsMultiobjectives     = false;
-      };
-  };
+  bool check_variables( unsigned short methodName,
+                        int num_cont_vars,
+                        int num_disc_int_vars,
+                        int num_disc_real_vars,
+                        int num_disc_string_vars,
+                        bool & continuous_only )
+  {
+    if (methodName == MOGA        || methodName == SOGA ||
+        methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
+        methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
+        methodName == ASYNCH_PATTERN_SEARCH || methodName == BRANCH_AND_BOUND)
+    {
+      continuous_only = false;
+      if (!num_cont_vars && !num_disc_int_vars && !num_disc_real_vars && !num_disc_string_vars)
+        return false;
+    }
+    else 
+    { // methods supporting only continuous design variables
+      continuous_only = true;
+      if (!num_cont_vars)
+        return false;
+    }
+    return true;
+  }
 
   //----------------------------------
 
-  class dummyGradOpt1 {
-
-    public:
-
-      struct Traits {
-          typedef double scalarType;
-          typedef std::vector<double> vectorType;
-          static const bool supportsGradients           = true;
-          static const bool supportsLinearEquality      = true;
-              struct LinearEquality
-              {
-                static const bool requiresBounds   = true;
-                static const scalarType lowerBound = 0.0;
-                static const scalarType upperBound = 1.0;
-              };
-          static const bool supportsLinearInequality    = false;
-          static const bool supportsNonlinearEquality   = false;
-          static const bool supportsNonlinearInequality = false;
-          static const bool supportsScaling             = false;
-          static const bool supportsLeastSquares        = false;
-          static const bool supportsMultiobjectives     = false;
-      };
-
-  };
-} // anonymous namespace
-
-//----------------------------------------------------------------
-
-TEUCHOS_UNIT_TEST(opt_api_traits, test1)
-{
-  TEST_ASSERT( dummyGradOpt1::Traits::supportsLinearEquality );
-  TEST_ASSERT( dummyGradOpt1::Traits::LinearEquality::requiresBounds );
-  TEST_COMPARE( dummyGradOpt1::Traits::LinearEquality::lowerBound, <, dummyGradOpt1::Traits::LinearEquality::upperBound );
-
-  // As an exmaple, this line won't compile and indicates early-on (at compile-time) that the
-  // particular optimizer does not support a feature.
-  //dummyGradFreeOpt1::Traits::scalarType lower_bound = dummyGradFreeOpt1::Traits::LinearEquality::lowerBound;
-
-}
-
-//----------------------------------------------------------------
-
-namespace {
-
-  struct DummyTraits1 : public InheritableSingleton_OptTraits
+  bool check_variables( std::shared_ptr<TraitsBase> traits,
+                        int num_cont_vars,
+                        int num_disc_int_vars,
+                        int num_disc_real_vars,
+                        int num_disc_string_vars,
+                        bool & continuous_only )
   {
-    // -------------------------
-    // This is boilerplate that everyone would be expected to do
-    // and could later be captured in a macro
-    // -------------------------
-    ~DummyTraits1() { }
-
-    // Enforce a single object
-    static InheritableSingleton_OptTraits * instance()
+    if( traits->supports_continuous_variables()              && 
+        ( traits->supports_integer_variables()            ||
+          traits->supports_relaxable_discrete_variables() ||
+          traits->supports_categorical_variables()          )   )
     {
-      static DummyTraits1 * this_instance = new DummyTraits1();
-      return this_instance;
+      continuous_only = false;
+      if (!num_cont_vars && !num_disc_int_vars && !num_disc_real_vars && !num_disc_string_vars)
+        return false;
     }
+    else { // methods supporting only continuous design variables
+      continuous_only = true;
+      if (!num_cont_vars)
+        return false;
+    }
+    return true;
+  }
 
-   private:
+  //----------------------------------
 
-    // Disallow multiple objects
-    DummyTraits1() :
-      InheritableSingleton_OptTraits()
-    { }
+  bool check_variable_consistency( unsigned short methodName,
+                                   std::shared_ptr<TraitsBase> traits,
+                                   Teuchos::FancyOStream &out,
+                                   bool & success )
+  {
+    bool continuous_only_enum   = false;
+    bool continuous_only_traits = false;
+    bool is_consistent_enums    = false;
+    bool is_consistent_traits   = false;
 
-    DummyTraits1(const DummyTraits1&); // don't implement
-    DummyTraits1 & operator =(const DummyTraits1&); // don't implement
+    std::shared_ptr<Iterator> method_iter;
 
-    // This is needed of we choose pure virtual in the base traits class
-    //bool is_derived() { return true; }
+    // Test Traits
+    method_iter.reset( new Iterator(traits) );
+    TEST_ASSERT( method_iter->traits()->is_derived() );
 
-    // -------------------------
-    // End of boilerplate
-    // -------------------------
-
-   public:
-
-    // Customize behavior via inheritance
-    bool requires_bounds() { return true; }
-
-  };
+    for( int i=0; i<2; ++i )
+      for( int j=0; j<2; ++j )
+        for( int k=0; k<2; ++k )
+          for( int l=0; l<2; ++l )
+          {
+            is_consistent_enums  = check_variables(methodName,            i, j, k, l, continuous_only_enum);
+            is_consistent_traits = check_variables(method_iter->traits(), i, j, k, l, continuous_only_traits);
+            TEST_ASSERT( is_consistent_enums  == is_consistent_traits );
+            TEST_ASSERT( continuous_only_enum == continuous_only_traits );
+          }
+  }
 }
 
-//----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_api_traits, test2)
+TEUCHOS_UNIT_TEST(opt_api_traits, var_consistency)
 {
-  InheritableSingleton_OptTraits * base_traits1 = new InheritableSingleton_OptTraits();
-  InheritableSingleton_OptTraits * base_traits2 = new InheritableSingleton_OptTraits();
-
-  TEST_ASSERT( base_traits1->requires_bounds() == false );
-  TEST_ASSERT( base_traits2->requires_bounds() == false );
-  // These are different and distinct objects
-  TEST_ASSERT( base_traits1 != base_traits2 );
-
-  InheritableSingleton_OptTraits * derived_traits1 = DummyTraits1::instance();
-  InheritableSingleton_OptTraits * derived_traits2 = DummyTraits1::instance();
-  TEST_ASSERT( derived_traits1->requires_bounds() == true );
-  // These are the same object 
-  TEST_ASSERT( derived_traits1 == derived_traits2 );
+  // Test various TPL Traits as they become available
+  check_variable_consistency( ASYNCH_PATTERN_SEARCH , std::shared_ptr<TraitsBase>(new AppsTraits())           , out, success );
+  check_variable_consistency( MOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
+  check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
+  check_variable_consistency( COLINY_EA             , std::shared_ptr<TraitsBase>(new COLINTraits())          , out, success );
+  check_variable_consistency( COLINY_BETA           , std::shared_ptr<TraitsBase>(new COLINTraits())          , out, success );
+  check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()), out, success );
+  check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          , out, success );
+  check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         , out, success );
+  check_variable_consistency( OPTPP_PDS             , std::shared_ptr<TraitsBase>(new OPTPPTraits())          , out, success );
 }
 
 //----------------------------------------------------------------

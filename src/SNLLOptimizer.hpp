@@ -69,6 +69,29 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
+/// OPTPP-specific traits class.
+
+/** OPTPPTraits specializes some traits accessors by over-riding the default 
+accessors in TraitsBase. */
+
+class OPTPPTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  OPTPPTraits() { }
+
+  /// destructor
+  virtual ~OPTPPTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+};
+
+
 class SNLLOptimizer: public Optimizer, public SNLLBase
 {
 public:

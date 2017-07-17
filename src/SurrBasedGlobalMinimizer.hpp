@@ -33,6 +33,38 @@ namespace Dakota {
     function, to generate new points upon which the surrogate for the next
     iteration is built. */
 
+/**
+ * \brief A version of TraitsBase specialized for surrogate-based minimizers
+ *
+ */
+
+class SurrBasedGlobalTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  SurrBasedGlobalTraits() { }
+
+  /// destructor
+  virtual ~SurrBasedGlobalTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+
+  /// Return the value of supportsIntegerVariables
+  virtual bool supports_integer_variables() { return true; }
+
+  /// Return the value of supportsRelaxableDiscreteVariables
+  virtual bool supports_relaxable_discrete_variables() { return true; }
+
+  /// Return the value of supportsCategoricalVariables
+  virtual bool supports_categorical_variables() { return true; }
+};
+
+
 class SurrBasedGlobalMinimizer: public SurrBasedMinimizer
 {
 public:

@@ -76,6 +76,9 @@ class AppsTraits: public TraitsBase
   /// destructor
   virtual ~AppsTraits();
 
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
   /// Return the value of supportsContinuousVariables
   virtual bool supports_continuous_variables() { return true; }
 

@@ -32,6 +32,9 @@ public:
   /// destructor
   virtual ~TraitsBase();
 
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return false; }
+
   /// Return the flag indicating whether method requires bounds
   virtual bool requires_bounds() { return false; }
 

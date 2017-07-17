@@ -153,6 +153,7 @@ Forward Declares
 ===============================================================================
 */
 class JEGAOptimizer;
+class JEGATraits;
 
 
 
@@ -604,7 +605,7 @@ class JEGATraits: public TraitsBase
   public:
 
   /// default constructor
-  JEGATraits();
+  JEGATraits() { }
 
   //typedef HOPSPACK::Hopspack OptT;
   //typedef HOPSPACK::Vector VecT;
@@ -618,7 +619,10 @@ class JEGATraits: public TraitsBase
   //static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
 
   /// destructor
-  virtual ~JEGATraits();
+  virtual ~JEGATraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
 
   /// Return the value of supportsContinuousVariables
   virtual bool supports_continuous_variables() { return true; }
