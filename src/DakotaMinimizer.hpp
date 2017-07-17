@@ -81,15 +81,15 @@ protected:
   //
 
   /// default constructor
-  Minimizer();
+  Minimizer(std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, Model& model);
+  Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(unsigned short method_name, Model& model);
+  Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
   Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
-	    size_t num_nln_ineq, size_t num_nln_eq);
+	    size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer();
@@ -99,7 +99,6 @@ protected:
   //
 
   void update_from_model(const Model& model);
-  void check_model(const Model& model);
 
   void initialize_run();
   void post_run(std::ostream& s);
@@ -292,8 +291,8 @@ private:
 };
 
 
-inline Minimizer::Minimizer(): 
-  calibrationDataFlag(false), scaleFlag(false)
+inline Minimizer::Minimizer(std::shared_ptr<TraitsBase> traits): 
+  Iterator(traits), calibrationDataFlag(false), scaleFlag(false)
 { }
 
 

@@ -19,23 +19,21 @@ namespace Dakota {
 
 
 APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
-  methodTraits.reset(new AppsTraits());
 }
 
 APPSOptimizer::APPSOptimizer(Model& model):
-  Optimizer(ASYNCH_PATTERN_SEARCH, model)
+  Optimizer(ASYNCH_PATTERN_SEARCH, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
   evalMgr = new APPSEvalMgr(iteratedModel);
   set_apps_parameters(); // set specification values using DB
-  methodTraits.reset(new AppsTraits());
 }
 
 /** core_run redefines the Optimizer virtual function to perform

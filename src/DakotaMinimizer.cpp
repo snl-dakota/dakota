@@ -41,8 +41,8 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model): 
-  Iterator(BaseConstructor(), problem_db),
+Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits): 
+  Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
@@ -67,8 +67,8 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, Model& model):
-  Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
+Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, model, traits), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
@@ -79,8 +79,8 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
 
 
 Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
-		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Iterator(NoDBBaseConstructor(), method_name),
+		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),
   numNonlinearEqConstraints(num_nln_eq), numLinearIneqConstraints(num_lin_ineq),
@@ -258,8 +258,6 @@ void Minimizer::update_from_model(const Model& model)
 
 void Minimizer::initialize_run()
 {
-  //check_model(iteratedModel);
-
   // Verify that iteratedModel is not null (default ctor and some
   // NoDBBaseConstructor ctors leave iteratedModel uninitialized).
   if (!iteratedModel.is_null()) {
@@ -887,171 +885,6 @@ local_recast_retrieve(const Variables& vars, Response& response) const
 	 << "optimization." << std::endl;
   else
     response.update(cache_it->response());
-}
-
-
-void Minimizer::check_model(const Model& model)
-{
-  bool err_flag = false;
-  // Check for correct bit associated within methodName
-  if ( !(methodName & MINIMIZER_BIT) ) {
-    Cerr << "\nError: minimizer bit not activated for method instantiation "
-   << "within Minimizer branch." << std::endl;
-    err_flag = true;
-  }
-
-  // MK: APPS-specific traits check using traits class
-  if (methodName == ASYNCH_PATTERN_SEARCH)
-  {
-    // Check for active design variables and discrete variable support
-    if (traits()->supports_continuous_variables() && traits()->supports_integer_variables() &&
-      traits()->supports_relaxable_discrete_variables() &&
-      traits()->supports_categorical_variables()){
-      if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
-      !numDiscreteRealVars) {
-        Cerr << "\nError: " << method_enum_to_string(methodName)
-        << " requires active variables." << std::endl;
-        err_flag = true;
-      }
-    }
-    else{ // methods supporting only continuous design variables
-      if (!numContinuousVars) {
-        Cerr << "\nError: " << method_enum_to_string(methodName)
-       << " requires active continuous variables." << std::endl;
-        err_flag = true;
-      }
-      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
-        Cerr << "\nWarning: discrete design variables ignored by "
-       << method_enum_to_string(methodName) << std::endl;
-    }
-  }
-  // MK: For all other methods apart from APPS
-  else{
-    // Check for active design variables and discrete variable support
-    if (methodName == MOGA        || methodName == SOGA ||
-        methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
-        methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
-        methodName == BRANCH_AND_BOUND) {
-      if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
-    !numDiscreteRealVars) {
-        Cerr << "\nError: " << method_enum_to_string(methodName)
-       << " requires active variables." << std::endl;
-        err_flag = true;
-      }
-    }
-    else { // methods supporting only continuous design variables
-      if (!numContinuousVars) {
-        Cerr << "\nError: " << method_enum_to_string(methodName)
-       << " requires active continuous variables." << std::endl;
-        err_flag = true;
-      }
-      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)
-        Cerr << "\nWarning: discrete design variables ignored by "
-       << method_enum_to_string(methodName) << std::endl;
-    }
-  }
-  // Check for response functions
-  if ( numFunctions <= 0 ) {
-    Cerr << "\nError: number of response functions must be greater than zero."
-	 << std::endl;
-    err_flag = true;
-  }
-
-  // check for gradient/Hessian/minimizer match: abort with an error for cases
-  // where insufficient derivative data is available (e.g., full Newton methods
-  // require Hessians), but only echo warnings in other cases (e.g., if more
-  // derivative data is specified than is needed --> for example, don't enforce
-  // that analytic Hessians require full Newton methods).
-  const String& grad_type = model.gradient_type();
-  const String& hess_type = model.hessian_type();
-  if (outputLevel >= VERBOSE_OUTPUT)
-    Cout << "Gradient type = " << grad_type << " Hessian type = " << hess_type
-	 << '\n';
-  if ( grad_type == "none" && ( ( methodName & LEASTSQ_BIT ) ||
-       ( ( methodName & OPTIMIZER_BIT ) && methodName >= NONLINEAR_CG ) ) ) {
-    Cerr << "\nError: gradient-based minimizers require a gradient "
-         << "specification." << std::endl;
-    err_flag = true;
-  }
-  if ( hess_type != "none" && methodName != OPTPP_NEWTON )
-    Cerr << "\nWarning: Hessians are only utilized by full Newton methods.\n\n";
-  if ( ( grad_type != "none" || hess_type != "none") &&
-       ( ( methodName & OPTIMIZER_BIT ) && methodName < NONLINEAR_CG ) )
-    Cerr << "\nWarning: Gradient/Hessian specification for a nongradient-based "
-   << "optimizer is ignored.\n\n";
-
-  // TO DO: hard error if not supported; warning if promoted;
-  //        quiet if natively supported
-
-  // MK: APPS-specific traits check using traits class
-  if (methodName == ASYNCH_PATTERN_SEARCH){
-    // Check for linear constraint support in method selection
-    if ( numLinearEqConstraints && !traits()->supports_linear_equality()){
-      Cerr << "\nError: linear equality constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method." << std::endl;
-      err_flag = true;
-    }
-    if ( numLinearIneqConstraints && !traits()->supports_linear_inequality()){
-      Cerr << "\nError: linear inequality constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method." << std::endl;
-      err_flag = true;
-    }
-  }
-  // MK: For all other methods apart from APPS
-  else{
-    // Check for linear constraint support in method selection
-    if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
-         ( methodName == NL2SOL       ||
-     methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
-     ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
-     methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
-     methodName == GENIE_DIRECT || methodName == GENIE_OPT_DARTS      ||
-           methodName == DL_SOLVER    || methodName == EFFICIENT_GLOBAL ) ) {
-      Cerr << "\nError: linear constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method for generally constrained problems." << std::endl;
-      err_flag = true;
-    }
-  }
-
-
-  // MK: APPS-specific traits check using traits class
-  if (methodName == ASYNCH_PATTERN_SEARCH){
-    // Check for nonlinear constraint support in method selection
-    if ( numNonlinearEqConstraints && !traits()->supports_nonlinear_equality()){
-      Cerr << "\nError: nonlinear equality constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method." << std::endl;
-      err_flag = true;
-    }
-    if ( numNonlinearIneqConstraints && !traits()->supports_nonlinear_inequality()){
-      Cerr << "\nError: nonlinear inequality constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method." << std::endl;
-      err_flag = true;
-    }
-  }
-  // MK: For all other methods apart from APPS
-  else
-  {
-    // Check for nonlinear constraint support in method selection.  Note that
-    // CONMIN and DOT swap method selections as needed for constraint support.
-    if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
-         ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
-     methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
-     methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
-           methodName == GENIE_OPT_DARTS )) {
-      Cerr << "\nError: nonlinear constraints not currently supported by "
-     << method_enum_to_string(methodName) << ".\n       Please select a "
-     << "different method for generally constrained problems." << std::endl;
-      err_flag = true;
-    }
-  }
-
-  if (err_flag)
-    abort_handler(-1);
 }
 
 } // namespace Dakota

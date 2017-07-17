@@ -50,87 +50,6 @@ namespace Dakota {
     to the HOPS web site (https://software.sandia.gov/trac/hopspack)
     for additional information on HOPS objects and controls. */
 
-class APPSOptimizer : public Optimizer
-{
-public:
-
-  //
-  //- Heading: Constructors and destructor
-  //
-
-  /// constructor
-  APPSOptimizer(ProblemDescDB& problem_db, Model& model);
-
-  /// alternate constructor for on-the-fly instantiation without ProblemDescDB
-  APPSOptimizer(Model& model);
-
-  /// alternate constructor for even more rudimentary on-the-fly instantiation
-  APPSOptimizer() { }
-
-  /// destructor
-  ~APPSOptimizer() {
-    if (evalMgr) delete evalMgr;
-  }
-
-  //
-  //- Heading: Virtual function redefinitions
-  //
-
-  /// compute the optimal solution
-  void core_run();
-
-protected:
-
-  //
-  //- Heading: Member functions
-  //
-
-  /// sets options for specific methods based on user specifications
-  void set_apps_parameters();
-
-  /// sets traits for specific TPL
-  void set_apps_traits();
-
-  /// initializes problem variables and constraints
-  void initialize_variables_and_constraints();
-
-  //
-  //- Heading: Private data
-  //
-
-  /// Total across all types of variables
-  int numTotalVars;
-
-  /// Pointer to APPS parameter list
-  HOPSPACK::ParameterList  params;
-
-  /// Pointer to APPS problem parameter sublist
-  HOPSPACK::ParameterList* problemParams;
-
-  /// Pointer to APPS linear constraint parameter sublist
-  HOPSPACK::ParameterList* linearParams;
-
-  /// Pointer to APPS mediator parameter sublist
-  HOPSPACK::ParameterList* mediatorParams;
-
-  /// Pointer to APPS citizen/algorithm parameter sublist
-  HOPSPACK::ParameterList* citizenParams;
-
-  /// Pointer to the APPS evaluation manager object
-  APPSEvalMgr* evalMgr;
-
-//PDH: Don't think we would need these data members anymore.
-
-  /// map from Dakota constraint number to APPS constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
-};
-
 /// HOPSPACK-specific traits class.
 
 /** AppsTraits specializes some traits accessors by over-riding the default 
@@ -204,6 +123,87 @@ inline double AppsTraits::getBestObj(const OptT & optimizer)
 {
   return optimizer.getBestF();
 }
+
+class APPSOptimizer : public Optimizer
+{
+public:
+
+  //
+  //- Heading: Constructors and destructor
+  //
+
+  /// constructor
+  APPSOptimizer(ProblemDescDB& problem_db, Model& model);
+
+  /// alternate constructor for on-the-fly instantiation without ProblemDescDB
+  APPSOptimizer(Model& model);
+
+  /// alternate constructor for even more rudimentary on-the-fly instantiation
+  APPSOptimizer():Optimizer(std::shared_ptr<TraitsBase>(new AppsTraits())) { }
+
+  /// destructor
+  ~APPSOptimizer() {
+    if (evalMgr) delete evalMgr;
+  }
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// compute the optimal solution
+  void core_run();
+
+protected:
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// sets options for specific methods based on user specifications
+  void set_apps_parameters();
+
+  /// sets traits for specific TPL
+  void set_apps_traits();
+
+  /// initializes problem variables and constraints
+  void initialize_variables_and_constraints();
+
+  //
+  //- Heading: Private data
+  //
+
+  /// Total across all types of variables
+  int numTotalVars;
+
+  /// Pointer to APPS parameter list
+  HOPSPACK::ParameterList  params;
+
+  /// Pointer to APPS problem parameter sublist
+  HOPSPACK::ParameterList* problemParams;
+
+  /// Pointer to APPS linear constraint parameter sublist
+  HOPSPACK::ParameterList* linearParams;
+
+  /// Pointer to APPS mediator parameter sublist
+  HOPSPACK::ParameterList* mediatorParams;
+
+  /// Pointer to APPS citizen/algorithm parameter sublist
+  HOPSPACK::ParameterList* citizenParams;
+
+  /// Pointer to the APPS evaluation manager object
+  APPSEvalMgr* evalMgr;
+
+//PDH: Don't think we would need these data members anymore.
+
+  /// map from Dakota constraint number to APPS constraint number
+  std::vector<int> constraintMapIndices;
+
+  /// multipliers for constraint transformations
+  std::vector<double> constraintMapMultipliers;
+
+  /// offsets for constraint transformations
+  std::vector<double> constraintMapOffsets;
+};
 
 } // namespace Dakota
 #endif

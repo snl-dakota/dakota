@@ -33,8 +33,8 @@ extern PRPCache data_pairs; // global container
 Optimizer* Optimizer::optimizerInstance(NULL);
 
 
-Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model),
+Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
@@ -132,8 +132,8 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Optimizer::Optimizer(unsigned short method_name, Model& model):
-  Minimizer(method_name, model), numObjectiveFns(numUserPrimaryFns),
+Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, model, traits), numObjectiveFns(numUserPrimaryFns),
   localObjectiveRecast(false)
 {
   if (numObjectiveFns > 1) {
@@ -152,8 +152,8 @@ Optimizer::Optimizer(unsigned short method_name, Model& model):
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq),
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq, traits),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
   numContinuousVars     = num_cv;

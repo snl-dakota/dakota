@@ -133,7 +133,7 @@ extern ResultsManager  iterator_results_db;
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
-Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
+Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -158,7 +158,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
-  iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
@@ -175,7 +175,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
+Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -184,7 +184,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
   resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
 #ifdef REFCOUNT_DEBUG
@@ -200,14 +200,14 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
+Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib), 
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
   resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -221,9 +221,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
+Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(NULL), referenceCount(1), methodTraits(new TraitsBase())
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -235,12 +235,12 @@ Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
 /** This constructor assigns a representation pointer and optionally
     increments its reference count.  It behaves the same as a default
     construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
   // bypass some logic in assign_rep():
-  iteratorRep(iterator_rep), referenceCount(1), methodTraits(new TraitsBase())
+  iteratorRep(iterator_rep), referenceCount(1), methodTraits(traits)
 {
   // relevant portion of assign_rep():
   if (iteratorRep && ref_count_incr)
@@ -258,9 +258,9 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
     data.  This version is used for top-level ProblemDescDB-driven
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db):
+Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), methodTraits(new TraitsBase()),
+  resultsDB(iterator_results_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 
@@ -335,9 +335,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
     (e.g., a MetaIterator instantiates its sub-iterator(s) by name
     instead of pointer and passes in its iteratedModel, since these
     sub-iterators lack their own model pointers). */
-Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
+Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), methodTraits(new TraitsBase()),
+  resultsDB(iterator_results_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -539,10 +539,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     execute get_iterator(), since letter holds the actual base class
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
-Iterator::Iterator(const String& method_string, Model& model):
+Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(model.problem_description_db()),
   parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
-  methodTraits(new TraitsBase()), 
+  methodTraits(traits), 
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -660,7 +660,7 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db),
-  methodTraits(new TraitsBase())
+  methodTraits(iterator.traits())
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
