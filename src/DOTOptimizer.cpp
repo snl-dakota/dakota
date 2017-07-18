@@ -37,7 +37,8 @@ namespace Dakota {
 
 
 DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), realCntlParmArray(20, 0.0),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new DOTTraits())),
+  realCntlParmArray(20, 0.0),
   intCntlParmArray(20, 0)
 {
   // If speculativeFlag is set and vendor numerical_gradients are used, output
@@ -61,7 +62,7 @@ DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, Model& model):
 
 
 DOTOptimizer::DOTOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new DOTTraits())),
   realCntlParmArray(20, 0.0), intCntlParmArray(20, 0)
 {
   printControl = 3;

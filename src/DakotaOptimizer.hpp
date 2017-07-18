@@ -24,7 +24,8 @@ namespace Dakota {
 
 /** The Optimizer class provides common data and functionality for
     DOTOptimizer, CONMINOptimizer, NPSOLOptimizer, SNLLOptimizer,
-    NLPQLPOptimizer, COLINOptimizer, and JEGAOptimizer. */
+    NLPQLPOptimizer, COLINOptimizer, OptDartsOptimizer, NCSUOptimizer,
+    NonlinearCGOptimizer, NomadOptimizer, and JEGAOptimizer. */
 
 class Optimizer: public Minimizer
 {
@@ -40,16 +41,16 @@ protected:
   //
 
   /// default constructor
-  Optimizer(std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Optimizer(std::shared_ptr<TraitsBase> traits);
   /// alternate constructor; accepts a model
-  Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
 
   /// alternate constructor for "on the fly" instantiations
-  Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for "on the fly" instantiations
   Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	    size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	    size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
+	    size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits);
 
   /// destructor
   ~Optimizer();

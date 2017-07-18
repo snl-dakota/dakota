@@ -41,6 +41,29 @@ namespace Dakota {
     [Vanderplaats Research and Development, 1995] for information on
     \c IPRM, \c RPRM, and the DOT function call parameter list. */
 
+/**
+ * \brief A version of TraitsBase specialized for DOT optimizers
+ *
+ */
+
+class DOTTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  DOTTraits() { }
+
+  /// destructor
+  virtual ~DOTTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+};
+
+
 class DOTOptimizer: public Optimizer
 {
 public:

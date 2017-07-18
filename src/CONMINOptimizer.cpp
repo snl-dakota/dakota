@@ -34,7 +34,7 @@ namespace Dakota {
 
 
 CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
 {
   // If speculativeFlag is set with vendor numerical_gradients, output a warning
   if (speculativeFlag && vendorNumericalGradFlag)
@@ -46,7 +46,7 @@ CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, Model& model):
 
 
 CONMINOptimizer::CONMINOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model)
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
 { initialize(); } // convenience fn for shared ctor code
 
 

@@ -46,6 +46,29 @@ namespace Dakota {
     Saunders, M.A., and Wright, M.H., 1986] for information on NPSOL's
     optional input parameters and the npoptn() subroutine. */
 
+/**
+ * \brief A version of TraitsBase specialized for NPSOL optimizers
+ *
+ */
+
+class NPSOLTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NPSOLTraits() { }
+
+  /// destructor
+  virtual ~NPSOLTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+};
+
+
 class NPSOLOptimizer: public Optimizer, public SOLBase
 {
 public:

@@ -62,7 +62,8 @@ NPSOLOptimizer* NPSOLOptimizer::npsolInstance(NULL);
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), SOLBase(model), setUpType("model")
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // invoke SOLBase set function (shared with NLSSOLLeastSq)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
@@ -78,7 +79,8 @@ NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
 NPSOLOptimizer::NPSOLOptimizer(Model& model):
-  Optimizer(NPSOL_SQP, model), SOLBase(model), setUpType("model")
+  Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // invoke SOLBase set function (shared with NLSSOLLeastSq)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
@@ -92,7 +94,8 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model):
     using a Model but no ProblemDescDB. */
 NPSOLOptimizer::
 NPSOLOptimizer(Model& model, const int& derivative_level, const Real& conv_tol):
-  Optimizer(NPSOL_SQP, model), SOLBase(model), setUpType("model")
+  Optimizer(NPSOL_SQP, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
 {
   // Set NPSOL options (mostly use defaults)
   std::string vlevel_s("Verify Level                = -1");
@@ -139,7 +142,8 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   const int& derivative_level, const Real& conv_tol): // SOLBase default ctor
   Optimizer(NPSOL_SQP, initial_point.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length()),
+	    nonlin_ineq_lower_bnds.length(), nonlin_eq_targets.length(),
+            std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   setUpType("user_functions"), initialPoint(initial_point), 
   lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
   userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)

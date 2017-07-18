@@ -63,6 +63,29 @@ namespace Dakota {
  
     ********************************************************************* */
 
+/**
+ * \brief A version of TraitsBase specialized for NLPQLP optimizers
+ *
+ */
+
+class NLPQLPTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NLPQLPTraits() { }
+
+  /// destructor
+  virtual ~NLPQLPTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+};
+
+
 class NLPQLPOptimizer: public Optimizer
 {
 public:

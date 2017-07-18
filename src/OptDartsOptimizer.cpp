@@ -33,7 +33,7 @@ namespace Dakota {
 // Main Class: OptDartsOptimizer
 
 OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {     
      // load_parameters
      this->load_parameters(model);
@@ -51,7 +51,8 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
        use_DIRECT = true;
 }
 
-OptDartsOptimizer::OptDartsOptimizer(Model& model): Optimizer(GENIE_OPT_DARTS, model)
+OptDartsOptimizer::OptDartsOptimizer(Model& model): 
+  Optimizer(GENIE_OPT_DARTS, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {
      // load_parameters
      this->load_parameters(model);

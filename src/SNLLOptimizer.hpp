@@ -69,20 +69,20 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
-/// OPTPP-specific traits class.
+/// SNLL-specific traits class.
 
-/** OPTPPTraits specializes some traits accessors by over-riding the default 
+/** SNLL specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
 
-class OPTPPTraits: public TraitsBase
+class SNLLTraits: public TraitsBase
 {
   public:
 
   /// default constructor
-  OPTPPTraits() { }
+  SNLLTraits() { }
 
   /// destructor
-  virtual ~OPTPPTraits() { }
+  virtual ~SNLLTraits() { }
 
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }

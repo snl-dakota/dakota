@@ -42,6 +42,29 @@ namespace Dakota {
     FDCHM parameters.  Refer to [Vanderplaats, 1978] for additional
     information on CONMIN parameters. */
 
+/**
+ * \brief A version of TraitsBase specialized for CONMIN optimizers
+ *
+ */
+
+class CONMINTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  CONMINTraits() { }
+
+  /// destructor
+  virtual ~CONMINTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the value of supportsContinuousVariables
+  virtual bool supports_continuous_variables() { return true; }
+};
+
+
 class CONMINOptimizer: public Optimizer
 {
 public:
