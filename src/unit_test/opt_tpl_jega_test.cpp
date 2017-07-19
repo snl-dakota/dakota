@@ -211,6 +211,8 @@ TEUCHOS_UNIT_TEST(opt_soga,cyl_head_3)
 
 //----------------------------------------------------------------
 
+#if 0
+
 TEUCHOS_UNIT_TEST(opt_soga,text_book_1)
 {
   /// Default Dakota input string:
@@ -348,6 +350,8 @@ TEUCHOS_UNIT_TEST(opt_soga,text_book_2)
   rel_err = fabs((resp.function_value(0) - target)/1.0);
   TEST_COMPARE(rel_err,<, max_tol);
 }
+
+#endif
 
 //----------------------------------------------------------------
 
@@ -702,6 +706,8 @@ TEUCHOS_UNIT_TEST(opt_soga,herbie_1)
 
 //----------------------------------------------------------------
 
+#if 0
+
 TEUCHOS_UNIT_TEST(opt_soga,herbie_2)
 {
   /// Default Dakota input string:
@@ -764,6 +770,8 @@ TEUCHOS_UNIT_TEST(opt_soga,herbie_2)
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
+
+#endif
 
 //----------------------------------------------------------------
 
