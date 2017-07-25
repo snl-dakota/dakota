@@ -369,14 +369,14 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   // Define nonlinear equality and inequality constraints.
 
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+  //get_nonlinear_constraints<AppsTraits>
+  get_nonlinear_constraints
+                ( iteratedModel, bigRealBoundSize,
+                  constraintMapIndices,
+                  constraintMapMultipliers,
+                  constraintMapOffsets);
 
-  int numAPPSNonlinearIneqConstraints = 0;
+  int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
 
   // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form
@@ -385,27 +385,6 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // as well as the mappings for both equalities and inequalities
   // (indices, multipliers, offsets) between the DAKOTA constraints
   // and the HOPSPACK constraints.
-
-  for (int i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
-  }
-
-  for (int i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numAPPSNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numAPPSNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_upr_bnds[i]);
-    }
-  }
 
   evalMgr->set_constraint_map(constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
 

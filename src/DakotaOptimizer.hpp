@@ -536,6 +536,54 @@ void get_linear_constraints( Model & model,
   copy_data(linear_eq_targets, lin_eq_targets);
 }
 
+//----------------------------------------------------------------
+
+/// copy the various data associated with nonlinear constraints from Dakota into TPL vectors/matrices
+template <typename RVecT, typename IVecT>
+void get_nonlinear_constraints( Model & model,
+                                Real bigRealBoundSize, // It would be nice to clean this up and not need to pass in
+                                IVecT & nonlin_map_indices,
+                                RVecT & nonlin_map_multipliers,
+                                RVecT & nonlin_map_offsets)
+{
+  const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
+  const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();
+  const RealVector& nln_eq_targets    = model.nonlinear_eq_constraint_targets();
+
+  int numNonlinearEqConstraints   = model.num_nonlinear_eq_constraints();
+  int numNonlinearIneqConstraints = model.num_nonlinear_ineq_constraints();
+
+  // Some of this could be done using a copy_data that supports vector offsets ... RWH
+  for (int i=0; i<numNonlinearEqConstraints; i++) {
+    nonlin_map_indices.push_back(i+numNonlinearIneqConstraints);
+    nonlin_map_multipliers.push_back(1.0);
+    nonlin_map_offsets.push_back(-nln_eq_targets[i]);
+  }
+
+  int check_numNonlinearIneqConstraints = 0;
+
+  for (int i=0; i<numNonlinearIneqConstraints; i++) {
+    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
+      check_numNonlinearIneqConstraints++;
+      nonlin_map_indices.push_back(i);
+      nonlin_map_multipliers.push_back(1.0);
+      nonlin_map_offsets.push_back(-nln_ineq_lwr_bnds[i]);
+    }
+    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
+      check_numNonlinearIneqConstraints++;
+      nonlin_map_indices.push_back(i);
+      nonlin_map_multipliers.push_back(-1.0);
+      nonlin_map_offsets.push_back(nln_ineq_upr_bnds[i]);
+    }
+  }
+
+  if( (int)nonlin_map_indices.size()-numNonlinearEqConstraints != check_numNonlinearIneqConstraints )
+  {
+    Cerr << "\nAdapter: get_nonlinear_constraints - mismatched number of nonlinear inequality constraints." << std::endl;
+    abort_handler(-1);
+  }
+}
+
 } // namespace Dakota
 
 #endif
