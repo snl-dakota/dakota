@@ -2410,8 +2410,9 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
       else { // could happen if an iterator requiring gradients is selected
         // with no_gradients or unsupported vendor numerical gradients
         // and lacks a separate error check.
-        Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
-             << std::endl;
+        Cerr << "Error: Model '" << model_id()
+             << "' received unsupported gradient request from ASV in "
+             << "Model::manage_asv." << std::endl;
         abort_handler(MODEL_ERROR);
       }
       if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
@@ -2446,8 +2447,9 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
       }
       else { // could happen if an iterator requiring Hessians is selected
         // with no_hessians and it lacks a separate error check.
-        Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
-             << std::endl;
+        Cerr << "Error: Model '" << model_id()
+             << "' received unsupported Hessian request from ASV in "
+             << "Model::manage_asv." << std::endl;
         abort_handler(MODEL_ERROR);
       }
     }

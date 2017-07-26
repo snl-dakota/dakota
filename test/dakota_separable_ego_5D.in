@@ -1,3 +1,5 @@
+#@ Diff in test is carried - LPS: var2 goes to -0.2 is concerning; need to look at the function more carefully 
+#@ *: Label=CarryDiff
 #@ s*: Label=AcceptanceTest
 #@ s0: UserMan=herbie_shubert_opt_ego
 # Dakota Input File: herbie_shubert_opt_ego.in                          #s0

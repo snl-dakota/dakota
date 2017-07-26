@@ -17,8 +17,10 @@
 
 // eventually use only _WIN32 here?
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-// avoid needless Windows API headers
+// Avoid needless Windows API headers
 #define WIN32_LEAN_AND_MEAN
+// Use Math Constants that are not in Standard C++
+#define _USE_MATH_DEFINES
 // Avoid redefinition of MIN and MAX macros by MSVC
 #define NOMINMAX
 #include <windows.h>

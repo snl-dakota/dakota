@@ -26,7 +26,7 @@ DataEnvironmentRep::DataEnvironmentRep():
   graphicsFlag(false), tabularDataFlag(false), 
   tabularDataFile("dakota_tabular.dat"), tabularFormat(TABULAR_ANNOTATED), 
   outputPrecision(0), 
-  resultsOutputFlag(false), resultsOutputFile("dakota_results.txt"), 
+  resultsOutputFlag(false), resultsOutputFile("dakota_results"), 
   referenceCount(1)
 { }
 

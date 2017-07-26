@@ -221,54 +221,78 @@ void print_restart(StringArray pos_args, String print_dest)
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
-  if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
-    exit(-1);
-  }
-  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+  const String& read_restart_filename = pos_args[0];
 
-  std::ofstream neutral_file_stream;
-  if (print_dest == "neutral_file") {
-    cout << "Writing neutral file " << pos_args[1] << '\n';
-    neutral_file_stream.open(pos_args[1].c_str());
-  }
+  try {
 
-  // override default to output data in full precision (double = 16 digits)
-  write_precision = 16;
-
-  int cntr = 0;
-  restart_input_fs.peek();  // peek to force EOF if no records in restart file
-  while (restart_input_fs.good() && !restart_input_fs.eof()) {
-
-    ParamResponsePair current_pair;
-    try { 
-      restart_input_archive & current_pair; 
+    std::ifstream restart_input_fs(read_restart_filename.c_str(),
+				   std::ios::binary);
+    if (!restart_input_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << read_restart_filename << "' for reading."<< std::endl;
+      exit(-1);
     }
-    catch(const boost::archive::archive_exception& e) {
-      Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	   << e.what() << std::endl;
-      abort_handler(-1);
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    cout << "Reading restart file '" << read_restart_filename << "'."
+	 << std::endl;
+
+    std::ofstream neutral_file_stream;
+    if (print_dest == "neutral_file") {
+      cout << "Writing neutral file " << pos_args[1] << '\n';
+      neutral_file_stream.open(pos_args[1].c_str());
     }
-    // serialization functions no longer throw strings
 
-    cntr++;
-    if (print_dest == "stdout")
-      cout << "------------------------------------------\nRestart record "
-	   << setw(4) << cntr << "  (evaluation id " << setw(4)
-	   << current_pair.eval_id()
-	   << "):\n------------------------------------------\n"
-	   << current_pair;
-    else if (print_dest == "neutral_file")
-      current_pair.write_annotated(neutral_file_stream);
+    // override default to output data in full precision (double = 16 digits)
+    write_precision = 16;
 
-    // peek to force EOF if the last restart record was read
-    restart_input_fs.peek();
+    int cntr = 0;
+    restart_input_fs.peek();  // peek to force EOF if no records in restart file
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+      ParamResponsePair current_pair;
+      try { 
+	restart_input_archive & current_pair; 
+      }
+      catch(const boost::archive::archive_exception& e) {
+	// No current way a user can recover from this with remove_ids
+	Cerr << "\nError reading restart file '" << read_restart_filename
+	     << "'.\nDetails (boost::archive exception):      "
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      // serialization functions no longer throw strings
+
+      cntr++;
+      if (print_dest == "stdout")
+	cout << "------------------------------------------\nRestart record "
+	     << setw(4) << cntr << "  (evaluation id " << setw(4)
+	     << current_pair.eval_id()
+	     << "):\n------------------------------------------\n"
+	     << current_pair;
+      else if (print_dest == "neutral_file")
+	current_pair.write_annotated(neutral_file_stream);
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
+    }
+    if (print_dest == "neutral_file")
+      neutral_file_stream.close();
+    cout << "Restart file processing completed: " << cntr
+	 << " evaluations retrieved.\n";
   }
-  if (print_dest == "neutral_file")
-    neutral_file_stream.close();
-  cout << "Restart file processing completed: " << cntr
-       << " evaluations retrieved.\n";
+  catch (const boost::archive::archive_exception& e) {
+    // primarily to catch invalid_signature error or an immediately bum stream
+    Cerr << "\nError reading restart file '" << read_restart_filename
+	 << "' (empty or corrupt file).\nDetails (Boost archive exception): "
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  catch (const std::exception& e) {
+    Cerr << "Unknown error reading restart file '" << read_restart_filename
+	 << "'.\nDetails: " << e.what() << '\n';
+    abort_handler(IO_ERROR);
+  }
 }
 
 
@@ -298,8 +322,8 @@ void print_restart_pdb(StringArray pos_args, String print_dest)
   while (restart_input_fs.good() && !restart_input_fs.eof()) {
 
     ParamResponsePair current_pair;
-    try { 
-      restart_input_archive & current_pair; 
+    try {
+      restart_input_archive & current_pair;
     }
     catch(const boost::archive::archive_exception& e) {
       Cerr << "\nError reading restart file (boost::archive exception):\n" 
@@ -437,82 +461,107 @@ void print_restart_tabular(StringArray pos_args, String print_dest,
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(pos_args[0].c_str(), std::ios::binary);
-  if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file " << pos_args[0] << endl;
-    exit(-1);
-  }
-  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+  const String& read_restart_filename = pos_args[0];
 
-  size_t num_evals = 0;
-  cout << "Writing tabular text file " << pos_args[1] << '\n';
-  std::ofstream tabular_text(pos_args[1].c_str());
-  // to track changes in interface and/or labels
-  String curr_interf;
-  StringMultiArray curr_acv_labels;
-  StringMultiArray curr_adiv_labels;
-  StringMultiArray curr_adsv_labels;
-  StringMultiArray curr_adrv_labels;
-  StringArray curr_resp_labels;
+  try {
 
-  // Note: tabular defaults to write_precision from global defs
-  // Note: setprecision(write_precision) and std::ios::floatfield are embedded
-  //       in write_data_tabular() functions.
-
-  int wp_save = write_precision;  // later restore since this is global data
-  write_precision = tabular_precision;
-
-  restart_input_fs.peek();  // peek to force EOF if no records in restart file
-  while (restart_input_fs.good() && !restart_input_fs.eof()) {
-
-    ParamResponsePair current_pair;
-    try { 
-      restart_input_archive & current_pair; 
+    std::ifstream restart_input_fs(read_restart_filename.c_str(),
+				   std::ios::binary);
+    if (!restart_input_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << read_restart_filename << "' for reading."<< std::endl;
+      exit(-1);
     }
-    catch(const boost::archive::archive_exception& e) {
-      Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	   << e.what() << std::endl;
-      abort_handler(-1);
-    }
-    // serialization functions no longer throw strings
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
 
-    // The number of variables or responses may differ across
-    // different interfaces.  Output the header when needed due to
-    // label or length changes.
-    const String& new_interf = current_pair.interface_id();
-    if (num_evals == 0  || new_interf != curr_interf) {
-      curr_interf = new_interf;
-      const Variables& curr_vars = current_pair.variables();
-      if (curr_vars.all_continuous_variable_labels() != curr_acv_labels ||
-	  curr_vars.all_discrete_int_variable_labels() != curr_adiv_labels ||
-	  curr_vars.all_discrete_string_variable_labels() != curr_adsv_labels ||
-	  curr_vars.all_discrete_real_variable_labels() != curr_adrv_labels ||
-	  current_pair.response().function_labels() != curr_resp_labels) {
-	// update the current copy of the labels, sizing first
-	curr_acv_labels.resize(boost::extents[curr_vars.acv()]);
-	curr_acv_labels = curr_vars.all_continuous_variable_labels();
-	curr_adiv_labels.resize(boost::extents[curr_vars.adiv()]);
-	curr_adiv_labels = curr_vars.all_discrete_int_variable_labels();
-	curr_adsv_labels.resize(boost::extents[curr_vars.adsv()]);
-	curr_adsv_labels = curr_vars.all_discrete_string_variable_labels();
-	curr_adrv_labels.resize(boost::extents[curr_vars.adrv()]);
-	curr_adrv_labels = curr_vars.all_discrete_real_variable_labels();
-	curr_resp_labels = current_pair.response().function_labels();
-	// write the new header
-	current_pair.write_tabular_labels(tabular_text, tabular_format);
+    cout << "Reading restart file '" << read_restart_filename << "'."
+	 << std::endl;
+
+    size_t num_evals = 0;
+    cout << "Writing tabular text file " << pos_args[1] << '\n';
+    std::ofstream tabular_text(pos_args[1].c_str());
+    // to track changes in interface and/or labels
+    String curr_interf;
+    StringMultiArray curr_acv_labels;
+    StringMultiArray curr_adiv_labels;
+    StringMultiArray curr_adsv_labels;
+    StringMultiArray curr_adrv_labels;
+    StringArray curr_resp_labels;
+
+    // Note: tabular defaults to write_precision from global defs
+    // Note: setprecision(write_precision) and std::ios::floatfield are embedded
+    //       in write_data_tabular() functions.
+
+    int wp_save = write_precision;  // later restore since this is global data
+    write_precision = tabular_precision;
+
+    restart_input_fs.peek();  // peek to force EOF if no records in restart file
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+      ParamResponsePair current_pair;
+      try {
+	restart_input_archive & current_pair;
       }
+      catch(const boost::archive::archive_exception& e) {
+	// No current way a user can recover from this with remove_ids
+	Cerr << "\nError reading restart file '" << read_restart_filename
+	     << "'.\nDetails (boost::archive exception):      "
+	     << e.what() << std::endl;
+	abort_handler(-1);
+      }
+      // serialization functions no longer throw strings
+
+      // The number of variables or responses may differ across
+      // different interfaces.  Output the header when needed due to
+      // label or length changes.
+      const String& new_interf = current_pair.interface_id();
+      if (num_evals == 0  || new_interf != curr_interf) {
+	curr_interf = new_interf;
+	const Variables& curr_vars = current_pair.variables();
+	if (curr_vars.all_continuous_variable_labels() != curr_acv_labels ||
+	    curr_vars.all_discrete_int_variable_labels() != curr_adiv_labels ||
+	    curr_vars.all_discrete_string_variable_labels() != curr_adsv_labels ||
+	    curr_vars.all_discrete_real_variable_labels() != curr_adrv_labels ||
+	    current_pair.response().function_labels() != curr_resp_labels) {
+	  // update the current copy of the labels, sizing first
+	  curr_acv_labels.resize(boost::extents[curr_vars.acv()]);
+	  curr_acv_labels = curr_vars.all_continuous_variable_labels();
+	  curr_adiv_labels.resize(boost::extents[curr_vars.adiv()]);
+	  curr_adiv_labels = curr_vars.all_discrete_int_variable_labels();
+	  curr_adsv_labels.resize(boost::extents[curr_vars.adsv()]);
+	  curr_adsv_labels = curr_vars.all_discrete_string_variable_labels();
+	  curr_adrv_labels.resize(boost::extents[curr_vars.adrv()]);
+	  curr_adrv_labels = curr_vars.all_discrete_real_variable_labels();
+	  curr_resp_labels = current_pair.response().function_labels();
+	  // write the new header
+	  current_pair.write_tabular_labels(tabular_text, tabular_format);
+	}
+      }
+      current_pair.write_tabular(tabular_text, tabular_format);  // also writes IDs
+      ++num_evals;
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
     }
-    current_pair.write_tabular(tabular_text, tabular_format);  // also writes IDs
-    ++num_evals;
 
-    // peek to force EOF if the last restart record was read
-    restart_input_fs.peek();
+    cout << "Restart file processing completed: " << num_evals
+	 << " evaluations tabulated.\n";
+
+    write_precision = wp_save;  // restore since this is global data
+
   }
-
-  cout << "Restart file processing completed: " << num_evals
-       << " evaluations tabulated.\n";
-
-  write_precision = wp_save;  // restore since this is global data
+  catch (const boost::archive::archive_exception& e) {
+    // primarily to catch invalid_signature error or an immediately bum stream
+    Cerr << "\nError reading restart file '" << read_restart_filename
+	 << "' (empty or corrupt file).\nDetails (Boost archive exception): "
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  catch (const std::exception& e) {
+    Cerr << "Unknown error reading restart file '" << read_restart_filename
+	 << "'.\nDetails: " << e.what() << '\n';
+    abort_handler(IO_ERROR);
+  }
 }
 
 
@@ -536,30 +585,49 @@ void read_neutral(StringArray pos_args)
     exit(-1);
   }
   
-  std::ofstream restart_output_fs(pos_args[1].c_str(), std::ios::binary);
-  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
-  cout << "Writing new restart file " << pos_args[1] << '\n';
+  const String& write_restart_filename = pos_args[1];
 
-  int cntr = 0;
-  neutral_file_stream >> std::ws;
-  while (neutral_file_stream.good() && !neutral_file_stream.eof()) {
-    ParamResponsePair current_pair;
-    try { 
-      current_pair.read_annotated(neutral_file_stream); 
+  try {
+
+    std::ofstream restart_output_fs(write_restart_filename.c_str(),
+				    std::ios::binary);
+    if (!restart_output_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << write_restart_filename << "' for writing."<< std::endl;
+      abort_handler(IO_ERROR);
     }
-    // shouldn't need to allow failed partial reads throwing string anymore
-    catch(const FileReadException& fr_except) {
-      Cerr << "\nError reading neutral file:\n  " << fr_except.what() 
-	   << std::endl;
-      abort_handler(-1);
-    }
-    restart_output_archive & current_pair;
-    cntr++;
+    boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
+    cout << "Writing new restart file " << write_restart_filename << '\n';
+
+    int cntr = 0;
     neutral_file_stream >> std::ws;
+    while (neutral_file_stream.good() && !neutral_file_stream.eof()) {
+      ParamResponsePair current_pair;
+      try {
+	current_pair.read_annotated(neutral_file_stream);
+      }
+      // shouldn't need to allow failed partial reads throwing string anymore
+      catch(const FileReadException& fr_except) {
+	Cerr << "\nError reading neutral file:\n  " << fr_except.what()
+	     << std::endl;
+	abort_handler(-1);
+      }
+      restart_output_archive & current_pair;
+      cntr++;
+      neutral_file_stream >> std::ws;
+    }
+    cout << "Neutral file processing completed: " << cntr
+	 << " evaluations retrieved.\n";
+    restart_output_fs.close();
+
   }
-  cout << "Neutral file processing completed: " << cntr
-       << " evaluations retrieved.\n";
-  restart_output_fs.close();
+  catch (const boost::archive::archive_exception& e) {
+    Cerr << "\nError: Could not write restart file '"
+	   << write_restart_filename
+	   << "'.\nDetails (Boost archive exception): "
+	   << e.what() << std::endl;
+  }
+
 }
 
 
@@ -626,68 +694,89 @@ void repair_restart(StringArray pos_args, String identifier_type)
     exit(-1);
   }
 
-  std::ifstream restart_input_fs(read_restart_filename.c_str(), 
-				 std::ios::binary);
-  if (!restart_input_fs.good()) {
-    Cerr << "Error: failed to open restart file "
-         << read_restart_filename << endl;
-    exit(-1);
-  }
-  boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+  try {
 
-  std::ofstream restart_output_fs(write_restart_filename.c_str(), 
-				  std::ios::binary);
-  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
-
-  cout << "Writing new restart file " << write_restart_filename << '\n';
-
-  int cntr = 0, good_cntr = 0;
-  restart_input_fs.peek();  // peek to force EOF if no records in restart file
-  while (restart_input_fs.good() && !restart_input_fs.eof()) {
-
-    ParamResponsePair current_pair;
-    try { 
-      restart_input_archive & current_pair; 
+    std::ifstream restart_input_fs(read_restart_filename.c_str(),
+				   std::ios::binary);
+    if (!restart_input_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << read_restart_filename << "' for reading."<< std::endl;
+      abort_handler(IO_ERROR);
     }
-    catch(const boost::archive::archive_exception& e) {
-      Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	   << e.what() << std::endl;
-      abort_handler(-1);
+    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+    std::ofstream restart_output_fs(write_restart_filename.c_str(),
+				    std::ios::binary);
+    if (!restart_output_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << write_restart_filename << "' for writing."<< std::endl;
+      abort_handler(IO_ERROR);
     }
-    // serialization functions no longer throw strings
+    boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
 
-    cntr++;
+    cout << "Writing new restart file " << write_restart_filename << '\n';
 
-    // detect if current_pair is to be removed
-    bool bad_flag = false;
-    if (by_value) {
-      const Response& resp      = current_pair.response();
-      const RealVector& fn_vals = resp.function_values();
-      const ShortArray& asv     = resp.active_set_request_vector();
-      for (size_t j=0; j<fn_vals.length(); ++j) {
-        if ((asv[j] & 1) && fn_vals[j] == remove_val) {
-          bad_flag = true;
-          break;
-        }
+    int cntr = 0, good_cntr = 0;
+    restart_input_fs.peek();  // peek to force EOF if no records in restart file
+    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+      ParamResponsePair current_pair;
+      try {
+	restart_input_archive & current_pair;
       }
-    }
-    else if (contains(bad_ids, current_pair.eval_id()))
-      bad_flag = true;
+      catch(const boost::archive::archive_exception& e) {
+	Cerr << "\nError reading restart file '" << read_restart_filename
+	     << "'.\nDetails (boost::archive exception):      "
+	     << e.what() << std::endl;
+	abort_handler(IO_ERROR);
+      }
 
-    // if current_pair is bad, omit it from the new restart file
-    if (!bad_flag) {
-      restart_output_archive & current_pair;
-      good_cntr++;
-    }
+      cntr++;
 
-    // peek to force EOF if the last restart record was read
-    restart_input_fs.peek();
+      // detect if current_pair is to be removed
+      bool bad_flag = false;
+      if (by_value) {
+	const Response& resp      = current_pair.response();
+	const RealVector& fn_vals = resp.function_values();
+	const ShortArray& asv     = resp.active_set_request_vector();
+	for (size_t j=0; j<fn_vals.length(); ++j) {
+	  if ((asv[j] & 1) && fn_vals[j] == remove_val) {
+	    bad_flag = true;
+	    break;
+	  }
+	}
+      }
+      else if (contains(bad_ids, current_pair.eval_id()))
+	bad_flag = true;
+
+      // if current_pair is bad, omit it from the new restart file
+      if (!bad_flag) {
+	restart_output_archive & current_pair;
+	good_cntr++;
+      }
+
+      // peek to force EOF if the last restart record was read
+      restart_input_fs.peek();
+    }
+    cout << "Restart repair completed: " << cntr << " evaluations retrieved"
+	 << ", " << cntr-good_cntr << " removed, " << good_cntr << " saved.\n";
+    restart_output_fs.close();
+
   }
-  cout << "Restart repair completed: " << cntr << " evaluations retrieved"
-       << ", " << cntr-good_cntr << " removed, " << good_cntr << " saved.\n";
-  restart_output_fs.close();
-}
+  catch (const boost::archive::archive_exception& e) {
+    // can't differentiate read from write errors currently
+    Cerr << "\nError repairing restart file '" << read_restart_filename
+	 << "'.\nDetails (Boost archive exception): "
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  catch (const std::exception& e) {
+    Cerr << "Unknown error repairing '" << read_restart_filename
+	 << "'.\nDetails: " << e.what() << '\n';
+    abort_handler(IO_ERROR);
+  }
 
+}
 
 /** \b Usage: "dakota_restart_util cat dakota_1.rst ... dakota_n.rst
                  dakota_new.rst"
@@ -701,47 +790,71 @@ void concatenate_restart(StringArray pos_args)
     exit(-1);
   }
 
-  String write_restart_filename = pos_args.back(); pos_args.pop_back();
-  std::ofstream restart_output_fs(write_restart_filename.c_str(),
-				  std::ios::binary);
-  boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
+  try {
 
-  cout << "Writing new restart file " << write_restart_filename << '\n';
-
-  BOOST_FOREACH(const String& rst_file, pos_args) {
-
-    std::ifstream restart_input_fs(rst_file.c_str(), std::ios::binary);
-    if (!restart_input_fs.good()) {
-      Cerr << "Error: failed to open restart file " << rst_file << endl;
+    String write_restart_filename = pos_args.back(); pos_args.pop_back();
+    std::ofstream restart_output_fs(write_restart_filename.c_str(),
+				    std::ios::binary);
+    if (!restart_output_fs.good()) {
+      Cerr << "\nError: could not open restart file '"
+	   << write_restart_filename << "' for writing."<< std::endl;
       exit(-1);
     }
-    boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+    boost::archive::binary_oarchive restart_output_archive(restart_output_fs);
 
-    int cntr = 0;
-    restart_input_fs.peek();  // peek to force EOF if no records in restart file
-    while (restart_input_fs.good() && !restart_input_fs.eof()) {
+    cout << "Writing new restart file " << write_restart_filename << '\n';
 
-      ParamResponsePair current_pair;
-      try { 
-	restart_input_archive & current_pair; 
+    BOOST_FOREACH(const String& rst_file, pos_args) {
+
+      std::ifstream restart_input_fs(rst_file.c_str(), std::ios::binary);
+      if (!restart_input_fs.good()) {
+	Cerr << "\nError: could not open restart file '"
+	     << rst_file << "' for reading."<< std::endl;
+	exit(-1);
       }
-      catch(const boost::archive::archive_exception& e) {
-	Cerr << "\nError reading restart file (boost::archive exception):\n" 
-	     << e.what() << std::endl;
-	abort_handler(-1);
-      }
-      // serialization functions no longer throw strings
-      restart_output_archive & current_pair;
-      cntr++;
+      boost::archive::binary_iarchive restart_input_archive(restart_input_fs);
+
+      int cntr = 0;
+      restart_input_fs.peek();  // peek to force EOF if no records in restart file
+      while (restart_input_fs.good() && !restart_input_fs.eof()) {
+
+	ParamResponsePair current_pair;
+	try {
+	  restart_input_archive & current_pair;
+	}
+	catch(const boost::archive::archive_exception& e) {
+	  Cerr << "\nError reading restart file '" << rst_file
+	       << "'.\nDetails (boost::archive exception):      "
+	       << e.what() << std::endl;
+	  abort_handler(-1);
+	}
+	// serialization functions no longer throw strings
+	restart_output_archive & current_pair;
+	cntr++;
  
-      // peek to force EOF if the last restart record was read
-      restart_input_fs.peek();
-    }
+	// peek to force EOF if the last restart record was read
+	restart_input_fs.peek();
+      }
 
-    cout << rst_file << " processing completed: " << cntr
-         << " evaluations retrieved.\n";
+      cout << rst_file << " processing completed: " << cntr
+	   << " evaluations retrieved.\n";
+    }
+    restart_output_fs.close();
+
   }
-  restart_output_fs.close();
+  catch (const boost::archive::archive_exception& e) {
+    // primarily to catch invalid_signature error or an immediately bum stream
+    Cerr << "\nError concatenating restart files (possibly empty or corrupt "
+	 << "file(s)).\nDetails (Boost archive exception): "
+	 << e.what() << std::endl;
+    abort_handler(IO_ERROR);
+  }
+  catch (const std::exception& e) {
+    Cerr << "Unknown error concatenating restart files.\nDetails: " 
+	 << e.what() << '\n';
+    abort_handler(IO_ERROR);
+  }
+
 }
 
 } // namespace Dakota
