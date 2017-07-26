@@ -1849,7 +1849,7 @@ We have investigated several scoring metrics with which to evaluate
 candidate points for Step 3. There are some classical ones such as distance 
 (e.g. add a point which maximizes the minimum distance to all of 
 the existing points). This distance metric tends to generate 
-points that are space-fillinlg. We have investigated several 
+points that are space-filling. We have investigated several 
 methods that involve interesting topological features of the 
 space (e.g. points that are near saddle points). These are 
 an area of active investigation but are not currently included 
@@ -1949,21 +1949,59 @@ The details of the specification are provided in the Dakota
 reference manual. 
 
 \subsection{Adaptive sampling based on dart throwing}\label{uq:adaptive:darts}
-\texttt{pof\_darts} is a novel method for estimating the probability of failure based on random sphere-packing. Random spheres are sampled from the domain with the constraint that each new sphere center has to be outside prior disks~\cite{Ebeida14}. The radius of each sphere is chosen such that the entire sphere lies either in the failure or the non-failure region. This radius depends of the function evaluation at the disk center, the failure threshold and an estimate of the function gradient at the disk center. 
-After exhausting the sampling budget specified by \texttt{samples}, which is the number of spheres per failure threshold, the domain is decomposed into two regions.  These regions correspond to failure and non-failure, each represented by the union of the spheres of each type. The volume of the union of failure spheres gives a lower bound on the required estimate of the probability of failure, while the volume of the union of the non-failure spheres subtracted from the volume of the domain gives an upper estimate. 
-After the spheres are constructed, we construct a surrogate model and sample the surrogate model extensively to estimate the probability of failure for each threshold. 
-%We currently report the average of both estimates.
+\texttt{pof\_darts} is a novel method for estimating the tail probability
+(Probability of Failure) based on random sphere-packing in the uncertain
+parameter space. Random points are sequentially sampled from the domain and
+consequently surrounded by protecting spheres, with the constraint that each new
+sphere center has to be outside all prior spheres~\cite{ebeida2016pof}. The
+radius of each sphere is chosen such that the entire sphere lies either in the
+failure or the non-failure region. This radius depends of the function
+evaluation at the disk center, the failure threshold and an estimate of the
+function gradient at the disk center. After exhausting the sampling budget
+specified by \texttt{build\_samples}, which is the number of spheres per failure
+threshold, the domain is decomposed into two regions.  These regions correspond
+to failure and non-failure categories, each represented by the union of the
+spheres of each type. The volume of the union of failure spheres gives a lower
+bound on the required estimate of the probability of failure, while the volume
+of the union of the non-failure spheres subtracted from the volume of the domain
+gives an upper estimate. After all the spheres are constructed, we construct a
+surrogate model, specified via a \texttt{model\_pointer}, and sample the
+surrogate model extensively to estimate the probability of failure for each
+threshold. 
 
-\texttt{pof\_darts} handles multiple response functions and allows each to have multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will insert a number of spheres specified by the user-input parameter "samples". However, estimating the probability of failure for each failure threshold would utilize the total number of disks sampled for all failure thresholds. For each failure threshold, the sphere radii changes to generate the right spatial decomposition.
+\texttt{pof\_darts} handles multiple response functions and allows each to have
+multiple failure thresholds. For each failure threshold \texttt{pof\_darts} will
+insert a number of spheres specified by the user-input parameter "samples".
+However, estimating the probability of failure for each failure threshold would
+utilize the total number of disks sampled for all failure thresholds. For each
+failure threshold, the sphere radii changes to generate the right spatial
+decomposition. The POF-Darts method is specified by the method keyword
+\texttt{pof\_darts}. The sample budget is specified by \texttt{build\_samples}.
+By default, the method employs a local approach to estimate the Lipschitz
+constant per sphere.
+%The method can generally support local or global approaches to estimate the
+%Lipschitz constant per sphere, given by (\texttt{lipschitz local} or
+%\texttt{lipschitz global}). However, only the local approach is currently
+%supported and is the default if not specified by the user.
 
-The POF-Darts method is specified by the method keyword 
-\texttt{pof\_darts}. The sample budget is specified by \texttt{samples}. The method can generally use a local or global approach to estimate the Lipschitz constant per sphere (\texttt{lipschitz local} or \texttt{lipschitz global}). However, only the local approach is currently supported and is the default if not specified by the user.
-
-%The user can either use a local or global approach to estimate the Lipschitz constant per sphere. The local approach is specified with \texttt{lipschitz local} and the global approach with \texttt{lipschitz global}. 
-
-The surrogate model used by the \texttt{pof\_darts} method for extensive sampling is typically a global surrogate that uses all available sample points to approximate the surrogate anywhere, or optionally a piecewise-decomposed one that uses small sample sets to build local patches of the global surrogate. The piecewise decomposition option is a new capability added to Dakota to help construct high-dimensional surrogates with cheap polynomial evaluations, using known function evaluations as well as gradient and Hessian information, if available. The piecewise decomposition option currently supports polynomial, Gaussian Process (GP), and Radial Basis Functions (RBF) surroagte models. It requires a \texttt{cell\_type}, set by default to Voronoi cells, an optional number of \texttt{support\_layers}, and an optional \texttt{discontinuity\_detection} parameter; see~\ref{models:surf:piecewise_decomp} for more details.
-
-In terms of specifying which surrogate to use, for example: the GP global surrogate is specified with \texttt{emulator gaussian\_process}, and the piecewise decomposition option is specified with \texttt{piecewise\_decomp}. The number of samples taken on the emulator to estimate the probability of failure is specified with \texttt{emulator\_samples}.
+The surrogate model used by the \texttt{pof\_darts} method for extensive
+sampling is specified using a \texttt{model\_pointer}, and its parameters are
+therefore defined in that model. It can typically be any global surrogate in
+Dakota (e.g., Gaussian process, polynomial chaos expansion, polynomial
+regression, etc). POF-Darts can also use piecewise-decomposed surrogates which
+build local pieces of the surrogate over different domain patches. The piecewise
+decomposition option is a new capability added to Dakota to help construct
+surrogates in high-dimensional spaces, using known function evaluations as well
+as gradient and Hessian information, if available. The piecewise decomposition
+option is declared using the keyword \texttt{domain\_decomp} and currently
+supports polynomial, Gaussian Process (GP), and Radial Basis Functions (RBF)
+surroagte models only. For example: a polynomial regression global surrogate is
+specified with \texttt{model polynomial}, its order is selected using
+\texttt{surrogate\_order}, and the piecewise decomposition option is specified
+with \texttt{domain\_decomp}. The \texttt{domain\_decomp} option is parametrized
+by a \texttt{cell\_type} set by default to Voronoi cells, an optional number of
+\texttt{support\_layers}, and an optional \texttt{discontinuity\_detection}
+capability. See~\ref{models:surf:piecewise_decomp} for more details.
 
 \section{Epistemic Nondeterministic Methods}\label{uq:epistemic}
 
