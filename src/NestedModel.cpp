@@ -1763,21 +1763,28 @@ iterator_response_overlay(const Response& sub_iterator_response,
     = sub_iterator_response.function_gradients();
   const RealSymMatrixArray& sub_iterator_hessians
     = sub_iterator_response.function_hessians();
+  Real coeff;
 
   // [W]{S}:
   size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
   for (i=0; i<num_sub_iter_mapped_1; ++i) {
     if (mapped_asv[i] & 1) { // mapped_vals
       Real& inner_prod = mapped_vals[i];
-      for (j=0; j<numSubIterFns; ++j)
-	inner_prod += primaryRespCoeffs(i,j)*sub_iterator_vals[j]; // [W]{S}
+      for (j=0; j<numSubIterFns; ++j) {
+        coeff = primaryRespCoeffs(i,j);
+	if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	  inner_prod += coeff * sub_iterator_vals[j]; // [W]{S}
+      }
     }
     if (mapped_asv[i] & 2) { // mapped_grads
       RealVector mapped_grad = mapped_response.function_gradient_view(i);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
 	Real& inner_prod = mapped_grad[j]; // [W]{S}
-	for (k=0; k<numSubIterFns; ++k)
-	  inner_prod += primaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
+	for (k=0; k<numSubIterFns; ++k) {
+	  coeff = primaryRespCoeffs(i,k);
+	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	    inner_prod += coeff * sub_iterator_grads(j,k);
+	}
       }
     }
     if (mapped_asv[i] & 4) { // mapped_hessians
@@ -1785,8 +1792,11 @@ iterator_response_overlay(const Response& sub_iterator_response,
       for (j=0; j<num_mapped_deriv_vars; ++j) {
 	for (k=0; k<=j; ++k) {
 	  Real& inner_prod = mapped_hess(j,k); // [W]{S}
-	  for (l=0; l<numSubIterFns; ++l)
-	    inner_prod += primaryRespCoeffs(i,l)*sub_iterator_hessians[l](j,k);
+	  for (l=0; l<numSubIterFns; ++l) {
+	    coeff = primaryRespCoeffs(i,l);
+	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	      inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	  }
 	}
       }
     }
@@ -1801,15 +1811,21 @@ iterator_response_overlay(const Response& sub_iterator_response,
       m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
     if (mapped_asv[m_index] & 1) { // mapped_vals
       Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
-      for (j=0; j<numSubIterFns; ++j)
-        inner_prod += secondaryRespCoeffs(i,j)*sub_iterator_vals[j];
+      for (j=0; j<numSubIterFns; ++j) {
+        coeff = secondaryRespCoeffs(i,j);
+	if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	  inner_prod += coeff * sub_iterator_vals[j];
+      }
     }
     if (mapped_asv[m_index] & 2) { // mapped_grads
       RealVector mapped_grad = mapped_response.function_gradient_view(m_index);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
         Real& inner_prod = mapped_grad[j]; inner_prod = 0.;
-        for (k=0; k<numSubIterFns; ++k)
-          inner_prod += secondaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
+        for (k=0; k<numSubIterFns; ++k) {
+	  coeff = secondaryRespCoeffs(i,k);
+	  if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	    inner_prod += coeff * sub_iterator_grads(j,k);
+	}
       }
     }
     if (mapped_asv[m_index] & 4) { // mapped_hessians
@@ -1818,9 +1834,11 @@ iterator_response_overlay(const Response& sub_iterator_response,
       for (j=0; j<num_mapped_deriv_vars; ++j) {
         for (k=0; k<=j; ++k) {
           Real& inner_prod = mapped_hess(j,k); inner_prod = 0.;
-          for (l=0; l<numSubIterFns; ++l)
-            inner_prod += secondaryRespCoeffs(i,l)
-	               *  sub_iterator_hessians[l](j,k);
+          for (l=0; l<numSubIterFns; ++l) {
+	    coeff = secondaryRespCoeffs(i,l);
+	    if (coeff != 0.) // avoid propagation of nan/inf for no mapping
+	      inner_prod += coeff * sub_iterator_hessians[l](j,k);
+	  }
 	}
       }
     }
@@ -1849,12 +1867,15 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
 
   // [W]{S}:
   size_t num_sub_iter_mapped_1 = primaryRespCoeffs.numRows();
-  Real sum, term;
+  Real sum, term, coeff;
   for (i=0; i<num_sub_iter_mapped_1; ++i) {
     sum = 0.;
     for (j=0; j<numSubIterFns; ++j) {
-      term = primaryRespCoeffs(i,j) * sub_iterator_errors[j]; // [W]{S}
-      sum += term * term;
+      coeff = primaryRespCoeffs(i,j);
+      if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
+	term = coeff * sub_iterator_errors[j]; // [W]{S}
+	sum += term * term;
+      }
     }
     mapped_errors[i] = std::sqrt(sum);
   }
@@ -1868,8 +1889,11 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
       m_index += numOptInterfEqCon;                           // [A]{S} == {a_t}
     sum = 0.;
     for (j=0; j<numSubIterFns; ++j) {
-      term = secondaryRespCoeffs(i,j) * sub_iterator_errors[j]; // [W]{S}
-      sum += term * term;
+      coeff = secondaryRespCoeffs(i,j);
+      if (coeff != 0.) { // avoid propagation of nan/inf for no mapping
+	term = coeff * sub_iterator_errors[j]; // [W]{S}
+	sum += term * term;
+      }
     }
     mapped_errors[m_index] = std::sqrt(sum);
   }
