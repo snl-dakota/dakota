@@ -1,7 +1,7 @@
 Blurb:: The base file name of the results file
 
 Description::
-Default file name is \c dakota_results.txt
+Default file basename is \c dakota_results
 
 Topics::	dakota_output
 Examples::
