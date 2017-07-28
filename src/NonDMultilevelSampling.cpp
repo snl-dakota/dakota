@@ -229,6 +229,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
+  RealVector mu_hat;
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -270,7 +271,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[lev]);
+	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat, N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
 	  write_data(Cout, sum_Y[1]); write_data(Cout, sum_Y[2]);
@@ -372,6 +373,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
+  RealVector mu_hat;
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -413,7 +415,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev, N_l[lev]);
+	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev, mu_hat,N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n";
 	  write_data(Cout, sum_Ql[1]);   write_data(Cout, sum_Ql[2]);
@@ -524,6 +526,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   SizetArray& N_lf = NLev[lf_form_level.first][lf_form_level.second];
   SizetArray& N_hf = NLev[hf_form_level.first][hf_form_level.second];
   size_t raw_N_lf = 0, raw_N_hf = 0;
+  RealVector mu_hat;
 
   // ---------------------
   // Compute Pilot Samples
@@ -534,7 +537,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
 			delta_N_l[hf_form_level.first]);
   shared_increment(iter, 0);
   accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-		     sum_HH, N_lf, N_hf);
+		     sum_HH, mu_hat, N_lf, N_hf);
   raw_N_lf += numSamples; raw_N_hf += numSamples;
 
   // Compute the LF/HF evaluation ratio, averaged over the QoI.
@@ -562,7 +565,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
     if (numSamples) { // small incr did not round up
       shared_increment(++iter, 0);
       accumulate_cv_sums(sum_L_shared, sum_L_refined, sum_H, sum_LL, sum_LH,
-			 sum_HH, N_lf, N_hf);
+			 sum_HH, mu_hat, N_lf, N_hf);
       raw_N_lf += numSamples; raw_N_hf += numSamples;
       // update ratios:
       avg_eval_ratio = eval_ratio(sum_L_shared[1], sum_H[1], sum_LL[1],
@@ -577,7 +580,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   // --------------------------------------------------
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
   if (lf_increment(avg_eval_ratio, N_lf, N_hf, ++iter, 0)) { // level 0
-    accumulate_cv_sums(sum_L_refined, N_lf);
+    accumulate_cv_sums(sum_L_refined, mu_hat, N_lf);
     raw_N_lf += numSamples;
   }
 
@@ -634,6 +637,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  RealVector mu_L_hat, mu_H_hat;
 
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
@@ -702,7 +706,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_mlcv_Ysums(allResponses, hf_resp, sum_L_shared,
 				sum_L_refined, sum_H, sum_LL, sum_LH,
-				sum_HH, lev, N_lf[lev], N_hf[lev]);
+				sum_HH, lev, mu_L_hat, mu_H_hat,
+				N_lf[lev], N_hf[lev]);
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (L_shared[1,2], L_refined[1,2], LH[1,2])"
 		 << ":\n";
@@ -725,7 +730,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	}
 	else { // no LF model for this level; accumulate only multilevel sums
 	  RealMatrix& sum_HH1 = sum_HH[1];
-	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
+	  accumulate_ml_Ysums(sum_H, sum_HH1, lev, mu_H_hat,
+			      N_hf[lev]); // sum_Y for lev>0
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (H[1], H[2], HH):\n";
 	    write_data(Cout, sum_H[1]); write_data(Cout, sum_H[2]);
@@ -775,7 +781,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
 	}
 	// now execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
-	  accumulate_mlcv_Ysums(sum_L_refined, lev, N_lf[lev]);
+	  accumulate_mlcv_Ysums(sum_L_refined, lev, mu_L_hat, N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -887,6 +893,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
+  RealVector mu_L_hat, mu_H_hat;
 
   // now converge on sample counts per level (N_hf)
   while (Pecos::l1_norm(delta_N_hf) && iter <= max_iter) {
@@ -958,7 +965,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 				sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1,
 				sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 				sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-				sum_Hlm1_Hlm1, lev, N_lf[lev], N_hf[lev]);
+				sum_Hlm1_Hlm1, lev, mu_L_hat, mu_H_hat,
+				N_lf[lev], N_hf[lev]);
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (Ll[1,2], L_refined[1,2], Hl[1,2]):\n";
 	    write_data(Cout, sum_Ll[1]); write_data(Cout, sum_Ll[2]);
@@ -985,7 +993,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	else { // no LF model for this level; accumulate only multilevel
 	       // discrepancy sums (Hl is Yl) as in standard MLMC
 	  RealMatrix& sum_HH1 = sum_Hl_Hl[1];
-	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, N_hf[lev]);//sum_Y for lev>0
+	  accumulate_ml_Ysums(sum_Hl, sum_HH1, lev, mu_H_hat,
+			      N_hf[lev]); // sum_Y for lev>0
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (H[1], H[2], HH[1]):\n";
 	    write_data(Cout, sum_Hl[1]); write_data(Cout, sum_Hl[2]);
@@ -1042,7 +1051,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
 	}
 	// now execute additional LF sample increment, if needed
 	if (lf_increment(avg_eval_ratios[lev], N_lf[lev], N_hf[lev],iter,lev)) {
-	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined,lev,N_lf[lev]);
+	  accumulate_mlcv_Qsums(sum_Ll_refined, sum_Llm1_refined, lev, mu_L_hat,
+				N_lf[lev]);
 	  raw_N_lf[lev] += numSamples;
 	  if (outputLevel == DEBUG_OUTPUT) {
 	    Cout << "Accumulated sums (L_refined[1,2]):\n";
@@ -1318,18 +1328,20 @@ initialize_mlcv_sums(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
+accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
+		    const RealVector& offset, SizetArray& num_Q)
 {
   using boost::math::isfinite;
   Real q_l, q_l_prod;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter q_it;
+  bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      q_l_prod = q_l = fn_vals[qoi];
+      q_l_prod = q_l = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
       if (isfinite(q_l)) { // neither NaN nor +/-Inf
 	q_it = sum_Q.begin(); ord = q_it->first;
@@ -1354,23 +1366,26 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 void NonDMultilevelSampling::
 accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		    IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-		    SizetArray& num_Q)
+		    const RealVector& offset, SizetArray& num_Q)
 {
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
+    accumulate_ml_Qsums(sum_Ql, lev, offset, num_Q);
   else {
     using boost::math::isfinite;
     Real q_l, q_lm1, q_l_prod, q_lm1_prod, qq_prod;
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it; IntIntPair pr;
+    bool os = !offset.empty();
 
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = fn_vals[qoi];
+	q_l_prod   = q_l   = (os) ?
+	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
+	  fn_vals[qoi+numFunctions];
+	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1419,18 +1434,20 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 void NonDMultilevelSampling::
 accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
-		    SizetArray& num_Y)
+		    const RealVector& offset, SizetArray& num_Y)
 {
   using boost::math::isfinite;
   Real lf_fn, lf_prod;
   int y_ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter y_it;
+  bool os = !offset.empty();
+
   if (lev == 0) {
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = fn_vals[qoi];
+	lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
 	  // add to sum_YY: running sums across all sample increments
 	  sum_YY(qoi,lev) += lf_prod * lf_prod;
@@ -1456,8 +1473,10 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = fn_vals[qoi];
-	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
+	lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+	hf_prod = hf_fn = (os) ?
+	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
+	  fn_vals[qoi+numFunctions];
 	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
 
 	  // add to sum_YY: running sums across all sample increments
@@ -1483,7 +1502,8 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 
 void NonDMultilevelSampling::
-accumulate_cv_sums(IntRealVectorMap& sum_L, SizetArray& num_L)
+accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
+		   SizetArray& num_L)
 {
   // uses one set of allResponses in UNCORRECTED_SURROGATE mode
   // IntRealVectorMap is not a multilevel case --> no discrepancies
@@ -1491,12 +1511,14 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, SizetArray& num_L)
   using boost::math::isfinite;
   Real fn_val, prod;
   int ord, active_ord; size_t qoi;
-  IntRespMCIter r_it; IntRVMIter l_it; 
+  IntRespMCIter r_it; IntRVMIter l_it;
+  bool os = !offset.empty();
+
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      prod = fn_val = fn_vals[qoi];
+      prod = fn_val = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
       if (isfinite(fn_val)) { // neither NaN nor +/-Inf
 	l_it = sum_L.begin(); ord = l_it->first; active_ord = 1;
@@ -1520,7 +1542,8 @@ void NonDMultilevelSampling::
 accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 		   IntRealVectorMap& sum_L_refined, IntRealVectorMap& sum_H,
 		   IntRealVectorMap& sum_LL, IntRealVectorMap& sum_LH,
-		   RealVector& sum_HH, SizetArray& num_L, SizetArray& num_H)
+		   RealVector& sum_HH, const RealVector& offset,
+		   SizetArray& num_L, SizetArray& num_H)
 {
   // uses one set of allResponses in AGGREGATED_MODELS mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
@@ -1529,14 +1552,17 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
   Real lf_fn, hf_fn, lf_prod, hf_prod;
   IntRespMCIter r_it; IntRVMIter ls_it, lr_it, h_it, ll_it, lh_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord; size_t qoi;
+  bool os = !offset.empty();
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      lf_prod = lf_fn = fn_vals[qoi];
-      hf_prod = hf_fn = fn_vals[qoi+numFunctions];
+      lf_prod = lf_fn = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
+      hf_prod = hf_fn = (os) ?
+	fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
+	fn_vals[qoi+numFunctions];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
@@ -1595,23 +1621,26 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 
 void NonDMultilevelSampling::
 accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		      size_t lev, SizetArray& num_Q)
+		      size_t lev, const RealVector& offset, SizetArray& num_Q)
 {
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
+    accumulate_ml_Qsums(sum_Ql, lev, offset, num_Q);
   else {
     using boost::math::isfinite;
     Real q_l, q_l_prod, q_lm1_prod, q_lm1;
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it;
+    bool os = !offset.empty();
 
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 	// response mode AGGREGATED_MODELS orders LF followed by HF
-	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
-	q_lm1_prod = q_lm1 = fn_vals[qoi];
+	q_l_prod   = q_l   = (os) ?
+	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
+	  fn_vals[qoi+numFunctions];
+	q_lm1_prod = q_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -1646,26 +1675,30 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev, SizetArray& num_Y)
+accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
+		      const RealVector& offset, SizetArray& num_Y)
 {
   // uses one set of allResponses in UNCORRECTED_SURROGATE (level 0) or
   // AGGREGATED_MODELS (lev > 0) modes.  IntRealMatrixMap is a multilevel
   // case with discrepancies, indexed by level.
 
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Y, lev, num_Y);
+    accumulate_ml_Qsums(sum_Y, lev, offset, num_Y);
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
     using boost::math::isfinite;
     Real fn_l, prod_l, fn_lm1, prod_lm1;
     int ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter y_it;
+    bool os = !offset.empty();
 
     for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	prod_l   = fn_l   = fn_vals[qoi+numFunctions];
-	prod_lm1 = fn_lm1 = fn_vals[qoi];
+	prod_l   = fn_l   = (os) ?
+	  fn_vals[qoi+numFunctions] - offset[qoi+numFunctions] :
+	  fn_vals[qoi+numFunctions];
+	prod_lm1 = fn_lm1 = (os) ? fn_vals[qoi] - offset[qoi] : fn_vals[qoi];
 
 	if (isfinite(fn_l) && isfinite(fn_lm1)) { // neither NaN nor +/-Inf
 	  y_it = sum_Y.begin(); ord = y_it->first; active_ord = 1;
@@ -1695,6 +1728,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
 		      IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
 		      IntRealMatrixMap& sum_HH, size_t lev,
+		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
   using boost::math::isfinite;
@@ -1703,6 +1737,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
   IntRMMIter ls_it, lr_it, h_it, ll_it, lh_it, hh_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, hh_ord, active_ord;
   size_t qoi;
+  bool lfos = !lf_offset.empty(), hfos = !hf_offset.empty();
 
   for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
        lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
@@ -1712,8 +1747,10 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      lf_l_prod = lf_l = lf_fn_vals[qoi];
-      hf_l_prod = hf_l = hf_fn_vals[qoi];
+      lf_l_prod = lf_l = (lfos) ?
+	lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+      hf_l_prod = hf_l = (hfos) ?
+	hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
       // sync sample counts for all L and H interactions at this level
       if (isfinite(lf_l) && isfinite(hf_l)) { // neither NaN nor +/-Inf
@@ -1781,6 +1818,7 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 		      IntRealMatrixMap& sum_L_refined, IntRealMatrixMap& sum_H,
 		      IntRealMatrixMap& sum_LL,        IntRealMatrixMap& sum_LH,
 		      IntRealMatrixMap& sum_HH, size_t lev,
+		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
   // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
@@ -1788,8 +1826,9 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
   // case with discrepancies, indexed by level.
 
   if (lev == 0) // UNCORRECTED_SURROGATE -> 1 set of qoi per response map
-    accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_L_shared, sum_L_refined,
-			  sum_H, sum_LL, sum_LH, sum_HH, lev, num_L, num_H);
+    accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_L_shared,
+			  sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
+			  lev, lf_offset, hf_offset, num_L, num_H);
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
     using boost::math::isfinite;
     Real lf_l, lf_l_prod, lf_lm1, lf_lm1_prod,
@@ -1798,6 +1837,7 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
     IntRMMIter ls_it, lr_it, h_it, ll_it, lh_it, hh_it;
     int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, hh_ord, active_ord;
     size_t qoi;
+    bool lfos = !lf_offset.empty(), hfos = !hf_offset.empty();
 
     for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
 	 lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
@@ -1807,10 +1847,16 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
-	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
+	  lf_fn_vals[qoi+numFunctions];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
+	  hf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&
@@ -1895,6 +1941,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      IntRealMatrixMap& sum_Hl_Hl,
 		      IntRealMatrixMap& sum_Hl_Hlm1,
 		      IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
+		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
   // uses two sets of responses (LF & HF) in UNCORRECTED_SURROGATE (level 0) or
@@ -1904,7 +1951,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
   if (lev == 0) // level lm1 not available; accumulate only level l
     accumulate_mlcv_Qsums(lf_resp_map, hf_resp_map, sum_Ll, sum_Ll_refined,
 			  sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl, lev,
-			  num_L, num_H);
+			  lf_offset, hf_offset, num_L, num_H);
   else {
     using boost::math::isfinite;
     Real lf_l_prod, lf_l, lf_lm1_prod, lf_lm1,
@@ -1916,6 +1963,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
       ll1_ord, ll2_ord, ll3_ord, lh1_ord, lh2_ord, lh3_ord, lh4_ord,
       hh1_ord, hh2_ord, hh3_ord;
     size_t qoi;
+    bool lfos = !lf_offset.empty(), hfos = !hf_offset.empty();
 
     for (lf_r_it =lf_resp_map.begin(), hf_r_it =hf_resp_map.begin();
 	 lf_r_it!=lf_resp_map.end() && hf_r_it!=hf_resp_map.end();
@@ -1925,10 +1973,16 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_l_prod   = lf_l   = lf_fn_vals[qoi+numFunctions];
-	lf_lm1_prod = lf_lm1 = lf_fn_vals[qoi];
-	hf_l_prod   = hf_l   = hf_fn_vals[qoi+numFunctions];
-	hf_lm1_prod = hf_lm1 = hf_fn_vals[qoi];
+	lf_l_prod   = lf_l   = (lfos) ?
+	  lf_fn_vals[qoi+numFunctions] - lf_offset[qoi+numFunctions] :
+	  lf_fn_vals[qoi+numFunctions];
+	lf_lm1_prod = lf_lm1 = (lfos) ?
+	  lf_fn_vals[qoi] - lf_offset[qoi] : lf_fn_vals[qoi];
+	hf_l_prod   = hf_l   = (hfos) ?
+	  hf_fn_vals[qoi+numFunctions] - hf_offset[qoi+numFunctions] :
+	  hf_fn_vals[qoi+numFunctions];
+	hf_lm1_prod = hf_lm1 = (hfos) ?
+	  hf_fn_vals[qoi] - hf_offset[qoi] : hf_fn_vals[qoi];
 
 	// sync sample counts for all L and H interactions at this level
 	if (isfinite(lf_l) && isfinite(lf_lm1) &&

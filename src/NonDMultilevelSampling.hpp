@@ -141,37 +141,40 @@ private:
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			   SizetArray& num_Q);
+			   const RealVector& offset, SizetArray& num_Q);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			  size_t lev, SizetArray& num_Y);
+			   size_t lev, const RealVector& offset,
+			   SizetArray& num_Y);
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-			   SizetArray& num_Q);
+			   const RealVector& offset, SizetArray& num_Q);
 
   /// update running sums for one model (sum_L) using set of model
   /// evaluations within allResponses
-  void accumulate_cv_sums(IntRealVectorMap& sum_L, SizetArray& num_L);
+  void accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
+			  SizetArray& num_L);
   /// update running sums for two models (sum_L, sum_H, and sum_LH)
   /// from set of low/high fidelity model evaluations within allResponses
   void accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
 			  IntRealVectorMap& sum_L_refined,
 			  IntRealVectorMap& sum_H,  IntRealVectorMap& sum_LL,
 			  IntRealVectorMap& sum_LH, RealVector& sum_HH,
-			  SizetArray& num_L,        SizetArray& num_H);
+			  const RealVector& offset, SizetArray& num_L,
+			  SizetArray& num_H);
 
   /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
   /// using set of model evaluations within allResponses
   void accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql,
 			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     SizetArray& num_Q);
+			     const RealVector& offset, SizetArray& num_Q);
   /// update running discrepancy sums for one model (sum_Y) using
   /// set of model evaluations within allResponses
   void accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
-			     SizetArray& num_Y);
+			     const RealVector& offset, SizetArray& num_Y);
   /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
   /// and sum_HH) from set of low/high fidelity model evaluations within
   /// {lf,hf}_resp_map; used for level 0 from other accumulators
@@ -181,7 +184,9 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, const RealVector& lf_offset,
+			     const RealVector& hf_offset, SizetArray& num_L,
+			     SizetArray& num_H);
   /// update running two-level discrepancy sums for two models (sum_L,
   /// sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
   /// model evaluations within {lf,hf}resp_map
@@ -191,7 +196,9 @@ private:
 			     IntRealMatrixMap& sum_L_refined,
 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+			     size_t lev, const RealVector& lf_offset,
+			     const RealVector& hf_offset,
+			     SizetArray& num_L, SizetArray& num_H);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within {lf,hf}_resp_map
   void accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
@@ -212,6 +219,8 @@ private:
 			     IntRealMatrixMap& sum_Hl_Hl,
 			     IntRealMatrixMap& sum_Hl_Hlm1,
 			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
+			     const RealVector& lf_offset,
+			     const RealVector& hf_offset,
 			     SizetArray& num_L, SizetArray& num_H);
 
   /// compute the LF/HF evaluation ratio, averaged over the QoI
