@@ -138,6 +138,10 @@ private:
 			    IntRealMatrixMap& sum_Hlm1_Hlm1,
 			    size_t num_ml_lev, size_t num_cv_lev);
 
+  /// accumulate initial approximation to mean vector, for use as offsets in
+  /// subsequent accumulations
+  void accumulate_offsets(RealVector& mu);
+
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
@@ -376,6 +380,12 @@ private:
 			       IntIntPairRealMatrixMap& sum_QlQlm1,
 			       Sizet2DArray& num_Q);
 
+  /// compute variance from sum accumulators
+  Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
+  /// compute variance from sum accumulators
+  Real variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
+		     Real sum_Qlm1Qlm1, size_t Nlq);
+
   /// sum up variances across QoI (using sum_YY with means from sum_Y)
   Real aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 			       const SizetArray& N_l);
@@ -384,6 +394,7 @@ private:
 			       const Real* sum_QlQl,     const Real* sum_QlQlm1,
 			       const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 			       size_t lev);
+
   /// sum up Monte Carlo estimates for mean squared error (MSE) across
   /// QoI using discrepancy variances
   Real aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l);
@@ -566,23 +577,40 @@ apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 
 
 inline Real NonDMultilevelSampling::
+variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq)
+{
+  Real mu_Y = sum_Y / Nlq;
+  // Note: precision loss in variance is difficult to avoid without
+  // storing full sample history; must accumulate Y^2 across iterations
+  // instead of (Y-mean)^2 since mean is updated on each iteration.
+  return (sum_YY - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+}
+
+
+inline Real NonDMultilevelSampling::
+variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
+	      Real sum_Qlm1Qlm1, size_t Nlq)
+{
+  Real mu_Ql = sum_Ql / Nlq, mu_Qlm1 = sum_Qlm1 / Nlq;
+  //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
+  return (     sum_QlQl - Nlq * mu_Ql   * mu_Ql     // var_Ql
+    - 2. * ( sum_QlQlm1 - Nlq * mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
+    +      sum_Qlm1Qlm1 - Nlq * mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
+    / (Nlq - 1); // bias corr
+}
+
+
+inline Real NonDMultilevelSampling::
 aggregate_variance_Ysum(const Real* sum_Y, const Real* sum_YY,
 			const SizetArray& N_l)
 {
-  Real agg_var_l = 0., mu_Y, var_Y; size_t Nlq;
-  if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq  = N_l[qoi];
-    mu_Y = sum_Y[qoi] / Nlq;
-    // Note: precision loss in variance is difficult to avoid without
-    // storing full sample history; must accumulate Y^2 across iterations
-    // instead of (Y-mean)^2 since mean is updated on each iteration.
-    var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
-    agg_var_l += var_Y;
-    if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
-  }
-  if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
-
+  Real agg_var_l = 0.;//, var_Y;
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+    agg_var_l += variance_Ysum(sum_Y[qoi], sum_YY[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+  //}
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
   return agg_var_l;
 }
 
@@ -593,24 +621,16 @@ aggregate_variance_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 			const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 			size_t lev)
 {
-  Real agg_var_l = 0., mu_Ql, mu_Qlm1, var_Y;
-  size_t Nlq;
-  if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq   = N_l[qoi];
-    mu_Ql = sum_Ql[qoi] / Nlq;
-    var_Y = sum_QlQl[qoi] - Nlq * mu_Ql * mu_Ql;                // var_Ql
-    if (lev) {
-      mu_Qlm1 = sum_Qlm1[qoi] / Nlq;
-      //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-      var_Y +=   sum_Qlm1Qlm1[qoi] - Nlq * mu_Qlm1 * mu_Qlm1    // var_Qlm1
-	- 2. * ( sum_QlQlm1[qoi]   - Nlq * mu_Ql   * mu_Qlm1 ); // covar_QlQlm1
-    }
-    agg_var_l += var_Y / (Nlq - 1); // bias corr
-    if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
-  }
-  if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
-
+  Real agg_var_l = 0., var_Y;
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "[ ";
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) //{
+    agg_var_l += (lev) ?
+      variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+		    sum_Qlm1Qlm1[qoi], N_l[qoi]) :
+      variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], N_l[qoi]);
+    //if (outputLevel >= DEBUG_OUTPUT) Cout << var_Y << ' ';
+  //}
+  //if (outputLevel >= DEBUG_OUTPUT)   Cout << "]\n";
   return agg_var_l;
 }
 
@@ -619,8 +639,9 @@ inline Real NonDMultilevelSampling::
 aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
 {
   Real agg_mse = 0.;
+  // aggregate MC estimator variance for each QoI
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    agg_mse += var_Y[qoi] / N_l[qoi]; // aggregate MC estimator var for each QoI
+    agg_mse += var_Y[qoi] / N_l[qoi];
   return agg_mse;
 }
 
@@ -628,13 +649,10 @@ aggregate_mse_Yvar(const Real* var_Y, const SizetArray& N_l)
 inline Real NonDMultilevelSampling::
 aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY, const SizetArray& N_l)
 {
-  Real agg_mse = 0., mu_Y, var_Y; size_t Nlq;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq   = N_l[qoi];
-    mu_Y  = sum_Y[qoi] / Nlq;
-    var_Y = (sum_YY[qoi] - Nlq * mu_Y * mu_Y) / (Nlq - 1);
-    agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
-  }
+  Real agg_mse = 0.;//, var_Y;
+  // aggregate MC estimator variance for each QoI
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    agg_mse += variance_Ysum(sum_Y[qoi], sum_YY[qoi], N_l[qoi]) / N_l[qoi];
   return agg_mse;
 }
 
@@ -646,19 +664,33 @@ aggregate_mse_Qsum(const Real* sum_Ql,       const Real* sum_Qlm1,
 {
   Real agg_mse = 0., mu_Ql, mu_Qlm1, var_Y; size_t Nlq;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Nlq   = N_l[qoi];
-    mu_Ql = sum_Ql[qoi] / Nlq;
-    var_Y = sum_QlQl[qoi] - Nlq * mu_Ql * mu_Ql;
-    if (lev) {
-      mu_Qlm1 = sum_Qlm1[qoi] / Nlq;
-      //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-      var_Y +=   sum_Qlm1Qlm1[qoi] - Nlq * mu_Qlm1 * mu_Qlm1    //   var_Qlm1
-	- 2. * ( sum_QlQlm1[qoi]   - Nlq * mu_Ql   * mu_Qlm1 ); // covar_QlQlm1
-    }
-    var_Y /= (Nlq - 1); // bias corr
+    Nlq = N_l[qoi];
+    var_Y = (lev) ?
+      variance_Qsum(sum_Ql[qoi], sum_Qlm1[qoi], sum_QlQl[qoi], sum_QlQlm1[qoi],
+		    sum_Qlm1Qlm1[qoi], Nlq) :
+      variance_Ysum(sum_Ql[qoi], sum_QlQl[qoi], Nlq);
     agg_mse += var_Y / Nlq; // aggregate MC estimator variance for each QoI
   }
   return agg_mse;
+}
+
+
+inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
+{
+  using boost::math::isfinite;
+  IntRespMCIter r_it = allResponses.begin();
+  size_t qoi, num_samp, num_fns = r_it->second.num_functions();
+  mu.sizeUninitialized(num_fns);
+  Real q_l, sum;
+  for (qoi=0; qoi<num_fns; ++qoi) {
+    num_samp = 0; sum = 0.;
+    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+      q_l = r_it->second.function_value(qoi);
+      if (isfinite(q_l)) // neither NaN nor +/-Inf
+	{ sum += q_l; ++num_samp; }
+    }
+    mu[qoi] = sum / num_samp;
+  }
 }
 
 

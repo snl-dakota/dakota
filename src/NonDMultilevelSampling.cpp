@@ -373,7 +373,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
-  RealVector mu_hat;
+  RealVectorArray mu_hat(num_lev);
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -415,7 +415,9 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev, mu_hat,N_l[lev]);
+	if (iter == 0) accumulate_offsets(mu_hat[lev]);
+	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev,
+			    mu_hat[lev], N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (Ql[1,2], Qlm1[1,2]):\n";
 	  write_data(Cout, sum_Ql[1]);   write_data(Cout, sum_Ql[2]);
