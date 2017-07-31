@@ -2644,7 +2644,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   Real agg_estim_var, var_Yl, cm1l, cm2l, cm3l, cm4l, cm1lm1, cm2lm1,
     cm3lm1, cm4lm1, cm1l_sq, cm1lm1_sq, cm2l_sq, cm2lm1_sq, var_Ql, var_Qlm1,
     mu_Q2l, mu_Q2lm1, mu_Q1lQ1lm1, mu_Q2lQ1lm1, mu_Q1lQ2lm1, mu_Q2lQ2lm1,
-    mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1;
+    mu_P2lP2lm1, var_P2l, var_P2lm1, covar_P2lP2lm1, term;
   size_t lev, qoi, cntr = 0, Nlq,
     num_lev = iteratedModel.truth_model().solution_levels();
   IntIntPair pr11(1,1), pr12(1,2), pr21(2,1), pr22(2,2);
@@ -2714,10 +2714,10 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	- 3. * cm1l_sq * cm1lm1_sq;
       var_P2l        = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
       var_P2lm1      = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
-      // [gg] modified to cope with negative variance      
-      covar_P2lP2lm1 = ( mu_P2lP2lm1 - var_Ql * var_Qlm1 +
-		         ( mu_Q1lQ1lm1 - cm1l * cm1lm1 )
-		         *( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) ); 
+      // [gg] fix to derivation: squared term
+      term = mu_Q1lQ1lm1 - cm1l * cm1lm1;
+      covar_P2lP2lm1
+	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.); 
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
