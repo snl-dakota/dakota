@@ -1173,14 +1173,24 @@ double COLINOptimizer::constraint_violation(const Response& tmpResponseHolder)
   // Need number of constraints and bounds so we can determine
   // constraint violation.
 
-  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+  RealVector nln_ineq_lwr_bnds; // will be sized in adapter call
+  RealVector nln_ineq_upr_bnds; // will be sized in adapter call
+  RealVector nln_eq_targets;    // will be sized in adapter call
+
+  get_nonlinear_constraints( iteratedModel, nln_ineq_lwr_bnds, nln_ineq_upr_bnds, nln_eq_targets);
+
+  int num_nln_ineq = nln_ineq_lwr_bnds.length() + nln_ineq_upr_bnds.length();
+  int num_nln_eq   = nln_eq_targets.length();
+
+  // A temporary check during refactoring to ensure consistency
+  if( num_nln_ineq != iteratedModel.num_nonlinear_ineq_constraints() ) {
+    Cerr << "COLINOptimizer::constraint_violation: consistency check failed for num_nln_ineq." << std::endl;
+    abort_handler(-1);
+  }
+  if( num_nln_eq != iteratedModel.num_nonlinear_eq_constraints() ) {
+    Cerr << "COLINOptimizer::constraint_violation: consistency check failed for num_nln_eq." << std::endl;
+    abort_handler(-1);
+  }
 
   // Compute constraint violation for nonlinear inequality and
   // equality constraints using sum of squares of component-wise
