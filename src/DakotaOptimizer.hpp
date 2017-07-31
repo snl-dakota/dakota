@@ -584,6 +584,24 @@ void get_nonlinear_constraints( Model & model,
   }
 }
 
+///  Would like to combine the previous adapter with this one (based on APPSOptimizer and COLINOptimizer)
+///  and then see how much more generalization is needed to support other TPLs like JEGA
+
+template <typename VecT>
+void get_nonlinear_constraints( Model & model,
+                                VecT & nonlin_ineq_lower,
+                                VecT & nonlin_ineq_upper,
+                                VecT & nonlin_eq_targets)
+{
+  const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
+  const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();
+  const RealVector& nln_eq_targets    = model.nonlinear_eq_constraint_targets();
+
+  copy_data(nln_ineq_lwr_bnds, nonlin_ineq_lower);
+  copy_data(nln_ineq_upr_bnds, nonlin_ineq_upper);
+  copy_data(nln_eq_targets   , nonlin_eq_targets);
+}
+
 } // namespace Dakota
 
 #endif
