@@ -37,8 +37,8 @@ method
           
 #method                                   #s4
 #  id_method = 'DACE'                     #s4
-#  sampling sample_type lhs		 	          #s4
 #  model_pointer = 'DACE_M'		 	          #s4
+#  sampling sample_type lhs		 	          #s4
 #    samples = 121 seed = 5034 	#s4
 
 #model						                 #s4
