@@ -412,9 +412,9 @@ private:
   /// convert uncentered (raw) moments to centered moments
   void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
-  /// convert uncentered (raw) moments to centered moments
-  void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-			      Real& rm1, Real& rm2, Real& rm3, Real& rm4) const;
+  // convert uncentered (raw) moments to centered moments
+  //void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+  //			      Real& rm1, Real& rm2, Real& rm3, Real& rm4) const;
   /// convert centered moments to standardized moments
   void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
@@ -577,13 +577,24 @@ apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 
 
 inline Real NonDMultilevelSampling::
-variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq)
+variance_Ysum(Real sum_Y, Real sum_YY, Real offset, size_t Nlq)
 {
   Real mu_Y = sum_Y / Nlq;
   // Note: precision loss in variance is difficult to avoid without
   // storing full sample history; must accumulate Y^2 across iterations
   // instead of (Y-mean)^2 since mean is updated on each iteration.
-  return (sum_YY - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+  Real var_Y = (sum_YY - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+  return var_Y;
+
+  /*
+  Real new_mu_Y = mu_Y + offset;
+  return var_Y
+    //  + offset   * offset    // uncenter from old mu_hat
+    //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
+    - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
+  // *** TO DO: this is not consistent with -Nlq * mu^2 / (Nlq - 1) ...
+  // *** could this be the source of negative variance...?
+  */
 }
 
 
@@ -694,29 +705,30 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 }
 
 
+/** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
-uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
+		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
 {
-  // convert from uncentered ("raw") to centered moments
+  // convert from uncentered ("raw") to centered moments for single level
   cm1 = rm1;             // mean
-  cm2 = rm2 - cm1 * cm1; // variance
-  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);
-  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+  cm2 = rm2 - Nlq * cm1 * cm1 / (Nlq - 1); // variance
+  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1); // TO DO
+  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1)); // TO DO
 }
 
-
+/*
 inline void NonDMultilevelSampling::
-centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-		       Real& rm1, Real& rm2, Real& rm3, Real& rm4) const
+centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4, Real& rm1,
+		       Real& rm2, Real& rm3, Real& rm4, size_t Nlq) const
 {
   // convert from centered to uncentered ("raw") moments
   rm1 = cm1;             // mean
-  rm2 = cm2 + cm1 * cm1;
+  rm2 = cm2 + Nlq * cm1 * cm1 / (Nlq - 1);
   rm3 = cm3 + cm1 * (3. * cm2 + cm1 * cm1);
   rm4 = cm4 + cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
 }
-
+*/
 
 inline void NonDMultilevelSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,

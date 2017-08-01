@@ -166,8 +166,10 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
-    if (subIteratorFlag) multilevel_mc_Qsum(model_form); // includes error est
-    else                 multilevel_mc_Ysum(model_form); // lighter weight
+    //if (subIteratorFlag)
+        multilevel_mc_Qsum(model_form); // includes error est
+    //else
+    //  multilevel_mc_Ysum(model_form); // lighter weight
   }
 }
 
@@ -229,7 +231,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
-  RealVector mu_hat;
+  RealVectorArray mu_hat(num_lev);
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -271,7 +273,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat, N_l[lev]);
+	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
+	accumulate_ml_Ysums(sum_Y, sum_YY, lev, mu_hat[lev], N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
 	  Cout << "Accumulated sums (Y1, Y2, Y3, Y4, Y1sq):\n";
 	  write_data(Cout, sum_Y[1]); write_data(Cout, sum_Y[2]);
@@ -322,7 +325,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum. There is no bias
   // correction for small sample sizes as in NonDSampling::compute_moments().
-  RealMatrix Q_raw_mom(numFunctions, 4);
+  RealMatrix Q_raw_mom(numFunctions, 4), ;
   RealMatrix &sum_Y1 = sum_Y[1], &sum_Y2 = sum_Y[2],
 	     &sum_Y3 = sum_Y[3], &sum_Y4 = sum_Y[4];
   for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -333,6 +336,30 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
       Q_raw_mom(qoi,2) += sum_Y3(qoi,lev) / Nlq;
       Q_raw_mom(qoi,3) += sum_Y4(qoi,lev) / Nlq;
     }
+    /*
+    // conversion from raw to centered for multilevel:
+    // Level 1 term:
+    Real& mu_L = Q_raw_mom(qoi,0); // mean of Q at final level L
+    size_t N0q = N_l[0][qoi];
+    Real mu_0 = sum_Y1(qoi,0) / N0q, rm2_0 = sum_Y2(qoi,0) / N0q;
+    Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_0) / (N0q - 1),
+      cm3_delta = N0q * mu_L
+      * ( N0q * mu_L * (3. * mu_0 - mu_L) - 3. * (N0q - 1) * rm2_0 )
+      / ((N0q - 1) * (N0q - 2)),
+      cm4_delta = ;
+    // Level 2 through L terms:
+    for (lev=1; lev<num_lev; ++lev) {
+      size_t Nlq = N_l[lev][qoi];
+      mu_Yl = sum_Y1(qoi,lev) / Nlq;
+      cm2_delta -= 2. * Nlq * mu_L * mu_Yl / (Nlq - 1);
+      cm3_delta += ;
+      cm4_delta += ;
+    }
+    Q_cent_mom(qoi,0) = mu_L;
+    Q_cent_mom(qoi,1) = Q_raw_mom(qoi,1) + cm2_delta;
+    Q_cent_mom(qoi,2) = Q_raw_mom(qoi,2) + cm3_delta;
+    Q_cent_mom(qoi,3) = Q_raw_mom(qoi,3) + cm4_delta;
+    */
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
@@ -415,7 +442,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	if (iter == 0) accumulate_offsets(mu_hat[lev]);
+	//if (iter == 0) accumulate_offsets(mu_hat[lev]);
 	accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, lev,
 			    mu_hat[lev], N_l[lev]);
 	if (outputLevel == DEBUG_OUTPUT) {
@@ -477,16 +504,45 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
     lev = 0;
     size_t Nlq = N_l[lev][qoi];
     Q_raw_mom(qoi,0) += sum_Q1l(qoi,lev) / Nlq;
-    Q_raw_mom(qoi,1) += sum_Q2l(qoi,lev) / Nlq;
-    Q_raw_mom(qoi,2) += sum_Q3l(qoi,lev) / Nlq;
-    Q_raw_mom(qoi,3) += sum_Q4l(qoi,lev) / Nlq;
+    Q_raw_mom(qoi,1) += sum_Q2l(qoi,lev) / (Nlq - 1);
+    Q_raw_mom(qoi,2) += sum_Q3l(qoi,lev) * Nlq / ((Nlq - 1) * (Nlq - 2));
+    Q_raw_mom(qoi,3) += sum_Q4l(qoi,lev) / Nlq; // TO DO
     for (lev=1; lev<num_lev; ++lev) {
       Nlq = N_l[lev][qoi];
       Q_raw_mom(qoi,0) += (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,1) += (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,2) += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) / Nlq;
+      Q_raw_mom(qoi,1) += (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / (Nlq - 1);
+      Q_raw_mom(qoi,2) += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq
+	/ ((Nlq - 1) * (Nlq - 2));
+      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) / Nlq;// TO DO
     }
+
+    // conversion from raw to centered for multilevel:
+    // Level 1 term:
+    Real& mu_L = Q_raw_mom(qoi,0); // mean of Q at final level L
+    N0q = N_l[0][qoi];
+    Real mu_Q0 = sum_Q1l(qoi,0) / N0q, rm2_0 = sum_Q2l(qoi,0) / (N0q - 1),
+      rm3_0 = sum_Q3l(qoi,0) * N0q / ((N0q - 1) * (N0q - 2));
+    Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_Q0) / (N0q - 1),
+      cm3_delta = N0q * mu_L * ( N0q * mu_L * (3. * mu_0 - mu_L)
+	- 3. * (N0q - 1) * rm2_0 ) / ((N0q - 1) * (N0q - 2)),
+      cm4_delta = fact4_0 * mu_L * (-4. * (N0q - 1) * (N0q - 2) / Nlq * rm3_0
+	+ 6. * mu_L * (N0q - 1) * rm2_0 + mu_L * mu_L * (mu_L * mu_L
+	- 4. * N0q * mu_0) );
+    // Level 2 through L terms:
+    for (lev=1 lev<num_lev; ++lev) {
+      size_t Nlq = N_l[lev][qoi];
+      mu_Yl  = (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
+      rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / (Nlq - 1);
+      cm2_delta -= 2. * Nlq * mu_L * mu_Yl / (Nlq - 1);
+      cm3_delta += 3. * Nlq * mu_L * ( Nlq * mu_L * mu_Yl - (Nlq - 1) * rm2_Yl )
+	/ ((Nlq - 1) * (Nlq - 2));
+      cm4_delta -= fact4_l * mu_L * (4. * (Nlq - 1) * (Nlq - 2) / Nlq * rm3_Yl
+	- 6. * mu_L * (Nlq - 1) * rm2_Yl + 4. * mu_L * mu_L * Nlq * mu_Yl);
+    }
+    Q_cent_mom(qoi,0) = mu_L;
+    Q_cent_mom(qoi,1) = Q_raw_mom(qoi,1) + cm2_delta;
+    Q_cent_mom(qoi,2) = Q_raw_mom(qoi,2) + cm3_delta;
+    Q_cent_mom(qoi,3) = Q_raw_mom(qoi,3) + cm4_delta;
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
@@ -1349,7 +1405,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
 	q_it = sum_Q.begin(); ord = q_it->first;
 	active_ord = 1;
 	while (q_it!=sum_Q.end()) {
-    
+
 	  if (ord == active_ord) {
 	    q_it->second(qoi,lev) += q_l_prod; ++q_it;
 	    ord = (q_it == sum_Q.end()) ? 0 : q_it->first;
@@ -2665,9 +2721,9 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       Nlq  = num_Q[lev][qoi];
       cm1l = sum_Q1l(qoi,lev) / Nlq; cm1lm1 = sum_Q1lm1(qoi,lev) / Nlq;
       //var_Yl = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-      var_Yl = ( sum_Q2l(qoi,lev)              - Nlq * cm1l   * cm1l
-		 - 2.* ( sum_Q1lQ1lm1(qoi,lev) - Nlq * cm1l   * cm1lm1 ) +
-		 sum_Q2lm1(qoi,lev)            - Nlq * cm1lm1 * cm1lm1 )
+      var_Yl = ( sum_Q2l(qoi,lev)      - Nlq * cm1l   * cm1l
+	 - 2.* ( sum_Q1lQ1lm1(qoi,lev) - Nlq * cm1l   * cm1lm1 ) +
+		 sum_Q2lm1(qoi,lev)    - Nlq * cm1lm1 * cm1lm1 )
 	     / ( Nlq - 1 ); // bias corr
       agg_estim_var += var_Yl / Nlq;
     }
@@ -2687,7 +2743,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			   cm1l, cm2l, cm3l, cm4l);
+			   cm1l, cm2l, cm3l, cm4l, Nlq);
     cm2l_sq = cm2l * cm2l;
     var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
     agg_estim_var = var_P2l / Nlq;
@@ -2696,10 +2752,10 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       mu_Q2l = sum_Q2l(qoi,lev) / Nlq;   mu_Q2lm1 = sum_Q2lm1(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, mu_Q2l,
 			     sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			     cm1l, cm2l, cm3l, cm4l);
+			     cm1l, cm2l, cm3l, cm4l, Nlq);
       uncentered_to_centered(sum_Q1lm1(qoi,lev) / Nlq, mu_Q2lm1,
 			     sum_Q3lm1(qoi,lev) / Nlq, sum_Q4lm1(qoi,lev) / Nlq,
-			     cm1lm1, cm2lm1, cm3lm1, cm4lm1);
+			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
       cm1l_sq = cm1l * cm1l; cm1lm1_sq = cm1lm1 * cm1lm1;
       cm2l_sq = cm2l * cm2l; cm2lm1_sq = cm2lm1 * cm2lm1;
       var_Ql   = ( sum_Q2l(qoi,lev)   - Nlq * cm1l   * cm1l)    / ( Nlq - 1 );
@@ -2716,8 +2772,8 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       var_P2lm1      = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
       // [gg] modified to cope with negative variance      
       covar_P2lP2lm1 = ( mu_P2lP2lm1 - var_Ql * var_Qlm1 +
-		         ( mu_Q1lQ1lm1 - cm1l * cm1lm1 )
-		         *( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) ); 
+		         ( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) *
+			 ( mu_Q1lQ1lm1 - cm1l * cm1lm1 ) / (Nlq - 1.) ); 
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
