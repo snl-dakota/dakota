@@ -714,7 +714,9 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
   cm1 = rm1;             // mean
   cm2 = rm2 - Nlq * cm1 * cm1 / (Nlq - 1); // variance
   cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1); // TO DO
+  // or rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);
   cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1)); // TO DO
+  // or rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1));
 }
 
 /*
