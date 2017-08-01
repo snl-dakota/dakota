@@ -325,7 +325,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum. There is no bias
   // correction for small sample sizes as in NonDSampling::compute_moments().
-  RealMatrix Q_raw_mom(numFunctions, 4), ;
+  RealMatrix Q_raw_mom(numFunctions, 4);
   RealMatrix &sum_Y1 = sum_Y[1], &sum_Y2 = sum_Y[2],
 	     &sum_Y3 = sum_Y[3], &sum_Y4 = sum_Y[4];
   for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -495,7 +495,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum. There is no bias
   // correction for small sample sizes as in NonDSampling::compute_moments().
-  RealMatrix Q_raw_mom(numFunctions, 4);
+  RealMatrix Q_raw_mom(numFunctions, 4), Q_cent_mom(numFunctions, 4);
   RealMatrix &sum_Q1l   = sum_Ql[1],   &sum_Q2l   = sum_Ql[2],
              &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
@@ -519,24 +519,24 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
     // conversion from raw to centered for multilevel:
     // Level 1 term:
     Real& mu_L = Q_raw_mom(qoi,0); // mean of Q at final level L
-    N0q = N_l[0][qoi];
-    Real mu_Q0 = sum_Q1l(qoi,0) / N0q, rm2_0 = sum_Q2l(qoi,0) / (N0q - 1),
-      rm3_0 = sum_Q3l(qoi,0) * N0q / ((N0q - 1) * (N0q - 2));
-    Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_Q0) / (N0q - 1),
+    size_t N0q = N_l[0][qoi], nm1 = N0q - 1, nm2 = N0q - 2;
+    Real mu_0 = sum_Q1l(qoi,0) / N0q, rm2_0 = sum_Q2l(qoi,0) / nm1,
+      rm3_0 = sum_Q3l(qoi,0) * N0q / (nm1 * nm2), mu_Yl, rm2_Yl, rm3_Yl;
+    Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_0) / nm1,
       cm3_delta = N0q * mu_L * ( N0q * mu_L * (3. * mu_0 - mu_L)
-	- 3. * (N0q - 1) * rm2_0 ) / ((N0q - 1) * (N0q - 2)),
-      cm4_delta = fact4_0 * mu_L * (-4. * (N0q - 1) * (N0q - 2) / Nlq * rm3_0
-	+ 6. * mu_L * (N0q - 1) * rm2_0 + mu_L * mu_L * (mu_L * mu_L
-	- 4. * N0q * mu_0) );
+	- 3. * nm1 * rm2_0 ) / (nm1 * nm2),
+      cm4_delta = /* fact4_0 * */ mu_L * (-4. * nm1 * nm2 / Nlq * rm3_0
+	+ 6. * mu_L * nm1 * rm2_0 + mu_L * mu_L * (mu_L * mu_L - 4. * N0q * mu_0) );
     // Level 2 through L terms:
-    for (lev=1 lev<num_lev; ++lev) {
+    for (lev=1; lev<num_lev; ++lev) {
       size_t Nlq = N_l[lev][qoi];
       mu_Yl  = (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
-      rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / (Nlq - 1);
+      rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / nm1;
+      rm3_Yl = (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq / (nm1 * nm2);
       cm2_delta -= 2. * Nlq * mu_L * mu_Yl / (Nlq - 1);
       cm3_delta += 3. * Nlq * mu_L * ( Nlq * mu_L * mu_Yl - (Nlq - 1) * rm2_Yl )
 	/ ((Nlq - 1) * (Nlq - 2));
-      cm4_delta -= fact4_l * mu_L * (4. * (Nlq - 1) * (Nlq - 2) / Nlq * rm3_Yl
+      cm4_delta -= /* fact4_l * */ mu_L * (4. * (Nlq - 1) * (Nlq - 2) / Nlq * rm3_Yl
 	- 6. * mu_L * (Nlq - 1) * rm2_Yl + 4. * mu_L * mu_L * Nlq * mu_Yl);
     }
     Q_cent_mom(qoi,0) = mu_L;
@@ -545,7 +545,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
     Q_cent_mom(qoi,3) = Q_raw_mom(qoi,3) + cm4_delta;
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Q_raw_mom, momentStats);
+  //convert_moments(Q_raw_mom, momentStats); // TO DO
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);

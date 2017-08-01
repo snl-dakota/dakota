@@ -409,12 +409,21 @@ private:
 			  const Real* sum_Qlm1Qlm1, const SizetArray& N_l,
 			  size_t lev);
 
-  /// convert uncentered (raw) moments to centered moments
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
+			      size_t Nlq) const;
+  /// convert uncentered (raw) moments to centered moments; unbiased estimators
   void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
-  // convert uncentered (raw) moments to centered moments
+  // convert centered moments to uncentered (raw) moments; biased estimators
   //void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-  //			      Real& rm1, Real& rm2, Real& rm3, Real& rm4) const;
+  //			        Real& rm1, Real& rm2, Real& rm3, Real& rm4)
+  //                            const;
+  // convert centered moments to uncentered (raw) moments; unbiased estimators
+  //void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+  //			        Real& rm1, Real& rm2, Real& rm3, Real& rm4,
+  //                            size_t Nlq) const;
   /// convert centered moments to standardized moments
   void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
@@ -577,7 +586,7 @@ apply_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 
 
 inline Real NonDMultilevelSampling::
-variance_Ysum(Real sum_Y, Real sum_YY, Real offset, size_t Nlq)
+variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
 {
   Real mu_Y = sum_Y / Nlq;
   // Note: precision loss in variance is difficult to avoid without
@@ -708,29 +717,65 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
+		       Real& cm2, Real& cm3, Real& cm4) const
+{
+  // convert from uncentered ("raw") to centered moments for single level
+
+  // Sample-based conversions involving biased estimators:
+  cm1 = rm1;             // mean
+  cm2 = rm2 - cm1 * cm1; // variance
+  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);                         // using cm
+  //  = rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);                    // using rm
+  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));      // using cm
+  //  = rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1)); // using rm
+}
+
+
+/** For single-level moment calculations with a scalar Nlq. */
+inline void NonDMultilevelSampling::
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
 {
   // convert from uncentered ("raw") to centered moments for single level
-  cm1 = rm1;             // mean
-  cm2 = rm2 - Nlq * cm1 * cm1 / (Nlq - 1); // variance
-  cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1); // TO DO
-  // or rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);
-  cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1)); // TO DO
-  // or rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1));
+
+  // Population-based unbiased estimators:
+  cm1 = rm1;                               // mean
+  Real cm1_sq = cm1 * cm1;
+  // TO DO: verify Nlq > 3
+  size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
+  cm2 = rm2 - Nlq * cm1_sq / nm1; // variance
+  cm3 = rm3 - Nlq * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq) / (nm1 * nm2);
+  // or rm3 - Nlq * cm1 * (3. * nm1 * rm2 - 2. * Nlq * cm1_sq) / (nm1 * nm2);
+  cm4 = rm4 - 2. * cm1 * Nlq * Nlq * (2. * (Nlq + 1) / (nm1 * nm2) * rm3
+      - 3. * cm1 * (2. * nm1 * rm2 - Nlq * cm1_sq) ) / (nm1 * nm2 * (Nlq - 3));
 }
 
+
 /*
+inline void NonDMultilevelSampling::
+centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
+                       Real& rm1, Real& rm2, Real& rm3, Real& rm4) const
+{
+  // convert from centered to uncentered ("raw") moments
+
+  // Sample-based conversions involving biased estimators:
+  rm1 = cm1;
+  rm2 = cm2 + cm1 * cm1;
+  rm3 = cm3 + cm1 * (3. * cm2 + cm1 * cm1);
+  rm4 = cm4 + cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+}
+
+
 inline void NonDMultilevelSampling::
 centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4, Real& rm1,
 		       Real& rm2, Real& rm3, Real& rm4, size_t Nlq) const
 {
   // convert from centered to uncentered ("raw") moments
-  rm1 = cm1;             // mean
-  rm2 = cm2 + Nlq * cm1 * cm1 / (Nlq - 1);
-  rm3 = cm3 + cm1 * (3. * cm2 + cm1 * cm1);
-  rm4 = cm4 + cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+
+  // Population-based unbiased estimators:
 }
 */
+
 
 inline void NonDMultilevelSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
