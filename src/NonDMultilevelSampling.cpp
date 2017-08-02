@@ -500,44 +500,50 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
              &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
              &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+  size_t Nlq, nm1, nm2, nm3; Real rm2_Yl;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     lev = 0;
-    size_t Nlq = N_l[lev][qoi];
-    Q_raw_mom(qoi,0) += sum_Q1l(qoi,lev) / Nlq;
-    Q_raw_mom(qoi,1) += sum_Q2l(qoi,lev) / (Nlq - 1);
-    Q_raw_mom(qoi,2) += sum_Q3l(qoi,lev) * Nlq / ((Nlq - 1) * (Nlq - 2));
-    Q_raw_mom(qoi,3) += sum_Q4l(qoi,lev) / Nlq; // TO DO
+    Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; nm3 = Nlq - 3;
+    Q_raw_mom(qoi,0) = sum_Q1l(qoi,lev) / Nlq;
+    Q_raw_mom(qoi,1) = rm2_Yl = sum_Q2l(qoi,lev) / nm1;
+    Q_raw_mom(qoi,2) = sum_Q3l(qoi,lev) * Nlq / (nm1 * nm2);
+    Q_raw_mom(qoi,3) = sum_Q4l(qoi,lev) * Nlq * (Nlq + 1) / (nm1 * nm2 * nm3)
+      - 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
     for (lev=1; lev<num_lev; ++lev) {
-      Nlq = N_l[lev][qoi];
+      Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; nm3 = Nlq - 3;
       Q_raw_mom(qoi,0) += (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,1) += (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / (Nlq - 1);
+      rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / nm1;
+      Q_raw_mom(qoi,1) += rm2_Yl;
       Q_raw_mom(qoi,2) += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq
-	/ ((Nlq - 1) * (Nlq - 2));
-      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) / Nlq;// TO DO
+	/ (nm1 * nm2);
+      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) * Nlq
+	* (Nlq + 1) / (nm1 * nm2 * nm3)	- 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
     }
 
     // conversion from raw to centered for multilevel:
     // Level 1 term:
     Real& mu_L = Q_raw_mom(qoi,0); // mean of Q at final level L
-    size_t N0q = N_l[0][qoi], nm1 = N0q - 1, nm2 = N0q - 2;
+    size_t N0q = N_l[0][qoi], nm1 = N0q - 1, nm2 = N0q - 2, np1 = N0q + 1;
     Real mu_0 = sum_Q1l(qoi,0) / N0q, rm2_0 = sum_Q2l(qoi,0) / nm1,
       rm3_0 = sum_Q3l(qoi,0) * N0q / (nm1 * nm2), mu_Yl, rm2_Yl, rm3_Yl;
     Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_0) / nm1,
-      cm3_delta = N0q * mu_L * ( N0q * mu_L * (3. * mu_0 - mu_L)
-	- 3. * nm1 * rm2_0 ) / (nm1 * nm2),
-      cm4_delta = /* fact4_0 * */ mu_L * (-4. * nm1 * nm2 / Nlq * rm3_0
-	+ 6. * mu_L * nm1 * rm2_0 + mu_L * mu_L * (mu_L * mu_L - 4. * N0q * mu_0) );
+      cm3_delta = N0q * mu_L / (nm1 * nm2) * ( N0q * mu_L * (3. * mu_0 - mu_L)
+	- 3. * nm1 * rm2_0 ),
+      cm4_delta =  -2. * mu_L / (nm2 * (N0q - 3)) *
+        (2. * np1 * nm2 * rm3_0 - mu_L * N0q * N0q *
+	(6. * rm2_0 - mu_L / nm1 * (mu_L * nm2 + 2. * mu_0 * np1) ) );
     // Level 2 through L terms:
     for (lev=1; lev<num_lev; ++lev) {
-      size_t Nlq = N_l[lev][qoi];
+      size_t Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
       mu_Yl  = (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
       rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / nm1;
       rm3_Yl = (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq / (nm1 * nm2);
-      cm2_delta -= 2. * Nlq * mu_L * mu_Yl / (Nlq - 1);
-      cm3_delta += 3. * Nlq * mu_L * ( Nlq * mu_L * mu_Yl - (Nlq - 1) * rm2_Yl )
-	/ ((Nlq - 1) * (Nlq - 2));
-      cm4_delta -= /* fact4_l * */ mu_L * (4. * (Nlq - 1) * (Nlq - 2) / Nlq * rm3_Yl
-	- 6. * mu_L * (Nlq - 1) * rm2_Yl + 4. * mu_L * mu_L * Nlq * mu_Yl);
+      cm2_delta -= 2. * Nlq * mu_L * mu_Yl / nm1;
+      cm3_delta += 3. * Nlq * mu_L * ( Nlq * mu_L * mu_Yl - nm1 * rm2_Yl )
+	/ (nm1 * nm2);
+      cm4_delta -= 4. * mu_L * Nlq / (nm2 * (Nlq - 3))
+	* (np1 * nm2 / Nlq * rm3_Yl - mu_L * Nlq
+	* (3. * rm2_Yl - mu_L * np1 / nm1 * mu_Yl) );
     }
     Q_cent_mom(qoi,0) = mu_L;
     Q_cent_mom(qoi,1) = Q_raw_mom(qoi,1) + cm2_delta;
