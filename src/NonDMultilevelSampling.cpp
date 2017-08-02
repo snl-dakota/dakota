@@ -166,10 +166,10 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
-    //if (subIteratorFlag)
-        multilevel_mc_Qsum(model_form); // includes error est
-    //else
-    //  multilevel_mc_Ysum(model_form); // lighter weight
+    if (subIteratorFlag)
+      multilevel_mc_Qsum(model_form); // includes error est
+    else
+      multilevel_mc_Ysum(model_form); // lighter weight
   }
 }
 
@@ -500,6 +500,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
              &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
              &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+  momentStats.shapeUninitialized(4, numFunctions); // TO DO: remove
   for (qoi=0; qoi<numFunctions; ++qoi) {
     lev = 0;
     size_t Nlq = N_l[lev][qoi];
@@ -539,13 +540,14 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
       cm4_delta -= /* fact4_l * */ mu_L * (4. * (Nlq - 1) * (Nlq - 2) / Nlq * rm3_Yl
 	- 6. * mu_L * (Nlq - 1) * rm2_Yl + 4. * mu_L * mu_L * Nlq * mu_Yl);
     }
-    Q_cent_mom(qoi,0) = mu_L;
-    Q_cent_mom(qoi,1) = Q_raw_mom(qoi,1) + cm2_delta;
-    Q_cent_mom(qoi,2) = Q_raw_mom(qoi,2) + cm3_delta;
-    Q_cent_mom(qoi,3) = Q_raw_mom(qoi,3) + cm4_delta;
+    Q_cent_mom(qoi,0) = momentStats(0,qoi) = mu_L;
+    Q_cent_mom(qoi,1) = momentStats(1,qoi) = Q_raw_mom(qoi,1) + cm2_delta;
+    Q_cent_mom(qoi,2) = momentStats(2,qoi) = Q_raw_mom(qoi,2) + cm3_delta;
+    Q_cent_mom(qoi,3) = momentStats(3,qoi) = Q_raw_mom(qoi,3) + cm4_delta;
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   //convert_moments(Q_raw_mom, momentStats); // TO DO
+
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -2731,15 +2733,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Estimator variance for mean = " << agg_estim_var;
 
-    // std err in std dev estimate (*** TO DO ***)
-    if (finalMomentsType == STANDARD_MOMENTS) {
-      Cerr << "Warning: std error not currently supported for standardized "
-	   << "final moments.\n         Setting estimate to zero." << std::endl;
-      finalStatErrors[cntr++] = 0.;
-      continue;
-    }
-
-    // std error in variance estimate
+    // std error in variance or std deviation estimate
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
@@ -2776,9 +2770,23 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.); 
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
-    finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << " and for variance = " << agg_estim_var << "\n\n";
+
+    if (finalMomentsType == STANDARD_MOMENTS) {// std error of std dev estimator
+      // An approximation for std error of a fn of another std error estimator
+      // = derivative of function * std error of the other estimator --> 
+      // d/dtheta of sqrt( variance(theta) ) = 1/2 variance^{-1/2} = 1/(2 stdev)
+      // Note: this approx. assumes normality in the estimator distribution.
+      // Harding et al. 2014 assumes normality in the QoI distribution and has
+      // been observed to contain bias in numerical experiments, whereas bias
+      // in the derivative approx goes to zero asymptotically.
+      Real stdev = momentStats(1,qoi);
+      finalStatErrors[cntr] = std::sqrt(agg_estim_var) / (2. * stdev);
+      ++cntr;
+    }
+    else // std error of variance estimator
+      finalStatErrors[cntr++] = std::sqrt(agg_estim_var);
 
     // level mapping errors not implemented at this time
     cntr +=
