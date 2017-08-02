@@ -716,8 +716,8 @@ inline void NonDMultilevelSampling::accumulate_offsets(RealVector& mu)
 
 /** For single-level moment calculations with a scalar Nlq. */
 inline void NonDMultilevelSampling::
-uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
-		       Real& cm2, Real& cm3, Real& cm4) const
+uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
+		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
 {
   // convert from uncentered ("raw") to centered moments for single level
 
@@ -739,15 +739,21 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
   // convert from uncentered ("raw") to centered moments for single level
 
   // Population-based unbiased estimators:
-  cm1 = rm1;                               // mean
-  Real cm1_sq = cm1 * cm1;
-  // TO DO: verify Nlq > 3
-  size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
-  cm2 = rm2 - Nlq * cm1_sq / nm1; // variance
-  cm3 = rm3 - Nlq * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq) / (nm1 * nm2);
-  // or rm3 - Nlq * cm1 * (3. * nm1 * rm2 - 2. * Nlq * cm1_sq) / (nm1 * nm2);
-  cm4 = rm4 - 2. * cm1 * Nlq * Nlq * (2. * (Nlq + 1) / (nm1 * nm2) * rm3
-      - 3. * cm1 * (2. * nm1 * rm2 - Nlq * cm1_sq) ) / (nm1 * nm2 * (Nlq - 3));
+  if (Nlq > 3) {
+    cm1 = rm1;                               // mean
+    Real cm1_sq = cm1 * cm1;
+    size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
+    cm2 = rm2 - Nlq / nm1 * cm1_sq; // variance
+    cm3 = rm3 - Nlq / (nm1 * nm2) * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq);
+    // or rm3 - Nlq * cm1 * (3. * nm1 * rm2 - 2. * Nlq * cm1_sq) / (nm1 * nm2);
+    cm4 = rm4 - 2. * cm1 / (nm2 * (Nlq - 3)) * (2. * (Nlq + 1) * nm2 * rm3
+	- 3. * cm1 * Nlq * Nlq * (2. * rm2 - Nlq / nm1 * cm1_sq ) );
+  }
+  else {
+    Cerr << "Warning: due to small sample size, resorting to biased estimator "
+	 << "conversion in NonDMultilevelSampling::uncentered_to_centered().\n";
+    uncentered_to_centered(rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4);
+  }
 }
 
 
@@ -773,6 +779,20 @@ centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4, Real& rm1,
   // convert from centered to uncentered ("raw") moments
 
   // Population-based unbiased estimators:
+  if (Nlq > 3) {
+    rm1 = cm1;                               // mean
+    Real cm1_sq = cm1 * cm1;
+    size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
+    rm2 = cm2 + Nlq / nm1 * cm1_sq; // variance
+    rm3 = cm3 + Nlq / (nm1 * nm2) * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq);
+    rm4 = cm4 + 2. * cm1 / (nm2 * (Nlq - 3)) * (2. * (Nlq + 1) * nm2 * rm3
+	- 3. * cm1 * Nlq * Nlq * (2. * rm2 - Nlq / nm1 * cm1_sq ) );
+  }
+  else {
+    Cerr << "Warning: due to small sample size, resorting to biased estimator "
+	 << "conversion in NonDMultilevelSampling::centered_to_uncentered().\n";
+    centered_to_uncentered(cm1, cm2, cm3, cm4, rm1, rm2, rm3, rm4);
+  }
 }
 */
 
