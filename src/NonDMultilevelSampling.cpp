@@ -322,6 +322,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
 	 << std::endl;
   }
 
+  /*
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum. There is no bias
   // correction for small sample sizes as in NonDSampling::compute_moments().
@@ -336,33 +337,12 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
       Q_raw_mom(qoi,2) += sum_Y3(qoi,lev) / Nlq;
       Q_raw_mom(qoi,3) += sum_Y4(qoi,lev) / Nlq;
     }
-    /*
-    // conversion from raw to centered for multilevel:
-    // Level 1 term:
-    Real& mu_L = Q_raw_mom(qoi,0); // mean of Q at final level L
-    size_t N0q = N_l[0][qoi];
-    Real mu_0 = sum_Y1(qoi,0) / N0q, rm2_0 = sum_Y2(qoi,0) / N0q;
-    Real cm2_delta = N0q * mu_L * (mu_L - 2. * mu_0) / (N0q - 1),
-      cm3_delta = N0q * mu_L
-      * ( N0q * mu_L * (3. * mu_0 - mu_L) - 3. * (N0q - 1) * rm2_0 )
-      / ((N0q - 1) * (N0q - 2)),
-      cm4_delta = ;
-    // Level 2 through L terms:
-    for (lev=1; lev<num_lev; ++lev) {
-      size_t Nlq = N_l[lev][qoi];
-      mu_Yl = sum_Y1(qoi,lev) / Nlq;
-      cm2_delta -= 2. * Nlq * mu_L * mu_Yl / (Nlq - 1);
-      cm3_delta += ;
-      cm4_delta += ;
-    }
-    Q_cent_mom(qoi,0) = mu_L;
-    Q_cent_mom(qoi,1) = Q_raw_mom(qoi,1) + cm2_delta;
-    Q_cent_mom(qoi,2) = Q_raw_mom(qoi,2) + cm3_delta;
-    Q_cent_mom(qoi,3) = Q_raw_mom(qoi,3) + cm4_delta;
-    */
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Q_raw_mom, momentStats);
+  convert_moments_biased(Q_raw_mom, momentStats);
+  */
+  convert_moments_unbiased(sum_Y[1], sum_Y[2], sum_Y[3], sum_Y[4],
+			   N_l, momentStats);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
@@ -492,33 +472,33 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	 << std::endl;
   }
 
+  /*
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum. There is no bias
   // correction for small sample sizes as in NonDSampling::compute_moments().
-  RealMatrix Q_raw_mom(numFunctions, 4), Q_cent_mom(numFunctions, 4);
   RealMatrix &sum_Q1l   = sum_Ql[1],   &sum_Q2l   = sum_Ql[2],
              &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
              &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
-  momentStats.shapeUninitialized(4, numFunctions); // TO DO: remove
   size_t Nlq, nm1, nm2, nm3; Real rm2_Yl;
+  Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     lev = 0;
     Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; nm3 = Nlq - 3;
-    Q_raw_mom(qoi,0) = sum_Q1l(qoi,lev) / Nlq;
-    Q_raw_mom(qoi,1) = rm2_Yl = sum_Q2l(qoi,lev) / nm1;
-    Q_raw_mom(qoi,2) = sum_Q3l(qoi,lev) * Nlq / (nm1 * nm2);
-    Q_raw_mom(qoi,3) = sum_Q4l(qoi,lev) * Nlq * (Nlq + 1) / (nm1 * nm2 * nm3)
-      - 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
+    rm1 = sum_Q1l(qoi,lev) / Nlq;
+    rm2 = rm2_Yl = sum_Q2l(qoi,lev) / nm1;
+    rm3 = sum_Q3l(qoi,lev) * Nlq / (nm1 * nm2);
+    rm4 = sum_Q4l(qoi,lev) * Nlq * (Nlq + 1) / (nm1 * nm2 * nm3)
+        - 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
     for (lev=1; lev<num_lev; ++lev) {
       Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; nm3 = Nlq - 3;
-      Q_raw_mom(qoi,0) += (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
+      rm1 += (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
       rm2_Yl = (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / nm1;
-      Q_raw_mom(qoi,1) += rm2_Yl;
-      Q_raw_mom(qoi,2) += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq
-	/ (nm1 * nm2);
-      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) * Nlq
-	* (Nlq + 1) / (nm1 * nm2 * nm3)	- 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
+      rm2 += rm2_Yl;
+      rm3 += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) * Nlq
+	  / (nm1 * nm2);
+      rm4 += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) * Nlq * (Nlq + 1)
+          / (nm1 * nm2 * nm3) - 3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
     }
 
     // conversion from raw to centered for multilevel:
@@ -546,14 +526,24 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	* (np1 * nm2 / Nlq * rm3_Yl - mu_L * Nlq
 	* (3. * rm2_Yl - mu_L * np1 / nm1 * mu_Yl) );
     }
-    Q_cent_mom(qoi,0) = momentStats(0,qoi) = mu_L;
-    Q_cent_mom(qoi,1) = momentStats(1,qoi) = Q_raw_mom(qoi,1) + cm2_delta;
-    Q_cent_mom(qoi,2) = momentStats(2,qoi) = Q_raw_mom(qoi,2) + cm3_delta;
-    Q_cent_mom(qoi,3) = momentStats(3,qoi) = Q_raw_mom(qoi,3) + cm4_delta;
+    cm1 = rm1;             cm2 = rm2 + cm2_delta;
+    cm3 = rm3 + cm3_delta; cm4 = rm4 + cm4_delta;
+    if (finalMomentsType == CENTRAL_MOMENTS) {
+      momentStats(0,qoi) = cm1;  momentStats(1,qoi) = cm2;
+      momentStats(2,qoi) = cm3;  momentStats(3,qoi) = cm4;
+    }
+    else
+      centered_to_standard(cm1, cm2, cm3, cm4, momentStats(0,qoi),
+                           momentStats(1,qoi), momentStats(2,qoi),
+			   momentStats(3,qoi));
   }
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  //convert_moments(Q_raw_mom, momentStats); // TO DO
+  */
 
+  RealMatrix sum_Y1 = sum_Ql[1], sum_Y2 = sum_Qlm1[2],
+             sum_Y3 = sum_Ql[3], sum_Y4 = sum_Qlm1[4];
+  sum_Y1 -= sum_Qlm1[1]; sum_Y2 -= sum_Qlm1[2];
+  sum_Y3 -= sum_Qlm1[3]; sum_Y4 -= sum_Qlm1[4];
+  convert_moments_unbiased(sum_Y1, sum_Y2, sum_Y3, sum_Y4, N_l, momentStats);
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -655,7 +645,7 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   cv_raw_moments(sum_L_shared, sum_H, sum_LL, sum_LH, N_hf, sum_L_refined, N_lf,
 		 rho2_LH, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(H_raw_mom, momentStats);
+  convert_moments_biased(H_raw_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf + (Real)raw_N_lf / cost_ratio;
@@ -894,7 +884,7 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+  convert_moments_biased(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -1168,7 +1158,7 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
     }
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Y_mlmc_mom, momentStats);
+  convert_moments_biased(Y_mlmc_mom, momentStats);
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = raw_N_hf[0] * hf_cost[0] + raw_N_lf[0] * lf_cost[0]; // 1st lev
@@ -2655,19 +2645,76 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 
 
 void NonDMultilevelSampling::
-convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
+convert_moments_unbiased(const RealMatrix& sum_Y1, const RealMatrix& sum_Y2,
+			 const RealMatrix& sum_Y3, const RealMatrix& sum_Y4,
+			 const Sizet2DArray& N_l, RealMatrix& final_mom)
 {
-  // Note: raw_mom is numFunctions x 4 and final_stat_mom is the transpose
-  if (final_stat_mom.empty())
-    final_stat_mom.shapeUninitialized(4, numFunctions);
+  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1;
+  Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4, rm2_Yl;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    // accumulate unbiased level estimates for raw moments:
+    rm1 = rm2 = rm3 = rm4 = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+      Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; nm3 = Nlq - 3;
+      rm1   += sum_Y1(qoi,lev) / Nlq;
+      rm2_Yl = sum_Y2(qoi,lev) / nm1;
+      rm2   += rm2_Yl;
+      rm3   += sum_Y3(qoi,lev) * Nlq / (nm1 * nm2);
+      rm4   += sum_Y4(qoi,lev) * Nlq * (Nlq + 1) / (nm1 * nm2 * nm3)
+	    -  3. * nm1 * nm1 / (nm2 * nm3) * rm2_Yl;
+    }
+
+    // conversion from raw to centered for multilevel:
+    Nlq = N_l[0][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+    Real mu_0 = sum_Y1(qoi,0) / Nlq, rm2_0 = sum_Y2(qoi,0) / nm1,
+        rm3_0 = sum_Y3(qoi,0) * Nlq / (nm1 * nm2), mu_Yl, rm2_Yl, rm3_Yl;
+    Real cm2_delta = Nlq * rm1 * (rm1 - 2. * mu_0) / nm1,
+         cm3_delta = Nlq * rm1 / (nm1 * nm2) *
+           ( Nlq * rm1 * (3. * mu_0 - rm1) - 3. * nm1 * rm2_0 ),
+         cm4_delta = -2. * rm1 / (nm2 * (Nlq - 3)) *
+           (2. * np1 * nm2 * rm3_0 - rm1 * Nlq * Nlq *
+           (6. * rm2_0 - rm1 / nm1 * (rm1 * nm2 + 2. * mu_0 * np1) ) );
+    // Level 2 through L terms:
+    for (lev=1; lev<num_lev; ++lev) {
+      size_t Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+      mu_Yl  = sum_Y1(qoi,lev) / Nlq;
+      rm2_Yl = sum_Y2(qoi,lev) / nm1;
+      rm3_Yl = sum_Y3(qoi,lev) * Nlq / (nm1 * nm2);
+      cm2_delta -= 2. * Nlq * rm1 * mu_Yl / nm1;
+      cm3_delta += 3. * Nlq * rm1 * ( Nlq * rm1 * mu_Yl - nm1 * rm2_Yl )
+	/ (nm1 * nm2);
+      cm4_delta -= 4. * rm1 * Nlq / (nm2 * (Nlq - 3))
+	* (np1 * nm2 / Nlq * rm3_Yl - rm1 * Nlq
+	* (3. * rm2_Yl - rm1 * np1 / nm1 * mu_Yl) );
+    }
+    cm1 = rm1;              cm2 = rm2 + cm2_delta;
+    cm3 = rm3 + cm3_delta;  cm4 = rm4 + cm4_delta;
+    final_mom.shapeUninitialized(4, numFunctions);
+    if (finalMomentsType == CENTRAL_MOMENTS) {
+      final_mom(0,qoi) = cm1;  final_mom(1,qoi) = cm2;
+      final_mom(2,qoi) = cm3;  final_mom(3,qoi) = cm4;
+    }
+    else
+      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
+			   final_mom(1,qoi), final_mom(2,qoi),
+			   final_mom(3,qoi));
+  }
+}
+
+
+void NonDMultilevelSampling::
+convert_moments_biased(const RealMatrix& raw_mom, RealMatrix& final_mom)
+{
+  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
+  if (final_mom.empty())
+    final_mom.shapeUninitialized(4, numFunctions);
 
   // Convert uncentered raw moment estimates to central moments
   if (finalMomentsType == CENTRAL_MOMENTS) {
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), final_stat_mom(0,qoi),
-			     final_stat_mom(1,qoi), final_stat_mom(2,qoi),
-			     final_stat_mom(3,qoi));
+			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
+			     final_mom(2,qoi), final_mom(3,qoi));
   }
   // Convert uncentered raw moment estimates to standardized moments
   else { //if (finalMomentsType == STANDARD_MOMENTS) {
@@ -2675,22 +2722,22 @@ convert_moments(const RealMatrix& raw_mom, RealMatrix& final_stat_mom)
     for (size_t qoi=0; qoi<numFunctions; ++qoi) {
       uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
 			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
-      centered_to_standard(cm1, cm2, cm3, cm4, final_stat_mom(0,qoi),
-			   final_stat_mom(1,qoi), final_stat_mom(2,qoi),
-			   final_stat_mom(3,qoi));
+      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
+			   final_mom(1,qoi), final_mom(2,qoi),
+			   final_mom(3,qoi));
     }
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
-	   << " final mom 1 = " << final_stat_mom(0,qoi) << '\n'
+	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
 	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
-	   << " final mom 2 = " << final_stat_mom(1,qoi) << '\n'
+	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
 	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
-	   << " final mom 3 = " << final_stat_mom(2,qoi) << '\n'
+	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
 	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
-	   << " final mom 4 = " << final_stat_mom(3,qoi) << "\n\n";
+	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
 }
 
 
