@@ -371,7 +371,7 @@ private:
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
-  void convert_moments_biased(const RealMatrix& raw_mom, RealMatrix& final_mom);
+  void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
   void convert_moments_unbiased(const RealMatrix& sum_Y1,
@@ -598,7 +598,8 @@ variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
   // Note: precision loss in variance is difficult to avoid without
   // storing full sample history; must accumulate Y^2 across iterations
   // instead of (Y-mean)^2 since mean is updated on each iteration.
-  Real var_Y = (sum_YY - Nlq * mu_Y * mu_Y) / (Nlq - 1);
+  Real var_Y = (sum_YY / Nlq - mu_Y * mu_Y)
+             * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
   return var_Y;
 
   /*
@@ -607,8 +608,6 @@ variance_Ysum(Real sum_Y, Real sum_YY, /*Real offset,*/ size_t Nlq)
     //  + offset   * offset    // uncenter from old mu_hat
     //  - new_mu_Y * new_mu_Y; // recenter with new_mu_Y
     - mu_Y * mu_Y - 2. * mu_Y * offset; // cancel offset^2
-  // *** TO DO: this is not consistent with -Nlq * mu^2 / (Nlq - 1) ...
-  // *** could this be the source of negative variance...?
   */
 }
 
@@ -619,10 +618,10 @@ variance_Qsum(Real sum_Ql, Real sum_Qlm1, Real sum_QlQl, Real sum_QlQlm1,
 {
   Real mu_Ql = sum_Ql / Nlq, mu_Qlm1 = sum_Qlm1 / Nlq;
   //var_Y = var_Ql - 2.* covar_QlQlm1 + var_Qlm1;
-  return (     sum_QlQl - Nlq * mu_Ql   * mu_Ql     // var_Ql
-    - 2. * ( sum_QlQlm1 - Nlq * mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
-    +      sum_Qlm1Qlm1 - Nlq * mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
-    / (Nlq - 1); // bias corr
+  return (       sum_QlQl / Nlq - mu_Ql   * mu_Ql     // var_Ql
+    - 2. * (   sum_QlQlm1 / Nlq - mu_Ql   * mu_Qlm1 ) // covar_QlQlm1
+    +        sum_Qlm1Qlm1 / Nlq - mu_Qlm1 * mu_Qlm1 ) // var_Qlm1
+    * (Real)Nlq / (Real)(Nlq - 1); // Bessel's correction
 }
 
 
@@ -744,22 +743,23 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 {
   // convert from uncentered ("raw") to centered moments for single level
 
-  // Population-based unbiased estimators:
+  // Sample-based biased estimators:
+  uncentered_to_centered(rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4);
+  // Bias corrections for population-based estimators w/ estimated means:
   if (Nlq > 3) {
-    cm1 = rm1;                               // mean
     Real cm1_sq = cm1 * cm1;
-    size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
-    cm2 = rm2 - Nlq / nm1 * cm1_sq; // variance
-    cm3 = rm3 - Nlq / (nm1 * nm2) * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq);
-    // or rm3 - Nlq * cm1 * (3. * nm1 * rm2 - 2. * Nlq * cm1_sq) / (nm1 * nm2);
-    cm4 = rm4 - 2. * cm1 / (nm2 * (Nlq - 3)) * (2. * (Nlq + 1) * nm2 * rm3
-	- 3. * cm1 * Nlq * Nlq * (2. * rm2 - Nlq / nm1 * cm1_sq ) );
+    Real nm1 = Nlq - 1., nm2 = Nlq - 2., nm3 = Nlq - 3., n_sq = Nlq * Nlq,
+      n2m3 = 2.*Nlq - 3.;
+    cm2 *= Nlq / nm1; // unbiased population variance from Bessel's correction
+    // TO DO: verify these corrections from sample central moments to 
+    // population central moments (taken from Joreskog, 1999)
+    cm3 *= n_sq / (nm1 * nm2);
+    cm4  = Nlq / (nm1 * nm2 * nm3)
+         * ( (n_sq - n2m3) * cm4 - 3. * n2m3 * cm2 * cm2 );
   }
-  else {
+  else
     Cerr << "Warning: due to small sample size, resorting to biased estimator "
 	 << "conversion in NonDMultilevelSampling::uncentered_to_centered().\n";
-    uncentered_to_centered(rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4);
-  }
 }
 
 
