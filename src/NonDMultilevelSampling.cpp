@@ -2750,18 +2750,18 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
 			   cm1l, cm2l, cm3l, cm4l, Nlq);
     cm2l_sq = cm2l * cm2l;
-    var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq; // *** TO DO
+    var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
     agg_estim_var = var_P2l / Nlq;
     for (lev=1; lev<num_lev; ++lev) {
       Nlq = num_Q[lev][qoi];
       mu_Q2l = sum_Q2l(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, mu_Q2l,
 			     sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			     cm1l, cm2l, cm3l, cm4l, Nlq);
+			     cm1l, cm2l, cm3l, cm4l, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
       mu_Q2lm1 = sum_Q2lm1(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1lm1(qoi,lev) / Nlq, mu_Q2lm1,
 			     sum_Q3lm1(qoi,lev) / Nlq, sum_Q4lm1(qoi,lev) / Nlq,
-			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
+			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
       cm1l_sq = cm1l * cm1l; cm1lm1_sq = cm1lm1 * cm1lm1;
       cm2l_sq = cm2l * cm2l; cm2lm1_sq = cm2lm1 * cm2lm1;
       var_Ql   = ( sum_Q2l(qoi,lev)   / Nlq - cm1l   * cm1l)    * bessel_corr;
@@ -2774,12 +2774,12 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	+ cm1lm1_sq * mu_Q2l + cm1l_sq * mu_Q2lm1
 	- 2. * cm1l * mu_Q1lQ2lm1 + 4. * cm1l * cm1lm1 * mu_Q1lQ1lm1
 	- 3. * cm1l_sq * cm1lm1_sq;
-      var_P2l     = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;   // *** TO DO
-      var_P2lm1   = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq; // *** TO DO
+      var_P2l     = cm4l   - cm2l_sq   + 2./(Nlq - 1.) * cm2l_sq;
+      var_P2lm1   = cm4lm1 - cm2lm1_sq + 2./(Nlq - 1.) * cm2lm1_sq;
       // [gg] fix to derivation: squared term
       term = mu_Q1lQ1lm1 - cm1l * cm1lm1;
       covar_P2lP2lm1
-	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.);// *** TO DO
+	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.);
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
     if (outputLevel >= DEBUG_OUTPUT)
