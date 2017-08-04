@@ -166,10 +166,10 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
-    if (subIteratorFlag)
-      multilevel_mc_Qsum(model_form); // includes error est
-    else
-      multilevel_mc_Ysum(model_form); // lighter weight
+    //if (subIteratorFlag)
+      multilevel_mc_Qsum(model_form); // w/ error est, unbiased central moments
+    //else
+    //  multilevel_mc_Ysum(model_form); // lighter weight
   }
 }
 
@@ -339,10 +339,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
-  /*
-  convert_moments_unbiased(sum_Y[1], sum_Y[2], sum_Y[3], sum_Y[4],
-			   N_l, momentStats);
-  */
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   equivHFEvals = raw_N_l[0] * cost[0]; // first level is single eval
@@ -472,6 +468,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	 << std::endl;
   }
 
+  /*
   // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments
   // have no bias correction (no additional variance from an estimated center).
@@ -491,6 +488,8 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   }
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(Q_raw_mom, momentStats);
+  */
+
   /*
   RealMatrix sum_Y1 = sum_Ql[1], sum_Y2 = sum_Qlm1[2],
              sum_Y3 = sum_Ql[3], sum_Y4 = sum_Qlm1[4];
@@ -498,6 +497,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   sum_Y3 -= sum_Qlm1[3]; sum_Y4 -= sum_Qlm1[4];
   convert_moments_unbiased(sum_Y1, sum_Y2, sum_Y3, sum_Y4, N_l, momentStats);
   */
+  convert_moments_unbiased(sum_Ql, sum_Qlm1, N_l, momentStats);
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -2602,47 +2602,49 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 
 
 void NonDMultilevelSampling::
-convert_moments_unbiased(const RealMatrix& sum_Y1, const RealMatrix& sum_Y2,
-			 const RealMatrix& sum_Y3, const RealMatrix& sum_Y4,
+convert_moments_unbiased(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			 const Sizet2DArray& N_l, RealMatrix& final_mom)
 {
-  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1;
-  Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4, rm2_Yl;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    // accumulate unbiased level estimates for raw moments:
-    rm1 = rm2 = rm3 = rm4 = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
-      Nlq = N_l[lev][qoi];
-      rm1 += sum_Y1(qoi,lev) / Nlq;  rm2 += sum_Y2(qoi,lev) / Nlq;
-      rm3 += sum_Y3(qoi,lev) / Nlq;  rm4 += sum_Y4(qoi,lev) / Nlq;
-    }
+  RealMatrix &sum_Q1l   = sum_Ql[1],   &sum_Q2l   = sum_Ql[2],
+             &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
+             &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
+             &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
 
+  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1;
+  Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4, mu_l, rm2_l, rm3_l, rm4_l,
+    mu_lm1, rm2_lm1, rm3_lm1, rm4_lm1, cm2_delta, cm3_delta, cm4_delta;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
     // conversion from raw to centered for multilevel:
-    Nlq = N_l[0][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
-    Real mu_0 = sum_Y1(qoi,0) / Nlq, rm2_0 = sum_Y2(qoi,0) / Nlq,
-        rm3_0 = sum_Y3(qoi,0) / Nlq, mu_Yl, rm2_Yl, rm3_Yl;
-    // *** BEGIN TO DO *** 
-    Real cm2_delta = Nlq * rm1 * (rm1 - 2. * mu_0) / nm1,
-         cm3_delta = Nlq * rm1 / (nm1 * nm2) *
-           ( Nlq * rm1 * (3. * mu_0 - rm1) - 3. * nm1 * rm2_0 ),
-         cm4_delta = -2. * rm1 / (nm2 * (Nlq - 3)) *
-           (2. * np1 * nm2 * rm3_0 - rm1 * Nlq * Nlq *
-           (6. * rm2_0 - rm1 / nm1 * (rm1 * nm2 + 2. * mu_0 * np1) ) );
-    // *** END TO DO *** 
+    lev = 0;
+    Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+    rm1 =  mu_l = sum_Q1l(qoi,lev) / Nlq; rm2 = rm2_l = sum_Q2l(qoi,lev) / Nlq;
+    rm3 = rm3_l = sum_Q3l(qoi,lev) / Nlq; rm4 = rm4_l = sum_Q4l(qoi,lev) / Nlq,
+    cm2_delta = (rm2_l - Nlq * mu_l * mu_l) / nm1;
+    cm3_delta = ( (3 * Nlq - 2) * rm3_l - Nlq * Nlq *
+		  (3. * mu_l * rm2_l - 2. * mu_l * mu_l) ) / (nm1 * nm2);
+    // *** TO DO ***
+    cm4_delta = 0.; // -2. * rm1 / (nm2 * (Nlq - 3)) *
+      // (2. * np1 * nm2 * rm3_l - rm1 * Nlq * Nlq *
+      // (6. * rm2_l - rm1 / nm1 * (rm1 * nm2 + 2. * mu_l * np1) ) );
     // Level 2 through L terms:
     for (lev=1; lev<num_lev; ++lev) {
-      size_t Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
-      mu_Yl  = sum_Y1(qoi,lev) / Nlq;
-      rm2_Yl = sum_Y2(qoi,lev) / Nlq;
-      rm3_Yl = sum_Y3(qoi,lev) / Nlq;
-      // *** BEGIN TO DO *** 
-      cm2_delta -= 2. * Nlq * rm1 * mu_Yl / nm1;
-      cm3_delta += 3. * Nlq * rm1 * ( Nlq * rm1 * mu_Yl - nm1 * rm2_Yl )
-	/ (nm1 * nm2);
-      cm4_delta -= 4. * rm1 * Nlq / (nm2 * (Nlq - 3))
-	* (np1 * nm2 / Nlq * rm3_Yl - rm1 * Nlq
-	* (3. * rm2_Yl - rm1 * np1 / nm1 * mu_Yl) );
-      // *** END TO DO *** 
+      Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+      mu_l  = sum_Q1l(qoi,lev) / Nlq; mu_lm1  = sum_Q1lm1(qoi,lev) / Nlq;
+      rm2_l = sum_Q2l(qoi,lev) / Nlq; rm2_lm1 = sum_Q2lm1(qoi,lev) / Nlq;
+      rm3_l = sum_Q3l(qoi,lev) / Nlq; rm3_lm1 = sum_Q3lm1(qoi,lev) / Nlq;
+      rm4_l = sum_Q4l(qoi,lev) / Nlq; rm4_lm1 = sum_Q4lm1(qoi,lev) / Nlq;
+      rm1  +=  mu_l -  mu_lm1;        rm2    += rm2_l - rm2_lm1;
+      rm3  += rm3_l - rm3_lm1;        rm4    += rm4_l - rm4_lm1;
+      cm2_delta += (rm2_l - rm2_lm1 - Nlq * (mu_l * mu_l - mu_lm1 * mu_lm1) )
+		/  nm1;
+      cm3_delta += ( (3 * Nlq - 2) * (rm3_l - rm3_lm1) - Nlq * Nlq *
+		     (3. * (mu_l * rm2_l - mu_lm1 * rm2_lm1) -
+		      2. * (mu_l * mu_l * mu_l - mu_lm1 * mu_lm1 * mu_lm1) ) )
+		/  (nm1 * nm2);
+      // *** TO DO ***
+      cm4_delta += 0.; //4. * rm1 * Nlq / (nm2 * (Nlq - 3))
+	// * (np1 * nm2 / Nlq * rm3_l - rm1 * Nlq
+	// * (3. * rm2_l - rm1 * np1 / nm1 * mu_l) );
     }
 
     cm1 = rm1;              cm2 = rm2 + cm2_delta;

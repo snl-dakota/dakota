@@ -374,10 +374,8 @@ private:
   void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
-  void convert_moments_unbiased(const RealMatrix& sum_Y1,
-				const RealMatrix& sum_Y2,
-				const RealMatrix& sum_Y3,
-				const RealMatrix& sum_Y4,
+  void convert_moments_unbiased(IntRealMatrixMap& sum_Ql,
+				IntRealMatrixMap& sum_Qlm1,
 				const Sizet2DArray& N_l, RealMatrix& final_mom);
 
   /// populate finalStatErrors for MLMC based on Q sums
