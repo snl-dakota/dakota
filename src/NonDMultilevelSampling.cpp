@@ -2748,7 +2748,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			   cm1l, cm2l, cm3l, cm4l, Nlq);
+			   cm1l, cm2l, cm3l, cm4l, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
     cm2l_sq = cm2l * cm2l;
     var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
     agg_estim_var = var_P2l / Nlq;
