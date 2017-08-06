@@ -2610,41 +2610,41 @@ convert_moments_unbiased(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
              &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
 
-  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1;
+  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1, n_sq;
   Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4, mu_l, rm2_l, rm3_l, rm4_l,
-    mu_lm1, rm2_lm1, rm3_lm1, rm4_lm1, cm2_delta, cm3_delta, cm4_delta;
+    mu_lm1, rm2_lm1, rm3_lm1, rm4_lm1, mu_l_sq, mu_lm1_sq,
+    cm2_delta, cm3_delta, cm4_delta;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     // conversion from raw to centered for multilevel:
     lev = 0;
-    Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+    Nlq = N_l[lev][qoi];
     rm1 =  mu_l = sum_Q1l(qoi,lev) / Nlq; rm2 = rm2_l = sum_Q2l(qoi,lev) / Nlq;
     rm3 = rm3_l = sum_Q3l(qoi,lev) / Nlq; rm4 = rm4_l = sum_Q4l(qoi,lev) / Nlq,
-    cm2_delta = (rm2_l - Nlq * mu_l * mu_l) / nm1;
-    cm3_delta = ( (3 * Nlq - 2) * rm3_l - Nlq * Nlq *
-		  (3. * mu_l * rm2_l - 2. * mu_l * mu_l) ) / (nm1 * nm2);
-    // *** TO DO ***
-    cm4_delta = 0.; // -2. * rm1 / (nm2 * (Nlq - 3)) *
-      // (2. * np1 * nm2 * rm3_l - rm1 * Nlq * Nlq *
-      // (6. * rm2_l - rm1 / nm1 * (rm1 * nm2 + 2. * mu_l * np1) ) );
+    nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+    n_sq = Nlq * Nlq; mu_l_sq = mu_l * mu_l;
+    cm2_delta = (rm2_l - Nlq * mu_l_sq) / nm1;
+    cm3_delta = ( (3 * Nlq - 2) * rm3_l - n_sq * mu_l *
+		  (3. * rm2_l - 2. * mu_l) ) / (nm1 * nm2);
+    cm4_delta = ( (7 * n_sq - 11 * Nlq + 6) * rm2_l - n_sq * np1 * mu_l_sq)
+              / ( nm1 * nm2 * (Nlq - 3) );
     // Level 2 through L terms:
     for (lev=1; lev<num_lev; ++lev) {
-      Nlq = N_l[lev][qoi]; nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
+      Nlq = N_l[lev][qoi];
       mu_l  = sum_Q1l(qoi,lev) / Nlq; mu_lm1  = sum_Q1lm1(qoi,lev) / Nlq;
       rm2_l = sum_Q2l(qoi,lev) / Nlq; rm2_lm1 = sum_Q2lm1(qoi,lev) / Nlq;
       rm3_l = sum_Q3l(qoi,lev) / Nlq; rm3_lm1 = sum_Q3lm1(qoi,lev) / Nlq;
       rm4_l = sum_Q4l(qoi,lev) / Nlq; rm4_lm1 = sum_Q4lm1(qoi,lev) / Nlq;
+      nm1   = Nlq - 1; nm2   = Nlq - 2; np1 = Nlq + 1;
+      n_sq  = Nlq * Nlq; mu_l_sq = mu_l * mu_l; mu_lm1_sq = mu_lm1 * mu_lm1;
       rm1  +=  mu_l -  mu_lm1;        rm2    += rm2_l - rm2_lm1;
       rm3  += rm3_l - rm3_lm1;        rm4    += rm4_l - rm4_lm1;
-      cm2_delta += (rm2_l - rm2_lm1 - Nlq * (mu_l * mu_l - mu_lm1 * mu_lm1) )
-		/  nm1;
-      cm3_delta += ( (3 * Nlq - 2) * (rm3_l - rm3_lm1) - Nlq * Nlq *
-		     (3. * (mu_l * rm2_l - mu_lm1 * rm2_lm1) -
-		      2. * (mu_l * mu_l * mu_l - mu_lm1 * mu_lm1 * mu_lm1) ) )
-		/  (nm1 * nm2);
-      // *** TO DO ***
-      cm4_delta += 0.; //4. * rm1 * Nlq / (nm2 * (Nlq - 3))
-	// * (np1 * nm2 / Nlq * rm3_l - rm1 * Nlq
-	// * (3. * rm2_l - rm1 * np1 / nm1 * mu_l) );
+      cm2_delta += (rm2_l - rm2_lm1 - Nlq * (mu_l_sq - mu_lm1_sq) ) /  nm1;
+      cm3_delta += ( (3 * Nlq - 2) * (rm3_l - rm3_lm1) - n_sq *
+		     (3. * (mu_l    * rm2_l - mu_lm1    * rm2_lm1) -
+		      2. * (mu_l_sq * mu_l  - mu_lm1_sq * mu_lm1) ) )
+	        /  (nm1 * nm2);
+      cm4_delta += ( (7 * n_sq - 11 * Nlq + 6) * (rm2_l - rm2_lm1) - n_sq * np1
+		*    (mu_l_sq - mu_lm1_sq) ) / ( nm1 * nm2 * (Nlq - 3) );
     }
 
     cm1 = rm1;              cm2 = rm2 + cm2_delta;
