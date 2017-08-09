@@ -468,36 +468,40 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 	 << std::endl;
   }
 
-  /*
-  // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final expected
+  // Roll up expected value estimators for central moments.  Final expected
   // value is sum of expected values from telescopic sum.  Note: raw moments
   // have no bias correction (no additional variance from an estimated center).
-  RealMatrix Q_raw_mom(numFunctions, 4);
+  //RealMatrix Q_raw_mom(numFunctions, 4);
   RealMatrix &sum_Q1l   = sum_Ql[1],   &sum_Q2l   = sum_Ql[2],
              &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
              &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
              &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
+  Real cm1, cm2, cm3, cm4, cm1l, cm2l, cm3l, cm4l;
+  if (momentStats.empty())
+    momentStats.shapeUninitialized(4, numFunctions);
   for (qoi=0; qoi<numFunctions; ++qoi) {
+    cm1 = cm2 = cm3 = cm4 = 0.;
     for (lev=0; lev<num_lev; ++lev) {
       size_t Nlq = N_l[lev][qoi];
-      Q_raw_mom(qoi,0) += (sum_Q1l(qoi,lev) - sum_Q1lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,1) += (sum_Q2l(qoi,lev) - sum_Q2lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,2) += (sum_Q3l(qoi,lev) - sum_Q3lm1(qoi,lev)) / Nlq;
-      Q_raw_mom(qoi,3) += (sum_Q4l(qoi,lev) - sum_Q4lm1(qoi,lev)) / Nlq;
+      // roll up unbiased moments centered on level mean
+      uncentered_to_centered(sum_Q1l(qoi,lev)/Nlq, sum_Q2l(qoi,lev)/Nlq,
+			     sum_Q3l(qoi,lev)/Nlq, sum_Q4l(qoi,lev)/Nlq,
+			     cm1l, cm2l, cm3l, cm4l, Nlq);
+      cm1 += cm1l; cm2 += cm2l; cm3 += cm3l; cm4 += cm4l;
+      if (lev) {
+	uncentered_to_centered(sum_Q1lm1(qoi,lev)/Nlq, sum_Q2lm1(qoi,lev)/Nlq,
+			       sum_Q3lm1(qoi,lev)/Nlq, sum_Q4lm1(qoi,lev)/Nlq,
+			       cm1l, cm2l, cm3l, cm4l, Nlq);
+	cm1 -= cm1l; cm2 -= cm2l; cm3 -= cm3l; cm4 -= cm4l;
+      }
     }
+    Real* mom_q = momentStats[qoi];
+    if (finalMomentsType == CENTRAL_MOMENTS)
+      { mom_q[0] = cm1; mom_q[1] = cm2; mom_q[2] = cm3; mom_q[3] = cm4; }
+    else
+      centered_to_standard(cm1, cm2, cm3, cm4,
+			   mom_q[0], mom_q[1], mom_q[2], mom_q[3]);
   }
-  // Convert uncentered raw moment estimates to final moments (central or std)
-  convert_moments(Q_raw_mom, momentStats);
-  */
-
-  /*
-  RealMatrix sum_Y1 = sum_Ql[1], sum_Y2 = sum_Qlm1[2],
-             sum_Y3 = sum_Ql[3], sum_Y4 = sum_Qlm1[4];
-  sum_Y1 -= sum_Qlm1[1]; sum_Y2 -= sum_Qlm1[2];
-  sum_Y3 -= sum_Qlm1[3]; sum_Y4 -= sum_Qlm1[4];
-  convert_moments_unbiased(sum_Y1, sum_Y2, sum_Y3, sum_Y4, N_l, momentStats);
-  */
-  convert_moments_unbiased(sum_Ql, sum_Qlm1, N_l, momentStats);
 
   // populate finalStatErrors
   compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l);
@@ -2601,6 +2605,7 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 }
 
 
+/*
 void NonDMultilevelSampling::
 convert_moments_unbiased(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			 const Sizet2DArray& N_l, RealMatrix& final_mom)
@@ -2660,6 +2665,7 @@ convert_moments_unbiased(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   final_mom(3,qoi));
   }
 }
+*/
 
 
 void NonDMultilevelSampling::
@@ -2750,7 +2756,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     lev = 0; Nlq = num_Q[lev][qoi];
     uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, sum_Q2l(qoi,lev) / Nlq,
 			   sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			   cm1l, cm2l, cm3l, cm4l, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
+			   cm1l, cm2l, cm3l, cm4l, Nlq);
     cm2l_sq = cm2l * cm2l;
     var_P2l = cm4l - cm2l_sq + 2./(Nlq - 1.) * cm2l_sq;
     agg_estim_var = var_P2l / Nlq;
@@ -2759,11 +2765,11 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       mu_Q2l = sum_Q2l(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1l(qoi,lev) / Nlq, mu_Q2l,
 			     sum_Q3l(qoi,lev) / Nlq, sum_Q4l(qoi,lev) / Nlq,
-			     cm1l, cm2l, cm3l, cm4l, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
+			     cm1l, cm2l, cm3l, cm4l, Nlq);
       mu_Q2lm1 = sum_Q2lm1(qoi,lev) / Nlq;
       uncentered_to_centered(sum_Q1lm1(qoi,lev) / Nlq, mu_Q2lm1,
 			     sum_Q3lm1(qoi,lev) / Nlq, sum_Q4lm1(qoi,lev) / Nlq,
-			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq); // need unbiased est of 4th central moment (non-excess kurtosis, not cumulant)
+			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
       cm1l_sq = cm1l * cm1l; cm1lm1_sq = cm1lm1 * cm1lm1;
       cm2l_sq = cm2l * cm2l; cm2lm1_sq = cm2lm1 * cm2lm1;
       var_Ql   = ( sum_Q2l(qoi,lev)   / Nlq - cm1l   * cm1l)    * bessel_corr;

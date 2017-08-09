@@ -372,11 +372,6 @@ private:
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
   void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
-  /// convert uncentered raw moments (multilevel expectations) to
-  /// standardized moments
-  void convert_moments_unbiased(IntRealMatrixMap& sum_Ql,
-				IntRealMatrixMap& sum_Qlm1,
-				const Sizet2DArray& N_l, RealMatrix& final_mom);
 
   /// populate finalStatErrors for MLMC based on Q sums
   void compute_error_estimates(IntRealMatrixMap& sum_Ql,
@@ -420,14 +415,6 @@ private:
   /// convert uncentered (raw) moments to centered moments; unbiased estimators
   void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 			      Real& cm1, Real& cm2, Real& cm3, Real& cm4) const;
-  // convert centered moments to uncentered (raw) moments; biased estimators
-  //void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-  //			        Real& rm1, Real& rm2, Real& rm3, Real& rm4)
-  //                            const;
-  // convert centered moments to uncentered (raw) moments; unbiased estimators
-  //void centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-  //			        Real& rm1, Real& rm2, Real& rm3, Real& rm4,
-  //                            size_t Nlq) const;
   /// convert centered moments to standardized moments
   void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
@@ -746,59 +733,18 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
   // Bias corrections for population-based estimators w/ estimated means:
   if (Nlq > 3) {
     Real cm1_sq = cm1 * cm1;
-    Real nm1 = Nlq - 1., nm2 = Nlq - 2., nm3 = Nlq - 3., n_sq = Nlq * Nlq,
-      n2m3 = 2.*Nlq - 3.;
+    Real nm1 = Nlq - 1., nm2 = Nlq - 2., n_sq = Nlq * Nlq;
     cm2 *= Nlq / nm1; // unbiased population variance from Bessel's correction
-    // TO DO: verify these corrections from sample central moments to 
-    // population central moments (taken from Joreskog, 1999)
     cm3 *= n_sq / (nm1 * nm2);
-    cm4  = Nlq / (nm1 * nm2 * nm3)
-         * ( (n_sq - n2m3) * cm4 - 3. * n2m3 * cm2 * cm2 );
+    // From "Modeling with Data," Klemens 2009 (Appendix M).
+    // Note: cm2 is now unbiased within following usage:
+    cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
+        / (n_sq - 3. * Nlq + 3.);
   }
   else
     Cerr << "Warning: due to small sample size, resorting to biased estimator "
 	 << "conversion in NonDMultilevelSampling::uncentered_to_centered().\n";
 }
-
-
-/*
-inline void NonDMultilevelSampling::
-centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
-                       Real& rm1, Real& rm2, Real& rm3, Real& rm4) const
-{
-  // convert from centered to uncentered ("raw") moments
-
-  // Sample-based conversions involving biased estimators:
-  rm1 = cm1;
-  rm2 = cm2 + cm1 * cm1;
-  rm3 = cm3 + cm1 * (3. * cm2 + cm1 * cm1);
-  rm4 = cm4 + cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
-}
-
-
-inline void NonDMultilevelSampling::
-centered_to_uncentered(Real  cm1, Real  cm2, Real  cm3, Real  cm4, Real& rm1,
-		       Real& rm2, Real& rm3, Real& rm4, size_t Nlq) const
-{
-  // convert from centered to uncentered ("raw") moments
-
-  // Population-based unbiased estimators:
-  if (Nlq > 3) {
-    rm1 = cm1;                               // mean
-    Real cm1_sq = cm1 * cm1;
-    size_t nm1 = Nlq - 1, nm2 = Nlq - 2;
-    rm2 = cm2 + Nlq / nm1 * cm1_sq; // variance
-    rm3 = cm3 + Nlq / (nm1 * nm2) * cm1 * (3. * nm1 * cm2 + Nlq * cm1_sq);
-    rm4 = cm4 + 2. * cm1 / (nm2 * (Nlq - 3)) * (2. * (Nlq + 1) * nm2 * rm3
-	- 3. * cm1 * Nlq * Nlq * (2. * rm2 - Nlq / nm1 * cm1_sq ) );
-  }
-  else {
-    Cerr << "Warning: due to small sample size, resorting to biased estimator "
-	 << "conversion in NonDMultilevelSampling::centered_to_uncentered().\n";
-    centered_to_uncentered(cm1, cm2, cm3, cm4, rm1, rm2, rm3, rm4);
-  }
-}
-*/
 
 
 inline void NonDMultilevelSampling::
