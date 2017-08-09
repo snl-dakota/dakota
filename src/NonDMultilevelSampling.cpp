@@ -2605,69 +2605,6 @@ apply_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
 }
 
 
-/*
-void NonDMultilevelSampling::
-convert_moments_unbiased(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			 const Sizet2DArray& N_l, RealMatrix& final_mom)
-{
-  RealMatrix &sum_Q1l   = sum_Ql[1],   &sum_Q2l   = sum_Ql[2],
-             &sum_Q3l   = sum_Ql[3],   &sum_Q4l   = sum_Ql[4],
-             &sum_Q1lm1 = sum_Qlm1[1], &sum_Q2lm1 = sum_Qlm1[2],
-             &sum_Q3lm1 = sum_Qlm1[3], &sum_Q4lm1 = sum_Qlm1[4];
-
-  size_t qoi, lev, num_lev = N_l.size(), Nlq, nm1, nm2, nm3, np1, n_sq;
-  Real rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4, mu_l, rm2_l, rm3_l, rm4_l,
-    mu_lm1, rm2_lm1, rm3_lm1, rm4_lm1, mu_l_sq, mu_lm1_sq,
-    cm2_delta, cm3_delta, cm4_delta;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    // conversion from raw to centered for multilevel:
-    lev = 0;
-    Nlq = N_l[lev][qoi];
-    rm1 =  mu_l = sum_Q1l(qoi,lev) / Nlq; rm2 = rm2_l = sum_Q2l(qoi,lev) / Nlq;
-    rm3 = rm3_l = sum_Q3l(qoi,lev) / Nlq; rm4 = rm4_l = sum_Q4l(qoi,lev) / Nlq,
-    nm1 = Nlq - 1; nm2 = Nlq - 2; np1 = Nlq + 1;
-    n_sq = Nlq * Nlq; mu_l_sq = mu_l * mu_l;
-    cm2_delta = (rm2_l - Nlq * mu_l_sq) / nm1;
-    cm3_delta = ( (3 * Nlq - 2) * rm3_l - n_sq * mu_l *
-		  (3. * rm2_l - 2. * mu_l) ) / (nm1 * nm2);
-    cm4_delta = ( (7 * n_sq - 11 * Nlq + 6) * rm2_l - n_sq * np1 * mu_l_sq)
-              / ( nm1 * nm2 * (Nlq - 3) );
-    // Level 2 through L terms:
-    for (lev=1; lev<num_lev; ++lev) {
-      Nlq = N_l[lev][qoi];
-      mu_l  = sum_Q1l(qoi,lev) / Nlq; mu_lm1  = sum_Q1lm1(qoi,lev) / Nlq;
-      rm2_l = sum_Q2l(qoi,lev) / Nlq; rm2_lm1 = sum_Q2lm1(qoi,lev) / Nlq;
-      rm3_l = sum_Q3l(qoi,lev) / Nlq; rm3_lm1 = sum_Q3lm1(qoi,lev) / Nlq;
-      rm4_l = sum_Q4l(qoi,lev) / Nlq; rm4_lm1 = sum_Q4lm1(qoi,lev) / Nlq;
-      nm1   = Nlq - 1; nm2   = Nlq - 2; np1 = Nlq + 1;
-      n_sq  = Nlq * Nlq; mu_l_sq = mu_l * mu_l; mu_lm1_sq = mu_lm1 * mu_lm1;
-      rm1  +=  mu_l -  mu_lm1;        rm2    += rm2_l - rm2_lm1;
-      rm3  += rm3_l - rm3_lm1;        rm4    += rm4_l - rm4_lm1;
-      cm2_delta += (rm2_l - rm2_lm1 - Nlq * (mu_l_sq - mu_lm1_sq) ) /  nm1;
-      cm3_delta += ( (3 * Nlq - 2) * (rm3_l - rm3_lm1) - n_sq *
-		     (3. * (mu_l    * rm2_l - mu_lm1    * rm2_lm1) -
-		      2. * (mu_l_sq * mu_l  - mu_lm1_sq * mu_lm1) ) )
-	        /  (nm1 * nm2);
-      cm4_delta += ( (7 * n_sq - 11 * Nlq + 6) * (rm2_l - rm2_lm1) - n_sq * np1
-		*    (mu_l_sq - mu_lm1_sq) ) / ( nm1 * nm2 * (Nlq - 3) );
-    }
-
-    cm1 = rm1;              cm2 = rm2 + cm2_delta;
-    cm3 = rm3 + cm3_delta;  cm4 = rm4 + cm4_delta;
-    final_mom.shapeUninitialized(4, numFunctions);
-    if (finalMomentsType == CENTRAL_MOMENTS) {
-      final_mom(0,qoi) = cm1;  final_mom(1,qoi) = cm2;
-      final_mom(2,qoi) = cm3;  final_mom(3,qoi) = cm4;
-    }
-    else
-      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
-			   final_mom(1,qoi), final_mom(2,qoi),
-			   final_mom(3,qoi));
-  }
-}
-*/
-
-
 void NonDMultilevelSampling::
 convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
 {

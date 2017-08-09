@@ -709,13 +709,23 @@ inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
 		       Real& cm1, Real& cm2, Real& cm3, Real& cm4) const
 {
-  // convert from uncentered ("raw") to centered moments for single level
+  // convert from uncentered ("raw") to centered moments for a single level
 
-  // Sample-based conversions involving biased estimators:
+  // For moments from sampling:
+  // > Raw moments are unbiased. Central moments are unbiased for an exact mean
+  //   (i.e., the samples represent the full population).
+  // > For sampling a portion of the population, central moments {2,3,4} are 
+  //   biased estimators since the mean is approximated.  The conversion to
+  //   unbiased requires a correction based on the number of samples, as
+  //   implemented in the subsequent function.
+
   cm1 = rm1;             // mean
   cm2 = rm2 - cm1 * cm1; // variance
+
   cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);                         // using cm
   //  = rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);                    // using rm
+
+  // the 4th moment is the central moment (non-excess, not cumulant)
   cm4 = rm4 - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));      // using cm
   //  = rm4 - cm1 * (4. * rm3 - cm1 * (6. * rm2 - 3. * cm1 * cm1)); // using rm
 }
@@ -726,10 +736,11 @@ inline void NonDMultilevelSampling::
 uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 		       Real& cm2, Real& cm3, Real& cm4, size_t Nlq) const
 {
-  // convert from uncentered ("raw") to centered moments for single level
+  // convert from uncentered ("raw") to centered moments for a single level
 
-  // Sample-based biased estimators:
+  // Biased central moment estimators:
   uncentered_to_centered(rm1, rm2, rm3, rm4, cm1, cm2, cm3, cm4);
+
   // Bias corrections for population-based estimators w/ estimated means:
   if (Nlq > 3) {
     Real cm1_sq = cm1 * cm1;
@@ -737,7 +748,10 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
     cm2 *= Nlq / nm1; // unbiased population variance from Bessel's correction
     cm3 *= n_sq / (nm1 * nm2);
     // From "Modeling with Data," Klemens 2009 (Appendix M).
-    // Note: cm2 is now unbiased within following usage:
+    // Notes:
+    // (1) this is 4th central moment (non-excess, unnormalized),
+    //     which differs from the fourth cumulant (excess, unnormalized)
+    // (2) cm2 is now unbiased within following conversion:
     cm4 = ( n_sq * Nlq * cm4 / nm1 - (6. * Nlq - 9.) * cm2 * cm2 )
         / (n_sq - 3. * Nlq + 3.);
   }
