@@ -166,10 +166,10 @@ void NonDMultilevelSampling::core_run()
     }
   }
   else { // multiple solutions levels (only) --> traditional ML-MC
-    //if (subIteratorFlag)
+    if (true) //(subIteratorFlag)
       multilevel_mc_Qsum(model_form); // w/ error est, unbiased central moments
-    //else
-    //  multilevel_mc_Ysum(model_form); // lighter weight
+    else
+      multilevel_mc_Ysum(model_form); // lighter weight
   }
 }
 
@@ -488,13 +488,20 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
 			     sum_Q3l(qoi,lev)/Nlq, sum_Q4l(qoi,lev)/Nlq,
 			     cm1l, cm2l, cm3l, cm4l, Nlq);
       cm1 += cm1l; cm2 += cm2l; cm3 += cm3l; cm4 += cm4l;
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "CM_l   for level " << lev << ": "
+	     << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
       if (lev) {
 	uncentered_to_centered(sum_Q1lm1(qoi,lev)/Nlq, sum_Q2lm1(qoi,lev)/Nlq,
 			       sum_Q3lm1(qoi,lev)/Nlq, sum_Q4lm1(qoi,lev)/Nlq,
 			       cm1l, cm2l, cm3l, cm4l, Nlq);
 	cm1 -= cm1l; cm2 -= cm2l; cm3 -= cm3l; cm4 -= cm4l;
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "CM_lm1 for level " << lev << ": "
+	       << cm1l << ' ' << cm2l << ' ' << cm3l << ' ' << cm4l << '\n';
       }
     }
+    check_negative(cm2); check_negative(cm4);
     Real* mom_q = momentStats[qoi];
     if (finalMomentsType == CENTRAL_MOMENTS)
       { mom_q[0] = cm1; mom_q[1] = cm2; mom_q[2] = cm3; mom_q[3] = cm4; }
@@ -2685,9 +2692,10 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		 sum_Q2lm1(qoi,lev)    / Nlq - cm1lm1 * cm1lm1 ) * bessel_corr;
       agg_estim_var += var_Yl / Nlq;
     }
+    check_negative(agg_estim_var);
     finalStatErrors[cntr++] = std::sqrt(agg_estim_var); // std error
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Estimator variance for mean = " << agg_estim_var;
+      Cout << "Estimator variance for mean = " << agg_estim_var << "\n";
 
     // std error in variance or std deviation estimate
     lev = 0; Nlq = num_Q[lev][qoi];
@@ -2709,7 +2717,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			     cm1lm1, cm2lm1, cm3lm1, cm4lm1, Nlq);
       cm1l_sq = cm1l * cm1l; cm1lm1_sq = cm1lm1 * cm1lm1;
       cm2l_sq = cm2l * cm2l; cm2lm1_sq = cm2lm1 * cm2lm1;
-      var_Ql   = ( sum_Q2l(qoi,lev)   / Nlq - cm1l   * cm1l)    * bessel_corr;
+      var_Ql   = ( sum_Q2l(qoi,lev)   / Nlq - cm1l   * cm1l   ) * bessel_corr;
       var_Qlm1 = ( sum_Q2lm1(qoi,lev) / Nlq - cm1lm1 * cm1lm1 ) * bessel_corr;
       mu_Q1lQ1lm1 = sum_Q1lQ1lm1(qoi,lev) / Nlq;
       mu_Q1lQ2lm1 = sum_Q1lQ2lm1(qoi,lev) / Nlq;
@@ -2727,10 +2735,14 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	= mu_P2lP2lm1 - var_Ql * var_Qlm1 + term * term / (Nlq - 1.);
       agg_estim_var += (var_P2l + var_P2lm1 - 2. * covar_P2lP2lm1) / Nlq;
     }
+    check_negative(agg_estim_var);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << " and for variance = " << agg_estim_var << "\n\n";
+      Cout << "Estimator variance for variance = " << agg_estim_var << "\n\n";
 
-    if (finalMomentsType == STANDARD_MOMENTS) {// std error of std dev estimator
+    Real stdev = momentStats(1,qoi);
+    if (finalMomentsType == STANDARD_MOMENTS && stdev > 0.) {
+      // std error of std deviation estimator
+
       // An approximation for std error of a fn of another std error estimator
       // = derivative of function * std error of the other estimator --> 
       // d/dtheta of sqrt( variance(theta) ) = 1/2 variance^{-1/2} = 1/(2 stdev)
@@ -2738,7 +2750,6 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       // Harding et al. 2014 assumes normality in the QoI distribution and has
       // been observed to contain bias in numerical experiments, whereas bias
       // in the derivative approx goes to zero asymptotically.
-      Real stdev = momentStats(1,qoi);
       finalStatErrors[cntr] = std::sqrt(agg_estim_var) / (2. * stdev);
       ++cntr;
     }

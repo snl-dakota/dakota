@@ -1354,8 +1354,8 @@ accumulate_moments(const RealVectorArray& fn_samples, size_t q,
       // (Appendix M):  unbiased_cm4 =
       // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
       (ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
-      // unbiased standard (excess kurtosis) from Wikipedia (Estimators of
-      // population kurtosis)
+      // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
+      // population kurtosis")
       nm1 * ((ns + 1.) * ns * sum4 / (sum2*sum2) - 3.*nm1) / (nm2*(ns - 3.));
   else moments[3] = (central) ? 0. : -3.;
 }

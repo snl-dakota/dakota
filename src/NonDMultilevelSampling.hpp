@@ -418,7 +418,9 @@ private:
   /// convert centered moments to standardized moments
   void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4) const;
-  
+  /// detect, warn, and repair a negative central moment (for even orders)
+  void check_negative(Real& cm) const;
+
   /// compute sum of a set of observations
   Real sum(const Real* vec, size_t vec_len) const;
   /// compute average of a set of observations
@@ -767,9 +769,27 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 {
   // convert from centered to standardized moments
   sm1 = cm1;                    // mean
-  sm2 = std::sqrt(cm2);         // std deviation
-  sm3 = cm3 / (cm2 * sm2);      // skewness
-  sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+  if (cm2 > 0.) {
+    sm2 = std::sqrt(cm2);         // std deviation
+    sm3 = cm3 / (cm2 * sm2);      // skewness
+    sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
+  }
+  else {
+    Cerr << "\nWarning: central to standard conversion failed due to "
+	 << "non-positive\n         variance.  Retaining central moments.\n";
+    sm2 = 0.; sm3 = cm3; sm4 = cm4; // or assign NaN to sm{3,4}
+  }
+}
+
+
+inline void NonDMultilevelSampling::check_negative(Real& cm) const
+{
+  if (cm < 0.) {
+    Cerr << "\nWarning: central moment less than zero (" << cm << ").  "
+	 << "Repairing to zero.\n";
+    cm = 0.;
+    // TO DO:  consider hard error if COV < -tol (pass in mean and cm order)
+  }
 }
 
 
