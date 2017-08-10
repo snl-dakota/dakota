@@ -23,7 +23,7 @@ namespace Dakota {
 
 
 NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NOWPACTraits())),
   nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
   nowpacEvaluator(iteratedModel)
 {
@@ -34,7 +34,8 @@ NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NOWPACOptimizer::NOWPACOptimizer(Model& model): Optimizer(MIT_NOWPAC, model),
+NOWPACOptimizer::NOWPACOptimizer(Model& model):
+  Optimizer(MIT_NOWPAC, model, std::shared_ptr<TraitsBase>(new NOWPACTraits())),
   nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
   nowpacEvaluator(iteratedModel)
 {

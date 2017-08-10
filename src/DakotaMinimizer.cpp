@@ -195,29 +195,32 @@ void Minimizer::update_from_model(const Model& model)
   // TO DO: hard error if not supported; warning if promoted;
   //        quiet if natively supported
 
+
   // Check for linear constraint support in method selection
-  if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
-       ( methodName == NL2SOL       ||
-	 methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
-	 ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
-	 methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
-	 methodName == GENIE_DIRECT || methodName == GENIE_OPT_DARTS      ||
-         methodName == DL_SOLVER    || methodName == EFFICIENT_GLOBAL ) ) {
-    Cerr << "\nError: linear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  if ( numLinearEqConstraints && !traits()->supports_linear_equality()){
+    Cerr << "\nError: linear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
-  // Check for nonlinear constraint support in method selection.  Note that
-  // CONMIN and DOT swap method selections as needed for constraint support.
-  if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
-       ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
-	 methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
-	 methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
-         methodName == GENIE_OPT_DARTS )) {
-    Cerr << "\nError: nonlinear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  if ( numLinearIneqConstraints && !traits()->supports_linear_inequality()){
+    Cerr << "\nError: linear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+
+  // Check for nonlinear constraint support in method selection
+  if ( numNonlinearEqConstraints && !traits()->supports_nonlinear_equality()){
+    Cerr << "\nError: nonlinear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+  if ( numNonlinearIneqConstraints && !traits()->supports_nonlinear_inequality()){
+    Cerr << "\nError: nonlinear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
 
