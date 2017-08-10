@@ -607,17 +607,6 @@ class JEGATraits: public TraitsBase
   /// default constructor
   JEGATraits() { }
 
-  //typedef HOPSPACK::Hopspack OptT;
-  //typedef HOPSPACK::Vector VecT;
-  //typedef HOPSPACK::Matrix MatT;
-
-  //static double noValue();
-
-  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
-  //static double getBestObj(const OptT &);
-
-  //static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
-
   /// destructor
   virtual ~JEGATraits() { }
 
@@ -656,10 +645,6 @@ End Namespace
 ===============================================================================
 */
 } // namespace Dakota
-
-
-
-
 
 
 /*
