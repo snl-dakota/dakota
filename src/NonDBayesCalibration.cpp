@@ -1518,6 +1518,9 @@ void NonDBayesCalibration::compute_statistics()
     kl_post_prior(acceptanceChain);
   if (posteriorStatsMutual)
     mutual_info_buildX();
+  if (outputLevel > NORMAL_OUTPUT) {
+    calculate_kde();
+  }
 }
 
 
@@ -1767,6 +1770,64 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
 
   TabularIO::close_file(export_mcmc_stream, mcmc_filename,
 			"NonDQUESOBayesCalibration chain export");
+}
+
+void NonDBayesCalibration::
+calculate_kde()
+{
+  RealVector pdf_results;
+  Pecos::GaussianKDE kde;
+  //Cout << "Accepted Chain in KDE " << acceptanceChain <<  '\n';
+  //Cout << "Accepted Fn Values in KDE " << acceptedFnVals <<  '\n';
+  std::ofstream export_kde;
+  size_t wpp4 = write_precision+4;
+  StringArray var_labels;
+        copy_data(residualModel.continuous_variable_labels(),var_labels);
+  const StringArray& resp_labels = 
+    		     mcmcModel.current_response().function_labels();
+  TabularIO::open_file(export_kde, "kde_posterior.dat",
+			"NonDBayesCalibration kde posterior export");
+  
+  int num_rows = acceptanceChain.numCols();
+  int num_vars = acceptanceChain.numRows();
+  RealMatrix current_var;
+  current_var.shapeUninitialized(1,num_rows);
+  for (int i=0; i<num_vars; ++i){
+    for (int j=0; j<num_rows; j++) 
+      current_var(0,j)=acceptanceChain(i,j);
+    //Cout << current_var;
+    kde.initialize(current_var,Teuchos::TRANS);
+    kde.pdf(current_var, pdf_results,Teuchos::TRANS);
+    //Cout << pdf_results;
+    export_kde << var_labels[i] << "  KDE PDF estimate  " << '\n';
+    //TabularIO::
+    //  write_header_tabular(export_kde, output_vars(i), "KDE PDF estimate");
+    for (int j=0; j<num_rows; j++) 
+      export_kde <<  current_var(0,j) << "    " << pdf_results(j) << '\n';
+    export_kde << '\n';
+  }
+  int num_responses = acceptedFnVals.numRows();
+  RealMatrix current_resp;
+  current_resp.shapeUninitialized(1,num_rows);
+  for (int i=0; i<num_responses; ++i){
+    for (int j=0; j<num_rows; j++) 
+      current_resp(0,j)=acceptedFnVals(i,j);
+    //Cout << current_resp;
+    //RealMatrix& col_resp = Teuchos::getCol(Teuchos::View, acceptedFnVals, i);
+    //kde.initialize(current_resp, Teuchos::TRANS);
+    kde.initialize(current_resp,Teuchos::TRANS);
+    kde.pdf(current_resp, pdf_results,Teuchos::TRANS);
+    //Cout << pdf_results;
+    export_kde << resp_labels[i] << "  KDE PDF estimate  " << '\n';
+    //TabularIO::
+    //  write_header_tabular(export_kde, resp_labels(i), "KDE PDF estimate");
+    for (int j=0; j<num_rows; j++) 
+      export_kde <<  current_resp(0,j) << "    " << pdf_results(j) << '\n';
+    export_kde << '\n';
+  }
+  TabularIO::close_file(export_kde, "kde_posterior.dat",
+			"NonDBayesCalibration kde posterior export");
+  
 }
 
 void NonDBayesCalibration::print_intervals_file
