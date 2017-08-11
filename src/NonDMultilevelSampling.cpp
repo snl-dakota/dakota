@@ -2739,8 +2739,8 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Estimator variance for variance = " << agg_estim_var << "\n\n";
 
-    Real stdev = momentStats(1,qoi);
-    if (finalMomentsType == STANDARD_MOMENTS && stdev > 0.) {
+    Real mom2 = momentStats(1,qoi);
+    if (finalMomentsType == STANDARD_MOMENTS && mom2 > 0.) {
       // std error of std deviation estimator
 
       // An approximation for std error of a fn of another std error estimator
@@ -2750,7 +2750,7 @@ compute_error_estimates(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       // Harding et al. 2014 assumes normality in the QoI distribution and has
       // been observed to contain bias in numerical experiments, whereas bias
       // in the derivative approx goes to zero asymptotically.
-      finalStatErrors[cntr] = std::sqrt(agg_estim_var) / (2. * stdev);
+      finalStatErrors[cntr] = std::sqrt(agg_estim_var) / (2. * mom2);
       ++cntr;
     }
     else // std error of variance estimator
