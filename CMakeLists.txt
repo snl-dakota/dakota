@@ -1,4 +1,4 @@
-## Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
+# Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
 cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_MODULE_PATH
