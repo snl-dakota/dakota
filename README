@@ -159,8 +159,7 @@ emulation layer).  Dakota is developed and most extensively tested on
 Redhat Enterprise Linux with GNU compilers, but additional operating
 systems / compiler combinations are tested nightly as well.  See the
 Dakota website for more information on supported platforms for
-particular Dakota versions.  Dakota was historically tested on
-SGI/IRIX, DEC/OSF, and HP-UX, but these are not actively supported.
+particular Dakota versions.
 
 ------------------------------------------------------------------------------
 Versions
