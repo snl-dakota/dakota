@@ -163,13 +163,13 @@ class NOWPACTraits: public TraitsBase
   virtual bool is_derived() { return true; }
 
   /// Return the value of supportsContinuousVariables
-  virtual bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() { return true; }
 
   /// Return the value of supportsLinearInequality
-  virtual bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() { return true; }
 
   /// Return the value of supportsNonlinearInequality
-  virtual bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() { return true; }
 };
 
 

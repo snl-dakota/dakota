@@ -39,7 +39,7 @@ class NonlinearCGTraits: public TraitsBase
   virtual bool is_derived() { return true; }
 
   /// Return the value of supportsContinuousVariables
-  virtual bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() { return true; }
 };
 
 
