@@ -1,31 +1,26 @@
 # DAKOTA INPUT FILE - dakota_optdarts.in
-# Tests:  genie_opt_darts
+
+environment,
+	#graphics
+        tabular_data
 
 method,
-	max_function_evaluations 500
-    genie_direct
+        genie_opt_darts
+        # genie_direct 
         seed = 439
 
 variables,
-	continuous_design = 2								
-        lower_bounds = -10.0 -10.0						
-        upper_bounds = 10.0 10.0						
-		descriptors = 'x1' 'x2'							
-#		linear_equality_constraint_matrix = 2.0 1.0		#s3
-#		linear_equality_targets = 4.0					#s3
-#		linear_inequality_constraint_matrix = 1.0 1.0	#s4
-#		linear_inequality_upper_bounds = 5.0			#s4
+	continuous_design = 2
+        lower_bounds = 0. 0.
+        upper_bounds = 1. 1.
+	descriptors = 'x1' 'x2'
 
 interface,
-      direct
-	  analysis_driver = 'text_book'
-
+        direct
+	  analysis_driver = 'rosenbrock'	#s0
+#	  analysis_driver = 'smooth_herbie'	#s1
 
 responses,
-	objective_functions = 1
-#	nonlinear_equality_constraints = 1		  			#s1
-#		nonlinear_equality_targets = -.2	  			#s1
-#	nonlinear_inequality_constraints = 2	  			#s2
-#		nonlinear_inequality_lower_bounds = 0.0 0.0	  	#s2
+	num_objective_functions = 1 
 	no_gradients
 	no_hessians
