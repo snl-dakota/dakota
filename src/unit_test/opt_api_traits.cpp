@@ -62,9 +62,7 @@ namespace {
                         bool & continuous_only )
   {
     if( traits->supports_continuous_variables()              && 
-        ( traits->supports_integer_variables()            ||
-          traits->supports_relaxable_discrete_variables() ||
-          traits->supports_categorical_variables()          )   )
+        traits->supports_discrete_variables())
     {
       continuous_only = false;
       if (!num_cont_vars && !num_disc_int_vars && !num_disc_real_vars && !num_disc_string_vars)
