@@ -64,20 +64,20 @@ class NPSOLTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
-  /// Return the value of supportsContinuousVariables
-  virtual bool supports_continuous_variables() { return true; }
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
 
-  /// Return the value of supportsLinearEquality
-  virtual bool supports_linear_equality() { return true; }
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
 
-  /// Return the value of supportsLinearInequality
-  virtual bool supports_linear_inequality() { return true; }
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
 
-  /// Return the value of supportsNonlinearEquality
-  virtual bool supports_nonlinear_equality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
 
-  /// Return the value of supportsNonlinearInequality
-  virtual bool supports_nonlinear_inequality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
 };
 
 

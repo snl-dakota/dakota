@@ -66,14 +66,8 @@ public:
   /// Return the flag indicating whether method supports continuous variables
   virtual bool supports_continuous_variables() { return false; }
 
-  /// Return the flag indicating whether method supports integer variables
-  virtual bool supports_integer_variables() { return false; }
-
-  /// Return the flag indicating whether method supports relaxable discrete variables
-  virtual bool supports_relaxable_discrete_variables() { return false; }
-
-  /// Return the flag indicating whether method supports categorical variables
-  virtual bool supports_categorical_variables() { return false; }
+  /// Return the flag indicating whether method supports continuous variables
+  virtual bool supports_discrete_variables() { return false; }
 
   /// Return the flag indicating whether method provides best objective result
   virtual bool provides_best_objective() { return false; }

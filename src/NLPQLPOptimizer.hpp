@@ -81,19 +81,19 @@ class NLPQLPTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
-  /// Return the value of supportsContinuousVariables
+  /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() { return true; }
 
-  /// Return the value of supportsLinearEquality
+  /// Return the flag indicating whether method supports linear equalities
   bool supports_linear_equality() { return true; }
 
-  /// Return the value of supportsLinearInequality
+  /// Return the flag indicating whether method supports linear inequalities
   bool supports_linear_inequality() { return true; }
 
-  /// Return the value of supportsNonlinearEquality
+  /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }
 
-  /// Return the value of supportsNonlinearInequality
+  /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }
 };
 

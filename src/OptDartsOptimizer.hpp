@@ -42,7 +42,7 @@ namespace Dakota {
       /// A temporary query used in the refactor
       virtual bool is_derived() { return true; }
 
-      /// Return the value of supportsContinuousVariables
+      /// Return the flag indicating whether method supports continuous variables
       bool supports_continuous_variables() { return true; }
   };
 
