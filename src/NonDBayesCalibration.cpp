@@ -887,9 +887,10 @@ void NonDBayesCalibration::calibrate_to_hifi()
       RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, 
     					         int(optimal_ind));
       Model::active_variables(optimal_config, hifiModel);
-      if (max_hifi > 0) 
+      if (max_hifi > 0) {
         hifiModel.evaluate();
-      expData.add_data(optimal_config, hifiModel.current_response().copy());
+        expData.add_data(optimal_config, hifiModel.current_response().copy());
+      }
       num_hifi++;
       // update list of candidates
       remove_column(design_matrix, optimal_ind);
@@ -1983,11 +1984,13 @@ void NonDBayesCalibration::print_results(std::ostream& s)
       "response function", STANDARD_MOMENTS, resp_labels, false); 
   
   // Print credibility and prediction intervals to screen
-  int num_filtered = filteredFnVals.numCols();
-  RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
-  RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
-  print_intervals_screen(s, filteredFnVals_transpose, 
-    			 predVals_transpose, num_filtered);
+  if (requestedProbLevels[0].length() > 0 && outputLevel >= NORMAL_OUTPUT) {
+    int num_filtered = filteredFnVals.numCols();
+    RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
+    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
+    print_intervals_screen(s, filteredFnVals_transpose, 
+      			 predVals_transpose, num_filtered);
+  }
 
   // Print posterior stats
   if(posteriorStatsKL)
