@@ -24,7 +24,7 @@ method,
           calibrate_error_multipliers one
           #hyperprior_alphas = 1000.0                   	#s2,#s3        
           #hyperprior_betas = 1.0				#s2,#s3 
-          #posterior_stats kl_divergence			#s1
+#         #posterior_stats kl_divergence			#s1
           #output debug 
 
 variables,
