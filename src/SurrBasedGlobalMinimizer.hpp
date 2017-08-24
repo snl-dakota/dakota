@@ -51,17 +51,11 @@ class SurrBasedGlobalTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
-  /// Return the value of supportsContinuousVariables
-  virtual bool supports_continuous_variables() { return true; }
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
 
-  /// Return the value of supportsIntegerVariables
-  virtual bool supports_integer_variables() { return true; }
-
-  /// Return the value of supportsRelaxableDiscreteVariables
-  virtual bool supports_relaxable_discrete_variables() { return true; }
-
-  /// Return the value of supportsCategoricalVariables
-  virtual bool supports_categorical_variables() { return true; }
+  /// Return the flag indicating whether method supports discrete variables
+  bool supports_discrete_variables() { return true; }
 };
 
 

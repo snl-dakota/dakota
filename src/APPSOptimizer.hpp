@@ -82,7 +82,7 @@ class AppsTraits: public TraitsBase
   /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() { return true; }
 
-  /// Return the flag indicating whether method supports continuous variables
+  /// Return the flag indicating whether method supports discrete variables
   bool supports_discrete_variables() { return true; }
 
   /// Return the flag indicating whether method supports linear equalities

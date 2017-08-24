@@ -71,17 +71,11 @@ class NomadTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
-  /// Return the value of supportsContinuousVariables
+  /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() { return true; }
 
-  /// Return the value of supportsIntegerVariables
-  bool supports_integer_variables() { return true; }
-
-  /// Return the value of supportsRelaxableDiscreteVariables
-  bool supports_relaxable_discrete_variables() { return true; }
-
-  /// Return the value of supportsCategoricalVariables
-  bool supports_categorical_variables() { return true; }
+  /// Return the flag indicating whether method supports discrete variables
+  bool supports_discrete_variables() { return true; }
 };
 
 
