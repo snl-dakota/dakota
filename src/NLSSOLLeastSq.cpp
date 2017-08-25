@@ -42,7 +42,7 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model), SOLBase(model)
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
@@ -58,7 +58,7 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
 NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
-  LeastSq(NLSSOL_SQP, model), SOLBase(model)
+  LeastSq(NLSSOL_SQP, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,

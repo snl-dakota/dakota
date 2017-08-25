@@ -31,6 +31,35 @@ typedef void (*Vf)();
     NL2SOL uses a function pointer approach for which passed functions
     must be either global functions or static member functions. */
 
+class NL2SOLLeastSqTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NL2SOLLeastSqTraits() { }
+
+  /// destructor
+  virtual ~NL2SOLLeastSqTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  //bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  //bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  //bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  //bool supports_nonlinear_inequality() { return true; }
+};
+
 class NL2SOLLeastSq: public LeastSq
 {
 public:

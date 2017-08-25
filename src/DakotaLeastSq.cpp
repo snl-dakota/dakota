@@ -38,8 +38,8 @@ LeastSq* LeastSq::leastSqInstance(NULL);
 /** This constructor extracts the inherited data for the least squares
     branch and performs sanity checking on gradient and constraint
     settings. */
-LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model),
+LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numLeastSqTerms(numUserPrimaryFns),
   weightFlag(!iteratedModel.primary_response_fn_weights().empty())
@@ -82,8 +82,8 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model):
 }
 
 
-LeastSq::LeastSq(unsigned short method_name, Model& model):
-  Minimizer(method_name, model),
+LeastSq::LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, model, traits),
   numLeastSqTerms(numFunctions - numNonlinearConstraints),
   weightFlag(false) //(!model.primary_response_fn_weights().empty()), // TO DO
 {

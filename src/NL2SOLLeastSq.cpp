@@ -27,7 +27,7 @@ NL2SOLLeastSq* NL2SOLLeastSq::nl2solInstance(NULL);
 
 
 NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model),
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
   // output controls
   auxprt(31), outlev(1), // normal/verbose/debug
   // finite differencing
@@ -64,7 +64,8 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NL2SOLLeastSq::NL2SOLLeastSq(Model& model): LeastSq(NL2SOL, model),
+NL2SOLLeastSq::NL2SOLLeastSq(Model& model) :
+  LeastSq(NL2SOL, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
   // output controls
   auxprt(31), outlev(1), // normal/verbose/debug
   // finite differencing
