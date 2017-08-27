@@ -122,8 +122,8 @@ void Minimizer::update_from_model(const Model& model)
 	 << "within Minimizer branch." << std::endl;
     err_flag = true;
   }
+  
   // Check for active design variables and discrete variable support
-      // the new traits-based query way - is the logic for this correct? - RWH
   if( traits()->supports_continuous_variables() && 
       traits()->supports_discrete_variables())
   {
