@@ -123,9 +123,13 @@ void Minimizer::update_from_model(const Model& model)
     err_flag = true;
   }
   
-  // Check for active design variables and discrete variable support
-  if( traits()->supports_continuous_variables() && 
-      traits()->supports_discrete_variables())
+  // Check for active design variables and discrete variable support.
+  // Methods not yet utilizing TraitsBase class are included explicitly
+  if(( traits()->supports_continuous_variables() && 
+      traits()->supports_discrete_variables()) ||
+    (methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
+      methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
+      methodName == BRANCH_AND_BOUND))
   {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
@@ -195,13 +199,22 @@ void Minimizer::update_from_model(const Model& model)
 
 
   // Check for linear constraint support in method selection
-  if ( numLinearEqConstraints && !traits()->supports_linear_equality()){
+  // Methods not yet utilizing TraitsBase class are included explicitly
+  if ( numLinearEqConstraints && (!traits()->supports_linear_equality() ||
+      (methodName == NL2SOL || methodName == OPTPP_CG ||
+      ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS ) ||
+      methodName == MESH_ADAPTIVE_SEARCH || methodName == DL_SOLVER ||
+      methodName == EFFICIENT_GLOBAL ))) {
     Cerr << "\nError: linear equality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
     err_flag = true;
   }
-  if ( numLinearIneqConstraints && !traits()->supports_linear_inequality()){
+  if ( numLinearIneqConstraints && (!traits()->supports_linear_inequality() ||
+      ( methodName == NL2SOL || methodName == OPTPP_CG ||
+      ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS ) ||
+      methodName == MESH_ADAPTIVE_SEARCH || methodName == DL_SOLVER ||
+      methodName == EFFICIENT_GLOBAL ))) {
     Cerr << "\nError: linear inequality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
@@ -209,13 +222,18 @@ void Minimizer::update_from_model(const Model& model)
   }
 
   // Check for nonlinear constraint support in method selection
-  if ( numNonlinearEqConstraints && !traits()->supports_nonlinear_equality()){
+  // Methods not yet utilizing TraitsBase class are included explicitly
+  if ( numNonlinearEqConstraints && (!traits()->supports_nonlinear_equality() ||
+      ( methodName == NL2SOL      || methodName == OPTPP_CG     ||
+      methodName == OPTPP_PDS ))) {
     Cerr << "\nError: nonlinear equality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
     err_flag = true;
   }
-  if ( numNonlinearIneqConstraints && !traits()->supports_nonlinear_inequality()){
+  if ( numNonlinearIneqConstraints && (!traits()->supports_nonlinear_inequality() ||
+      ( methodName == NL2SOL      || methodName == OPTPP_CG     ||
+      methodName == OPTPP_PDS ))) {
     Cerr << "\nError: nonlinear inequality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
