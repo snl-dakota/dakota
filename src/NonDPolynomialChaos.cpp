@@ -1375,6 +1375,8 @@ void NonDPolynomialChaos::print_results(std::ostream& s)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     print_coefficients(s);
+  if (!expansionExportFile.empty())
+    export_coefficients();
 
   if (//iteratedModel.subordinate_models(false).size() == 1 &&
       iteratedModel.truth_model().solution_levels() > 1) {
@@ -1390,16 +1392,6 @@ void NonDPolynomialChaos::print_results(std::ostream& s)
 
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
-  bool export_pce = false;
-  RealVectorArray coeffs_array;
-  if (!expansionExportFile.empty()) {
-    if (subIteratorFlag || !finalStatistics.function_gradients().empty())
-      Cerr << "\nWarning: PCE coefficient export not supported in advanced "
-	   << "modes" << std::endl;
-    else
-      { export_pce = true; coeffs_array.resize(numFunctions); }
-  }
-
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
 
@@ -1426,20 +1418,31 @@ void NonDPolynomialChaos::print_coefficients(std::ostream& s)
     for (j=0; j<numContinuousVars; j++)
       s << " ----";
     poly_approxs[i].print_coefficients(s, normalizedCoeffOutput);
-    if (export_pce)
-      coeffs_array[i] // default returns a vector view; sparse returns a copy
-	= poly_approxs[i].approximation_coefficients(normalizedCoeffOutput);
+  }
+}
+
+
+void NonDPolynomialChaos::export_coefficients()
+{
+  if (subIteratorFlag || !finalStatistics.function_gradients().empty()) {
+    Cerr << "\nWarning: PCE coefficient export not supported in advanced "
+	 << "modes" << std::endl;
+    return;
   }
 
-  if (export_pce) {
-    // export the PCE coefficients for all QoI and a shared multi-index.
-    // Annotation provides questionable value in this context & is off for now.
-    SharedPecosApproxData* data_rep
-      = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
-    String context("polynomial chaos expansion export file");
-    TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
-				  data_rep->multi_index());
-  }
+  RealVectorArray coeffs_array(numFunctions);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t i=0; i<numFunctions; i++)
+    coeffs_array[i] // default returns a vector view; sparse returns a copy
+      = poly_approxs[i].approximation_coefficients(normalizedCoeffOutput);
+
+  // export the PCE coefficients for all QoI and a shared multi-index.
+  // Annotation provides questionable value in this context & is off for now.
+  SharedPecosApproxData* data_rep
+  = (SharedPecosApproxData*)uSpaceModel.shared_approximation().data_rep();
+  String context("polynomial chaos expansion export file");
+  TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
+				data_rep->multi_index());
 }
 
 
