@@ -1,5 +1,5 @@
-# Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
-cmake_minimum_required(VERSION 2.8.12)
+# Dakota itself requires this CMake version; some TPLs may require even newer
+cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -10,6 +10,13 @@ set(CMAKE_MODULE_PATH
 # We delay enabling languages until developer compiler flags are set,
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
+
+# Require C++11 at a minimum, but allow newer standards
+# Do this prior to other flag settings below
+if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
