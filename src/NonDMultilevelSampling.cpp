@@ -62,16 +62,29 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   size_t i, j, num_mf = ordered_models.size(), num_lev,
     pilot_size = pilotSamples.size();
-  ModelLIter ml_iter;
+  ModelLIter ml_iter; bool err_flag = false;
   NLev.resize(num_mf);
   for (i=0, ml_iter=ordered_models.begin(); i<num_mf; ++i, ++ml_iter) {
-    // for now, only SimulationModel supports solution_levels()
-    num_lev = ml_iter->solution_levels();
+    // for now, only SimulationModel supports solution_{levels,costs}()
+    num_lev = ml_iter->solution_levels(); // default is 1 soln level
+
+    // Ensure there is consistent cost data available as SimulationModel must
+    // be allowed to have empty solnCntlCostMap (when optional solution control
+    // is not specified)
+    if (num_lev != ml_iter->solution_costs()) { // default is 0 soln costs
+      Cerr << "Error: insufficient cost data provided for multilevel sampling."
+	   << "\n       Please specify solution_level_cost for model "
+	   << ml_iter->model_id() << std::endl;
+      err_flag = true;
+    }
+
     //Sizet2DArray& Nl_i = NLev[i];
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
   }
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
 
   switch (pilot_size) {
   case 0: maxEvalConcurrency *= 100;          break;

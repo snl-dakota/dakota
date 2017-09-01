@@ -52,11 +52,12 @@ initialize_solution_control(const String& control, const RealVector& cost)
     // cost_len of 0: empty map for no solution control
     // cost_len of 1: nominal cost for model w/o any soln levels
     // cost_len  > 1: error
-    if (cost_len == 1)   // nominal cost with no solution controlindex
+    if (cost_len == 1)   // nominal cost with no solution control
       solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS)); // *** TO DO: harden lookup for _NPOS
     else if (cost_len) { // more than 1 cost requires associated control
-      Cerr << "Error: " << std::endl;
-      abort_handler(-1);
+      Cerr << "Error: vector-valued solution cost requires an associated "
+	   << "solution control." << std::endl;
+      abort_handler(MODEL_ERROR);
     }
     return;
   }

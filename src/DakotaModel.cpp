@@ -2852,6 +2852,16 @@ size_t Model::solution_levels() const
 }
 
 
+/** return the number of levels within a solution / discretization hierarchy. */
+size_t Model::solution_costs() const
+{
+  if (modelRep)
+    return modelRep->solution_costs(); // envelope fwd to letter
+  else // letter lacking redefinition of virtual fn.
+    return 0;
+}
+
+
 /** activate a particular level within a solution / discretization
     hierarchy and return the cost estimate. */
 void Model::solution_level_index(size_t index)
