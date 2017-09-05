@@ -66,15 +66,15 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   NLev.resize(num_mf);
   for (i=0, ml_iter=ordered_models.begin(); i<num_mf; ++i, ++ml_iter) {
     // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_iter->solution_levels(); // default is 1 soln level
+    num_lev = ml_iter->solution_levels(); // lower bound is 1 soln level
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified)
-    if (num_lev != ml_iter->solution_costs()) { // default is 0 soln costs
+    // is not specified).  Passing false bypasses lower bound of 1.
+    if (num_lev != ml_iter->solution_levels(false)) { // default is 0 soln costs
       Cerr << "Error: insufficient cost data provided for multilevel sampling."
 	   << "\n       Please specify solution_level_cost for model "
-	   << ml_iter->model_id() << std::endl;
+	   << ml_iter->model_id() << '.' << std::endl;
       err_flag = true;
     }
 
@@ -173,6 +173,7 @@ void NonDMultilevelSampling::core_run()
 	multilevel_control_variate_mc_Qcorr(model_form, model_form+1);
     }
     else { // multiple model forms (only) --> CVMC
+      // *** TO DO: repair case of #HF = 1, #LF > 1 (fails in load_pilot_sample)
       SizetSizetPair lf_form_level(model_form,   soln_level),
 	             hf_form_level(model_form+1, soln_level);
       control_variate_mc(lf_form_level, hf_form_level);
@@ -1156,8 +1157,8 @@ void NonDMultilevelSampling::load_pilot_sample(SizetArray& delta_N_l)
     delta_size = num_mf;
     for (size_t i=0; i<num_mf; ++i)
       if (NLev[i].size() > 1) {
-	Cerr << "Error: multidimensional case in load_pilot_sample(SizetArray)"
-	     << std::endl;
+	Cerr << "Error: multidimensional NLev not expected in 1-dimensional "
+	     << "load_pilot_sample(SizetArray)" << std::endl;
 	abort_handler(METHOD_ERROR);
       }
   }

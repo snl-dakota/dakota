@@ -2843,22 +2843,12 @@ Interface& Model::derived_interface()
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_levels() const
+size_t Model::solution_levels(bool lwr_bnd) const
 {
   if (modelRep)
-    return modelRep->solution_levels(); // envelope fwd to letter
+    return modelRep->solution_levels(lwr_bnd); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
-    return 1;
-}
-
-
-/** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_costs() const
-{
-  if (modelRep)
-    return modelRep->solution_costs(); // envelope fwd to letter
-  else // letter lacking redefinition of virtual fn.
-    return 0;
+    return (lwr_bnd) ? 1 : 0;
 }
 
 

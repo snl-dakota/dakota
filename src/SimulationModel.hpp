@@ -52,10 +52,9 @@ protected:
   /// return userDefinedInterface
   Interface& derived_interface();
 
-  /// return size of solnControlCostMap, with lower bound of 1 solution level
-  size_t solution_levels() const;
-  /// return size of solnControlCostMap, with lower bound of 0 solution costs
-  size_t solution_costs() const;
+  /// return size of solnControlCostMap, optionally enforcing lower bound
+  /// of 1 solution level
+  size_t solution_levels(bool lwr_bnd = true) const;
   /// activate entry in solnControlCostMap
   void solution_level_index(size_t lev_index);
   /// return cost estimates from solnControlCostMap
@@ -193,13 +192,11 @@ inline Interface& SimulationModel::derived_interface()
 
 /* There is a default solution level (nominal settings) even if no
    solution control is provided */ 
-inline size_t SimulationModel::solution_levels() const
-{ return (solnCntlCostMap.empty()) ? 1 : solnCntlCostMap.size(); }
-
-
-/* There is not a default solution cost; it must be specified. */ 
-inline size_t SimulationModel::solution_costs() const
-{ return solnCntlCostMap.size(); }
+inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
+{
+  size_t map_len = solnCntlCostMap.size(), min_len = 1;
+  return (lwr_bnd) ? std::max(min_len, map_len) : map_len;
+}
 
 
 inline void SimulationModel::derived_evaluate(const ActiveSet& set)
