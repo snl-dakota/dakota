@@ -1572,7 +1572,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nonlinear_inequality_scales", P nonlinearIneqScales},
 	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
 	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights}};
+	{"primary_response_fn_weights", P primaryRespFnWeights}, 
+        {"simulation_variance", P simVariance}};
     #undef P
 
     KW<RealVector, DataResponsesRep> *kw;

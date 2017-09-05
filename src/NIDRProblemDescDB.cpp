@@ -7386,6 +7386,7 @@ static RealVector
 	MP_(nonlinearEqTargets),
 	MP_(nonlinearIneqLowerBnds),
 	MP_(nonlinearIneqUpperBnds),
+	MP_(simVariance),
 	MP_(fdGradStepSize),
 	MP_(fdHessStepSize),
 	MP_(primaryRespFnScales),

@@ -27,6 +27,8 @@
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random.hpp"
+#include "boost/random/normal_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
 #include "boost/generator_iterator.hpp"
 #include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
@@ -633,6 +635,43 @@ void NonDBayesCalibration::calibrate_to_hifi()
     }
 
   }
+  // Apply hifi error
+  const RealVector& hifi_sim_error = hifiModel.current_response().
+                                       shared_data().simulation_error();
+  RealVector hifi_error_vec(numFunctions);
+  if (hifi_sim_error.length() > 0) {
+    int stoch_seed = randomSeed;
+    Real stdev;
+    boost::mt19937 rnumGenerator;
+    if (hifi_sim_error.length() == 1) {
+      for (size_t k = 0; k < num_exp; k++) {
+	stoch_seed += 1;
+        rnumGenerator.seed(stoch_seed);
+        stdev = std::sqrt(hifi_sim_error[0]);
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+        for (size_t j = 0; j < numFunctions; j++)
+          hifi_error_vec[j] = err_gen();
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
+    else {
+      for (size_t k = 0; k < num_exp; k++) {
+        for (size_t j = 0; j < numFunctions; j++) {
+          stoch_seed += 1;
+          stdev = std::sqrt(hifi_sim_error[j]);
+          rnumGenerator.seed(stoch_seed);
+          boost::normal_distribution<> err_dist(0.0, stdev);
+          boost::variate_generator<boost::mt19937,
+          boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+          hifi_error_vec[j] = err_gen();
+        }
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
+  }
+
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
@@ -825,6 +864,49 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
+      // Build simulation error matrix
+      RealMatrix sim_error_matrix;
+      const RealVector& sim_error_vec = mcmcModel.current_response().
+                                        shared_data().simulation_error();
+      if (sim_error_vec.length() > 0) {
+        if (num_hifi == 0) {
+          Real stdev;
+          int stoch_seed = randomSeed;
+          sim_error_matrix.reshape(numFunctions, num_filtered);
+          RealVector col_vec(numFunctions);
+          boost::mt19937 rnumGenerator;
+          if (sim_error_vec.length() == 1) {
+            rnumGenerator.seed(randomSeed+1);
+            stdev = std::sqrt(sim_error_vec[0]);
+            boost::normal_distribution<> err_dist(0.0, stdev);
+            boost::variate_generator<boost::mt19937, 
+                                     boost::normal_distribution<> >
+                   err_gen(rnumGenerator, err_dist);
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                col_vec[k] = err_gen();
+	      }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+	    }
+          }
+          else {
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                stoch_seed += 1;
+                rnumGenerator.seed(stoch_seed);
+                stdev = std::sqrt(sim_error_vec[k]);
+                boost::normal_distribution<> err_dist(0.0, stdev);
+                boost::variate_generator<boost::mt19937,
+		                         boost::normal_distribution<> >
+                       err_gen(rnumGenerator, err_dist);
+                col_vec[k] = err_gen();
+              }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+            }
+	  }
+        }
+      }
+
       // BMA: You can now use acceptanceChain/acceptedFnVals, though
       // need to be careful about what subset for this chain run (may
       // need indices to track)
@@ -855,7 +937,13 @@ void NonDBayesCalibration::calibrate_to_hifi()
             col_vec[k] = lofi_params[k];
           }
           for (size_t k = 0; k < numFunctions; k ++) {
-            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+            if (sim_error_vec.length() > 0) {
+	      RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
+		                                  sim_error_matrix, j);
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k]+sim_error_vec[k];
+	    }
+	    else
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k];
           }
           Teuchos::setCol(col_vec, j, Xmatrix);
         }

@@ -3196,7 +3196,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       ( calibration_data {N_rem(true,calibrationDataFlag)}
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
             annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
@@ -3229,9 +3229,10 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
          ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
        )
      ]
+    [ simulation_variance REALLIST LEN1 calibration_terms {N_rem(RealL,simVariance)} ]
     [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
       [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
       [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
