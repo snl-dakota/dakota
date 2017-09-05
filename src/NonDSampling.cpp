@@ -25,7 +25,6 @@
 
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isfinite;
 
 static const char rcsId[]="@(#) $Id: NonDSampling.cpp 7036 2010-10-22 23:20:24Z mseldre $";
 
