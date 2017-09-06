@@ -1,5 +1,3 @@
-#@ Diff in test 6 carried for 1.0e+50 gen rel index (MSE wants to triage)
-#@ *: Label=CarryDiff
 #@ s7: TimeoutAbsolute=2100
 
 # DAKOTA INPUT FILE : dakota_short_column_taylor2.in

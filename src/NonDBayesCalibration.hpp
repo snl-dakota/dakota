@@ -17,6 +17,7 @@
 
 #include "NonDCalibration.hpp"
 #include "InvGammaRandomVariable.hpp"
+#include "GaussianKDE.hpp"
 #include "ANN/ANN.h" 
 
 namespace Dakota {
@@ -128,6 +129,9 @@ protected:
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
+
+  /// calculate a Kernel Density Estimate (KDE) for the posterior samples
+  void calculate_kde();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
