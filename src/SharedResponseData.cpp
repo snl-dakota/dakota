@@ -118,8 +118,8 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     Cerr << "Warning: total number of response functions is zero.  This is "
 	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
   
-  if ( (simulationVariance.length() != 1) && 
-       (simulationVariance.length() != num_total_responses) ) {
+  if (  simulationVariance.length() != 0 && simulationVariance.length() != 1 && 
+        simulationVariance.length() != num_total_responses) {
     Cerr << "Error: simulation_variance must have length equal to 1 or "
          << "the total number of calibration terms." << std::endl;
     abort_handler(-1);
