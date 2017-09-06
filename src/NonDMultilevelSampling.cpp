@@ -61,20 +61,29 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   size_t i, j, num_mf = ordered_models.size(), num_lev,
+    prev_lev = std::numeric_limits<size_t>::max(),
     pilot_size = pilotSamples.size();
-  ModelLIter ml_iter; bool err_flag = false;
+  ModelLRevIter ml_rit; bool err_flag = false;
   NLev.resize(num_mf);
-  for (i=0, ml_iter=ordered_models.begin(); i<num_mf; ++i, ++ml_iter) {
+  for (i=num_mf-1, ml_rit=ordered_models.rbegin();
+       ml_rit!=ordered_models.rend(); --i, ++ml_rit) {
     // for now, only SimulationModel supports solution_{levels,costs}()
-    num_lev = ml_iter->solution_levels(); // lower bound is 1 soln level
+    num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
+
+    if (num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel sampling for "
+	   << "model " << ml_rit->model_id() << ".\n         Ignoring "
+	   << num_lev - prev_lev << " of " << num_lev << " levels."<< std::endl;
+      num_lev = prev_lev;
+    }
 
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
-    if (num_lev != ml_iter->solution_levels(false)) { // default is 0 soln costs
+    if (num_lev > ml_rit->solution_levels(false)) { // default is 0 soln costs
       Cerr << "Error: insufficient cost data provided for multilevel sampling."
-	   << "\n       Please specify solution_level_cost for model "
-	   << ml_iter->model_id() << '.' << std::endl;
+	   << "\n       Please provide solution_level_cost estimates for model "
+	   << ml_rit->model_id() << '.' << std::endl;
       err_flag = true;
     }
 
@@ -82,12 +91,14 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     NLev[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
     //  Nl_i[j].resize(numFunctions); // defer to pre_run()
+
+    prev_lev = num_lev;
   }
   if (err_flag)
     abort_handler(METHOD_ERROR);
 
   switch (pilot_size) {
-  case 0: maxEvalConcurrency *= 100;          break;
+  case 0: maxEvalConcurrency *= 100;             break;
   case 1: maxEvalConcurrency *= pilotSamples[0]; break;
   default: {
     size_t max_ps = 0;
@@ -160,7 +171,7 @@ void NonDMultilevelSampling::core_run()
   // TO DO: following pilot sample across levels and fidelities in mixed case,
   // could pair models for CVMC based on estimation of rho2_LH.
 
-  size_t model_form = 0, soln_level = 0, num_mf = NLev.size();
+  size_t model_form = 0, num_mf = NLev.size();
   if (num_mf > 1) {
     size_t num_hf_lev = NLev.back().size();
     if (num_hf_lev > 1) { // ML performed on HF with CV using available LF
@@ -169,11 +180,12 @@ void NonDMultilevelSampling::core_run()
       // at coarsest level (TO DO: validate case of unequal levels)
       if (false) // original approach using 1 discrepancy correlation per level
 	multilevel_control_variate_mc_Ycorr(model_form, model_form+1);
-      else   // reformulated approach using 2 QoI correlations per level
+      else       // reformulated approach using 1 new QoI correlation per level
 	multilevel_control_variate_mc_Qcorr(model_form, model_form+1);
     }
     else { // multiple model forms (only) --> CVMC
-      // *** TO DO: repair case of #HF = 1, #LF > 1 (fails in load_pilot_sample)
+      // assume nominal value from user input, ignoring solution_level_control
+      size_t soln_level = _NPOS;
       SizetSizetPair lf_form_level(model_form,   soln_level),
 	             hf_form_level(model_form+1, soln_level);
       control_variate_mc(lf_form_level, hf_form_level);
