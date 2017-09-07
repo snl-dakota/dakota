@@ -1028,11 +1028,25 @@ size_t map_key_to_index(const KeyType& key,
   // linear search provides index in one pass, but find() plus distance()
   // should be faster for sorted associative containers
   //size_t index = 0;
-  //typename std::set<ScalarType>::const_iterator cit;
-  //for (cit=values.begin(); cit!=values.end(); ++cit, ++index)
-  //  if (*cit == value)
+  //typename std::map<KeyType, ValueType>::const_iterator cit;
+  //for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
+  //  if (cit->first == value)
   //    return index;
   //return _NPOS;
+}
+
+
+/// calculate the map index corresponding to the passed value
+template <typename KeyType, typename ValueType>
+size_t map_value_to_index(const ValueType& value,
+			  const std::map<KeyType, ValueType>& pairs)
+{
+  size_t index = 0;
+  typename std::map<KeyType, ValueType>::const_iterator cit;
+  for (cit=pairs.begin(); cit!=pairs.end(); ++cit, ++index)
+    if (cit->second == value)
+      return index;
+  return _NPOS;
 }
 
 

@@ -12,7 +12,7 @@ method,
 	  pilot_samples = 20 seed = 1237
 #	  max_iterations = 0
 #	  convergence_tolerance = .1			
-	  convergence_tolerance = .01			#s0,#p0,#p1
+	  convergence_tolerance = .01			#s0,#s2,#s3,#p0,#p1
 #	  convergence_tolerance = .001			#s1
 #	  convergence_tolerance = .0001
 	output silent
@@ -27,21 +27,23 @@ model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
 	simulation
-	  solution_level_control = 'N_x'
+	  solution_level_control = 'N_x'			#s0,#s1,#s3,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 15. 45. 90. 180.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 375. 10125. 81000. 648000.
+	  solution_level_cost = 375. 10125. 81000. 648000.	#s0,#s1,#s3,#p0,#p1
+#	  solution_level_cost = 375. 	    	   		#s2
 
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
-	  solution_level_control = 'N_x'
+	  solution_level_control = 'N_x'			#s0,#s1,#s2,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 630. 1260. 2100. 4200.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8	#s0,#s1,#s2,#p0,#p1
+#	  solution_level_cost = 5.67e+5				#s3
 
 variables,
 	id_variables = 'LF_VARS'
