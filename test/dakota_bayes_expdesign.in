@@ -69,19 +69,20 @@ interface,
         id_interface = 'hifi_IF'
         analysis_drivers = 'expdesign_high'
           fork
-        asynchronous evaluation_concurrency=2              #s0
+        asynchronous evaluation_concurrency=2              #s0,#s3,#s4
 
 interface,
         id_interface = 'lofi_IF'
         analysis_drivers = 'expdesign_low'
           fork 
-        asynchronous evaluation_concurrency=4              #s0
+        asynchronous evaluation_concurrency=4              #s0,#s3,#s4
 
 responses,
  	id_responses = 'lofi_resp'
         calibration_terms = 1
 	no_gradients	
 	no_hessians
+#	simulation_variance = 300			#s3
 
 responses,
  	id_responses = 'hifi_resp'
@@ -95,5 +96,6 @@ responses,
 	  #variance_type = 'scalar'
 	no_gradients	
 	no_hessians
+#	simulation_variance = 0.5			#s4
 
 
