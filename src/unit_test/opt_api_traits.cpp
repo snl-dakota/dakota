@@ -114,12 +114,9 @@ TEUCHOS_UNIT_TEST(opt_api_traits, var_consistency)
   check_variable_consistency( ASYNCH_PATTERN_SEARCH , std::shared_ptr<TraitsBase>(new AppsTraits())           , out, success );
   check_variable_consistency( MOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
   check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
-  check_variable_consistency( COLINY_EA             , std::shared_ptr<TraitsBase>(new COLINTraits())          , out, success );
-  check_variable_consistency( COLINY_BETA           , std::shared_ptr<TraitsBase>(new COLINTraits())          , out, success );
   check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()), out, success );
   check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          , out, success );
   check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         , out, success );
-  check_variable_consistency( OPTPP_PDS             , std::shared_ptr<TraitsBase>(new SNLLTraits())           , out, success );
 }
 
 //----------------------------------------------------------------
