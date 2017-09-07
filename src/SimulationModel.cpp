@@ -53,7 +53,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
     // cost_len of 1: nominal cost for model w/o any soln levels
     // cost_len  > 1: error
     if (cost_len == 1)   // nominal cost with no solution control
-      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS)); // *** TO DO: harden lookup for _NPOS
+      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS));
     else if (cost_len) { // more than 1 cost requires associated control
       Cerr << "Error: vector-valued solution cost requires an associated "
 	   << "solution control." << std::endl;
@@ -221,8 +221,8 @@ initialize_solution_control(const String& control, const RealVector& cost)
 
 /* Real */void SimulationModel::solution_level_index(size_t lev_index)
 {
-  // incoming soln level index is an index into the ordered std::map<>,
-  // not to be confused with the value in the key-value map that corresponds
+  // incoming soln level index is an index into the ordered solnCntlCostMap,
+  // not to be confused with the value in the key-value pair that corresponds
   // to the discrete variable value index (val_index below).
   std::map<Real, size_t>::const_iterator cost_cit = solnCntlCostMap.begin();
   std::advance(cost_cit, lev_index);
@@ -302,13 +302,95 @@ initialize_solution_control(const String& control, const RealVector& cost)
 }
 
 
-RealVector SimulationModel::solution_level_cost() const
+size_t SimulationModel::solution_level_index() const
+{
+  size_t val_index;
+  switch (solnCntlVarType) {
+  case DISCRETE_DESIGN_RANGE: case DISCRETE_INTERVAL_UNCERTAIN:
+  case DISCRETE_STATE_RANGE: {
+    int val = currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
+      l_bnd = userDefinedConstraints.all_discrete_int_lower_bounds()
+        [solnCntlADVIndex];
+    val_index = (size_t)(val - l_bnd);
+    break;
+  }
+  //////////////////////////////
+  case DISCRETE_DESIGN_SET_INT:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
+      discreteDesignSetIntValues[solnCntlSetIndex]);
+    break;
+  case DISCRETE_DESIGN_SET_STRING:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
+      discreteDesignSetStringValues[solnCntlSetIndex]);
+    break;
+  case DISCRETE_DESIGN_SET_REAL:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
+      discreteDesignSetRealValues[solnCntlSetIndex]);
+    break;
+  //////////////////////////////
+  case DISCRETE_UNCERTAIN_SET_INT:
+    val_index = map_key_to_index(
+      currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
+      epistDistParams.discrete_set_int_values_probabilities()
+        [solnCntlSetIndex]);
+    break;
+  case DISCRETE_UNCERTAIN_SET_STRING:
+    val_index = map_key_to_index(
+      currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
+      epistDistParams.discrete_set_string_values_probabilities()
+        [solnCntlSetIndex]);
+    break;
+  case DISCRETE_UNCERTAIN_SET_REAL:
+    val_index = map_key_to_index(
+      currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
+      epistDistParams.discrete_set_real_values_probabilities()
+        [solnCntlSetIndex]);
+    break;
+  //////////////////////////////
+  case DISCRETE_STATE_SET_INT:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_int_variables()[solnCntlADVIndex],
+      discreteStateSetIntValues[solnCntlSetIndex]);
+    break;
+  case DISCRETE_STATE_SET_STRING:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_string_variables()[solnCntlADVIndex],
+      discreteStateSetStringValues[solnCntlSetIndex]);
+    break;
+  case DISCRETE_STATE_SET_REAL:
+    val_index = set_value_to_index(
+      currentVariables.all_discrete_real_variables()[solnCntlADVIndex],
+      discreteStateSetRealValues[solnCntlSetIndex]);
+    break;
+  default: // EMPTY_TYPE (no solution_level_control provided)
+    return _NPOS; break;
+  }
+
+  // convert val_index to lev_index and return
+  return map_value_to_index(val_index, solnCntlCostMap);
+}
+
+
+RealVector SimulationModel::solution_level_costs() const
 {
   RealVector cost_levels(solnCntlCostMap.size(), false);
   std::map<Real, size_t>::const_iterator cit; size_t i;
   for (cit=solnCntlCostMap.begin(), i=0; cit!=solnCntlCostMap.end(); ++cit, ++i)
     cost_levels[i] = cit->first;
   return cost_levels;
+}
+
+
+Real SimulationModel::solution_level_cost() const
+{
+  std::map<Real, size_t>::const_iterator cit = solnCntlCostMap.begin();
+  size_t lev_index = solution_level_index();
+  if (lev_index != _NPOS)
+    std::advance(cit, lev_index);
+  return cit->first;
 }
 
 

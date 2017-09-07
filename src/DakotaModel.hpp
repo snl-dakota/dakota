@@ -172,8 +172,14 @@ public:
   /// activate a particular level within the solution level control
   /// and return the cost estimate (SimulationModel)
   virtual void solution_level_index(size_t index);
+  /// return currently active level within the solution level control
+  /// (SimulationModel)
+  virtual size_t solution_level_index() const;
   /// return ordered cost estimates across solution levels (SimulationModel)
-  virtual RealVector solution_level_cost() const;
+  virtual RealVector solution_level_costs() const;
+  /// return currently active cost estimate from solution level
+  /// control (SimulationModel)
+  virtual Real solution_level_cost() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

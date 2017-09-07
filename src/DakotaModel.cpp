@@ -2852,8 +2852,7 @@ size_t Model::solution_levels(bool lwr_bnd) const
 }
 
 
-/** activate a particular level within a solution / discretization
-    hierarchy and return the cost estimate. */
+/** activate a particular level within a solution / discretization hierarchy. */
 void Model::solution_level_index(size_t index)
 {
   if (modelRep)
@@ -2867,7 +2866,33 @@ void Model::solution_level_index(size_t index)
 }
 
 
-RealVector Model::solution_level_cost() const
+size_t Model::solution_level_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
+         << "() function.\n       solution_level_index is not supported by this"
+	 << " Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_index(); // envelope fwd to letter
+}
+
+
+RealVector Model::solution_level_costs() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_costs"
+         << "() function.\n       solution_level_costs is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_costs(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_cost() const
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_cost"

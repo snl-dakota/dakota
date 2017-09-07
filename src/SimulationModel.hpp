@@ -57,8 +57,12 @@ protected:
   size_t solution_levels(bool lwr_bnd = true) const;
   /// activate entry in solnControlCostMap
   void solution_level_index(size_t lev_index);
-  /// return cost estimates from solnControlCostMap
-  RealVector solution_level_cost() const;
+  /// return active entry in solnControlCostMap
+  size_t solution_level_index() const;
+  /// return all cost estimates from solnControlCostMap
+  RealVector solution_level_costs() const;
+  /// return active cost estimate from solnControlCostMap
+  Real solution_level_cost() const;
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/

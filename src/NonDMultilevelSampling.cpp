@@ -66,7 +66,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   ModelLRevIter ml_rit; bool err_flag = false;
   NLev.resize(num_mf);
   for (i=num_mf-1, ml_rit=ordered_models.rbegin();
-       ml_rit!=ordered_models.rend(); --i, ++ml_rit) {
+       ml_rit!=ordered_models.rend(); --i, ++ml_rit) { // high fid to low fid
     // for now, only SimulationModel supports solution_{levels,costs}()
     num_lev = ml_rit->solution_levels(); // lower bound is 1 soln level
 
@@ -184,7 +184,7 @@ void NonDMultilevelSampling::core_run()
 	multilevel_control_variate_mc_Qcorr(model_form, model_form+1);
     }
     else { // multiple model forms (only) --> CVMC
-      // assume nominal value from user input, ignoring solution_level_control
+      // use nominal value from user input, ignoring solution_level_control
       size_t soln_level = _NPOS;
       SizetSizetPair lf_form_level(model_form,   soln_level),
 	             hf_form_level(model_form+1, soln_level);
@@ -243,7 +243,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
+  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -387,7 +387,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0., lev_cost;
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
+  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -558,9 +558,13 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
 
+  // retrieve active index (will differ from incoming soln levels when _NPOS
+  // is passed)
+  //size_t lf_lev_index = surr_model.solution_level_index(),
+  //       hf_lev_index = truth_model.solution_level_index();
   // retrieve cost estimates across model forms for a particular soln level
-  Real lf_cost    =  surr_model.solution_level_cost()[lf_form_level.second],
-       hf_cost    = truth_model.solution_level_cost()[hf_form_level.second],
+  Real lf_cost =  surr_model.solution_level_cost(),
+       hf_cost = truth_model.solution_level_cost(),
     cost_ratio = hf_cost / lf_cost, avg_eval_ratio, avg_mse_ratio;
   size_t iter = 0;
 
@@ -570,8 +574,9 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
             rho2_LH(numFunctions, false);
 
   SizetArray delta_N_l; load_pilot_sample(delta_N_l);
-  SizetArray& N_lf = NLev[lf_form_level.first][lf_form_level.second];
-  SizetArray& N_hf = NLev[hf_form_level.first][hf_form_level.second];
+  // NLev allocations currently enforce truncation to #HF levels (1)
+  SizetArray& N_lf = NLev[lf_form_level.first][0];//[lf_lev_index];
+  SizetArray& N_hf = NLev[hf_form_level.first][0];//[hf_lev_index];
   size_t raw_N_lf = 0, raw_N_hf = 0;
   RealVector mu_hat;
 
@@ -661,8 +666,8 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_cost = truth_model.solution_level_cost(),
-    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev),
+  RealVector hf_cost = truth_model.solution_level_costs(),
+    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev),
     avg_eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -906,8 +911,8 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   Real avg_eval_ratio, eps_sq_div_2, sum_sqrt_var_cost, estimator_var0 = 0.,
     lf_lev_cost, hf_lev_cost;
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_cost = truth_model.solution_level_cost(),
-    lf_cost = surr_model.solution_level_cost(), agg_var_hf(num_hf_lev),
+  RealVector hf_cost = truth_model.solution_level_costs(),
+    lf_cost = surr_model.solution_level_costs(), agg_var_hf(num_hf_lev),
     avg_eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach

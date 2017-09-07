@@ -1241,7 +1241,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_cost(), agg_var(num_lev);
+  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
