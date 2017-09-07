@@ -53,11 +53,6 @@ namespace Dakota {
  *
  */
 
-  // Should these traits have any dependence on the particular useage of the 
-  // COLIN optimizer?  For example, should the queries for which variables
-  // are supported depend on any of:
-  // COLINY_BETA, COLINY_COBYLA, COLINY_DIRECT, COLINY_EA, COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS? - RWH
-
 class COLINTraits: public TraitsBase
 {
   public:
@@ -71,11 +66,16 @@ class COLINTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
+  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
+
   /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() { return true; }
 
-  /// Return the flag indicating whether method supports discrete variables
-  bool supports_discrete_variables() { return true; }
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }

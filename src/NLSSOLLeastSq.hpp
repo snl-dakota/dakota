@@ -46,6 +46,12 @@ namespace Dakota {
     Saunders, M.A., and Wright, M.H., 1986] for information on NLSSOL's
     optional input parameters and the npoptn() subroutine. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for NLSSOL nonlinear least squares library
+ *
+ */
+
 class NLSSOLLeastSqTraits: public TraitsBase
 {
   public:
@@ -63,13 +69,13 @@ class NLSSOLLeastSqTraits: public TraitsBase
   bool supports_continuous_variables() { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  //bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
   bool supports_linear_inequality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  //bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }

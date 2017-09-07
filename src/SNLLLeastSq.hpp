@@ -59,6 +59,13 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for SNLLLeastSq
+ *
+ */
+
+  
 class SNLLLeastSqTraits: public TraitsBase
 {
   public:
@@ -76,13 +83,13 @@ class SNLLLeastSqTraits: public TraitsBase
   bool supports_continuous_variables() { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  //bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
   bool supports_linear_inequality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  //bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }

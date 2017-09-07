@@ -28,6 +28,12 @@ class PebbldTraits: public TraitsBase
 
   /// Return the flag indicating whether method supports discrete variables
   bool supports_discrete_variables() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
 };
 
 

@@ -69,10 +69,10 @@ namespace Dakota {
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
-/// SNLL-specific traits class.
-
-/** SNLL specializes some traits accessors by over-riding the default 
-accessors in TraitsBase. */
+/**
+ * \brief A version of TraitsBase specialized for SNLL optimizers
+ *
+ */
 
 class SNLLTraits: public TraitsBase
 {
@@ -86,6 +86,8 @@ class SNLLTraits: public TraitsBase
 
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
+
+  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
 
   /// Return the value of supportsContinuousVariables
   bool supports_continuous_variables() { return true; }

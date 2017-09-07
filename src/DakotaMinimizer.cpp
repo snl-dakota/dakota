@@ -124,12 +124,11 @@ void Minimizer::update_from_model(const Model& model)
   }
   
   // Check for active design variables and discrete variable support.
-  // Methods not yet utilizing TraitsBase class are included explicitly
+  // Include explicit checking for COLINOptimizer methods that are not
+  // representative of the majority (i.e. other COLINOptimizer methods)
   if(( traits()->supports_continuous_variables() && 
       traits()->supports_discrete_variables()) ||
-    (methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
-      methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
-      methodName == BRANCH_AND_BOUND))
+    (methodName == COLINY_EA  ||  methodName == COLINY_BETA ))
   {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
@@ -199,22 +198,20 @@ void Minimizer::update_from_model(const Model& model)
 
 
   // Check for linear constraint support in method selection
-  // Methods not yet utilizing TraitsBase class are included explicitly
+  // Include explicit checking for COLINOptimizer and SNLLOptimizer methods
+  // that are not representative of the respective majority
+  // (i.e. other COLINOptimizer or SNLLOptimizer methods)
   if ( numLinearEqConstraints && (!traits()->supports_linear_equality() ||
-      (methodName == NL2SOL || methodName == OPTPP_CG ||
-      ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS ) ||
-      methodName == MESH_ADAPTIVE_SEARCH || methodName == DL_SOLVER ||
-      methodName == EFFICIENT_GLOBAL ))) {
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
     Cerr << "\nError: linear equality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
     err_flag = true;
   }
   if ( numLinearIneqConstraints && (!traits()->supports_linear_inequality() ||
-      ( methodName == NL2SOL || methodName == OPTPP_CG ||
-      ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS ) ||
-      methodName == MESH_ADAPTIVE_SEARCH || methodName == DL_SOLVER ||
-      methodName == EFFICIENT_GLOBAL ))) {
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
     Cerr << "\nError: linear inequality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
@@ -222,18 +219,17 @@ void Minimizer::update_from_model(const Model& model)
   }
 
   // Check for nonlinear constraint support in method selection
-  // Methods not yet utilizing TraitsBase class are included explicitly
+  // Include explicit checking for SNLLOptimizer methods that are not
+  // representative of the majority (i.e. other SNLLOptimizer methods)
   if ( numNonlinearEqConstraints && (!traits()->supports_nonlinear_equality() ||
-      ( methodName == NL2SOL      || methodName == OPTPP_CG     ||
-      methodName == OPTPP_PDS ))) {
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
     Cerr << "\nError: nonlinear equality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;
     err_flag = true;
   }
   if ( numNonlinearIneqConstraints && (!traits()->supports_nonlinear_inequality() ||
-      ( methodName == NL2SOL      || methodName == OPTPP_CG     ||
-      methodName == OPTPP_PDS ))) {
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
     Cerr << "\nError: nonlinear inequality constraints not currently supported by "
    << method_enum_to_string(methodName) << ".\n       Please select a "
    << "different method." << std::endl;

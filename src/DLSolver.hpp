@@ -5,6 +5,40 @@
 
 namespace Dakota {
 
+/**
+ * \brief A version of TraitsBase specialized for DLSolver
+ *
+ */
+
+class DLSolverTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  DLSolverTraits() { }
+
+  /// destructor
+  virtual ~DLSolverTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
 struct Dakota_funcs;
 
 class Optimizer1: public Optimizer
@@ -13,7 +47,8 @@ public:
 	char *options;
 	Dakota_funcs *DF;
 	Model *M, *M0;
-	inline Optimizer1(Model &M1): Optimizer(M1), DF(0), M0(&M1) {}
+	inline Optimizer1(Model &M1, std::shared_ptr<TraitsBase> traits):
+		Optimizer(DL_SOLVER, M1, traits), DF(0), M0(&M1) {}
 	inline ActiveSet *activeSet_() { return &activeSet; }
 	inline Model *iteratedModel_() { return &iteratedModel; }
 	inline Variables *bestVariables_() { return &bestVariablesArray.front(); }
