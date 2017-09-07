@@ -31,6 +31,42 @@ namespace Dakota {
     convergence through the use of a sequence of trust regions and the
     application of surrogate corrections at the trust region centers. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for local surrogate-based minimizer
+ *
+ */
+
+class DataFitSurrBasedLocalTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  DataFitSurrBasedLocalTraits() { }
+
+  /// destructor
+  virtual ~DataFitSurrBasedLocalTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
+
 class DataFitSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
 {
 public:

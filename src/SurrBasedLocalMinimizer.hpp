@@ -39,7 +39,7 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer();
 

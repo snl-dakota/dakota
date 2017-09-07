@@ -26,15 +26,9 @@ namespace Dakota {
 /// The global surrogate-based minimizer which sequentially minimizes
 /// and updates a global surrogate model without trust region controls
 
-/** This method uses a SurrogateModel to perform minimization (optimization
-    or nonlinear least squares) through a set of iterations.  At each
-    iteration, a surrogate is built, the surrogate is minimized, and the
-    optimal points from the surrogate are then evaluated with the "true"
-    function, to generate new points upon which the surrogate for the next
-    iteration is built. */
 
 /**
- * \brief A version of TraitsBase specialized for surrogate-based minimizers
+ * \brief A version of TraitsBase specialized for surrogate-based global minimizer
  *
  */
 
@@ -56,8 +50,27 @@ class SurrBasedGlobalTraits: public TraitsBase
 
   /// Return the flag indicating whether method supports discrete variables
   bool supports_discrete_variables() { return true; }
+  
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
 };
 
+
+/** This method uses a SurrogateModel to perform minimization (optimization
+    or nonlinear least squares) through a set of iterations.  At each
+    iteration, a surrogate is built, the surrogate is minimized, and the
+    optimal points from the surrogate are then evaluated with the "true"
+    function, to generate new points upon which the surrogate for the next
+    iteration is built. */
 
 class SurrBasedGlobalMinimizer: public SurrBasedMinimizer
 {

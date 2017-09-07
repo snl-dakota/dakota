@@ -30,8 +30,8 @@ namespace Dakota {
 
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedLocalMinimizer(problem_db, model), minimizeIndex(0),
-  nestedTrustRegions(true), multiLev(false)
+  SurrBasedLocalMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
+  minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel.surrogate_type() != "hierarchical") {
