@@ -324,13 +324,12 @@ private:
   /// update current variables/labels/bounds/targets with data from actualModel
   void update_from_model(const Model& model);
 
-  /// test for exact equality in values between vars and sdv
-  bool vars_exact_compare(const Variables& vars,
-			  const Pecos::SurrogateDataVars& sdv) const;
-  /// test if c_vars and d_vars are within [c_l_bnds,c_u_bnds] and
-  /// [d_l_bnds,d_u_bnds]
-  bool inside(const RealVector& c_vars, const IntVector& di_vars,
-	      const RealVector& dr_vars) const;
+  /// test for exact equality in values between active vars and sdv
+  bool active_vars_compare(const Variables& vars,
+			   const Pecos::SurrogateDataVars& sdv) const;
+  /// test if inactive state is consistent and active vars are within
+  /// [l_bnds, u_bnds]
+  bool inside(const Variables& vars) const;
 
   //
   //- Heading: Data members
@@ -388,8 +387,8 @@ inline void DataFitSurrModel::total_points(int points)
 
 
 inline bool DataFitSurrModel::
-vars_exact_compare(const Variables& vars,
-		   const Pecos::SurrogateDataVars& sdv) const
+active_vars_compare(const Variables& vars,
+		    const Pecos::SurrogateDataVars& sdv) const
 {
   // Similar to id_vars_exact_compare() in PRPMultiIndex.hpp
 

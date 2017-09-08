@@ -1024,12 +1024,8 @@ void DataFitSurrModel::build_global()
       // in NonD::transform_model() needs to be set in order to allow test
       // of transformed bounds in "region" reuse case.  For "all" reuse case
       // typically used with data import, this is not necessary.
-      if ( prp_iter->interface_id() == am_interface_id &&
-	   // TO DO: test for identical set of inactive values!
-	   inside(db_vars.continuous_variables(),
-		  db_vars.discrete_int_variables(),
-		  db_vars.discrete_real_variables()) &&
-	   !vars_exact_compare(db_vars, anchor_vars) ) { // avoid anchor duplic
+      if ( prp_iter->interface_id() == am_interface_id && inside(db_vars) &&
+	  !active_vars_compare(db_vars, anchor_vars) ) { // avoid anchor duplic
 	// Eval id definitions:
 	//   id > 0 for unique evals from current execution
 	//   id = 0 for evals from file import --> data_pairs
@@ -1225,52 +1221,98 @@ void DataFitSurrModel::refine_surrogate()
 }
 
 
-bool DataFitSurrModel::
-inside(const RealVector& c_vars, const IntVector& di_vars,
-       const RealVector& dr_vars) const
+bool DataFitSurrModel::inside(const Variables& vars) const
 {
-  if (pointReuse == "region") { // inside always = TRUE for "all"
+  size_t i, num_acv = vars.acv(), num_adiv = vars.adiv(),
+    num_adsv = vars.adsv(), num_adrv = vars.adrv(), cv_start = vars.cv_start(),
+    div_start = vars.div_start(), dsv_start = vars.dsv_start(),
+    drv_start = vars.drv_start(), num_cv = vars.cv(), num_div = vars.div(),
+    num_dsv = vars.dsv(), num_drv = vars.drv();
 
-    size_t i, num_c_vars = c_vars.length(), num_di_vars = di_vars.length(),
-      num_dr_vars = dr_vars.length();
+  const Variables& am_vars = (actualModel.is_null()) ?
+    currentVariables : actualModel.current_variables();
 
-    const RealVector& c_l_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.continuous_lower_bounds() :
-      actualModel.continuous_lower_bounds();
-    const RealVector& c_u_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.continuous_upper_bounds() :
-      actualModel.continuous_upper_bounds();
-    const IntVector&  di_l_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.discrete_int_lower_bounds() :
-      actualModel.discrete_int_lower_bounds();
-    const IntVector&  di_u_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.discrete_int_upper_bounds() :
-      actualModel.discrete_int_upper_bounds();
-    const RealVector& dr_l_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.discrete_real_lower_bounds() :
-      actualModel.discrete_real_lower_bounds();
-    const RealVector& dr_u_bnds = (actualModel.is_null()) ?
-      userDefinedConstraints.discrete_real_upper_bounds() :
-      actualModel.discrete_real_upper_bounds();
-    
-    if (c_l_bnds.length() != num_c_vars  || c_u_bnds.length()  != num_c_vars  ||
-	di_l_bnds.length()!= num_di_vars || di_u_bnds.length() != num_di_vars ||
-	dr_l_bnds.length()!= num_dr_vars || dr_u_bnds.length() != num_dr_vars) {
-      Cerr << "Warning: inconsistent variable counts in DataFitSurrModel::"
-	   << "inside().  Excluding candidate data point.\n";
+  if (am_vars.acv()       != num_acv   || am_vars.adiv()      != num_adiv || 
+      am_vars.adsv()      != num_adsv  || am_vars.adrv()      != num_adrv || 
+      am_vars.cv_start()  != cv_start  || am_vars.div_start() != div_start ||
+      am_vars.dsv_start() != dsv_start || am_vars.drv_start() != drv_start ||
+      am_vars.cv()        != num_cv    || am_vars.div()       != num_div  ||
+      am_vars.dsv()       != num_dsv   || am_vars.drv()       != num_drv ) {
+    Cerr << "Warning: inconsistent variable counts in DataFitSurrModel::"
+	 << "inside().  Excluding candidate data point.\n";
+    return false;
+  }
+
+  size_t cv_end =  cv_start + num_cv,  div_end = div_start + num_div,
+        dsv_end = dsv_start + num_dsv, drv_end = drv_start + num_drv;
+
+  // complement of active cont vars must be identical
+  const RealVector& acv = vars.all_continuous_variables();
+  const RealVector& am_acv = am_vars.all_continuous_variables();
+  for (i=0; i<cv_start; ++i)
+    if (acv[i] != am_acv[i])
       return false;
-    }
+  for (i=cv_end; i<num_acv; ++i)
+    if (acv[i] != am_acv[i])
+      return false;
+  // complement of active discrete int vars must be identical
+  const IntVector& adiv = vars.all_discrete_int_variables();
+  const IntVector& am_adiv = am_vars.all_discrete_int_variables();
+  for (i=0; i<div_start; ++i)
+    if (adiv[i] != am_adiv[i])
+      return false;
+  for (i=div_end; i<num_adiv; ++i)
+    if (adiv[i] != am_adiv[i])
+      return false;
+  // complement of active discrete string vars must be identical
+  StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
+  StringMultiArrayConstView am_adsv = am_vars.all_discrete_string_variables();
+  for (i=0; i<dsv_start; ++i)
+    if (adsv[i] != am_adsv[i])
+      return false;
+  for (i=dsv_end; i<num_adsv; ++i)
+    if (adsv[i] != am_adsv[i])
+      return false;
+  // complement of active discrete real vars must be identical
+  const RealVector& adrv = vars.all_discrete_real_variables();
+  const RealVector& am_adrv = am_vars.all_discrete_real_variables();
+  for (i=0; i<drv_start; ++i)
+    if (adrv[i] != am_adrv[i])
+      return false;
+  for (i=drv_end; i<num_adrv; ++i)
+    if (adrv[i] != am_adrv[i])
+      return false;
 
-    for (i=0; i<num_c_vars; ++i)
-      if (c_vars[i] < c_l_bnds[i] || c_vars[i] > c_u_bnds[i])
+  // additionally check if within current bounds for "region" case
+  if (pointReuse == "region") {
+
+    const Constraints& am_cons = (actualModel.is_null()) ?
+      userDefinedConstraints : actualModel.user_defined_constraints();
+
+    const RealVector& cv = vars.continuous_variables();
+    const RealVector& c_l_bnds = am_cons.continuous_lower_bounds();
+    const RealVector& c_u_bnds = am_cons.continuous_upper_bounds();
+    for (i=0; i<num_cv; ++i)
+      if (cv[i] < c_l_bnds[i] || cv[i] > c_u_bnds[i])
 	return false;
-    for (i=0; i<num_di_vars; ++i)
-      if (di_vars[i] < di_l_bnds[i] || di_vars[i] > di_u_bnds[i])
+
+    const IntVector& div = vars.discrete_int_variables();
+    const IntVector& di_l_bnds = am_cons.discrete_int_lower_bounds();
+    const IntVector& di_u_bnds = am_cons.discrete_int_upper_bounds();
+    for (i=0; i<num_div; ++i)
+      if (div[i] < di_l_bnds[i] || div[i] > di_u_bnds[i])
 	return false;
-    for (i=0; i<num_dr_vars; ++i)
-      if (dr_vars[i] < dr_l_bnds[i] || dr_vars[i] > dr_u_bnds[i])
+
+    // No check for active string variable bounds
+
+    const RealVector& drv = vars.discrete_real_variables();
+    const RealVector& dr_l_bnds = am_cons.discrete_real_lower_bounds();
+    const RealVector& dr_u_bnds = am_cons.discrete_real_upper_bounds();
+    for (i=0; i<num_drv; ++i)
+      if (drv[i] < dr_l_bnds[i] || drv[i] > dr_u_bnds[i])
 	return false;
   }
+
   return true;
 }
 
