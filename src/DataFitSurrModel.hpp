@@ -376,7 +376,7 @@ private:
 
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
-{ finalize_export(); }
+{ if (!exportPointsFile.empty()) finalize_export(); }
 
 
 inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()

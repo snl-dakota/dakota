@@ -59,8 +59,10 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   if (pointsManagement == DEFAULT_POINTS)
     pointsManagement = (pointsTotal > 0) ? TOTAL_POINTS : RECOMMENDED_POINTS;
 
+  bool import_pts = !importPointsFile.empty(),
+       export_pts = !exportPointsFile.empty();
   if (pointReuse.empty()) // assign default
-    pointReuse = (importPointsFile.empty()) ? "none" : "all";
+    pointReuse = (import_pts) ? "all" : "none";
 
   // DataFitSurrModel is allowed to set the db list nodes, so long as it 
   // restores the list nodes to their previous setting.  This removes the need
@@ -139,11 +141,12 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   deltaCorr.initialize(*this, surrogateFnIndices, corrType,
     problem_db.get_short("model.surrogate.correction_order"));
 
-  import_points(
-    problem_db.get_ushort("model.surrogate.import_build_format"),
-    problem_db.get_bool("model.surrogate.import_build_active_only"));
-  initialize_export();
-  if (!importPointsFile.empty() || !exportPointsFile.empty())
+  if (import_pts)
+    import_points(problem_db.get_ushort("model.surrogate.import_build_format"),
+      problem_db.get_bool("model.surrogate.import_build_active_only"));
+  if (export_pts)
+    initialize_export();
+  if (import_pts || export_pts)
     manage_data_recastings();
 }
 
@@ -183,8 +186,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
   surrogateType = approx_type;
 
+  bool import_pts = !importPointsFile.empty(),
+       export_pts = !exportPointsFile.empty();
   if (pointReuse.empty()) // assign default
-    pointReuse = (importPointsFile.empty()) ? "none" : "all";
+    pointReuse = (import_pts) ? "all" : "none";
 
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
@@ -268,10 +273,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  import_points(import_build_format, import_build_active_only);
-  initialize_export();
-  if (!importPointsFile.empty() || !exportPointsFile.empty())
-    manage_data_recastings();
+  if (import_pts) import_points(import_build_format, import_build_active_only);
+  if (export_pts) initialize_export();
+  if (import_pts || export_pts) manage_data_recastings();
 }
 
 
@@ -1021,6 +1025,7 @@ void DataFitSurrModel::build_global()
       // of transformed bounds in "region" reuse case.  For "all" reuse case
       // typically used with data import, this is not necessary.
       if ( prp_iter->interface_id() == am_interface_id &&
+	   // TO DO: test for identical set of inactive values!
 	   inside(db_vars.continuous_variables(),
 		  db_vars.discrete_int_variables(),
 		  db_vars.discrete_real_variables()) &&
@@ -1361,7 +1366,8 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // export data (optional)
-    export_point(surrModelEvalCntr, currentVariables, approx_response);
+    if (!exportPointsFile.empty())
+      export_point(surrModelEvalCntr, currentVariables, approx_response);
 
     // post-process
     switch (responseMode) {
@@ -1715,7 +1721,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
-  IntRespMIter r_it;
+  IntRespMIter r_it; bool export_pts = !exportPointsFile.empty();
   if (responseMode == AUTO_CORRECTED_SURROGATE && corrType) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
@@ -1733,11 +1739,12 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
       deltaCorr.apply(v_it->second,//rawVarsMap[r_it->first],
 		      r_it->second, quiet_flag);
       // decided to export auto-corrected approx response
-      export_point(r_it->first, v_it->second, r_it->second);
+      if (export_pts)
+	export_point(r_it->first, v_it->second, r_it->second);
     }
     rawVarsMap.clear();
   }
-  else if (!exportPointsFile.empty()) {
+  else if (export_pts) {
     IntVarsMIter v_it;
     for (r_it  = approx_resp_map_rekey.begin(), v_it = rawVarsMap.begin();
 	 r_it != approx_resp_map_rekey.end(); ++r_it, ++v_it)
@@ -1762,9 +1769,6 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 void DataFitSurrModel::
 import_points(unsigned short tabular_format, bool active_only)
 {
-  if (importPointsFile.empty())
-    return;
-
   // Temporary objects to use to read correct size vars/resp
   const Variables& vars = actualModel.is_null() ? currentVariables : 
     actualModel.current_variables(); 
@@ -1826,21 +1830,18 @@ import_points(unsigned short tabular_format, bool active_only)
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::initialize_export()
 {
-  if (!exportPointsFile.empty()) {
-    TabularIO::open_file(exportFileStream, exportPointsFile,
-			 "DataFitSurrModel export");
-    TabularIO::write_header_tabular(exportFileStream, currentVariables,
-				    currentResponse, "eval_id", exportFormat);
-  }
+  TabularIO::open_file(exportFileStream, exportPointsFile,
+		       "DataFitSurrModel export");
+  TabularIO::write_header_tabular(exportFileStream, currentVariables,
+				  currentResponse, "eval_id", exportFormat);
 }
 
 
 /** Constructor helper to export approximation-based evaluations to a file. */
 void DataFitSurrModel::finalize_export()
 {
-  if (!exportPointsFile.empty())
-    TabularIO::close_file(exportFileStream, exportPointsFile,
-			  "DataFitSurrModel export");
+  TabularIO::close_file(exportFileStream, exportPointsFile,
+			"DataFitSurrModel export");
 }
 
 
@@ -1850,9 +1851,6 @@ void DataFitSurrModel::finalize_export()
 void DataFitSurrModel::
 export_point(int eval_id, const Variables& vars, const Response& resp)
 {
-  if (exportPointsFile.empty())
-    return;
-
   if (recastings()) {
     Variables export_vars; Response export_resp;
     iterator_space_to_user_space(vars, resp, export_vars, export_resp);
