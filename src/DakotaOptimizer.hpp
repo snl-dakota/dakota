@@ -278,7 +278,7 @@ void set_variables( const VectorType & source,
 
   size_t i, dsi_cntr;
 
-  copy_data_partial(source, contVars, 0, num_cont_vars);
+  copy_data_partial(source, 0, contVars, 0, num_cont_vars);
   vars.continuous_variables(contVars);
 
   copy_data(source, discIntVars, int_set_bits, set_int_vars, num_cont_vars, num_disc_int_vars);
@@ -538,51 +538,102 @@ void get_linear_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-/// copy the various data associated with nonlinear constraints from Dakota into TPL vectors/matrices
 template <typename RVecT, typename IVecT>
-void get_nonlinear_constraints( Model & model,
-                                Real bigRealBoundSize, // It would be nice to clean this up and not need to pass in
-                                IVecT & nonlin_map_indices,
-                                RVecT & nonlin_map_multipliers,
-                                RVecT & nonlin_map_offsets)
+int get_inequality_constraints( Model & model,
+                                 Real bigRealBoundSize,
+                                 CONSTRAINT_TYPE ctype,
+                                 IVecT & map_indices,
+                                 RVecT & map_multipliers,
+                                 RVecT & map_offsets,
+                                 Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
 {
-  const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets    = model.nonlinear_eq_constraint_targets();
+  const RealVector& ineq_lwr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                      model.nonlinear_ineq_constraint_lower_bounds() :
+                                      model.linear_ineq_constraint_lower_bounds();
+  const RealVector& ineq_upr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                      model.nonlinear_ineq_constraint_upper_bounds() :
+                                      model.linear_ineq_constraint_upper_bounds();
+  int numIneqConstraints          = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                      model.num_nonlinear_ineq_constraints() :
+                                      model.num_linear_ineq_constraints();
 
-  int numNonlinearEqConstraints   = model.num_nonlinear_eq_constraints();
-  int numNonlinearIneqConstraints = model.num_nonlinear_ineq_constraints();
+  int num_added = 0;
 
-  // Some of this could be done using a copy_data that supports vector offsets ... RWH
-  for (int i=0; i<numNonlinearEqConstraints; i++) {
-    nonlin_map_indices.push_back(i+numNonlinearIneqConstraints);
-    nonlin_map_multipliers.push_back(1.0);
-    nonlin_map_offsets.push_back(-nln_eq_targets[i]);
-  }
-
-  int check_numNonlinearIneqConstraints = 0;
-
-  for (int i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      check_numNonlinearIneqConstraints++;
-      nonlin_map_indices.push_back(i);
-      nonlin_map_multipliers.push_back(1.0);
-      nonlin_map_offsets.push_back(-nln_ineq_lwr_bnds[i]);
+  for (int i=0; i<numIneqConstraints; i++) {
+    if (ineq_lwr_bnds[i] > -bigRealBoundSize) {
+      num_added++;
+      map_indices.push_back(i);
+      map_multipliers.push_back(scaling);
+      map_offsets.push_back(-scaling*ineq_lwr_bnds[i]);
     }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      check_numNonlinearIneqConstraints++;
-      nonlin_map_indices.push_back(i);
-      nonlin_map_multipliers.push_back(-1.0);
-      nonlin_map_offsets.push_back(nln_ineq_upr_bnds[i]);
+    if (ineq_upr_bnds[i] < bigRealBoundSize) {
+      num_added++;
+      map_indices.push_back(i);
+      map_multipliers.push_back(-scaling);
+      map_offsets.push_back(scaling*ineq_upr_bnds[i]);
     }
   }
+  return num_added;
+}
 
-  if( (int)nonlin_map_indices.size()-numNonlinearEqConstraints != check_numNonlinearIneqConstraints )
-  {
-    Cerr << "\nAdapter: get_nonlinear_constraints - mismatched number of nonlinear inequality constraints." << std::endl;
-    abort_handler(-1);
+//----------------------------------------------------------------
+
+template <typename RVecT>
+void get_nonlinear_eq_constraints( Model & model,
+                                   const RVecT & curr_resp_vals,
+                                         RVecT & values)
+{
+  const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
+  int numNonlinearEqConstraints    = model.num_nonlinear_eq_constraints();
+
+  for (int i=0; i<numNonlinearEqConstraints; i++)
+    values.push_back(curr_resp_vals[i] - nln_eq_targets[i]);
+}
+
+//----------------------------------------------------------------
+
+template <typename RVecT, typename IVecT>
+void get_equality_constraints( Model & model,
+                               CONSTRAINT_TYPE ctype,
+                               IVecT & indices,
+                               size_t shift_index,
+                               RVecT & multipliers,
+                               RVecT & values)
+{
+  const RealVector& eq_targets = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                   model.nonlinear_eq_constraint_targets() :
+                                   model.linear_eq_constraint_targets();
+  int num_eq                   = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                   model.num_nonlinear_eq_constraints() :
+                                   model.num_linear_eq_constraints();
+
+  for (int i=0; i<num_eq; i++) {
+    indices.push_back(i+shift_index);
+    multipliers.push_back(-1.0);
+    values.push_back(eq_targets[i]);
+    indices.push_back(i+shift_index);
+    multipliers.push_back(1.0);
+    values.push_back(-eq_targets[i]);
   }
 }
+
+//----------------------------------------------------------------
+
+template <typename RVecT>
+void get_nonlinear_eq_constraints( Model & model,
+                                   const RealVector & curr_resp_vals,
+                                         RVecT & values,
+                                         Real scale,
+                                         int offset = 0 )
+{
+  const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
+  int numNonlinearEqConstraints    = model.num_nonlinear_eq_constraints();
+
+  for (int i=0; i<numNonlinearEqConstraints; i++)
+    values[i+offset] = curr_resp_vals[i] + scale*nln_eq_targets[i];
+}
+
+//----------------------------------------------------------------
 
 ///  Would like to combine the previous adapter with this one (based on APPSOptimizer and COLINOptimizer)
 ///  and then see how much more generalization is needed to support other TPLs like JEGA

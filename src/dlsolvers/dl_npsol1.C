@@ -143,14 +143,6 @@ NPSOL_stuff::find_optimum(Optimizer1 *D)
 	// these bounds must be updated from model bounds each time an iterator is
 	// run within the B&B strategy.
 	RealVector augmented_l_bnds = M->continuous_lower_bounds();
-	RealVector augmented_u_bnds = M->continuous_upper_bounds();
-	augment_bounds(augmented_l_bnds, augmented_u_bnds,
-		 M->linear_ineq_constraint_lower_bounds(),
-		 M->linear_ineq_constraint_upper_bounds(),
-		 M->linear_eq_constraint_targets(),
-		 M->nonlinear_ineq_constraint_lower_bounds(),
-		 M->nonlinear_ineq_constraint_upper_bounds(),
-		 M->nonlinear_eq_constraint_targets());
 
 	np_optn("NOLIST");
 	np_optn("MA PR 0");

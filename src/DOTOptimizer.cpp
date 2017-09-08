@@ -186,77 +186,45 @@ void DOTOptimizer::allocate_constraints()
   // of 1-sided inequalities to pass to DOT (numDotConstr) as well as the
   // mappings (indices, multipliers, offsets) between the DAKOTA constraints
   // and the DOT constraints.  TO DO: support for automatic constraint scaling.
-  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
+  size_t 
+    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
     num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints(),
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
-  const RealVector& lin_ineq_lwr_bnds
-    = iteratedModel.linear_ineq_constraint_lower_bounds();
-  const RealVector& lin_ineq_upr_bnds
-    = iteratedModel.linear_ineq_constraint_upper_bounds();
-  const RealVector& lin_eq_targets
-    = iteratedModel.linear_eq_constraint_targets();
   numDotNlnConstr = 2*num_nln_eq;
-  for (i=0; i<num_nln_ineq; ++i) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numDotNlnConstr++;
-      // nln_ineq_lower_bnd - dakota_constraint <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(-1.0);
-      constraintMappingOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numDotNlnConstr++;
-      // dakota_constraint - nln_ineq_upper_bnd <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(1.0);
-      constraintMappingOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
-  for (i=0; i<num_nln_eq; ++i) {
-    // nln_eq_target - dakota_constraint <= 0
-    constraintMappingIndices.push_back(i+num_nln_ineq);
-    constraintMappingMultipliers.push_back(-1.0);
-    constraintMappingOffsets.push_back(nln_eq_targets[i]);
-    // dakota_constraint - nln_eq_target <= 0
-    constraintMappingIndices.push_back(i+num_nln_ineq);
-    constraintMappingMultipliers.push_back(1.0);
-    constraintMappingOffsets.push_back(-nln_eq_targets[i]);
-  }
+  get_inequality_constraints
+                ( iteratedModel, bigRealBoundSize,
+                  CONSTRAINT_TYPE::NONLINEAR,
+                  constraintMappingIndices,
+                  constraintMappingMultipliers,
+                  constraintMappingOffsets,
+                  -1.0 /* should be a trait? RWH */);
+  numDotNlnConstr += (int)constraintMappingOffsets.size();
+
+  get_equality_constraints
+                ( iteratedModel,
+                  CONSTRAINT_TYPE::NONLINEAR,
+                  constraintMappingIndices,
+                  num_nln_ineq,
+                  constraintMappingMultipliers,
+                  constraintMappingOffsets);
 
   numDotLinConstr = 2*num_lin_eq;
-  for (i=0; i<num_lin_ineq; ++i) {
-    if (lin_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numDotLinConstr++;
-      // lin_ineq_lower_bnd - Ax <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(-1.0);
-      constraintMappingOffsets.push_back(lin_ineq_lwr_bnds[i]);
-    }
-    if (lin_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numDotLinConstr++;
-      // Ax - lin_ineq_upper_bnd <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(1.0);
-      constraintMappingOffsets.push_back(-lin_ineq_upr_bnds[i]);
-    }
-  }
-  for (i=0; i<num_lin_eq; ++i) {
-    // lin_eq_target - Ax <= 0
-    constraintMappingIndices.push_back(i+num_lin_ineq);
-    constraintMappingMultipliers.push_back(-1.0);
-    constraintMappingOffsets.push_back(lin_eq_targets[i]);
-    // Ax - lin_eq_target <= 0
-    constraintMappingIndices.push_back(i+num_lin_ineq);
-    constraintMappingMultipliers.push_back(1.0);
-    constraintMappingOffsets.push_back(-lin_eq_targets[i]);
-  }
+  numDotLinConstr += get_inequality_constraints
+                ( iteratedModel, bigRealBoundSize,
+                  CONSTRAINT_TYPE::LINEAR,
+                  constraintMappingIndices,
+                  constraintMappingMultipliers,
+                  constraintMappingOffsets,
+                  -1.0 /* should be a trait? RWH */);
+
+  get_equality_constraints
+                ( iteratedModel,
+                  CONSTRAINT_TYPE::LINEAR,
+                  constraintMappingIndices,
+                  num_lin_ineq,
+                  constraintMappingMultipliers,
+                  constraintMappingOffsets);
 
   numDotConstr = numDotNlnConstr + numDotLinConstr;
 

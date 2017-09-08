@@ -369,9 +369,17 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   // Define nonlinear equality and inequality constraints.
 
-  //get_nonlinear_constraints<AppsTraits>
-  get_nonlinear_constraints
+  std::vector<double> curr_resp_vals(numNonlinearEqConstraints, 0.0);
+  get_nonlinear_eq_constraints ( iteratedModel, curr_resp_vals, constraintMapOffsets);
+  for( size_t i=0; i<numNonlinearEqConstraints; ++i )
+  {
+    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
+    constraintMapMultipliers.push_back(1.0);
+  }
+
+  get_inequality_constraints
                 ( iteratedModel, bigRealBoundSize,
+                  CONSTRAINT_TYPE::NONLINEAR,
                   constraintMapIndices,
                   constraintMapMultipliers,
                   constraintMapOffsets);
