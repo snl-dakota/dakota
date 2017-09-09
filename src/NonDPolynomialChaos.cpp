@@ -1080,9 +1080,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
   if (update_sampler) {
+    Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
     if (tensorRegression) {
-      NonDQuadrature* nond_quad
-	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      NonDQuadrature* nond_quad = (NonDQuadrature*)sub_iter_rep;
       nond_quad->samples(numSamplesOnModel);
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
 	SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
@@ -1095,9 +1095,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
       }
       nond_quad->update(); // sanity check on sizes, likely a no-op
     }
-    else { // enforce increment through sampling_reset()
-      // no lower bound on samples in the subiterator
-      uSpaceModel.subordinate_iterator().sampling_reference(0);
+    // test for valid sampler for case of build data import (unstructured grid)
+    else if (sub_iter_rep != NULL) { // enforce increment using sampling_reset()
+      sub_iter_rep->sampling_reference(0);// no lower bnd on samples in sub-iter
       DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
       // total including reuse from DB/file (does not include previous ML iter)
       dfs_model->total_points(numSamplesOnModel);
@@ -1231,9 +1231,9 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
 
   // Multilevel variance aggregation requires independent sample sets
-  Analyzer* sampler
-    = (Analyzer*)uSpaceModel.subordinate_iterator().iterator_rep();
-  sampler->vary_pattern(true);
+  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
+  if (u_sub_iter != NULL)
+    ((Analyzer*)u_sub_iter)->vary_pattern(true);
 
   Model& truth_model  = iteratedModel.truth_model();
   size_t lev, num_lev = truth_model.solution_levels(), // single model form
@@ -1247,9 +1247,16 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
   // Initialize for pilot sample
+  bool import_pilot = !importBuildPointsFile.empty();
   SizetArray delta_N_l; NLev.assign(num_lev, 0);
-  delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
-  Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
+  if (import_pilot) {
+    delta_N_l.assign(num_lev, 1); // TO DO: dummy to be updated
+    Cout << "\nImporting ML PCE pilot sample.\n";
+  }
+  else {
+    delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
+    Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
+  }
 
   // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -1275,15 +1282,24 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (delta_N_l[lev]) {
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-
 	if (iter == 0) { // initial expansion build
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  if (lev == 0) compute_expansion(); // init + build
-	  else           update_expansion(); // just build 
+	  if (import_pilot) {
+	    if (lev == 0) compute_expansion(); // init + build
+	    else           update_expansion(); // just build 
+	    // *** TO DO ***: retrieve number of matched points
+	    //delta_N_l[lev] = .();
+	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	  }
+	  else {
+	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	    increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	    if (lev == 0) compute_expansion(); // init + build
+	    else           update_expansion(); // just build 
+	  }
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
+	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
 	  append_expansion();
 	}

@@ -324,12 +324,13 @@ private:
   /// update current variables/labels/bounds/targets with data from actualModel
   void update_from_model(const Model& model);
 
+  /// test if inactive state is consistent
+  bool consistent(const Variables& vars) const;
+  /// test if active vars are within [l_bnds, u_bnds]
+  bool inside(const Variables& vars) const;
   /// test for exact equality in values between active vars and sdv
   bool active_vars_compare(const Variables& vars,
 			   const Pecos::SurrogateDataVars& sdv) const;
-  /// test if inactive state is consistent and active vars are within
-  /// [l_bnds, u_bnds]
-  bool inside(const Variables& vars) const;
 
   //
   //- Heading: Data members

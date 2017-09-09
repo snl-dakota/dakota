@@ -2537,7 +2537,8 @@ user_space_to_iterator_space(const Variables& user_vars,
 						  iter_vars, iter_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    iter_vars = user_vars; iter_resp = user_resp; // shallow copies
+    iter_vars = user_vars.copy(); // use deep copy to preserve inactive
+    iter_resp = user_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings bottom up (e.g., for data import)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2549,16 +2550,22 @@ user_space_to_iterator_space(const Variables& user_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_rit->current_variables(); // shallow copy
 	Response  recast_resp = ml_rit->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
 	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
-	//recast_model_rep->
-	//  inverse_transform_set(iter_vars, iter_set, recast_set);
+	recast_model_rep->
+	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
+	recast_resp.active_set(recast_set);
 	recast_model_rep->
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	iter_vars = recast_vars; iter_resp = recast_resp;// iter_set=recast_set;
+	// update iter_vars
+	iter_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	iter_resp = recast_resp; // sufficient for now...
+	//iter_resp.active_set(recast_set);
+	//iter_resp.update(recast_resp);
       }
   }
 }

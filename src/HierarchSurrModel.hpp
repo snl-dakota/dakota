@@ -158,6 +158,13 @@ protected:
   /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true);
 
+  // return active orderedModels interface identifier?
+  //const String& interface_id() const;
+  /// if recurse_flag, return true if orderedModels evaluation cache usage
+  bool evaluation_cache(bool recurse_flag = true) const;
+  /// if recurse_flag, return true if orderedModels restart file usage
+  bool restart_file(bool recurse_flag = true) const;
+
   /// set the evaluation counter reference points for the HierarchSurrModel
   /// (request forwarded to the low and high fidelity models)
   void set_evaluation_reference();
@@ -487,6 +494,38 @@ inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
 }
 
 
+//inline const String& HierarchSurrModel::interface_id() const
+//{ return orderedModels[]->interface_id(); }
+
+
+inline bool HierarchSurrModel::evaluation_cache(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i)
+      if (orderedModels[i].evaluation_cache(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
+inline bool HierarchSurrModel::restart_file(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i)
+      if (orderedModels[i].restart_file(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
 inline void HierarchSurrModel::set_evaluation_reference()
 {
   //orderedModels[lowFidelityIndices.first].set_evaluation_reference();
@@ -514,8 +553,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 {
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
-    orderedModels[i].print_evaluation_summary(s, minimal_header,
-        relative_count);
+    orderedModels[i].print_evaluation_summary(s,minimal_header,relative_count);
 }
 
 

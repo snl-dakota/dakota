@@ -1011,36 +1011,40 @@ void DataFitSurrModel::build_global()
     Variables db_vars; Response db_resp;
     bool map_to_iter_space = recastings();
     for (prp_iter=data_pairs.begin(); prp_iter!=data_pairs.end(); ++prp_iter) {
-      // apply any recastings below this level: we perform these recastings at
-      // run time (instead of once in import_points()) to support any updates
-      // to the transformations (e.g., distribution parameter updates).
-      if (map_to_iter_space)
-	user_space_to_iterator_space(prp_iter->variables(),
-				     prp_iter->response(), db_vars, db_resp);
-      else
-	{ db_vars = prp_iter->variables(); db_resp = prp_iter->response(); }
 
-      // Note: for NonD uses with u-space models, the global_bounds boolean
-      // in NonD::transform_model() needs to be set in order to allow test
-      // of transformed bounds in "region" reuse case.  For "all" reuse case
-      // typically used with data import, this is not necessary.
-      if ( prp_iter->interface_id() == am_interface_id && inside(db_vars) &&
-	  !active_vars_compare(db_vars, anchor_vars) ) { // avoid anchor duplic
-	// Eval id definitions:
-	//   id > 0 for unique evals from current execution
-	//   id = 0 for evals from file import --> data_pairs
-	//   id < 0 for non-unique evals from restart
-	// update one point at a time since accumulation within an
-	// IntResponseMap requires unique id's
-	approxInterface.append_approximation(db_vars,
-	  std::make_pair(prp_iter->eval_id(), db_resp));
-	++reuse_points;
+      const Variables& prp_vars = prp_iter->variables();
+      const Response&  prp_resp = prp_iter->response();
+      if (prp_iter->interface_id() == am_interface_id && consistent(prp_vars)) {
+	// apply any recastings below this level: we perform these recastings at
+	// run time (instead of once in import_points()) to support any updates
+	// to the transformations (e.g., distribution parameter updates).
+	if (map_to_iter_space)
+	  user_space_to_iterator_space(prp_vars, prp_resp, db_vars, db_resp);
+	else
+	  { db_vars = prp_vars; db_resp = prp_resp; }
 
-	if (outputLevel >= DEBUG_OUTPUT) {
-	  if (map_to_iter_space) Cout << "Transformed ";
-	  else                   Cout << "Untransformed ";
-	  Cout << "data for DB eval " << prp_iter->eval_id() << ":\n"
-	       << db_vars << db_resp;
+	// Note: for NonD uses with u-space models, the global_bounds boolean
+	// in NonD::transform_model() needs to be set in order to allow test
+	// of transformed bounds in "region" reuse case.  For "all" reuse case
+	// typically used with data import, this is not necessary.
+	if ( inside(db_vars) &&
+	    !active_vars_compare(db_vars, anchor_vars) ) {// avoid anchor duplic
+	  // Eval id definitions:
+	  //   id > 0 for unique evals from current execution
+	  //   id = 0 for evals from file import --> data_pairs
+	  //   id < 0 for non-unique evals from restart
+	  // update one point at a time since accumulation within an
+	  // IntResponseMap requires unique id's
+	  approxInterface.append_approximation(db_vars,
+	    std::make_pair(prp_iter->eval_id(), db_resp));
+	  ++reuse_points;
+
+	  if (outputLevel >= DEBUG_OUTPUT) {
+	    if (map_to_iter_space) Cout << "Transformed ";
+	    else                   Cout << "Untransformed ";
+	    Cout << "data for DB eval " << prp_iter->eval_id() << ":\n"
+		 << db_vars << db_resp;
+	  }
 	}
       }
     }
@@ -1221,7 +1225,7 @@ void DataFitSurrModel::refine_surrogate()
 }
 
 
-bool DataFitSurrModel::inside(const Variables& vars) const
+bool DataFitSurrModel::consistent(const Variables& vars) const
 {
   size_t i, num_acv = vars.acv(), num_adiv = vars.adiv(),
     num_adsv = vars.adsv(), num_adrv = vars.adrv(), cv_start = vars.cv_start(),
@@ -1239,7 +1243,7 @@ bool DataFitSurrModel::inside(const Variables& vars) const
       am_vars.cv()        != num_cv    || am_vars.div()       != num_div  ||
       am_vars.dsv()       != num_dsv   || am_vars.drv()       != num_drv ) {
     Cerr << "Warning: inconsistent variable counts in DataFitSurrModel::"
-	 << "inside().  Excluding candidate data point.\n";
+	 << "consistent().  Excluding candidate data point.\n";
     return false;
   }
 
@@ -1282,21 +1286,28 @@ bool DataFitSurrModel::inside(const Variables& vars) const
   for (i=drv_end; i<num_adrv; ++i)
     if (adrv[i] != am_adrv[i])
       return false;
+}
 
+
+bool DataFitSurrModel::inside(const Variables& vars) const
+{
   // additionally check if within current bounds for "region" case
   if (pointReuse == "region") {
 
     const Constraints& am_cons = (actualModel.is_null()) ?
       userDefinedConstraints : actualModel.user_defined_constraints();
+    const RealVector&  cv = vars.continuous_variables();
+    const IntVector&  div = vars.discrete_int_variables();
+    const RealVector& drv = vars.discrete_real_variables();
+    size_t i, num_cv = cv.length(), num_div = div.length(),
+      num_drv = drv.length();
 
-    const RealVector& cv = vars.continuous_variables();
     const RealVector& c_l_bnds = am_cons.continuous_lower_bounds();
     const RealVector& c_u_bnds = am_cons.continuous_upper_bounds();
     for (i=0; i<num_cv; ++i)
       if (cv[i] < c_l_bnds[i] || cv[i] > c_u_bnds[i])
 	return false;
 
-    const IntVector& div = vars.discrete_int_variables();
     const IntVector& di_l_bnds = am_cons.discrete_int_lower_bounds();
     const IntVector& di_u_bnds = am_cons.discrete_int_upper_bounds();
     for (i=0; i<num_div; ++i)
@@ -1305,7 +1316,6 @@ bool DataFitSurrModel::inside(const Variables& vars) const
 
     // No check for active string variable bounds
 
-    const RealVector& drv = vars.discrete_real_variables();
     const RealVector& dr_l_bnds = am_cons.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = am_cons.discrete_real_upper_bounds();
     for (i=0; i<num_drv; ++i)
