@@ -1247,18 +1247,29 @@ bool DataFitSurrModel::consistent(const Variables& vars) const
     return false;
   }
 
-  size_t cv_end =  cv_start + num_cv,  div_end = div_start + num_div,
-        dsv_end = dsv_start + num_dsv, drv_end = drv_start + num_drv;
+  size_t cv_end =  cv_start + num_cv,    div_end = div_start + num_div,
+        dsv_end = dsv_start + num_dsv,   drv_end = drv_start + num_drv,
+    num_post_cv = num_acv - cv_end, num_post_drv = num_adrv - drv_end;
 
-  // complement of active cont vars must be identical
-  const RealVector& acv = vars.all_continuous_variables();
+  // This tolerance is important since imported data may lack full precision
+  Real rel_tol = 1.e-10; // hardwired for now
+
+  // complement of active cont vars must be identical (within rel tol)
+  const RealVector&    acv =    vars.all_continuous_variables();
   const RealVector& am_acv = am_vars.all_continuous_variables();
-  for (i=0; i<cv_start; ++i)
-    if (acv[i] != am_acv[i])
-      return false;
-  for (i=cv_end; i<num_acv; ++i)
-    if (acv[i] != am_acv[i])
-      return false;
+  RealVector pre_cv(Teuchos::View, acv.values(),           cv_start),
+            post_cv(Teuchos::View, acv.values()+cv_end,    num_post_cv),
+          pre_am_cv(Teuchos::View, am_acv.values(),        cv_start),
+         post_am_cv(Teuchos::View, am_acv.values()+cv_end, num_post_cv);
+  if ( !nearby(pre_cv,  pre_am_cv,  rel_tol) ||
+       !nearby(post_cv, post_am_cv, rel_tol) )
+    return false;
+  // for (i=0; i<cv_start; ++i)
+  //   if (acv[i] != am_acv[i])
+  //     return false;
+  // for (i=cv_end; i<num_acv; ++i)
+  //   if (acv[i] != am_acv[i])
+  //     return false;
   // complement of active discrete int vars must be identical
   const IntVector& adiv = vars.all_discrete_int_variables();
   const IntVector& am_adiv = am_vars.all_discrete_int_variables();
@@ -1277,15 +1288,22 @@ bool DataFitSurrModel::consistent(const Variables& vars) const
   for (i=dsv_end; i<num_adsv; ++i)
     if (adsv[i] != am_adsv[i])
       return false;
-  // complement of active discrete real vars must be identical
+  // complement of active discrete real vars must be identical (within rel tol)
   const RealVector& adrv = vars.all_discrete_real_variables();
   const RealVector& am_adrv = am_vars.all_discrete_real_variables();
-  for (i=0; i<drv_start; ++i)
-    if (adrv[i] != am_adrv[i])
-      return false;
-  for (i=drv_end; i<num_adrv; ++i)
-    if (adrv[i] != am_adrv[i])
-      return false;
+  RealVector pre_drv(Teuchos::View, adrv.values(),            drv_start),
+            post_drv(Teuchos::View, adrv.values()+drv_end,    num_post_drv),
+          pre_am_drv(Teuchos::View, am_adrv.values(),         drv_start),
+         post_am_drv(Teuchos::View, am_adrv.values()+drv_end, num_post_drv);
+  if ( !nearby(pre_drv,  pre_am_drv,  rel_tol) ||
+       !nearby(post_drv, post_am_drv, rel_tol) )
+    return false;
+  // for (i=0; i<drv_start; ++i)
+  //   if (adrv[i] != am_adrv[i])
+  //     return false;
+  // for (i=drv_end; i<num_adrv; ++i)
+  //   if (adrv[i] != am_adrv[i])
+  //     return false;
 }
 
 
