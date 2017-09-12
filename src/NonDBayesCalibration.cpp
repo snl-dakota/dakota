@@ -638,8 +638,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
   num_exp = expData.num_experiments();
   
   // Apply hifi error
-  for (size_t j = 0; j < num_exp; j++) 
-    Cout << "original exp data " << j << " = " << expData.all_data(j) << '\n';
   const RealVector& hifi_sim_error = hifiModel.current_response().
                                        shared_data().simulation_error();
   RealVector hifi_error_vec(numFunctions);
@@ -675,9 +673,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
     }
   }
-  for (size_t j = 0; j < num_exp; j++) 
-    Cout << "modified exp data " << j << " = " << expData.all_data(j) << '\n';
-
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)

@@ -11,6 +11,13 @@
 # while x is the configuration variable. See Section 4.1 of the JCP paper
 # "An information theoretic approach to use high-fidelity codes to
 # calibration low-fidelity codes" by Lewis, et al, published in 2016.  
+#
+# s3 and s4: Second-order diffs due to changes in Boost versions are 
+# expected. These changes occur in boost/random/normal_distribution.hpp. 
+# Baseline uses Boost 1.53.0. Platforms using 1.58.0 are known to diff. 
+# Moments of posterior parameter and response distributions in s3 and s4 
+# should differ from those in s0; baselines for these tests can be 
+# updated as the variate generator is udpated.
 
 environment
   tabular_data
@@ -82,7 +89,7 @@ responses,
         calibration_terms = 1
 	no_gradients	
 	no_hessians
-#	simulation_variance = 300			#s3
+#	simulation_variance = 200			#s3
 
 responses,
  	id_responses = 'hifi_resp'

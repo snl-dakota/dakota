@@ -372,9 +372,8 @@ inline short SharedResponseData::primary_fn_type() const
 { return srdRep->primaryFnType; }
 
 inline const RealVector& SharedResponseData::simulation_error() const
-{ Cout << "sim var test\n";
+{
   const RealVector& simvartest = srdRep->simulationVariance; 
-  Cout << "sim var = " << simvartest << '\n';
   return srdRep->simulationVariance;
 }
 
