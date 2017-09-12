@@ -2537,7 +2537,7 @@ user_space_to_iterator_space(const Variables& user_vars,
 						  iter_vars, iter_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    iter_vars = user_vars.copy(); // use deep copy to preserve inactive
+    iter_vars = user_vars.copy(); // deep copy to preserve inactive in source
     iter_resp = user_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings bottom up (e.g., for data import)
@@ -2560,7 +2560,7 @@ user_space_to_iterator_space(const Variables& user_vars,
 	recast_resp.active_set(recast_set);
 	recast_model_rep->
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
-	// update iter_vars
+	// update active in iter_vars
 	iter_vars.active_variables(recast_vars);
 	// reassign resp rep pointer (no actual data copying)
 	iter_resp = recast_resp; // sufficient for now...
@@ -2581,7 +2581,8 @@ iterator_space_to_user_space(const Variables& iter_vars,
 						  user_vars, user_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    user_vars = iter_vars; user_resp = iter_resp; // shallow copies
+    user_vars = iter_vars.copy(); // deep copy to preserve inactive in source
+    user_resp = iter_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings top down (e.g., for data export)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2592,16 +2593,23 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_it->current_variables(); // shallow copy
 	Response  recast_resp = ml_it->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
 	recast_model_rep->transform_variables(user_vars, recast_vars);
-	//recast_model_rep->transform_set(user_vars, user_set, recast_set);
+	recast_model_rep->
+	  transform_set(user_vars, user_resp.active_set(), recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
+	recast_resp.active_set(recast_set);
 	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
 						     user_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	user_vars = recast_vars; user_resp = recast_resp;// user_set=recast_set;
+	// update active in iter_vars
+	user_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	user_resp = recast_resp; // sufficient for now...
+	//user_resp.active_set(recast_set);
+	//user_resp.update(recast_resp);
       }
   }
 }
