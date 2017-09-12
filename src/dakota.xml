@@ -3225,10 +3225,10 @@
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
-          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" complexity="1">
-            <param type="STRING" />
-	        <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
-              <param type="REALLIST" />
+          <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="0" complexity="1" >
+            <param type="REALLIST" />
+	    <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" >
+              <param type="STRING" />
             </keyword>
           </keyword>
         </keyword>
