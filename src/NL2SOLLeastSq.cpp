@@ -14,7 +14,6 @@
 #include "dakota_system_defs.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "ProblemDescDB.hpp"
-#include <boost/math/special_functions/fpclassify.hpp>
 
 
 // We use statistical notation:  p is the number of parameters being estimated
@@ -184,7 +183,7 @@ hasnaninf(const double *d, int n)
 void NL2SOLLeastSq::
 calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
 
   int i, ic, j, k, n = *np, nf = *nfp, nfc, p = *pp, spec;
   Nl2Misc *q = (Nl2Misc*)ur;
@@ -248,7 +247,7 @@ calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
 void NL2SOLLeastSq::
 calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
 
   int i, j, k, n = *np, nf = *nfp, p = *pp;
   Nl2Misc *q = (Nl2Misc*)ur;
