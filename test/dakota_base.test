@@ -5226,9 +5226,9 @@ Test Number 21 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -5.5511151231e-17
-                      2.7755575616e-17
-<<<<< Best data captured at function evaluation 71
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 67
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -9035,8 +9035,8 @@ Test Number 2 succeeded
    1.6999999999e+00   8.3301386856e-01  -9.6614373445e-01  -9.6614373445e-01
    1.7499999999e+00   8.4588021936e-01  -1.0189229205e+00  -1.0189229205e+00
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 73 total (65 new, 8 duplicate)
-  response_fn_1: 73 val (65 n, 8 d), 73 grad (65 n, 8 d), 73 Hess (65 n, 8 d)
+<<<<< Function evaluation summary: 73 total (66 new, 7 duplicate)
+  response_fn_1: 73 val (66 n, 7 d), 73 grad (66 n, 7 d), 73 Hess (66 n, 7 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.9999999995e-01   4.7624085941e-02   1.6683404022e+00   1.6683404022e+00
@@ -9093,8 +9093,8 @@ Test Number 4 succeeded
    1.6999999999e+00   8.3301386856e-01  -9.6614373445e-01  -9.6614373445e-01
    1.7499999999e+00   8.4588021936e-01  -1.0189229205e+00  -1.0189229205e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
-  response_fn_1: 60 val (60 n, 0 d), 60 grad (60 n, 0 d), 24 Hess (24 n, 0 d)
+<<<<< Function evaluation summary: 62 total (62 new, 0 duplicate)
+  response_fn_1: 62 val (62 n, 0 d), 62 grad (62 n, 0 d), 24 Hess (24 n, 0 d)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000001e-01   4.7624085968e-02   1.6683404019e+00   1.6683404019e+00
@@ -10674,14 +10674,14 @@ Test Number 8 succeeded
 <<<<< Best data captured at function evaluation 41
 dakota_nomad.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 252 total (252 new, 0 duplicate)
+<<<<< Function evaluation summary: 175 total (175 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9987792969e-01 x1
-                      9.9992370605e-01 x2
-                      9.9978637695e-01 x3
+                      9.9950790405e-01 x1
+                      1.0001220703e+00 x2
+                      1.0001983643e+00 x3
 <<<<< Best objective function  =
-                      2.3384614557e-15
-<<<<< Best data captured at function evaluation 231
+                      6.0411040531e-14
+<<<<< Best data captured at function evaluation 149
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 826 total (826 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -10697,16 +10697,16 @@ Test Number 1 succeeded
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 787
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 161 total (161 new, 0 duplicate)
+<<<<< Function evaluation summary: 221 total (221 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.1093750000e+00 x1
-                      9.1796875000e-01 x2
+                      9.8437500000e-01 x1
+                      1.1406250000e+00 x2
                       9.6875000000e-01 x3
                       1.2000000000e+00 y3
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
-                      3.3893455628e-03
-<<<<< Best data captured at function evaluation 146
+                      3.5920793533e-03
+<<<<< Best data captured at function evaluation 199
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 379 total (379 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -10740,11 +10740,11 @@ Test Number 4 succeeded
                      -7.4505785985e-09
 <<<<< Best data captured at function evaluation 797
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 665 total (665 new, 0 duplicate)
+<<<<< Function evaluation summary: 697 total (697 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9889564514e-01 x1
-                      9.9954605103e-01 x2
-                      1.0003347397e+00 x3
+                      1.0007829666e+00 x1
+                      1.0007143021e+00 x2
+                      9.9916458130e-01 x3
                                      1 y1
                                      1 y2
                                      4 z1
@@ -10753,7 +10753,7 @@ Test Number 5 succeeded
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
                       2.4820032000e+03
-<<<<< Best data captured at function evaluation 615
+<<<<< Best data captured at function evaluation 647
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 805 total (805 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -10798,11 +10798,11 @@ Test Number 8 succeeded
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 12
 Test Number 9 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 120 total (120 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 131 total (131 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.5707406998e+00 x1
-                      1.2201385498e+00 x2
+                      1.2201404572e+00 x2
                       1.3584842682e+00 x3
 <<<<< Best objective function  =
                      -2.6076522674e+03
@@ -13212,15 +13212,15 @@ Partial Correlation Matrix between input and output:
        nuv_1  1.00000e+00 
       lnuv_1         -nan 
        uuv_1  1.00000e+00 
-      luuv_1  9.95808e-01 
-       tuv_1 -1.47314e-01 
-       euv_1  9.63123e-01 
-      beuv_1 -1.97642e-01 
-      gauv_1  9.99871e-01 
-      guuv_1  6.68110e-01 
-       fuv_1  9.99996e-01 
+      luuv_1  9.96561e-01 
+       tuv_1 -1.67038e-01 
+       euv_1  9.68246e-01 
+      beuv_1 -2.55155e-01 
+      gauv_1  9.99901e-01 
+      guuv_1  7.42563e-01 
+       fuv_1  9.99997e-01 
        wuv_1  1.00000e+00 
-      hbuv_1  9.84959e-01 
+      hbuv_1  9.85748e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
        nuv_1  1.00000e+00 
@@ -13791,32 +13791,32 @@ Test Number 3 succeeded
                       3.0297761412e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 222 total (160 new, 62 duplicate)
+<<<<< Function evaluation summary (UQ_I): 222 total (156 new, 66 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 30 Hess (21 n, 9 d)
-  response_fn_2: 113 val (82 n, 31 d), 121 grad (90 n, 31 d), 113 Hess (82 n, 31 d)
+  response_fn_2: 113 val (78 n, 35 d), 121 grad (86 n, 35 d), 113 Hess (78 n, 35 d)
   response_fn_3: 115 val (75 n, 40 d), 123 grad (83 n, 40 d), 115 Hess (75 n, 40 d)
 <<<<< Best parameters          =
-                      2.4535571275e+00 w
-                      3.8804054900e+00 t
+                      2.4535571300e+00 w
+                      3.8804054861e+00 t
 <<<<< Best objective function  =
-                      9.5207965478e+00
+                      9.5207965477e+00
 <<<<< Best constraint values   =
-                     -8.3307016796e-05
-                     -7.0100776040e-04
+                     -8.3306990335e-05
+                     -7.0100856657e-04
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 3709 total (3676 new, 33 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2463 total (2430 new, 33 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 354 val (345 n, 9 d), 362 grad (353 n, 9 d), 354 Hess (345 n, 9 d)
-  response_fn_3: 3301 val (3286 n, 15 d), 3309 grad (3294 n, 15 d), 3301 Hess (3286 n, 15 d)
+  response_fn_2: 344 val (335 n, 9 d), 352 grad (343 n, 9 d), 344 Hess (335 n, 9 d)
+  response_fn_3: 2065 val (2050 n, 15 d), 2073 grad (2058 n, 15 d), 2065 Hess (2050 n, 15 d)
 <<<<< Best parameters          =
                       2.4535282170e+00 w
                       3.8804517942e+00 t
 <<<<< Best objective function  =
                       9.5207979719e+00
 <<<<< Best constraint values   =
-                     -8.3574117798e-05
-                     -6.9485612711e-04
+                     -8.3574117826e-05
+                     -6.9485612713e-04
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 222 total (164 new, 58 duplicate)
@@ -14091,22 +14091,22 @@ Test Number 7 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_cantilever_trsb2.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 690 total (690 new, 0 duplicate)
-         obj_fn: 508 val (508 n, 0 d), 182 grad (182 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 508 val (508 n, 0 d), 182 grad (182 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 508 val (508 n, 0 d), 182 grad (182 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 206 total (137 new, 69 duplicate)
-  response_fn_1: 26 val (11 n, 15 d), 39 grad (22 n, 17 d), 26 Hess (11 n, 15 d)
-  response_fn_2: 93 val (53 n, 40 d), 106 grad (64 n, 42 d), 93 Hess (53 n, 40 d)
-  response_fn_3: 100 val (62 n, 38 d), 113 grad (73 n, 40 d), 100 Hess (62 n, 38 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 640 total (640 new, 0 duplicate)
+         obj_fn: 471 val (471 n, 0 d), 169 grad (169 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 471 val (471 n, 0 d), 169 grad (169 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 471 val (471 n, 0 d), 169 grad (169 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 184 total (139 new, 45 duplicate)
+  response_fn_1: 23 val (11 n, 12 d), 34 grad (22 n, 12 d), 23 Hess (11 n, 12 d)
+  response_fn_2: 84 val (53 n, 31 d), 95 grad (64 n, 31 d), 84 Hess (53 n, 31 d)
+  response_fn_3: 90 val (64 n, 26 d), 101 grad (75 n, 26 d), 90 Hess (64 n, 26 d)
 <<<<< Best parameters          =
-                      2.6650296895e+00 w
-                      3.5855773412e+00 t
+                      2.6427978892e+00 w
+                      3.6081215412e+00 t
 <<<<< Best objective function  =
-                      9.5556700683e+00
+                      9.5355359928e+00
 <<<<< Best constraint values   =
-                      1.2871121933e-03
-                      1.3540824252e-04
+                      1.3991428441e-03
+                      1.8045688787e-04
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 624 total (624 new, 0 duplicate)
@@ -14131,17 +14131,17 @@ Test Number 2 succeeded
          obj_fn: 40 val (40 n, 0 d), 23 grad (23 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 40 val (40 n, 0 d), 23 grad (23 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 40 val (40 n, 0 d), 23 grad (23 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 150 total (84 new, 66 duplicate)
+<<<<< Function evaluation summary (UQ_I): 150 total (85 new, 65 duplicate)
   response_fn_1: 20 val (6 n, 14 d), 30 grad (12 n, 18 d), 20 Hess (6 n, 14 d)
   response_fn_2: 69 val (30 n, 39 d), 79 grad (36 n, 43 d), 69 Hess (30 n, 39 d)
-  response_fn_3: 71 val (38 n, 33 d), 81 grad (48 n, 33 d), 71 Hess (38 n, 33 d)
+  response_fn_3: 71 val (39 n, 32 d), 81 grad (49 n, 32 d), 71 Hess (39 n, 32 d)
 <<<<< Best parameters          =
-                      2.4517598428e+00 w
-                      3.8835332161e+00 t
+                      2.4517598430e+00 w
+                      3.8835332155e+00 t
 <<<<< Best objective function  =
-                      9.5214907873e+00
+                      9.5214907868e+00
 <<<<< Best constraint values   =
-                      3.0019449382e+00
+                      3.0019449373e+00
                       3.0004128864e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
@@ -14167,27 +14167,27 @@ Test Number 4 succeeded
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 126 total (82 new, 44 duplicate)
-  response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 16 Hess (7 n, 9 d)
-  response_fn_2: 55 val (36 n, 19 d), 63 grad (44 n, 19 d), 55 Hess (36 n, 19 d)
-  response_fn_3: 63 val (31 n, 32 d), 71 grad (38 n, 33 d), 63 Hess (31 n, 32 d)
+<<<<< Function evaluation summary (UQ_I): 126 total (84 new, 42 duplicate)
+  response_fn_1: 16 val (8 n, 8 d), 24 grad (16 n, 8 d), 16 Hess (8 n, 8 d)
+  response_fn_2: 55 val (35 n, 20 d), 63 grad (43 n, 20 d), 55 Hess (35 n, 20 d)
+  response_fn_3: 63 val (33 n, 30 d), 71 grad (41 n, 30 d), 63 Hess (33 n, 30 d)
 <<<<< Best parameters          =
-                      2.4591469504e+00 w
-                      3.8716606032e+00 t
+                      2.4591467459e+00 w
+                      3.8716609257e+00 t
 <<<<< Best objective function  =
-                      9.5209823652e+00
+                      9.5209823667e+00
 <<<<< Best constraint values   =
-                     -1.0136003861e-04
-                     -3.0454086894e-03
+                     -1.0136079720e-04
+                     -3.0453238366e-03
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 273 total (273 new, 0 duplicate)
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 2717 total (2687 new, 30 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2719 total (2689 new, 30 duplicate)
   response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 116 val (107 n, 9 d), 124 grad (114 n, 10 d), 116 Hess (107 n, 9 d)
+  response_fn_2: 118 val (109 n, 9 d), 126 grad (116 n, 10 d), 118 Hess (109 n, 9 d)
   response_fn_3: 2561 val (2551 n, 10 d), 2569 grad (2559 n, 10 d), 2561 Hess (2551 n, 10 d)
 <<<<< Best parameters          =
                       2.4591211588e+00 w
@@ -14221,10 +14221,10 @@ Test Number 7 succeeded
          obj_fn: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 201 val (201 n, 0 d), 72 grad (72 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 2110 total (2080 new, 30 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2000 total (1969 new, 31 duplicate)
   response_fn_1: 16 val (7 n, 9 d), 24 grad (14 n, 10 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 120 val (111 n, 9 d), 128 grad (118 n, 10 d), 120 Hess (111 n, 9 d)
-  response_fn_3: 1950 val (1940 n, 10 d), 1958 grad (1948 n, 10 d), 1950 Hess (1940 n, 10 d)
+  response_fn_2: 118 val (109 n, 9 d), 126 grad (116 n, 10 d), 118 Hess (109 n, 9 d)
+  response_fn_3: 1842 val (1831 n, 11 d), 1850 grad (1839 n, 11 d), 1842 Hess (1831 n, 11 d)
 <<<<< Best parameters          =
                       2.4591255358e+00 w
                       3.8717003269e+00 t
@@ -14232,7 +14232,7 @@ Test Number 7 succeeded
                       9.5209971410e+00
 <<<<< Best constraint values   =
                      -1.0146824817e-04
-                     -3.0742055473e-03
+                     -3.0742055537e-03
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_cantilever_verify.in
 Test Number 0 succeeded
@@ -17650,40 +17650,40 @@ Test Number 2 succeeded
 dakota_sbo_textbook.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -3.8857805862e-16
-                      9.4368957093e-16
-<<<<< Best data captured at function evaluation 45
+                     -1.8096635301e-14
+                      3.6193270603e-14
+<<<<< Best data captured at function evaluation 56
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -3.8857805862e-16
-                      9.4368957093e-16
-<<<<< Best data captured at function evaluation 45
+                     -1.8096635301e-14
+                      3.6193270603e-14
+<<<<< Best data captured at function evaluation 56
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 100 total (96 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -3.8857805862e-16
-                      9.4368957093e-16
-<<<<< Best data captured at function evaluation 45
+                     -1.8096635301e-14
+                      3.6193270603e-14
+<<<<< Best data captured at function evaluation 56
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
@@ -25852,16 +25852,16 @@ Test Number 8 succeeded
                      -5.0433737930e-03
 <<<<< Best data captured at function evaluation 22
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 54 total (17 new, 37 duplicate)
+<<<<< Function evaluation summary: 32 total (24 new, 8 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      4.3181315662e-01 x2
+                      5.0000000000e-01 x2
 <<<<< Best objective function  =
-                      1.6672326949e-01
+                      1.2500000000e-01
 <<<<< Best constraint values   =
-                      3.4093421691e-02
-                     -6.3537397771e-02
-<<<<< Best data captured at function evaluation 11
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 24
 dakota_textbook_increment.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
@@ -49062,14 +49062,14 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    7.7918418821e+03 Num2 Num0
    1.4223421078e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -1.0070961756e-08 Num5 Num0
-   9.2915399135e-09 Num6 Num0
+   1.2756063421e-09 Num5 Num0
+   1.3897826920e-08 Num6 Num0
   -2.9293565098e+03 Num0 Num1
   -1.4379877985e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   4.1737322298e-12 Num1 Num2
-   1.9306598478e-12 Num2 Num2
+   0.0000000000e+00 Num1 Num2
+   6.4355328259e-13 Num2 Num2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    3.2540741426e+04  3.2849041386e+04
@@ -57927,7 +57927,7 @@ Test Number 3 succeeded
 mean_limit:  Min = -1.1807930097e+01  Max = 1.0220248897e+01
 std_dev_limit:  Min = 2.0016844611e-01  Max = 1.1062806921e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2975 total (2890 new, 85 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2975 total (2805 new, 170 duplicate)
 mean_limit:  Min = -1.1802556867e+01  Max = 1.0479881985e+01
 std_dev_limit:  Min = 1.9957448390e-01  Max = 1.0988137837e+01
 Test Number 5 succeeded
@@ -60348,10 +60348,10 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.2732777980913568e+01  4.7174021723812039e+01  8.8453569437313040e-01  8.8009441678854605e-01
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3372428623024192e+01  1.0209312733880294e+02  4.1419113998737878e+01  5.4800893729283345e+01
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60386,10 +60386,10 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.2732777980913568e+01  4.7174021723812039e+01  8.8453569437313040e-01  8.8009441678854605e-01
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3372428623024192e+01  1.0209312733880294e+02  4.1419113998737878e+01  5.4800893729283345e+01
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60424,10 +60424,10 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.2732777980913568e+01  4.7174021723812039e+01  8.8453569437313040e-01  8.8009441678854605e-01
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3372428623024192e+01  1.0209312733880294e+02  4.1419113998737878e+01  5.4800893729283345e+01
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60462,10 +60462,10 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.2732777980913568e+01  4.7174021723812039e+01  8.8453569437313040e-01  8.8009441678854605e-01
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3372428623024192e+01  1.0209312733880294e+02  4.1419113998737878e+01  5.4800893729283345e+01
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60500,10 +60500,10 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.2732777980913568e+01  4.7174021723812039e+01  8.8453569437313040e-01  8.8009441678854605e-01
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3372428623024192e+01  1.0209312733880294e+02  4.1419113998737878e+01  5.4800893729283345e+01
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60538,10 +60538,10 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.6416159197759612e+01  5.0724739639806494e+01  1.0145745536428417e+00  1.0077200345425168e+00
+ response_fn_1  8.6416159197759569e+01  5.0724739639806472e+01  1.0145745536428437e+00  1.0077200345425197e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  7.6351270371948459e+01  9.6481048023570764e+01  4.4536668635079174e+01  5.8925674870825389e+01
+ response_fn_1  7.6351270371948416e+01  9.6481048023570722e+01  4.4536668635079153e+01  5.8925674870825368e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60576,10 +60576,10 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.6597769214141536e+01  5.1360207877083383e+01  1.0684378453191392e+00  1.3451439359034714e+00
+ response_fn_1  8.6597769214141522e+01  5.1360207877083354e+01  1.0684378453191410e+00  1.3451439359034782e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  7.9436184801997030e+01  9.3759353626286043e+01  4.6771809520774852e+01  5.6954614491298287e+01
+ response_fn_1  7.9436184801997030e+01  9.3759353626286014e+01  4.6771809520774831e+01  5.6954614491298258e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60614,10 +60614,10 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary (ID_I): 400 total (400 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.6551981118560562e+01  5.2204292553870793e+01  1.1868239658765531e+00  2.1629496304104299e+00
+ response_fn_1  8.6551981118560505e+01  5.2204292553870772e+01  1.1868239658765554e+00  2.1629496304104365e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.1420488933765867e+01  9.1683473303355257e+01  4.8820006642425575e+01  5.6096595181087224e+01
+ response_fn_1  8.1420488933765810e+01  9.1683473303355200e+01  4.8820006642425561e+01  5.6096595181087203e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60652,10 +60652,10 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.7335199625091931e+01  4.3839171762321484e+01  8.1567728623429969e-01  7.7161092999771963e-01
+ response_fn_1  8.7335199625091917e+01  4.3839171762321463e+01  8.1567728623429980e-01  7.7161092999772374e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.1222336338289438e+01  9.3448062911894425e+01  3.9922684817066816e+01  4.8614350107700915e+01
+ response_fn_1  8.1222336338289438e+01  9.3448062911894397e+01  3.9922684817066795e+01  4.8614350107700893e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60690,10 +60690,10 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (ID_I): 400 total (400 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.8762479041532700e+01  4.9193012828121383e+01  1.0675310636077118e+00  1.5076299065639667e+00
+ response_fn_1  8.8762479041532686e+01  4.9193012828121368e+01  1.0675310636077118e+00  1.5076299065639700e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.3926984707163200e+01  9.3597973375902200e+01  4.6003941353128077e+01  5.2860797289983438e+01
+ response_fn_1  8.3926984707163186e+01  9.3597973375902185e+01  4.6003941353128063e+01  5.2860797289983424e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -60741,618 +60741,618 @@ Moment statistics for each response function:
 Test Number 11 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  8.6614602620944467e+01  He0  He0  He0  He0  He0
-  -4.7538089860759790e+01  He1  He0  He0  He0  He0
-  5.4028870281349866e+00  He0  He1  He0  He0  He0
-  -3.8659312357314912e-01  He0  He0  He1  He0  He0
-  4.5237445628385962e-02  He0  He0  He0  He1  He0
-  1.5230691793658426e-02  He0  He0  He0  He0  He1
+  8.6614602620944453e+01  He0  He0  He0  He0  He0
+  -4.7538089860759762e+01  He1  He0  He0  He0  He0
+  5.4028870281349857e+00  He0  He1  He0  He0  He0
+  -3.8659312357314612e-01  He0  He0  He1  He0  He0
+  4.5237445628389723e-02  He0  He0  He0  He1  He0
+  1.5230691793663853e-02  He0  He0  He0  He0  He1
   1.1286306837804670e+01  He2  He0  He0  He0  He0
-  4.3797631604107199e+00  He1  He1  He0  He0  He0
-  6.1390702156283083e+00  He0  He2  He0  He0  He0
-  -4.9251352338156262e-01  He1  He0  He1  He0  He0
-  2.0284733973374136e-01  He0  He1  He1  He0  He0
-  2.1667022481987916e+00  He0  He0  He2  He0  He0
-  7.7313811014941702e-01  He1  He0  He0  He1  He0
-  -4.7575409874031377e-01  He0  He1  He0  He1  He0
-  1.0974813671797122e-01  He0  He0  He1  He1  He0
-  2.6627094583388156e-01  He0  He0  He0  He2  He0
-  2.9338479733554755e-03  He1  He0  He0  He0  He1
-  8.1855668801661275e-03  He0  He1  He0  He0  He1
-  -1.5885201370620286e-02  He0  He0  He1  He0  He1
-  -3.9676373875647958e-03  He0  He0  He0  He1  He1
-  8.4049752534382918e-02  He0  He0  He0  He0  He2
+  4.3797631604106977e+00  He1  He1  He0  He0  He0
+  6.1390702156282950e+00  He0  He2  He0  He0  He0
+  -4.9251352338155607e-01  He1  He0  He1  He0  He0
+  2.0284733973373631e-01  He0  He1  He1  He0  He0
+  2.1667022481987859e+00  He0  He0  He2  He0  He0
+  7.7313811014942380e-01  He1  He0  He0  He1  He0
+  -4.7575409874030572e-01  He0  He1  He0  He1  He0
+  1.0974813671796996e-01  He0  He0  He1  He1  He0
+  2.6627094583387761e-01  He0  He0  He0  He2  He0
+  2.9338479733615488e-03  He1  He0  He0  He0  He1
+  8.1855668801640510e-03  He0  He1  He0  He0  He1
+  -1.5885201370623284e-02  He0  He0  He1  He0  He1
+  -3.9676373875577303e-03  He0  He0  He0  He1  He1
+  8.4049752534380115e-02  He0  He0  He0  He0  He2
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  8.6614602620944467e+01  5.1470363900133009e+01
+ response_fn_1  8.6614602620944453e+01  5.1470363900132980e+01
 Test Number 12 succeeded
 <<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.0945445181203240e+02  He0  He0  He0  He0  He0
+  1.0945445181203245e+02  He0  He0  He0  He0  He0
   4.7599085087432250e+01  He1  He0  He0  He0  He0
-  -4.7447530268582803e+00  He0  He1  He0  He0  He0
-  -5.5711879835377986e-01  He0  He0  He1  He0  He0
-  5.9771631932531183e-02  He0  He0  He0  He1  He0
-  -4.3226697267896498e-02  He0  He0  He0  He0  He1
-  8.2322326075881822e+00  He2  He0  He0  He0  He0
-  6.6677299010411266e+00  He1  He1  He0  He0  He0
-  9.2292505133951384e+00  He0  He2  He0  He0  He0
-  -6.7442933493042340e-02  He1  He0  He1  He0  He0
-  2.5019595282447332e-01  He0  He1  He1  He0  He0
+  -4.7447530268582891e+00  He0  He1  He0  He0  He0
+  -5.5711879835377376e-01  He0  He0  He1  He0  He0
+  5.9771631932540849e-02  He0  He0  He0  He1  He0
+  -4.3226697267896200e-02  He0  He0  He0  He0  He1
+  8.2322326075881875e+00  He2  He0  He0  He0  He0
+  6.6677299010411462e+00  He1  He1  He0  He0  He0
+  9.2292505133951650e+00  He0  He2  He0  He0  He0
+  -6.7442933493050403e-02  He1  He0  He1  He0  He0
+  2.5019595282446877e-01  He0  He1  He1  He0  He0
   2.1600961220124986e+00  He0  He0  He2  He0  He0
-  -2.8776467834592367e-01  He1  He0  He0  He1  He0
-  1.2278112102130906e-01  He0  He1  He0  He1  He0
-  2.2622537078508861e-02  He0  He0  He1  He1  He0
-  2.3214881586507710e-01  He0  He0  He0  He2  He0
-  6.9411314591757853e-02  He1  He0  He0  He0  He1
-  -3.4297666063755623e-02  He0  He1  He0  He0  He1
-  -1.1195104044172278e-03  He0  He0  He1  He0  He1
-  4.8086824118974116e-02  He0  He0  He0  He1  He1
-  8.8671941139057922e-02  He0  He0  He0  He0  He2
+  -2.8776467834592173e-01  He1  He0  He0  He1  He0
+  1.2278112102130492e-01  He0  He1  He0  He1  He0
+  2.2622537078507733e-02  He0  He0  He1  He1  He0
+  2.3214881586507868e-01  He0  He0  He0  He2  He0
+  6.9411314591761100e-02  He1  He0  He0  He0  He1
+  -3.4297666063750253e-02  He0  He1  He0  He0  He1
+  -1.1195104044141803e-03  He0  He0  He1  He0  He1
+  4.8086824118976572e-02  He0  He0  He0  He1  He1
+  8.8671941139056354e-02  He0  He0  He0  He0  He2
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.0945445181203240e+02  5.1463451657630912e+01
+ response_fn_1  1.0945445181203245e+02  5.1463451657630927e+01
 Test Number 13 succeeded
 <<<<< Function evaluation summary (ID_I): 401 total (401 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.0945445181203054e+02  He0  He0  He0  He0  He0
-  4.7599085087431966e+01  He1  He0  He0  He0  He0
-  8.2322326075881094e+00  He2  He0  He0  He0  He0
-  -4.7447530268581737e+00  He0  He1  He0  He0  He0
-  9.2292505133950691e+00  He0  He2  He0  He0  He0
-  -5.5711879835372191e-01  He0  He0  He1  He0  He0
-  2.1600961220124559e+00  He0  He0  He2  He0  He0
-  5.9771631932513863e-02  He0  He0  He0  He1  He0
-  2.3214881586503647e-01  He0  He0  He0  He2  He0
-  -4.3226697267853317e-02  He0  He0  He0  He0  He1
-  8.8671941139030416e-02  He0  He0  He0  He0  He2
-  -1.9798977272481965e-15  He3  He0  He0  He0  He0
-  4.2466030691912238e-15  He4  He0  He0  He0  He0
-  1.5247062871518818e-15  He5  He0  He0  He0  He0
-  1.0115365335473642e-16  He6  He0  He0  He0  He0
-  1.0573552615477673e-16  He7  He0  He0  He0  He0
-  6.6677299010411000e+00  He1  He1  He0  He0  He0
-  -4.4061976289810900e-15  He2  He1  He0  He0  He0
-  -1.8318679906315083e-15  He1  He2  He0  He0  He0
-  1.3947176746853529e-15  He2  He2  He0  He0  He0
-  -2.8819539347561342e-15  He0  He3  He0  He0  He0
-  2.8541983591405057e-15  He0  He4  He0  He0  He0
-  -2.2574534834044848e-16  He0  He5  He0  He0  He0
-  2.7508859387934415e-16  He0  He6  He0  He0  He0
-  1.3005469717037551e-16  He0  He7  He0  He0  He0
-  -6.7442933493038634e-02  He1  He0  He1  He0  He0
-  -1.2845627339608257e-14  He2  He0  He1  He0  He0
-  -7.7021722333370235e-16  He1  He0  He2  He0  He0
-  5.9535709695524019e-15  He2  He0  He2  He0  He0
-  2.5019595282446461e-01  He0  He1  He1  He0  He0
-  -8.9251522839006725e-15  He0  He2  He1  He0  He0
-  -8.8123952579621800e-16  He0  He1  He2  He0  He0
-  5.6482596377804839e-15  He0  He2  He2  He0  He0
-  1.0177044392397270e-15  He0  He0  He3  He0  He0
-  -4.7438904656379082e-15  He0  He0  He4  He0  He0
-  -8.7337544603845643e-16  He0  He0  He5  He0  He0
-  5.5202755946639719e-16  He0  He0  He6  He0  He0
-  5.6744732369730231e-17  He0  He0  He7  He0  He0
-  -2.8776467834590902e-01  He1  He0  He0  He1  He0
-  3.0600522116230877e-15  He2  He0  He0  He1  He0
-  1.9744622603568018e-14  He1  He0  He0  He2  He0
-  1.1022432966356632e-14  He2  He0  He0  He2  He0
-  1.2278112102130691e-01  He0  He1  He0  He1  He0
-  -1.0568802777388697e-14  He0  He2  He0  He1  He0
-  -9.0673996089307707e-15  He0  He1  He0  He2  He0
-  1.0174153186603974e-14  He0  He2  He0  He2  He0
-  2.2622537078499691e-02  He0  He0  He1  He1  He0
-  -5.6708110429681824e-15  He0  He0  He2  He1  He0
-  -4.3940545646492524e-15  He0  He0  He1  He2  He0
-  3.7816971776294395e-15  He0  He0  He2  He2  He0
-  2.5905203907920296e-16  He0  He0  He0  He3  He0
-  6.7538567331363637e-16  He0  He0  He0  He4  He0
-  -1.1102230246251563e-16  He0  He0  He0  He5  He0
-  2.0169051614023665e-16  He0  He0  He0  He6  He0
-  4.9343245538895794e-18  He0  He0  He0  He7  He0
-  6.9411314591769524e-02  He1  He0  He0  He0  He1
-  1.8058471384918562e-15  He2  He0  He0  He0  He1
-  1.5765166949677223e-14  He1  He0  He0  He0  He2
-  1.1091821905395705e-14  He2  He0  He0  He0  He2
-  -3.4297666063754291e-02  He0  He1  He0  He0  He1
-  -1.2594092435591620e-14  He0  He2  He0  He0  He1
-  -9.6329194620992098e-15  He0  He1  He0  He0  He2
-  5.6760152133961128e-15  He0  He2  He0  He0  He2
-  -1.1195104044210043e-03  He0  He0  He1  He0  He1
-  -1.1657341758564144e-14  He0  He0  He2  He0  He1
-  -3.9777209304148187e-15  He0  He0  He1  He0  He2
-  2.9542340795885025e-15  He0  He0  He2  He0  He2
-  4.8086824118983233e-02  He0  He0  He0  He1  He1
-  -6.7359312572179419e-15  He0  He0  He0  He2  He1
-  9.8610355991901599e-15  He0  He0  He0  He1  He2
-  6.9545064151910196e-15  He0  He0  He0  He2  He2
-  5.2735593669694896e-16  He0  He0  He0  He0  He3
-  -6.2450045135164661e-17  He0  He0  He0  He0  He4
-  -3.4046839421838141e-16  He0  He0  He0  He0  He5
-  5.5696188402028696e-16  He0  He0  He0  He0  He6
-  6.2383960431318320e-17  He0  He0  He0  He0  He7
-  -1.7948605564773365e-15  He3  He1  He0  He0  He0
-  7.4014868308343765e-17  He4  He1  He0  He0  He0
-  2.0724163126336256e-16  He5  He1  He0  He0  He0
-  0.0000000000000000e+00  He6  He1  He0  He0  He0
+  1.0945445181203030e+02  He0  He0  He0  He0  He0
+  4.7599085087431902e+01  He1  He0  He0  He0  He0
+  8.2322326075880774e+00  He2  He0  He0  He0  He0
+  -4.7447530268582954e+00  He0  He1  He0  He0  He0
+  9.2292505133951117e+00  He0  He2  He0  He0  He0
+  -5.5711879835378142e-01  He0  He0  He1  He0  He0
+  2.1600961220124724e+00  He0  He0  He2  He0  He0
+  5.9771631932583058e-02  He0  He0  He0  He1  He0
+  2.3214881586505545e-01  He0  He0  He0  He2  He0
+  -4.3226697267848183e-02  He0  He0  He0  He0  He1
+  8.8671941139065083e-02  He0  He0  He0  He0  He2
+  -1.8966310004013078e-15  He3  He0  He0  He0  He0
+  3.3584246494910981e-15  He4  He0  He0  He0  He0
+  8.1416355139178153e-17  He5  He0  He0  He0  He0
+  2.8372366184865119e-16  He6  He0  He0  He0  He0
+  8.4588420923821446e-17  He7  He0  He0  He0  He0
+  6.6677299010411275e+00  He1  He1  He0  He0  He0
+  1.8977874827186270e-15  He2  He1  He0  He0  He0
+  -1.1518563880485999e-14  He1  He2  He0  He0  He0
+  -1.1102230246251565e-16  He2  He2  He0  He0  He0
+  2.1047978175185258e-15  He0  He3  He0  He0  He0
+  3.6544841227244789e-16  He0  He4  He0  He0  He0
+  -8.8817841970012553e-17  He0  He5  He0  He0  He0
+  2.2081102378655892e-16  He0  He6  He0  He0  He0
+  1.0608797790862606e-16  He0  He7  He0  He0  He0
+  -6.7442933493051055e-02  He1  He0  He1  He0  He0
+  -1.1733669591507123e-14  He2  He0  He1  He0  He0
+  -3.6394498525993413e-15  He1  He0  He2  He0  He0
+  1.1955714196432154e-14  He2  He0  He2  He0  He0
+  2.5019595282446250e-01  He0  He1  He1  He0  He0
+  -9.9469044112510119e-15  He0  He2  He1  He0  He0
+  8.4446338810550969e-15  He0  He1  He2  He0  He0
+  -2.5118795932144167e-15  He0  He2  He2  He0  He0
+  4.8202182985808877e-15  He0  He0  He3  He0  He0
+  2.5211314517529564e-16  He0  He0  He4  He0  He0
+  -1.5080529417825046e-15  He0  He0  He5  He0  He0
+  3.4231876592608980e-16  He0  He0  He6  He0  He0
+  2.8019914431015855e-17  He0  He0  He7  He0  He0
+  -2.8776467834592567e-01  He1  He0  He0  He1  He0
+  -6.7949118554011534e-15  He2  He0  He0  He1  He0
+  -8.9026008787129740e-15  He1  He0  He0  He2  He0
+  8.9234175604246957e-15  He2  He0  He0  He2  He0
+  1.2278112102130882e-01  He0  He1  He0  He1  He0
+  -4.4504330776184986e-15  He0  He2  He0  He1  He0
+  -4.1720099597242211e-15  He0  He1  He0  He2  He0
+  3.4347524824340780e-16  He0  He2  He0  He2  He0
+  2.2622537078492037e-02  He0  He0  He1  He1  He0
+  6.1235738701981290e-16  He0  He0  He2  He1  He0
+  1.8821749714348357e-15  He0  He0  He1  He2  He0
+  4.0089459529824012e-15  He0  He0  He2  He2  He0
+  1.6630215723030988e-15  He0  He0  He0  He3  He0
+  -1.2466879380686663e-15  He0  He0  He0  He4  He0
+  4.1910919179599649e-16  He0  He0  He0  He5  He0
+  3.4848667161845166e-16  He0  He0  He0  He6  He0
+  -8.0006548123781134e-17  He0  He0  He0  He7  He0
+  6.9411314591763085e-02  He1  He0  He0  He0  He1
+  2.8085173076064507e-15  He2  He0  He0  He0  He1
+  -7.9831974364452662e-15  He1  He0  He0  He0  He2
+  1.2108369862318114e-14  He2  He0  He0  He0  He2
+  -3.4297666063770348e-02  He0  He1  He0  He0  He1
+  3.6004185743898631e-15  He0  He2  He0  He0  He1
+  -7.1696121262121437e-15  He0  He1  He0  He0  He2
+  -1.8023776915399026e-15  He0  He2  He0  He0  He2
+  -1.1195104044124608e-03  He0  He0  He1  He0  He1
+  -6.0966856563204885e-15  He0  He0  He2  He0  He1
+  -3.7157776855423208e-15  He0  He0  He1  He0  He2
+  5.8494875609937935e-15  He0  He0  He2  He0  He2
+  4.8086824118980465e-02  He0  He0  He0  He1  He1
+  -8.3613671542082102e-16  He0  He0  He0  He2  He1
+  3.0878077872387166e-15  He0  He0  He0  He1  He2
+  4.7514076007004746e-15  He0  He0  He0  He2  He2
+  7.6327832942979463e-17  He0  He0  He0  He0  He3
+  -2.0816681711721685e-16  He0  He0  He0  He0  He4
+  -8.7615100360001926e-16  He0  He0  He0  He0  He5
+  4.9281566481972219e-16  He0  He0  He0  He0  He6
+  4.1236855200362983e-17  He0  He0  He0  He0  He7
+  -8.1416355139178143e-16  He3  He1  He0  He0  He0
+  -1.4802973661668753e-16  He4  He1  He0  He0  He0
+  2.5165055224836881e-16  He5  He1  He0  He0  He0
+  -1.9737298215558339e-17  He6  He1  He0  He0  He0
   -2.8196140307940484e-18  He7  He1  He0  He0  He0
-  -1.8503717077085941e-17  He3  He2  He0  He0  He0
-  2.4054832200211723e-16  He4  He2  He0  He0  He0
-  -1.1842378929335003e-16  He5  He2  He0  He0  He0
-  2.9605947323337507e-17  He6  He2  He0  He0  He0
-  1.6212780677065779e-17  He7  He2  He0  He0  He0
-  -2.0909200297107114e-15  He1  He3  He0  He0  He0
-  -3.8857805861880479e-16  He2  He3  He0  He0  He0
-  -2.2204460492503131e-16  He1  He4  He0  He0  He0
-  0.0000000000000000e+00  He2  He4  He0  He0  He0
-  1.5543122344752191e-16  He1  He5  He0  He0  He0
-  -1.4802973661668753e-16  He2  He5  He0  He0  He0
-  1.9737298215558337e-16  He1  He6  He0  He0  He0
-  1.4802973661668754e-17  He2  He6  He0  He0  He0
-  2.1147105230955365e-18  He1  He7  He0  He0  He0
-  1.9032394707859827e-17  He2  He7  He0  He0  He0
-  -1.8503717077085943e-16  He3  He0  He1  He0  He0
-  -9.2518585385429718e-16  He4  He0  He1  He0  He0
-  1.7023419710919068e-16  He5  He0  He1  He0  He0
-  7.8949192862233357e-17  He6  He0  He1  He0  He0
-  1.4098070153970242e-18  He7  He0  He1  He0  He0
-  -9.2518585385429707e-18  He3  He0  He2  He0  He0
-  -5.3660779523549230e-16  He4  He0  He2  He0  He0
-  1.5543122344752191e-16  He5  He0  He2  He0  He0
-  7.6482030585288561e-17  He6  He0  He2  He0  He0
-  -9.8686491077791696e-18  He7  He0  He2  He0  He0
+  1.0639637319324418e-15  He3  He2  He0  He0  He0
+  2.8680761469483212e-16  He4  He2  He0  He0  He0
+  -2.7385501274087196e-16  He5  He2  He0  He0  He0
+  -1.7270135938613546e-17  He6  He2  He0  He0  He0
+  3.0310850831036017e-17  He7  He2  He0  He0  He0
+  -2.5905203907920321e-16  He1  He3  He0  He0  He0
+  -5.1810407815840642e-16  He2  He3  He0  He0  He0
+  -4.6259292692714859e-16  He1  He4  He0  He0  He0
+  -3.5157062446463289e-16  He2  He4  He0  He0  He0
+  -2.2944609175586571e-16  He1  He5  He0  He0  He0
+  -2.5905203907920320e-17  He2  He5  He0  He0  He0
+  2.3684757858670006e-16  He1  He6  He0  He0  He0
+  2.4671622769447922e-17  He2  He6  He0  He0  He0
+  7.4014868308343765e-17  He1  He7  He0  He0  He0
+  1.6917684184764292e-17  He2  He7  He0  He0  He0
+  -2.2389497663273992e-15  He3  He0  He1  He0  He0
+  -3.8857805861880479e-16  He4  He0  He1  He0  He0
+  2.9605947323337506e-16  He5  He0  He1  He0  He0
+  7.4014868308343765e-17  He6  He0  He1  He0  He0
+  -2.5376526277146434e-17  He7  He0  He1  He0  He0
+  1.1842378929335002e-15  He3  He0  He2  He0  He0
+  3.6082248300317588e-16  He4  He0  He2  He0  He0
+  -1.1102230246251565e-16  He5  He0  He2  He0  He0
+  -3.9474596431116678e-17  He6  He0  He2  He0  He0
+  1.0573552615477681e-17  He7  He0  He2  He0  He0
   8.8817841970012523e-16  He1  He1  He1  He0  He0
-  -2.6645352591003757e-15  He2  He1  He1  He0  He0
-  -2.6645352591003757e-15  He1  He2  He1  He0  He0
-  -1.7763568394002505e-15  He2  He2  He1  He0  He0
-  1.3322676295501878e-15  He1  He1  He2  He0  He0
-  1.3322676295501878e-15  He2  He1  He2  He0  He0
-  -6.6613381477509392e-16  He1  He2  He2  He0  He0
-  -1.5543122344752192e-15  He2  He2  He2  He0  He0
-  -5.3660779523549230e-16  He0  He3  He1  He0  He0
-  -3.1456319031046104e-16  He0  He4  He1  He0  He0
-  -8.8817841970012528e-17  He0  He5  He1  He0  He0
-  1.0362081563168128e-16  He0  He6  He1  He0  He0
-  3.2425561354131558e-17  He0  He7  He1  He0  He0
-  2.4980018054066022e-16  He0  He3  He2  He0  He0
-  4.6259292692714853e-18  He0  He4  He2  He0  He0
-  -2.1464311809419693e-16  He0  He5  He2  He0  He0
-  9.1285004246957312e-17  He0  He6  He2  He0  He0
-  2.1852008738653874e-17  He0  He7  He2  He0  He0
-  -6.7538567331363686e-16  He1  He0  He3  He0  He0
-  -6.6150788550582241e-16  He2  He0  He3  He0  He0
-  -2.7755575615628914e-16  He1  He0  He4  He0  He0
-  -7.1701903673708023e-16  He2  He0  He4  He0  He0
-  1.4802973661668753e-16  He1  He0  He5  He0  He0
-  1.5913196686293911e-16  He2  He0  He5  He0  He0
-  2.3684757858670006e-16  He1  He0  He6  He0  He0
-  3.8241015292644281e-17  He2  He0  He6  He0  He0
-  2.8196140307940484e-18  He1  He0  He7  He0  He0
-  -8.4588420923821458e-18  He2  He0  He7  He0  He0
-  2.6830389761774615e-16  He0  He1  He3  He0  He0
-  -6.9388939039072284e-16  He0  He2  He3  He0  He0
-  -4.4871513911933413e-16  He0  He1  He4  He0  He0
-  -4.3946328058079111e-17  He0  He2  He4  He0  He0
-  -9.6219328800846903e-17  He0  He1  He5  He0  He0
-  1.5728159515523052e-16  He0  He2  He5  He0  He0
-  -1.2335811384723961e-17  He0  He1  He6  He0  He0
-  2.7138785046392715e-17  He0  He2  He6  He0  He0
-  4.5113824492704774e-17  He0  He1  He7  He0  He0
-  -1.2159585507799333e-17  He0  He2  He7  He0  He0
-  -5.7361522938966425e-16  He3  He0  He0  He1  He0
-  -2.7755575615628914e-16  He4  He0  He0  He1  He0
-  3.7007434154171883e-17  He5  He0  He0  He1  He0
-  1.9737298215558339e-17  He6  He0  He0  He1  He0
-  -1.1278456123176193e-17  He7  He0  He0  He1  He0
-  -7.8640797577615252e-16  He3  He0  He0  He2  He0
-  -9.2518585385429716e-17  He4  He0  He0  He2  He0
-  2.8125649957170631e-16  He5  He0  He0  He2  He0
-  2.7138785046392715e-17  He6  He0  He0  He2  He0
-  -3.9474596431116678e-17  He7  He0  He0  He2  He0
-  8.8817841970012523e-16  He1  He1  He0  He1  He0
-  3.9968028886505635e-15  He2  He1  He0  He1  He0
-  1.7763568394002505e-15  He1  He2  He0  He1  He0
-  8.8817841970012523e-16  He2  He2  He0  He1  He0
-  4.4408920985006262e-16  He1  He1  He0  He2  He0
-  -4.4408920985006262e-16  He2  He1  He0  He2  He0
-  6.6613381477509392e-16  He1  He2  He0  He2  He0
-  0.0000000000000000e+00  He2  He2  He0  He2  He0
-  -8.3266726846886741e-16  He0  He3  He0  He1  He0
-  -1.2952601953960160e-16  He0  He4  He0  He1  He0
-  2.2204460492503131e-16  He0  He5  He0  He1  He0
-  2.2204460492503132e-17  He0  He6  He0  He1  He0
-  -3.2425561354131558e-17  He0  He7  He0  He1  He0
-  -1.2675046197803870e-15  He0  He3  He0  He2  He0
-  -9.2518585385429716e-17  He0  He4  He0  He2  He0
-  -7.0314124892926578e-17  He0  He5  He0  He2  He0
-  -1.1102230246251566e-17  He0  He6  He0  He2  He0
-  1.4098070153970241e-17  He0  He7  He0  He2  He0
-  0.0000000000000000e+00  He1  He0  He1  He1  He0
-  8.8817841970012523e-16  He2  He0  He1  He1  He0
-  2.2204460492503131e-15  He1  He0  He2  He1  He0
-  8.8817841970012523e-16  He2  He0  He2  He1  He0
-  -2.2204460492503131e-15  He1  He0  He1  He2  He0
-  -2.8865798640254070e-15  He2  He0  He1  He2  He0
-  2.2204460492503131e-15  He1  He0  He2  He2  He0
-  -9.9920072216264089e-16  He2  He0  He2  He2  He0
+  1.7763568394002505e-15  He2  He1  He1  He0  He0
+  -8.8817841970012523e-16  He1  He2  He1  He0  He0
+  -2.4424906541753444e-15  He2  He2  He1  He0  He0
+  -1.3322676295501878e-15  He1  He1  He2  He0  He0
+  -1.5543122344752192e-15  He2  He1  He2  He0  He0
+  -4.4408920985006262e-16  He1  He2  He2  He0  He0
+  -1.3322676295501878e-15  He2  He2  He2  He0  He0
+  8.9743027823866827e-16  He0  He3  He1  He0  He0
+  -6.7538567331363686e-16  He0  He4  He1  He0  He0
+  -9.9920072216264091e-17  He0  He5  He1  He0  He0
+  1.3322676295501878e-16  He0  He6  He1  He0  He0
+  1.2688263138573217e-17  He0  He7  He1  He0  He0
+  -9.5294142946992610e-16  He0  He3  He2  He0  He0
+  -2.7755575615628914e-16  He0  He4  He2  He0  He0
+  2.6275278249462038e-16  He0  He5  He2  He0  He0
+  2.3438041630975527e-17  He0  He6  He2  He0  He0
+  -3.5597627138774863e-17  He0  He7  He2  He0  He0
+  1.1009711660866135e-15  He1  He0  He3  He0  He0
+  1.7115938296304496e-15  He2  He0  He3  He0  He0
+  -7.2164496600635175e-16  He1  He0  He4  He0  He0
+  -1.3877787807814457e-17  He2  He0  He4  He0  He0
+  -2.5905203907920321e-16  He1  He0  He5  He0  He0
+  -2.5535129566378598e-16  He2  He0  He5  He0  He0
+  2.5658487680225838e-16  He1  He0  He6  He0  He0
+  -3.4540271877227093e-17  He2  He0  He6  He0  He0
+  3.1720657846433042e-17  He1  He0  He7  He0  He0
+  5.1105504308142124e-17  He2  He0  He7  He0  He0
+  1.0177044392397268e-16  He0  He1  He3  He0  He0
+  9.4831550020065448e-16  He0  He2  He3  He0  He0
+  1.2952601953960160e-16  He0  He1  He4  He0  He0
+  -5.1116518425449919e-16  He0  He2  He4  He0  He0
+  6.6613381477509390e-17  He0  He1  He5  He0  He0
+  -2.4794980883295163e-16  He0  He2  He5  He0  He0
+  -1.6036554800141149e-17  He0  He1  He6  He0  He0
+  1.2829243840112919e-16  He0  He2  He6  He0  He0
+  1.8327491200161314e-17  He0  He1  He7  He0  He0
+  4.7933438523498824e-17  He0  He2  He7  He0  He0
+  -5.3660779523549230e-16  He3  He0  He0  He1  He0
+  -1.8503717077085941e-17  He4  He0  He0  He1  He0
+  -1.2582527612418440e-16  He5  He0  He0  He1  He0
+  -4.4408920985006264e-17  He6  He0  He0  He1  He0
+  1.8327491200161314e-17  He7  He0  He0  He1  He0
+  1.1564823173178713e-15  He3  He0  He0  He2  He0
+  0.0000000000000000e+00  He4  He0  He0  He2  He0
+  -2.3684757858670006e-16  He5  He0  He0  He2  He0
+  -2.4671622769447922e-17  He6  He0  He0  He2  He0
+  2.0442201723256852e-17  He7  He0  He0  He2  He0
+  1.7763568394002505e-15  He1  He1  He0  He1  He0
+  -8.8817841970012523e-16  He2  He1  He0  He1  He0
+  -3.9968028886505635e-15  He1  He2  He0  He1  He0
+  4.4408920985006262e-16  He2  He2  He0  He1  He0
+  -3.1086244689504383e-15  He1  He1  He0  He2  He0
+  -3.1086244689504383e-15  He2  He1  He0  He2  He0
+  -2.2204460492503131e-15  He1  He2  He0  He2  He0
+  -1.3322676295501878e-15  He2  He2  He0  He2  He0
+  4.3483735131151963e-16  He0  He3  He0  He1  He0
+  4.1633363423443370e-16  He0  He4  He0  He1  He0
+  -2.5905203907920320e-17  He0  He5  He0  He1  He0
+  -1.9737298215558339e-17  He0  He6  He0  He1  He0
+  -8.4588420923821458e-18  He0  He7  He0  He1  He0
+  -1.5173048003210472e-15  He0  He3  He0  He2  He0
+  -6.0599673427456458e-16  He0  He4  He0  He2  He0
+  7.0314124892926578e-17  He0  He5  He0  He2  He0
+  3.9474596431116678e-17  He0  He6  He0  He2  He0
+  -4.2294210461910729e-18  He0  He7  He0  He2  He0
+  -1.7763568394002505e-15  He1  He0  He1  He1  He0
+  1.3322676295501878e-15  He2  He0  He1  He1  He0
+  -2.6645352591003757e-15  He1  He0  He2  He1  He0
+  4.4408920985006262e-16  He2  He0  He2  He1  He0
+  8.8817841970012523e-16  He1  He0  He1  He2  He0
+  -6.6613381477509392e-16  He2  He0  He1  He2  He0
+  -1.9984014443252818e-15  He1  He0  He2  He2  He0
+  0.0000000000000000e+00  He2  He0  He2  He2  He0
   1.3322676295501878e-15  He0  He1  He1  He1  He0
-  -2.2204460492503131e-16  He0  He2  He1  He1  He0
-  3.9968028886505635e-15  He0  He1  He2  He1  He0
-  -1.1102230246251565e-16  He0  He2  He2  He1  He0
-  -3.1086244689504383e-15  He0  He1  He1  He2  He0
-  -2.3314683517128287e-15  He0  He2  He1  He2  He0
-  -1.3322676295501878e-15  He0  He1  He2  He2  He0
-  -8.8817841970012523e-16  He0  He2  He2  He2  He0
-  3.3769283665681843e-16  He0  He0  He3  He1  He0
-  2.5905203907920321e-16  He0  He0  He4  He1  He0
-  -4.4408920985006264e-17  He0  He0  He5  He1  He0
-  4.4408920985006264e-17  He0  He0  He6  He1  He0
-  1.7622587692462801e-18  He0  He0  He7  He1  He0
-  -1.5728159515523052e-16  He0  He0  He3  He2  He0
-  -1.1796119636642288e-16  He0  He0  He4  He2  He0
-  5.5511151231257830e-18  He0  He0  He5  He2  He0
-  -6.7846962615981786e-18  He0  He0  He6  He2  He0
-  1.9384846461709081e-17  He0  He0  He7  He2  He0
-  -8.0491169285323849e-16  He1  He0  He0  He3  He0
-  -3.5619655373390441e-16  He2  He0  He0  He3  He0
-  -2.4980018054066022e-16  He1  He0  He0  He4  He0
-  2.8680761469483212e-16  He2  He0  He0  He4  He0
-  1.9984014443252818e-16  He1  He0  He0  He5  He0
-  -1.3692750637043598e-16  He2  He0  He0  He5  He0
-  1.5543122344752191e-16  He1  He0  He0  He6  He0
-  -1.9737298215558339e-17  He2  He0  He0  He6  He0
-  -4.5113824492704774e-17  He1  He0  He0  He7  He0
-  -1.9032394707859827e-17  He2  He0  He0  He7  He0
-  5.1347814888913490e-16  He0  He1  He0  He3  He0
-  4.1633363423443370e-16  He0  He2  He0  He3  He0
-  -6.0137080500529316e-16  He0  He1  He0  He4  He0
-  1.9660199394403813e-16  He0  He2  He0  He4  He0
-  1.2027416100105862e-16  He0  He1  He0  He5  He0
-  -2.2574534834044848e-16  He0  He2  He0  He5  He0
-  5.4277570092785429e-17  He0  He1  He0  He6  He0
-  1.7270135938613546e-17  He0  He2  He0  He6  He0
-  -7.0490350769851209e-19  He0  He1  He0  He7  He0
-  1.9032394707859827e-17  He0  He2  He0  He7  He0
-  -9.5294142946992610e-16  He0  He0  He1  He3  He0
-  -5.9211894646675012e-16  He0  He0  He2  He3  He0
-  -6.0137080500529316e-16  He0  He0  He1  He4  He0
-  -2.3129646346357429e-17  He0  He0  He2  He4  He0
-  2.0354088784794536e-16  He0  He0  He1  He5  He0
-  2.7755575615628914e-17  He0  He0  He2  He5  He0
-  1.0362081563168128e-16  He0  He0  He1  He6  He0
-  1.4186183092432555e-17  He0  He0  He2  He6  He0
-  -2.2909364000201642e-17  He0  He0  He1  He7  He0
-  -5.8154539385127249e-18  He0  He0  He2  He7  He0
-  -1.8503717077085941e-17  He3  He0  He0  He0  He1
-  -3.3306690738754696e-16  He4  He0  He0  He0  He1
-  8.1416355139178141e-17  He5  He0  He0  He0  He1
-  3.4540271877227093e-17  He6  He0  He0  He0  He1
-  4.2294210461910729e-18  He7  He0  He0  He0  He1
-  1.0547118733938987e-15  He3  He0  He0  He0  He2
-  7.1239310746780881e-16  He4  He0  He0  He0  He2
-  8.1416355139178141e-17  He5  He0  He0  He0  He2
-  -3.2073109600282297e-17  He6  He0  He0  He0  He2
-  -4.4408920985006264e-17  He7  He0  He0  He0  He2
-  2.6645352591003757e-15  He1  He1  He0  He0  He1
-  -8.8817841970012523e-16  He2  He1  He0  He0  He1
-  4.4408920985006262e-16  He1  He2  He0  He0  He1
-  6.6613381477509392e-16  He2  He2  He0  He0  He1
-  1.3322676295501878e-15  He1  He1  He0  He0  He2
-  1.1102230246251565e-15  He2  He1  He0  He0  He2
-  8.8817841970012523e-16  He1  He2  He0  He0  He2
-  2.2204460492503131e-16  He2  He2  He0  He0  He2
-  6.1987452208237904e-16  He0  He3  He0  He0  He1
-  -1.2952601953960160e-16  He0  He4  He0  He0  He1
-  -7.4014868308343765e-17  He0  He5  He0  He0  He1
-  1.2335811384723961e-17  He0  He6  He0  He0  He1
-  -1.1983359630874706e-17  He0  He7  He0  He0  He1
-  -1.4109084271278032e-15  He0  He3  He0  He0  He2
-  -2.7755575615628914e-17  He0  He4  He0  He0  He2
-  9.9920072216264091e-17  He0  He5  He0  He0  He2
-  7.4014868308343768e-18  He0  He6  He0  He0  He2
-  -2.8196140307940482e-17  He0  He7  He0  He0  He2
-  -8.8817841970012523e-16  He1  He0  He1  He0  He1
-  -8.8817841970012523e-16  He2  He0  He1  He0  He1
-  -8.8817841970012523e-16  He1  He0  He2  He0  He1
-  -4.4408920985006262e-16  He2  He0  He2  He0  He1
-  -8.8817841970012523e-16  He1  He0  He1  He0  He2
-  -3.1086244689504383e-15  He2  He0  He1  He0  He2
-  2.2204460492503131e-15  He1  He0  He2  He0  He2
-  -3.3306690738754696e-16  He2  He0  He2  He0  He2
-  1.3322676295501878e-15  He0  He1  He1  He0  He1
-  -1.3322676295501878e-15  He0  He2  He1  He0  He1
-  -2.2204460492503131e-16  He0  He1  He2  He0  He1
-  3.3306690738754696e-16  He0  He2  He2  He0  He1
-  -2.6645352591003757e-15  He0  He1  He1  He0  He2
-  -2.3314683517128287e-15  He0  He2  He1  He0  He2
-  6.6613381477509392e-16  He0  He1  He2  He0  He2
-  -6.6613381477509392e-16  He0  He2  He2  He0  He2
-  2.8218168542556060e-16  He0  He0  He3  He0  He1
-  -7.4014868308343765e-17  He0  He0  He4  He0  He1
-  0.0000000000000000e+00  He0  He0  He5  He0  He1
-  -1.1102230246251566e-17  He0  He0  He6  He0  He1
-  -1.3745618400120986e-17  He0  He0  He7  He0  He1
-  1.5265566588595902e-16  He0  He0  He3  He0  He2
-  -3.6082248300317588e-16  He0  He0  He4  He0  He2
-  -3.8857805861880476e-17  He0  He0  He5  He0  He2
-  -1.4802973661668754e-17  He0  He0  He6  He0  He2
-  2.0442201723256852e-17  He0  He0  He7  He0  He2
-  8.8817841970012523e-16  He1  He0  He0  He1  He1
-  0.0000000000000000e+00  He2  He0  He0  He1  He1
-  4.4408920985006262e-16  He1  He0  He0  He2  He1
-  2.2204460492503131e-16  He2  He0  He0  He2  He1
-  0.0000000000000000e+00  He1  He0  He0  He1  He2
-  4.4408920985006262e-16  He2  He0  He0  He1  He2
-  1.9984014443252818e-15  He1  He0  He0  He2  He2
-  6.6613381477509392e-16  He2  He0  He0  He2  He2
-  0.0000000000000000e+00  He0  He1  He0  He1  He1
-  1.7763568394002505e-15  He0  He2  He0  He1  He1
-  -8.8817841970012523e-16  He0  He1  He0  He2  He1
-  -3.3306690738754696e-16  He0  He2  He0  He2  He1
-  3.7747582837255322e-15  He0  He1  He0  He1  He2
-  1.1102230246251565e-16  He0  He2  He0  He1  He2
-  -2.2204460492503131e-16  He0  He1  He0  He2  He2
-  -6.6613381477509392e-16  He0  He2  He0  He2  He2
-  -4.4408920985006262e-16  He0  He0  He1  He1  He1
-  2.4424906541753444e-15  He0  He0  He2  He1  He1
-  -1.3322676295501878e-15  He0  He0  He1  He2  He1
-  -8.8817841970012523e-16  He0  He0  He2  He2  He1
-  2.2204460492503131e-16  He0  He0  He1  He1  He2
-  -3.3306690738754696e-16  He0  He0  He2  He1  He2
-  -1.7763568394002505e-15  He0  He0  He1  He2  He2
-  -7.2164496600635175e-16  He0  He0  He2  He2  He2
-  -3.2381504884900401e-17  He0  He0  He0  He3  He1
-  -1.9891495857867389e-16  He0  He0  He0  He4  He1
-  -1.8503717077085942e-18  He0  He0  He0  He5  He1
-  1.7270135938613546e-17  He0  He0  He0  He6  He1
-  -1.4802973661668754e-17  He0  He0  He0  He7  He1
-  2.0816681711721685e-17  He0  He0  He0  He3  He2
-  1.4109084271278030e-16  He0  He0  He0  He4  He2
-  -5.7361522938966427e-17  He0  He0  He0  He5  He2
-  -1.4802973661668754e-17  He0  He0  He0  He6  He2
-  1.2335811384723962e-18  He0  He0  He0  He7  He2
-  2.6830389761774615e-16  He1  He0  He0  He0  He3
-  1.7717309101309790e-15  He2  He0  He0  He0  He3
-  -2.8680761469483212e-16  He1  He0  He0  He0  He4
-  3.5157062446463289e-16  He2  He0  He0  He0  He4
-  -1.9613940101711098e-16  He1  He0  He0  He0  He5
-  -2.6090241078691180e-16  He2  He0  He0  He0  He5
-  1.8010284621696984e-16  He1  He0  He0  He0  He6
-  1.2335811384723962e-18  He2  He0  He0  He0  He6
-  3.7712337661870398e-17  He1  He0  He0  He0  He7
-  4.2294210461910723e-17  He2  He0  He0  He0  He7
-  -1.8041124150158794e-16  He0  He1  He0  He0  He3
-  3.9782991715734778e-16  He0  He2  He0  He0  He3
-  1.6653345369377348e-16  He0  He1  He0  He0  He4
-  3.4925765982999718e-16  He0  He2  He0  He0  He4
-  -8.5117098554595341e-17  He0  He1  He0  He0  He5
-  -2.3129646346357430e-16  He0  He2  He0  He0  He5
-  -5.1810407815840639e-17  He0  He1  He0  He0  He6
-  -3.7007434154171884e-18  He0  He2  He0  He0  He6
-  3.5245175384925604e-19  He0  He1  He0  He0  He7
-  3.0839528461809905e-17  He0  He2  He0  He0  He7
-  -5.5973744158184979e-16  He0  He0  He1  He0  He3
-  3.5388358909926865e-16  He0  He0  He2  He0  He3
-  -8.6967470262303926e-16  He0  He0  He1  He0  He4
-  4.1633363423443370e-17  He0  He0  He2  He0  He4
-  6.6613381477509390e-17  He0  He0  He1  He0  He5
-  -8.2341540993032447e-17  He0  He0  He2  He0  He5
-  1.2089095157029481e-16  He0  He0  He1  He0  He6
-  9.2518585385429707e-18  He0  He0  He2  He0  He6
-  4.5818728000403285e-18  He0  He0  He1  He0  He7
-  1.6036554800141149e-17  He0  He0  He2  He0  He7
-  -1.2073675392798577e-15  He0  He0  He0  He1  He3
-  3.0068540250264658e-16  He0  He0  He0  He2  He3
-  -1.8503717077085943e-16  He0  He0  He0  He1  He4
-  1.0408340855860843e-16  He0  He0  He0  He2  He4
-  2.7570538444858055e-16  He0  He0  He0  He1  He5
-  -7.4014868308343765e-17  He0  He0  He0  He2  He5
-  3.3923481307990897e-17  He0  He0  He0  He1  He6
-  -2.7755575615628914e-17  He0  He0  He0  He2  He6
-  -5.6039828862031709e-17  He0  He0  He0  He1  He7
-  2.2204460492503132e-17  He0  He0  He0  He2  He7
+  1.3322676295501878e-15  He0  He2  He1  He1  He0
+  -1.5543122344752192e-15  He0  He1  He2  He1  He0
+  1.3322676295501878e-15  He0  He2  He2  He1  He0
+  1.7763568394002505e-15  He0  He1  He1  He2  He0
+  -1.8873791418627661e-15  He0  He2  He1  He2  He0
+  -3.3306690738754696e-16  He0  He1  He2  He2  He0
+  -2.5535129566378600e-15  He0  He2  He2  He2  He0
+  1.0177044392397268e-15  He0  He0  He3  He1  He0
+  -6.4763009769800802e-17  He0  He0  He4  He1  He0
+  -1.5543122344752191e-16  He0  He0  He5  He1  He0
+  2.2204460492503132e-17  He0  He0  He6  He1  He0
+  5.6392280615880967e-18  He0  He0  He7  He1  He0
+  8.1416355139178143e-16  He0  He0  He3  He2  He0
+  0.0000000000000000e+00  He0  He0  He4  He2  He0
+  -9.2518585385429716e-17  He0  He0  He5  He2  He0
+  -9.8686491077791696e-18  He0  He0  He6  He2  He0
+  2.2733138123277014e-17  He0  He0  He7  He2  He0
+  9.5294142946992610e-16  He1  He0  He0  He3  He0
+  6.7538567331363686e-16  He2  He0  He0  He3  He0
+  -1.3692750637043598e-15  He1  He0  He0  He4  He0
+  6.0137080500529308e-17  He2  He0  He0  He4  He0
+  -3.4046839421838136e-16  He1  He0  He0  He5  He0
+  -7.9565983431469553e-17  He2  He0  He0  He5  He0
+  3.3059974511060218e-16  He1  He0  He0  He6  He0
+  1.9737298215558339e-17  He2  He0  He0  He6  He0
+  4.1589306954212213e-17  He1  He0  He0  He7  He0
+  3.5245175384925604e-19  He2  He0  He0  He7  He0
+  -1.2813824075882014e-15  He0  He1  He0  He3  He0
+  -5.3429483060085659e-16  He0  He2  He0  He3  He0
+  -5.3660779523549230e-16  He0  He1  He0  He4  He0
+  -2.1741867565575981e-16  He0  He2  He0  He4  He0
+  2.9050835811024930e-16  He0  He1  He0  He5  He0
+  1.0732155904709847e-16  He0  He2  He0  He5  He0
+  4.1941758708061468e-17  He0  He1  He0  He6  He0
+  6.7230172046745586e-17  He0  He2  He0  He6  He0
+  -2.9605947323337507e-17  He0  He1  He0  He7  He0
+  -3.2249335477206931e-17  He0  He2  He0  He7  He0
+  6.7075974404436544e-16  He0  He0  He1  He3  He0
+  5.1347814888913490e-16  He0  He0  He2  He3  He0
+  -2.7292982688701767e-16  He0  He0  He1  He4  He0
+  7.1701903673708031e-17  He0  He0  He2  He4  He0
+  -1.5543122344752191e-16  He0  He0  He1  He5  He0
+  -1.9613940101711098e-16  He0  He0  He2  He5  He0
+  3.8241015292644281e-17  He0  He0  He1  He6  He0
+  -9.8686491077791696e-18  He0  He0  He2  He6  He0
+  2.5024074523297180e-17  He0  He0  He1  He7  He0
+  2.0794653477106107e-17  He0  He0  He2  He7  He0
+  8.8817841970012523e-16  He3  He0  He0  He0  He1
+  5.5511151231257827e-17  He4  He0  He0  He0  He1
+  2.9605947323337507e-17  He5  He0  He0  He0  He1
+  -1.9737298215558339e-17  He6  He0  He0  He0  He1
+  -1.4098070153970242e-18  He7  He0  He0  He0  He1
+  1.6560826783991918e-15  He3  He0  He0  He0  He2
+  5.5511151231257827e-17  He4  He0  He0  He0  He2
+  -2.9605947323337506e-16  He5  He0  He0  He0  He2
+  -7.8949192862233357e-17  He6  He0  He0  He0  He2
+  3.2425561354131558e-17  He7  He0  He0  He0  He2
+  8.8817841970012523e-16  He1  He1  He0  He0  He1
+  1.7763568394002505e-15  He2  He1  He0  He0  He1
+  1.3322676295501878e-15  He1  He2  He0  He0  He1
+  4.4408920985006262e-16  He2  He2  He0  He0  He1
+  -8.8817841970012523e-16  He1  He1  He0  He0  He2
+  -1.3322676295501878e-15  He2  He1  He0  He0  He2
+  -1.5543122344752192e-15  He1  He2  He0  He0  He2
+  -6.6613381477509392e-16  He2  He2  He0  He0  He2
+  8.6967470262303926e-16  He0  He3  He0  He0  He1
+  -2.3129646346357430e-16  He0  He4  He0  He0  He1
+  -5.1810407815840639e-17  He0  He5  He0  He0  He1
+  5.4277570092785429e-17  He0  He6  He0  He0  He1
+  -2.3261815754050899e-17  He0  He7  He0  He0  He1
+  2.7292982688701767e-16  He0  He3  He0  He0  He2
+  -2.3592239273284576e-16  He0  He4  He0  He0  He2
+  -1.0362081563168128e-16  He0  He5  He0  He0  He2
+  3.4540271877227093e-17  He0  He6  He0  He0  He2
+  1.7270135938613546e-17  He0  He7  He0  He0  He2
+  8.8817841970012523e-16  He1  He0  He1  He0  He1
+  8.8817841970012523e-16  He2  He0  He1  He0  He1
+  2.2204460492503131e-15  He1  He0  He2  He0  He1
+  1.5543122344752192e-15  He2  He0  He2  He0  He1
+  -4.4408920985006262e-16  He1  He0  He1  He0  He2
+  -4.4408920985006262e-16  He2  He0  He1  He0  He2
+  -8.8817841970012523e-16  He1  He0  He2  He0  He2
+  3.3306690738754696e-16  He2  He0  He2  He0  He2
+  -8.8817841970012523e-16  He0  He1  He1  He0  He1
+  1.1102230246251565e-15  He0  He2  He1  He0  He1
+  4.4408920985006262e-15  He0  He1  He2  He0  He1
+  -6.6613381477509392e-16  He0  He2  He2  He0  He1
+  1.7763568394002505e-15  He0  He1  He1  He0  He2
+  -2.1094237467877974e-15  He0  He2  He1  He0  He2
+  -9.9920072216264089e-16  He0  He1  He2  He0  He2
+  -8.8817841970012523e-16  He0  He2  He2  He0  He2
+  -8.1878948066105295e-16  He0  He0  He3  He0  He1
+  1.5265566588595902e-16  He0  He0  He4  He0  He1
+  1.4802973661668753e-16  He0  He0  He5  He0  He1
+  1.6036554800141149e-17  He0  He0  He6  He0  He1
+  -2.4671622769447922e-17  He0  He0  He7  He0  He1
+  1.5728159515523052e-16  He0  He0  He3  He0  He2
+  2.3592239273284576e-16  He0  He0  He4  He0  He2
+  5.1810407815840639e-17  He0  He0  He5  He0  He2
+  -1.1102230246251566e-17  He0  He0  He6  He0  He2
+  1.3745618400120986e-17  He0  He0  He7  He0  He2
+  -1.7763568394002505e-15  He1  He0  He0  He1  He1
+  8.8817841970012523e-16  He2  He0  He0  He1  He1
+  2.6645352591003757e-15  He1  He0  He0  He2  He1
+  3.3306690738754696e-15  He2  He0  He0  He2  He1
+  -1.3322676295501878e-15  He1  He0  He0  He1  He2
+  2.2204460492503131e-16  He2  He0  He0  He1  He2
+  -3.3306690738754696e-15  He1  He0  He0  He2  He2
+  -8.8817841970012523e-16  He2  He0  He0  He2  He2
+  -2.6645352591003757e-15  He0  He1  He0  He1  He1
+  2.2204460492503131e-15  He0  He2  He0  He1  He1
+  3.9968028886505635e-15  He0  He1  He0  He2  He1
+  -1.5543122344752192e-15  He0  He2  He0  He2  He1
+  0.0000000000000000e+00  He0  He1  He0  He1  He2
+  2.2204460492503131e-16  He0  He2  He0  He1  He2
+  -2.5535129566378600e-15  He0  He1  He0  He2  He2
+  -1.2212453270876722e-15  He0  He2  He0  He2  He2
+  2.6645352591003757e-15  He0  He0  He1  He1  He1
+  -2.2204460492503131e-16  He0  He0  He2  He1  He1
+  1.3322676295501878e-15  He0  He0  He1  He2  He1
+  1.1102230246251565e-16  He0  He0  He2  He2  He1
+  8.8817841970012523e-16  He0  He0  He1  He1  He2
+  -8.8817841970012523e-16  He0  He0  He2  He1  He2
+  -5.5511151231257827e-16  He0  He0  He1  He2  He2
+  7.2164496600635175e-16  He0  He0  He2  He2  He2
+  -1.8503717077085941e-17  He0  He0  He0  He3  He1
+  -1.1564823173178715e-16  He0  He0  He0  He4  He1
+  3.3306690738754695e-17  He0  He0  He0  He5  He1
+  0.0000000000000000e+00  He0  He0  He0  He6  He1
+  -8.4588420923821458e-18  He0  He0  He0  He7  He1
+  -5.6436337085112121e-16  He0  He0  He0  He3  He2
+  3.7007434154171886e-16  He0  He0  He0  He4  He2
+  4.9960036108132046e-17  He0  He0  He0  He5  He2
+  -3.8241015292644281e-17  He0  He0  He0  He6  He2
+  -9.6924232308545407e-18  He0  He0  He0  He7  He2
+  1.9151347174783950e-15  He1  He0  He0  He0  He3
+  8.9743027823866827e-16  He2  He0  He0  He0  He3
+  -1.4617936490897894e-15  He1  He0  He0  He0  He4
+  9.7144514654701197e-17  He2  He0  He0  He0  He4
+  -3.7007434154171886e-16  He1  He0  He0  He0  He5
+  -1.6838382540148207e-16  He2  He0  He0  He0  He5
+  3.2073109600282300e-16  He1  He0  He0  He0  He6
+  2.4671622769447922e-17  He2  He0  He0  He0  He6
+  4.9343245538895844e-17  He1  He0  He0  He0  He7
+  3.4187820123377838e-17  He2  He0  He0  He0  He7
+  4.8572257327350599e-16  He0  He1  He0  He0  He3
+  5.0653925498522767e-16  He0  He2  He0  He0  He3
+  -6.1524859281310762e-16  He0  He1  He0  He0  He4
+  2.4517425127138875e-16  He0  He2  He0  He0  He4
+  1.2027416100105862e-16  He0  He1  He0  He0  He5
+  -1.8873791418627661e-16  He0  He2  He0  He0  He5
+  3.5773853015699491e-17  He0  He1  He0  He0  He6
+  8.0799564569941945e-17  He0  He2  He0  He0  He6
+  -1.6917684184764292e-17  He0  He1  He0  He0  He7
+  1.4274296030894868e-17  He0  He2  He0  He0  He7
+  -1.1703601051256858e-15  He0  He0  He1  He0  He3
+  5.0885221961986338e-16  He0  He0  He2  He0  He3
+  4.6259292692714853e-18  He0  He0  He1  He0  He4
+  1.9428902930940239e-16  He0  He0  He2  He0  He4
+  2.6460315420232897e-16  He0  He0  He1  He0  He5
+  -2.1279274638648835e-16  He0  He0  He2  He0  He5
+  -6.1679056923619804e-18  He0  He0  He1  He0  He6
+  -1.2952601953960160e-17  He0  He0  He2  He0  He6
+  -4.1765532831136841e-17  He0  He0  He1  He0  He7
+  2.7667462677166600e-17  He0  He0  He2  He0  He7
+  8.6504877335376784e-16  He0  He0  He0  He1  He3
+  9.2518585385429716e-17  He0  He0  He0  He2  He3
+  -2.2204460492503131e-16  He0  He0  He0  He1  He4
+  2.9605947323337506e-16  He0  He0  He0  He2  He4
+  -1.6653345369377348e-16  He0  He0  He0  He1  He5
+  -6.6613381477509390e-17  He0  He0  He0  He2  He5
+  5.7978313508202623e-17  He0  He0  He0  He1  He6
+  -1.7270135938613546e-17  He0  He0  He0  He2  He6
+  3.5245175384925604e-19  He0  He0  He0  He1  He7
+  1.1454682000100821e-17  He0  He0  He0  He2  He7
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
-  expansion:    1.0945445181203054e+02  5.1463451657630578e+01
-  integration:  1.0945445181203159e+02  5.1463451657630834e+01  8.7770920128044438e-01  1.2106952231345787e+00
+  expansion:    1.0945445181203030e+02  5.1463451657630550e+01
+  integration:  1.0945445181203161e+02  5.1463451657630841e+01  8.7770920128044583e-01  1.2106952231345893e+00
 Test Number 14 succeeded
 <<<<< Function evaluation summary (ID_I): 32 total (32 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.0945445181203210e+02  He0  He0  He0  He0  He0
-  4.7599085087432265e+01  He1  He0  He0  He0  He0
-  -4.7447530268582749e+00  He0  He1  He0  He0  He0
-  6.6677299010411160e+00  He1  He1  He0  He0  He0
-  -5.5711879835377598e-01  He0  He0  He1  He0  He0
-  -6.7442933493048862e-02  He1  He0  He1  He0  He0
-  2.5019595282446261e-01  He0  He1  He1  He0  He0
-  -3.5527136788005009e-15  He1  He1  He1  He0  He0
-  5.9771631932540537e-02  He0  He0  He0  He1  He0
-  -2.8776467834591468e-01  He1  He0  He0  He1  He0
+  1.0945445181203212e+02  He0  He0  He0  He0  He0
+  4.7599085087432258e+01  He1  He0  He0  He0  He0
+  -4.7447530268582820e+00  He0  He1  He0  He0  He0
+  6.6677299010411293e+00  He1  He1  He0  He0  He0
+  -5.5711879835378753e-01  He0  He0  He1  He0  He0
+  -6.7442933493056856e-02  He1  He0  He1  He0  He0
+  2.5019595282447149e-01  He0  He1  He1  He0  He0
+  -8.8817841970012523e-16  He1  He1  He1  He0  He0
+  5.9771631932537872e-02  He0  He0  He0  He1  He0
+  -2.8776467834590491e-01  He1  He0  He0  He1  He0
   1.2278112102130834e-01  He0  He1  He0  He1  He0
-  4.4408920985006262e-15  He1  He1  He0  He1  He0
-  2.2622537078498262e-02  He0  He0  He1  He1  He0
-  -8.8817841970012523e-16  He1  He0  He1  He1  He0
+  -1.7763568394002505e-15  He1  He1  He0  He1  He0
+  2.2622537078499150e-02  He0  He0  He1  He1  He0
+  -3.5527136788005009e-15  He1  He0  He1  He1  He0
   8.8817841970012523e-16  He0  He1  He1  He1  He0
   1.7763568394002505e-15  He1  He1  He1  He1  He0
-  -4.3226697267898295e-02  He0  He0  He0  He0  He1
-  6.9411314591769191e-02  He1  He0  He0  He0  He1
-  -3.4297666063769938e-02  He0  He1  He0  He0  He1
-  -8.8817841970012523e-16  He1  He1  He0  He0  He1
-  -1.1195104044103843e-03  He0  He0  He1  He0  He1
-  2.6645352591003757e-15  He1  He0  He1  He0  He1
-  2.6645352591003757e-15  He0  He1  He1  He0  He1
-  3.5527136788005009e-15  He1  He1  He1  He0  He1
-  4.8086824118969140e-02  He0  He0  He0  He1  He1
-  -2.6645352591003757e-15  He1  He0  He0  He1  He1
-  -2.6645352591003757e-15  He0  He1  He0  He1  He1
-  -3.5527136788005009e-15  He1  He1  He0  He1  He1
-  2.6645352591003757e-15  He0  He0  He1  He1  He1
-  0.0000000000000000e+00  He1  He0  He1  He1  He1
-  -1.7763568394002505e-15  He0  He1  He1  He1  He1
-  -8.8817841970012523e-16  He1  He1  He1  He1  He1
+  -4.3226697267900960e-02  He0  He0  He0  He0  He1
+  6.9411314591775408e-02  He1  He0  He0  He0  He1
+  -3.4297666063761056e-02  He0  He1  He0  He0  He1
+  -1.7763568394002505e-15  He1  He1  He0  He0  He1
+  -1.1195104044201543e-03  He0  He0  He1  He0  He1
+  -1.7763568394002505e-15  He1  He0  He1  He0  He1
+  -4.4408920985006262e-15  He0  He1  He1  He0  He1
+  -1.7763568394002505e-15  He1  He1  He1  He0  He1
+  4.8086824118973581e-02  He0  He0  He0  He1  He1
+  -5.3290705182007514e-15  He1  He0  He0  He1  He1
+  -8.8817841970012523e-16  He0  He1  He0  He1  He1
+  8.8817841970012523e-16  He1  He1  He0  He1  He1
+  -1.7763568394002505e-15  He0  He0  He1  He1  He1
+  3.5527136788005009e-15  He1  He0  He1  He1  He1
+  0.0000000000000000e+00  He0  He1  He1  He1  He1
+  8.8817841970012523e-16  He1  He1  He1  He1  He1
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
-  expansion:    1.0945445181203210e+02  4.8302524540069925e+01
-  integration:  1.0945445181203210e+02  4.8302524540069918e+01 -8.0116126088135842e-02 -1.8870571172251649e+00
+  expansion:    1.0945445181203212e+02  4.8302524540069918e+01
+  integration:  1.0945445181203212e+02  4.8302524540069918e+01 -8.0116126088135453e-02 -1.8870571172251644e+00
 Test Number 15 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.0945445181203235e+02  He0  He0  He0  He0  He0
-  4.7599085087432272e+01  He1  He0  He0  He0  He0
-  -4.7447530268586258e+00  He0  He1  He0  He0  He0
-  -5.5711879835400602e-01  He0  He0  He1  He0  He0
-  5.9771631932579949e-02  He0  He0  He0  He1  He0
-  -4.3226697267595426e-02  He0  He0  He0  He0  He1
-  8.2322326075882302e+00  He2  He0  He0  He0  He0
-  6.6677299010410120e+00  He1  He1  He0  He0  He0
-  9.2292505133951881e+00  He0  He2  He0  He0  He0
-  -6.7442933493006896e-02  He1  He0  He1  He0  He0
-  2.5019595282452300e-01  He0  He1  He1  He0  He0
-  2.1600961220125221e+00  He0  He0  He2  He0  He0
-  -2.8776467834577346e-01  He1  He0  He0  He1  He0
-  1.2278112102120264e-01  He0  He1  He0  He1  He0
-  2.2622537078472504e-02  He0  He0  He1  He1  He0
-  2.3214881586507374e-01  He0  He0  He0  He2  He0
-  6.9411314591846462e-02  He1  He0  He0  He0  He1
-  -3.4297666063672683e-02  He0  He1  He0  He0  He1
-  -1.1195104044132952e-03  He0  He0  He1  He0  He1
-  4.8086824118875882e-02  He0  He0  He0  He1  He1
-  8.8671941139383037e-02  He0  He0  He0  He0  He2
-  4.3798298321462426e-14  He3  He0  He0  He0  He0
-  -9.9475983006414026e-14  He2  He1  He0  He0  He0
-  2.4091839634365897e-14  He1  He2  He0  He0  He0
-  -4.8849813083506888e-15  He0  He3  He0  He0  He0
-  8.3488771451811772e-14  He2  He0  He1  He0  He0
-  4.7517545453956700e-14  He1  He1  He1  He0  He0
-  3.1974423109204508e-14  He0  He2  He1  He0  He0
-  -4.5963233219481481e-14  He1  He0  He2  He0  He0
-  3.3750779948604759e-14  He0  He1  He2  He0  He0
-  2.2204460492503131e-14  He0  He0  He3  He0  He0
-  -3.8635761256955448e-14  He2  He0  He0  He1  He0
-  -2.7977620220553945e-14  He1  He1  He0  He1  He0
-  1.8873791418627661e-14  He0  He2  He0  He1  He0
-  6.4059868520871532e-14  He1  He0  He1  He1  He0
-  1.5099033134902129e-14  He0  He1  He1  He1  He0
-  5.3734794391857577e-14  He0  He0  He2  He1  He0
-  -9.4479979395600822e-14  He1  He0  He0  He2  He0
-  -9.7699626167013776e-15  He0  He1  He0  He2  He0
-  3.3084646133829665e-14  He0  He0  He1  He2  He0
-  3.2751579226442118e-15  He0  He0  He0  He3  He0
-  9.7699626167013776e-15  He2  He0  He0  He0  He1
-  -8.3488771451811772e-14  He1  He1  He0  He0  He1
-  -1.4765966227514582e-14  He0  He2  He0  He0  He1
-  7.1387340483397566e-14  He1  He0  He1  He0  He1
-  1.3145040611561853e-13  He0  He1  He1  He0  He1
-  -1.7319479184152442e-14  He0  He0  He2  He0  He1
-  4.3520742565306136e-14  He1  He0  He0  He1  He1
-  4.1744385725905886e-14  He0  He1  He0  He1  He1
-  -5.8619775700208265e-14  He0  He0  He1  He1  He1
-  4.1938674755215288e-14  He0  He0  He0  He2  He1
-  -4.5741188614556449e-14  He1  He0  He0  He0  He2
-  2.3980817331903381e-14  He0  He1  He0  He0  He2
-  1.0302869668521453e-13  He0  He0  He1  He0  He2
-  -7.4606987254810520e-14  He0  He0  He0  He1  He2
-  7.3536446029698332e-14  He0  He0  He0  He0  He3
-  1.7097434579227411e-14  He4  He0  He0  He0  He0
-  -6.4392935428259079e-15  He3  He1  He0  He0  He0
-  3.7747582837255322e-14  He2  He2  He0  He0  He0
-  4.1300296516055823e-14  He1  He3  He0  He0  He0
-  -9.1038288019262836e-15  He0  He4  He0  He0  He0
-  -5.7731597280508140e-15  He3  He0  He1  He0  He0
-  2.6201263381153694e-14  He2  He1  He1  He0  He0
-  -4.8405723873656825e-14  He1  He2  He1  He0  He0
-  -1.8651746813702630e-14  He0  He3  He1  He0  He0
-  -6.4392935428259079e-14  He2  He0  He2  He0  He0
-  5.9618976422370906e-14  He1  He1  He2  He0  He0
-  -1.5987211554602254e-14  He0  He2  He2  He0  He0
-  2.4424906541753444e-14  He1  He0  He3  He0  He0
-  5.3290705182007514e-14  He0  He1  He3  He0  He0
-  1.3156142841808105e-14  He0  He0  He4  He0  He0
-  -2.4424906541753444e-14  He3  He0  He0  He1  He0
-  5.7509552675583109e-14  He2  He1  He0  He1  He0
-  2.5091040356528538e-14  He1  He2  He0  He1  He0
-  -7.1054273576010019e-15  He0  He3  He0  He1  He0
-  -2.1094237467877974e-14  He2  He0  He1  He1  He0
-  -6.9277916736609768e-14  He1  He1  He1  He1  He0
-  -2.1316282072803006e-14  He0  He2  He1  He1  He0
-  -1.6875389974302379e-14  He1  He0  He2  He1  He0
-  -4.0412118096355698e-14  He0  He1  He2  He1  He0
-  -3.9857006584043120e-14  He0  He0  He3  He1  He0
-  -1.3322676295501878e-15  He2  He0  He0  He2  He0
-  8.4376949871511897e-15  He1  He1  He0  He2  He0
-  -1.6431300764452317e-14  He0  He2  He0  He2  He0
-  2.5757174171303632e-14  He1  He0  He1  He2  He0
-  -3.4361402612148595e-14  He0  He1  He1  He2  He0
-  -2.1621593404574924e-14  He0  He0  He2  He2  He0
-  3.7747582837255322e-14  He1  He0  He0  He3  He0
-  -3.7081449022480228e-14  He0  He1  He0  He3  He0
-  -2.8699265186560297e-14  He0  He0  He1  He3  He0
-  -4.5519144009631418e-15  He0  He0  He0  He4  He0
-  8.0491169285323849e-14  He3  He0  He0  He0  He1
-  1.3988810110276972e-14  He2  He1  He0  He0  He1
-  2.6645352591003757e-14  He1  He2  He0  He0  He1
-  3.4861002973229915e-14  He0  He3  He0  He0  He1
-  -2.4424906541753444e-14  He2  He0  He1  He0  He1
-  -2.0650148258027912e-14  He1  He1  He1  He0  He1
-  3.5527136788005009e-15  He0  He2  He1  He0  He1
-  3.0253577421035516e-15  He1  He0  He2  He0  He1
-  -4.2854608750531042e-14  He0  He1  He2  He0  He1
-  2.5313084961453569e-14  He0  He0  He3  He0  He1
-  3.8080649744642869e-14  He2  He0  He0  He1  He1
-  -2.5091040356528538e-14  He1  He1  He0  He1  He1
-  3.5971225997855072e-14  He0  He2  He0  He1  He1
-  2.6645352591003757e-15  He1  He0  He1  He1  He1
-  1.4654943925052066e-14  He0  He1  He1  He1  He1
-  -4.5519144009631418e-15  He0  He0  He2  He1  He1
-  1.0841327835464654e-13  He1  He0  He0  He2  He1
-  -1.1546319456101628e-14  He0  He1  He0  He2  He1
-  3.0087043967341742e-14  He0  He0  He1  He2  He1
-  3.4861002973229915e-14  He0  He0  He0  He3  He1
-  1.8041124150158794e-15  He2  He0  He0  He0  He2
-  4.6206094506118234e-14  He1  He1  He0  He0  He2
-  -3.2862601528904634e-14  He0  He2  He0  He0  He2
-  2.8865798640254070e-15  He1  He0  He1  He0  He2
-  2.8865798640254070e-14  He0  He1  He1  He0  He2
-  -5.9063864910058328e-14  He0  He0  He2  He0  He2
-  1.7763568394002505e-15  He1  He0  He0  He1  He2
-  -1.9761969838327786e-14  He0  He1  He0  He1  He2
-  -5.0626169922907138e-14  He0  He0  He1  He1  He2
-  7.2164496600635175e-14  He0  He0  He0  He2  He2
-  -1.6431300764452317e-14  He1  He0  He0  He0  He3
-  7.2164496600635175e-16  He0  He1  He0  He0  He3
-  7.5939254884360707e-14  He0  He0  He1  He0  He3
-  -6.2450045135165055e-14  He0  He0  He0  He1  He3
-  5.7509552675583109e-14  He0  He0  He0  He0  He4
+  1.0945445181203242e+02  He0  He0  He0  He0  He0
+  4.7599085087432343e+01  He1  He0  He0  He0  He0
+  -4.7447530268585938e+00  He0  He1  He0  He0  He0
+  -5.5711879835407174e-01  He0  He0  He1  He0  He0
+  5.9771631932577951e-02  He0  He0  He0  He1  He0
+  -4.3226697267571390e-02  He0  He0  He0  He0  He1
+  8.2322326075882710e+00  He2  He0  He0  He0  He0
+  6.6677299010410147e+00  He1  He1  He0  He0  He0
+  9.2292505133952147e+00  He0  He2  He0  He0  He0
+  -6.7442933493030655e-02  He1  He0  He1  He0  He0
+  2.5019595282443419e-01  He0  He1  He1  He0  He0
+  2.1600961220125190e+00  He0  He0  He2  He0  He0
+  -2.8776467834574682e-01  He1  He0  He0  He1  He0
+  1.2278112102125927e-01  He0  He1  He0  He1  He0
+  2.2622537078493155e-02  He0  He0  He1  He1  He0
+  2.3214881586508263e-01  He0  He0  He0  He2  He0
+  6.9411314591825146e-02  He1  He0  He0  He0  He1
+  -3.4297666063678900e-02  He0  He1  He0  He0  He1
+  -1.1195104043706557e-03  He0  He0  He1  He0  He1
+  4.8086824118882543e-02  He0  He0  He0  He1  He1
+  8.8671941139394583e-02  He0  He0  He0  He0  He2
+  6.0618177144533547e-14  He3  He0  He0  He0  He0
+  -1.3034018309099338e-13  He2  He1  He0  He0  He0
+  3.1863400806741993e-14  He1  He2  He0  He0  He0
+  -8.4376949871511897e-15  He0  He3  He0  He0  He0
+  1.0125233984581428e-13  He2  He0  He1  He0  He0
+  4.2188474935755949e-14  He1  He1  He1  He0  He0
+  2.6645352591003757e-14  He0  He2  He1  He0  He0
+  -4.1522341120980855e-14  He1  He0  He2  He0  He0
+  2.3092638912203256e-14  He0  He1  He2  He0  He0
+  -2.2204460492503131e-15  He0  He0  He3  He0  He0
+  -1.3322676295501878e-14  He2  He0  He0  He1  He0
+  -2.1871393585115584e-14  He1  He1  He0  He1  He0
+  -5.2180482157382357e-15  He0  He2  He0  He1  He0
+  6.3060667798708891e-14  He1  He0  He1  He1  He0
+  8.7929663550312398e-14  He0  He1  He1  He1  He0
+  -2.1538326677728037e-14  He0  He0  He2  He1  He0
+  -9.7366559259626229e-14  He1  He0  He0  He2  He0
+  -4.4408920985006262e-15  He0  He1  He0  He2  He0
+  1.5765166949677223e-14  He0  He0  He1  He2  He0
+  1.7652546091539989e-14  He0  He0  He0  He3  He0
+  3.8635761256955448e-14  He2  He0  He0  He0  He1
+  -3.7414515929867775e-14  He1  He1  He0  He0  He1
+  -3.9523939676655573e-14  He0  He2  He0  He0  He1
+  8.2711615334574162e-14  He1  He0  He1  He0  He1
+  1.4388490399142029e-13  He0  He1  He1  He0  He1
+  -4.4408920985006262e-14  He0  He0  He2  He0  He1
+  3.4416913763379853e-14  He1  He0  He0  He1  He1
+  5.4622972811557702e-14  He0  He1  He0  He1  He1
+  -8.3488771451811772e-14  He0  He0  He1  He1  He1
+  4.2660319721221640e-14  He0  He0  He0  He2  He1
+  -4.5963233219481481e-14  He1  He0  He0  He0  He2
+  2.4868995751603507e-14  He0  He1  He0  He0  He2
+  9.1038288019262836e-14  He0  He0  He1  He0  He2
+  -9.5035090907913400e-14  He0  He0  He0  He1  He2
+  7.6201414969667702e-14  He0  He0  He0  He0  He3
+  1.4210854715202004e-14  He4  He0  He0  He0  He0
+  -8.8817841970012523e-16  He3  He1  He0  He0  He0
+  6.6613381477509392e-14  He2  He2  He0  He0  He0
+  1.6875389974302379e-14  He1  He3  He0  He0  He0
+  -4.6629367034256575e-15  He0  He4  He0  He0  He0
+  -3.1086244689504383e-14  He3  He0  He1  He0  He0
+  3.8191672047105385e-14  He2  He1  He1  He0  He0
+  -5.7398530373120593e-14  He1  He2  He1  He0  He0
+  -1.0658141036401503e-14  He0  He3  He1  He0  He0
+  -5.3290705182007514e-14  He2  He0  He2  He0  He0
+  6.0951244051921094e-14  He1  He1  He2  He0  He0
+  -7.9936057773011271e-15  He0  He2  He2  He0  He0
+  2.3092638912203256e-14  He1  He0  He3  He0  He0
+  5.3734794391857577e-14  He0  He1  He3  He0  He0
+  1.6764367671839864e-14  He0  He0  He4  He0  He0
+  -3.7747582837255322e-14  He3  He0  He0  He1  He0
+  7.9047879353311146e-14  He2  He1  He0  He1  He0
+  2.8199664825478976e-14  He1  He2  He0  He1  He0
+  1.1102230246251565e-14  He0  He3  He0  He1  He0
+  -2.0428103653102880e-14  He2  He0  He1  He1  He0
+  -5.6399329650957952e-14  He1  He1  He1  He1  He0
+  -3.0864200084579352e-14  He0  He2  He1  He1  He0
+  -8.8817841970012523e-15  He1  He0  He2  He1  He0
+  -3.1974423109204508e-14  He0  He1  He2  He1  He0
+  -1.6986412276764895e-14  He0  He0  He3  He1  He0
+  -7.9936057773011271e-15  He2  He0  He0  He2  He0
+  1.2434497875801753e-14  He1  He1  He0  He2  He0
+  -9.7699626167013776e-15  He0  He2  He0  He2  He0
+  3.0198066269804258e-14  He1  He0  He1  He2  He0
+  -5.7065463465733046e-14  He0  He1  He1  He2  He0
+  -3.7192471324942744e-15  He0  He0  He2  He2  He0
+  2.6423307986078726e-14  He1  He0  He0  He3  He0
+  -3.4194869158454821e-14  He0  He1  He0  He3  He0
+  -3.3695268797373501e-14  He0  He0  He1  He3  He0
+  3.9135361618036768e-15  He0  He0  He0  He4  He0
+  8.1601392309949006e-14  He3  He0  He0  He0  He1
+  1.5099033134902129e-14  He2  He1  He0  He0  He1
+  2.4646951146678475e-14  He1  He2  He0  He0  He1
+  2.2870594307278225e-14  He0  He3  He0  He0  He1
+  1.0436096431476471e-14  He2  He0  He1  He0  He1
+  -2.3758772726978350e-14  He1  He1  He1  He0  He1
+  -3.1086244689504383e-15  He0  He2  He1  He0  He1
+  -5.5788706987414116e-15  He1  He0  He2  He0  He1
+  -2.9420910152566648e-14  He0  He1  He2  He0  He1
+  3.8413716652030416e-14  He0  He0  He3  He0  He1
+  2.6312285683616210e-14  He2  He0  He0  He1  He1
+  -1.4321877017664519e-14  He1  He1  He0  He1  He1
+  3.5305092183079978e-14  He0  He2  He0  He1  He1
+  2.6867397195928788e-14  He1  He0  He1  He1  He1
+  2.8421709430404007e-14  He0  He1  He1  He1  He1
+  -9.6589403142388619e-15  He0  He0  He2  He1  He1
+  8.3211215695655483e-14  He1  He0  He0  He2  He1
+  -4.0856207306205761e-14  He0  He1  He0  He2  He1
+  4.6185277824406512e-14  He0  He0  He1  He2  He1
+  2.6090241078691179e-14  He0  He0  He0  He3  He1
+  1.9539925233402755e-14  He2  He0  He0  He0  He2
+  2.4903690221123043e-14  He1  He1  He0  He0  He2
+  -3.0198066269804258e-14  He0  He2  He0  He0  He2
+  3.1308289294429414e-14  He1  He0  He1  He0  He2
+  2.0872192862952943e-14  He0  He1  He1  He0  He2
+  -5.1070259132757201e-14  He0  He0  He2  He0  He2
+  -1.4654943925052066e-14  He1  He0  He0  He1  He2
+  -8.6597395920762210e-15  He0  He1  He0  He1  He2
+  -4.1744385725905886e-14  He0  He0  He1  He1  He2
+  8.7929663550312398e-14  He0  He0  He0  He2  He2
+  -3.0198066269804258e-14  He1  He0  He0  He0  He3
+  2.5535129566378600e-15  He0  He1  He0  He0  He3
+  7.1054273576010019e-14  He0  He0  He1  He0  He3
+  -7.7660100572529700e-14  He0  He0  He0  He1  He3
+  6.3948846218409017e-14  He0  He0  He0  He0  He4
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.0945445181203235e+02  5.1463451657630984e+01
+ response_fn_1  1.0945445181203242e+02  5.1463451657631076e+01
 Test Number 16 succeeded
 <<<<< Function evaluation summary (ID_I): 1 total (1 new, 0 duplicate)
   Approximate Mean Response                  =  8.9512051812032141e+01
-  Approximate Standard Deviation of Response =  4.7838283884325470e+01
+  Approximate Standard Deviation of Response =  4.7838283884325477e+01
   Importance Factor for ssv_1                =  9.9002469310840269e-01
-  Importance Factor for ssv_2                =  9.8373028029262507e-03
-  Importance Factor for ssv_3                =  1.3562646490030417e-04
-  Importance Factor for ssv_4                =  1.5611299062684263e-06
-  Importance Factor for ssv_5                =  8.1649386476688512e-07
-  Importance Factor for ssv_1     ssv_2      =  4.6565062812516917e-17
-  Importance Factor for ssv_1     ssv_3      = -4.1383679545124457e-18
-  Importance Factor for ssv_2     ssv_3      = -5.6705728236799276e-19
-  Importance Factor for ssv_1     ssv_4      = -2.1566158414963495e-20
-  Importance Factor for ssv_2     ssv_4      = -2.0637592386488070e-20
-  Importance Factor for ssv_3     ssv_4      =  4.1649130849155475e-22
-  Importance Factor for ssv_1     ssv_5      =  2.9633526218023910e-20
-  Importance Factor for ssv_2     ssv_5      = -5.7212714963252828e-20
-  Importance Factor for ssv_3     ssv_5      =  4.7919055287257769e-21
-  Importance Factor for ssv_4     ssv_5      = -6.5806003744078972e-22
+  Importance Factor for ssv_2                =  9.8373028029263027e-03
+  Importance Factor for ssv_3                =  1.3562646490030414e-04
+  Importance Factor for ssv_4                =  1.5611299062686522e-06
+  Importance Factor for ssv_5                =  8.1649386476668236e-07
+  Importance Factor for ssv_1     ssv_2      =  3.4067821690039989e-17
+  Importance Factor for ssv_1     ssv_3      = -3.5431791814552884e-18
+  Importance Factor for ssv_2     ssv_3      = -4.4082191562176194e-20
+  Importance Factor for ssv_1     ssv_4      = -1.5096310890475527e-20
+  Importance Factor for ssv_2     ssv_4      = -1.7197993655407998e-20
+  Importance Factor for ssv_3     ssv_4      = -2.1897346067663614e-21
+  Importance Factor for ssv_1     ssv_5      = -1.8403979440665193e-19
+  Importance Factor for ssv_2     ssv_5      = -1.9900074769824636e-20
+  Importance Factor for ssv_3     ssv_5      =  6.8273244485455911e-21
+  Importance Factor for ssv_4     ssv_5      =  2.5068953807266877e-22
 Test Number 17 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  9.6807841678697727e+01  4.2916627580588141e+01  1.0849452562141586e+00  2.4477071763009683e+00
+ response_fn_1  9.6807841678697756e+01  4.2916627580588177e+01  1.0849452562141582e+00  2.4477071763009626e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  8.8292251683665313e+01  1.0532343167373014e+02  3.7681092797404951e+01  4.9855184301063900e+01
+ response_fn_1  8.8292251683665327e+01  1.0532343167373018e+02  3.7681092797404979e+01  4.9855184301063943e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61387,10 +61387,10 @@ Test Number 18 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  6.4751105941171161e+01  4.4497767885486297e+01  1.2106234778311369e+00  1.3817595064153534e+00
+ response_fn_1  6.4751105941171176e+01  4.4497767885486340e+01  1.2106234778311360e+00  1.3817595064153476e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  5.5921783406557196e+01  7.3580428475785126e+01  3.9069344808649490e+01  5.1691955868413082e+01
+ response_fn_1  5.5921783406557211e+01  7.3580428475785141e+01  3.9069344808649532e+01  5.1691955868413132e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61408,74 +61408,74 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 19 succeeded
 <<<<< Function evaluation summary (ID_I): 231 total (231 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.8753589735977039e+02  He0  He0  He0  He0  He0
+  1.8753589735977044e+02  He0  He0  He0  He0  He0
   -8.4092343989877349e+01  He1  He0  He0  He0  He0
-  7.8392178850478778e-01  He0  He1  He0  He0  He0
-  6.1961445843694347e-02  He0  He0  He1  He0  He0
-  -4.5505860191828576e-02  He0  He0  He0  He1  He0
-  9.0199851420370829e-03  He0  He0  He0  He0  He1
+  7.8392178850476157e-01  He0  He1  He0  He0  He0
+  6.1961445843672011e-02  He0  He0  He1  He0  He0
+  -4.5505860191832510e-02  He0  He0  He0  He1  He0
+  9.0199851420391889e-03  He0  He0  He0  He0  He1
   1.0202701165024909e+01  He2  He0  He0  He0  He0
-  7.1148844855212348e-02  He1  He1  He0  He0  He0
-  2.4385149449260801e+00  He0  He2  He0  He0  He0
-  1.5706347439822088e-01  He1  He0  He1  He0  He0
-  1.0732916612939076e+00  He0  He1  He1  He0  He0
-  1.0090802209460394e+00  He0  He0  He2  He0  He0
-  -4.1646735815445970e-03  He1  He0  He0  He1  He0
-  1.3843318377068578e-01  He0  He1  He0  He1  He0
-  -5.4098505970783979e-02  He0  He0  He1  He1  He0
-  2.0864700932161431e-01  He0  He0  He0  He2  He0
-  2.7808139126999722e-02  He1  He0  He0  He0  He1
-  6.3012181862978911e-02  He0  He1  He0  He0  He1
-  -2.4356948056003080e-02  He0  He0  He1  He0  He1
-  2.6542443822717227e-02  He0  He0  He0  He1  He1
-  2.1458043258638031e-02  He0  He0  He0  He0  He2
+  7.1148844855220994e-02  He1  He1  He0  He0  He0
+  2.4385149449260819e+00  He0  He2  He0  He0  He0
+  1.5706347439821650e-01  He1  He0  He1  He0  He0
+  1.0732916612939110e+00  He0  He1  He1  He0  He0
+  1.0090802209460350e+00  He0  He0  He2  He0  He0
+  -4.1646735815509990e-03  He1  He0  He0  He1  He0
+  1.3843318377068653e-01  He0  He1  He0  He1  He0
+  -5.4098505970790890e-02  He0  He0  He1  He1  He0
+  2.0864700932161351e-01  He0  He0  He0  He2  He0
+  2.7808139127009315e-02  He1  He0  He0  He0  He1
+  6.3012181862983185e-02  He0  He1  He0  He0  He1
+  -2.4356948056007487e-02  He0  He0  He1  He0  He1
+  2.6542443822723319e-02  He0  He0  He0  He1  He1
+  2.1458043258639842e-02  He0  He0  He0  He0  He2
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.8753589735977039e+02  8.5414050858665632e+01
+ response_fn_1  1.8753589735977044e+02  8.5414050858665632e+01
 Test Number 20 succeeded
 <<<<< Function evaluation summary (ID_I): 120 total (120 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
-  1.0945445181203237e+02  He0  He0  He0  He0  He0
-  4.7599085087432208e+01  He1  He0  He0  He0  He0
-  -4.7447530268582678e+00  He0  He1  He0  He0  He0
-  -5.5711879835378153e-01  He0  He0  He1  He0  He0
-  5.9771631932524452e-02  He0  He0  He0  He1  He0
-  -4.3226697267904339e-02  He0  He0  He0  He0  He1
-  8.2322326075881946e+00  He2  He0  He0  He0  He0
-  6.6677299010411195e+00  He1  He1  He0  He0  He0
-  9.2292505133951384e+00  He0  He2  He0  He0  He0
-  -6.7442933493053997e-02  He1  He0  He1  He0  He0
-  2.5019595282447582e-01  He0  He1  He1  He0  He0
-  2.1600961220125141e+00  He0  He0  He2  He0  He0
-  -2.8776467834593611e-01  He1  He0  He0  He1  He0
-  1.2278112102130093e-01  He0  He1  He0  He1  He0
-  2.2622537078488041e-02  He0  He0  He1  He1  He0
-  2.3214881586506081e-01  He0  He0  He0  He2  He0
-  6.9411314591754231e-02  He1  He0  He0  He0  He1
-  -3.4297666063767503e-02  He0  He1  He0  He0  He1
-  -1.1195104044209954e-03  He0  He0  He1  He0  He1
-  4.8086824118986328e-02  He0  He0  He0  He1  He1
-  8.8671941139068969e-02  He0  He0  He0  He0  He2
+  1.0945445181203242e+02  He0  He0  He0  He0  He0
+  4.7599085087432215e+01  He1  He0  He0  He0  He0
+  -4.7447530268582820e+00  He0  He1  He0  He0  He0
+  -5.5711879835377975e-01  He0  He0  He1  He0  He0
+  5.9771631932542590e-02  He0  He0  He0  He1  He0
+  -4.3226697267907309e-02  He0  He0  He0  He0  He1
+  8.2322326075882035e+00  He2  He0  He0  He0  He0
+  6.6677299010411373e+00  He1  He1  He0  He0  He0
+  9.2292505133951579e+00  He0  He2  He0  He0  He0
+  -6.7442933493054455e-02  He1  He0  He1  He0  He0
+  2.5019595282447737e-01  He0  He1  He1  He0  He0
+  2.1600961220125177e+00  He0  He0  He2  He0  He0
+  -2.8776467834593555e-01  He1  He0  He0  He1  He0
+  1.2278112102129737e-01  He0  He1  He0  He1  He0
+  2.2622537078495718e-02  He0  He0  He1  He1  He0
+  2.3214881586505348e-01  He0  He0  He0  He2  He0
+  6.9411314591762960e-02  He1  He0  He0  He0  He1
+  -3.4297666063753209e-02  He0  He1  He0  He0  He1
+  -1.1195104044133294e-03  He0  He0  He1  He0  He1
+  4.8086824119000456e-02  He0  He0  He0  He1  He1
+  8.8671941139072508e-02  He0  He0  He0  He0  He2
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.0945445181203237e+02  5.1463451657630877e+01
+ response_fn_1  1.0945445181203242e+02  5.1463451657630898e+01
 response_fn_1 Sobol' indices:
                                   Main             Total
-                      9.0663550119671654e-01  9.2345672759381336e-01 ssv_1
-                      7.2823020015855222e-02  8.9639215071544431e-02 ssv_2
-                      3.6407248329054132e-03  3.6662713431358921e-03 ssv_3
-                      4.2046194461924133e-05  8.0070863292236346e-05 ssv_4
-                      6.6430284915846932e-06  9.7798597836597943e-06 ssv_5
-                      1.6786423509648721e-02 ssv_1 ssv_2 
-                      1.7174143292256041e-06 ssv_1 ssv_3 
-                      2.3635388129530709e-05 ssv_2 ssv_3 
-                      3.1266347386156586e-05 ssv_1 ssv_4 
-                      5.6920062269332298e-06 ssv_2 ssv_4 
-                      1.9323455678407339e-07 ssv_3 ssv_4 
-                      1.8191257326800271e-06 ssv_1 ssv_5 
-                      4.4415168401800250e-07 ssv_2 ssv_5 
-                      4.7321493875749164e-10 ssv_3 ssv_5 
-                      8.7308066043831318e-07 ssv_4 ssv_5 
+                      9.0663550119671610e-01  9.2345672759381292e-01 ssv_1
+                      7.2823020015855472e-02  8.9639215071544751e-02 ssv_2
+                      3.6407248329054210e-03  3.6662713431358999e-03 ssv_3
+                      4.2046194461922351e-05  8.0070863292234720e-05 ssv_4
+                      6.6430284915852581e-06  9.7798597836609496e-06 ssv_5
+                      1.6786423509648797e-02 ssv_1 ssv_2 
+                      1.7174143292256259e-06 ssv_1 ssv_3 
+                      2.3635388129530980e-05 ssv_2 ssv_3 
+                      3.1266347386156437e-05 ssv_1 ssv_4 
+                      5.6920062269328952e-06 ssv_2 ssv_4 
+                      1.9323455678420438e-07 ssv_3 ssv_4 
+                      1.8191257326804832e-06 ssv_1 ssv_5 
+                      4.4415168401763188e-07 ssv_2 ssv_5 
+                      4.7321493875101057e-10 ssv_3 ssv_5 
+                      8.7308066043882553e-07 ssv_4 ssv_5 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
    4.0000000000000002e-01   5.0000000000000000e-01   0.0000000000000000e+00
@@ -61501,7 +61501,7 @@ response_fn_1 Sobol' indices:
    1.6000000000000001e+00   1.6499999999999999e+00   0.0000000000000000e+00
    1.6499999999999999e+00   1.7000000000000000e+00   0.0000000000000000e+00
    1.7000000000000000e+00   1.7500000000000000e+00   0.0000000000000000e+00
-   1.7500000000000000e+00   4.4555202541655882e+02   2.2532569540695221e-03
+   1.7500000000000000e+00   4.4555202541655916e+02   2.2532569540695204e-03
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000000002e-01   0.0000000000000000e+00
@@ -61532,10 +61532,10 @@ Test Number 21 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.1885938024747077e+02  1.0414580446511098e+02  8.7813925063271370e-01  5.5543437203750745e-01
+ response_fn_1  2.1885938024747080e+02  1.0414580446511100e+02  8.7813925063271425e-01  5.5543437203750878e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  1.9819459318184300e+02  2.3952416731309853e+02  9.1440729240460456e+01  1.2098360398987148e+02
+ response_fn_1  1.9819459318184303e+02  2.3952416731309856e+02  9.1440729240460470e+01  1.2098360398987150e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61600,7 +61600,7 @@ Test Number 23 succeeded
 <<<<< Function evaluation summary (ID_I): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.7284844491873464e+03  2.4611118052041966e+03  9.6290912716045118e-01  2.1177467684170499e+00
+ response_fn_1  5.7284844491873464e+03  2.4611118052041966e+03  9.6290912716045107e-01  2.1177467684170495e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  5.2401464728237852e+03  6.2168224255509076e+03  2.1608730122735624e+03  2.8590126846191906e+03
@@ -61630,10 +61630,10 @@ Test Number 24 succeeded
 <<<<< Function evaluation summary (ID_I): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.9767127648290599e+02  6.9954904481406828e+01  5.3384803001703263e-01  4.2823762226161000e-01
+ response_fn_1  1.9767872218222143e+02  6.9966268704701392e+01  5.3394683949388455e-01  4.2718181801908234e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  1.8379070575104438e+02  2.1155184721476761e+02  6.1420885004249108e+01  8.1264881522549103e+01
+ response_fn_1  1.8379589654190957e+02  2.1156154782253330e+02  6.1430862870094437e+01  8.1278083059546049e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61641,14 +61641,14 @@ Simple Correlation Matrix among all inputs and outputs:
        ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
        ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
        ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
-response_fn_1 -9.73423e-01 -2.22704e-02  4.61706e-02  2.07932e-02  2.27866e-03  1.00000e+00 
+response_fn_1 -9.73398e-01 -2.24734e-02  4.64304e-02  2.09534e-02  2.38155e-03  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       ssv_1 -9.74507e-01 
-       ssv_2 -9.61466e-02 
-       ssv_3  1.54740e-01 
-       ssv_4  7.33120e-02 
-       ssv_5  7.28064e-02 
+       ssv_1 -9.74499e-01 
+       ssv_2 -9.70282e-02 
+       ssv_3  1.55820e-01 
+       ssv_4  7.40109e-02 
+       ssv_5  7.32465e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61668,10 +61668,10 @@ Test Number 25 succeeded
 <<<<< Function evaluation summary (ID_I): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.9356232154618013e+02  7.7175643741305564e+01 -2.9345186715397648e-01  3.0396887952880838e+00
+ response_fn_1  1.9406110220295596e+02  7.5183348023108366e+01 -8.7455441183610985e-04  1.7977101438025456e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  1.7824899949007084e+02  2.0887564360228941e+02  6.7760743503316675e+01  8.9653035645707860e+01
+ response_fn_1  1.7914309484050870e+02  2.0897910956540323e+02  6.6011494224670713e+01  8.7338635008648751e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61679,14 +61679,14 @@ Simple Correlation Matrix among all inputs and outputs:
        ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
        ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
        ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
-response_fn_1 -8.25464e-01  2.89426e-02  6.33975e-02  2.26710e-02  1.49945e-01  1.00000e+00 
+response_fn_1 -8.54290e-01  2.25413e-02  6.16440e-02  2.29678e-02  1.35225e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       ssv_1 -8.38689e-01 
-       ssv_2  5.26745e-02 
-       ssv_3  9.74367e-02 
-       ssv_4  3.45782e-02 
-       ssv_5  2.87464e-01 
+       ssv_1 -8.65636e-01 
+       ssv_2  4.45127e-02 
+       ssv_3  1.01764e-01 
+       ssv_4  3.79767e-02 
+       ssv_5  2.84675e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -61706,14 +61706,14 @@ Test Number 26 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  6.7440831048546679e-01  7.7905747808171416e-02  3.1263192631698415e+00  1.1657458306536302e+01
- response_fn_2  5.7908770845350135e-02  1.9073655376348445e-01  3.9118328363832361e-01  4.0021035845213593e-01
- response_fn_3 -2.6291179858431369e-02  1.8321037691878378e-01  8.3051475619966875e-01  1.8612198103159696e+00
+ response_fn_1  6.7440831048546679e-01  7.7905747808171361e-02  3.1263192631698415e+00  1.1657458306536299e+01
+ response_fn_2  5.7908770845350101e-02  1.9073655376348442e-01  3.9118328363832333e-01  4.0021035845213421e-01
+ response_fn_3 -2.6291179858431372e-02  1.8321037691878367e-01  8.3051475619966797e-01  1.8612198103159665e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882104e-02  9.0501179473975887e-02
- response_fn_2  2.0062500518882143e-02  9.5755041171818128e-02  1.6746799987308278e-01  2.2157393478721199e-01
- response_fn_3 -6.2644093417310143e-02  1.0061733700447401e-02  1.6085996508371547e-01  2.1283096137975188e-01
+ response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882049e-02  9.0501179473975832e-02
+ response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308275e-01  2.2157393478721196e-01
+ response_fn_3 -6.2644093417310115e-02  1.0061733700447377e-02  1.6085996508371539e-01  2.1283096137975177e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -61736,14 +61736,14 @@ Test Number 27 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  6.6188416167943898e-01  3.1146269263248483e-01  1.7451690885519440e+00  6.3320635064612230e+00
- response_fn_2  3.2203090647408304e-02  2.0872785686356765e-01  6.3092566270689421e-01  4.9890617252910463e-01
- response_fn_3  2.5923895848165738e-02  2.0921401782730289e-01  4.8797147354472792e-01 -8.3297462212696072e-02
+ response_fn_1  6.6188416167943886e-01  3.1146269263248499e-01  1.7451690885519471e+00  6.3320635064612372e+00
+ response_fn_2  3.2203090647408276e-02  2.0872785686356771e-01  6.3092566270689399e-01  4.9890617252910402e-01
+ response_fn_3  2.5923895848165800e-02  2.0921401782730301e-01  4.8797147354472936e-01 -8.3297462212692630e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  6.0008320622862632e-01  7.2368511713025163e-01  2.7346637621924341e-01  3.6181850297859186e-01
- response_fn_2 -9.2130445382911236e-03  7.3619225833107732e-02  1.8326448715269170e-01  2.4247398640908407e-01
- response_fn_3 -1.5588704220077996e-02  6.7436495916409475e-02  1.8369133980681940e-01  2.4303874757074548e-01
+ response_fn_1  6.0008320622862621e-01  7.2368511713025152e-01  2.7346637621924358e-01  3.6181850297859208e-01
+ response_fn_2 -9.2130445382911583e-03  7.3619225833107704e-02  1.8326448715269175e-01  2.4247398640908413e-01
+ response_fn_3 -1.5588704220077954e-02  6.7436495916409558e-02  1.8369133980681948e-01  2.4303874757074562e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -61770,14 +61770,14 @@ Test Number 28 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  6.7295152263393543e-01  7.7070142251451826e-02  3.3101448484997662e+00  1.3699597016829127e+01
- response_fn_2  5.8331866671352553e-02  1.9141362261798925e-01  3.9942492227255261e-01  4.0396498927619628e-01
- response_fn_3 -2.6462248577507869e-02  1.8257935891820914e-01  8.1930503046309811e-01  1.8302068052589617e+00
+ response_fn_1  6.7295152263393565e-01  7.7070142251451965e-02  3.3101448484997604e+00  1.3699597016829101e+01
+ response_fn_2  5.8331866671352629e-02  1.9141362261798944e-01  3.9942492227255283e-01  4.0396498927619501e-01
+ response_fn_3 -2.6462248577507883e-02  1.8257935891820923e-01  8.1930503046309799e-01  1.8302068052589613e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  6.5765913436228474e-01  6.8824391090558612e-01  6.7668112473024788e-02  8.9530477175548059e-02
- response_fn_2  2.0351251195034600e-02  9.6312482147670506e-02  1.6806247096214774e-01  2.2236046892162090e-01
- response_fn_3 -6.2689954475037002e-02  9.7654573200212647e-03  1.6030592695963788e-01  2.1209792338283884e-01
+ response_fn_1  6.5765913436228485e-01  6.8824391090558645e-01  6.7668112473024913e-02  8.9530477175548212e-02
+ response_fn_2  2.0351251195034635e-02  9.6312482147670631e-02  1.6806247096214791e-01  2.2236046892162112e-01
+ response_fn_3 -6.2689954475037030e-02  9.7654573200212647e-03  1.6030592695963797e-01  2.1209792338283895e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -61800,14 +61800,14 @@ Test Number 29 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  6.7440831048546679e-01  7.7905747808171416e-02  3.1263192631698415e+00  1.1657458306536302e+01
- response_fn_2  5.7908770845350135e-02  1.9073655376348445e-01  3.9118328363832361e-01  4.0021035845213593e-01
- response_fn_3 -2.6291179858431369e-02  1.8321037691878378e-01  8.3051475619966875e-01  1.8612198103159696e+00
+ response_fn_1  6.7440831048546679e-01  7.7905747808171361e-02  3.1263192631698415e+00  1.1657458306536299e+01
+ response_fn_2  5.7908770845350101e-02  1.9073655376348442e-01  3.9118328363832333e-01  4.0021035845213421e-01
+ response_fn_3 -2.6291179858431372e-02  1.8321037691878367e-01  8.3051475619966797e-01  1.8612198103159665e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
- response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882104e-02  9.0501179473975887e-02
- response_fn_2  2.0062500518882143e-02  9.5755041171818128e-02  1.6746799987308278e-01  2.2157393478721199e-01
- response_fn_3 -6.2644093417310143e-02  1.0061733700447401e-02  1.6085996508371547e-01  2.1283096137975188e-01
+ response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882049e-02  9.0501179473975832e-02
+ response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308275e-01  2.2157393478721196e-01
+ response_fn_3 -6.2644093417310115e-02  1.0061733700447377e-02  1.6085996508371539e-01  2.1283096137975177e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -61949,8 +61949,8 @@ Surrogate quality metrics for function 2:
    root_mean_squared    1.3352932139e-14
             mean_abs    1.0584126168e-14
             rsquared    1.0000000000e+00
-<<<<< Function evaluation summary: 63 total (52 new, 11 duplicate)
-  response_fn_1: 38 val (34 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 65 total (53 new, 12 duplicate)
+  response_fn_1: 40 val (35 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 31 val (24 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
@@ -64984,22 +64984,22 @@ Test Number 14 succeeded
                      -0.0000000000e+00
 <<<<< Best data captured at function evaluation 43
 Test Number 15 succeeded
-<<<<< Function evaluation summary: 2073 total (2073 new, 0 duplicate)
+<<<<< Function evaluation summary: 2159 total (2159 new, 0 duplicate)
 <<<<< Best parameters          =
-                      7.1330589849e-02 x1
+                      7.3159579332e-02 x1
                       1.4814814815e-01 x2
-                      8.8888888889e-01 x3
+                      7.4074074074e-01 x3
                       8.8888888889e-01 x4
                       8.8888888889e-01 x5
                       8.8888888889e-01 x6
                       8.8888888889e-01 x7
-                      8.8888888889e-01 x8
+                      7.4074074074e-01 x8
 <<<<< Best objective function  =
-                      1.2712648186e+00
+                      1.2741536645e+00
 <<<<< Best constraint values   =
-                     -6.8986021026e-02
-                     -1.3717421125e-02
-<<<<< Best data captured at function evaluation 242
+                     -6.8721750026e-02
+                     -1.4631915866e-02
+<<<<< Best data captured at function evaluation 573
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 2524 total (2524 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -65260,7 +65260,7 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 57 total (55 new, 2 duplicate)
+<<<<< Function evaluation summary: 63 total (61 new, 2 duplicate)
 response_fn_1:  Min = 6.0000000497e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
