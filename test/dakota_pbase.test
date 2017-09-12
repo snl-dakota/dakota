@@ -3261,29 +3261,29 @@ Test Number 1 succeeded
                       4.1106505960e-02
 <<<<< Best data captured at function evaluation 68
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 62 total (62 new, 0 duplicate)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
-                      9.9988570533e-01 x3
+                      1.0000857053e+00 x3
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
                       5.5511151231e-17
                      -1.1102230246e-16
-<<<<< Best data captured at function evaluation 62
+<<<<< Best data captured at function evaluation 60
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 62 total (62 new, 0 duplicate)
+<<<<< Function evaluation summary: 60 total (60 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
-                      9.9988570533e-01 x3
+                      1.0000857053e+00 x3
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
                       5.5511151231e-17
                      -1.1102230246e-16
-<<<<< Best data captured at function evaluation 62
+<<<<< Best data captured at function evaluation 60
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 353 total (353 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4468,7 +4468,7 @@ Moment statistics for each response function:
  response_fn_3  1.3333333333e+00  1.3249737943e+00
 dakota_lib_split.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
+<<<<< Function evaluation summary: 56 total (55 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.0003666224e+00 x1
                       1.0003666224e+00 x2
@@ -4487,7 +4487,7 @@ Test Number 0 succeeded
                      -5.6694089465e-05
 <<<<< Best data captured at function evaluation 22
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
+<<<<< Function evaluation summary: 56 total (55 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.0003666224e+00 x1
                       1.0003666224e+00 x2
@@ -5399,17 +5399,17 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 21
 dakota_sbo_textbook.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 186 total (186 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 69 total (65 new, 4 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 69 total (66 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      4.9998545582e-01 x2
+                      5.0000008571e-01 x2
 <<<<< Best objective function  =
-                      1.2500727241e-01
+                      1.2499995714e-01
 <<<<< Best constraint values   =
-                      7.2720901441e-06
-                     -1.4543968755e-05
-<<<<< Best data captured at function evaluation 64
+                     -4.2855799964e-08
+                      8.5711607256e-08
+<<<<< Best data captured at function evaluation 65
 dakota_sbuq_hierarchical.in
 Test Number 0 succeeded
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
