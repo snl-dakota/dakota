@@ -1304,6 +1304,8 @@ bool DataFitSurrModel::consistent(const Variables& vars) const
   // for (i=drv_end; i<num_adrv; ++i)
   //   if (adrv[i] != am_adrv[i])
   //     return false;
+
+  return true;
 }
 
 
@@ -1839,11 +1841,13 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
 void DataFitSurrModel::
 import_points(unsigned short tabular_format, bool active_only)
 {
-  // Temporary objects to use to read correct size vars/resp
-  const Variables& vars = actualModel.is_null() ? currentVariables : 
-    actualModel.current_variables(); 
-  const Response& resp  = actualModel.is_null() ? currentResponse : 
-    actualModel.current_response();
+  // Temporary objects to use to read correct size vars/resp; use copies
+  // so that read_data_tabular() does not alter state of vars/resp objects
+  // in Models (especially important for non-active variables).
+  Variables vars = actualModel.is_null() ? currentVariables.copy() : 
+    actualModel.current_variables().copy(); 
+  Response  resp = actualModel.is_null() ? currentResponse.copy() : 
+    actualModel.current_response().copy();
   size_t num_vars = active_only ? 
     (vars.cv() + vars.div() + vars.dsv() + vars.drv()) : vars.tv();
 
