@@ -3501,6 +3501,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.1577426150e+01  2.1600491303e+00  1.3548455023e+00  1.8452095777e+01
+dakota_bayes_linear.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)
 <<<<< Best parameters          =
