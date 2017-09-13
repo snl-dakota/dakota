@@ -192,14 +192,13 @@ void DOTOptimizer::allocate_constraints()
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
   numDotNlnConstr = 2*num_nln_eq;
-  get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
+  numDotNlnConstr += get_inequality_constraints (
+                  iteratedModel, bigRealBoundSize,
                   CONSTRAINT_TYPE::NONLINEAR,
                   constraintMappingIndices,
                   constraintMappingMultipliers,
                   constraintMappingOffsets,
                   -1.0 /* should be a trait? RWH */);
-  numDotNlnConstr += (int)constraintMappingOffsets.size();
 
   get_equality_constraints
                 ( iteratedModel,
