@@ -390,6 +390,10 @@ protected:
   static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
      		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
+  static void ann_dist(const ANNpointArray matrix1, 
+                const ANNpointArray matrix2, RealVector& distances, 
+		RealVector& indices, int NX, int NY, int dim2, IntVector& k, 
+		double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		
 

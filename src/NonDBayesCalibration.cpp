@@ -2340,12 +2340,13 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
 
   // Get knn-distances for Xmatrix
   RealVector XYdistances(num_samples);
+  RealVector XYknn_indices(num_samples);
   IntVector k_vec(num_samples);
   int k = 6;
   k_vec.putScalar(k); // for self distances, need k+1
   double eps = 0.0;
-  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
-      	   k_vec, eps);
+  ann_dist(dataXY, dataXY, XYdistances, knn_indices, num_samples, num_samples, 
+           dim, k_vec, eps);
   
   // Build marginals
   ANNpointArray dataX, dataY;
@@ -2447,6 +2448,45 @@ void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1,
       delete [] knn_dist_i;
     }
     distances[i] = dist;
+    delete [] knn_ind;
+    delete [] knn_dist;
+  }
+  delete kdTree;
+  annClose();
+}
+
+void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
+     const ANNpointArray matrix2, RealVector& distances, RealVector& indices,
+     int NX, int NY, int dim2, IntVector& k_vec, double eps)
+{
+  ANNkd_tree* kdTree;
+  kdTree = new ANNkd_tree( matrix2, NY, dim2 );
+  for (unsigned int i = 0; i < NX; ++i){
+    int k_i = k_vec[i] ;
+    ANNdistArray knn_dist = new ANNdist[k_i+1];
+    ANNidxArray knn_ind = new ANNidx[k_i+1];
+    //calc min number of distances needed
+    kdTree->annkSearch(matrix1[ i ], k_i+1, knn_ind, knn_dist, eps);
+    double dist = knn_dist[k_i];
+    double ind = knn_ind[k_i];
+    if (dist == 0.0){
+      ANNdistArray knn_dist_i = new ANNdist[NY];
+      ANNidxArray knn_ind_i = new ANNidx[NY];
+      //calc distances for whole array
+      kdTree->annkSearch(matrix1[ i ], NY, knn_ind_i, knn_dist_i, eps); 
+      for (unsigned int j = k_i+1; j < NY; ++j){
+	if (knn_dist_i[j] > 0.0){
+	  dist = knn_dist_i[j];
+	  ind = knn_ind_i[j];
+	  k_vec[i] = j;
+	  break;
+	}
+      }
+      delete [] knn_ind_i;
+      delete [] knn_dist_i;
+    }
+    distances[i] = dist;
+    indices[i] = ind;
     delete [] knn_ind;
     delete [] knn_dist;
   }
