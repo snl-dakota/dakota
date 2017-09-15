@@ -27,8 +27,6 @@
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random.hpp"
-#include "boost/random/normal_distribution.hpp"
-#include "boost/random/variate_generator.hpp"
 #include "boost/generator_iterator.hpp"
 #include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
@@ -56,7 +54,6 @@ NonDBayesCalibration::
 NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDCalibration(problem_db, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
-  mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
   chainSamples(0), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
@@ -69,7 +66,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   importCandFormat(
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
-  maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
+  maxHifiEvals(probDescDB.get_sizet("method.max_hifi_evaluations")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -115,8 +112,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
   exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format"))
 {
-  // BMA ERROR! Random seed should be set before using it!
-
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
     // iteratedModel
@@ -246,7 +241,6 @@ void NonDBayesCalibration::construct_mcmc_model()
   switch (emulatorType) {
 
   case PCE_EMULATOR: case SC_EMULATOR: {
-    mcmcModelHasSurrogate = true;
     const UShortArray& level_seq
       = probDescDB.get_usa("method.nond.sparse_grid_level");
     const RealVector& dim_pref
@@ -294,7 +288,6 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 
   case GP_EMULATOR: case KRIGING_EMULATOR: {
-    mcmcModelHasSurrogate = true;
     String sample_reuse; String approx_type;
     if (emulatorType == GP_EMULATOR)
       { approx_type = "global_gaussian"; mcmcDerivOrder = 3; } // grad support
@@ -348,7 +341,6 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 
   case NO_EMULATOR:
-    mcmcModelHasSurrogate = (inbound_model.model_type() == "surrogate");
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
     if (standardizedSpace) transform_model(inbound_model, mcmcModel);//dist bnds
     else                   mcmcModel = inbound_model; // shared rep
@@ -582,7 +574,7 @@ void NonDBayesCalibration::initialize_model()
   }
   default: // GPs and NO_EMULATOR
     initialize_random_variable_parameters(); // standardizedSpace or not
-    //resize_final_statistics_gradients(); // not required
+    //initialize_final_statistics_gradients(); // not required
     if (standardizedSpace) transform_correlations();
     if (emulatorType)      mcmcModel.build_approximation();
     break;
@@ -594,10 +586,6 @@ void NonDBayesCalibration::initialize_model()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
-  RealVector vars = mcmcModel.continuous_variables();
-  const RealVector& initial_point = RealVector(Teuchos::Copy, 
-                              	    vars.values(), numContinuousVars);
-  
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
@@ -635,44 +623,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
     }
 
   }
-  num_exp = expData.num_experiments();
-  
-  // Apply hifi error
-  const RealVector& hifi_sim_error = hifiModel.current_response().
-                                       shared_data().simulation_error();
-  RealVector hifi_error_vec(numFunctions);
-  if (hifi_sim_error.length() > 0) {
-    int stoch_seed = randomSeed;
-    Real stdev;
-    boost::mt19937 rnumGenerator;
-    if (hifi_sim_error.length() == 1) {
-      for (size_t k = 0; k < num_exp; k++) {
-	stoch_seed += 1;
-        rnumGenerator.seed(stoch_seed);
-        stdev = std::sqrt(hifi_sim_error[0]);
-        boost::normal_distribution<> err_dist(0.0, stdev);
-        boost::variate_generator<boost::mt19937,
-        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
-        for (size_t j = 0; j < numFunctions; j++)
-          hifi_error_vec[j] = err_gen();
-        expData.apply_simulation_error(hifi_error_vec, k);
-      }
-    }
-    else {
-      for (size_t k = 0; k < num_exp; k++) {
-        for (size_t j = 0; j < numFunctions; j++) {
-          stoch_seed += 1;
-          stdev = std::sqrt(hifi_sim_error[j]);
-          rnumGenerator.seed(stoch_seed);
-          boost::normal_distribution<> err_dist(0.0, stdev);
-          boost::variate_generator<boost::mt19937,
-          boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
-          hifi_error_vec[j] = err_gen();
-        }
-        expData.apply_simulation_error(hifi_error_vec, k);
-      }
-    }
-  }
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
@@ -698,6 +648,15 @@ void NonDBayesCalibration::calibrate_to_hifi()
     design_matrix = lhs_iterator2.all_samples();
   }
   else {
+    /*
+    // KAM TODO: As is, do not support response read-in for 
+    // candidate points
+    Variables designvars = hifiModel.current_variables();
+    TabularIO::read_data_tabular(importCandPtsFile, 
+				 "user-provided candidate points", 
+				 designvars, numFunctions, design_matrix, 
+				 response_matrix, importCandFormat, false);	
+				 */
     // BMA TODO: This should probably be cv() + div() + ...
     size_t num_designvars = hifiModel.tv();
     RealMatrix design_matrix_in;
@@ -755,7 +714,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
+  int max_hifi = (maxHifiEvals > 0) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
 
   std::ofstream out_file("experimental_design_output.txt");
@@ -805,7 +764,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     // of reconstructing
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.continuous_variables(initial_point);
+
     residualModel.assign_rep
       (new DataTransformModel(mcmcModel, expData, numHyperparams, 
 			      obsErrorMultiplierMode, mcmcDerivOrder), false);
@@ -820,14 +779,14 @@ void NonDBayesCalibration::calibrate_to_hifi()
       copy_data(residualModel.continuous_variable_labels(), 
   	combined_labels);
       NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
-	  "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
+          "posterior variable", combined_labels, false); 
       // Print response moments
       StringArray resp_labels = mcmcModel.current_response().function_labels();
       NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
-          "response function", STANDARD_MOMENTS, resp_labels, false); 
+          "response function", resp_labels, false); 
     }
 
-    if (!stop_metric || max_hifi == 0) {
+    if (!stop_metric) {
 
       if (outputLevel >= DEBUG_OUTPUT) {
 	Cout << "\n----------------------------------------------\n";
@@ -865,49 +824,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
-      // Build simulation error matrix
-      RealMatrix sim_error_matrix;
-      const RealVector& sim_error_vec = mcmcModel.current_response().
-                                        shared_data().simulation_error();
-      if (sim_error_vec.length() > 0) {
-        if (num_hifi == 0) {
-          Real stdev;
-          int stoch_seed = randomSeed;
-          sim_error_matrix.reshape(numFunctions, num_filtered);
-          RealVector col_vec(numFunctions);
-          boost::mt19937 rnumGenerator;
-          if (sim_error_vec.length() == 1) {
-            rnumGenerator.seed(randomSeed+1);
-            stdev = std::sqrt(sim_error_vec[0]);
-            boost::normal_distribution<> err_dist(0.0, stdev);
-            boost::variate_generator<boost::mt19937, 
-                                     boost::normal_distribution<> >
-                   err_gen(rnumGenerator, err_dist);
-            for (int j = 0; j < num_filtered; j++) {
-              for (size_t k = 0; k < numFunctions; k++) {
-                col_vec[k] = err_gen();
-	      }
-            Teuchos::setCol(col_vec, j, sim_error_matrix);
-	    }
-          }
-          else {
-            for (int j = 0; j < num_filtered; j++) {
-              for (size_t k = 0; k < numFunctions; k++) {
-                stoch_seed += 1;
-                rnumGenerator.seed(stoch_seed);
-                stdev = std::sqrt(sim_error_vec[k]);
-                boost::normal_distribution<> err_dist(0.0, stdev);
-                boost::variate_generator<boost::mt19937,
-		                         boost::normal_distribution<> >
-                       err_gen(rnumGenerator, err_dist);
-                col_vec[k] = err_gen();
-              }
-            Teuchos::setCol(col_vec, j, sim_error_matrix);
-            }
-	  }
-        }
-      }
-
       // BMA: You can now use acceptanceChain/acceptedFnVals, though
       // need to be careful about what subset for this chain run (may
       // need indices to track)
@@ -938,13 +854,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
             col_vec[k] = lofi_params[k];
           }
           for (size_t k = 0; k < numFunctions; k ++) {
-            if (sim_error_vec.length() > 0) {
-	      RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
-		                                  sim_error_matrix, j);
-              col_vec[numContinuousVars+k] = lofi_resp_vec[k]+sim_error_vec[k];
-	    }
-	    else
-              col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
           }
           Teuchos::setCol(col_vec, j, Xmatrix);
         }
@@ -976,10 +886,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
       RealVector optimal_config = Teuchos::getCol(Teuchos::Copy, design_matrix, 
     					         int(optimal_ind));
       Model::active_variables(optimal_config, hifiModel);
-      if (max_hifi > 0) {
-        hifiModel.evaluate();
-        expData.add_data(optimal_config, hifiModel.current_response().copy());
-      }
+      hifiModel.evaluate();
+      expData.add_data(optimal_config, hifiModel.current_response().copy());
       num_hifi++;
       // update list of candidates
       remove_column(design_matrix, optimal_ind);
@@ -996,8 +904,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       out_file << "ITERATION " << num_hifi << "\n";
       out_file << "Optimal Design: " << optimal_config;
       out_file << "Mutual Information = " << max_MI << '\n';
-      if (max_hifi > 0) 
-        out_file << "Hifi Response: " << hifiModel.current_response();
+      out_file << "Hifi Response: " << hifiModel.current_response();
       out_file << "\n";
     } // end MI loop
   } // end while loop
@@ -1006,6 +913,40 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 void NonDBayesCalibration::build_model_discrepancy()
 {
+  /*
+  //check when NOT needed
+  // Construct MAP (will we ever want to use the full posterior?)
+  RealVector mapSoln; // move to hpp? See NonDQUESO
+  boost::shared_ptr<QUESO::GslVector> paramInitials; // move to hpp?
+  construct_map_optimizer();
+  if (mapSoln.empty()) // no previous map solution
+    copy_gsl_partial(*paramInitials, 0,
+      negLogPostModel.current_variables().continuous_variables_view());
+  else // warm start using map soln from previous emulator
+    negLogPostModel.current_variables().continuous_variables(mapSoln);
+  mapOptimizer.run();
+  const RealVector& map_c_vars
+      = mapOptimizer.variables_results().continuous_variables();
+  copy_gsl_partial(map_c_vars, *paramInitials, 0);
+  if (adaptPosteriorRefine) 
+    copy_data(map_c_vars, mapSoln);
+  RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
+  //int num_cols = acc_chain_transpose.numCols();
+  RealVector ave_params(1);
+  ave_params[0] = 1.1832;
+  //compute_col_means(acc_chain_transpose, ave_params); 
+  negLogPostModel.current_variables().continuous_variables(ave_params);
+  //residualModel.assign_rep(new DataTransformModel(mcmcModel, expData, numHyperparams, obsErrorMultiplierMode, mcmcDerivOrder), false);
+    Cout << "test 1\n";
+      mapOptimizer.assign_rep(new
+	SNLLOptimizer("optpp_newton", negLogPostModel), false);
+    //Cout << "test 2\n";
+    //mapOptimizer.run();
+    //Cout << "test 3\n";
+    //const RealVector& map_c_vars = mapOptimizer.variables_results().continuous_variables();
+    //Cout << "map_c_vars = " << map_c_vars;
+    */
+
   // For now, use average params (unfiltered)
   RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
   int num_cols = acc_chain_transpose.numCols();
@@ -1052,6 +993,7 @@ void NonDBayesCalibration::build_model_discrepancy()
     configvar_array[i] = configvars.copy();
   }
 
+  // KAM - undo later(?)
   // Construct response information from expData and model 
   ResponseArray simresponse_array(num_exp);
   ResponseArray expresponse_array(num_exp);
@@ -1068,6 +1010,55 @@ void NonDBayesCalibration::build_model_discrepancy()
   bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   modelDisc.compute(configvar_array, expresponse_array, simresponse_array, 
       		    quiet_flag);
+  
+  // KAM Hardcode for multiple samples of param post
+  /*
+  int num_post = 950;
+  ResponseArray simresponse_testarray(num_post*num_exp);
+  ResponseArray expresponse_testarray(num_post*num_exp);
+  RealMatrix postsamples(acceptanceChain.numRows(), num_post);
+  int ind_ctr = 0;
+  for (int j = 0; j < num_post; j++){
+    int ind = std::rand() % acceptanceChain.numCols();
+    RealVector param_samp = Teuchos::getCol(Teuchos::View, acceptanceChain, 
+						ind);
+    Teuchos::setCol(param_samp, j, postsamples);
+    mcmcModel.continuous_variables(param_samp);
+    for (int i = 0; i<num_exp; i++){
+      RealVector config_vec = Teuchos::getCol(Teuchos::View, allConfigInputs, 
+  		 	    i);
+      Model::inactive_variables(config_vec, mcmcModel);
+      mcmcModel.evaluate();
+      simresponse_testarray[ind_ctr] = mcmcModel.current_response().copy();
+      expresponse_testarray[ind_ctr] = expData.response(i);
+      ind_ctr++;
+    }
+  }
+  VariablesArray configvar_testarray(num_post*num_exp);
+  ind_ctr = 0;
+  for (int j = 0; j < num_post; j++) {
+    for (int i=0; i<num_exp; i++) {
+      const RealVector& config_i = Teuchos::getCol(Teuchos::View, 
+  				 allConfigInputs, i);
+      Model::inactive_variables(config_i, mcmcModel, vars_copy);
+      configvars.continuous_variables(vars_copy.inactive_continuous_variables());
+      configvars.discrete_int_variables(vars_copy.
+  				      inactive_discrete_int_variables());
+      configvars.discrete_real_variables(vars_copy.
+  				       inactive_discrete_real_variables());
+      configvar_testarray[ind_ctr] = configvars.copy();
+      Cout << "ind = " << ind_ctr << '\n';
+      ind_ctr++;
+    }
+  }
+  Cout << "sim response array = " << simresponse_testarray << '\n';
+  Cout << "exp response array = " << expresponse_testarray << '\n';
+  Cout << "config var array = " << configvar_testarray << '\n';
+  Cout << "post sample = " << postsamples << '\n';
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  modelDisc.compute(configvar_testarray, expresponse_testarray, 
+      		simresponse_testarray, quiet_flag);
+  */
   
   // Construct config var information for prediction configs   
   int num_pred;
@@ -1595,10 +1586,11 @@ void NonDBayesCalibration::compute_statistics()
 
   }
 
-  NonDSampling::compute_moments(filtered_chain, chainStats, STANDARD_MOMENTS);
-  NonDSampling::compute_moments(filteredFnVals,    fnStats, STANDARD_MOMENTS);
-  if (outputLevel >= NORMAL_OUTPUT)
+  NonDSampling::compute_moments(filtered_chain, chainStats);
+  NonDSampling::compute_moments(filteredFnVals, fnStats);
+  if (outputLevel >= NORMAL_OUTPUT) {
     compute_intervals();
+  }
 
   // Print tabular file for the filtered chain
   if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
@@ -1608,9 +1600,6 @@ void NonDBayesCalibration::compute_statistics()
     kl_post_prior(acceptanceChain);
   if (posteriorStatsMutual)
     mutual_info_buildX();
-  if (outputLevel > NORMAL_OUTPUT) {
-    calculate_kde();
-  }
 }
 
 
@@ -1862,64 +1851,6 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
 			"NonDQUESOBayesCalibration chain export");
 }
 
-void NonDBayesCalibration::
-calculate_kde()
-{
-  RealVector pdf_results;
-  Pecos::GaussianKDE kde;
-  //Cout << "Accepted Chain in KDE " << acceptanceChain <<  '\n';
-  //Cout << "Accepted Fn Values in KDE " << acceptedFnVals <<  '\n';
-  std::ofstream export_kde;
-  size_t wpp4 = write_precision+4;
-  StringArray var_labels;
-        copy_data(residualModel.continuous_variable_labels(),var_labels);
-  const StringArray& resp_labels = 
-    		     mcmcModel.current_response().function_labels();
-  TabularIO::open_file(export_kde, "kde_posterior.dat",
-			"NonDBayesCalibration kde posterior export");
-  
-  int num_rows = acceptanceChain.numCols();
-  int num_vars = acceptanceChain.numRows();
-  RealMatrix current_var;
-  current_var.shapeUninitialized(1,num_rows);
-  for (int i=0; i<num_vars; ++i){
-    for (int j=0; j<num_rows; j++) 
-      current_var(0,j)=acceptanceChain(i,j);
-    //Cout << current_var;
-    kde.initialize(current_var,Teuchos::TRANS);
-    kde.pdf(current_var, pdf_results,Teuchos::TRANS);
-    //Cout << pdf_results;
-    export_kde << var_labels[i] << "  KDE PDF estimate  " << '\n';
-    //TabularIO::
-    //  write_header_tabular(export_kde, output_vars(i), "KDE PDF estimate");
-    for (int j=0; j<num_rows; j++) 
-      export_kde <<  current_var(0,j) << "    " << pdf_results(j) << '\n';
-    export_kde << '\n';
-  }
-  int num_responses = acceptedFnVals.numRows();
-  RealMatrix current_resp;
-  current_resp.shapeUninitialized(1,num_rows);
-  for (int i=0; i<num_responses; ++i){
-    for (int j=0; j<num_rows; j++) 
-      current_resp(0,j)=acceptedFnVals(i,j);
-    //Cout << current_resp;
-    //RealMatrix& col_resp = Teuchos::getCol(Teuchos::View, acceptedFnVals, i);
-    //kde.initialize(current_resp, Teuchos::TRANS);
-    kde.initialize(current_resp,Teuchos::TRANS);
-    kde.pdf(current_resp, pdf_results,Teuchos::TRANS);
-    //Cout << pdf_results;
-    export_kde << resp_labels[i] << "  KDE PDF estimate  " << '\n';
-    //TabularIO::
-    //  write_header_tabular(export_kde, resp_labels(i), "KDE PDF estimate");
-    for (int j=0; j<num_rows; j++) 
-      export_kde <<  current_resp(0,j) << "    " << pdf_results(j) << '\n';
-    export_kde << '\n';
-  }
-  TabularIO::close_file(export_kde, "kde_posterior.dat",
-			"NonDBayesCalibration kde posterior export");
-  
-}
-
 void NonDBayesCalibration::print_intervals_file
 (std::ostream& s, RealMatrix& filteredFnVals_transpose, 
  RealMatrix& predVals, int num_filtered, size_t num_concatenated)
@@ -2066,20 +1997,18 @@ void NonDBayesCalibration::print_results(std::ostream& s)
   StringArray combined_labels;
         copy_data(residualModel.continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
-      "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
+      "posterior variable", combined_labels, false); 
   // Print response moments
   StringArray resp_labels = mcmcModel.current_response().function_labels();
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
-      "response function", STANDARD_MOMENTS, resp_labels, false); 
+      "response function", resp_labels, false); 
   
   // Print credibility and prediction intervals to screen
-  if (requestedProbLevels[0].length() > 0 && outputLevel >= NORMAL_OUTPUT) {
-    int num_filtered = filteredFnVals.numCols();
-    RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
-    RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
-    print_intervals_screen(s, filteredFnVals_transpose, 
-      			 predVals_transpose, num_filtered);
-  }
+  int num_filtered = filteredFnVals.numCols();
+  RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
+  RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
+  print_intervals_screen(s, filteredFnVals_transpose, 
+    			 predVals_transpose, num_filtered);
 
   // Print posterior stats
   if(posteriorStatsKL)
@@ -2340,13 +2269,12 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
 
   // Get knn-distances for Xmatrix
   RealVector XYdistances(num_samples);
-  IntVector XYindices(num_samples);
   IntVector k_vec(num_samples);
   int k = 6;
   k_vec.putScalar(k); // for self distances, need k+1
   double eps = 0.0;
-  ann_dist(dataXY, dataXY, XYdistances, XYindices, num_samples, num_samples, 
-           dim, k_vec, eps);
+  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
+      	   k_vec, eps);
   
   // Build marginals
   ANNpointArray dataX, dataY;
@@ -2375,29 +2303,19 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
   kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
 
-  // KAM 
   double marg_sum = 0.0;
-  int n_x, n_y;
-  bool ksg2 = false;
   for(int i = 0; i < num_samples; i++){
-    if (ksg2) {
-      ANNdist e_x = annDist(dimX, dataX[i], dataX[XYindices[i]]);
-      ANNdist e_y = annDist(dimY, dataY[i], dataY[XYindices[i]]);
-      n_x = kdTreeX->annkFRSearch(dataX[i], e_x, 0, NULL, NULL, eps);
-      n_y = kdTreeY->annkFRSearch(dataY[i], e_y, 0, NULL, NULL, eps);
-    }
-    else {
-      n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
-  				    NULL, eps);
-      n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
-  				    NULL, eps);
-    }
+    int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
+				    NULL, eps);
+    int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
+				    NULL, eps);
     double psiX = boost::math::digamma(n_x);
     double psiY = boost::math::digamma(n_y);
     //double psiX = boost::math::digamma(n_x+1);
     //double psiY = boost::math::digamma(n_y+1);
     marg_sum += psiX + psiY;
     //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //Cout << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
     //test_stream << "psiX = " << psiX << '\n';
     //test_stream << "psiY = " << psiY << '\n';
   }
@@ -2458,45 +2376,6 @@ void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1,
       delete [] knn_dist_i;
     }
     distances[i] = dist;
-    delete [] knn_ind;
-    delete [] knn_dist;
-  }
-  delete kdTree;
-  annClose();
-}
-
-void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
-     const ANNpointArray matrix2, RealVector& distances, IntVector& indices,
-     int NX, int NY, int dim2, IntVector& k_vec, double eps)
-{
-  ANNkd_tree* kdTree;
-  kdTree = new ANNkd_tree( matrix2, NY, dim2 );
-  for (unsigned int i = 0; i < NX; ++i){
-    int k_i = k_vec[i] ;
-    ANNdistArray knn_dist = new ANNdist[k_i+1];
-    ANNidxArray knn_ind = new ANNidx[k_i+1];
-    //calc min number of distances needed
-    kdTree->annkSearch(matrix1[ i ], k_i+1, knn_ind, knn_dist, eps);
-    double dist = knn_dist[k_i];
-    int ind = knn_ind[k_i];
-    if (dist == 0.0){
-      ANNdistArray knn_dist_i = new ANNdist[NY];
-      ANNidxArray knn_ind_i = new ANNidx[NY];
-      //calc distances for whole array
-      kdTree->annkSearch(matrix1[ i ], NY, knn_ind_i, knn_dist_i, eps); 
-      for (unsigned int j = k_i+1; j < NY; ++j){
-	if (knn_dist_i[j] > 0.0){
-	  dist = knn_dist_i[j];
-	  ind = knn_ind_i[j];
-	  k_vec[i] = j;
-	  break;
-	}
-      }
-      delete [] knn_ind_i;
-      delete [] knn_dist_i;
-    }
-    distances[i] = dist;
-    indices[i] = ind;
     delete [] knn_ind;
     delete [] knn_dist;
   }
