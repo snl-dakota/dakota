@@ -1980,6 +1980,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             freeform {N_mdm(utype,importCandFormat_TABULAR_NONE)}
            ]
          ]
+        [ ksg2 {N_mdm(true,mutualInfoKSG2)} ]
        ]
       [ calibrate_error_multipliers {0}
         one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}

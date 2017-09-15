@@ -70,6 +70,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
+  mutualInfoKSG2(probDescDB.get_bool("method.nond.mutual_info_ksg2")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -2380,6 +2381,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   int n_x, n_y;
   bool ksg2 = false;
   for(int i = 0; i < num_samples; i++){
+    //if (mutualInfoKSG2) {
     if (ksg2) {
       ANNdist e_x = annDist(dimX, dataX[i], dataX[XYindices[i]]);
       ANNdist e_y = annDist(dimY, dataY[i], dataY[XYindices[i]]);

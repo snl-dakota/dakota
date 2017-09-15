@@ -235,6 +235,9 @@ protected:
   /// maximum number of high-fidelity model runs to be used for adaptive
   /// Bayesian experimental design
   int maxHifiEvals;
+  /// whether the KSG2 algorithm is to be employed in the calculation
+  /// of the mutual information
+  bool mutualInfoKSG2;
 
   // settings specific to model discrepancy
 

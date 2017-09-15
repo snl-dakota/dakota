@@ -6844,6 +6844,7 @@ static bool
 	MP_(mainEffectsFlag),
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
+	MP_(mutualInfoKSG2),
 	MP_(mutationAdaptive),
 	MP_(normalizedCoeffs),
 	MP_(pcaFlag),
