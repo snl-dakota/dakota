@@ -1040,7 +1040,7 @@ void DataFitSurrModel::build_global()
 	  ++reuse_points;
 
 	  if (outputLevel >= DEBUG_OUTPUT) {
-	    if (map_to_iter_space) Cout << "Transformed ";
+	    if (map_to_iter_space) Cout <<   "Transformed ";
 	    else                   Cout << "Untransformed ";
 	    Cout << "data for DB eval " << prp_iter->eval_id() << ":\n"
 		 << db_vars << db_resp;

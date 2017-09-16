@@ -112,8 +112,14 @@ protected:
   //
 
   /// special case of multifidelity_expansion() for multilevel allocation of
-  /// samples, mirroring NonDMultilevelSampling for least sq/compressed sensing
+  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
+  /// PCE expansions for model discrepancies
   void multilevel_regression(size_t model_form);
+  /// special case of multifidelity_expansion() for multilevel allocation of
+  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
+  /// PCE expansions for hierarchical surpluses
+  void hierarchical_regression(size_t model_form);
+
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp, size_t total_samp);
   /// generate new samples from numSamplesOnModel and update expansion

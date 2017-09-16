@@ -357,7 +357,7 @@ void Approximation::finalize()
     approxRep->finalize();
   else {
     // finalization has to apply restorations in the correct order
-    size_t i, num_popped = approxData.popped_trials(); // # of popped trials
+    size_t i, num_popped = approxData.popped_sets(); // # of popped trials
     for (i=0; i<num_popped; ++i)
       approxData.push(sharedDataRep->finalization_index(i), false);
     clear_popped(); // clear only after process completed
