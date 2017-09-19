@@ -71,7 +71,8 @@ public:
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
-				const IntResponseMap& resp_map);
+				const IntResponseMap& resp_map,
+				size_t index = _NPOS);
 
 protected:
 
@@ -86,14 +87,14 @@ protected:
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
-  virtual void compute_expansion();
+  virtual void compute_expansion(size_t index = _NPOS);
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
   /// increment the input specification sequence (PCE only)
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
-  virtual void update_expansion();
+  virtual void update_expansion(size_t index = _NPOS);
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   virtual void multifidelity_expansion();
@@ -128,7 +129,7 @@ protected:
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
-  void refine_expansion();
+  void refine_expansion(size_t index = _NPOS);
 
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,

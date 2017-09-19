@@ -305,48 +305,6 @@ bool DataFitSurrModel::finalize_mapping()
 }
 
 
-/** This function constructs a new approximation, discarding any
-    previous data.  It constructs any required data for
-    SurrogateData::{vars,resp}Data and does not define an anchor point
-    for SurrogateData::anchor{Vars,Resp}, so is an unconstrained build. */
-void DataFitSurrModel::build_approximation()
-{
-  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
-
-  // clear out previous anchor/data points, but preserve history (if multipoint)
-  approxInterface.clear_current();
-  // update actualModel w/ variable values/bounds/labels
-  update_model(actualModel);
-
-  // build a local, multipoint, or global data fit approximation.
-  if (strbegins(surrogateType, "local_") ||
-      strbegins(surrogateType, "multipoint_")) {
-    // NOTE: branch used by SBO
-    update_local_multipoint();
-    build_local_multipoint();
-    interface_build_approx();
-  }
-  else { // global approximation.  NOTE: branch not used by SBO.
-    update_global();
-    build_global();
-    //deltaCorr.compute(...need data...);
-    // could add deltaCorr.compute() here and in HierarchSurrModel::
-    // build_approximation if global approximations had easy access
-    // to the truth/approx responses.  Instead, it is called from
-    // SurrBasedLocalMinimizer using data from the trust region center.
-    if (autoRefine)
-      // BMA TODO: Move this to an external refiner
-      refine_surrogate();
-    else
-      interface_build_approx();
-  }
-
-  ++approxBuilds;
-
-  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
-}
-
-
 /** asynchronous flags need to be initialized for the sub-models.  In addition,
     max_eval_concurrency is the outer level iterator concurrency, not the
     DACE concurrency that actualModel will see, and recomputing the
@@ -404,11 +362,54 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 
 /** This function constructs a new approximation, discarding any
+    previous data.  It constructs any required data for
+    SurrogateData::{vars,resp}Data and does not define an anchor point
+    for SurrogateData::anchor{Vars,Resp}, so is an unconstrained build. */
+void DataFitSurrModel::build_approximation(size_t index)
+{
+  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+
+  // clear out previous anchor/data points, but preserve history (if multipoint)
+  approxInterface.clear_current();
+  // update actualModel w/ variable values/bounds/labels
+  update_model(actualModel);
+
+  // build a local, multipoint, or global data fit approximation.
+  if (strbegins(surrogateType, "local_") ||
+      strbegins(surrogateType, "multipoint_")) {
+    // NOTE: branch used by SBO
+    update_local_multipoint();
+    build_local_multipoint();
+    interface_build_approx(index);
+  }
+  else { // global approximation.  NOTE: branch not used by SBO.
+    update_global();
+    build_global();
+    //deltaCorr.compute(...need data...);
+    // could add deltaCorr.compute() here and in HierarchSurrModel::
+    // build_approximation if global approximations had easy access
+    // to the truth/approx responses.  Instead, it is called from
+    // SurrBasedLocalMinimizer using data from the trust region center.
+    if (autoRefine)
+      // BMA TODO: Move this to an external refiner
+      refine_surrogate(index);
+    else
+      interface_build_approx(index);
+  }
+
+  ++approxBuilds;
+
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+}
+
+
+/** This function constructs a new approximation, discarding any
     previous data.  It uses the passed data to populate
     SurrogateData::anchor{Vars,Resp} and constructs any required data
     points for SurrogateData::{vars,resp}Data. */
 bool DataFitSurrModel::
-build_approximation(const Variables& vars, const IntResponsePair& response_pr)
+build_approximation(const Variables& vars, const IntResponsePair& response_pr,
+		    size_t index)
 {
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
@@ -431,7 +432,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // NOTE: branch not used by SBO
     update_local_multipoint();
     // anchor is given, so no need for build_local_multipoint
-    interface_build_approx();
+    interface_build_approx(index);
   }
   else { // global approximation.  NOTE: branch used by SBO.
     update_global();
@@ -443,9 +444,9 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     // SurrBasedLocalMinimizer using data from the trust region center.
     if (autoRefine)
       // BMA TODO: Move this to an external refiner
-      refine_surrogate();
+      refine_surrogate(index);
     else
-      interface_build_approx();
+      interface_build_approx(index);
   }
 
   ++approxBuilds;
@@ -467,7 +468,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     update the actualModel with revised bounds, labels, etc.  Thus, it
     updates data from a previous call to build_approximation(), and is
     not intended to be used in isolation. */
-void DataFitSurrModel::update_approximation(bool rebuild_flag)
+void DataFitSurrModel::update_approximation(bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
@@ -487,7 +488,7 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -505,7 +506,7 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
     not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
@@ -520,7 +521,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -538,7 +539,8 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
     not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag,
+		     size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
@@ -554,7 +556,7 @@ update_approximation(const VariablesArray& vars_array,
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -572,7 +574,7 @@ update_approximation(const VariablesArray& vars_array,
     not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
@@ -588,7 +590,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -604,7 +606,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     update the actualModel with revised bounds, labels, etc.  Thus, it
     appends to data from a previous call to build_approximation(), and
     is not intended to be used in isolation. */
-void DataFitSurrModel::append_approximation(bool rebuild_flag)
+void DataFitSurrModel::append_approximation(bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
@@ -625,7 +627,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -643,7 +645,7 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     is not intended to be used in isolation. */
 void DataFitSurrModel::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
@@ -658,7 +660,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -676,7 +678,8 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
     be used in isolation. */
 void DataFitSurrModel::
 append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag,
+		     size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
@@ -692,7 +695,7 @@ append_approximation(const VariablesArray& vars_array,
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -710,7 +713,7 @@ append_approximation(const VariablesArray& vars_array,
     be used in isolation. */
 void DataFitSurrModel::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
@@ -726,7 +729,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
-    approxInterface.rebuild_approximation(rebuild_deque);
+    approxInterface.rebuild_approximation(rebuild_deque, index);
     ++approxBuilds;
   }
 
@@ -870,7 +873,7 @@ void DataFitSurrModel::update_local_multipoint()
 }
 
 
-void DataFitSurrModel::interface_build_approx()
+void DataFitSurrModel::interface_build_approx(size_t index)
 {
   if (actualModel.is_null())
     approxInterface.build_approximation(
@@ -879,14 +882,15 @@ void DataFitSurrModel::interface_build_approx()
       userDefinedConstraints.discrete_int_lower_bounds(),
       userDefinedConstraints.discrete_int_upper_bounds(),
       userDefinedConstraints.discrete_real_lower_bounds(),
-      userDefinedConstraints.discrete_real_upper_bounds());
+      userDefinedConstraints.discrete_real_upper_bounds(), index);
   else { // employ sub-model vars view, if available
-    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
+    approxInterface.build_approximation(
+      actualModel.continuous_lower_bounds(),
       actualModel.continuous_upper_bounds(),
       actualModel.discrete_int_lower_bounds(),
       actualModel.discrete_int_upper_bounds(),
       actualModel.discrete_real_lower_bounds(),
-      actualModel.discrete_real_upper_bounds());
+      actualModel.discrete_real_upper_bounds(), index);
   }
   if (exportSurrogate)
     approxInterface.export_approximation();
@@ -1097,7 +1101,7 @@ void DataFitSurrModel::build_global()
 
     // only run the iterator if work to do
     if (new_points)
-      run_dace_iterator(false); // don't rebuild
+      run_dace_iterator(false); // don't rebuild (no index needed)
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
@@ -1116,7 +1120,7 @@ void DataFitSurrModel::build_global()
 }
 
 
-void DataFitSurrModel::run_dace_iterator(bool rebuild_flag)
+void DataFitSurrModel::run_dace_iterator(bool rebuild_flag, size_t index)
 {
   // Define the data requests
   ActiveSet set = daceIterator.active_set(); // copy
@@ -1134,11 +1138,11 @@ void DataFitSurrModel::run_dace_iterator(bool rebuild_flag)
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   daceIterator.run(pl_iter);
   // append the new data sets and rebuild if indicated
-  append_approximation(rebuild_flag);
+  append_approximation(rebuild_flag, index);
 }
 
 
-void DataFitSurrModel::refine_surrogate()
+void DataFitSurrModel::refine_surrogate(size_t index)
 {
   StringArray diag_metrics(1, refineCVMetric);
   int curr_iter = 0; // initial surrogate build is iteration 0
@@ -1161,7 +1165,7 @@ void DataFitSurrModel::refine_surrogate()
   total_evals += num_samples;
 
   // build surrogate from initial sample
-  interface_build_approx();
+  interface_build_approx(index);
   Real2DArray cv_diags = 
     approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
   RealArray cv_per_fn(currentResponse.num_functions());
@@ -1203,10 +1207,10 @@ void DataFitSurrModel::refine_surrogate()
     total_evals += num_samples;
     Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";
-    run_dace_iterator(false); // don't rebuild
+    run_dace_iterator(false, index); // don't rebuild
 
     // build and check diagnostics
-    interface_build_approx();
+    interface_build_approx(index);
     Real2DArray cv_diags = 
       approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
     RealArray cv_per_fn(currentResponse.num_functions());

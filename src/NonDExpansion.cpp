@@ -685,7 +685,7 @@ void NonDExpansion::initialize_expansion()
 }
 
 
-void NonDExpansion::compute_expansion()
+void NonDExpansion::compute_expansion(size_t index)
 {
 #ifdef DERIV_DEBUG
   // numerical verification of analytic Jacobian/Hessian routines
@@ -873,12 +873,12 @@ void NonDExpansion::compute_expansion()
       u_space_sampler.active_set(sampler_set);
     }
 
-    uSpaceModel.build_approximation();
+    uSpaceModel.build_approximation(index);
   }
 }
 
 
-void NonDExpansion::refine_expansion()
+void NonDExpansion::refine_expansion(size_t index)
 {
   // --------------------------------------
   // Uniform/adaptive refinement approaches
@@ -911,7 +911,7 @@ void NonDExpansion::refine_expansion()
 	NonDIntegration* nond_integration = (NonDIntegration*)
 	  uSpaceModel.subordinate_iterator().iterator_rep();
 	nond_integration->increment_grid(); // TPQ or SSG
-	update_expansion();
+	update_expansion(index);
 	break;
       }
       case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
@@ -923,7 +923,7 @@ void NonDExpansion::refine_expansion()
 	// ramp expansion order and update regression samples, keeping
 	// initial collocation ratio (either user specified or inferred)
 	increment_order_and_grid(); // virtual fn defined for NonDPCE
-	update_expansion(); // invokes uSpaceModel.build_approximation()
+	update_expansion(index); // invokes uSpaceModel.build_approximation()
 	break;
       }
       metric = compute_covariance_metric();
@@ -937,7 +937,7 @@ void NonDExpansion::refine_expansion()
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
-      update_expansion();
+      update_expansion(index);
       metric = compute_covariance_metric();
       break;
     }
@@ -950,7 +950,7 @@ void NonDExpansion::refine_expansion()
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-      update_expansion();
+      update_expansion(index);
       metric = compute_covariance_metric();
       break;
     }
@@ -988,9 +988,9 @@ void NonDExpansion::multifidelity_expansion()
   iteratedModel.surrogate_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
-  compute_expansion();  // nominal expansion from input spec
+  compute_expansion(0);  // nominal expansion from input spec
   if (refineType)
-    refine_expansion(); // uniform/adaptive refinement
+    refine_expansion(0); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -1004,14 +1004,14 @@ void NonDExpansion::multifidelity_expansion()
   size_t i, num_mf = iteratedModel.subordinate_models(false).size();
   for (size_t i=1; i<num_mf; ++i) {
     // store current state for use in combine_approximation() below
-    uSpaceModel.store_approximation();
+    uSpaceModel.store_approximation(i-1);
 
     increment_specification_sequence(); // advance to next PCE/SC specification
     iteratedModel.surrogate_model_indices(i-1);
     iteratedModel.truth_model_indices(i);
-    update_expansion();   // nominal expansion from input spec
+    update_expansion(i);   // nominal expansion from input spec
     if (refineType)
-      refine_expansion(); // uniform/adaptive refinement
+      refine_expansion(i); // uniform/adaptive refinement
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
@@ -1038,8 +1038,9 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 }
 
 
-void NonDExpansion::append_expansion(const RealMatrix&     samples,
-				     const IntResponseMap& resp_map)
+void NonDExpansion::
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
+		 size_t index)
 {
   Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
        << "       NonDExpansion does not support data appending." << std::endl;
@@ -1056,7 +1057,7 @@ void NonDExpansion::increment_order_and_grid()
 }
 
 
-void NonDExpansion::update_expansion()
+void NonDExpansion::update_expansion(size_t index)
 {
   // leave sampler_set, expansion flags, and distribution parameter settings
   // as set previously by compute_expansion(); there should be no need to
@@ -1067,7 +1068,7 @@ void NonDExpansion::update_expansion()
   // before this can be implemented.  For now, employ incremental rebuilds
   // only for hierarchical SC and rely on evaluation duplicate detection
   // within non-incremental builds from scratch.
-  uSpaceModel.build_approximation();//.rebuild_approximation();
+  uSpaceModel.build_approximation(index);//.rebuild_approximation();
 }
 
 

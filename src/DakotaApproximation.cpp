@@ -274,10 +274,10 @@ Approximation::~Approximation()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::build()
+void Approximation::build(size_t index)
 {
   if (approxRep)
-    approxRep->build();
+    approxRep->build(index);
   else {
     size_t num_curr_pts = approxData.points();
     int ms = min_points(true); // account for anchor point & buildDataOrder
@@ -308,12 +308,12 @@ void Approximation::export_model(const String& fn_label,
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::rebuild()
+void Approximation::rebuild(size_t index)
 {
   if (approxRep)
-    approxRep->rebuild();
+    approxRep->rebuild(index);
   else // virtual fn: default definition
-    build(); // if no special rebuild optimization, fall back on full build()
+    build(index); // if no incremental rebuild(), fall back on full build()
 }
 
 

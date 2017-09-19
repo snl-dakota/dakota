@@ -340,7 +340,7 @@ bool HierarchSurrModel::finalize_mapping()
 }
 
 
-void HierarchSurrModel::build_approximation()
+void HierarchSurrModel::build_approximation(size_t index)
 {
   Cout << "\n>>>>> Building hierarchical approximation.\n";
 
@@ -408,7 +408,8 @@ void HierarchSurrModel::build_approximation()
 
 /*
 bool HierarchSurrModel::
-build_approximation(const RealVector& c_vars, const Response& response)
+build_approximation(const RealVector& c_vars, const Response& response,
+                    size_t index)
 {
   // NOTE: this fn not currently used by SBO, but it could be.
 

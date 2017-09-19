@@ -123,9 +123,10 @@ protected:
 
   /// use the high fidelity model to compute the truth values needed for
   /// correction of the low fidelity model results
-  void build_approximation();
+  void build_approximation(size_t index = _NPOS);
   // Uses the c_vars/response anchor point to define highFidResponse
-  //bool build_approximation(const RealVector& c_vars,const Response& response);
+  //bool build_approximation(const RealVector& c_vars,const Response& response,
+  //                         size_t index = _NPOS);
 
   /// update component parallel mode for supporting parallelism in
   /// the low ad high fidelity models

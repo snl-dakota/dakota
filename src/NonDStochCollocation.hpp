@@ -61,8 +61,8 @@ protected:
   void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
   //void initialize_expansion();
-  //void compute_expansion();
-  void update_expansion();
+  //void compute_expansion(size_t index = _NPOS);
+  void update_expansion(size_t index = _NPOS);
 
   Real compute_covariance_metric();
   Real compute_final_statistics_metric();

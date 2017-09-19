@@ -771,13 +771,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
 }
 
 
-void NonDPolynomialChaos::compute_expansion()
+void NonDPolynomialChaos::compute_expansion(size_t index)
 {
   if (expansionImportFile.empty())
     // ------------------------------
     // Calculate the PCE coefficients
     // ------------------------------
-    NonDExpansion::compute_expansion(); // default implementation
+    NonDExpansion::compute_expansion(index); // default implementation
   else {
     // ---------------------------
     // Import the PCE coefficients
@@ -1217,7 +1217,7 @@ void NonDPolynomialChaos::multifidelity_expansion()
   else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
 	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
     if (true) hierarchical_regression(0);
-    else      multilevel_regression(0);
+    else        multilevel_regression(0);
   }
   else {
     Cerr << "Error: unsupported combination of fidelities and levels within "
@@ -1285,14 +1285,14 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	if (iter == 0) { // initial expansion build
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  if (lev == 0) compute_expansion(); // init + build
-	  else           update_expansion(); // just build 
+	  if (lev == 0) compute_expansion(lev); // init + build
+	  else           update_expansion(lev); // just build 
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion();
+	  append_expansion(lev);
 	}
 
         // compute and accumulate variance of mean estimator from the set of
@@ -1474,8 +1474,8 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	    // *** TO DO: update solution control variable in uSpaceModel
 	    // (update HierarchSurr vars + DataFitSurr::update_from_sub_model())
 
-	    if (lev == 0) compute_expansion(); // init + build
-	    else           update_expansion(); // just build 
+	    if (lev == 0) compute_expansion(lev); // init + build
+	    else           update_expansion(lev); // just build 
 	    delta_N_l[lev] = uSpaceModel.approximation_data(0).points();
 	    //Cout << "\nRetrieved count = " << delta_N_l[lev] << "\n\n";
 	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
@@ -1483,8 +1483,8 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	  else {
 	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	    increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	    if (lev == 0) compute_expansion(); // init + build
-	    else           update_expansion(); // just build 
+	    if (lev == 0) compute_expansion(lev); // init + build
+	    else           update_expansion(lev); // just build 
 	  }
 	}
 	else { // retrieve prev expansion for this level & append new samples
@@ -1495,7 +1495,7 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion();
+	  append_expansion(lev);
 	}
 
         // compute and accumulate variance of mean estimator from the set of

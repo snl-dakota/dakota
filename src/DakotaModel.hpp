@@ -200,44 +200,45 @@ public:
   virtual bool resize_pending() const;
 
   /// build a new SurrogateModel approximation
-  virtual void build_approximation();
+  virtual void build_approximation(size_t index = _NPOS);
   /// build a new SurrogateModel approximation using/enforcing
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
-				   const IntResponsePair& response_pr);
+				   const IntResponsePair& response_pr,
+				   size_t index = _NPOS);
 
 
   /// replace the approximation data within an existing surrogate
   /// based on data updates propagated elsewhere
-  virtual void update_approximation(bool rebuild_flag);
+  virtual void update_approximation(bool rebuild_flag, size_t index = _NPOS);
   /// replace the anchor point data within an existing surrogate
   virtual void update_approximation(const Variables& vars, 
 				    const IntResponsePair& response_pr,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
   /// replace the data points within an existing surrogate
   virtual void update_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
   /// replace the data points within an existing surrogate
   virtual void update_approximation(const RealMatrix& samples,
 				    const IntResponseMap& resp_map,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
 
   /// append to the existing approximation data within a surrogate
   /// based on data updates propagated elsewhere
-  virtual void append_approximation(bool rebuild_flag);
+  virtual void append_approximation(bool rebuild_flag, size_t index = _NPOS);
   /// append a single point to an existing surrogate's data
   virtual void append_approximation(const Variables& vars, 
 				    const IntResponsePair& response_pr,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
 				    const IntResponseMap& resp_map,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const RealMatrix& samples,
 				    const IntResponseMap& resp_map,
-				    bool rebuild_flag);
+				    bool rebuild_flag, size_t index = _NPOS);
 
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
@@ -268,7 +269,7 @@ public:
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
-  virtual void run_dace_iterator(bool rebuild_flag);
+  virtual void run_dace_iterator(bool rebuild_flag, size_t index = _NPOS);
 
   // retrieve the variables used to build a surrogate model
   //virtual const VariablesArray build_variables() const;

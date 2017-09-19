@@ -416,10 +416,10 @@ int SurfpackApproximation::recommended_coefficients() const
 }
 
 
-void SurfpackApproximation::build()
+void SurfpackApproximation::build(size_t index)
 {
   // base class implementation checks data set against min required
-  Approximation::build();
+  Approximation::build(index);
 
   // Surface object should have been created in constructor
   if (!factory) { 

@@ -39,10 +39,10 @@ int TaylorApproximation::min_coefficients() const
 }
 
 
-void TaylorApproximation::build()
+void TaylorApproximation::build(size_t index)
 {
   // base class implementation checks data set against min required
-  Approximation::build();
+  Approximation::build(index);
 
   // No computations needed.  Just do sanity checking on approxData.
 

@@ -197,8 +197,8 @@ protected:
   int min_coefficients() const;
   //int num_constraints() const; // use default implementation
 
-  void build();
-  void rebuild();
+  void build(size_t index = _NPOS);
+  void rebuild(size_t index = _NPOS);
   void pop(bool save_data);
   void push();
   void finalize();
@@ -474,20 +474,20 @@ inline int PecosApproximation::min_coefficients() const
 { return pecosBasisApprox.min_coefficients(); }
 
 
-inline void PecosApproximation::build()
+inline void PecosApproximation::build(size_t index)
 {
   // base class implementation checks data set against min required
-  Approximation::build();
+  Approximation::build(index);
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.compute_coefficients();
+  pecosBasisApprox.compute_coefficients(); // *** TO DO
 }
 
 
-inline void PecosApproximation::rebuild()
+inline void PecosApproximation::rebuild(size_t index)
 {
   // base class default invokes build() for derived Approximations
   // that do not supply rebuild()
-  //Approximation::rebuild();
+  //Approximation::rebuild(index);
 
   // TO DO: increment_coefficients() below covers current usage of
   // append_approximation() in NonDExpansion.  For more general
@@ -497,7 +497,7 @@ inline void PecosApproximation::rebuild()
   //size_t curr_pts  = approxData.points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
-    pecosBasisApprox.increment_coefficients();
+    pecosBasisApprox.increment_coefficients(); // *** TO DO
   //else if (curr_pts < curr_pecos_pts)
     //pecosBasisApprox.decrement_coefficients();
   // else, if number of points is consistent, leave as is

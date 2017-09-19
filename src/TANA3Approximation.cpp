@@ -53,10 +53,10 @@ int TANA3Approximation::num_constraints() const
 }
 
 
-void TANA3Approximation::build()
+void TANA3Approximation::build(size_t index)
 {
   // base class implementation checks data set against min required
-  Approximation::build();
+  Approximation::build(index);
 
   // Perform sanity checking to verify two points with gradients
   // (Hessians ignored)

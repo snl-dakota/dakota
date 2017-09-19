@@ -67,13 +67,13 @@ public:
   //
 
   /// builds the approximation from scratch
-  virtual void build();
+  virtual void build(size_t index = _NPOS);
   /// exports the approximation
   virtual void export_model(const String& fn_label = "", 
       const String& export_prefix = "", 
       const unsigned short export_format = NO_MODEL_FORMAT );
   /// rebuilds the approximation incrementally
-  virtual void rebuild();
+  virtual void rebuild(size_t index = _NPOS);
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop(bool save_data);
