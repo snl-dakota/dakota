@@ -113,9 +113,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void build();
+  void build(size_t index = _NPOS);
 
-  void rebuild();
+  void rebuild(size_t index = _NPOS);
   void pop(bool save_surr_data);
   bool push_available();
   size_t retrieval_index();
@@ -163,11 +163,11 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 { }
 
 
-inline void SharedPecosApproxData::build()
+inline void SharedPecosApproxData::build(size_t index)
 { pecosSharedDataRep->allocate_data(); }
 
 
-inline void SharedPecosApproxData::rebuild()
+inline void SharedPecosApproxData::rebuild(size_t index)
 { pecosSharedDataRep->increment_data(); }
 
 

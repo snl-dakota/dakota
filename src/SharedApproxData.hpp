@@ -72,10 +72,10 @@ public:
   //
 
   /// builds the shared approximation data from scratch
-  virtual void build();
+  virtual void build(size_t index = _NPOS);
 
   /// rebuilds the shared approximation data incrementally
-  virtual void rebuild();
+  virtual void rebuild(size_t index = _NPOS);
   /// back out the previous increment to the shared approximation data 
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set

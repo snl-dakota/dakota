@@ -628,7 +628,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   // initialize the data shared among approximation instances
   sharedData.set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
 			dr_l_bnds, dr_u_bnds);
-  sharedData.build();
+  sharedData.build(level_index);
   // build the approximation surface instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int fn_index = *it;
@@ -678,7 +678,7 @@ void ApproximationInterface::
 rebuild_approximation(const BoolDeque& rebuild_deque, size_t level_index)
 {
   // rebuild data shared among approximation instances
-  sharedData.rebuild();
+  sharedData.rebuild(level_index);
   // rebuild the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int fn_index = *it;

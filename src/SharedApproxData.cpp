@@ -343,20 +343,20 @@ SharedApproxData::~SharedApproxData()
 }
 
 
-void SharedApproxData::build()
+void SharedApproxData::build(size_t index)
 {
   if (dataRep)
-    dataRep->build();
+    dataRep->build(index);
   //else no-op (implementation not required for shared data)
 }
 
 
-void SharedApproxData::rebuild()
+void SharedApproxData::rebuild(size_t index)
 {
   if (dataRep)
-    dataRep->rebuild();
+    dataRep->rebuild(index);
   else // if incremental rebuild not defined, fall back to full build
-    build();
+    build(index);
 }
 
 
