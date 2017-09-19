@@ -479,7 +479,7 @@ inline void PecosApproximation::build(size_t index)
   // base class implementation checks data set against min required
   Approximation::build(index);
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.compute_coefficients(); // *** TO DO
+  pecosBasisApprox.compute_coefficients(index);
 }
 
 
@@ -497,7 +497,7 @@ inline void PecosApproximation::rebuild(size_t index)
   //size_t curr_pts  = approxData.points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
-    pecosBasisApprox.increment_coefficients(); // *** TO DO
+    pecosBasisApprox.increment_coefficients(index);
   //else if (curr_pts < curr_pecos_pts)
     //pecosBasisApprox.decrement_coefficients();
   // else, if number of points is consistent, leave as is

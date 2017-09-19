@@ -623,17 +623,17 @@ void ApproximationInterface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds,
-		    size_t level_index)
+		    size_t index)
 {
   // initialize the data shared among approximation instances
   sharedData.set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
 			dr_l_bnds, dr_u_bnds);
-  sharedData.build(level_index);
+  sharedData.build(index);
   // build the approximation surface instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int fn_index = *it;
     // construct the approximation
-    functionSurfaces[fn_index].build(level_index);
+    functionSurfaces[fn_index].build(index);
 
     // manage diagnostics
     if (functionSurfaces[fn_index].diagnostics_available()) {
@@ -675,10 +675,10 @@ void ApproximationInterface::export_approximation()
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */
 void ApproximationInterface::
-rebuild_approximation(const BoolDeque& rebuild_deque, size_t level_index)
+rebuild_approximation(const BoolDeque& rebuild_deque, size_t index)
 {
   // rebuild data shared among approximation instances
-  sharedData.rebuild(level_index);
+  sharedData.rebuild(index);
   // rebuild the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int fn_index = *it;
@@ -687,7 +687,7 @@ rebuild_approximation(const BoolDeque& rebuild_deque, size_t level_index)
       // approx bounds not updated as in build_approximation()
 
       // invokes increment_coefficients()
-      functionSurfaces[fn_index].rebuild(level_index);
+      functionSurfaces[fn_index].rebuild(index);
 
       // diagnostics not currently active on rebuild
     }

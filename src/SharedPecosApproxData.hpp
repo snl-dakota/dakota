@@ -164,11 +164,11 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 
 
 inline void SharedPecosApproxData::build(size_t index)
-{ pecosSharedDataRep->allocate_data(); }
+{ pecosSharedDataRep->allocate_data(index); }
 
 
 inline void SharedPecosApproxData::rebuild(size_t index)
-{ pecosSharedDataRep->increment_data(); }
+{ pecosSharedDataRep->increment_data(index); }
 
 
 inline void SharedPecosApproxData::pop(bool save_surr_data)

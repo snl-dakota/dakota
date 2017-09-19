@@ -95,12 +95,12 @@ protected:
 			   const IntVector&  di_u_bnds,
 			   const RealVector& dr_l_bnds,
 			   const RealVector& dr_u_bnds,
-			   size_t level_index = _NPOS);
+			   size_t index = _NPOS);
 
   void export_approximation();
 
   void rebuild_approximation(const BoolDeque& rebuild_deque,
-			     size_t level_index = _NPOS);
+			     size_t index = _NPOS);
   void pop_approximation(bool save_surr_data);
   void push_approximation();
   bool push_available();
