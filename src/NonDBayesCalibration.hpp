@@ -77,7 +77,7 @@ public:
   // compute information metrics
   static Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples,
       		size_t dim); 
-  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY);
+  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY, int alg);
 
 protected:
 

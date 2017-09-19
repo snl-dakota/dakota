@@ -758,6 +758,12 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double MIrel;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
+  // Determine mutual information algorithm
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
 
   std::ofstream out_file("experimental_design_output.txt");
 
@@ -950,7 +956,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
           Teuchos::setCol(col_vec, j, Xmatrix);
         }
         // calculate the mutual information b/w post theta and lofi responses
-        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
+        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions,alg);
 	if (outputLevel >= DEBUG_OUTPUT) {
 	  Cout << "\n----------------------------------------------\n";
           Cout << "Experimental Design Iteration "<<num_hifi+1<<" Progress";
@@ -2229,7 +2235,7 @@ void NonDBayesCalibration::mutual_info_buildX()
    * considered in the mutual info calculation. Each column has the form
    * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
    */
-   
+
   int num_params = numContinuousVars + numHyperparams;
   int num_samples = 1000;
   boost::mt19937 rnumGenerator;
@@ -2282,16 +2288,20 @@ void NonDBayesCalibration::mutual_info_buildX()
 
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
 
-
-  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
+  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params, alg);
   Cout << "MI est = " << mutualinfo_est << '\n';
 
 }
 
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
-    int dimY)
+    int dimY, int alg)
 {
-  approxnn::normSelector::instance().method(approxnn::LINF_NORM);
+  //approxnn::normSelector::instance().method(approxnn::LINF_NORM);
 
   //std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
@@ -2379,16 +2389,14 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   // KAM 
   double marg_sum = 0.0;
   int n_x, n_y;
-  bool ksg2 = false;
   for(int i = 0; i < num_samples; i++){
-    //if (mutualInfoKSG2) {
-    if (ksg2) {
+    if (alg == 1) { //ksg2
       ANNdist e_x = annDist(dimX, dataX[i], dataX[XYindices[i]]);
       ANNdist e_y = annDist(dimY, dataY[i], dataY[XYindices[i]]);
       n_x = kdTreeX->annkFRSearch(dataX[i], e_x, 0, NULL, NULL, eps);
       n_y = kdTreeY->annkFRSearch(dataY[i], e_y, 0, NULL, NULL, eps);
     }
-    else {
+    else { //alg=0, ksg1
       n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
   				    NULL, eps);
       n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
@@ -2399,13 +2407,16 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     //double psiX = boost::math::digamma(n_x+1);
     //double psiY = boost::math::digamma(n_y+1);
     marg_sum += psiX + psiY;
-    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //test_stream <<"i = "<< i <<", nx = "<< n_x <<", ny = "<< n_y <<'\n';
     //test_stream << "psiX = " << psiX << '\n';
     //test_stream << "psiY = " << psiY << '\n';
   }
   double psik = boost::math::digamma(k);
   double psiN = boost::math::digamma(num_samples);
   double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
+  if (alg == 1) {
+    MI_est = MI_est - 1/double(k);
+  }
   //test_stream << "psi_k = " << psik << '\n';
   //test_stream << "marg_sum = " << marg_sum << '\n';
   //test_stream << "psiN = " << psiN << '\n';
