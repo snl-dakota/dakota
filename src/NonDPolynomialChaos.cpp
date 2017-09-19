@@ -1285,14 +1285,14 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 	if (iter == 0) { // initial expansion build
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  if (lev == 0) compute_expansion(lev); // init + build
-	  else           update_expansion(lev); // just build 
+	  if (lev == 0) compute_expansion(); // init + build; not hierarchical
+	  else           update_expansion(); //   just build; not hierarchical
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion(lev);
+	  append_expansion(); // not hierarchical
 	}
 
         // compute and accumulate variance of mean estimator from the set of
@@ -1403,7 +1403,7 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
   bool import_pilot = !importBuildPointsFile.empty();
   SizetArray delta_N_l; NLev.assign(num_lev, 0);
   if (import_pilot) {
-    delta_N_l.assign(num_lev, 1); // TO DO: dummy to be updated
+    delta_N_l.assign(num_lev, 1); // dummy to be updated
     Cout << "\nImporting ML PCE pilot sample.\n";
   }
   else {
@@ -1474,8 +1474,8 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	    // *** TO DO: update solution control variable in uSpaceModel
 	    // (update HierarchSurr vars + DataFitSurr::update_from_sub_model())
 
-	    if (lev == 0) compute_expansion(lev); // init + build
-	    else           update_expansion(lev); // just build 
+	    if (lev == 0) compute_expansion(lev); // init + build; hierarchical
+	    else           update_expansion(lev); //   just build; hierarchical
 	    delta_N_l[lev] = uSpaceModel.approximation_data(0).points();
 	    //Cout << "\nRetrieved count = " << delta_N_l[lev] << "\n\n";
 	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
@@ -1483,8 +1483,8 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	  else {
 	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	    increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	    if (lev == 0) compute_expansion(lev); // init + build
-	    else           update_expansion(lev); // just build 
+	    if (lev == 0) compute_expansion(lev); // init + build; hierarchical
+	    else           update_expansion(lev); //   just build; hierarchical
 	  }
 	}
 	else { // retrieve prev expansion for this level & append new samples
@@ -1495,7 +1495,7 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion(lev);
+	  append_expansion(lev); // hierarchical
 	}
 
         // compute and accumulate variance of mean estimator from the set of
