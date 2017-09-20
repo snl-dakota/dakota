@@ -3057,6 +3057,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.gpmsa_normalize", P gpmsaNormalize},
 	{"nond.logit_transform", P logitTransform},
 	{"nond.model_discrepancy", P calModelDiscrepancy},
+	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

@@ -2709,6 +2709,8 @@
 		      </oneOf>
 		    </optional>
                   </keyword>
+		  <!-- KAM -->
+	          <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
 		</keyword> 
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>
