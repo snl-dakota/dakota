@@ -14,9 +14,13 @@ project("Dakota" NONE)
 # Require C++11 at a minimum, but allow newer standards
 # Do this prior to other flag settings below
 if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 11 CACHE STRING "Dakota strictly requires C++11 or better")
 endif()
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
+  set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
+    "Dakota prefers not to use compiler-specific C++ extensions")
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "Dakota strictly requires C++11 or better")
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
