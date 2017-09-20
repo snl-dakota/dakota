@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+  enum class LINEAR_INEQUALITY_FORMAT { NONE, ZERO_LOWER, ZERO_UPPER, NZ_LOWER, NZ_UPPER, TWO_SIDED };
+
 /// Base class for traits.
 
 /** TraitsBase provides default traits through various accessors . */
@@ -40,6 +42,9 @@ public:
 
   /// Return the flag indicating whether method supports linear equalities
   virtual bool supports_linear_equality() { return false; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format() { return LINEAR_INEQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method supports linear inequalities
   virtual bool supports_linear_inequality() { return false; }

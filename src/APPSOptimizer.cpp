@@ -378,8 +378,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   }
 
   get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
-                  CONSTRAINT_TYPE::NONLINEAR,
+                ( CONSTRAINT_TYPE::NONLINEAR,
                   constraintMapIndices,
                   constraintMapMultipliers,
                   constraintMapOffsets);

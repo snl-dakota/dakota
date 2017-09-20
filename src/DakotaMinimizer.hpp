@@ -21,8 +21,6 @@
 
 namespace Dakota {
 
-  enum class CONSTRAINT_TYPE { LINEAR, NONLINEAR };
-
 /// Base class for the optimizer and least squares branches of the
 /// iterator hierarchy.
 

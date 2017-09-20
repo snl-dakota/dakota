@@ -64,6 +64,10 @@ protected:
   void finalize_run();
   void print_results(std::ostream& s);
 
+  // A possible helper/adapter-based data transfer
+  void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
+  const Real& mapped_function_value(size_t i) const;
+  
   //
   //- Heading: Data
   //
@@ -78,6 +82,24 @@ protected:
   static Optimizer* optimizerInstance;
   /// pointer containing previous value of optimizerInstance
   Optimizer* prevOptInstance;
+
+  template <typename RVecT, typename IVecT>
+    int get_inequality_constraints(
+        CONSTRAINT_TYPE ctype,
+        IVecT & map_indices,
+        RVecT & map_multipliers,
+        RVecT & map_offsets,
+        Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
+    {
+      return get_ineq_constraints(
+                          iteratedModel,
+                          bigRealBoundSize,
+                          ctype,
+                          map_indices,
+                          map_multipliers,
+                          map_offsets,
+                          scaling);
+    }
 
 private:
 
@@ -463,8 +485,8 @@ void get_responses( const Model & model,
 /// copy the various pieces comprising bounds on Dakota::Variables into concatenated TPL vectors
 template <typename AdapterT>
 bool get_bounds( Model & model,
-                 Real bigRealBoundSize, // It would be nice to clean this up and not need to pass in
-                 int bigIntBoundSize, // It would be nice to clean this up and not need to pass in
+                 Real big_real_bound_size, // It would be nice to clean this up and not need to pass in
+                 int big_int_bound_size, // It would be nice to clean this up and not need to pass in
                  typename AdapterT::VecT & lower,
                  typename AdapterT::VecT & upper)
 {
@@ -487,7 +509,7 @@ bool get_bounds( Model & model,
   int offset = 0;
   bool allSet = get_bounds(lower_bnds_cont, upper_bnds_cont,
                            lower, upper,
-                           bigRealBoundSize,
+                           big_real_bound_size,
                            AdapterT::noValue(),
                            offset);
 
@@ -495,7 +517,7 @@ bool get_bounds( Model & model,
   allSet = allSet && 
               get_mixed_bounds
                 (int_set_bits, init_pt_set_int, lower_bnds_int, upper_bnds_int, 
-                 lower, upper, bigIntBoundSize, (int)AdapterT::noValue(), offset);
+                 lower, upper, big_int_bound_size, (int)AdapterT::noValue(), offset);
 
   offset += model.div();
   get_bounds(init_pt_set_real, lower, upper, offset);
@@ -511,7 +533,7 @@ bool get_bounds( Model & model,
 /// copy the various data associated with linear constraints from Dakota into TPL vectors/matrices
 template <typename AdapterT>
 void get_linear_constraints( Model & model,
-                             Real bigRealBoundSize, // It would be nice to clean this up and not need to pass in
+                             Real big_real_bound_size, // It would be nice to clean this up and not need to pass in
                              typename AdapterT::VecT & lin_ineq_lower_bnds,
                              typename AdapterT::VecT & lin_ineq_upper_bnds,
                              typename AdapterT::VecT & lin_eq_targets,
@@ -530,7 +552,7 @@ void get_linear_constraints( Model & model,
 
   get_bounds(linear_ineq_lower_bnds, linear_ineq_upper_bnds,
               lin_ineq_lower_bnds, lin_ineq_upper_bnds,
-              bigRealBoundSize, // hard-wired to Real type; is more gneral type needed?
+              big_real_bound_size, // hard-wired to Real type; is more gneral type needed?
               AdapterT::noValue());
 
   copy_data(linear_eq_targets, lin_eq_targets);
@@ -539,8 +561,8 @@ void get_linear_constraints( Model & model,
 //----------------------------------------------------------------
 
 template <typename RVecT, typename IVecT>
-int get_inequality_constraints( Model & model,
-                                 Real bigRealBoundSize,
+int get_ineq_constraints( Model & model,
+                                 Real big_real_bound_size,
                                  CONSTRAINT_TYPE ctype,
                                  IVecT & map_indices,
                                  RVecT & map_multipliers,
@@ -560,13 +582,13 @@ int get_inequality_constraints( Model & model,
   int num_added = 0;
 
   for (int i=0; i<numIneqConstraints; i++) {
-    if (ineq_lwr_bnds[i] > -bigRealBoundSize) {
+    if (ineq_lwr_bnds[i] > -big_real_bound_size) {
       num_added++;
       map_indices.push_back(i);
       map_multipliers.push_back(scaling);
       map_offsets.push_back(-scaling*ineq_lwr_bnds[i]);
     }
-    if (ineq_upr_bnds[i] < bigRealBoundSize) {
+    if (ineq_upr_bnds[i] < big_real_bound_size) {
       num_added++;
       map_indices.push_back(i);
       map_multipliers.push_back(-scaling);

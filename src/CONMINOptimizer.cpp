@@ -179,8 +179,7 @@ void CONMINOptimizer::allocate_constraints()
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
   numConminNlnConstr = 2*num_nln_eq;
   get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
-                  CONSTRAINT_TYPE::NONLINEAR,
+                ( CONSTRAINT_TYPE::NONLINEAR,
                   constraintMappingIndices,
                   constraintMappingMultipliers,
                   constraintMappingOffsets,
@@ -197,8 +196,7 @@ void CONMINOptimizer::allocate_constraints()
 
   numConminLinConstr = 2*num_lin_eq;
   numConminLinConstr += get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
-                  CONSTRAINT_TYPE::LINEAR,
+                ( CONSTRAINT_TYPE::LINEAR,
                   constraintMappingIndices,
                   constraintMappingMultipliers,
                   constraintMappingOffsets,

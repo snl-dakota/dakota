@@ -146,15 +146,13 @@ void NLPQLPOptimizer::allocate_constraints()
   // get_inequality constraints
 
   get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
-                  CONSTRAINT_TYPE::NONLINEAR,
+                ( CONSTRAINT_TYPE::NONLINEAR,
                   nonlinIneqConMappingIndices,
                   nonlinIneqConMappingMultipliers,
                   nonlinIneqConMappingOffsets);
 
   get_inequality_constraints
-                ( iteratedModel, bigRealBoundSize,
-                  CONSTRAINT_TYPE::LINEAR,
+                ( CONSTRAINT_TYPE::LINEAR,
                   linIneqConMappingIndices,
                   linIneqConMappingMultipliers,
                   linIneqConMappingOffsets);
