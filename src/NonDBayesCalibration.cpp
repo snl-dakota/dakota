@@ -2301,7 +2301,7 @@ void NonDBayesCalibration::mutual_info_buildX()
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     int dimY, int alg)
 {
-  //approxnn::normSelector::instance().method(approxnn::LINF_NORM);
+  approxnn::normSelector::instance().method(approxnn::LINF_NORM);
 
   //std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
