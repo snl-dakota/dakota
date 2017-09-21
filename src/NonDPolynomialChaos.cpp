@@ -1115,7 +1115,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
 	UShortArray dim_quad_order(numContinuousVars);
 	for (size_t i=0; i<numContinuousVars; ++i)
 	  dim_quad_order[i] = exp_order[i] + 1;
-        nond_quad->quadrature_order(dim_quad_order);
+	nond_quad->quadrature_order(dim_quad_order);
       }
       nond_quad->update(); // sanity check on sizes, likely a no-op
     }
@@ -1423,11 +1423,39 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
   // (hard coded for right now; TO DO: fit params)
   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
+  NLev.assign(num_lev, 0); // total samples
+  SizetArray delta_N_l;    // sample increments
+
   // Initialize for pilot sample
   bool import_pilot = !importBuildPointsFile.empty();
-  SizetArray delta_N_l; NLev.assign(num_lev, 0);
+  // Options for import of discrepancy data.
+  // > There is no good way for import to segregate the desired Q^l sample sets
+  //   from among paired sets for Q^0, Q^1 - Q^0, Q^2 - Q^1, ..., Q^L - Q^Lm1.
+  //   Would have to develop special processing to match up sample pairs (e.g.,
+  //   top down starting from Q^L or bottom up starting from Q^0).
+  // > Could import discrepancy data for lev > 0.  But violates use of low level
+  //   data within restart (the transfer mechanism), and lookup can't use 2
+  //   solution control levels -- would have to rely on, e.g., higher level and
+  //   propagate this level from HF model vars to HierarchSurr vars to DataFit
+  //   vars to capture imported data in build_global()).  Less clean, more
+  //   hack-ish, although may still need better solution level propagation
+  //   across models for import consistency() checks to work properly.
+  // > Migrate to hierarchical approximation, where each level only imports one
+  //   set of sample data (no solution control hacks or sampling pairing reqd).
+  //   Diverges from MLMC, but is more consistent with HierarchInterpPolyApprox.
+  //   Other advantages: sample set freedom across levels, reduced cost from
+  //   not requiring additional Q^lm1 observations, telescoping consistency of
+  //   level surrogates, local error estimates relative to previous surrogate.
+  //   >> supporting hierarchical and non-hierarchical cases would lead to
+  //      uneven support for import.  Best to implement, verify, migrate?
+  //   >> want to support import for MF PCE as well, including future
+  //      adaptive MF PCE.
   if (import_pilot) {
-    delta_N_l.assign(num_lev, 1); // dummy to be updated
+    // Build point import is active only for the pilot sample and we overlay
+    // an additional pilot_sample spec, but we do not augment with samples from
+    // a collocation pts/ratio enforcement.  These controls take over on
+    // subsequent iterations
+    delta_N_l.assign(num_lev, 0); // TO DO: overlay user spec for pilot sample
     Cout << "\nImporting ML PCE pilot sample.\n";
   }
   else {
@@ -1437,7 +1465,8 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
 
   // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+  while ( iter <= max_iter &&
+	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 
     // set initial surrogate responseMode and model indices for lev 0
     //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
@@ -1457,72 +1486,44 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
 	//lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
       }
 
+      if (iter == 0) { // initial expansion build
+	// Update solution control variable in uSpaceModel to support
+	// DataFitSurrModel::consistent() logic
+	if (import_pilot)
+	  uSpaceModel.update_from_subordinate_model(); // max depth
+
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	if (lev == 0) compute_expansion(lev); // init + build; hierarchical
+	else           update_expansion(lev); //   just build; hierarchical
+
+	// update counts to include imported data
+	if (import_pilot) {
+	  NLev[lev] = delta_N_l[lev]
+	    = uSpaceModel.approximation_data(0).points();
+	  //Cout << "\nRetrieved count = " << delta_N_l[lev] << "\n\n";
+	  // Trap zero samples as it will cause FPE downstream
+	  if (NLev[lev] == 0) { // no pilot spec, no import match
+	    Cerr << "Error: insufficient sample recovery for level " << lev
+		 << " in NonDPolynomialChaos::recursive_regression()."
+		 << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	}
+      }
+      else if (delta_N_l[lev]) {
+	// retrieve prev expansion for this level & append new samples
+	uSpaceModel.restore_approximation(lev);
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	// Note: import build data is not re-processed by append_expansion()
+	append_expansion(lev); // hierarchical
+      }
+
       // aggregate variances across QoI for estimating NLev (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (delta_N_l[lev]) {
-	if (iter == 0) { // initial expansion build
-	  if (import_pilot) {
-	    // Options for import of discrepancy data.
-	    // > There is no good way for import to segregate the desired Q^l
-	    //   sample sets from among paired sets for Q^0, Q^1 - Q^0,
-	    //   Q^2 - Q^1, ..., Q^L - Q^Lm1.  Would have to develop special
-	    //   processing to match up sample pairs (e.g., top down starting
-	    //   from Q^L or bottom up starting from Q^0).
-	    // > Could import discrepancy data for lev > 0.  But violates use
-	    //   of low level data within restart (the transfer mechanism), and
-	    //   lookup can't use 2 solution control levels -- would have to
-	    //   rely on, e.g., higher level and propagate this level from HF
-	    //   model vars to HierarchSurr vars to DataFit vars to capture
-	    //   imported data in build_global()).  Less clean, more hack-ish,
-	    //   although may still need better solution level propagation
-	    //   across models for import consistency() checks to work properly.
-	    // > Migrate to hierarchical approximation, where each level only
-	    //   imports one set of sample data (no solution control hacks or
-	    //   sampling pairing required).  Diverges from MLMC, but is more
-	    //   consistent with HierarchInterpPolyApproximation.  Other
-	    //   advantages: sample set freedom across levels, reduced cost
-	    //   from not requiring additional Q^lm1 observations, telescoping
-	    //   consistency of level surrogates, local error estimates
-	    //   relative to previous surrogate.
-	    //   >> supporting hierarchical and non-hierarchical cases would
-	    //      lead to uneven support for import.  Probably best to just
-	    //      implement, verify, migrate.
-	    //   >> want to support import for MF PCE as well, including future
-	    //      adaptive MF PCE.
-
-	    // *** TO DO: if import is active only for pilot, then need a way to
-	    // specify collocation pts/ratio for other iterations, e.g., pilot
-	    // import is _not_ augmented and spec applies only after pilot.
-
-	    // Update solution control variable in uSpaceModel to support
-	    // DataFitSurrModel::consistent() logic
-	    uSpaceModel.update_from_subordinate_model(); // max depth
-
-	    if (lev == 0) compute_expansion(lev); // init + build; hierarchical
-	    else           update_expansion(lev); //   just build; hierarchical
-	    delta_N_l[lev] = uSpaceModel.approximation_data(0).points();
-	    //Cout << "\nRetrieved count = " << delta_N_l[lev] << "\n\n";
-	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  }
-	  else {
-	    NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	    increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	    if (lev == 0) compute_expansion(lev); // init + build; hierarchical
-	    else           update_expansion(lev); //   just build; hierarchical
-	  }
-	}
-	else { // retrieve prev expansion for this level & append new samples
-
-	  // *** TO DO: Turn data import off following pilot iteration
-	  //if (import_pilot && iter == 1) uSpaceModel.point_reuse(false);
-
-	  uSpaceModel.restore_approximation(lev);
-	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion(lev); // hierarchical
-	}
-
         // compute and accumulate variance of mean estimator from the set of
 	// fold results within the selected settings from cross-validation:
 	agg_var_l = 0.;
