@@ -1426,4 +1426,69 @@ void HierarchSurrModel::update_model(Model& model)
       currentVariables.discrete_string_variables());
 }
 
+
+void HierarchSurrModel::update_from_model(Model& model)
+{
+  // update complement of active currentVariables using model data.
+
+  // Note: this approach makes a strong assumption about non-active variable
+  // consistency, which is limiting.  Better to perform an individual variable
+  // mapping (e.g., solution control) when needed and allow for a different
+  // ADV position.
+
+  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
+  // linear/nonlinear constraint coeffs/bnds updated in init_model())
+
+  // *** TO DO: make this robust to differing inactive parameterizations using 
+  // tag lookups.  Omit mappings for failed lookups.
+
+  size_t i, cv_begin = currentVariables.cv_start(),
+    num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
+    num_acv = currentVariables.acv();
+  const RealVector& acv = model.all_continuous_variables();
+  for (i=0; i<cv_begin; ++i)
+    currentVariables.all_continuous_variable(acv[i], i);
+  for (i=cv_end; i<num_acv; ++i)
+    currentVariables.all_continuous_variable(acv[i], i);
+  //userDefinedConstraints.all_continuous_lower_bounds(
+  //  model.all_continuous_lower_bounds());
+  //userDefinedConstraints.all_continuous_upper_bounds(
+  //  model.all_continuous_upper_bounds());
+
+  size_t div_begin = currentVariables.div_start(),
+    num_div  = currentVariables.div(), div_end = div_begin + num_div,
+    num_adiv = currentVariables.adiv();
+  const IntVector& adiv = model.all_discrete_int_variables();
+  for (i=0; i<div_begin; ++i)
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+  for (i=div_end; i<num_adiv; ++i)
+    currentVariables.all_discrete_int_variable(adiv[i], i);
+  //userDefinedConstraints.all_discrete_int_lower_bounds(
+  //  model.all_discrete_int_lower_bounds());
+  //userDefinedConstraints.all_discrete_int_upper_bounds(
+  //  model.all_discrete_int_upper_bounds());
+
+  size_t dsv_begin = currentVariables.dsv_start(),
+    num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
+    num_adsv = currentVariables.adsv();
+  StringMultiArrayConstView adsv = model.all_discrete_string_variables();
+  for (i=0; i<dsv_begin; ++i)
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+  for (i=dsv_end; i<num_adsv; ++i)
+    currentVariables.all_discrete_string_variable(adsv[i], i);
+
+  size_t drv_begin = currentVariables.drv_start(),
+    num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
+    num_adrv = currentVariables.adrv();
+  const RealVector& adrv = model.all_discrete_real_variables();
+  for (i=0; i<drv_begin; ++i)
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+  for (i=drv_end; i<num_adrv; ++i)
+    currentVariables.all_discrete_real_variable(adrv[i], i);
+  //userDefinedConstraints.all_discrete_real_lower_bounds(
+  //  model.all_discrete_real_lower_bounds());
+  //userDefinedConstraints.all_discrete_real_upper_bounds(
+  //  model.all_discrete_real_upper_bounds());
+}
+
 } // namespace Dakota

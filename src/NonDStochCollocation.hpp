@@ -52,6 +52,8 @@ public:
 
   bool resize();
 
+  bool recursive();
+
 protected:
 
   //
@@ -74,6 +76,10 @@ private:
   //
 
 };
+
+
+inline bool NonDStochCollocation::recursive()
+{ return false; } // for now
 
 } // namespace Dakota
 

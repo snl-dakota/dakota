@@ -109,6 +109,10 @@ protected:
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
 
+  /// update currentVariables using non-active data from the passed model
+  /// (one of the ordered models)
+  void update_from_subordinate_model(size_t depth);
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
   void primary_response_fn_weights(const RealVector& wts,
@@ -191,13 +195,16 @@ private:
   void check_interface_instance();
 
   /// update the passed model (one of the ordered models) with data that could
-  /// change per function evaluation (active variable values/bounds)
-  void update_model(Model& model);
-  /// update the passed model (one of the ordered models) with data that could
   /// change once per set of evaluations (e.g., an outer iterator execution),
   /// including active variable labels, inactive variable values/bounds/labels,
   /// and linear/nonlinear constraint coeffs/bounds
   void init_model(Model& model);
+  /// update the passed model (one of the ordered models) with data that could
+  /// change per function evaluation (active variable values/bounds)
+  void update_model(Model& model);
+  /// update currentVariables using non-active data from the passed model
+  /// (one of the ordered models)
+  void update_from_model(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
@@ -320,8 +327,16 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   sameModelInstance = (lf_model_index == highFidelityIndices.first);
   check_interface_instance();
 
-  if (lf_soln_lev_index != _NPOS)
+  if (lf_soln_lev_index != _NPOS) {
+    // Activate variable value for solution control within LF model
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+    // Pull inactive variable change up into top-level currentVariables,
+    // so that data flows correctly within Model recursions?  No, current
+    // design is that forward pushes are automated, but inverse pulls are 
+    // generally special case invocations from Iterator code (e.g., with
+    // locally-managed Model recursions).
+    //update_from_model(orderedModels[lf_model_index]);
+  }
 
   DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
@@ -355,8 +370,16 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
   sameModelInstance = (hf_model_index == lowFidelityIndices.first);
   check_interface_instance();
 
-  if (hf_soln_lev_index != _NPOS)
+  if (hf_soln_lev_index != _NPOS) {
+    // Activate variable value for solution control within HF model
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+    // Pull inactive variable change up into top-level currentVariables,
+    // so that data flows correctly within Model recursions?  No, current
+    // design is that forward pushes are automated, but inverse pulls are 
+    // generally special case invocations from Iterator code (e.g., with 
+    // locally-managed Model recursions).
+    //update_from_model(orderedModels[hf_model_index]);
+  }
 
   DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
@@ -390,6 +413,36 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
     ml.push_back(orderedModels[i]);
     if (recurse_flag)
       orderedModels[i].derived_subordinate_models(ml, true);
+  }
+}
+
+
+inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
+{
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+    Model& lf_model = surrogate_model();
+    // bottom-up data flow, so recurse first
+    if (depth)
+      lf_model.update_from_subordinate_model(depth - 1);
+    // now pull updates from LF
+    update_from_model(lf_model);
+    break;
+  }
+  case BYPASS_SURROGATE: {
+    Model& hf_model = truth_model();
+    // bottom-up data flow, so recurse first
+    if (depth)
+      hf_model.update_from_subordinate_model(depth - 1);
+    // now pull updates from HF
+    update_from_model(hf_model);
+    break;
+  }
+  default:
+    Cerr << "Error: mixed mode. Cannot update from a single model in Hierarch"
+	 << "SurrModel::\n       update_from_subordinate_model()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    break;
   }
 }
 

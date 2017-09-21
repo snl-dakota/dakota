@@ -80,6 +80,11 @@ protected:
   //- Heading: Virtual functions
   //
 
+  /// algorithm selector logic for multilevel-multifidelity approaches,
+  /// indicating whether the discrepancy models distinct or based on
+  /// recursive surrogate modeling
+  virtual bool recursive() = 0;
+
   /// perform error checks and mode overrides
   virtual void resolve_inputs(short& u_space_type, short& data_order);
   /// initialize uSpaceModel polynomial approximations with PCE/SC data

@@ -73,12 +73,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
   initialize_response_covariance();
   initialize_final_statistics(); // level mappings are available
-
-  // override default SurrogateModel::responseMode for purposes of
-  // HierarchSurrModel::set_communicators(), which precedes mode
-  // updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 }
 
 
@@ -102,12 +96,6 @@ NonDExpansion(unsigned short method_name, Model& model,
 
   // level mappings not yet available
   // (defer initialize_response_covariance() and initialize_final_statistics())
-
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 }
 
 

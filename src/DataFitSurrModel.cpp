@@ -2212,6 +2212,8 @@ void DataFitSurrModel::update_from_model(const Model& model)
     model.all_continuous_variables());
   currentVariables.all_discrete_int_variables(
     model.all_discrete_int_variables());
+  currentVariables.all_discrete_string_variables(
+    model.all_discrete_string_variables());
   currentVariables.all_discrete_real_variables(
     model.all_discrete_real_variables());
   userDefinedConstraints.all_continuous_lower_bounds(
@@ -2231,6 +2233,8 @@ void DataFitSurrModel::update_from_model(const Model& model)
       model.all_continuous_variable_labels());
     currentVariables.all_discrete_int_variable_labels(
       model.all_discrete_int_variable_labels());
+    currentVariables.all_discrete_string_variable_labels(
+      model.all_discrete_string_variable_labels());
     currentVariables.all_discrete_real_variable_labels(
       model.all_discrete_real_variable_labels());
     currentResponse.function_labels(model.response_labels());
@@ -2238,6 +2242,8 @@ void DataFitSurrModel::update_from_model(const Model& model)
 
   if (!model.discrete_design_set_int_values().empty())
     discreteDesignSetIntValues = model.discrete_design_set_int_values();
+  if (!model.discrete_design_set_string_values().empty())
+    discreteDesignSetStringValues = model.discrete_design_set_string_values();
   if (!model.discrete_design_set_real_values().empty())
     discreteDesignSetRealValues = model.discrete_design_set_real_values();
 
@@ -2256,6 +2262,8 @@ void DataFitSurrModel::update_from_model(const Model& model)
 
   if (!model.discrete_state_set_int_values().empty())
     discreteStateSetIntValues = model.discrete_state_set_int_values();
+  if (!model.discrete_state_set_string_values().empty())
+    discreteStateSetStringValues = model.discrete_state_set_string_values();
   if (!model.discrete_state_set_real_values().empty())
     discreteStateSetRealValues = model.discrete_state_set_real_values();
 

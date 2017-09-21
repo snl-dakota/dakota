@@ -69,6 +69,14 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_approx_active_only"))
   //resizedFlag(false), callResize(false)
 {
+  // override default SurrogateModel::responseMode for purposes of
+  // HierarchSurrModel::set_communicators(), which precedes mode
+  // updates in {multifidelity,multilevel}_expansion().
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  }
+
   // -------------------
   // input sanity checks
   // -------------------
@@ -331,6 +339,14 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  }
+
   // -------------------
   // input sanity checks
   // -------------------
@@ -407,6 +423,14 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  }
+
   // -------------------
   // input sanity checks
   // -------------------
@@ -1216,8 +1240,8 @@ void NonDPolynomialChaos::multifidelity_expansion()
     NonDExpansion::multifidelity_expansion();
   else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
 	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-    if (true) hierarchical_regression(0);
-    else        multilevel_regression(0);
+    if (recursive()) recursive_regression(0);
+    else            multilevel_regression(0);
   }
   else {
     Cerr << "Error: unsupported combination of fidelities and levels within "
@@ -1378,7 +1402,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
 }
 
 
-void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
+void NonDPolynomialChaos::recursive_regression(size_t model_form)
 {
   //iteratedModel.surrogate_model_indices(model_form);//soln lev not updated yet
   iteratedModel.truth_model_indices(model_form);     // soln lev not updated yet
@@ -1471,8 +1495,9 @@ void NonDPolynomialChaos::hierarchical_regression(size_t model_form)
 	    // specify collocation pts/ratio for other iterations, e.g., pilot
 	    // import is _not_ augmented and spec applies only after pilot.
 
-	    // *** TO DO: update solution control variable in uSpaceModel
-	    // (update HierarchSurr vars + DataFitSurr::update_from_sub_model())
+	    // Update solution control variable in uSpaceModel to support
+	    // DataFitSurrModel::consistent() logic
+	    uSpaceModel.update_from_subordinate_model(); // max depth
 
 	    if (lev == 0) compute_expansion(lev); // init + build; hierarchical
 	    else           update_expansion(lev); //   just build; hierarchical

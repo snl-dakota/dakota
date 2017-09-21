@@ -84,6 +84,8 @@ protected:
 
   void multifidelity_expansion();
 
+  bool recursive();
+
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);
@@ -113,12 +115,12 @@ protected:
 
   /// special case of multifidelity_expansion() for multilevel allocation of
   /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// PCE expansions for model discrepancies
+  /// distinct PCE expansions for model discrepancies
   void multilevel_regression(size_t model_form);
   /// special case of multifidelity_expansion() for multilevel allocation of
   /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// PCE expansions for hierarchical surpluses
-  void hierarchical_regression(size_t model_form);
+  /// recursive PCE expansions for hierarchical surpluses
+  void recursive_regression(size_t model_form);
 
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp, size_t total_samp);
@@ -245,6 +247,17 @@ private:
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 };
+
+
+inline bool NonDPolynomialChaos::recursive()
+{
+  size_t num_mf = iteratedModel.subordinate_models(false).size();
+  // num_hf_lev = iteratedModel.truth_model().solution_levels();
+  if (num_mf > 1) // && num_hf_lev == 1)                 // multifidelity PCE
+    return false; // for now
+  else                                                   // multilevel PCE
+    return true;  // for now
+}
 
 
 inline void NonDPolynomialChaos::
