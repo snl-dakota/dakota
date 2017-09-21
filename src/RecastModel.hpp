@@ -427,7 +427,7 @@ private:
   void initialize_data_from_submodel();
 
   /// update current variables/labels/bounds/targets from subModel
-  void update_from_sub_model();
+  void update_from_model(Model& model);
 
   //
   //- Heading: Data members
@@ -558,7 +558,7 @@ inline void RecastModel::update_from_subordinate_model(size_t depth)
   if (depth > 0)
     subModel.update_from_subordinate_model(depth - 1);
   // now pull the latest updates from subModel
-  update_from_sub_model();
+  update_from_model(subModel);
 }
 
 

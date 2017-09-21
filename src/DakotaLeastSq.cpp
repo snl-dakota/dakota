@@ -173,7 +173,7 @@ void LeastSq::weight_model()
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
-  // update_from_sub_model is used instead.
+  // update_from_model() is used instead.
   bool recurse_flag = false;
   iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
 

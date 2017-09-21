@@ -620,7 +620,7 @@ void NonDExpansion::initialize_expansion()
   // to iteratedModel, it must be propagated up through the local g_u_model and
   // uSpaceModel recursions (so they are correct when propagated back down).
   //
-  // RecastModel::update_from_sub_model() has insufficient context to update
+  // RecastModel::update_from_model() has insufficient context to update
   // distribution params for variables that are not transformed (i.e., 
   // numerically-generated bases/points); it assumes that the presence of any
   // variable transformation precludes flow of distribution parameters.  So
