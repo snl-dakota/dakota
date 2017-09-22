@@ -566,7 +566,70 @@ namespace Dakota {
         return hess;
     }
 
+    void C3Approximation::store(size_t index)
+    {
+        ft_derived_functions_free(&(this->ft_derived_functions));
+        c3_sobol_sensitivity_free(this->ft_sobol); this->ft_sobol = NULL;
+        
+        // base class implementation manages approx data
+        Approximation::store(index);
 
+        size_t stored_len = storedFT.size();
+        if (index == _NPOS || index == stored_len) { // append
+            storedFT.push_back(function_train_copy(this->ft));            
+        }
+        else if (index < stored_len) { // replace
+            // function_train_free(storedFT[index]); storedFT[index] = NULL;
+            storedFT[index] = function_train_copy(this->ft); // MEMORY LEAK
+        }
+        else {
+            PCerr << "Error: bad index (" << index << ") passed in C3Approximation::store"
+                  << std::endl;
+            abort_handler(-1);
+        }
+        
+    }
+
+
+    void C3Approximation::restore(size_t index)
+    {
+        // base class implementation manages approx data
+        Approximation::restore(index);
+        // map to Pecos::BasisApproximation
+
+        size_t stored_len = storedFT.size();
+        function_train_free(this->ft); this->ft = NULL;
+        ft1d_array_free(this->ft_gradient); this->ft_gradient = NULL;
+        ft1d_array_free(this->ft_hessian); this->ft_hessian = NULL;
+        if (index == _NPOS) {
+            this->ft = storedFT.back();
+            this->ft_gradient = function_train_gradient(this->ft);
+            this->ft_hessian  = ft1d_array_jacobian(this->ft_gradient);
+        }
+        else if (index < stored_len) {
+            this->ft = storedFT[index];
+            this->ft_gradient = function_train_gradient(this->ft);
+            this->ft_hessian  = ft1d_array_jacobian(this->ft_gradient);           
+        }
+        else {
+            PCerr << "Error: bad index (" << index << ") passed in"
+                  << "C3Approximation::restore()" << std::endl;
+            abort_handler(-1);
+        }
+
+    }
+
+
+    void C3Approximation::remove_stored(size_t index)
+    {
+        // base class implementation manages approx data
+        Approximation::remove_stored(index);
+
+        size_t stored_len = storedFT.size();
+        storedFT.erase(storedFT.begin()+index);
+    }
+
+    
 
 } // namespace Dakota
 

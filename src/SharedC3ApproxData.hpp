@@ -58,6 +58,13 @@ public:
   //- Heading: Member functions
   //
 
+  void store(size_t);
+  void restore(size_t);
+  void remove_stored(size_t);
+  size_t pre_combine(short);
+  void post_combine(short);
+
+    
   /// invoke SharedOrthogPolyApproxData::construct_basis()
   void construct_basis(const ShortArray& u_types,
                        const Pecos::AleatoryDistParams& adp);
@@ -79,6 +86,8 @@ protected:
     struct OneApproxOpts ** oneApproxOpts;
     struct MultiApproxOpts * approxOpts;
 
+    std::vector<struct OneApproxOpts **> storeOne;
+    std::vector<struct MultiApproxOpts *> storeMulti;
 
     size_t maxNum;
     size_t startOrder;

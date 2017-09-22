@@ -6929,7 +6929,9 @@ static size_t
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents),
-  	MP_(numPredConfigs);
+  	MP_(numPredConfigs),
+    MP_(numSamplesForConstruct);
+
 
 static Method_mp_type
 	MP2s(covarianceControl,DIAGONAL_COVARIANCE),

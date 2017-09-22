@@ -781,9 +781,12 @@ public:
   /// Wilks sided interval type
   short wilksSidedInterval;
 
-  // NonD
+  // NonD Function_Train
   // pointer to model parameters for UQ
   String modelParamSpec;
+  /// Number of LHS used for construction
+  size_t numSamplesForConstruct;
+
 
     
   /// a sub-specification of vbdFlag: interaction order limit for

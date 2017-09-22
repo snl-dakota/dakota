@@ -129,6 +129,9 @@ protected:
     void build();
     // void rebuild();
     // void finalize();
+    void store(size_t index);
+    void restore(size_t index);
+    void remove_stored(size_t index);
 
     int min_coefficients() const;
 
@@ -151,6 +154,7 @@ private:
     //- Heading: Data
     //
 
+
     ////////////////
     // Reading in from dakota interface
     int adaptive_construction; // 0 if
@@ -172,8 +176,8 @@ private:
     double * xtrain;
     double * ytrain;
 
-
     // Model
+    std::vector<struct FunctionTrain *> storedFT;
     struct FunctionTrain * ft;
     struct FT1DArray * ft_gradient;
     struct FT1DArray * ft_hessian;

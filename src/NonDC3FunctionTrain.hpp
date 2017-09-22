@@ -59,6 +59,15 @@ namespace Dakota {
         void resolve_inputs(short& u_space_type, short& data_order);
         void initialize(short u_space_type);
 
+        // Multilevel stuff
+        void multifidelity_expansion();
+        void multilevel_regression(size_t);
+        void increment_sample_sequence(size_t new_samp, size_t total_samp);
+        /// generate new samples from numSamplesOnModel and update expansion
+        void append_expansion(const RealMatrix& samples,
+                              const IntResponseMap& resp_map);
+        void append_expansion();
+        
         //
         //- Heading: Member function definitions
         //
@@ -70,7 +79,7 @@ namespace Dakota {
         /// user specified import build active only
         bool importBuildActiveOnly;
 
-
+        size_t numSamplesOnModel;
     private:
 
         /// initialize uSpaceModel with input variable data
@@ -107,6 +116,8 @@ namespace Dakota {
         String exportPointsFile;
 
 
+        void print_results(std::ostream&);
+
         /// override certain print functions 
         void print_moments(std::ostream& s);
         void print_sobol_indices(std::ostream& s);
@@ -115,8 +126,38 @@ namespace Dakota {
         void compute_diagonal_variance();
         void compute_off_diagonal_covariance();
         void compute_analytic_statistics();
+
+        /// number of samples allocated to each level of a discretization
+        /// hierarchy within multilevel regression
+        SizetArray NLev;
+        /// equivalent number of high fidelity evaluations accumulated using samples
+        /// across multiple model forms and/or discretization levels
+        Real equivHFEvals;
     };
 
+
+inline void NonDC3FunctionTrain::
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
+{
+  // adapt the expansion in sync with the dataset
+  numSamplesOnModel += resp_map.size();
+
+  // utilize rebuild following expansion updates
+  uSpaceModel.append_approximation(samples, resp_map, true);
+}
+
+inline void NonDC3FunctionTrain::append_expansion()
+{
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         increment_order_from_grid() called
+
+  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+						    true, false);
+  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
+}
+
+    
 } // namespace Dakota
 
 #endif

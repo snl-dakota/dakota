@@ -811,6 +811,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
            ]
           model_param_spec STRING {N_mdm(str,modelParamSpec)}
+          [ num_samples_for_construction INTEGER >= 0 {N_mdm(sizet,numSamplesForConstruct)} ]
          )
         |
         ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}

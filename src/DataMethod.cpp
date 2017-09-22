@@ -155,8 +155,9 @@ DataMethodRep::DataMethodRep():
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
-  modelParamSpec("FT"),
-    // Parameter Study
+  // C3/FT
+  modelParamSpec("FT"), numSamplesForConstruct(20),
+  // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false), 
   // Verification
   refinementRate(2.),
@@ -299,7 +300,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity
+    << modelParamSpec << numSamplesForConstruct;
 
 
   // Parameter Study
@@ -448,8 +450,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
-    >> generatePosteriorSamples >> evaluatePosteriorDensity;
-
+    >> generatePosteriorSamples >> evaluatePosteriorDensity
+    >> modelParamSpec >> numSamplesForConstruct;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -597,7 +599,8 @@ void DataMethodRep::write(std::ostream& s) const
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity;
+    << generatePosteriorSamples << evaluatePosteriorDensity
+    << modelParamSpec << numSamplesForConstruct;
 
 
   // Parameter Study

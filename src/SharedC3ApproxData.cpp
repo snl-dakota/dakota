@@ -179,4 +179,41 @@ namespace Dakota {
         // do nothing
     }
 
+    void SharedC3ApproxData::store(size_t index)
+    {
+        size_t stored_len = storeOne.size();
+        if (index == _NPOS || index == stored_len) { // append
+            storeOne.push_back(this->oneApproxOpts);
+            storeMulti.push_back(this->approxOpts);
+        }
+        else if (index < stored_len) { // replace
+            storeOne[index] = this->oneApproxOpts;
+            storeMulti[index] = this->approxOpts;
+        }
+
+    }
+    
+    size_t SharedC3ApproxData::pre_combine(short combine_type)
+    {
+        (void) (combine_type);
+        return 0;
+    }
+
+    void SharedC3ApproxData::post_combine(short combine_type)
+    {
+        (void) (combine_type);
+    }
+
+    void SharedC3ApproxData::restore(size_t index)
+    {
+        (void) (index);
+    }
+
+
+    void SharedC3ApproxData::remove_stored(size_t index)
+    {
+        (void)(index);
+    }
+
+
 } // namespace Dakota

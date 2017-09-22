@@ -28,5 +28,8 @@
   <keyword  id="model_param_spec" name="model_param_spec" code="{N_mdm(str,modelParamSpec)}" label="Model Parameters for UQ" help="" minOccurs="1" >
     <param type="STRING" in_taglist="model" />
   </keyword>
+  <keyword  id="num_samples_for_construction" name="num_samples_for_construction" code="{N_mdm(sizet,numSamplesForConstruct)}" label="Number of samples to use for constructing emulator" help="" minOccurs="0" default="20">
+	<param type="INTEGER" constraint=">= 0" />
+  </keyword>
 </keyword>
 

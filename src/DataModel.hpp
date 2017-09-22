@@ -379,8 +379,6 @@ public:
   size_t verbosity;
     
 
-    
-
   /// whether automatic surrogate refinement is enabled
   bool autoRefine;
   /// maximum evals in refinement
