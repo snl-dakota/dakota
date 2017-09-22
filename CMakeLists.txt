@@ -1,4 +1,4 @@
-## Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
+# Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
 cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_MODULE_PATH
@@ -527,7 +527,12 @@ if(ENABLE_DAKOTA_DOCS AND NOT UNIX)
     "DAKOTA documentation build only available on UNIX platforms")
 endif()
 
-option(DAKOTA_API_JAVA "Enable Dakota library Java API" OFF)
+# Option to build an unsupported Java wrapper for Dakota's library mode that 
+# has a Java callback for performing function evaluations.  This is a non-
+# functioning capability that should only be enabled by developers.  It does 
+# not relate to compiling or using Dakota's graphical user interface.
+option(DAKOTA_API_JAVA "Unsupported: Enable Dakota library Java API" OFF)
+mark_as_advanced(DAKOTA_API_JAVA)
 
 if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS OR DAKOTA_API_JAVA)
   # Each of these requires compiling Java code with Java 1.6 or newer 

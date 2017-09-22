@@ -1,9 +1,8 @@
-Design variables are those variables which are modified for the
-purposes of computing an optimal design.
+Design variables are adjusted in the course of seeking an optimal
+design or an optimal set of deterministic calibration parameters.
 
-The most common type of design variables encountered in engineering
-applications are of the continuous type. These variables may assume
-any real value within
-their bounds. All but a handful of the optimization algorithms in
-Dakota support continuous design variables exclusively.
+Continuous design variables, which may assume any real value within
+specified bounds, are the most common design variable type in
+engineering applications.  All but a handful of the optimization
+algorithms in %Dakota support continuous design variables exclusively.
 

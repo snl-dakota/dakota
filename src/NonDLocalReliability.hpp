@@ -393,21 +393,24 @@ probability(bool cdf_flag, const RealVector& mpp_u, const RealVector& fn_grad_u,
 // or probability --> FORM reliability
 inline Real NonDLocalReliability::reliability(Real p)
 {
-  if (p <= 0. || p >= 1.) { // warning or error
-    if (p == 0.) {      // handle numerical exception
-      Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return  Pecos::LARGE_NUMBER;// DBL_MAX;
-    }
-    else if (p == 1.) { // handle numerical exception
-      Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return -Pecos::LARGE_NUMBER;//-DBL_MAX;
-    }
-    else {              // trap error for p < 0 or p > 1
-      Cerr << "\nError: invalid probability value in NonDLocalReliability::"
-	   << "reliability()." << std::endl; abort_handler(-1); return  0.;
-    }
+  if (p < 0.0 || 1.0 < p) {
+    Cerr << "\nError: invalid probability value in NonDLocalReliability::"
+	 << "reliability()." << std::endl; 
+    abort_handler(-1);
+    return  0.;
   }
-  else return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
+  else if (p < std::numeric_limits<double>::min()) {
+    Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
+	 << "reliability().\n"; 
+    return  Pecos::LARGE_NUMBER;// DBL_MAX;
+  }
+  else if ( 1.0 - std::numeric_limits<double>::epsilon() < p ) {
+    Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
+	 << "reliability().\n"; 
+    return -Pecos::LARGE_NUMBER;//-DBL_MAX;
+  }
+
+  return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 }
 
 

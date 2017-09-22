@@ -101,7 +101,10 @@ private:
   
   /// labels for each field group
   StringArray fieldLabels;
-
+  
+  /// simulation variance
+  RealVector simulationVariance;
+  
   /// number of scalar responses
   size_t numScalarResponses;
   /// index of field lengths for field data 
@@ -225,6 +228,9 @@ public:
   short primary_fn_type() const;
   /// set the primary function type (generic, objective, calibration)
   void primary_fn_type(short type);
+
+  /// retrieve simulation variance
+  const RealVector& simulation_error() const;
 
   /// create a deep copy of the current object and return by value
   SharedResponseData copy() const;
@@ -364,6 +370,12 @@ inline void SharedResponseData::response_type(short type)
 
 inline short SharedResponseData::primary_fn_type() const
 { return srdRep->primaryFnType; }
+
+inline const RealVector& SharedResponseData::simulation_error() const
+{
+  const RealVector& simvartest = srdRep->simulationVariance; 
+  return srdRep->simulationVariance;
+}
 
 
 inline const String& SharedResponseData::function_label(size_t i) const

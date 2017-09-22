@@ -17,6 +17,7 @@
 
 #include "NonDCalibration.hpp"
 #include "InvGammaRandomVariable.hpp"
+#include "GaussianKDE.hpp"
 #include "ANN/ANN.h" 
 
 namespace Dakota {
@@ -76,7 +77,7 @@ public:
   // compute information metrics
   static Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples,
       		size_t dim); 
-  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY);
+  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY, int alg);
 
 protected:
 
@@ -128,6 +129,9 @@ protected:
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
+
+  /// calculate a Kernel Density Estimate (KDE) for the posterior samples
+  void calculate_kde();
 
   void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
 					  const RealMatrix &samples_for_posterior_eval, 
@@ -231,6 +235,9 @@ protected:
   /// maximum number of high-fidelity model runs to be used for adaptive
   /// Bayesian experimental design
   int maxHifiEvals;
+  /// whether the KSG2 algorithm is to be employed in the calculation
+  /// of the mutual information
+  bool mutualInfoKSG2;
 
   // settings specific to model discrepancy
 
@@ -385,6 +392,10 @@ protected:
   void mutual_info_buildX();
   static void ann_dist(const ANNpointArray matrix1, const ANNpointArray matrix2, 
      		RealVector& distances, int NX, int NY, int dim2, IntVector& k, 
+		double eps);
+  static void ann_dist(const ANNpointArray matrix1, 
+                const ANNpointArray matrix2, RealVector& distances, 
+		IntVector& indices, int NX, int NY, int dim2, IntVector& k, 
 		double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		

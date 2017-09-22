@@ -2010,6 +2010,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             freeform {N_mdm(utype,importCandFormat_TABULAR_NONE)}
            ]
          ]
+        [ ksg2 {N_mdm(true,mutualInfoKSG2)} ]
        ]
       [ calibrate_error_multipliers {0}
         one {N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}
@@ -2418,8 +2419,8 @@ KEYWORD model {N_mom3(start,0,stop)}
   [ id_model STRING {N_mom(str,idModel)} ]
   ( single ALIAS simulation {N_mom(lit,modelType_simulation)}
     [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
-    [ solution_level_control STRING {N_mom(str,solutionLevelControl)}
-      solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
+    [ solution_level_cost REALLIST {N_mom(RealDL,solutionLevelCost)}
+      [ solution_level_control STRING {N_mom(str,solutionLevelControl)} ]
      ]
    )
   |
@@ -3240,7 +3241,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       ( calibration_data {N_rem(true,calibrationDataFlag)}
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
             annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
@@ -3273,9 +3274,10 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
          ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
        )
      ]
+    [ simulation_variance REALLIST LEN1 calibration_terms {N_rem(RealL,simVariance)} ]
     [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(sizet,numNonlinearIneqConstraints)}
       [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
       [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
@@ -3301,13 +3303,34 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
   |
   analytic_gradients {N_rem(lit,gradientType_analytic)}
   |
-  ( 
-    ( mixed_gradients {N_rem(lit,gradientType_mixed)}
-      id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
-      id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-     )
-    |
-    numerical_gradients {N_rem(lit,gradientType_numerical)}
+  ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+    id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
+    id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
+    [ method_source {0} ]
+    [ 
+      ( dakota {N_rem(lit,methodSource_dakota)}
+        [ ignore_bounds {N_rem(true,ignoreBounds)} ]
+        [ 
+          relative {N_rem(lit,fdGradStepType_relative)}
+          |
+          absolute {N_rem(lit,fdGradStepType_absolute)}
+          |
+          bounds {N_rem(lit,fdGradStepType_bounds)}
+         ]
+       )
+      |
+      vendor {N_rem(lit,methodSource_vendor)}
+     ]
+    [ interval_type {0} ]
+    [ 
+      forward {N_rem(lit,intervalType_forward)}
+      |
+      central {N_rem(lit,intervalType_central)}
+     ]
+    [ fd_step_size ALIAS fd_gradient_step_size REALLIST {N_rem(RealL,fdGradStepSize)} ]
+   )
+  |
+  ( numerical_gradients {N_rem(lit,gradientType_numerical)}
     [ method_source {0} ]
     [ 
       ( dakota {N_rem(lit,methodSource_dakota)}

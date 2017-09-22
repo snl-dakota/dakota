@@ -193,7 +193,126 @@
       &default_max_function_evaluations;
       &default_scaling;"
       >
+    <!ENTITY numerical_gradient_options '
+      <!-- # formerly required for dakota | vendor -->
+      <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" default="dakota" />
+      <optional>
+        <oneOf>
+          <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota" help="" minOccurs="1" default="relative" >
+            <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds" help="" minOccurs="0" default="bounds respected" />
+            <optional>
+              <oneOf label="step scaling" >
+                <keyword  id="relative" name="relative" code="{N_rem(lit,fdGradStepType_relative)}" label="relative" help=""  />
+                <keyword  id="absolute" name="absolute" code="{N_rem(lit,fdGradStepType_absolute)}" label="absolute" help=""  default="relative" />
+                <keyword  id="bounds" name="bounds" code="{N_rem(lit,fdGradStepType_bounds)}" label="bounds" help=""  />
+              </oneOf>
+            </optional>
+          </keyword>
+          <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor" help=""  />
+        </oneOf>
+      </optional>
+      <!-- # formerly required for forward or central -->
+      <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type" help="" minOccurs="0" default="forward" />
+      <optional>
+        <oneOf>
+          <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward" help=""  default="forward" />
+          <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central" help=""  />
+        </oneOf>
+      </optional>
+      <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" default="0.001" >
+        <alias name="fd_gradient_step_size"/>
+        <param type="REALLIST" />
+      </keyword>
+      '>
+    <!ENTITY response_gradients '
+      <oneOf label="gradient type">
+        <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients" help=""  />
+        <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients" help=""  />
+        <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
+          <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
+            <param type="INTEGERLIST" />
+          </keyword>
+          <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
+            <param type="INTEGERLIST" />
+          </keyword>
+	  &numerical_gradient_options;
+        </keyword>
+        <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum">
+	  &numerical_gradient_options;
+	</keyword>
+      </oneOf>
+      ' >
+    <!ENTITY response_hessians '
+      <oneOf label="Hessian type">
+        <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians" help=""  />
+        <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians" help="RespCommands.html#RespHessNum" minOccurs="1" >
+          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
+            <alias name="fd_hessian_step_size"/>
+            <param type="REALLIST" />
+          </keyword>
+          <optional>
+            <oneOf label="step scaling" >
+              <keyword  id="relative1" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
+              <keyword  id="absolute1" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
+              <keyword  id="bounds1" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
+            </oneOf>
+          </optional>
+          <optional>
+            <oneOf label="difference interval">
+              <keyword  id="forward1" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
+              <keyword  id="central1" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
+            </oneOf>
+          </optional>
+        </keyword>
+        <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians" help="RespCommands.html#RespHessQuasi" minOccurs="1" >
+          <oneOf>
+            <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
+              <keyword  id="damped" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessQuasi" minOccurs="0" default="undamped BFGS" />
+            </keyword>
+            <keyword  id="sr1" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
+          </oneOf>
+        </keyword>
+        <keyword  id="analytic_hessians" name="analytic_hessians" code="{N_rem(lit,hessianType_analytic)}" label="analytic_hessians" help=""  />
+        <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians" help="RespCommands.html#RespHessMixed" minOccurs="1" >
+          <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
+              <alias name="fd_hessian_step_size"/>
+              <param type="REALLIST" />
+            </keyword>
+          </keyword>
+          <optional>
+            <oneOf label="step scaling">
+              <keyword  id="relative2" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
+              <keyword  id="absolute2" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
+              <keyword  id="bounds2" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
+            </oneOf>
+          </optional>
+          <optional>
+            <oneOf label="difference interval">
+              <keyword  id="forward2" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
+              <keyword  id="central2" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
+            </oneOf>
+          </optional>
+          <keyword  id="id_quasi_hessians" name="id_quasi_hessians" code="{N_rem(intset,idQuasiHessians)}" label="Quasi Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+            <oneOf>
+              <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
+                <keyword  id="damped1" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessMixed" minOccurs="0" default="undamped BFGS" />
+              </keyword>
+              <keyword  id="sr11" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
+            </oneOf>
+          </keyword>
+          <keyword  id="id_analytic_hessians" name="id_analytic_hessians" code="{N_rem(intset,idAnalyticHessians)}" label="Analytic Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
+            <param type="INTEGERLIST" />
+          </keyword>
+        </keyword>
+      </oneOf>
+      '>
+
+
 ]>
+
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
                   xsi:schemaLocation='http://www.sandia.gov/dakota/1.0 dakota.xsd'>
   <input>
@@ -1241,8 +1360,8 @@
               &default_scaling;
             </required>
             <keyword  id="efficient_global" name="efficient_global" code="{N_mdm(utype,methodName_EFFICIENT_GLOBAL)}" label="efficient_global" help="" minOccurs="1" group="Surrogate-based Methods" >
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='(d+1)(d+2)/2'>
-		<param type='INTEGER' />
+	      <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples" help="" minOccurs="0" default="(d+1)(d+2)/2">
+		<param type="INTEGER" />
 	      </keyword>
               <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
                 <param type="INTEGER" constraint="> 0" />
@@ -1280,8 +1399,8 @@
 			<alias name="samples" />
 			<param type="INTEGER" />
 		      </keyword>
-		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
+		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
 		      <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
 		      &default_max_refinement_iterations;
@@ -1473,7 +1592,7 @@
 		      </oneOf>
 		      <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)" help="MethodCommands.html#MethodNonDMC" minOccurs="0" default="no variance-based decomposition" >
 			<keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
-			  <param type="INTEGER" constraint='> 0' />
+			  <param type="INTEGER" constraint="> 0" />
 			</keyword>
 			<keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="VBD tolerance for omitting small indices" help="MethodCommands.html#MethodNonDMC" minOccurs="0" default="All VBD indices displayed" >
 			  <param type="REAL" />
@@ -1524,8 +1643,8 @@
 			<alias name="samples" />
 			<param type="INTEGER" />
 		      </keyword>
-		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
+		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
 		      <keyword  id="fixed_seed1" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
 		      <!-- &default_max_iterations; for future multilevel SC -->
@@ -1641,9 +1760,9 @@
 		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_sampling"/>
-		      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='(initial) samples' help='' minOccurs='0' default='0'>
+		      <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples" help="" minOccurs="0" default="0">
 			      <alias name="initial_samples" />
-			      <param type='INTEGER' />
+			      <param type="INTEGER" />
 		      </keyword>
  		      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 			<param type="INTEGER" constraint="> 0" />
@@ -1766,9 +1885,9 @@
 		</keyword>
 		<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_importance_sampling"/>
-		  <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='(initial) samples' help='' minOccurs='0' default='0'>
-		    <alias name='initial_samples' />
-		    <param type='INTEGER' />
+		  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples" help="" minOccurs="0" default="0">
+		    <alias name="initial_samples" />
+		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		    <param type="INTEGER" constraint="> 0" />
@@ -1808,8 +1927,8 @@
 		    <alias name="samples" />
 		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" default="10000">
 		    <param type="INTEGER" />
@@ -1847,9 +1966,9 @@
 		</keyword>
 		<keyword  id="adaptive_sampling" name="adaptive_sampling" code="{N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}" label="adaptive_sampling" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_adaptive_sampling"/>
-		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='0'>
-		    <alias name='samples' />
-		    <param type='INTEGER' />
+		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples" help="" minOccurs="0" default="0">
+		    <alias name="samples" />
+		    <param type="INTEGER" />
 		  </keyword>
 		  <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		    <param type="INTEGER" constraint="> 0" />
@@ -1915,8 +2034,8 @@
 		    <alias name="samples" />
 		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="lipschitz" name="lipschitz" code="{0}" label="Lipschitz" help="" minOccurs="0" >
 		    <oneOf>
@@ -1952,8 +2071,8 @@
 		    <alias name="samples" />
 		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="lipschitz" name="lipschitz" code="{0}" label="Lipschitz" help="" minOccurs="0" >
 		    <oneOf>
@@ -1986,11 +2105,11 @@
 		<!-- BMA TODO: not clear what the right samples spec is for evidence -->
 		<keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence" help="" minOccurs="1" group="Uncertainty Quantification" >
 		  <alias name="nond_global_evidence"/>
-		  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs='0' help=""  >
+		  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs="0" help=""  >
 		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <optional>
 		    <oneOf>
@@ -2074,8 +2193,8 @@
 	      <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" >
 		      <param type="INTEGER" />
 	      </keyword>
-	      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		<param type='INTEGER' constraint='> 0' />
+	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
 	      </keyword>
 	      &default_max_iterations;
 	      &default_convergence_tolerance;
@@ -2122,12 +2241,12 @@
 	      <alias name="nond_bayes_calibration"/>
 	      <oneOf>
 		    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
-		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-			    <alias name='samples' />
-			    <param type='INTEGER' />
+		      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+			    <alias name="samples" />
+			    <param type="INTEGER" />
 		      </keyword>
-		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			    <param type='INTEGER' constraint='> 0' />
+		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+			    <param type="INTEGER" constraint="> 0" />
 		      </keyword>
 		      <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
 			  <oneOf label="emulator type" >
@@ -2261,12 +2380,12 @@
 		  </keyword>
 		    </keyword>
 		    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
-		      <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-			<alias name='samples' />
-			<param type='INTEGER' />
+		      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+			<alias name="samples" />
+			<param type="INTEGER" />
 		      </keyword>
-		      <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-			<param type='INTEGER' constraint='> 0' />
+		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+			<param type="INTEGER" constraint="> 0" />
 			</keyword>
 			<keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
 			  <param type="INTEGER" />
@@ -2346,8 +2465,8 @@
 			</keyword>
 		      </keyword>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		    </keyword>
 		  <keyword  id="emulator2" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
 		    <oneOf label="emulator type" >
@@ -2453,12 +2572,12 @@
 		  </optional>
 		</keyword>
 		<keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
-		  <keyword  id='chain_samples' name='chain_samples' code='{N_mdm(int,chainSamples)}' label='MCMC chain samples' help='' default='method-dependent'>
-		    <alias name='samples' />
-		    <param type='INTEGER' />
+		  <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+		    <alias name="samples" />
+		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id='seed7' name='seed' code='{N_mdm(pint,randomSeed)}' label='seed' help='' minOccurs='0' default='system-generated (non-repeatable)' >
-		    <param type='INTEGER' constraint='> 0' />
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
 		    <param type="INTEGER" constraint=">= 3" />
@@ -2593,6 +2712,8 @@
 		      </oneOf>
 		    </optional>
                   </keyword>
+		  <!-- KAM -->
+	          <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
 		</keyword> 
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>
@@ -2611,8 +2732,8 @@
 		</optional>
 	      </keyword>
 
-		  <keyword  id='burn_in_samples' name='burn_in_samples' code='{N_mdm(int,burnInSamples)}' label='Burn-in samples' help='' minOccurs='0' default='0'>
-		  	<param type='INTEGER' />
+		  <keyword  id="burn_in_samples" name="burn_in_samples" code="{N_mdm(int,burnInSamples)}" label="Burn-in samples" help="" minOccurs="0" default="0">
+		  	<param type="INTEGER" />
 		  </keyword>
 	          <keyword id="posterior_stats" name="posterior_stats" code="{0}" minOccurs="0">
 	             <keyword id="kl_divergence" name="kl_divergence" code="{N_mdm(true,posteriorStatsKL)}" minOccurs="0" />
@@ -2709,8 +2830,8 @@
 		    </optional>
 		  </keyword>
 		</keyword>
-	      <keyword  id='sub_sampling_period' name='sub_sampling_period' code='{N_mdm(int,subSamplingPeriod)}' label='Chain sampling period for statistics' help='' minOccurs='0' default='0'>
-		  	<param type='INTEGER' />
+	      <keyword  id="sub_sampling_period" name="sub_sampling_period" code="{N_mdm(int,subSamplingPeriod)}" label="Chain sampling period for statistics" help="" minOccurs="0" default="0">
+		  	<param type="INTEGER" />
 		  </keyword>
           <keyword  id="probability_levels1" name="probability_levels" code="{N_mdm(resplevs01,probabilityLevels)}" label="probability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
             <param type="REALLIST" />
@@ -2731,8 +2852,8 @@
 		<keyword  id="box_behnken" name="box_behnken" code="{N_mdm(utype,subMethod_SUBMETHOD_BOX_BEHNKEN)}" label="box_behnken" help=""  />
 		<keyword  id="central_composite" name="central_composite" code="{N_mdm(utype,subMethod_SUBMETHOD_CENTRAL_COMPOSITE)}" label="central_composite" help=""  />
 	      </oneOf>
-	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
-		<param type='INTEGER' />
+	      <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" default="0">
+		<param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
@@ -2750,8 +2871,8 @@
 	      </keyword>
 	    </keyword>
 	    <keyword  id="fsu_cvt" name="fsu_cvt" code="{N_mdm(utype,methodName_FSU_CVT)}" label="fsu_cvt" help="" minOccurs="1" group="DACE" >
-	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
-		<param type='INTEGER' />
+	      <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" default="0">
+		<param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
@@ -2780,8 +2901,8 @@
 	      <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions" help="MethodCommands.html#MethodPSUADE" minOccurs="0" default="3" >
 		<param type="INTEGERLIST" />
 	      </keyword>
-	      <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
-		      <param type='INTEGER' />
+	      <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" default="0">
+		      <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="seed6" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodEG" minOccurs="0" default="system-generated (non-repeatable)" >
 		<param type="INTEGER" constraint="> 0" />
@@ -2920,8 +3041,8 @@
                 </keyword>
                 <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability" help="" minOccurs="1" group="Uncertainty Quantification" >
                   <alias name="nond_global_reliability"/>
-		  <keyword  id='initial_samples' name='initial_samples' code='{N_mdm(int,numSamples)}' label='initial samples' help='' minOccurs='0' default='(d+1)(d+2)/2'>
-		    <param type='INTEGER' />
+		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples" help="" minOccurs="0" default="(d+1)(d+2)/2">
+		    <param type="INTEGER" />
 		  </keyword>
                   <oneOf>
                     <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_X)}" label="x_gaussian_process" help=""  >
@@ -3011,8 +3132,8 @@
                   <param type="REAL" />
                 </keyword>
               </keyword>
-	            <keyword  id='samples' name='samples' code='{N_mdm(int,numSamples)}' label='samples' help='' minOccurs='0' default='0'>
-		            <param type='INTEGER' />
+	            <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples" help="" minOccurs="0" default="0">
+		            <param type="INTEGER" />
 	            </keyword>
               <keyword  id="fixed_sequence" name="fixed_sequence" code="{N_mdm(true,fixedSequenceFlag)}" label="Fixed sequence flag" help="MethodCommands.html#MethodFSUDACE" minOccurs="0" default="sequence not fixed: sampling patterns are variable among multiple QMC runs" />
               <keyword  id="sequence_start" name="sequence_start" code="{N_mdm(ivec,sequenceStart)}" label="Sequence starting indices" help="MethodCommands.html#MethodFSUDACE" minOccurs="0" default="Vector of zeroes" >
@@ -3109,10 +3230,10 @@
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
-          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" complexity="1">
-            <param type="STRING" />
-	        <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
-              <param type="REALLIST" />
+          <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="0" complexity="1" >
+            <param type="REALLIST" />
+	    <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" >
+              <param type="STRING" />
             </keyword>
           </keyword>
         </keyword>
@@ -3270,22 +3391,22 @@
 			  <keyword  id="dace_method_pointer" name="dace_method_pointer" code="{N_mom(str,subMethodPointer)}" label="Design of Experiments Method Pointer" help="ModelCommands.html#ModelSurrG" minOccurs="1" default="no design of experiments data" >
                     <param type="STRING" in_taglist="method" />
 			    <keyword  id="auto_refinement" name="auto_refinement" code="{N_mom(true,autoRefine)}" label="Automatically Refine Surrogate" help="" minOccurs="0" default="no refinement" complexity="1">
-			      <keyword  id='max_iterations' name='max_iterations' code='{N_mom(int,maxIterations)}' label='Max Build Iterations' help='' minOccurs='0' default='100'>
-			<param type='INTEGER' constraint="> 0" />
+			      <keyword  id="max_iterations" name="max_iterations" code="{N_mom(int,maxIterations)}" label="Max Build Iterations" help="" minOccurs="0" default="100">
+			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id='max_function_evaluations' name='max_function_evaluations' code='{N_mom(int,maxFunctionEvals)}' label='Max Build Evaluations' help='' minOccurs='0' default='1000'>
-			<param type='INTEGER' constraint="> 0" />
+			      <keyword  id="max_function_evaluations" name="max_function_evaluations" code="{N_mom(int,maxFunctionEvals)}" label="Max Build Evaluations" help="" minOccurs="0" default="1000">
+			<param type="INTEGER" constraint="> 0" />
 		      </keyword>
-			      <keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mom(Real,convergenceTolerance)}' label='Convergence Tolerance' help='' minOccurs='0' default='1.0e-4' >
-			<param type='REAL' />
+			      <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mom(Real,convergenceTolerance)}" label="Convergence Tolerance" help="" minOccurs="0" default="1.0e-4" >
+			<param type="REAL" />
 		      </keyword>
-			      <keyword  id='soft_convergence_limit' name='soft_convergence_limit' code='{N_mom(int,softConvergenceLimit)}' label='Soft Convergence Limit' help='' minOccurs='0' default='0' >
-		        <param type='INTEGER' constraint=">= 0" />
+			      <keyword  id="soft_convergence_limit" name="soft_convergence_limit" code="{N_mom(int,softConvergenceLimit)}" label="Soft Convergence Limit" help="" minOccurs="0" default="0" >
+		        <param type="INTEGER" constraint=">= 0" />
 		      </keyword>
 			      <keyword  id="cross_validation_metric" name="cross_validation_metric" code="{N_mom(str,refineCVMetric)}" label="Cross-Validation Metric Type" help="" minOccurs="0" default="root-mean-squared error" >
 			<param type="STRING" />
-				    <keyword  id='folds' name='folds' code='{N_mom(int,refineCVFolds)}' label='CV Folds' help='' minOccurs='0' default='10'>
-			  <param type='INTEGER' constraint="> 0" />
+				    <keyword  id="folds" name="folds" code="{N_mom(int,refineCVFolds)}" label="CV Folds" help="" minOccurs="0" default="10">
+			  <param type="INTEGER" constraint="> 0" />
 			</keyword>
 		      </keyword>
 		      <!-- TODO: soft convergence limit / tolerance, challenge points -->
@@ -3496,8 +3617,8 @@
 	      <keyword  id="actual_model_pointer" name="actual_model_pointer" code="{N_mom(str,actualModelPointer)}" label="Actual Model Pointer" help="" minOccurs="1" >
 	    <param type="STRING" in_taglist="model" />
 	  </keyword>
-	      <keyword  id='initial_samples' name='initial_samples' code='{N_mom(int,initialSamples)}' label='Initial Samples' help='' minOccurs='0' default='model-dependent'>
-	    <param type='INTEGER' />
+	      <keyword  id="initial_samples" name="initial_samples" code="{N_mom(int,initialSamples)}" label="Initial Samples" help="" minOccurs="0" default="model-dependent">
+	    <param type="INTEGER" />
 	  </keyword>
 	  <keyword  id="sample_type" name="sample_type" code="{0}" label="Sample Type" help="" minOccurs="0" default="random" >
 	    <oneOf label="Sample Type">
@@ -3527,17 +3648,17 @@
         <keyword  id="decrease_tolerance" name="decrease_tolerance" code="{N_mom(Real,decreaseTolerance)}" label="Decrease Tolerance" help="" minOccurs="0" default="1.0e-6">
           <param type="REAL" />
         </keyword>
-        <keyword  id='max_rank' name='max_rank' label="Max Rank" code='{N_mom(int,subspaceCVMaxRank)}' minOccurs='0' default="number fullspace vars">
-          <param type='INTEGER' />
+        <keyword  id="max_rank" name="max_rank" label="Max Rank" code="{N_mom(int,subspaceCVMaxRank)}" minOccurs="0" default="number fullspace vars">
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword id="exhaustive" name="exhaustive" label="Exhaustive" code="{N_mom(false,subspaceCVIncremental)}" minOccurs="0" default="on" />
 	    </keyword>
 	  </keyword>
-	  <keyword  id='dimension' name='dimension' label="Dimension" code='{N_mom(int,subspaceDimension)}' minOccurs='0'>
-            <param type='INTEGER' />
+	  <keyword  id="dimension" name="dimension" label="Dimension" code="{N_mom(int,subspaceDimension)}" minOccurs="0">
+            <param type="INTEGER" />
 	  </keyword>
-	  <keyword  id='bootstrap_samples' name='bootstrap_samples' label="Bootstrap Samples" code='{N_mom(int,numReplicates)}' minOccurs='0'>
-            <param type='INTEGER' />
+	  <keyword  id="bootstrap_samples" name="bootstrap_samples" label="Bootstrap Samples" code="{N_mom(int,numReplicates)}" minOccurs="0">
+            <param type="INTEGER" />
 	  </keyword>
 	  <keyword id="build_surrogate" name="build_surrogate" label="Build Surrogate" code="{N_mom(true,subspaceBuildSurrogate)}" minOccurs="0">
             <keyword  id="refinement_samples" name="refinement_samples" code="{N_mom(ivec,refineSamples)}" label="Refinement Samples" help="" minOccurs="0" default="0"> 
@@ -3593,7 +3714,7 @@
 	    </oneOf>
 	  </keyword>
 	      <keyword  id="expansion_bases" name="expansion_bases" code="{N_mom(int,subspaceDimension)}" label="Expansion Bases" help="" minOccurs="0" >
-	    <param type='INTEGER' />
+	    <param type="INTEGER" />
 	  </keyword>
 	      <keyword  id="truncation_tolerance" name="truncation_tolerance" code="{N_mom(Real,truncationTolerance)}" label="Truncation Tolerance" help="" minOccurs="0" >
 	    <param type="REAL" />
@@ -4371,32 +4492,32 @@
           </keyword>
         </keyword>
       </keyword>
-      <keyword  id='linear_inequality_constraint_matrix' name='linear_inequality_constraint_matrix' code='{N_vam(rvec,linearIneqConstraintCoeffs)}' label='linear_inequality_constraint_matrix' help='' minOccurs='0' default='no linear inequality constraints' >
-        <param type='REALLIST' />
+      <keyword  id="linear_inequality_constraint_matrix" name="linear_inequality_constraint_matrix" code="{N_vam(rvec,linearIneqConstraintCoeffs)}" label="linear_inequality_constraint_matrix" help="" minOccurs="0" default="no linear inequality constraints" >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_inequality_lower_bounds' name='linear_inequality_lower_bounds' code='{N_vam(rvec,linearIneqLowerBnds)}' label='linear_inequality_lower_bounds' help='' minOccurs='0' default='vector values = -infinity' >
-        <param type='REALLIST' />
+      <keyword  id="linear_inequality_lower_bounds" name="linear_inequality_lower_bounds" code="{N_vam(rvec,linearIneqLowerBnds)}" label="linear_inequality_lower_bounds" help="" minOccurs="0" default="vector values = -infinity" >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_inequality_upper_bounds' name='linear_inequality_upper_bounds' code='{N_vam(rvec,linearIneqUpperBnds)}' label='linear_inequality_upper_bounds' help='' minOccurs='0' default='vector values = 0 .' >
-        <param type='REALLIST' />
+      <keyword  id="linear_inequality_upper_bounds" name="linear_inequality_upper_bounds" code="{N_vam(rvec,linearIneqUpperBnds)}" label="linear_inequality_upper_bounds" help="" minOccurs="0" default="vector values = 0 ." >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_inequality_scale_types' name='linear_inequality_scale_types' code='{N_vam(strL,linearIneqScaleTypes)}' label='linear_inequality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
-        <param type='STRINGLIST' />
+      <keyword  id="linear_inequality_scale_types" name="linear_inequality_scale_types" code="{N_vam(strL,linearIneqScaleTypes)}" label="linear_inequality_scale_types" help="" minOccurs="0" default="vector values = &quot;none&quot;" >
+        <param type="STRINGLIST" />
       </keyword>
-      <keyword  id='linear_inequality_scales' name='linear_inequality_scales' code='{N_vam(rvec,linearIneqScales)}' label='linear_inequality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
-        <param type='REALLIST' />
+      <keyword  id="linear_inequality_scales" name="linear_inequality_scales" code="{N_vam(rvec,linearIneqScales)}" label="linear_inequality_scales" help="" minOccurs="0" default="vector values = 1 . (no scaling)" >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_equality_constraint_matrix' name='linear_equality_constraint_matrix' code='{N_vam(rvec,linearEqConstraintCoeffs)}' label='linear_equality_constraint_matrix' help='' minOccurs='0' default='no linear equality constraints' >
-        <param type='REALLIST' />
+      <keyword  id="linear_equality_constraint_matrix" name="linear_equality_constraint_matrix" code="{N_vam(rvec,linearEqConstraintCoeffs)}" label="linear_equality_constraint_matrix" help="" minOccurs="0" default="no linear equality constraints" >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_equality_targets' name='linear_equality_targets' code='{N_vam(rvec,linearEqTargets)}' label='linear_equality_targets' help='' minOccurs='0' default='vector values = 0 .' >
-        <param type='REALLIST' />
+      <keyword  id="linear_equality_targets" name="linear_equality_targets" code="{N_vam(rvec,linearEqTargets)}" label="linear_equality_targets" help="" minOccurs="0" default="vector values = 0 ." >
+        <param type="REALLIST" />
       </keyword>
-      <keyword  id='linear_equality_scale_types' name='linear_equality_scale_types' code='{N_vam(strL,linearEqScaleTypes)}' label='linear_equality_scale_types' help='' minOccurs='0' default='vector values = &quot;none&quot;' >
-        <param type='STRINGLIST' />
+      <keyword  id="linear_equality_scale_types" name="linear_equality_scale_types" code="{N_vam(strL,linearEqScaleTypes)}" label="linear_equality_scale_types" help="" minOccurs="0" default="vector values = &quot;none&quot;" >
+        <param type="STRINGLIST" />
       </keyword>
-      <keyword  id='linear_equality_scales' name='linear_equality_scales' code='{N_vam(rvec,linearEqScales)}' label='linear_equality_scales' help='' minOccurs='0' default='vector values = 1 . (no scaling)' >
-        <param type='REALLIST' />
+      <keyword  id="linear_equality_scales" name="linear_equality_scales" code="{N_vam(rvec,linearEqScales)}" label="linear_equality_scales" help="" minOccurs="0" default="vector values = 1 . (no scaling)" >
+        <param type="REALLIST" />
       </keyword>
     </keyword>
 
@@ -4725,8 +4846,9 @@
                   <param type="INTEGER" constraint=">= 0" />
 		</keyword>
 
-		<keyword  id="variance_type1" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
+		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
                   <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+		  <alias name="variance_type"/>
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
@@ -4746,8 +4868,9 @@
 		<keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
 		  <param type="INTEGER" constraint=">= 0" />
 		</keyword>
-		<keyword  id="variance_type" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
+		<keyword  id="experiment_variance_type" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
 		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
+		  <alias name="variance_type"/>
 		</keyword>
               </keyword>
 	    </oneOf>
@@ -4755,6 +4878,9 @@
           <!-- #              )
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
             -->
+          <keyword id="simulation_variance" name="simulation_variance" code="{N_rem(RealL,simVariance)}" label="Additive model error" help="" minOccurs="0" default="no variance" >
+             <param type="REALLIST" constraint="LEN1 calibration_terms" />
+          </keyword>
           <keyword  id="nonlinear_inequality_constraints1" name="nonlinear_inequality_constraints" code="{N_rem(sizet,numNonlinearIneqConstraints)}" label="Number of nonlinear inequality constraints" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
             <alias name="num_nonlinear_inequality_constraints"/>
             <param type="INTEGER" constraint=">= 0" />
@@ -4812,118 +4938,9 @@
           </keyword>
         </keyword>
       </oneOf>
-      <oneOf label="gradient type">
-        <keyword  id="no_gradients" name="no_gradients" code="{N_rem(lit,gradientType_none)}" label="no_gradients" help=""  />
-        <keyword  id="analytic_gradients" name="analytic_gradients" code="{N_rem(lit,gradientType_analytic)}" label="analytic_gradients" help=""  />
-        <required>
-          <oneOf>
-            <keyword  id="mixed_gradients" name="mixed_gradients" code="{N_rem(lit,gradientType_mixed)}" label="Mixed gradients" help="RespCommands.html#RespGradMixed" minOccurs="1" >
-              <keyword  id="id_numerical_gradients" name="id_numerical_gradients" code="{N_rem(intset,idNumericalGrads)}" label="Numerical derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-              <keyword  id="id_analytic_gradients" name="id_analytic_gradients" code="{N_rem(intset,idAnalyticGrads)}" label="Analytic derivatives function list" help="RespCommands.html#RespGradMixed"  >
-                <param type="INTEGERLIST" />
-              </keyword>
-            </keyword>
-            <keyword  id="numerical_gradients" name="numerical_gradients" code="{N_rem(lit,gradientType_numerical)}" label="Numerical gradients" help="RespCommands.html#RespGradNum"  />
-          </oneOf>
-          <!-- # formerly required for dakota | vendor -->
-          <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" default="dakota" />
-          <optional>
-            <oneOf>
-              <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota" help="" minOccurs="1" default="relative" >
-                <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds" help="" minOccurs="0" default="bounds respected" />
-                <optional>
-                  <oneOf label="step scaling" >
-                    <keyword  id="relative" name="relative" code="{N_rem(lit,fdGradStepType_relative)}" label="relative" help=""  />
-                    <keyword  id="absolute" name="absolute" code="{N_rem(lit,fdGradStepType_absolute)}" label="absolute" help=""  default="relative" />
-                    <keyword  id="bounds" name="bounds" code="{N_rem(lit,fdGradStepType_bounds)}" label="bounds" help=""  />
-                  </oneOf>
-                </optional>
-              </keyword>
-              <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor" help=""  />
-            </oneOf>
-          </optional>
-          <!-- # formerly required for forward or central -->
-          <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type" help="" minOccurs="0" default="forward" />
-          <optional>
-            <oneOf>
-              <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward" help=""  default="forward" />
-              <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-          <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size" help="" minOccurs="0" default="0.001" >
-            <alias name="fd_gradient_step_size"/>
-            <param type="REALLIST" />
-          </keyword>
-        </required>
-      </oneOf>
-      <oneOf label="Hessian type">
-        <keyword  id="no_hessians" name="no_hessians" code="{N_rem(lit,hessianType_none)}" label="no_hessians" help=""  />
-        <keyword  id="numerical_hessians" name="numerical_hessians" code="{N_rem(lit,hessianType_numerical)}" label="Numerical Hessians" help="RespCommands.html#RespHessNum" minOccurs="1" >
-          <keyword  id="fd_step_size1" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessNum" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
-            <alias name="fd_hessian_step_size"/>
-            <param type="REALLIST" />
-          </keyword>
-          <optional>
-            <oneOf label="step scaling" >
-              <keyword  id="relative1" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
-              <keyword  id="absolute1" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
-              <keyword  id="bounds1" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
-            </oneOf>
-          </optional>
-          <optional>
-            <oneOf label="difference interval">
-              <keyword  id="forward1" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
-              <keyword  id="central1" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-        </keyword>
-        <keyword  id="quasi_hessians" name="quasi_hessians" code="{N_rem(lit,hessianType_quasi)}" label="Quasi Hessians" help="RespCommands.html#RespHessQuasi" minOccurs="1" >
-          <oneOf>
-            <keyword  id="bfgs1" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
-              <keyword  id="damped" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessQuasi" minOccurs="0" default="undamped BFGS" />
-            </keyword>
-            <keyword  id="sr1" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
-          </oneOf>
-        </keyword>
-        <keyword  id="analytic_hessians" name="analytic_hessians" code="{N_rem(lit,hessianType_analytic)}" label="analytic_hessians" help=""  />
-        <keyword  id="mixed_hessians" name="mixed_hessians" code="{N_rem(lit,hessianType_mixed)}" label="Mixed Hessians" help="RespCommands.html#RespHessMixed" minOccurs="1" >
-          <keyword  id="id_numerical_hessians" name="id_numerical_hessians" code="{N_rem(intset,idNumericalHessians)}" label="Numerical Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-            <keyword  id="fd_step_size2" name="fd_step_size" code="{N_rem(RealL,fdHessStepSize)}" label="Finite difference step size" help="RespCommands.html#RespHessMixed" minOccurs="0" default="0.001 (forward), 0.002 (central)" >
-              <alias name="fd_hessian_step_size"/>
-              <param type="REALLIST" />
-            </keyword>
-          </keyword>
-          <optional>
-            <oneOf label="step scaling">
-              <keyword  id="relative2" name="relative" code="{N_rem(lit,fdHessStepType_relative)}" label="relative" help=""  />
-              <keyword  id="absolute2" name="absolute" code="{N_rem(lit,fdHessStepType_absolute)}" label="absolute" help=""  default="relative" />
-              <keyword  id="bounds2" name="bounds" code="{N_rem(lit,fdHessStepType_bounds)}" label="bounds" help=""  />
-            </oneOf>
-          </optional>
-          <optional>
-            <oneOf label="difference interval">
-              <keyword  id="forward2" name="forward" code="{N_rem(false,centralHess)}" label="forward" help=""  default="forward" />
-              <keyword  id="central2" name="central" code="{N_rem(true,centralHess)}" label="central" help=""  />
-            </oneOf>
-          </optional>
-          <keyword  id="id_quasi_hessians" name="id_quasi_hessians" code="{N_rem(intset,idQuasiHessians)}" label="Quasi Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-            <oneOf>
-              <keyword  id="bfgs2" name="bfgs" code="{N_rem(lit,quasiHessianType_bfgs)}" label="bfgs" help="" minOccurs="1" >
-                <keyword  id="damped1" name="damped" code="{N_rem(lit,quasiHessianType_damped_bfgs)}" label="Numerical safeguarding of BFGS update" help="RespCommands.html#RespHessMixed" minOccurs="0" default="undamped BFGS" />
-              </keyword>
-              <keyword  id="sr11" name="sr1" code="{N_rem(lit,quasiHessianType_sr1)}" label="sr1" help=""  />
-            </oneOf>
-          </keyword>
-          <keyword  id="id_analytic_hessians" name="id_analytic_hessians" code="{N_rem(intset,idAnalyticHessians)}" label="Analytic Hessians function list" help="RespCommands.html#RespHessMixed" minOccurs="0" >
-            <param type="INTEGERLIST" />
-          </keyword>
-        </keyword>
-      </oneOf>
-    </keyword>
+      &response_gradients;
+      &response_hessians;
+     </keyword>
     
   </input>
 </document>

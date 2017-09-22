@@ -11,9 +11,9 @@
 #@ p9: MPIProcs=3
 #@ p10: MPIProcs=3
 #@ p11: MPIProcs=3
-#@ p12: MPIProcs=3
-#@ p13: MPIProcs=3
-#@ p14: MPIProcs=3
+#@ p12: MPIProcs=1
+#@ p13: MPIProcs=1
+#@ p14: MPIProcs=1
 #@ p15: MPIProcs=3
 #@ p16: MPIProcs=3
 #@ p17: MPIProcs=3
@@ -30,6 +30,10 @@
 # DAKOTA INPUT FILE - dakota_uq_subspace.in
 # Contains regression tests for using model subspace
 # with several methods
+
+## BMA, 20170920: Tests p12, p13, p14 hang in MPI on RHEL7 with no graceful termination
+## For now, MPIProcs=1 to skip the hang and this bogus KW to trip an input error
+# invalid_keyword_to_force_fail = true  #p12,#p13,#p14
 
 environment
   output_precision = 16

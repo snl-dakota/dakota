@@ -101,6 +101,8 @@ protected:
   void print_results(std::ostream& s);
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
+  /// export the PCE coefficient array to expansionExportFile
+  void export_coefficients();
 
   /// archive the PCE coefficient array for the orthogonal basis
   void archive_coefficients();

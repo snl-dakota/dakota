@@ -1,7 +1,8 @@
-Dakota variables can be grouped by their type, including \c all, \c
-design, \c uncertain, \c aleatory, \c epistemic, or \c state.
-There are certain situations where the user may want to explicitly
-control the subset of variables that is considered active for a
-certain %Dakota method, and override the default alignments between
-methods and variable types.  Refer to \ref variables-active for
-additional information.
+Dakota variables can be grouped their type: \ref
+topic-design_variables "design", uncertain (further sub-divided into
+\ref topic-aleatory_uncertain_variables "aleatory" and \ref
+topic-epistemic_uncertain_variables "epistemic"), and \ref
+topic-state_variables "state".  These distinctions are useful in
+situations where the user may want to explicitly control the subset of
+variables that is considered \ref variables-active for a certain
+%Dakota method, overriding the default active variable type.
