@@ -38,6 +38,8 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
+  multilevDiscrepEmulation(
+    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
@@ -67,6 +69,16 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.integration_refinement")),
   refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else
+      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  }
+
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
   epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
@@ -81,6 +93,7 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short u_space_type,
 	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
+  multilevDiscrepEmulation(DISTINCT_EMULATION),
   expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
@@ -90,6 +103,16 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  if (iteratedModel.surrogate_type() == "hierarchical") {
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else
+      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  }
+
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
   epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);

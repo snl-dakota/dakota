@@ -84,8 +84,6 @@ protected:
 
   void multifidelity_expansion();
 
-  bool recursive();
-
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);
@@ -243,21 +241,12 @@ private:
   /// number of samples allocated to each level of a discretization
   /// hierarchy within multilevel regression
   SizetArray NLev;
+  /// number of initial samples specified by the user
+  SizetArray pilotSamples;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;
 };
-
-
-inline bool NonDPolynomialChaos::recursive()
-{
-  size_t num_mf = iteratedModel.subordinate_models(false).size();
-  // num_hf_lev = iteratedModel.truth_model().solution_levels();
-  if (num_mf > 1) // && num_hf_lev == 1)                 // multifidelity PCE
-    return false; // for now
-  else                                                   // multilevel PCE
-    return true;  // for now
-}
 
 
 inline void NonDPolynomialChaos::

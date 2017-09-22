@@ -32,14 +32,6 @@ NonDStochCollocation::
 NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model)
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
-
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
@@ -158,14 +150,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs)
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
-
   // -------------------
   // input sanity checks
   // -------------------

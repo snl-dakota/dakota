@@ -66,17 +66,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.import_approx_points_file")),
   importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
   importApproxActiveOnly(
-    probDescDB.get_bool("method.import_approx_active_only"))
+    probDescDB.get_bool("method.import_approx_active_only")),
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
   //resizedFlag(false), callResize(false)
 {
-  // override default SurrogateModel::responseMode for purposes of
-  // HierarchSurrModel::set_communicators(), which precedes mode
-  // updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
-
   // -------------------
   // input sanity checks
   // -------------------
@@ -339,14 +332,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false), initSGLevel(0)
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
-
   // -------------------
   // input sanity checks
   // -------------------
@@ -413,7 +398,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    bool use_derivs, bool cv_flag,
 		    const String& import_build_points_file,
 		    unsigned short import_build_format,
-		    bool import_build_active_only):
+		    bool import_build_active_only): // TO DO: pilot samples
   NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
 		piecewise_basis, use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
@@ -423,14 +408,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
   //resizedFlag(false), callResize(false)
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (recursive()) iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else             iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
-
   // -------------------
   // input sanity checks
   // -------------------
@@ -1240,8 +1217,10 @@ void NonDPolynomialChaos::multifidelity_expansion()
     NonDExpansion::multifidelity_expansion();
   else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
 	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-    if (recursive()) recursive_regression(0);
-    else            multilevel_regression(0);
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+      recursive_regression(0);
+    else
+      multilevel_regression(0);
   }
   else {
     Cerr << "Error: unsupported combination of fidelities and levels within "
@@ -1274,16 +1253,16 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   
   // Initialize for pilot sample
   if (!importBuildPointsFile.empty()) {
-    Cerr << "Error: build data import not supported in NonDPolynomialChaos::"
-	 << "multilevel_regression()." << std::endl;
+    Cerr << "Error: build data import not currently supported in "
+	 << "NonDPolynomialChaos::multilevel_regression()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  SizetArray delta_N_l; NLev.assign(num_lev, 0);
-  delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
-  Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
+  SizetArray delta_N_l(num_lev);
+  load_pilot_sample(pilotSamples, delta_N_l);
 
   // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  NLev.assign(num_lev, 0);
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
@@ -1422,11 +1401,10 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
   // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
-  
-  NLev.assign(num_lev, 0); // total samples
-  SizetArray delta_N_l;    // sample increments
 
   // Initialize for pilot sample
+  SizetArray delta_N_l(num_lev); // sample increments
+  load_pilot_sample(pilotSamples, delta_N_l);
   bool import_pilot = !importBuildPointsFile.empty();
   // Options for import of discrepancy data.
   // > There is no good way for import to segregate the desired Q^l sample sets
@@ -1450,21 +1428,16 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
   //      uneven support for import.  Best to implement, verify, migrate?
   //   >> want to support import for MF PCE as well, including future
   //      adaptive MF PCE.
-  if (import_pilot) {
+  if (import_pilot)
+    Cout << "\nPilot sample to include imported build points.\n";
     // Build point import is active only for the pilot sample and we overlay
     // an additional pilot_sample spec, but we do not augment with samples from
-    // a collocation pts/ratio enforcement.  These controls take over on
-    // subsequent iterations
-    delta_N_l.assign(num_lev, 0); // TO DO: overlay user spec for pilot sample
-    Cout << "\nImporting ML PCE pilot sample.\n";
-  }
-  else {
-    delta_N_l.assign(num_lev, 10); // TO DO: PCE user spec for pilot sample
-    Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
-  }
+    // a collocation pts/ratio enforcement (pts/ratio controls take over on
+    // subsequent iterations).
 
   // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  NLev.assign(num_lev, 0); // total samples
   while ( iter <= max_iter &&
 	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 
