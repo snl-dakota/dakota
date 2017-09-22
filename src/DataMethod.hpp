@@ -52,7 +52,7 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
+       POLYNOMIAL_CHAOS, STOCH_COLLOCATION, MULTILEVEL_POLYNOMIAL_CHAOS,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
@@ -130,6 +130,8 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
 enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
+// define special values for multilevDiscrepEmulation
+enum { NO_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
@@ -876,6 +878,8 @@ public:
   /// orthogonal least interpolation PCE; based on the \c tensor_grid
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
+  /// type of discrepancy emulation in multilevel methods: distinct or recursive
+  short multilevDiscrepEmulation;
   /// the \c import_expansion_file specification in \ref MethodNonDPCE
   String importExpansionFile;
   /// the \c export_expansion_file specification in \ref MethodNonDPCE
@@ -997,8 +1001,8 @@ public:
   String importPredConfigs;
   /// tabular format for prediction configurations import file
   unsigned short importPredConfigFormat;
-  /// specify type of model discrepancy formulation
-  String discrepancyType;
+  /// type of model discrepancy emulation
+  String modelDiscrepancyType;
   /// correction order for either gaussian process or polynomial model
   /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
   short approxCorrectionOrder;
@@ -1018,15 +1022,15 @@ public:
   unsigned short exportDiscrepFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
-  /// whether to import candidate design points for adaptive Bayesian experimtal
-  /// design
+  /// whether to import candidate design points for adaptive Bayesian
+  /// experimental design
   String importCandPtsFile;
   /// tabular format for the candidate design points import file
   unsigned short importCandFormat;
   /// number of candidate designs for adaptive Bayesian experimental design
   size_t numCandidates;
-  /// maximum number of highfidelity model runs to be used for adaptive Bayesian 
-  /// experimental design
+  /// maximum number of highfidelity model runs to be used for
+  /// adaptive Bayesian experimental design
   int maxHifiEvals;
 
   // DREAM sub-specification
@@ -1055,8 +1059,8 @@ public:
   RealVector dataDistCovariance;
   /// file from which to read data distribution data (covariance or samples )
   String dataDistFile;
-  /// The filename of the export file containing an arbitrary set of samples and 
-  /// their corresponding density values
+  /// The filename of the export file containing an arbitrary set of
+  /// samples and their corresponding density values
   String posteriorDensityExportFilename;
   /// The filename of the export file containing samples from the posterior and 
   /// their corresponding density values

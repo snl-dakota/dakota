@@ -439,9 +439,10 @@ inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
     break;
   }
   default:
-    Cerr << "Error: mixed mode. Cannot update from a single model in Hierarch"
-	 << "SurrModel::\n       update_from_subordinate_model()" << std::endl;
-    abort_handler(MODEL_ERROR);
+    Cerr << "Warning: an aggregation mode is active in HierarchSurrModel. "
+	 << "Cannot update from a\n         single model in update_from_"
+	 << "subordinate_model()" << std::endl;
+    //abort_handler(MODEL_ERROR);
     break;
   }
 }

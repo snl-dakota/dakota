@@ -6593,8 +6593,6 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
-	MP2(discrepancyType,global_kriging),
-	MP2(discrepancyType,global_polynomial),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),
@@ -6628,6 +6626,8 @@ static Method_mp_lit
 	MP2(mcmcType,dram),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
+	MP2(modelDiscrepancyType,global_kriging),
+	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
 	MP2(mutationType,offset_cauchy),
 	MP2(mutationType,offset_normal),
@@ -6953,6 +6953,8 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+	MP2s(multilevDiscrepEmulation,DISTINCT_EMULATION),
+	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
@@ -7089,6 +7091,7 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),
 	MP2s(methodName,RKD_DARTS),

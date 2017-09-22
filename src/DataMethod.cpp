@@ -131,6 +131,7 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
+  multilevDiscrepEmulation(DISTINCT_EMULATION),
   //expansionSampleType("lhs"),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
@@ -146,7 +147,8 @@ DataMethodRep::DataMethodRep():
   calibrateErrorMode(CALIBRATE_NONE), burnInSamples(0), subSamplingPeriod(1),
   calModelDiscrepancy(false),
   // numPredConfigs (BMA TODO this is not initialized...)
-  importPredConfigFormat(TABULAR_ANNOTATED), discrepancyType("global_kriging"),
+  importPredConfigFormat(TABULAR_ANNOTATED),
+  modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
@@ -274,30 +276,28 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
-    << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples
-    << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << gpmsaNormalize
+    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
+    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << refineSamples << pilotSamples << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode
-    << hyperPriorAlphas << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << calModelDiscrepancy << numPredConfigs << predictionConfigList
-    << importPredConfigs << importPredConfigFormat
-    << discrepancyType << approxCorrectionOrder << exportCorrModelFile
-    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat
-    << exportDiscrepFile << exportDiscrepFormat << adaptExpDesign
-    << importCandPtsFile << importCandFormat << numCandidates << maxHifiEvals
-    << numChains << numCR << crossoverChainPairs << grThreshold << jumpStep
-    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << fitnessMetricType << batchSelectionType << lipschitzType
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
+    << numPredConfigs << predictionConfigList << importPredConfigs
+    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
+    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
+    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
+    << adaptExpDesign << importCandPtsFile << importCandFormat << numCandidates
+    << maxHifiEvals << numChains << numCR << crossoverChainPairs << grThreshold
+    << jumpStep << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
@@ -422,30 +422,28 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
     >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
-    >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
-    >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
-    >> reliabilitySearchType
-    >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> finalMomentsType >> distributionType >> responseLevelTarget
-    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> chainSamples
-    >> buildSamples >> samplesOnEmulator >> emulatorOrder >> emulatorType
-    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
-    >> gpmsaNormalize
+    >> tensorGridFlag >> tensorGridOrder >> multilevDiscrepEmulation
+    >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
+    >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
+    >> integrationRefine >> refineSamples >> pilotSamples >> finalMomentsType
+    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> chainSamples >> buildSamples >> samplesOnEmulator
+    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
+    >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> quesoOptionsFilename
-    >> fitnessMetricType
-    >> batchSelectionType >> lipschitzType >> calibrateErrorMode
-    >> hyperPriorAlphas >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
-    >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
-    >> importPredConfigs >> importPredConfigFormat
-    >> discrepancyType >> approxCorrectionOrder >> exportCorrModelFile
-    >> exportCorrModelFormat >> exportCorrVarFile >> exportCorrVarFormat
-    >> exportDiscrepFile >> exportDiscrepFormat >> adaptExpDesign
-    >> importCandPtsFile >> importCandFormat >> numCandidates >> maxHifiEvals
-    >> numChains >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
-    >> dataDistType >> dataDistCovInputType >> dataDistMeans 
+    >> fitnessMetricType >> batchSelectionType >> lipschitzType
+    >> calibrateErrorMode >> hyperPriorAlphas >> hyperPriorBetas
+    >> burnInSamples >> subSamplingPeriod >> calModelDiscrepancy
+    >> numPredConfigs >> predictionConfigList >> importPredConfigs
+    >> importPredConfigFormat >> modelDiscrepancyType >> approxCorrectionOrder
+    >> exportCorrModelFile >> exportCorrModelFormat >> exportCorrVarFile
+    >> exportCorrVarFormat >> exportDiscrepFile >> exportDiscrepFormat
+    >> adaptExpDesign >> importCandPtsFile >> importCandFormat >> numCandidates
+    >> maxHifiEvals >> numChains >> numCR >> crossoverChainPairs >> grThreshold
+    >> jumpStep >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity;
@@ -570,30 +568,28 @@ void DataMethodRep::write(std::ostream& s) const
     << lsRegressionType << regressionNoiseTol << regressionL2Penalty
     << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
-    << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples
-    << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << gpmsaNormalize
+    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
+    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << refineSamples << pilotSamples << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
+    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode
-    << hyperPriorAlphas << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << calModelDiscrepancy << numPredConfigs << predictionConfigList
-    << importPredConfigs << importPredConfigFormat
-    << discrepancyType << approxCorrectionOrder << exportCorrModelFile
-    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat
-    << exportDiscrepFile << exportDiscrepFormat << adaptExpDesign
-    << importCandPtsFile << importCandFormat << numCandidates << maxHifiEvals
-    << numChains << numCR << crossoverChainPairs << grThreshold << jumpStep
-    << dataDistType << dataDistCovInputType << dataDistMeans 
+    << fitnessMetricType << batchSelectionType << lipschitzType
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
+    << numPredConfigs << predictionConfigList << importPredConfigs
+    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
+    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
+    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
+    << adaptExpDesign << importCandPtsFile << importCandFormat << numCandidates
+    << maxHifiEvals << numChains << numCR << crossoverChainPairs << grThreshold
+    << jumpStep << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
