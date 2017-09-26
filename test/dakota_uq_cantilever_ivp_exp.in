@@ -51,8 +51,8 @@ method,
         id_method = 'ALEATORY'
 	polynomial_chaos                      #s0,#s1,#s4,#s5
 #	stoch_collocation                     #s2,#s3,#s6,#s7
-	  sparse_grid_level_sequence = 2			#s0,#s2,#s4,#s6
-#	  sparse_grid_level_sequence = 4			#s1,#s3,#s5,#s7
+	  sparse_grid_level = 2		      #s0,#s2,#s4,#s6
+#	  sparse_grid_level = 4		      #s1,#s3,#s5,#s7
       non_nested
     response_levels = 0.0 0.0
       num_response_levels = 0 1 1

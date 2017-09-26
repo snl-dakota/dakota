@@ -109,9 +109,8 @@ DataMethodRep::DataMethodRep():
   // COLINY, JEGA, NonD, & DACE
   randomSeed(0),
   // NOMAD
-  initMeshSize(1.0), minMeshSize(1.e-6),
-  historyFile("mads_history"), displayFormat("bbe obj"),
-  vns(0.0), neighborOrder(1), showAllEval(false),
+  initMeshSize(1.0), minMeshSize(1.e-6), historyFile("mads_history"),
+  displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
@@ -160,9 +159,7 @@ DataMethodRep::DataMethodRep():
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
-
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
-
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification

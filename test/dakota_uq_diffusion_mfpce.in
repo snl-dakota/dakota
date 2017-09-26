@@ -10,7 +10,7 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        polynomial_chaos				
+        multifidelity_polynomial_chaos				
 	  sparse_grid_level_sequence = 3 2 1 #s0,#p0
 #	  sparse_grid_level_sequence = 4 3 2 #s1,#p1
 	unrestricted

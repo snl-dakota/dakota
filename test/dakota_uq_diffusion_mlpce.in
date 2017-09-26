@@ -9,8 +9,8 @@ environment,
 
 method,
 	model_pointer = 'HIERARCH'
-        polynomial_chaos				
-	  expansion_order = 2				# initial for pilot
+        multilevel_polynomial_chaos				
+	  expansion_order_sequence = 2			# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
 	  seed = 1237
 	  orthogonal_matching_pursuit
