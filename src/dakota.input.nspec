@@ -785,9 +785,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     ( 
       ( 
         ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}
-          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
           [ final_moments {0}
@@ -814,26 +811,31 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
           ( 
-            quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+            ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+              [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+              [ 
+                nested {N_mdm(type,nestingOverride_NESTED)}
+                |
+                non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+               ]
+             )
             |
             ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
+              [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
               [ 
                 restricted {N_mdm(type,growthOverride_RESTRICTED)}
                 |
                 unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
                ]
+              [ 
+                nested {N_mdm(type,nestingOverride_NESTED)}
+                |
+                non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+               ]
              )
-            [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-            [ 
-              nested {N_mdm(type,nestingOverride_NESTED)}
-              |
-              non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-             ]
-           )
-          |
-          cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
-          |
-          ( 
+            |
+            cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
+            |
             ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
               [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
               [ basis_type {0}
@@ -893,32 +895,64 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
                 [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
                )
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+                [ 
+                  annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                  |
+                  ( 
+                    ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                     )
+                   )
+                  |
+                  freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                 ]
+                [ active_only {N_mdm(true,importBuildActive)} ]
+               ]
              )
             |
             ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
               collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
               [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-             )
-            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-              [ 
-                annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-                |
-                ( 
-                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+              [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+                [ 
+                  annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                  |
+                  ( 
+                    ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                      [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                      [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                      [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                     )
                    )
-                 )
-                |
-                freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                  |
+                  freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                 ]
+                [ active_only {N_mdm(true,importBuildActive)} ]
                ]
-              [ active_only {N_mdm(true,importBuildActive)} ]
-             ]
+             )
            )
           |
           import_expansion_file STRING {N_mdm(str,importExpansionFile)}
+          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+          [ sample_type {0}
+            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+           ]
+          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+          [ probability_refinement ALIAS sample_refinement {0}
+            import {N_mdm(utype,integrationRefine_IS)}
+            |
+            adapt_import {N_mdm(utype,integrationRefine_AIS)}
+            |
+            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+           ]
           [ variance_based_decomp {N_mdm(true,vbdFlag)}
             [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
             [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
@@ -927,20 +961,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
             |
             full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-           ]
-          [ normalized {N_mdm(true,normalizedCoeffs)} ]
-          [ sample_type {0}
-            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-            |
-            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-           ]
-          [ probability_refinement ALIAS sample_refinement {0}
-            import {N_mdm(utype,integrationRefine_IS)}
-            |
-            adapt_import {N_mdm(utype,integrationRefine_AIS)}
-            |
-            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
            ]
           [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
             [ 
@@ -973,13 +993,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
              ]
            ]
+          [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
          )
         |
         ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
-          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
           [ final_moments {0}
@@ -994,78 +1012,70 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
            ]
-          ( 
-            ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
-              [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-              [ basis_type {0}
-                tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ discrepancy_emulation {0}
+            distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+            |
+            recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+           ]
+          ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrder)}
+            [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+            [ basis_type {0}
+              tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
+              |
+              total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
+              |
+              ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+                [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
+                [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
+               )
+             ]
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+              [ 
+                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
+                  [ 
+                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
+                    |
+                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
+                   ]
+                 )
                 |
-                total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
+                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
+                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+                 )
                 |
-                ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
-                  [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
-                  [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
+                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
+                |
+                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
+                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+                 )
+                |
+                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
+                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+                 )
+                |
+                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
+                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
                  )
                ]
-              ( 
-                collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-                |
-                collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-                [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-                [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
-                [ discrepancy_emulation {0}
-                  distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
-                  |
-                  recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
-                 ]
-                [ 
-                  ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                    [ 
-                      svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                      |
-                      equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                     ]
-                   )
-                  |
-                  ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                    [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                   )
-                  |
-                  basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                  |
-                  ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                    [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                   )
-                  |
-                  ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                    [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                   )
-                  |
-                  ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                    [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                    [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                   )
-                 ]
-                [ cross_validation {N_mdm(true,crossValidation)}
-                  [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-                 ]
-                [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-                [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-                [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-                [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-                [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-               )
-              |
-              ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamples)}
-                [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-                [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
-               )
+              [ cross_validation {N_mdm(true,crossValidation)}
+                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+               ]
+              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
+              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+              [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
              )
             |
-            ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
-              [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+            ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamples)}
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+              [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
@@ -1085,7 +1095,43 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              ]
            )
           |
-          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
+          ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+            collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPoints)}
+            [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+            [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+              [ 
+                annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
+                |
+                freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+               ]
+              [ active_only {N_mdm(true,importBuildActive)} ]
+             ]
+           )
+          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+          [ sample_type {0}
+            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+           ]
+          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+          [ probability_refinement ALIAS sample_refinement {0}
+            import {N_mdm(utype,integrationRefine_IS)}
+            |
+            adapt_import {N_mdm(utype,integrationRefine_AIS)}
+            |
+            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+           ]
           [ variance_based_decomp {N_mdm(true,vbdFlag)}
             [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
             [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
@@ -1094,20 +1140,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
             |
             full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-           ]
-          [ normalized {N_mdm(true,normalizedCoeffs)} ]
-          [ sample_type {0}
-            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-            |
-            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-           ]
-          [ probability_refinement ALIAS sample_refinement {0}
-            import {N_mdm(utype,integrationRefine_IS)}
-            |
-            adapt_import {N_mdm(utype,integrationRefine_AIS)}
-            |
-            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
            ]
           [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
             [ 
@@ -1140,13 +1172,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
              ]
            ]
+          [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
          )
         |
         ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(utype,methodName_STOCH_COLLOCATION)}
-          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
           [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
           [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
           [ final_moments {0}
@@ -1207,6 +1237,22 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             |
             non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
            ]
+          [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+          [ sample_type {0}
+            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+            |
+            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+           ]
+          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+          [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+          [ probability_refinement ALIAS sample_refinement {0}
+            import {N_mdm(utype,integrationRefine_IS)}
+            |
+            adapt_import {N_mdm(utype,integrationRefine_AIS)}
+            |
+            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+           ]
           [ variance_based_decomp {N_mdm(true,vbdFlag)}
             [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
             [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
@@ -1215,19 +1261,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
             |
             full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-           ]
-          [ sample_type {0}
-            lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-            |
-            random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-           ]
-          [ probability_refinement ALIAS sample_refinement {0}
-            import {N_mdm(utype,integrationRefine_IS)}
-            |
-            adapt_import {N_mdm(utype,integrationRefine_AIS)}
-            |
-            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
            ]
           [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
             [ 
