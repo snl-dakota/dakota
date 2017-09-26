@@ -4,8 +4,8 @@ environment
 
 method
   polynomial_chaos
-    expansion_order_sequence 7
-      collocation_points_sequence 0
+    expansion_order 7
+      collocation_points 0
         orthogonal_matching_pursuit
         cross_validation 
        import_build_points_file 'cantilever_sampling_tabular.dat'
