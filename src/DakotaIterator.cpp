@@ -408,8 +408,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     default:            return new NonDGlobalEvidence(problem_db, model); break;
     } break;
   case POLYNOMIAL_CHAOS: case MULTILEVEL_POLYNOMIAL_CHAOS:
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     return new NonDPolynomialChaos(problem_db, model);  break;
-  case STOCH_COLLOCATION:
+  case STOCH_COLLOCATION: case MULTIFIDELITY_STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
@@ -793,8 +794,12 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
   case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
   case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return String("multifidelity_polynomial_chaos"); break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
     return String("multilevel_polynomial_chaos"); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return String("multifidelity_stoch_collocation"); break;
   case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
   case CUBATURE_INTEGRATION:    return String("cubature"); break;
   case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
@@ -885,8 +890,12 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
   else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
   else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
+  else if (method_name == "multifidelity_polynomial_chaos")
+    return MULTIFIDELITY_POLYNOMIAL_CHAOS;
   else if (method_name == "multilevel_polynomial_chaos")
     return MULTILEVEL_POLYNOMIAL_CHAOS;
+  else if (method_name == "multifidelity_stoch_collocation")
+    return MULTIFIDELITY_STOCH_COLLOCATION;
   else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
   else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
   else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;

@@ -173,7 +173,16 @@
 	 DACE, sampling: minimum required
       -->
 
-    <!ENTITY pce_p_refinement
+    <!ENTITY import_build
+      '			  <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+			    <alias name="import_points_file"/>
+			    <param type="INPUT_FILE" />
+			    &method_import_build_format;
+			    <keyword  id="active_only" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+			  </keyword>'
+      >
+
+    <!ENTITY pce_refinement
       '<keyword  id="p_refinement" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="Automated polynomial order refinement" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no refinement" >
          <oneOf label="p-refinement type">
            <keyword  id="uniform1" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
@@ -185,52 +194,125 @@
              </oneOf>
 	   </keyword>
 	 </oneOf>
-       </keyword>'
+       </keyword>
+       &default_max_refinement_iterations;'
       >
 
-    <!ENTITY pce_poly_family
-      '<optional>
-	 <oneOf label="Basis polynomial family">
-	   <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help="" default="extended (Askey + numerically-generated)" />
-	   <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help="" default="extended (Askey + numerically-generated)" />
-	   <!-- # | piecewise {NIDRProblemDescDB::method_piecewise} -->
-	 </oneOf>
-       </optional>'
+    <!ENTITY sc_refinement
+      '               <optional>
+			<oneOf label="Automated refinement type">
+			  <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" default="no refinement" >
+			    <oneOf label="p-refinement type">
+			      <keyword  id="uniform2" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
+			      <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
+				<oneOf label="dimension adaptivity estimation approach">
+				  <keyword  id="sobol1" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
+				  <keyword  id="generalized2" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
+				</oneOf>
+			      </keyword>
+			    </oneOf>
+			  </keyword>
+			  <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
+			    <oneOf label="h-refinement type">
+			      <keyword  id="uniform3" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
+			      <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
+				<oneOf label="dimension adaptivity estimation approach">
+				  <keyword  id="sobol2" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
+				  <keyword  id="generalized3" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
+				</oneOf>
+			      </keyword>
+			      <keyword  id="local_adaptive" name="local_adaptive" code="{N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}" label="local_adaptive" help=""  />
+			    </oneOf>
+			  </keyword>
+			</oneOf>
+		      </optional>
+		      &default_max_refinement_iterations;'
       >
 
-    <!ENTITY expansion_quadrature
-      '<keyword  id="quadrature_order_sequence" name="quadrature_order_sequence" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
-	 <param type="INTEGERLIST" />
-	 <keyword  id="dimension_preference" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
-	   <param type="REALLIST" />
-	 </keyword>
-	 <optional>
+    <!ENTITY expansion_rule_nesting
+      '  <optional>
 	   <oneOf label="Nesting of quadrature rules">
 	     <keyword  id="nested" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
 	     <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" help=""  />
 	   </oneOf>
-	 </optional>
-       </keyword>'
+	 </optional>'
       >
 
-    <!ENTITY expansion_sparse_grid
-      '<keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-	 <param type="INTEGERLIST" />
-	 <keyword  id="dimension_preference" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
-	   <param type="REALLIST" />
-	 </keyword>
-         <optional>
+    <!ENTITY expansion_rule_growth
+      '  <optional>
            <oneOf label="Restricted growth of quadrature rules">
 	     <keyword  id="restricted" name="restricted" code="{N_mdm(type,growthOverride_RESTRICTED)}" label="restricted" help=""  default="restricted (except for generalized sparse grids)" />
 	     <keyword  id="unrestricted" name="unrestricted" code="{N_mdm(type,growthOverride_UNRESTRICTED)}" label="unrestricted" help=""  />
            </oneOf>
-         </optional>
-	 <optional>
-	   <oneOf label="Nesting of quadrature rules">
-	     <keyword  id="nested" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
-	     <keyword  id="non_nested" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" help=""  />
-	   </oneOf>
-	 </optional>
+         </optional>'
+      >
+
+    <!ENTITY expansion_dim_pref
+      '  <keyword  id="dimension_preference" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
+	   <param type="REALLIST" />
+	 </keyword>'
+      >
+
+    <!ENTITY sc_sparse_interpolant
+      '                   <optional>
+			    <oneOf>
+			      <keyword  id="nodal" name="nodal" code="{N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}" label="nodal" help=""  default="nodal" />
+			      <keyword  id="hierarchical" name="hierarchical" code="{N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}" label="hierarchical" help=""  />
+			    </oneOf>
+			  </optional>'
+      >
+
+    <!ENTITY expansion_quadrature_sequence
+      '<keyword  id="quadrature_order_sequence" name="quadrature_order_sequence" code="{N_mdm(usharray,quadratureOrderSeq)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
+	 <param type="INTEGERLIST" />
+	 &expansion_dim_pref;
+	 &expansion_rule_nesting;
+       </keyword>'
+      >
+
+    <!ENTITY expansion_quadrature
+      '<keyword  id="quadrature_order" name="quadrature_order" code="{N_mdm(ushint,quadratureOrder)}" label="Quadrature order for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE"  >
+	 <param type="INTEGER" />
+	 &expansion_dim_pref;
+	 &expansion_rule_nesting;
+       </keyword>'
+      >
+
+    <!ENTITY pce_sparse_grid_sequence
+      '<keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+	 <param type="INTEGERLIST" />
+	 &expansion_dim_pref;
+         &expansion_rule_growth;
+	 &expansion_rule_nesting;
+       </keyword>'
+      >
+
+    <!ENTITY pce_sparse_grid
+      '<keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for PCE coefficient estimation" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+	 <param type="INTEGER" />
+	 &expansion_dim_pref;
+         &expansion_rule_growth;
+	 &expansion_rule_nesting;
+       </keyword>'
+      >
+
+    <!ENTITY sc_sparse_grid_sequence
+      '<keyword  id="sparse_grid_level_sequence" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevelSeq)}" label="Sparse grid level for SC interpolation" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
+	 <param type="INTEGERLIST" />
+	 &expansion_dim_pref;
+	 &sc_sparse_interpolant;
+         &expansion_rule_growth;
+	 &expansion_rule_nesting;
+       </keyword>'
+      >
+
+    <!ENTITY sc_sparse_grid
+      '<keyword  id="sparse_grid_level" name="sparse_grid_level" code="{N_mdm(ushint,sparseGridLevel)}" label="Sparse grid level for for SC interpolation" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
+	 <param type="INTEGER" />
+	 &expansion_dim_pref;
+	 &sc_sparse_interpolant;
+         &expansion_rule_growth;
+	 &expansion_rule_nesting;
        </keyword>'
       >
 
@@ -240,29 +322,8 @@
        </keyword>'
       >
 
-    <!ENTITY import_build
-      '			  <keyword  id="import_build_points_file1" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			    <alias name="import_points_file"/>
-			    <param type="INPUT_FILE" />
-			    &method_import_build_format;
-			    <keyword  id="active_only1" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			  </keyword>'
-      >
-
-    <!ENTITY pce_regression
-      '				<required>
-				  <oneOf>
-				    <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				      <param type="INTEGERLIST" />
-				    </keyword>
-				    <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				      <param type="REAL" />
-				    </keyword>
-				  </oneOf>
-				  <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
-				    <param type="REAL" />
-				  </keyword>
-				  <optional>
+    <!ENTITY pce_regression_alg_select
+      '                           <optional>
 				    <oneOf>
 				      <keyword  id="least_squares" name="least_squares" code="{N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}" label="least_squares" help="" minOccurs="1" default="svd" >
 					<optional>
@@ -303,37 +364,11 @@
 					</keyword>
 				      </keyword>
 				    </oneOf>
-				  </optional>
-				  <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-				    <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
-				  </keyword>
-				  <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
-				  <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
-				  <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
-				    <alias name="reuse_samples"/>
-				  </keyword>
-				  &default_max_iterations;
-				  &default_max_solver_iterations;
-				</required>'
+				  </optional>'
       >
 
-    <!ENTITY pce_expansion_samples
-      '				<keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				  <param type="INTEGERLIST" />
-				  <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
-				    <alias name="reuse_samples"/>
-				  </keyword>
-				  <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no sample reuse in coefficient estimation" />
-				</keyword>'
-      >
-
-    <!ENTITY pce_expansion_order
-      '			    <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			      <param type="INTEGERLIST" />
-			      <keyword  id="dimension_preference1" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="dimension_preference" help="" minOccurs="0" default="isotropic grids" >
-				<param type="REALLIST" />
-			      </keyword>
-			      <keyword  id="basis_type" name="basis_type" code="{0}" label="basis_type" help="" minOccurs="0" >
+    <!ENTITY pce_basis_type
+      '                       <keyword  id="basis_type" name="basis_type" code="{0}" label="basis_type" help="" minOccurs="0" >
 				<oneOf>
 				  <keyword  id="tensor_product" name="tensor_product" code="{N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}" label="tensor_product" help=""  />
 				  <keyword  id="total_order" name="total_order" code="{N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}" label="total_order" help=""  />
@@ -360,7 +395,99 @@
 				    </keyword>
 				  </keyword>
 				</oneOf>
-			      </keyword>
+			      </keyword>'
+      >
+
+    <!ENTITY pce_regression_sequence
+      '				<required>
+				  <oneOf>
+				    <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				      <param type="INTEGERLIST" />
+				    </keyword>
+				    <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				      <param type="REAL" />
+				    </keyword>
+				  </oneOf>
+				  <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+				    <param type="REAL" />
+				  </keyword>
+				  &pce_regression_alg_select;
+				  <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+				    <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
+				  </keyword>
+				  <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
+				  <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
+				  <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				    <alias name="reuse_samples"/>
+				  </keyword>
+				  &default_max_solver_iterations;
+				</required>'
+      >
+
+    <!ENTITY pce_regression
+      '				<required>
+				  <oneOf>
+				    <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				      <param type="INTEGER" />
+				    </keyword>
+				    <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				      <param type="REAL" />
+				    </keyword>
+				  </oneOf>
+				  <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+				    <param type="REAL" />
+				  </keyword>
+				  &pce_regression_alg_select;
+				  <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+				    <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
+				  </keyword>
+				  <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
+				  <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
+				  <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				    <alias name="reuse_samples"/>
+				  </keyword>
+				  &default_max_solver_iterations;
+				</required>'
+      >
+
+    <!ENTITY pce_expansion_samples_sequence
+      '				<keyword  id="expansion_samples_sequence" name="expansion_samples_sequence" code="{N_mdm(szarray,expansionSamplesSeq)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <param type="INTEGERLIST" />
+				  <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				    <alias name="reuse_samples"/>
+				  </keyword>
+				  <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no sample reuse in coefficient estimation" />
+				</keyword>'
+      >
+
+    <!ENTITY pce_expansion_samples
+      '				<keyword  id="expansion_samples" name="expansion_samples" code="{N_mdm(sizet,expansionSamples)}" label="Number simulation samples to estimate coeffs" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+				  <param type="INTEGER" />
+				  <keyword  id="reuse_points1" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				    <alias name="reuse_samples"/>
+				  </keyword>
+				  <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(lit,expansionSampleType_incremental_lhs)}" label="Use incremental LHS for expansion_samples" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no sample reuse in coefficient estimation" />
+				</keyword>'
+      >
+
+    <!ENTITY pce_expansion_order_sequence
+      '			    <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrderSeq)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <param type="INTEGERLIST" />
+			      &expansion_dim_pref;
+			      &pce_basis_type;
+			      <oneOf>
+				&pce_regression_sequence;
+				&pce_expansion_samples_sequence;
+			      </oneOf>
+			      &import_build;
+			    </keyword>'
+      >
+
+    <!ENTITY pce_expansion_order
+      '			    <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <param type="INTEGER" />
+			      &expansion_dim_pref;
+			      &pce_basis_type;
 			      <oneOf>
 				&pce_regression;
 				&pce_expansion_samples;
@@ -369,11 +496,11 @@
 			    </keyword>'
       >
 
-    <!ENTITY pce_orthog_least_interp
+    <!ENTITY pce_orthog_least_interp_sequence
       '			    <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			      <alias name="least_interpolation"/>
 			      <alias name="oli"/>
-			      <keyword  id="collocation_points_sequence1" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
+			      <keyword  id="collocation_points_sequence1" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" help=""  >
 				<param type="INTEGERLIST" />
 			      </keyword>
 			      <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
@@ -385,6 +512,33 @@
 			      </keyword>
 			      &import_build;
 			    </keyword>'
+      >
+
+    <!ENTITY pce_orthog_least_interp
+      '			    <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <alias name="least_interpolation"/>
+			      <alias name="oli"/>
+			      <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
+				<param type="INTEGER" />
+			      </keyword>
+			      <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
+			      <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" >
+				<param type="INTEGERLIST" />
+			      </keyword>
+			      <keyword  id="reuse_points2" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				<alias name="reuse_samples"/>
+			      </keyword>
+			      &import_build;
+			    </keyword>'
+      >
+
+    <!ENTITY discrep_emulation
+      '		      <keyword  id="discrepancy_emulation" name="discrepancy_emulation" code="{0}" label="Multilevel-multifidelity discrepancy emulation approach" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="distinct" >
+			<oneOf>
+			  <keyword  id="distinct" name="distinct" code="{N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}" label="distinct" help=""  />
+			  <keyword  id="recursive" name="recursive" code="{N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}" label="recursive" help=""  />
+			</oneOf>
+		      </keyword>'
       >
 
     <!ENTITY expansion_options
@@ -415,6 +569,7 @@
 			  <param type="INTEGERLIST" />
 			</keyword>
 		      </keyword>
+		      &default_final_moments;
 		      <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)" help="MethodCommands.html#MethodNonDMC" minOccurs="0" default="no variance-based decomposition" >
 			<keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
 			  <param type="INTEGER" constraint="> 0" />
@@ -429,6 +584,7 @@
 			  <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance" help=""  />
 			</oneOf>
 		      </optional>
+		      &default_convergence_tolerance;
 		      <keyword  id="import_approx_points_file" name="import_approx_points_file" code="{N_mdm(str,importApproxPtsFile)}" label="File name for importing samples for evaluating the PCE" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="no point import from a file" >
 			<param type="INPUT_FILE" />
 			&method_import_approx_format;
@@ -442,10 +598,28 @@
       >
 
     <!ENTITY pce_options
-      '		      <keyword  id="normalized" name="normalized" code="{N_mdm(true,normalizedCoeffs)}" label="Output PCE coefficients corresponding to normalized basis" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="PCE coefficients correspond to unnormalized basis polynomials" />
+      '		      <optional>
+	                <oneOf label="Basis polynomial family">
+	                  <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help="" default="extended (Askey + numerically-generated)" />
+	                  <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help="" default="extended (Askey + numerically-generated)" />
+	                  <!-- # | piecewise {N_mdm(type,expansionType_} -->
+	                </oneOf>
+                      </optional>
+		      <keyword  id="normalized" name="normalized" code="{N_mdm(true,normalizedCoeffs)}" label="Output PCE coefficients corresponding to normalized basis" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="PCE coefficients correspond to unnormalized basis polynomials" />
 		      <keyword  id="export_expansion_file" name="export_expansion_file" code="{N_mdm(str,exportExpansionFile)}" label="File name for exporting the coefficients and multi-index of a PCE " help="MethodCommands.html#MethodNonDPCE" minOccurs="0" >
 			<param type="OUTPUT_FILE" />
 		      </keyword>'
+      >
+
+    <!ENTITY sc_options
+      '               <optional>
+			<oneOf label="Basis polynomial family">
+			  <keyword  id="piecewise" name="piecewise" code="{NIDRProblemDescDB::method_piecewise}" label="piecewise" help="" default="extended (Askey + numerically-generated)" />
+			  <keyword  id="askey1" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help="" default="extended (Askey + numerically-generated)"  />
+			  <keyword  id="wiener1" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help="" default="extended (Askey + numerically-generated)" />
+			</oneOf>
+		      </optional>
+		      <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />'
       >
 
     <!-- Options shared by all coliny solvers (depends on previous ENTITYs) -->
@@ -1648,12 +1822,7 @@
                 </oneOf>
               </keyword>
               <keyword  id="use_derivatives" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodEG" minOccurs="0" default="use function values only"/>
-              <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodEG" minOccurs="0" default="no point import from a file" >
-		<alias name="import_points_file"/>
-                <param type="INPUT_FILE" />
-		&method_import_build_format;
-	        <keyword  id="active_only" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-              </keyword>
+              &import_build;
               <keyword  id="export_approx_points_file" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodEG" minOccurs="0" default="no point export to a file" >
 		<alias name="export_points_file"/>
                 <param type="OUTPUT_FILE" />
@@ -1666,130 +1835,74 @@
 		  <oneOf>
 		    <keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_polynomial_chaos"/>
-		      &default_max_refinement_iterations;
-		      &default_convergence_tolerance;
-		      &default_final_moments;
-		      &pce_p_refinement;
-		      &pce_poly_family;
-		      <oneOf label="Coefficient approach">
-			<required>
-			  <oneOf label="Coefficient computation approach">
-			    &expansion_quadrature;
-			    &expansion_sparse_grid;
-			    &pce_cubature;
-			    &pce_expansion_order;
-			    &pce_orthog_least_interp;
-			  </oneOf>
-			</required>
+		      &pce_refinement;
+		      <oneOf label="Chaos coefficient estimation approach">
+			&expansion_quadrature;
+			&pce_sparse_grid;
+			&pce_cubature;
+			&pce_expansion_order;
+			&pce_orthog_least_interp;
 			<keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" help="MethodCommands.html#MethodNonDPCE"  >
 			  <param type="INPUT_FILE" />
 			</keyword>
+		      </oneOf>
+		      &expansion_options;
+		      &pce_options;
+		    </keyword>
+		    <keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
+		      &pce_refinement;
+		      &discrep_emulation;
+		      <oneOf label="Chaos coefficient estimation approach">
+			&expansion_quadrature_sequence;
+			&pce_sparse_grid_sequence;
+			<!-- &pce_cubature; -->
+			&pce_expansion_order_sequence;
+			&pce_orthog_least_interp_sequence;
+			<!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" help="MethodCommands.html#MethodNonDPCE"  >
+			  <param type="INPUT_FILE" />
+			</keyword> -->
 		      </oneOf>
 		      &expansion_options;
 		      &pce_options;
 		    </keyword>
 		    <keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
-		      &default_max_refinement_iterations;
-		      &default_convergence_tolerance;
-		      &default_final_moments;
-		      <!-- &pce_p_refinment; -->
-		      &pce_poly_family;
-		      <!-- BMA TODO integrate with initial_samples....? -->
+		      <!-- &pce_refinement; -->
+		      &default_max_iterations;
 		      <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
 			<alias name="initial_samples"/>
 			<param type="INTEGERLIST" />
 		      </keyword>
-		      <keyword  id="discrepancy_emulation" name="discrepancy_emulation" code="{0}" label="Multilevel discrepancy emulation approach" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="distinct" >
-			<oneOf>
-			  <keyword  id="distinct" name="distinct" code="{N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}" label="distinct" help=""  />
-			  <keyword  id="recursive" name="recursive" code="{N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}" label="recursive" help=""  />
-			</oneOf>
-		      </keyword>	  
-		      <!-- <oneOf label="Coefficient approach">
-			<required> -->
-			  <oneOf label="Coefficient computation approach">
-			    &pce_expansion_order;
-			    &pce_orthog_least_interp;
-			  </oneOf>
-			<!-- </required>
-			<keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" help="MethodCommands.html#MethodNonDPCE"  >
+		      &discrep_emulation;
+		      <oneOf label="Coefficient computation approach">
+			&pce_expansion_order_sequence;
+			&pce_orthog_least_interp_sequence;
+			<!-- <keyword  id="import_expansion_file" name="import_expansion_file" code="{N_mdm(str,importExpansionFile)}" label="File name for importing expansion values and multi index to build a PCE" help="MethodCommands.html#MethodNonDPCE"  >
 			  <param type="INPUT_FILE" />
-			</keyword>
-		      </oneOf> -->
+			</keyword> -->
+		      </oneOf>
 		      &expansion_options;
 		      &pce_options;
 		    </keyword>
 		    <keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation" help="" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_stoch_collocation"/>
-		      <!-- &default_max_iterations; for future multilevel SC -->
-		      &default_max_refinement_iterations;
-		      &default_convergence_tolerance;
-		      &default_final_moments;
-		      <optional>
-			<oneOf label="Automated refinement type">
-			  <keyword  id="p_refinement1" name="p_refinement" code="{N_mdm(type,refinementType_P_REFINEMENT)}" label="p_refinement" help="" minOccurs="1" default="no refinement" >
-			    <oneOf label="p-refinement type">
-			      <keyword  id="uniform2" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
-			      <keyword  id="dimension_adaptive1" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
-				<oneOf label="dimension adaptivity estimation approach">
-				  <keyword  id="sobol1" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
-				  <keyword  id="generalized2" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
-				</oneOf>
-			      </keyword>
-			    </oneOf>
-			  </keyword>
-			  <keyword  id="h_refinement" name="h_refinement" code="{N_mdm(type,refinementType_H_REFINEMENT)}" label="h_refinement" help="" minOccurs="1"  default="no refinement" >
-			    <oneOf label="h-refinement type">
-			      <keyword  id="uniform3" name="uniform" code="{N_mdm(type,refinementControl_UNIFORM_CONTROL)}" label="uniform" help=""  />
-			      <keyword  id="dimension_adaptive2" name="dimension_adaptive" code="{0}" label="dimension_adaptive" help="" minOccurs="1" >
-				<oneOf label="dimension adaptivity estimation approach">
-				  <keyword  id="sobol2" name="sobol" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}" label="sobol" help=""  default="generalized" />
-				  <keyword  id="generalized3" name="generalized" code="{N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}" label="generalized" help=""  />
-				</oneOf>
-			      </keyword>
-			      <keyword  id="local_adaptive" name="local_adaptive" code="{N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}" label="local_adaptive" help=""  />
-			    </oneOf>
-			  </keyword>
-			</oneOf>
-		      </optional>
-		      <optional>
-			<oneOf label="Basis polynomial family">
-			  <keyword  id="piecewise" name="piecewise" code="{NIDRProblemDescDB::method_piecewise}" label="piecewise" help="" default="extended (Askey + numerically-generated)" />
-			  <keyword  id="askey1" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey" help="" default="extended (Askey + numerically-generated)"  />
-			  <keyword  id="wiener1" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener" help="" default="extended (Askey + numerically-generated)" />
-			</oneOf>
-		      </optional>
+		      &sc_refinement;
 		      <oneOf label="Interpolation grid type">
-			<keyword  id="quadrature_order_sequence1" name="quadrature_order_sequence" code="{N_mdm(usharray,quadratureOrder)}" label="Quadrature order for collocation points" help="MethodCommands.html#MethodNonDSC"  >
-			  <param type="INTEGERLIST" />
-			</keyword>
-			<keyword  id="sparse_grid_level_sequence1" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sparse grid level for collocation points" help="MethodCommands.html#MethodNonDSC" minOccurs="1" >
-			  <param type="INTEGERLIST" />
-			  <optional>
-			    <oneOf>
-			      <keyword  id="restricted1" name="restricted" code="{N_mdm(type,growthOverride_RESTRICTED)}" label="restricted" help=""  default="restricted (except for generalized sparse grids)" />
-			      <keyword  id="unrestricted1" name="unrestricted" code="{N_mdm(type,growthOverride_UNRESTRICTED)}" label="unrestricted" help=""  />
-			    </oneOf>
-			  </optional>
-			  <optional>
-			    <oneOf>
-			      <keyword  id="nodal" name="nodal" code="{N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}" label="nodal" help=""  default="nodal" />
-			      <keyword  id="hierarchical" name="hierarchical" code="{N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}" label="hierarchical" help=""  />
-			    </oneOf>
-			  </optional>
-			</keyword>
+			&expansion_quadrature;
+			&sc_sparse_grid;
 		      </oneOf>
-		      <keyword  id="dimension_preference2" name="dimension_preference" code="{N_mdm(RealDL,anisoDimPref)}" label="Dimension preference for anisotropic tensor and sparse grids" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="isotropic grids" >
-			<param type="REALLIST" />
-		      </keyword>
-		      <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />
-		      <optional>
-			<oneOf label="Nesting of quadrature rules">
-			  <keyword  id="nested1" name="nested" code="{N_mdm(type,nestingOverride_NESTED)}" label="nested" help=""  default="quadrature: non_nested unless automated refinement; sparse grids: nested" />
-			  <keyword  id="non_nested1" name="non_nested" code="{N_mdm(type,nestingOverride_NON_NESTED)}" label="non_nested" help=""  />
-			</oneOf>
-		      </optional>
 		      &expansion_options;
+		      &sc_options;
+		    </keyword>
+		    <keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation" help="" minOccurs="1" group="Uncertainty Quantification" >
+		      &sc_refinement;
+		      &discrep_emulation;
+		      <oneOf label="Interpolation grid type">
+			&expansion_quadrature_sequence;
+			&sc_sparse_grid_sequence;
+		      </oneOf>
+		      &expansion_options;
+		      &sc_options;
+		      <!-- &default_max_iterations; for future multilevel SC -->
 		    </keyword>
 		    <keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method" help="MethodCommands.html#MethodNonDMC" minOccurs="1" group="Uncertainty Quantification" >
 		      <alias name="nond_sampling"/>
@@ -1886,7 +1999,6 @@
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="fixed_seed3" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
-		  <!-- BMA TODO integrate with initial_samples....? -->
 		  <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
 		    <alias name="initial_samples"/>
 		    <param type="INTEGERLIST" />
@@ -1966,12 +2078,7 @@
 		  <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator" help="" minOccurs="0" default="10000">
 		    <param type="INTEGER" />
 		  </keyword>
-		  <keyword  id="import_build_points_file2" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="no point import from a file" >
-		    <alias name="import_points_file"/>
-		    <param type="INPUT_FILE" />
-		    &method_import_build_format;
-		    <keyword  id="active_only4" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-		  </keyword>
+		  &import_build;
 		  <keyword  id="export_approx_points_file3" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the emulator" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="no point export to a file" >
 		    <alias name="export_points_file"/>
 		    <param type="OUTPUT_FILE" />
@@ -2027,12 +2134,7 @@
 		  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples per iteration" help="" minOccurs="0" >
 		    <param type="INTEGERLIST" />
 		  </keyword>
-		  <keyword  id="import_build_points_file3" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="no point import from a file" >
-		    <alias name="import_points_file"/>
-		    <param type="INPUT_FILE" />
-		    &method_import_build_format;
-		    <keyword  id="active_only5" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-		  </keyword>
+		  &import_build;
 		  <keyword  id="export_approx_points_file4" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDAdaptive" minOccurs="0" default="no point export to a file" >
 		    <alias name="export_points_file"/>
 		    <param type="OUTPUT_FILE" />
@@ -2159,12 +2261,7 @@
 			  </oneOf>
 			</keyword>
 			<keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-			<keyword  id="import_build_points_file4" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			  <alias name="import_points_file"/>
-			  <param type="INPUT_FILE" />
-			  &method_import_build_format;
-			  <keyword  id="active_only6" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			</keyword>
+			&import_build;
 			<keyword  id="export_approx_points_file5" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file" help="" minOccurs="0" default="no point export to a file" >
 			  <alias name="export_points_file"/>
 			  <param type="OUTPUT_FILE" />
@@ -2247,12 +2344,7 @@
 		      </oneOf>
 		    </keyword>
 		    <keyword  id="use_derivatives4" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-		    <keyword  id="import_build_points_file5" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-		      <alias name="import_points_file"/>
-		      <param type="INPUT_FILE" />
-		      &method_import_build_format;
-		      <keyword  id="active_only7" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-		    </keyword>
+		    &import_build;
 		    <keyword  id="export_approx_points_file6" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file" help="" minOccurs="0" default="no point export to a file" >
 		      <alias name="export_points_file"/>
 		      <param type="OUTPUT_FILE" />
@@ -2273,80 +2365,65 @@
 	    <keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" >
 	      <alias name="nond_bayes_calibration"/>
 	      <oneOf>
-		    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
-		      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
-			    <alias name="samples" />
-			    <param type="INTEGER" />
+		<keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
+		  <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+		    <alias name="samples" />
+		    <param type="INTEGER" />
+		  </keyword>
+		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		    <param type="INTEGER" constraint="> 0" />
+		  </keyword>
+		  <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
+		    <oneOf label="emulator type" >
+		      <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
+			<alias name="kriging"/>
+			<oneOf>
+			  <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+			  <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+			</oneOf>
+			<keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
+			  <param type="INTEGER" />
+			</keyword>
+			<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			&import_build;
 		      </keyword>
-		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-			    <param type="INTEGER" constraint="> 0" />
-		      </keyword>
-		      <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-			  <oneOf label="emulator type" >
-			    <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			      <alias name="kriging"/>
-			      <oneOf>
-			        <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			        <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			      </oneOf>
-			      <keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			        <param type="INTEGER" />
+		      <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+			<oneOf>
+			  <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
+			    <param type="INTEGERLIST" />
+			  </keyword>
+			  <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			    <param type="INTEGERLIST" />
+			    <oneOf>
+			      <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="INTEGERLIST" />
 			      </keyword>
-			      <keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			      <keyword  id="import_build_points_file6" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			        <alias name="import_points_file"/>
-			        <param type="INPUT_FILE" />
-			        &method_import_build_format;
-			        <keyword  id="active_only8" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+			      <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+				<param type="REAL" />
 			      </keyword>
-			    </keyword>
-			    <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			      <oneOf>
-			        <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-				      <param type="INTEGERLIST" />
-			        </keyword>
-			        <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				      <param type="INTEGERLIST" />
-				      <oneOf>
-				        <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-						  <param type="INTEGERLIST" />
-						</keyword>
-						<keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-						  <param type="REAL" />
-						</keyword>
-				      </oneOf>
-					  <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"/>
-					  <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-					  <keyword  id="import_build_points_file7" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				        <alias name="import_points_file"/>
-						<param type="INPUT_FILE" />
-						&method_import_build_format;
-						<keyword  id="active_only9" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				      </keyword>
-			        </keyword>
-			        <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-				      <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				        <param type="INTEGERLIST" />
-				      </keyword>
-				      <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-					  <keyword  id="import_build_points_file8" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-				        <alias name="import_points_file"/>
-				        <param type="INPUT_FILE" />
-				        &method_import_build_format;
-				        <keyword  id="active_only10" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-				      </keyword>
-			        </keyword>
-			      </oneOf>
-			    </keyword>
-			  <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-			    <keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
+			    </oneOf>
+			    <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"/>
+			    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    &import_build;
+			  </keyword>
+			  <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			    <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
 			      <param type="INTEGERLIST" />
 			    </keyword>
+			    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    &import_build;
 			  </keyword>
 			</oneOf>
-			<keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		      </keyword>
-		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
+		      <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
+			<keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
+			  <param type="INTEGERLIST" />
+			</keyword>
+		      </keyword>
+		    </oneOf>
+		    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+		  </keyword>
+		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 				<param type="OUTPUT_FILE" />
@@ -2514,12 +2591,7 @@
 			</keyword>
 			<keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			</keyword>
-			<keyword  id="import_build_points_file10" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			  <alias name="import_points_file"/>
-			  <param type="INPUT_FILE" />
-			  &method_import_build_format;
-			  <keyword  id="active_only12" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			</keyword>
+			&import_build;
 		      </keyword>
 		      <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
 			<oneOf>
@@ -2540,12 +2612,7 @@
 			    </keyword>
 			    <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
-			    <keyword  id="import_build_points_file11" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only13" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
+			    &import_build;
 			  </keyword>
 			  <keyword  id="orthogonal_least_interpolation2" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			    <keyword  id="collocation_points_sequence5" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
@@ -2553,12 +2620,7 @@
 			    </keyword>
 			    <keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
-			    <keyword  id="import_build_points_file12" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only14" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
+			    &import_build;
 			  </keyword>
 			</oneOf>
 		      </keyword>
@@ -2640,12 +2702,7 @@
 			</keyword>
 			<keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			</keyword>
-			<keyword  id="import_build_points_file13" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			  <alias name="import_points_file"/>
-			  <param type="INPUT_FILE" />
-			  &method_import_build_format;
-			  <keyword  id="active_only15" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			</keyword>
+			&import_build;
 		      </keyword>
 		      <keyword  id="pce3" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
 			<oneOf>
@@ -2666,12 +2723,7 @@
 			    </keyword>
 			    <keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
-			    <keyword  id="import_build_points_file14" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only16" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
+			    &import_build;
 			  </keyword>
 			  <keyword  id="orthogonal_least_interpolation3" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			    <keyword  id="collocation_points_sequence7" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
@@ -2679,12 +2731,7 @@
 			    </keyword>
 			    <keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
 			    </keyword>
-			    <keyword  id="import_build_points_file15" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			      <alias name="import_points_file"/>
-			      <param type="INPUT_FILE" />
-			      &method_import_build_format;
-			      <keyword  id="active_only17" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			    </keyword>
+			    &import_build;
 			  </keyword>
 			</oneOf>
 		      </keyword>
@@ -3089,12 +3136,7 @@
                       <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
                     </oneOf>
                   </optional>
-                  <keyword  id="import_build_points_file16" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="File name for points to be imported as the basis for the initial GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point import from a file" >
-                    <alias name="import_points_file"/>
-		    <param type="INPUT_FILE" />
-		    &method_import_build_format;
-		    <keyword  id="active_only18" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-                  </keyword>
+                  &import_build;
                   <keyword  id="export_approx_points_file7" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point export to a file" >
                     <alias name="export_points_file"/>
 		    <param type="OUTPUT_FILE" />

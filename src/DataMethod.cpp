@@ -126,13 +126,17 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
+  quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
+  expansionOrder(USHRT_MAX),
+  collocationPoints(std::numeric_limits<size_t>::max()),
+  expansionSamples(std::numeric_limits<size_t>::max()),
+  //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   multilevDiscrepEmulation(DISTINCT_EMULATION),
-  //expansionSampleType("lhs"),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
   finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
@@ -269,12 +273,14 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << regressionType
-    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
+    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
+    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
+    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
+    << expansionOrder << collocationPoints << expansionSamples
+    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+    << collocRatioTermsOrder << regressionType << lsRegressionType
+    << regressionNoiseTol << regressionL2Penalty << crossValidation
+    << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
@@ -415,12 +421,14 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> vbdOrder >> covarianceControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> expansionBasisType >> expansionOrder
-    >> expansionSamples >> expansionSampleType >> quadratureOrder
-    >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
-    >> collocationRatio >> collocRatioTermsOrder >> regressionType
-    >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
-    >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
+    >> piecewiseBasis >> expansionBasisType >> quadratureOrderSeq
+    >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
+    >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
+    >> expansionOrder >> collocationPoints >> expansionSamples
+    >> expansionSampleType >> anisoDimPref >> cubIntOrder >> collocationRatio
+    >> collocRatioTermsOrder >> regressionType >> lsRegressionType
+    >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
+    >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder >> multilevDiscrepEmulation
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
@@ -561,12 +569,14 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << regressionType
-    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
+    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
+    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
+    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
+    << expansionOrder << collocationPoints << expansionSamples
+    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+    << collocRatioTermsOrder << regressionType << lsRegressionType
+    << regressionNoiseTol << regressionL2Penalty << crossValidation
+    << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal

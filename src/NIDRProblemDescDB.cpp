@@ -6763,19 +6763,22 @@ static unsigned short
 	MP_(adaptedBasisAdvancements),
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
+        MP_(expansionOrder),
+        MP_(quadratureOrder),
 	MP_(softConvLimit),
+	MP_(sparseGridLevel),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
 static SizetArray
-	MP_(collocationPoints),
-        MP_(expansionSamples),
+	MP_(collocationPointsSeq),
+        MP_(expansionSamplesSeq),
   	MP_(pilotSamples);
 
 static UShortArray
-        MP_(expansionOrder),
-        MP_(quadratureOrder),
-	MP_(sparseGridLevel),
+        MP_(expansionOrderSeq),
+        MP_(quadratureOrderSeq),
+	MP_(sparseGridLevelSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
@@ -6907,6 +6910,8 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+	MP_(collocationPoints),
+        MP_(expansionSamples),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
         MP_(numDesigns),
@@ -7091,6 +7096,8 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
+	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),

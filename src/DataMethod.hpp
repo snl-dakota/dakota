@@ -53,6 +53,7 @@ enum { DEFAULT_METHOD=0,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
        POLYNOMIAL_CHAOS, STOCH_COLLOCATION, MULTILEVEL_POLYNOMIAL_CHAOS,
+       MULTIFIDELITY_POLYNOMIAL_CHAOS, MULTIFIDELITY_STOCH_COLLOCATION,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
@@ -815,26 +816,41 @@ public:
   /// (Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT) or regression
   /// (Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS).
   short expansionBasisType;
+
+  /// the \c quadrature_order_sequence specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  UShortArray quadratureOrderSeq;
+  /// the \c sparse_grid_level_sequence specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  UShortArray sparseGridLevelSeq;
+  /// the \c expansion_order_sequence specification in \ref MethodNonDPCE
+  UShortArray expansionOrderSeq;
+  /// the \c collocation_points_sequence specification in \ref MethodNonDPCE
+  SizetArray collocationPointsSeq;
+  /// the \c expansion_samples_sequence specification in \ref MethodNonDPCE
+  SizetArray expansionSamplesSeq;
+
+  /// the \c quadrature_order specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  unsigned short quadratureOrder;
+  /// the \c sparse_grid_level specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  unsigned short sparseGridLevel;
   /// the \c expansion_order specification in \ref MethodNonDPCE
-  UShortArray expansionOrder;
+  unsigned short expansionOrder;
+  /// the \c collocation_points specification in \ref MethodNonDPCE
+  size_t collocationPoints;
   /// the \c expansion_samples specification in \ref MethodNonDPCE
-  SizetArray expansionSamples;
+  size_t expansionSamples;
+
   /// allows for incremental PCE construction using the \c
   /// incremental_lhs specification in \ref MethodNonDPCE
   String expansionSampleType;
-  /// the \c quadrature_order specification in \ref MethodNonDPCE and
-  /// \ref MethodNonDSC
-  UShortArray quadratureOrder;
-  /// the \c sparse_grid_level specification in \ref MethodNonDPCE,
-  /// \ref MethodNonDSC, and other stochastic expansion-enabled methods
-  UShortArray sparseGridLevel;
   /// the \c dimension_preference specification for tensor and sparse grids
   /// and expansion orders in \ref MethodNonDPCE and \ref MethodNonDSC
   RealVector anisoDimPref;
   /// the \c cubature_integrand specification in \ref MethodNonDPCE
   unsigned short cubIntOrder;
-  /// the \c collocation_points specification in \ref MethodNonDPCE
-  SizetArray collocationPoints;
   /// the \c collocation_ratio specification in \ref MethodNonDPCE
   Real collocationRatio;
   /// order applied to the number of expansion terms when applying
