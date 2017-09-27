@@ -27,6 +27,8 @@
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random.hpp"
+#include "boost/random/normal_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
 #include "boost/generator_iterator.hpp"
 #include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
@@ -68,6 +70,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
+  mutualInfoKSG2(probDescDB.get_bool("method.nond.mutual_info_ksg2")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -633,6 +636,44 @@ void NonDBayesCalibration::calibrate_to_hifi()
     }
 
   }
+  num_exp = expData.num_experiments();
+  
+  // Apply hifi error
+  const RealVector& hifi_sim_error = hifiModel.current_response().
+                                       shared_data().simulation_error();
+  RealVector hifi_error_vec(numFunctions);
+  if (hifi_sim_error.length() > 0) {
+    int stoch_seed = randomSeed;
+    Real stdev;
+    boost::mt19937 rnumGenerator;
+    if (hifi_sim_error.length() == 1) {
+      for (size_t k = 0; k < num_exp; k++) {
+	stoch_seed += 1;
+        rnumGenerator.seed(stoch_seed);
+        stdev = std::sqrt(hifi_sim_error[0]);
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+        for (size_t j = 0; j < numFunctions; j++)
+          hifi_error_vec[j] = err_gen();
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
+    else {
+      for (size_t k = 0; k < num_exp; k++) {
+        for (size_t j = 0; j < numFunctions; j++) {
+          stoch_seed += 1;
+          stdev = std::sqrt(hifi_sim_error[j]);
+          rnumGenerator.seed(stoch_seed);
+          boost::normal_distribution<> err_dist(0.0, stdev);
+          boost::variate_generator<boost::mt19937,
+          boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+          hifi_error_vec[j] = err_gen();
+        }
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
+  }
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
@@ -717,6 +758,12 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double MIrel;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
+  // Determine mutual information algorithm
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
 
   std::ofstream out_file("experimental_design_output.txt");
 
@@ -825,6 +872,49 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
+      // Build simulation error matrix
+      RealMatrix sim_error_matrix;
+      const RealVector& sim_error_vec = mcmcModel.current_response().
+                                        shared_data().simulation_error();
+      if (sim_error_vec.length() > 0) {
+        if (num_hifi == 0) {
+          Real stdev;
+          int stoch_seed = randomSeed;
+          sim_error_matrix.reshape(numFunctions, num_filtered);
+          RealVector col_vec(numFunctions);
+          boost::mt19937 rnumGenerator;
+          if (sim_error_vec.length() == 1) {
+            rnumGenerator.seed(randomSeed+1);
+            stdev = std::sqrt(sim_error_vec[0]);
+            boost::normal_distribution<> err_dist(0.0, stdev);
+            boost::variate_generator<boost::mt19937, 
+                                     boost::normal_distribution<> >
+                   err_gen(rnumGenerator, err_dist);
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                col_vec[k] = err_gen();
+	      }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+	    }
+          }
+          else {
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                stoch_seed += 1;
+                rnumGenerator.seed(stoch_seed);
+                stdev = std::sqrt(sim_error_vec[k]);
+                boost::normal_distribution<> err_dist(0.0, stdev);
+                boost::variate_generator<boost::mt19937,
+		                         boost::normal_distribution<> >
+                       err_gen(rnumGenerator, err_dist);
+                col_vec[k] = err_gen();
+              }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+            }
+	  }
+        }
+      }
+
       // BMA: You can now use acceptanceChain/acceptedFnVals, though
       // need to be careful about what subset for this chain run (may
       // need indices to track)
@@ -855,12 +945,18 @@ void NonDBayesCalibration::calibrate_to_hifi()
             col_vec[k] = lofi_params[k];
           }
           for (size_t k = 0; k < numFunctions; k ++) {
-            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+            if (sim_error_vec.length() > 0) {
+	      RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
+		                                  sim_error_matrix, j);
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k]+sim_error_vec[k];
+	    }
+	    else
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k];
           }
           Teuchos::setCol(col_vec, j, Xmatrix);
         }
         // calculate the mutual information b/w post theta and lofi responses
-        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
+        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions,alg);
 	if (outputLevel >= DEBUG_OUTPUT) {
 	  Cout << "\n----------------------------------------------\n";
           Cout << "Experimental Design Iteration "<<num_hifi+1<<" Progress";
@@ -2139,7 +2235,7 @@ void NonDBayesCalibration::mutual_info_buildX()
    * considered in the mutual info calculation. Each column has the form
    * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
    */
-   
+
   int num_params = numContinuousVars + numHyperparams;
   int num_samples = 1000;
   boost::mt19937 rnumGenerator;
@@ -2192,14 +2288,18 @@ void NonDBayesCalibration::mutual_info_buildX()
 
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
 
-
-  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
+  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params, alg);
   Cout << "MI est = " << mutualinfo_est << '\n';
 
 }
 
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
-    int dimY)
+    int dimY, int alg)
 {
   approxnn::normSelector::instance().method(approxnn::LINF_NORM);
 
@@ -2251,12 +2351,13 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
 
   // Get knn-distances for Xmatrix
   RealVector XYdistances(num_samples);
+  IntVector XYindices(num_samples);
   IntVector k_vec(num_samples);
   int k = 6;
   k_vec.putScalar(k); // for self distances, need k+1
   double eps = 0.0;
-  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
-      	   k_vec, eps);
+  ann_dist(dataXY, dataXY, XYdistances, XYindices, num_samples, num_samples, 
+           dim, k_vec, eps);
   
   // Build marginals
   ANNpointArray dataX, dataY;
@@ -2285,25 +2386,37 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
   kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
 
+  // KAM 
   double marg_sum = 0.0;
+  int n_x, n_y;
   for(int i = 0; i < num_samples; i++){
-    int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
-				    NULL, eps);
-    int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
-				    NULL, eps);
+    if (alg == 1) { //ksg2
+      ANNdist e_x = annDist(dimX, dataX[i], dataX[XYindices[i]]);
+      ANNdist e_y = annDist(dimY, dataY[i], dataY[XYindices[i]]);
+      n_x = kdTreeX->annkFRSearch(dataX[i], e_x, 0, NULL, NULL, eps);
+      n_y = kdTreeY->annkFRSearch(dataY[i], e_y, 0, NULL, NULL, eps);
+    }
+    else { //alg=0, ksg1
+      n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
+  				    NULL, eps);
+      n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
+  				    NULL, eps);
+    }
     double psiX = boost::math::digamma(n_x);
     double psiY = boost::math::digamma(n_y);
     //double psiX = boost::math::digamma(n_x+1);
     //double psiY = boost::math::digamma(n_y+1);
     marg_sum += psiX + psiY;
-    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
-    //Cout << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //test_stream <<"i = "<< i <<", nx = "<< n_x <<", ny = "<< n_y <<'\n';
     //test_stream << "psiX = " << psiX << '\n';
     //test_stream << "psiY = " << psiY << '\n';
   }
   double psik = boost::math::digamma(k);
   double psiN = boost::math::digamma(num_samples);
   double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
+  if (alg == 1) {
+    MI_est = MI_est - 1/double(k);
+  }
   //test_stream << "psi_k = " << psik << '\n';
   //test_stream << "marg_sum = " << marg_sum << '\n';
   //test_stream << "psiN = " << psiN << '\n';
@@ -2358,6 +2471,45 @@ void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1,
       delete [] knn_dist_i;
     }
     distances[i] = dist;
+    delete [] knn_ind;
+    delete [] knn_dist;
+  }
+  delete kdTree;
+  annClose();
+}
+
+void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
+     const ANNpointArray matrix2, RealVector& distances, IntVector& indices,
+     int NX, int NY, int dim2, IntVector& k_vec, double eps)
+{
+  ANNkd_tree* kdTree;
+  kdTree = new ANNkd_tree( matrix2, NY, dim2 );
+  for (unsigned int i = 0; i < NX; ++i){
+    int k_i = k_vec[i] ;
+    ANNdistArray knn_dist = new ANNdist[k_i+1];
+    ANNidxArray knn_ind = new ANNidx[k_i+1];
+    //calc min number of distances needed
+    kdTree->annkSearch(matrix1[ i ], k_i+1, knn_ind, knn_dist, eps);
+    double dist = knn_dist[k_i];
+    int ind = knn_ind[k_i];
+    if (dist == 0.0){
+      ANNdistArray knn_dist_i = new ANNdist[NY];
+      ANNidxArray knn_ind_i = new ANNidx[NY];
+      //calc distances for whole array
+      kdTree->annkSearch(matrix1[ i ], NY, knn_ind_i, knn_dist_i, eps); 
+      for (unsigned int j = k_i+1; j < NY; ++j){
+	if (knn_dist_i[j] > 0.0){
+	  dist = knn_dist_i[j];
+	  ind = knn_ind_i[j];
+	  k_vec[i] = j;
+	  break;
+	}
+      }
+      delete [] knn_ind_i;
+      delete [] knn_dist_i;
+    }
+    distances[i] = dist;
+    indices[i] = ind;
     delete [] knn_ind;
     delete [] knn_dist;
   }

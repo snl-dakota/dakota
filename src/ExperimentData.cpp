@@ -893,6 +893,15 @@ apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, size_t experiment,
   
 }
 
+void ExperimentData::apply_simulation_error(const RealVector& simulation_error,
+                                            size_t experiment)
+{
+  Response exp_response = allExperiments[experiment];
+  const RealVector& exp_vals = exp_response.function_values();
+  for (size_t i = 0; i < allExperiments[experiment].num_functions(); i++)
+    exp_response.function_value(exp_vals[i] + simulation_error[i], i);
+}
+
 
 void ExperimentData::
 get_main_diagonal(RealVector &diagonal, size_t experiment ) const
