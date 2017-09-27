@@ -470,6 +470,19 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << std::endl;
 }
 
+/** Implements configuration of constraint maps, etc...  */
+void Optimizer::pre_run()
+{
+  Minimizer::pre_run();
+
+  get_ineq_constraints( iteratedModel,
+                        bigRealBoundSize,
+                        CONSTRAINT_TYPE::NONLINEAR,
+                        my_constraintMapIndices,
+                        my_constraintMapMultipliers,
+                        my_constraintMapOffsets);
+}
+
 
 /** Implements portions of initialize_run specific to Optimizers. This
     function should be invoked (or reimplemented) by any derived

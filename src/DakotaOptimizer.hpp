@@ -59,6 +59,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void pre_run();
   void initialize_run();
   void post_run(std::ostream& s);
   void finalize_run();
@@ -82,6 +83,15 @@ protected:
   static Optimizer* optimizerInstance;
   /// pointer containing previous value of optimizerInstance
   Optimizer* prevOptInstance;
+
+  /// map from Dakota constraint number to APPS constraint number
+  std::vector<int> my_constraintMapIndices;
+
+  /// multipliers for constraint transformations
+  std::vector<double> my_constraintMapMultipliers;
+
+  /// offsets for constraint transformations
+  std::vector<double> my_constraintMapOffsets;
 
   template <typename RVecT, typename IVecT>
     int get_inequality_constraints(
