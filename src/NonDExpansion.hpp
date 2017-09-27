@@ -98,6 +98,8 @@ protected:
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   virtual void multifidelity_expansion();
+  /// construct a multilevel expansion across discretization levels
+  virtual void multilevel_expansion();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
@@ -240,6 +242,10 @@ private:
   //
   //- Heading: Convenience function definitions
   //
+
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  void assign_surrogate_response_mode();
 
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator

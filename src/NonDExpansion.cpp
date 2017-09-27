@@ -69,15 +69,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.integration_refinement")),
   refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else
-      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
+  assign_surrogate_response_mode();
 
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
@@ -103,15 +95,7 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
-  // override default SurrogateModel::responseMode for purposes of setting
-  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
-  // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    else
-      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-  }
+  assign_surrogate_response_mode();
 
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
@@ -124,6 +108,35 @@ NonDExpansion(unsigned short method_name, Model& model,
 
 NonDExpansion::~NonDExpansion()
 { }
+
+
+void NonDExpansion::assign_surrogate_response_mode()
+{
+  // override default SurrogateModel::responseMode for purposes of setting
+  // comms for the ordered Models within HierarchSurrModel::set_communicators(),
+  // which precedes mode updates in {multifidelity,multilevel}_expansion().
+  switch (methodName) {
+  case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    if (iteratedModel.surrogate_type() != "hierarchical") {
+      Cerr << "Error: multilevel/multifidelity expansions require a "
+	   << "hierarchical model." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    else
+      iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    break;
+  default: // single level/fidelity
+    if (iteratedModel.surrogate_type() == "hierarchical") {
+      Cerr << "Warning: single-level expansion configured with a hierarchical "
+	   << "model.  High fidelity results will be used." << std::endl;
+      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+    }
+    break;
+  }
+}
 
 
 bool NonDExpansion::resize()
@@ -603,12 +616,16 @@ void NonDExpansion::core_run()
 {
   initialize_expansion();
 
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    multifidelity_expansion(); // multilevel / multifidelity expansion
-  else { // single fidelity expansion
+  switch (methodName) {
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS: case MULTIFIDELITY_STOCH_COLLOCATION:
+    multifidelity_expansion(); break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS:  //case MULTILEVEL_STOCH_COLLOCATION:
+    multilevel_expansion();    break;
+  default: // single fidelity expansion
     compute_expansion();  // nominal iso/aniso expansion from input spec
     if (refineType)
       refine_expansion(); // uniform/adaptive p-/h-refinement
+    break;
   }
   
   // generate final results
@@ -657,7 +674,11 @@ void NonDExpansion::initialize_expansion()
   adp_u.update_partial(adp_x, natafTransform.x_random_variables(),
 		       natafTransform.u_types());
   // now perform the general recursion
-  uSpaceModel.update_from_subordinate_model(); // depth = max
+  size_t depth = (methodName > STOCH_COLLOCATION && // multilevel/multifidelity
+		  multilevDiscrepEmulation == DISTINCT_EMULATION) ?
+    2    : // limit depth to avoid warning at HierarchSurrModel
+    _NPOS; // max depth
+  uSpaceModel.update_from_subordinate_model(depth);
 
   // if a sub-iterator, reset any refinements that may have occurred
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
@@ -992,16 +1013,35 @@ void NonDExpansion::refine_expansion(size_t index)
 }
 
 
+void NonDExpansion::multilevel_expansion()
+{
+  Cerr << "Error: no default implementation for multilevel_expansion()."
+       << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDExpansion::multifidelity_expansion()
 {
+  /* *** TO DO: *** sanity checks + allow discretization levels...
+  size_t num_mf = iteratedModel.subordinate_models(false).size(),
+     num_hf_lev = iteratedModel.truth_model().solution_levels();
+     // for now, only SimulationModel supports solution_levels()
+  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
+    ;
+  */
+
   // ordered_model_fidelities is from low to high --> initial expansion is LF
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
   iteratedModel.surrogate_model_indices(0);
 
+  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  size_t   index = (recursive) ? 0 : _NPOS;
+
   // initial low fidelity/lowest discretization expansion
-  compute_expansion(0);  // nominal expansion from input spec
+  compute_expansion(index);  // nominal LF expansion from input spec
   if (refineType)
-    refine_expansion(0); // uniform/adaptive refinement
+    refine_expansion(index); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -1012,17 +1052,22 @@ void NonDExpansion::multifidelity_expansion()
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
   // loop over each of the discrepancy levels
-  size_t i, num_mf = iteratedModel.subordinate_models(false).size();
+  size_t i, im1, num_mf = iteratedModel.subordinate_models(false).size();
   for (size_t i=1; i<num_mf; ++i) {
     // store current state for use in combine_approximation() below
-    uSpaceModel.store_approximation(i-1);
+    im1 = i - 1;
+    if (recursive) uSpaceModel.store_approximation(im1);
+    else           uSpaceModel.store_approximation();
 
     increment_specification_sequence(); // advance to next PCE/SC specification
-    iteratedModel.surrogate_model_indices(i-1);
+    iteratedModel.surrogate_model_indices(im1);
     iteratedModel.truth_model_indices(i);
-    update_expansion(i);   // nominal expansion from input spec
+
+    index = (recursive) ? i : _NPOS;
+    update_expansion(index);   // nominal discrepancy expansion from input spec
     if (refineType)
-      refine_expansion(i); // uniform/adaptive refinement
+      refine_expansion(index); // uniform/adaptive refinement
+
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
@@ -1299,10 +1344,9 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_sparse->print_smolyak_multi_index();
   }
-  // output spectral data for multifidelity UQ.  To get finer grain data,
+  // output spectral data for multilevel/multifidelity UQ. For finer grain data,
   // activate DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp
-  if (iteratedModel.surrogate_type() == "hierarchical" &&
-      methodName == POLYNOMIAL_CHAOS) {
+  if (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS) {// || MULTILEVEL_POLY_CHAOS
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; ++i) {

@@ -1208,8 +1208,9 @@ ratio_samples_to_order(Real colloc_ratio, int num_samples,
 }
 
 
-void NonDPolynomialChaos::multifidelity_expansion()
+void NonDPolynomialChaos::multilevel_expansion()
 {
+  /* *** TO DO: *** sanity checks;  Allow model forms?
   size_t num_mf = iteratedModel.subordinate_models(false).size(),
      num_hf_lev = iteratedModel.truth_model().solution_levels();
      // for now, only SimulationModel supports solution_levels()
@@ -1217,16 +1218,19 @@ void NonDPolynomialChaos::multifidelity_expansion()
     NonDExpansion::multifidelity_expansion();
   else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
 	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-      recursive_regression(0);
-    else
-      multilevel_regression(0);
+
   }
   else {
     Cerr << "Error: unsupported combination of fidelities and levels within "
 	 << "NonDPolynomialChaos::multifidelity_expansion()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+  */
+
+  if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    recursive_regression(0);
+  else
+    multilevel_regression(0);
 }
 
 

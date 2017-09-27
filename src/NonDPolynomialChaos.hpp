@@ -82,7 +82,7 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion(size_t index = _NPOS);
 
-  void multifidelity_expansion();
+  void multilevel_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
@@ -111,11 +111,11 @@ protected:
   //- Heading: Member functions
   //
 
-  /// special case of multifidelity_expansion() for multilevel allocation of
+  /// special case of multilevel_expansion() for multilevel allocation of
   /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
   /// distinct PCE expansions for model discrepancies
   void multilevel_regression(size_t model_form);
-  /// special case of multifidelity_expansion() for multilevel allocation of
+  /// special case of multilevel_expansion() for multilevel allocation of
   /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
   /// recursive PCE expansions for hierarchical surpluses
   void recursive_regression(size_t model_form);
