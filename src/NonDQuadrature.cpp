@@ -16,6 +16,7 @@
 #include "dakota_system_defs.hpp"
 #include "NonDQuadrature.hpp"
 #include "DakotaModel.hpp"
+#include "DiscrepancyCorrection.hpp"
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
 #include "LHSDriver.hpp"
@@ -48,6 +49,9 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   Pecos::ExpansionConfigOptions
     ec_options(Pecos::QUADRATURE,
 	       probDescDB.get_short("method.nond.expansion_basis_type"),
+	       iteratedModel.discrepancy_correction().correction_type(),
+	       probDescDB.get_short(
+		 "method.nond.multilevel_discrepancy_emulation"),
 	       outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
 	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
 	       probDescDB.get_short("method.nond.expansion_refinement_control"),

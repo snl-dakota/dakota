@@ -838,7 +838,7 @@ void DataFitSurrModel::remove_stored_approximation(size_t index)
 }
 
 
-void DataFitSurrModel::combine_approximation(short corr_type)
+void DataFitSurrModel::combine_approximation()
 {
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
@@ -850,7 +850,7 @@ void DataFitSurrModel::combine_approximation(short corr_type)
   //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
   //bool swap = !nond_int->maximal_grid();
 
-  approxInterface.combine_approximation(corr_type);
+  approxInterface.combine_approximation();
 
   //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
 }

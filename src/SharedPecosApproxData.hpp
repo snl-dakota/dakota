@@ -128,8 +128,8 @@ protected:
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  size_t pre_combine(short corr_type);
-  void post_combine(short corr_type);
+  size_t pre_combine();
+  void post_combine();
 
 private:
 
@@ -215,12 +215,12 @@ inline void SharedPecosApproxData::remove_stored(size_t index)
 { pecosSharedDataRep->remove_stored_data(index); }
 
 
-inline size_t SharedPecosApproxData::pre_combine(short corr_type)
-{ return pecosSharedDataRep->pre_combine_data(corr_type); }
+inline size_t SharedPecosApproxData::pre_combine()
+{ return pecosSharedDataRep->pre_combine_data(); }
 
 
-inline void SharedPecosApproxData::post_combine(short corr_type)
-{ pecosSharedDataRep->post_combine_data(corr_type); }
+inline void SharedPecosApproxData::post_combine()
+{ pecosSharedDataRep->post_combine_data(); }
 
 
 inline void SharedPecosApproxData::

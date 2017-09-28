@@ -109,7 +109,7 @@ protected:
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
-  void combine_approximation(short corr_type);
+  void combine_approximation();
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
@@ -316,12 +316,12 @@ inline void ApproximationInterface::remove_stored_approximation(size_t index)
 }
 
 
-inline void ApproximationInterface::combine_approximation(short corr_type)
+inline void ApproximationInterface::combine_approximation()
 {
-  size_t swap_index = sharedData.pre_combine(corr_type);//shared aggregation 1st
+  size_t swap_index = sharedData.pre_combine(); // shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type, swap_index);
-  sharedData.post_combine(corr_type); // shared cleanup last
+    functionSurfaces[*it].combine(swap_index);
+  sharedData.post_combine(); // shared cleanup last
 }
 
 

@@ -3281,10 +3281,10 @@ void Model::remove_stored_approximation(size_t index)
 }
 
 
-void Model::combine_approximation(short corr_type)
+void Model::combine_approximation()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->combine_approximation(corr_type);
+    modelRep->combine_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This model does not support "

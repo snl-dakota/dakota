@@ -265,7 +265,7 @@ public:
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current approximation with previously stored data sets
-  virtual void combine_approximation(short corr_type);
+  virtual void combine_approximation();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated

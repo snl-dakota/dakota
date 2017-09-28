@@ -386,9 +386,9 @@ void Approximation::remove_stored(size_t index)
 }
 
 
-void Approximation::combine(short corr_type, size_t swap_index)
+void Approximation::combine(size_t swap_index)
 {
-  if (approxRep) approxRep->combine(corr_type, swap_index);
+  if (approxRep) approxRep->combine(swap_index);
 //else           approxData.combine(); // base contribution; derived augments
 }
 

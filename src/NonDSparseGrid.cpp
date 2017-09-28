@@ -18,6 +18,7 @@
 #include "CombinedSparseGridDriver.hpp"
 #include "HierarchSparseGridDriver.hpp"
 #include "DakotaModel.hpp"
+#include "DiscrepancyCorrection.hpp"
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
 
@@ -56,8 +57,12 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short combine_type = iteratedModel.discrepancy_correction().correction_type();
+  short discrep_type
+    = probDescDB.get_short("method.nond.multilevel_discrepancy_emulation");
   Pecos::ExpansionConfigOptions
-    ec_options(exp_coeffs_soln_approach, exp_basis_type, outputLevel,
+    ec_options(exp_coeffs_soln_approach, exp_basis_type,
+	       combine_type, discrep_type, outputLevel,
 	       probDescDB.get_bool("method.variance_based_decomp"),
 	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
 	       /*refine_type,*/ refine_control, //maxIterations,

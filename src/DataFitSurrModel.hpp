@@ -192,7 +192,7 @@ protected:
   /// store the current data fit approximation for later combination
   void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current data fit approximation with one previously stored
-  void combine_approximation(short corr_type);
+  void combine_approximation();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated

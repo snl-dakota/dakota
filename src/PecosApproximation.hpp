@@ -205,7 +205,7 @@ protected:
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  void combine(short corr_type, size_t swap_index);
+  void combine(size_t swap_index);
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -558,15 +558,15 @@ inline void PecosApproximation::remove_stored(size_t index)
 }
 
 
-inline void PecosApproximation::combine(short corr_type, size_t swap_index)
+inline void PecosApproximation::combine(size_t swap_index)
 {
   // base class implementation manages approxData state
-  //Approximation::combine(corr_type);
+  //Approximation::combine();
   if (swap_index != _NPOS) approxData.swap(swap_index);
 
   // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
   // PECOS combination type enumerations coincide.
-  pecosBasisApprox.combine_coefficients(corr_type, swap_index);
+  pecosBasisApprox.combine_coefficients(swap_index);
 }
 
 

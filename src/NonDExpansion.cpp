@@ -473,7 +473,9 @@ void NonDExpansion::initialize_u_space_model()
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   Pecos::ExpansionConfigOptions
-    ec_options(expansionCoeffsApproach, expansionBasisType, outputLevel,
+    ec_options(expansionCoeffsApproach, expansionBasisType, 
+	       iteratedModel.discrepancy_correction().correction_type(),
+	       multilevDiscrepEmulation, outputLevel,
 	       vbdFlag, vbdOrderLimit, refineControl, maxRefineIterations,
 	       maxSolverIterations, convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
@@ -1075,8 +1077,7 @@ void NonDExpansion::multifidelity_expansion()
   }
 
   // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation(
-    iteratedModel.discrepancy_correction().correction_type());
+  uSpaceModel.combine_approximation();
   Cout << "\n----------------------------------------------------"
        << "\nMultifidelity UQ: approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";

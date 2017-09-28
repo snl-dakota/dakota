@@ -90,7 +90,7 @@ public:
   virtual void remove_stored(size_t index = _NPOS);
 
   /// combine current approximation with previously stored approximation
-  virtual void combine(short corr_type, size_t swap_index);
+  virtual void combine(size_t swap_index);
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);

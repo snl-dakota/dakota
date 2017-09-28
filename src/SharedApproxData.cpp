@@ -488,7 +488,7 @@ void SharedApproxData::remove_stored(size_t index)
 }
 
 
-size_t SharedApproxData::pre_combine(short corr_type)
+size_t SharedApproxData::pre_combine()
 {
   if (!dataRep) {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "
@@ -496,14 +496,14 @@ size_t SharedApproxData::pre_combine(short corr_type)
     abort_handler(-1);
   }
 
-  return dataRep->pre_combine(corr_type);
+  return dataRep->pre_combine();
 }
 
 
-void SharedApproxData::post_combine(short corr_type)
+void SharedApproxData::post_combine()
 {
   if (dataRep)
-    dataRep->post_combine(corr_type);
+    dataRep->post_combine();
   else {
     Cerr << "\nError: post_combine() not defined for this shared approximation "
 	 << "type." << std::endl;

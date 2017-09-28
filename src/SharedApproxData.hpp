@@ -104,9 +104,9 @@ public:
   virtual void remove_stored(size_t index = _NPOS);
 
   /// aggregate the shared approximation data from current and stored states
-  virtual size_t pre_combine(short corr_type);
+  virtual size_t pre_combine();
   /// clean up stored data sets after aggregation
-  virtual void post_combine(short corr_type);
+  virtual void post_combine();
 
   //
   //- Heading: Member functions

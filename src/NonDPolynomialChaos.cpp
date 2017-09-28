@@ -1374,8 +1374,7 @@ void NonDPolynomialChaos::multilevel_regression(size_t model_form)
   // remove redundancy between current active and stored, prior to combining
   uSpaceModel.remove_stored_approximation(last_active);
   // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation(
-    iteratedModel.discrepancy_correction().correction_type());
+  uSpaceModel.combine_approximation();
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = NLev[0] * cost[0]; // first level is single eval
@@ -1573,8 +1572,7 @@ void NonDPolynomialChaos::recursive_regression(size_t model_form)
   // remove redundancy between current active and stored, prior to combining
   uSpaceModel.remove_stored_approximation(last_active);
   // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation(
-    iteratedModel.discrepancy_correction().correction_type());
+  uSpaceModel.combine_approximation();
 
   // compute the equivalent number of HF evaluations
   equivHFEvals = NLev[0] * cost[0];// first level incurs single model cost
