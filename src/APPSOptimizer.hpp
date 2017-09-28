@@ -96,6 +96,11 @@ class AppsTraits: public TraitsBase
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
 };
 
 inline AppsTraits::~AppsTraits()
@@ -189,17 +194,6 @@ protected:
 
   /// Pointer to the APPS evaluation manager object
   APPSEvalMgr* evalMgr;
-
-//PDH: Don't think we would need these data members anymore.
-
-  /// map from Dakota constraint number to APPS constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
 };
 
 } // namespace Dakota

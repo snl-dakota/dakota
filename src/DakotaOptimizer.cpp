@@ -475,12 +475,26 @@ void Optimizer::pre_run()
 {
   Minimizer::pre_run();
 
-  get_ineq_constraints( iteratedModel,
-                        bigRealBoundSize,
-                        CONSTRAINT_TYPE::NONLINEAR,
-                        my_constraintMapIndices,
-                        my_constraintMapMultipliers,
-                        my_constraintMapOffsets);
+  if( traits()->supports_nonlinear_inequality() )
+  {
+    // Sanity check consistent specs
+    if( traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::NONE )
+    {
+      Cerr << "\nError: inconsistent format for NONLINEAR_INEQUALITY_FORMAT in traits." << std::endl;
+      abort_handler(-1);
+    }
+
+    Real scaling = (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+                 ? 1.0 : -1.0;
+
+      config_ineq_constraint_maps( iteratedModel,
+          bigRealBoundSize,
+          CONSTRAINT_TYPE::NONLINEAR,
+          my_constraintMapIndices,
+          my_constraintMapMultipliers,
+          my_constraintMapOffsets,
+          scaling);
+  }
 }
 
 

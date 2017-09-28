@@ -34,6 +34,25 @@ public:
   /// Static helper function: third-party opt packages which are not available
   static void not_available(const std::string& package_name);
 
+//----------------------------------------------------------------
+
+  /// Adapter for transferring responses from Dakota data to TPL data
+  template <typename VecT>
+    void get_responses_from_dakota(
+        const RealVector & dak_fn_vals,
+        VecT & funs, 
+        VecT & cEqs, 
+        VecT & cIneqs)
+    {
+      return get_responses( iteratedModel,
+                            dak_fn_vals, 
+                            my_constraintMapIndices,
+                            my_constraintMapMultipliers,
+                            my_constraintMapOffsets, 
+                            funs,
+                            cEqs,
+                            cIneqs);
+    }
 protected:
 
   //
@@ -93,6 +112,8 @@ protected:
   /// offsets for constraint transformations
   std::vector<double> my_constraintMapOffsets;
 
+//----------------------------------------------------------------
+
   template <typename RVecT, typename IVecT>
     int get_inequality_constraints(
         CONSTRAINT_TYPE ctype,
@@ -101,14 +122,14 @@ protected:
         RVecT & map_offsets,
         Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
     {
-      return get_ineq_constraints(
-                          iteratedModel,
-                          bigRealBoundSize,
-                          ctype,
-                          map_indices,
-                          map_multipliers,
-                          map_offsets,
-                          scaling);
+      return config_ineq_constraint_maps(
+                               iteratedModel,
+                               bigRealBoundSize,
+                               ctype,
+                               map_indices,
+                               map_multipliers,
+                               map_offsets,
+                               scaling);
     }
 
 private:
@@ -251,9 +272,9 @@ void copy_data( const VectorType1 & source,
 template <typename AdapterT>
 void set_best_responses( typename AdapterT::OptT & optimizer,
                          const Model & model,
-                         const std::vector<int> constraintMapIndices, // need to move this to traits or similar
-                         const std::vector<double> constraintMapMultipliers, // need to move this to traits or similar
-                         const std::vector<double> constraintMapOffsets, // need to move this to traits or similar
+                         const std::vector<int> constraint_map_indices, // need to move this to traits or similar
+                         const std::vector<double> constraint_map_multipliers, // need to move this to traits or similar
+                         const std::vector<double> constraint_map_offsets, // need to move this to traits or similar
                                ResponseArray & response_array)
 {
   RealVector best_fns(model.num_functions());
@@ -263,7 +284,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
 
   // Get best Objective - assumes single objective only for now
   std::vector<double> bestEqs(numNlEqCons);
-  std::vector<double> bestIneqs(constraintMapIndices.size()-numNlEqCons);
+  std::vector<double> bestIneqs(constraint_map_indices.size()-numNlEqCons);
   const BoolDeque& max_sense = model.primary_response_fn_sense();
   best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
 
@@ -272,7 +293,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
     optimizer.getBestNonlEqs(bestEqs); // we leave this method name the same for now but could generalize depending on other TPLs
     for (size_t i=0; i<numNlEqCons; i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-      best_fns[constraintMapIndices[i]+1] = (bestEqs[i]-constraintMapOffsets[i]) / constraintMapMultipliers[i];
+      best_fns[constraint_map_indices[i]+1] = (bestEqs[i]-constraint_map_offsets[i]) / constraint_map_multipliers[i];
   }
 
   // Get best Nonlinear Inequality Constraints
@@ -280,8 +301,8 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
     optimizer.getBestNonlIneqs(bestIneqs); // we leave this method name the same for now but could generalize depending on other TPLs
     for (size_t i=0; i<bestIneqs.size(); i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-      best_fns[constraintMapIndices[i+numNlEqCons]+1] = 
-        (bestIneqs[i]-constraintMapOffsets[i+numNlEqCons]) / constraintMapMultipliers[i+numNlEqCons];
+      best_fns[constraint_map_indices[i+numNlEqCons]+1] = 
+        (bestIneqs[i]-constraint_map_offsets[i+numNlEqCons]) / constraint_map_multipliers[i+numNlEqCons];
   }
   response_array.front().function_values(best_fns);
 }
@@ -462,9 +483,9 @@ void get_bounds( const SetArray& source_set,
 template <typename vectorType>
 void get_responses( const Model & model,
                     const RealVector & dak_fn_vals,
-                    const std::vector<int> constraintMapIndices, // need to move this to traits or similar
-                    const std::vector<double> constraintMapMultipliers, // need to move this to traits or similar
-                    const std::vector<double> constraintMapOffsets, // need to move this to traits or similar
+                    const std::vector<int> constraint_map_indices, // need to move this to traits or similar
+                    const std::vector<double> constraint_map_multipliers, // need to move this to traits or similar
+                    const std::vector<double> constraint_map_offsets, // need to move this to traits or similar
                     vectorType & f_vec, 
                     vectorType & cEqs_vec, 
                     vectorType & cIneqs_vec)
@@ -479,15 +500,15 @@ void get_responses( const Model & model,
   // Get best Nonlinear Equality Constraints - see comments in set_best_responses 
   cEqs_vec.resize(numNlEqCons);
   for (int i=0; i<cEqs_vec.size(); i++)
-    cEqs_vec[i] = constraintMapOffsets[i] +
-      constraintMapMultipliers[i]*dak_fn_vals[constraintMapIndices[i]+1];
+    cEqs_vec[i] = constraint_map_offsets[i] +
+      constraint_map_multipliers[i]*dak_fn_vals[constraint_map_indices[i]+1];
 
   // Get best Nonlinear Equality Constraints - see comments in set_best_responses 
-  cIneqs_vec.resize(constraintMapIndices.size()-numNlEqCons);
+  cIneqs_vec.resize(constraint_map_indices.size()-numNlEqCons);
   for (int i=0; i<cIneqs_vec.size(); i++)
-    cIneqs_vec[i] = constraintMapOffsets[i+numNlEqCons] +
-      constraintMapMultipliers[i+numNlEqCons] * 
-      dak_fn_vals[constraintMapIndices[i+numNlEqCons]+1];
+    cIneqs_vec[i] = constraint_map_offsets[i+numNlEqCons] +
+      constraint_map_multipliers[i+numNlEqCons] * 
+      dak_fn_vals[constraint_map_indices[i+numNlEqCons]+1];
 }
 
 //----------------------------------------------------------------
@@ -571,7 +592,7 @@ void get_linear_constraints( Model & model,
 //----------------------------------------------------------------
 
 template <typename RVecT, typename IVecT>
-int get_ineq_constraints( Model & model,
+int config_ineq_constraint_maps( Model & model,
                                  Real big_real_bound_size,
                                  CONSTRAINT_TYPE ctype,
                                  IVecT & map_indices,

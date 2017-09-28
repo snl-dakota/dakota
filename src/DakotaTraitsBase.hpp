@@ -18,7 +18,17 @@
 
 namespace Dakota {
 
-  enum class LINEAR_INEQUALITY_FORMAT { NONE, ZERO_LOWER, ZERO_UPPER, NZ_LOWER, NZ_UPPER, TWO_SIDED };
+  enum class LINEAR_INEQUALITY_FORMAT    { NONE,
+                                           ZERO_LOWER,
+                                           ZERO_UPPER,
+                                           NZ_LOWER,
+                                           NZ_UPPER,
+                                           TWO_SIDED };
+
+  enum class NONLINEAR_INEQUALITY_FORMAT { NONE,
+                                           TWO_SIDED,
+                                           ONE_SIDED_LOWER,
+                                           ONE_SIDED_UPPER };
 
 /// Base class for traits.
 
@@ -43,17 +53,20 @@ public:
   /// Return the flag indicating whether method supports linear equalities
   virtual bool supports_linear_equality() { return false; }
 
-  /// Return the flag indicating whether method supports linear equalities
-  virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format() { return LINEAR_INEQUALITY_FORMAT::NONE; }
-
   /// Return the flag indicating whether method supports linear inequalities
   virtual bool supports_linear_inequality() { return false; }
+
+  /// Return the the format used for linear inequality constraints
+  virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format() { return LINEAR_INEQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   virtual bool supports_nonlinear_equality() { return false; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   virtual bool supports_nonlinear_inequality() { return false; }
+
+  /// Return the the format used for nonlinear inequality constraints
+  virtual NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() { return NONLINEAR_INEQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method expects nonlinear inequality
   /// constraints followed by nonlinear equality constraints

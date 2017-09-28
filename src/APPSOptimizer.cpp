@@ -23,7 +23,7 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, iteratedModel);
   set_apps_parameters(); // set specification values using DB
 }
 
@@ -32,7 +32,7 @@ APPSOptimizer::APPSOptimizer(Model& model):
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, iteratedModel);
   set_apps_parameters(); // set specification values using DB
 }
 
@@ -88,9 +88,9 @@ void APPSOptimizer::core_run()
 //     Then populate bestResponseArray.
 
     set_best_responses<AppsTraits>( optimizer, iteratedModel, 
-                                              constraintMapIndices, 
-                                              constraintMapMultipliers, 
-                                              constraintMapOffsets,
+                                              my_constraintMapIndices, 
+                                              my_constraintMapMultipliers, 
+                                              my_constraintMapOffsets,
                                               bestResponseArray);
   }
 }
@@ -370,20 +370,14 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // Define nonlinear equality and inequality constraints.
 
   std::vector<double> curr_resp_vals(numNonlinearEqConstraints, 0.0);
-  get_nonlinear_eq_constraints ( iteratedModel, curr_resp_vals, constraintMapOffsets);
+  get_nonlinear_eq_constraints ( iteratedModel, curr_resp_vals, my_constraintMapOffsets);
   for( size_t i=0; i<numNonlinearEqConstraints; ++i )
   {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
+    my_constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
+    my_constraintMapMultipliers.push_back(1.0);
   }
 
-  get_inequality_constraints
-                ( CONSTRAINT_TYPE::NONLINEAR,
-                  constraintMapIndices,
-                  constraintMapMultipliers,
-                  constraintMapOffsets);
-
-  int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
+  int numAPPSNonlinearIneqConstraints = (int)my_constraintMapIndices.size()-numNonlinearEqConstraints;
 
   // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form
@@ -393,7 +387,6 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // (indices, multipliers, offsets) between the DAKOTA constraints
   // and the HOPSPACK constraints.
 
-  evalMgr->set_constraint_map(constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
 
   problemParams->setParameter("Number Nonlinear Eqs", (int) numNonlinearEqConstraints);
   problemParams->setParameter("Number Nonlinear Ineqs", (int) numAPPSNonlinearIneqConstraints);
