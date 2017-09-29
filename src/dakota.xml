@@ -1346,6 +1346,12 @@
               &default_max_function_evaluations;
               &default_scaling;
             </keyword>
+            <keyword  id="rol_ls" name="rol_ls" code="{N_mdm(utype,methodName_ROL_LS)}" label="rol_ls" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
+            </keyword>
+              &default_convergence_tolerance;
+              &default_max_iterations;
+              &default_max_function_evaluations;
+              &default_scaling;
             <required>
               <oneOf>
                 <keyword  id="genie_opt_darts" name="genie_opt_darts" code="{N_mdm(utype,methodName_GENIE_OPT_DARTS)}" label="genie_opt_darts" help=""  />

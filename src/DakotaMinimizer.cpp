@@ -194,7 +194,8 @@ void Minimizer::update_from_model(const Model& model)
 
   // Check for linear constraint support in method selection
   if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
-       ( methodName == NL2SOL       ||
+       ( methodName == ROL_LS || 
+        methodName == NL2SOL       || 
 	 methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
 	 ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
 	 methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
@@ -208,7 +209,8 @@ void Minimizer::update_from_model(const Model& model)
   // Check for nonlinear constraint support in method selection.  Note that
   // CONMIN and DOT swap method selections as needed for constraint support.
   if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
-       ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
+       ( methodName == ROL_LS || 
+        methodName == NL2SOL        || methodName == OPTPP_CG    ||
 	 methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
 	 methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
          methodName == GENIE_OPT_DARTS )) {

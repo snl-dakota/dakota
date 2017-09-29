@@ -104,6 +104,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     reduced_basis.cpp
     restart_test.cpp
     rol_integration.cpp
+    opt_tpl_rol_test.cpp
     stat_utils.cpp
     wilks_sampling.cpp
     )

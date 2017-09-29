@@ -80,7 +80,6 @@ public:
 
 }; // class InequalityQL
 
-
 //----------------------------------------------------------------
 
 TEUCHOS_UNIT_TEST(rol, basic1)
@@ -102,7 +101,7 @@ TEUCHOS_UNIT_TEST(rol, basic1)
   try {
  
     Teuchos::ParameterList parlist;
-    parlist.sublist("Step").set("Type","Augmented Lagrangian");
+    parlist.sublist("Step").set("Type","Line Search");
     
 
     RCP<std::vector<RealT> > l_rcp = rcp( new std::vector<RealT>(5,-100.0) );

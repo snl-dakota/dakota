@@ -730,6 +730,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ scaling {N_mdm(true,methodScaling)} ]
      )
     |
+    ( rol_ls {N_mdm(utype,methodName_ROL_LS)}
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+     )
+    |
     ( 
       genie_opt_darts {N_mdm(utype,methodName_GENIE_OPT_DARTS)}
       |
