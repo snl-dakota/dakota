@@ -124,7 +124,7 @@ protected:
   //
 
   /// common constructor code for initialization of natafTransform
-  void initialize(short u_space_type);
+  void initialize_random(short u_space_type);
 
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
@@ -245,7 +245,7 @@ private:
 
   /// define the surrogate response mode for a hierarchical model in 
   /// multilevel/multifidelity expansions
-  void assign_surrogate_response_mode();
+  void assign_hierarchical_response_mode();
 
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator

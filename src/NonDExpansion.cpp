@@ -38,8 +38,6 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
-  multilevDiscrepEmulation(
-    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
@@ -85,7 +83,6 @@ NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, short u_space_type,
 	      bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
-  multilevDiscrepEmulation(DISTINCT_EMULATION),
   expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
@@ -95,8 +92,6 @@ NonDExpansion(unsigned short method_name, Model& model,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), vbdFlag(false), 
   vbdOrderLimit(0), vbdDropTol(-1.), covarianceControl(DEFAULT_COVARIANCE)
 {
-  assign_surrogate_response_mode();
-
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
   epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
@@ -110,14 +105,14 @@ NonDExpansion::~NonDExpansion()
 { }
 
 
-void NonDExpansion::assign_surrogate_response_mode()
+void NonDExpansion::assign_hierarchical_response_mode()
 {
   // override default SurrogateModel::responseMode for purposes of setting
   // comms for the ordered Models within HierarchSurrModel::set_communicators(),
   // which precedes mode updates in {multifidelity,multilevel}_expansion().
-  switch (methodName) {
-  case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
-  case MULTIFIDELITY_STOCH_COLLOCATION:
+  //switch (methodName) {
+  //case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+  //case MULTIFIDELITY_STOCH_COLLOCATION:
     if (iteratedModel.surrogate_type() != "hierarchical") {
       Cerr << "Error: multilevel/multifidelity expansions require a "
 	   << "hierarchical model." << std::endl;
@@ -127,15 +122,15 @@ void NonDExpansion::assign_surrogate_response_mode()
       iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
     else
       iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-    break;
-  default: // single level/fidelity
-    if (iteratedModel.surrogate_type() == "hierarchical") {
-      Cerr << "Warning: single-level expansion configured with a hierarchical "
-	   << "model.  High fidelity results will be used." << std::endl;
-      iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-    }
-    break;
-  }
+  //  break;
+  //default: // single level/fidelity
+  //  if (iteratedModel.surrogate_type() == "hierarchical") {
+  //    Cerr << "Warning: single-level expansion configured with hierarchical "
+  //	     << "model.  High fidelity results will be used." << std::endl;
+  //    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  //  }
+  //  break;
+  //}
 }
 
 
@@ -262,7 +257,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 }
 
 
-void NonDExpansion::initialize(short u_space_type)
+void NonDExpansion::initialize_random(short u_space_type)
 {
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
   initialize_random_variable_transformation();
@@ -618,17 +613,13 @@ void NonDExpansion::core_run()
 {
   initialize_expansion();
 
-  switch (methodName) {
-  case MULTIFIDELITY_POLYNOMIAL_CHAOS: case MULTIFIDELITY_STOCH_COLLOCATION:
-    multifidelity_expansion(); break;
-  case MULTILEVEL_POLYNOMIAL_CHAOS:  //case MULTILEVEL_STOCH_COLLOCATION:
-    multilevel_expansion();    break;
-  default: // single fidelity expansion
-    compute_expansion();  // nominal iso/aniso expansion from input spec
-    if (refineType)
-      refine_expansion(); // uniform/adaptive p-/h-refinement
-    break;
-  }
+  //switch (methodName) { // TO DO
+  //case MULTIFIDELITY_STOCH_COLLOCATION:
+  //  multifidelity_expansion(); break;
+
+  compute_expansion();  // nominal iso/aniso expansion from input spec
+  if (refineType)
+    refine_expansion(); // uniform/adaptive p-/h-refinement
   
   // generate final results
   compute_print_converged_results();

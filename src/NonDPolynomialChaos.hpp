@@ -82,8 +82,6 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion(size_t index = _NPOS);
 
-  void multilevel_expansion();
-
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);
@@ -111,17 +109,6 @@ protected:
   //- Heading: Member functions
   //
 
-  /// special case of multilevel_expansion() for multilevel allocation of
-  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// distinct PCE expansions for model discrepancies
-  void multilevel_regression(size_t model_form);
-  /// special case of multilevel_expansion() for multilevel allocation of
-  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// recursive PCE expansions for hierarchical surpluses
-  void recursive_regression(size_t model_form);
-
-  /// increment the sequence in numSamplesOnModel for multilevel_regression()
-  void increment_sample_sequence(size_t new_samp, size_t total_samp);
   /// generate new samples from numSamplesOnModel and update expansion
   void append_expansion(size_t index = _NPOS);
 
@@ -192,13 +179,19 @@ private:
   unsigned short numAdvance;
 
   /// user specification for expansion_order (array for multifidelity)
-  UShortArray expOrderSeqSpec;
+  unsigned short expOrderSpec;
   /// user specification for dimension_preference
   RealVector dimPrefSpec;
   /// user specification for collocation_points (array for multifidelity)
-  SizetArray collocPtsSeqSpec;
+  size_t collocPtsSpec;
   /// user specification for expansion_samples (array for multifidelity)
-  SizetArray expSamplesSeqSpec;
+  size_t expSamplesSpec;
+  /// user request of quadrature order
+  unsigned short quadOrderSpec;
+  /// user request of sparse grid level
+  unsigned short ssgLevelSpec;
+  /// cubature integrand
+  unsigned short cubIntSpec;
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 
@@ -211,13 +204,6 @@ private:
 
   /// user requested expansion type
   short uSpaceType;
-
-  /// user request of quadrature order
-  UShortArray quadOrderSeqSpec;
-  /// user request of sparse grid level
-  UShortArray ssgLevelSeqSpec;
-  /// cubature integrand
-  unsigned short cubIntSpec;
 
   /// user specified import build points file
   String importBuildPointsFile;
@@ -237,15 +223,6 @@ private:
   //bool resizedFlag;
   // local flag to signal an explicit call to resize() is necessary
   //bool callResize;
-
-  /// number of samples allocated to each level of a discretization
-  /// hierarchy within multilevel regression
-  SizetArray NLev;
-  /// number of initial samples specified by the user
-  SizetArray pilotSamples;
-  /// equivalent number of high fidelity evaluations accumulated using samples
-  /// across multiple model forms and/or discretization levels
-  Real equivHFEvals;
 };
 
 
