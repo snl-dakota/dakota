@@ -80,6 +80,10 @@ class NomadTraits: public TraitsBase
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }
 
+  /// Return the the format used for nonlinear inequality constraints
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+    { return NONLINEAR_EQUALITY_FORMAT::TWO_SIDED; }
+
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }
 

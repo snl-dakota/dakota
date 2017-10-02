@@ -19,11 +19,13 @@
 namespace Dakota {
 
   enum class LINEAR_INEQUALITY_FORMAT    { NONE,
-                                           ZERO_LOWER,
-                                           ZERO_UPPER,
-                                           NZ_LOWER,
-                                           NZ_UPPER,
-                                           TWO_SIDED };
+                                           TWO_SIDED,
+                                           ONE_SIDED_LOWER,
+                                           ONE_SIDED_UPPER };
+
+  enum class NONLINEAR_EQUALITY_FORMAT   { NONE,
+                                           TWO_SIDED,
+                                           ONE_SIDED };
 
   enum class NONLINEAR_INEQUALITY_FORMAT { NONE,
                                            TWO_SIDED,
@@ -61,6 +63,9 @@ public:
 
   /// Return the flag indicating whether method supports nonlinear equalities
   virtual bool supports_nonlinear_equality() { return false; }
+
+  /// Return the the format used for nonlinear equality constraints
+  virtual NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() { return NONLINEAR_EQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   virtual bool supports_nonlinear_inequality() { return false; }

@@ -145,8 +145,12 @@ void NLPQLPOptimizer::allocate_constraints()
 
   // get_inequality constraints
 
-  get_inequality_constraints
-                ( CONSTRAINT_TYPE::LINEAR,
+  // This uses the adapter free function directly rather than the method in 
+  // Dakota::Optimizer because it populates a different set of map objects.
+  configure_inequality_constraint_maps(
+                  iteratedModel,
+                  bigRealBoundSize,
+                  CONSTRAINT_TYPE::LINEAR,
                   linIneqConMappingIndices,
                   linIneqConMappingMultipliers,
                   linIneqConMappingOffsets);

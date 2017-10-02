@@ -772,13 +772,7 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
 
   numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 
-
-  // Augment the nonlinear inequality constraint maps with extra data (not sure what it represents - RWH)
-  for (i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
-  }
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
 }
 
 NomadOptimizer::~NomadOptimizer() {};

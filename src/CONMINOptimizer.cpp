@@ -180,43 +180,11 @@ void CONMINOptimizer::allocate_constraints()
   numConminNlnConstr = 2*num_nln_eq;
   numConminNlnConstr += (int)constraintMapOffsets.size();
 
-  //for( size_t i=0; i<constraintMappingIndices.size(); ++i)
-  //  cout << "constraintMappingIndices["<<i<<"] = " << constraintMappingIndices[i] << "\t"
-  //       << "constraintMapIndices["<<i<<"] = " << constraintMapIndices[i]
-  //       << endl;
-  //for( size_t i=0; i<constraintMappingMultipliers.size(); ++i)
-  //  cout << "constraintMappingMultipliers["<<i<<"] = " << constraintMappingMultipliers[i] << "\t"
-  //       << "constraintMapMultipliers["<<i<<"] = " << constraintMapMultipliers[i]
-  //       << endl;
-  //for( size_t i=0; i<constraintMappingOffsets.size(); ++i)
-  //  cout << "constraintMappingOffsets["<<i<<"] = " << constraintMappingOffsets[i] << "\t"
-  //       << "constraintMapOffsets["<<i<<"] = " << constraintMapOffsets[i]
-  //       << endl;
-
   // Augment nonlinear inequality maps (set in Optimizer::configure_constraint_maps) with additional constraint info ...
-  get_equality_constraints
-                ( iteratedModel,
-                  CONSTRAINT_TYPE::NONLINEAR,
-                  constraintMapIndices,
-                  num_nln_ineq,
-                  constraintMapMultipliers,
-                  constraintMapOffsets);
-
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, num_nln_ineq);
   numConminLinConstr = 2*num_lin_eq;
-  numConminLinConstr += get_inequality_constraints
-                ( CONSTRAINT_TYPE::LINEAR,
-                  constraintMapIndices,
-                  constraintMapMultipliers,
-                  constraintMapOffsets,
-                  -1.0 /* should be a trait? RWH */);
-
-  get_equality_constraints
-                ( iteratedModel,
-                  CONSTRAINT_TYPE::LINEAR,
-                  constraintMapIndices,
-                  num_lin_ineq,
-                  constraintMapMultipliers,
-                  constraintMapOffsets);
+  numConminLinConstr += configure_inequality_constraints(CONSTRAINT_TYPE::LINEAR);
+  configure_equality_constraints(CONSTRAINT_TYPE::LINEAR, num_lin_ineq);
 
   numConminConstr = numConminNlnConstr + numConminLinConstr;
 

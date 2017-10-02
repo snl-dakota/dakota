@@ -481,17 +481,19 @@ void Optimizer::configure_constraint_maps()
       abort_handler(-1);
     }
 
-    Real scaling = (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
-                 ? 1.0 : -1.0;
+    Real scaling = 
+      (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+        ? 1.0 : -1.0;
 
-    numNonlinearIneqConstraintsFound = config_ineq_constraint_maps(
-                                                        iteratedModel,
-                                                        bigRealBoundSize,
-                                                        CONSTRAINT_TYPE::NONLINEAR,
-                                                        constraintMapIndices,
-                                                        constraintMapMultipliers,
-                                                        constraintMapOffsets,
-                                                        scaling);
+    numNonlinearIneqConstraintsFound = 
+      configure_inequality_constraint_maps(
+                                  iteratedModel,
+                                  bigRealBoundSize,
+                                  CONSTRAINT_TYPE::NONLINEAR,
+                                  constraintMapIndices,
+                                  constraintMapMultipliers,
+                                  constraintMapOffsets,
+                                  scaling);
   }
 }
 

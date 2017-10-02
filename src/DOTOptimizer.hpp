@@ -68,6 +68,10 @@ class DOTTraits: public TraitsBase
   /// Return the flag indicating whether method supports linear inequalities
   bool supports_linear_inequality() { return true; }
 
+  /// Return the the format used for nonlinear inequality constraints
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format()
+    { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }
 

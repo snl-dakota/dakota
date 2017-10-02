@@ -20,6 +20,90 @@
 namespace Dakota {
 
 
+//----------------------------------------------------------------
+
+/// Adapter for configuring constraint maps used when transferring data between Dakota and a TPL
+template <typename RVecT, typename IVecT>
+int configure_inequality_constraint_maps(
+                               const Model & model,
+                               Real big_real_bound_size,
+                               CONSTRAINT_TYPE ctype,
+                               IVecT & map_indices,
+                               RVecT & map_multipliers,
+                               RVecT & map_offsets,
+                               Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
+{
+  const RealVector& ineq_lwr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                        model.nonlinear_ineq_constraint_lower_bounds() :
+                                        model.linear_ineq_constraint_lower_bounds();
+  const RealVector& ineq_upr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                        model.nonlinear_ineq_constraint_upper_bounds() :
+                                        model.linear_ineq_constraint_upper_bounds();
+  int num_ineq_constr             = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                        model.num_nonlinear_ineq_constraints() :
+                                        model.num_linear_ineq_constraints();
+
+  int num_added = 0;
+
+  for (int i=0; i<num_ineq_constr; i++) {
+    if (ineq_lwr_bnds[i] > -big_real_bound_size) {
+      num_added++;
+      map_indices.push_back(i);
+      map_multipliers.push_back(scaling);
+      map_offsets.push_back(-scaling*ineq_lwr_bnds[i]);
+    }
+    if (ineq_upr_bnds[i] < big_real_bound_size) {
+      num_added++;
+      map_indices.push_back(i);
+      map_multipliers.push_back(-scaling);
+      map_offsets.push_back(scaling*ineq_upr_bnds[i]);
+    }
+  }
+  return num_added;
+}
+
+//----------------------------------------------------------------
+
+template <typename RVecT, typename IVecT>
+void configure_equality_constraint_maps(
+                               Model & model,
+                               CONSTRAINT_TYPE ctype,
+                               IVecT & indices,
+                               size_t index_offset,
+                               RVecT & multipliers,
+                               RVecT & values,
+                               bool make_one_sided)
+{
+  const RealVector& eq_targets = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                     model.nonlinear_eq_constraint_targets() :
+                                     model.linear_eq_constraint_targets();
+  int num_eq                   = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
+                                     model.num_nonlinear_eq_constraints() :
+                                     model.num_linear_eq_constraints();
+
+  if( make_one_sided )
+  {
+    for (int i=0; i<num_eq; i++) {
+      indices.push_back(i+index_offset);
+      multipliers.push_back(-1.0);
+      values.push_back(eq_targets[i]);
+      indices.push_back(i+index_offset);
+      multipliers.push_back(1.0);
+      values.push_back(-eq_targets[i]);
+    }
+  }
+  else // leave as two-sided
+  {
+    for (int i=0; i<num_eq; i++) {
+      indices.push_back(i+index_offset);
+      multipliers.push_back(1.0);
+      values.push_back(-eq_targets[i]);
+    }
+  }
+}
+
+//----------------------------------------------------------------
+
 /// Base class for the optimizer branch of the iterator hierarchy.
 
 /** The Optimizer class provides common data and functionality for
@@ -120,23 +204,49 @@ protected:
 
 //----------------------------------------------------------------
 
-  template <typename RVecT, typename IVecT>
-    int get_inequality_constraints(
-        CONSTRAINT_TYPE ctype,
-        IVecT & map_indices,
-        RVecT & map_multipliers,
-        RVecT & map_offsets,
-        Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
+  int configure_inequality_constraints( CONSTRAINT_TYPE ctype )
+  {
+    Real scaling = 1.0;
+    if( ctype == CONSTRAINT_TYPE::NONLINEAR )
+      scaling = (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+        ? 1.0 : -1.0;
+    else if( ctype == CONSTRAINT_TYPE::LINEAR )
+      scaling = (traits()->linear_inequality_format() == LINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+        ? 1.0 : -1.0;
+    else
     {
-      return config_ineq_constraint_maps(
-                               iteratedModel,
-                               bigRealBoundSize,
-                               ctype,
-                               map_indices,
-                               map_multipliers,
-                               map_offsets,
-                               scaling);
+      Cerr << "\nError: inconsistent format for CONSTRAINT_TYPE in configure_inequality_constraints adapter." << std::endl;
+      abort_handler(-1);
     }
+
+    return configure_inequality_constraint_maps(
+        iteratedModel,
+        bigRealBoundSize,
+        ctype,
+        constraintMapIndices,
+        constraintMapMultipliers,
+        constraintMapOffsets,
+        scaling);
+  }
+
+//----------------------------------------------------------------
+
+  void configure_equality_constraints( CONSTRAINT_TYPE ctype, size_t index_offset)
+  {
+    bool split_into_one_sided = true;
+    if( (ctype == CONSTRAINT_TYPE::NONLINEAR) &&
+        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TWO_SIDED) )
+      split_into_one_sided = false;
+
+    return configure_equality_constraint_maps(
+        iteratedModel,
+        ctype,
+        constraintMapIndices,
+        index_offset,
+        constraintMapMultipliers,
+        constraintMapOffsets,
+        split_into_one_sided);
+  }
 
 private:
 
@@ -278,37 +388,37 @@ void copy_data( const VectorType1 & source,
 template <typename AdapterT>
 void set_best_responses( typename AdapterT::OptT & optimizer,
                          const Model & model,
-                         const std::vector<int> constraint_map_indices, // need to move this to traits or similar
-                         const std::vector<double> constraint_map_multipliers, // need to move this to traits or similar
-                         const std::vector<double> constraint_map_offsets, // need to move this to traits or similar
+                         const std::vector<int> constraint_map_indices,
+                         const std::vector<double> constraint_map_multipliers,
+                         const std::vector<double> constraint_map_offsets,
                                ResponseArray & response_array)
 {
   RealVector best_fns(model.num_functions());
 
-  size_t numNlEqCons = model.num_nonlinear_eq_constraints();
-  size_t numNlIneqCons = model.num_nonlinear_ineq_constraints();
+  size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
+  size_t num_nl_ineq_constr = model.num_nonlinear_ineq_constraints();
 
   // Get best Objective - assumes single objective only for now
-  std::vector<double> bestEqs(numNlEqCons);
-  std::vector<double> bestIneqs(constraint_map_indices.size()-numNlEqCons);
+  std::vector<double> bestEqs(num_nl_eq_constr);
+  std::vector<double> bestIneqs(constraint_map_indices.size()-num_nl_eq_constr);
   const BoolDeque& max_sense = model.primary_response_fn_sense();
   best_fns[0] = (!max_sense.empty() && max_sense[0]) ?  -AdapterT::getBestObj(optimizer) : AdapterT::getBestObj(optimizer);
 
   // Get best Nonlinear Equality Constraints
-  if (numNlEqCons > 0) {
+  if (num_nl_eq_constr > 0) {
     optimizer.getBestNonlEqs(bestEqs); // we leave this method name the same for now but could generalize depending on other TPLs
-    for (size_t i=0; i<numNlEqCons; i++)
+    for (size_t i=0; i<num_nl_eq_constr; i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
       best_fns[constraint_map_indices[i]+1] = (bestEqs[i]-constraint_map_offsets[i]) / constraint_map_multipliers[i];
   }
 
   // Get best Nonlinear Inequality Constraints
-  if (numNlIneqCons > 0) {
+  if (num_nl_ineq_constr > 0) {
     optimizer.getBestNonlIneqs(bestIneqs); // we leave this method name the same for now but could generalize depending on other TPLs
     for (size_t i=0; i<bestIneqs.size(); i++)
       // Need to figure out how best to generalize use of 2 index arrays, 1 value array and the expression - could use lambdas with c++11
-      best_fns[constraint_map_indices[i+numNlEqCons]+1] = 
-        (bestIneqs[i]-constraint_map_offsets[i+numNlEqCons]) / constraint_map_multipliers[i+numNlEqCons];
+      best_fns[constraint_map_indices[i+num_nl_eq_constr]+1] = 
+        (bestIneqs[i]-constraint_map_offsets[i+num_nl_eq_constr]) / constraint_map_multipliers[i+num_nl_eq_constr];
   }
   response_array.front().function_values(best_fns);
 }
@@ -489,14 +599,14 @@ void get_bounds( const SetArray& source_set,
 template <typename vectorType>
 void get_responses( const Model & model,
                     const RealVector & dak_fn_vals,
-                    const std::vector<int> constraint_map_indices, // need to move this to traits or similar
-                    const std::vector<double> constraint_map_multipliers, // need to move this to traits or similar
-                    const std::vector<double> constraint_map_offsets, // need to move this to traits or similar
+                    const std::vector<int> constraint_map_indices,
+                    const std::vector<double> constraint_map_multipliers,
+                    const std::vector<double> constraint_map_offsets,
                     vectorType & f_vec, 
                     vectorType & cEqs_vec, 
                     vectorType & cIneqs_vec)
 {
-  size_t numNlEqCons = model.num_nonlinear_eq_constraints();
+  size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
 
   // Copy Objective - assumes single objective only for now
   f_vec.resize(1);
@@ -504,17 +614,17 @@ void get_responses( const Model & model,
   f_vec[0] = (!max_sense.empty() && max_sense[0]) ? -dak_fn_vals[0] : dak_fn_vals[0];
 
   // Get best Nonlinear Equality Constraints - see comments in set_best_responses 
-  cEqs_vec.resize(numNlEqCons);
+  cEqs_vec.resize(num_nl_eq_constr);
   for (int i=0; i<cEqs_vec.size(); i++)
     cEqs_vec[i] = constraint_map_offsets[i] +
       constraint_map_multipliers[i]*dak_fn_vals[constraint_map_indices[i]+1];
 
-  // Get best Nonlinear Equality Constraints - see comments in set_best_responses 
-  cIneqs_vec.resize(constraint_map_indices.size()-numNlEqCons);
+  // Get best Nonlinear Inequality Constraints - see comments in set_best_responses 
+  cIneqs_vec.resize(constraint_map_indices.size()-num_nl_eq_constr);
   for (int i=0; i<cIneqs_vec.size(); i++)
-    cIneqs_vec[i] = constraint_map_offsets[i+numNlEqCons] +
-      constraint_map_multipliers[i+numNlEqCons] * 
-      dak_fn_vals[constraint_map_indices[i+numNlEqCons]+1];
+    cIneqs_vec[i] = constraint_map_offsets[i+num_nl_eq_constr] +
+      constraint_map_multipliers[i+num_nl_eq_constr] * 
+      dak_fn_vals[constraint_map_indices[i+num_nl_eq_constr]+1];
 }
 
 //----------------------------------------------------------------
@@ -597,83 +707,16 @@ void get_linear_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-template <typename RVecT, typename IVecT>
-int config_ineq_constraint_maps( Model & model,
-                                 Real big_real_bound_size,
-                                 CONSTRAINT_TYPE ctype,
-                                 IVecT & map_indices,
-                                 RVecT & map_multipliers,
-                                 RVecT & map_offsets,
-                                 Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
-{
-  const RealVector& ineq_lwr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                      model.nonlinear_ineq_constraint_lower_bounds() :
-                                      model.linear_ineq_constraint_lower_bounds();
-  const RealVector& ineq_upr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                      model.nonlinear_ineq_constraint_upper_bounds() :
-                                      model.linear_ineq_constraint_upper_bounds();
-  int numIneqConstraints          = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                      model.num_nonlinear_ineq_constraints() :
-                                      model.num_linear_ineq_constraints();
-
-  int num_added = 0;
-
-  for (int i=0; i<numIneqConstraints; i++) {
-    if (ineq_lwr_bnds[i] > -big_real_bound_size) {
-      num_added++;
-      map_indices.push_back(i);
-      map_multipliers.push_back(scaling);
-      map_offsets.push_back(-scaling*ineq_lwr_bnds[i]);
-    }
-    if (ineq_upr_bnds[i] < big_real_bound_size) {
-      num_added++;
-      map_indices.push_back(i);
-      map_multipliers.push_back(-scaling);
-      map_offsets.push_back(scaling*ineq_upr_bnds[i]);
-    }
-  }
-  return num_added;
-}
-
-//----------------------------------------------------------------
-
 template <typename RVecT>
 void get_nonlinear_eq_constraints( Model & model,
                                    const RVecT & curr_resp_vals,
                                          RVecT & values)
 {
   const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
-  int numNonlinearEqConstraints    = model.num_nonlinear_eq_constraints();
+  int num_nl_eq_constr             = model.num_nonlinear_eq_constraints();
 
-  for (int i=0; i<numNonlinearEqConstraints; i++)
+  for (int i=0; i<num_nl_eq_constr; i++)
     values.push_back(curr_resp_vals[i] - nln_eq_targets[i]);
-}
-
-//----------------------------------------------------------------
-
-template <typename RVecT, typename IVecT>
-void get_equality_constraints( Model & model,
-                               CONSTRAINT_TYPE ctype,
-                               IVecT & indices,
-                               size_t shift_index,
-                               RVecT & multipliers,
-                               RVecT & values)
-{
-  const RealVector& eq_targets = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                   model.nonlinear_eq_constraint_targets() :
-                                   model.linear_eq_constraint_targets();
-  int num_eq                   = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                   model.num_nonlinear_eq_constraints() :
-                                   model.num_linear_eq_constraints();
-
-  for (int i=0; i<num_eq; i++) {
-    indices.push_back(i+shift_index);
-    multipliers.push_back(-1.0);
-    values.push_back(eq_targets[i]);
-    indices.push_back(i+shift_index);
-    multipliers.push_back(1.0);
-    values.push_back(-eq_targets[i]);
-  }
 }
 
 //----------------------------------------------------------------
@@ -686,9 +729,9 @@ void get_nonlinear_eq_constraints( Model & model,
                                          int offset = 0 )
 {
   const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
-  int numNonlinearEqConstraints    = model.num_nonlinear_eq_constraints();
+  int num_nl_eq_constr             = model.num_nonlinear_eq_constraints();
 
-  for (int i=0; i<numNonlinearEqConstraints; i++)
+  for (int i=0; i<num_nl_eq_constr; i++)
     values[i+offset] = curr_resp_vals[i] + scale*nln_eq_targets[i];
 }
 

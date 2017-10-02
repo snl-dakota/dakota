@@ -195,29 +195,12 @@ void DOTOptimizer::allocate_constraints()
   numDotNlnConstr += numNonlinearIneqConstraintsFound;
 
   // Augment nonlinear inequality maps (set in Optimizer::configure_constraint_maps) with additional constraint info ...
-  get_equality_constraints
-                ( iteratedModel,
-                  CONSTRAINT_TYPE::NONLINEAR,
-                  constraintMapIndices,
-                  num_nln_ineq,
-                  constraintMapMultipliers,
-                  constraintMapOffsets);
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, num_nln_ineq);
 
   numDotLinConstr = 2*num_lin_eq;
-  numDotLinConstr += get_inequality_constraints
-                ( CONSTRAINT_TYPE::LINEAR,
-                  constraintMapIndices,
-                  constraintMapMultipliers,
-                  constraintMapOffsets,
-                  -1.0 /* should be a trait? RWH */);
+  numDotLinConstr += configure_inequality_constraints(CONSTRAINT_TYPE::LINEAR);
 
-  get_equality_constraints
-                ( iteratedModel,
-                  CONSTRAINT_TYPE::LINEAR,
-                  constraintMapIndices,
-                  num_lin_ineq,
-                  constraintMapMultipliers,
-                  constraintMapOffsets);
+  configure_equality_constraints(CONSTRAINT_TYPE::LINEAR, num_lin_ineq);
 
   numDotConstr = numDotNlnConstr + numDotLinConstr;
 
