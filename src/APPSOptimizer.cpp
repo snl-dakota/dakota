@@ -88,9 +88,9 @@ void APPSOptimizer::core_run()
 //     Then populate bestResponseArray.
 
     set_best_responses<AppsTraits>( optimizer, iteratedModel, 
-                                              my_constraintMapIndices, 
-                                              my_constraintMapMultipliers, 
-                                              my_constraintMapOffsets,
+                                              constraintMapIndices, 
+                                              constraintMapMultipliers, 
+                                              constraintMapOffsets,
                                               bestResponseArray);
   }
 }
@@ -370,14 +370,14 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // Define nonlinear equality and inequality constraints.
 
   std::vector<double> curr_resp_vals(numNonlinearEqConstraints, 0.0);
-  get_nonlinear_eq_constraints ( iteratedModel, curr_resp_vals, my_constraintMapOffsets);
+  get_nonlinear_eq_constraints ( iteratedModel, curr_resp_vals, constraintMapOffsets);
   for( size_t i=0; i<numNonlinearEqConstraints; ++i )
   {
-    my_constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    my_constraintMapMultipliers.push_back(1.0);
+    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
+    constraintMapMultipliers.push_back(1.0);
   }
 
-  int numAPPSNonlinearIneqConstraints = (int)my_constraintMapIndices.size()-numNonlinearEqConstraints;
+  int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
 
   // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form

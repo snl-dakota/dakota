@@ -146,12 +146,6 @@ void NLPQLPOptimizer::allocate_constraints()
   // get_inequality constraints
 
   get_inequality_constraints
-                ( CONSTRAINT_TYPE::NONLINEAR,
-                  nonlinIneqConMappingIndices,
-                  nonlinIneqConMappingMultipliers,
-                  nonlinIneqConMappingOffsets);
-
-  get_inequality_constraints
                 ( CONSTRAINT_TYPE::LINEAR,
                   linIneqConMappingIndices,
                   linIneqConMappingMultipliers,
@@ -161,7 +155,7 @@ void NLPQLPOptimizer::allocate_constraints()
                    + iteratedModel.num_linear_eq_constraints();
 
   numNlpqlConstr   = numEqConstraints
-                   + nonlinIneqConMappingIndices.size()
+                   + constraintMapIndices.size()
                    + linIneqConMappingIndices.size();
 }
 
@@ -269,11 +263,11 @@ void NLPQLPOptimizer::core_run()
 	if (ACTIVE[i])
 	  activeSet.request_value(2, numObjectiveFns+num_nln_ineq+i);
       size_t  cntr = numEqConstraints;
-      StLIter i_iter;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(); // nonlinear ineq
-	   i_iter != nonlinIneqConMappingIndices.end(); i_iter++)
+      auto my_i_iter = constraintMapIndices.begin(),
+           my_i_end  = constraintMapIndices.end();
+      for ( ; my_i_iter != my_i_end; my_i_iter++) // nonlinear ineq
 	if (ACTIVE[cntr++])
-	  activeSet.request_value(2, (*i_iter)+numObjectiveFns);
+	  activeSet.request_value(2, (*my_i_iter)+numObjectiveFns);
     }
     else // initial evaluation: need all functions/gradients
       activeSet.request_values(3);
@@ -303,15 +297,16 @@ void NLPQLPOptimizer::core_run()
           Ax += lin_eq_coeffs(index,j) * X[j];
         G[i] = Ax - lin_eq_targets[index];
       }
+      auto my_i_iter = constraintMapIndices.begin();
+      auto my_m_iter = constraintMapMultipliers.begin(),
+           my_o_iter = constraintMapOffsets.begin();
+      size_t  cntr = numEqConstraints;
+      for ( ;
+	   my_i_iter != constraintMapIndices.end();
+	   my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
+	G[cntr++] = (*my_o_iter) + (*my_m_iter) * local_fns[(*my_i_iter)+1];
       StLIter i_iter;
       RLIter  m_iter, o_iter;
-      size_t  cntr = numEqConstraints;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	   m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	   o_iter  = nonlinIneqConMappingOffsets.begin();
-	   i_iter != nonlinIneqConMappingIndices.end();
-	   i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-	G[cntr++] = (*o_iter) + (*m_iter) * local_fns[(*i_iter)+1];
       for (i_iter  = linIneqConMappingIndices.begin(),
 	   m_iter  = linIneqConMappingMultipliers.begin(),
 	   o_iter  = linIneqConMappingOffsets.begin();
@@ -349,23 +344,26 @@ void NLPQLPOptimizer::core_run()
 	  }
 	}
       }
-      StLIter i_iter;
-      RLIter  m_iter, o_iter;
+      auto my_i_iter = constraintMapIndices.begin();
+      auto my_m_iter = constraintMapMultipliers.begin(),
+           my_o_iter = constraintMapOffsets.begin();
       size_t  cntr = numEqConstraints;
       Real    mult;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	   m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	   o_iter  = nonlinIneqConMappingOffsets.begin();
-	   i_iter != nonlinIneqConMappingIndices.end();
-	   i_iter++, m_iter++, o_iter++) { // nonlinear ineq
+      for (my_i_iter  = constraintMapIndices.begin(),
+	   my_m_iter  = constraintMapMultipliers.begin(),
+	   my_o_iter  = constraintMapOffsets.begin();
+	   my_i_iter != constraintMapIndices.end();
+	   my_i_iter++, my_m_iter++, my_o_iter++) { // nonlinear ineq
 	if (ACTIVE[cntr]) {
-	  index = *i_iter;
-	  mult  = *m_iter;
+	  index = *my_i_iter;
+	  mult  = *my_m_iter;
 	  for (j=0; j<numContinuousVars; j++)
 	    DG[cntr+MMAX*j] = mult * local_grads(j,index+1);
 	}
 	cntr++;
       }
+      StLIter i_iter;
+      RLIter  m_iter, o_iter;
       for (i_iter  = linIneqConMappingIndices.begin(),
 	   m_iter  = linIneqConMappingMultipliers.begin(),
 	   o_iter  = linIneqConMappingOffsets.begin();
@@ -427,15 +425,14 @@ void NLPQLPOptimizer::core_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = (max_flag) ? -F[0] : F[0];
 
-    StLIter i_iter;
-    RLIter  m_iter, o_iter;
+    auto my_i_iter = constraintMapIndices.begin();
+    auto my_m_iter = constraintMapMultipliers.begin(),
+         my_o_iter = constraintMapOffsets.begin();
     size_t  cntr = numEqConstraints;
-    for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	 m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	 o_iter  = nonlinIneqConMappingOffsets.begin();
-	 i_iter != nonlinIneqConMappingIndices.end();
-	 i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-      best_fns[(*i_iter)+1] = (G[cntr++] - (*o_iter))/(*m_iter);
+    for ( ;
+	 my_i_iter != constraintMapIndices.end();
+	 my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
+      best_fns[(*my_i_iter)+1] = (G[cntr++] - (*my_o_iter))/(*my_m_iter);
 
     size_t i, 
       num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),

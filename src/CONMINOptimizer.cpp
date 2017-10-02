@@ -178,45 +178,45 @@ void CONMINOptimizer::allocate_constraints()
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
   numConminNlnConstr = 2*num_nln_eq;
-  numConminNlnConstr += (int)my_constraintMapOffsets.size();
+  numConminNlnConstr += (int)constraintMapOffsets.size();
 
   //for( size_t i=0; i<constraintMappingIndices.size(); ++i)
   //  cout << "constraintMappingIndices["<<i<<"] = " << constraintMappingIndices[i] << "\t"
-  //       << "my_constraintMapIndices["<<i<<"] = " << my_constraintMapIndices[i]
+  //       << "constraintMapIndices["<<i<<"] = " << constraintMapIndices[i]
   //       << endl;
   //for( size_t i=0; i<constraintMappingMultipliers.size(); ++i)
   //  cout << "constraintMappingMultipliers["<<i<<"] = " << constraintMappingMultipliers[i] << "\t"
-  //       << "my_constraintMapMultipliers["<<i<<"] = " << my_constraintMapMultipliers[i]
+  //       << "constraintMapMultipliers["<<i<<"] = " << constraintMapMultipliers[i]
   //       << endl;
   //for( size_t i=0; i<constraintMappingOffsets.size(); ++i)
   //  cout << "constraintMappingOffsets["<<i<<"] = " << constraintMappingOffsets[i] << "\t"
-  //       << "my_constraintMapOffsets["<<i<<"] = " << my_constraintMapOffsets[i]
+  //       << "constraintMapOffsets["<<i<<"] = " << constraintMapOffsets[i]
   //       << endl;
 
-  // Augment nonlinear inequality maps (set in Optimizer::pre_run) with additional constraint info ...
+  // Augment nonlinear inequality maps (set in Optimizer::configure_constraint_maps) with additional constraint info ...
   get_equality_constraints
                 ( iteratedModel,
                   CONSTRAINT_TYPE::NONLINEAR,
-                  my_constraintMapIndices,
+                  constraintMapIndices,
                   num_nln_ineq,
-                  my_constraintMapMultipliers,
-                  my_constraintMapOffsets);
+                  constraintMapMultipliers,
+                  constraintMapOffsets);
 
   numConminLinConstr = 2*num_lin_eq;
   numConminLinConstr += get_inequality_constraints
                 ( CONSTRAINT_TYPE::LINEAR,
-                  my_constraintMapIndices,
-                  my_constraintMapMultipliers,
-                  my_constraintMapOffsets,
+                  constraintMapIndices,
+                  constraintMapMultipliers,
+                  constraintMapOffsets,
                   -1.0 /* should be a trait? RWH */);
 
   get_equality_constraints
                 ( iteratedModel,
                   CONSTRAINT_TYPE::LINEAR,
-                  my_constraintMapIndices,
+                  constraintMapIndices,
                   num_lin_ineq,
-                  my_constraintMapMultipliers,
-                  my_constraintMapOffsets);
+                  constraintMapMultipliers,
+                  constraintMapOffsets);
 
   numConminConstr = numConminNlnConstr + numConminLinConstr;
 
@@ -294,7 +294,6 @@ void CONMINOptimizer::deallocate_workspace()
 void CONMINOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
-  Optimizer::pre_run();
 
   // Allocate space for CONMIN arrays
   allocate_constraints();
@@ -433,7 +432,7 @@ void CONMINOptimizer::core_run()
 	// convenience.
 	size_t conmin_constr = IC[i] - 1; // (0-based)
 	if (conmin_constr < numConminNlnConstr) {
-	  size_t dakota_constr = my_constraintMapIndices[conmin_constr];
+	  size_t dakota_constr = constraintMapIndices[conmin_constr];
 	  activeSet.request_value(conminInfo, dakota_constr + numObjectiveFns);
 	  // some DAKOTA equality and 2-sided inequality constraints may
 	  // have their ASV assigned multiple times depending on which of
@@ -462,22 +461,22 @@ void CONMINOptimizer::core_run()
 	// reason, CONMIN's A-matrix has a column length of N1 (and N1 =
 	// numContinuousVars+2).
 	size_t conmin_constr = IC[i]-1;
-	size_t dakota_constr = my_constraintMapIndices[conmin_constr];
+	size_t dakota_constr = constraintMapIndices[conmin_constr];
         if (conmin_constr < numConminNlnConstr) { // nonlinear ineq & eq
           // gradients pick up multiplier mapping only (offsets drop out)
           for (j=0; j<num_vars; ++j)
-            A[i*N1 + j] = my_constraintMapMultipliers[conmin_constr] *
+            A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      local_fn_grads(j,dakota_constr+1);
         }
         else if (dakota_constr < num_lin_ineq) { // linear ineq
 	  for (j=0; j<num_vars; ++j)
-	    A[i*N1 + j] = my_constraintMapMultipliers[conmin_constr] *
+	    A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      lin_ineq_coeffs(dakota_constr,j);
 	}
 	else { // linear eq
 	  size_t dakota_leq_constr = dakota_constr - num_lin_ineq;
 	  for (j=0; j<num_vars; ++j)
-	    A[i*N1 + j] = my_constraintMapMultipliers[conmin_constr] *
+	    A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      lin_eq_coeffs(dakota_leq_constr,j);
         }
       }
@@ -491,11 +490,11 @@ void CONMINOptimizer::core_run()
       // offsets/multipliers must be applied.
       size_t conmin_constr, dakota_constr;
       for (conmin_constr=0; conmin_constr<numConminConstr; conmin_constr++) {
-        dakota_constr = my_constraintMapIndices[conmin_constr];
+        dakota_constr = constraintMapIndices[conmin_constr];
         if (conmin_constr < numConminNlnConstr) // nonlinear ineq & eq
           constraintValues[conmin_constr] =
-            my_constraintMapOffsets[conmin_constr] +
-            my_constraintMapMultipliers[conmin_constr] *
+            constraintMapOffsets[conmin_constr] +
+            constraintMapMultipliers[conmin_constr] *
             local_fn_vals[dakota_constr+1];
         else {
           Real Ax = 0.0;
@@ -509,8 +508,8 @@ void CONMINOptimizer::core_run()
               Ax += lin_eq_coeffs(dakota_leq_constr,j) * local_cdv[j];
           }
           constraintValues[conmin_constr] =
-            my_constraintMapOffsets[conmin_constr] +
-            my_constraintMapMultipliers[conmin_constr] * Ax;
+            constraintMapOffsets[conmin_constr] +
+            constraintMapMultipliers[conmin_constr] * Ax;
         }
       }
     }
@@ -538,10 +537,10 @@ void CONMINOptimizer::core_run()
     // should be OK so long as all of constraintValues is populated
     // (no active set deletions).
     for (size_t i=0; i<numConminNlnConstr; i++) {
-      size_t dakota_constr = my_constraintMapIndices[i];
+      size_t dakota_constr = constraintMapIndices[i];
       // back out the offset and multiplier
       best_fns[dakota_constr+1] = ( constraintValues[i] -
-	my_constraintMapOffsets[i] ) / my_constraintMapMultipliers[i];
+	constraintMapOffsets[i] ) / constraintMapMultipliers[i];
     }
     bestResponseArray.front().function_values(best_fns);
   }

@@ -351,15 +351,6 @@ private:
 
   /// total number of constraints seen by NLPQL
   int numNlpqlConstr;
-  /// a list of indices for referencing the DAKOTA nonlinear inequality
-  /// constraints used in computing the corresponding NLPQL constraints.
-  SizetList nonlinIneqConMappingIndices;
-  /// a list of multipliers for mapping the DAKOTA nonlinear inequality
-  /// constraints to the corresponding NLPQL constraints.
-  RealList nonlinIneqConMappingMultipliers;
-  /// a list of offsets for mapping the DAKOTA nonlinear inequality
-  /// constraints to the corresponding NLPQL constraints.
-  RealList nonlinIneqConMappingOffsets;
 
   /// a list of indices for referencing the DAKOTA linear inequality
   /// constraints used in computing the corresponding NLPQL constraints.

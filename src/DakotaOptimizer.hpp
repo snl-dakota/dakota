@@ -49,9 +49,9 @@ public:
     {
       return get_responses( iteratedModel,
                             dak_fn_vals, 
-                            my_constraintMapIndices,
-                            my_constraintMapMultipliers,
-                            my_constraintMapOffsets, 
+                            constraintMapIndices,
+                            constraintMapMultipliers,
+                            constraintMapOffsets, 
                             funs,
                             cEqs,
                             cIneqs);
@@ -81,15 +81,15 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void pre_run();
   void initialize_run();
   void post_run(std::ostream& s);
   void finalize_run();
   void print_results(std::ostream& s);
 
-  // A possible helper/adapter-based data transfer
-  void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
-  const Real& mapped_function_value(size_t i) const;
+  // helper/adapter methods
+  void configure_constraint_maps();
+  //void mapped_function_values(const RealVector& function_vals); // use constraints and traits for format
+  //const Real& mapped_function_value(size_t i) const;
   
   //
   //- Heading: Data
@@ -110,13 +110,13 @@ protected:
   int numNonlinearIneqConstraintsFound;
 
   /// map from Dakota constraint number to APPS constraint number
-  std::vector<int> my_constraintMapIndices;
+  std::vector<int> constraintMapIndices;
 
   /// multipliers for constraint transformations
-  std::vector<double> my_constraintMapMultipliers;
+  std::vector<double> constraintMapMultipliers;
 
   /// offsets for constraint transformations
-  std::vector<double> my_constraintMapOffsets;
+  std::vector<double> constraintMapOffsets;
 
 //----------------------------------------------------------------
 

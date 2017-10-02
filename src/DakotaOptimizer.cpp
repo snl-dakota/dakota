@@ -471,15 +471,12 @@ void Optimizer::objective_reduction(const Response& full_response,
 }
 
 /** Implements configuration of constraint maps, etc...  */
-void Optimizer::pre_run()
+void Optimizer::configure_constraint_maps()
 {
-  Minimizer::pre_run();
 
-  if( traits()->supports_nonlinear_inequality() )
-  {
+  if( traits()->supports_nonlinear_inequality() ) {
     // Sanity check consistent specs
-    if( traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::NONE )
-    {
+    if( traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::NONE ) {
       Cerr << "\nError: inconsistent format for NONLINEAR_INEQUALITY_FORMAT in traits." << std::endl;
       abort_handler(-1);
     }
@@ -487,13 +484,13 @@ void Optimizer::pre_run()
     Real scaling = (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
                  ? 1.0 : -1.0;
 
-      numNonlinearIneqConstraintsFound = config_ineq_constraint_maps(
+    numNonlinearIneqConstraintsFound = config_ineq_constraint_maps(
                                                         iteratedModel,
                                                         bigRealBoundSize,
                                                         CONSTRAINT_TYPE::NONLINEAR,
-                                                        my_constraintMapIndices,
-                                                        my_constraintMapMultipliers,
-                                                        my_constraintMapOffsets,
+                                                        constraintMapIndices,
+                                                        constraintMapMultipliers,
+                                                        constraintMapOffsets,
                                                         scaling);
   }
 }
@@ -525,6 +522,8 @@ void Optimizer::initialize_run()
   // minimizer is NL2SOL and the previous optimizer is NULL).
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
+
+  configure_constraint_maps();
 }
 
 

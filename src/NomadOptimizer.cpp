@@ -232,7 +232,7 @@ void NomadOptimizer::core_run()
 //PDH: May be able to get rid of setting the constraint map once we
 //have something in place that everyone can access.
 
-  ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, my_constraintMapIndices, my_constraintMapMultipliers, my_constraintMapOffsets);
+  ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
   ev.set_surrogate_usage(useSurrogate);
 
   // Construct Extended Poll object to form categorical neighbors.
@@ -318,7 +318,7 @@ void NomadOptimizer::core_run()
     // else local_objective_recast_retrieve() is used in Optimizer::post_run()
     const NOMAD::Point & bestFs = bestX->get_bb_outputs();
     RealVector best_fns(numFunctions);
-    std::vector<double> bestIneqs(my_constraintMapIndices.size()-numNonlinearEqConstraints);
+    std::vector<double> bestIneqs(constraintMapIndices.size()-numNonlinearEqConstraints);
     std::vector<double> bestEqs(numNonlinearEqConstraints);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
 
@@ -329,16 +329,16 @@ void NomadOptimizer::core_run()
     // Map linear and nonlinear constraints according to constraint map.
     if (numNonlinearIneqConstraints > 0) {
       for (int i=0; i<numNomadNonlinearIneqConstraints; i++) {
-	best_fns[my_constraintMapIndices[i]+1] = (bestFs[i+1].value() -
-		 my_constraintMapOffsets[i]) / my_constraintMapMultipliers[i];
+	best_fns[constraintMapIndices[i]+1] = (bestFs[i+1].value() -
+		 constraintMapOffsets[i]) / constraintMapMultipliers[i];
       }
     }
     if (numNonlinearEqConstraints > 0) {
       for (int i=0; i<numNonlinearEqConstraints; i++)
-	best_fns[my_constraintMapIndices[i+numNomadNonlinearIneqConstraints]+1] = 
+	best_fns[constraintMapIndices[i+numNomadNonlinearIneqConstraints]+1] = 
 	  (bestFs[i+numNomadNonlinearIneqConstraints+1].value() -
-	   my_constraintMapOffsets[i+numNomadNonlinearIneqConstraints]) /
-	  my_constraintMapMultipliers[i+numNomadNonlinearIneqConstraints];
+	   constraintMapOffsets[i+numNomadNonlinearIneqConstraints]) /
+	  constraintMapMultipliers[i+numNomadNonlinearIneqConstraints];
     }
     bestResponseArray.front().function_values(best_fns);
   }
@@ -775,9 +775,9 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
 
   // Augment the nonlinear inequality constraint maps with extra data (not sure what it represents - RWH)
   for (i=0; i<numNonlinearEqConstraints; i++) {
-    my_constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    my_constraintMapMultipliers.push_back(1.0);
-    my_constraintMapOffsets.push_back(-nln_eq_targets[i]);
+    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
+    constraintMapMultipliers.push_back(1.0);
+    constraintMapOffsets.push_back(-nln_eq_targets[i]);
   }
 }
 
