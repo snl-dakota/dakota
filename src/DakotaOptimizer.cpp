@@ -487,13 +487,14 @@ void Optimizer::pre_run()
     Real scaling = (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
                  ? 1.0 : -1.0;
 
-      config_ineq_constraint_maps( iteratedModel,
-          bigRealBoundSize,
-          CONSTRAINT_TYPE::NONLINEAR,
-          my_constraintMapIndices,
-          my_constraintMapMultipliers,
-          my_constraintMapOffsets,
-          scaling);
+      numNonlinearIneqConstraintsFound = config_ineq_constraint_maps(
+                                                        iteratedModel,
+                                                        bigRealBoundSize,
+                                                        CONSTRAINT_TYPE::NONLINEAR,
+                                                        my_constraintMapIndices,
+                                                        my_constraintMapMultipliers,
+                                                        my_constraintMapOffsets,
+                                                        scaling);
   }
 }
 

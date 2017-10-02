@@ -232,7 +232,7 @@ void NomadOptimizer::core_run()
 //PDH: May be able to get rid of setting the constraint map once we
 //have something in place that everyone can access.
 
-  ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
+  ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, my_constraintMapIndices, my_constraintMapMultipliers, my_constraintMapOffsets);
   ev.set_surrogate_usage(useSurrogate);
 
   // Construct Extended Poll object to form categorical neighbors.
@@ -767,35 +767,14 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   //		nonlinear_inequality_constraints
   //		nonlinear_equality_constraints
 
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
     = iteratedModel.nonlinear_eq_constraint_targets();
 
-  numNomadNonlinearIneqConstraints = 0;
+  numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 
-  for (i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
 
-  // Augment the nonlinear inequality constraints for extra data (not sure what it represents - RWH)
+  // Augment the nonlinear inequality constraint maps with extra data (not sure what it represents - RWH)
   for (i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
     my_constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
     my_constraintMapMultipliers.push_back(1.0);
     my_constraintMapOffsets.push_back(-nln_eq_targets[i]);

@@ -192,36 +192,32 @@ void DOTOptimizer::allocate_constraints()
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
   numDotNlnConstr = 2*num_nln_eq;
-  numDotNlnConstr += get_inequality_constraints (
-                  CONSTRAINT_TYPE::NONLINEAR,
-                  constraintMappingIndices,
-                  constraintMappingMultipliers,
-                  constraintMappingOffsets,
-                  -1.0 /* should be a trait? RWH */);
+  numDotNlnConstr += numNonlinearIneqConstraintsFound;
 
+  // Augment nonlinear inequality maps (set in Optimizer::pre_run) with additional constraint info ...
   get_equality_constraints
                 ( iteratedModel,
                   CONSTRAINT_TYPE::NONLINEAR,
-                  constraintMappingIndices,
+                  my_constraintMapIndices,
                   num_nln_ineq,
-                  constraintMappingMultipliers,
-                  constraintMappingOffsets);
+                  my_constraintMapMultipliers,
+                  my_constraintMapOffsets);
 
   numDotLinConstr = 2*num_lin_eq;
   numDotLinConstr += get_inequality_constraints
                 ( CONSTRAINT_TYPE::LINEAR,
-                  constraintMappingIndices,
-                  constraintMappingMultipliers,
-                  constraintMappingOffsets,
+                  my_constraintMapIndices,
+                  my_constraintMapMultipliers,
+                  my_constraintMapOffsets,
                   -1.0 /* should be a trait? RWH */);
 
   get_equality_constraints
                 ( iteratedModel,
                   CONSTRAINT_TYPE::LINEAR,
-                  constraintMappingIndices,
+                  my_constraintMapIndices,
                   num_lin_ineq,
-                  constraintMappingMultipliers,
-                  constraintMappingOffsets);
+                  my_constraintMapMultipliers,
+                  my_constraintMapOffsets);
 
   numDotConstr = numDotNlnConstr + numDotLinConstr;
 
@@ -304,6 +300,7 @@ void DOTOptimizer::allocate_workspace()
 void DOTOptimizer::initialize_run()
 {
   Optimizer::initialize_run();
+  Optimizer::pre_run();
 
   allocate_constraints();
   allocate_workspace();
@@ -402,7 +399,7 @@ void DOTOptimizer::core_run()
 	// indexing convenience.
         size_t dot_constr = intWorkSpace[i] - 1; // (0-based)
         if (dot_constr < numDotNlnConstr) { // only nonlinear in ASV
-          size_t dakota_constr = constraintMappingIndices[dot_constr];
+          size_t dakota_constr = my_constraintMapIndices[dot_constr];
           activeSet.request_value(dotInfo, dakota_constr+numObjectiveFns);
 	  // some DAKOTA equality and 2-sided inequality constraints may have
 	  // their ASV assigned multiple times depending on which of DOT's
@@ -429,22 +426,22 @@ void DOTOptimizer::core_run()
       for (i=0; i<ngt; i++) {
 	// work in 0-based constraint id's for indexing convenience
         size_t dot_constr = intWorkSpace[i] - 1;
-        size_t dakota_constr = constraintMappingIndices[dot_constr];
+        size_t dakota_constr = my_constraintMapIndices[dot_constr];
         if (dot_constr < numDotNlnConstr) { // nonlinear ineq & eq
           // gradients pick up multiplier mapping only (offsets drop out)
           for (j=0; j<num_vars; ++j)
-            realWorkSpace[offset+j] = constraintMappingMultipliers[dot_constr]
+            realWorkSpace[offset+j] = my_constraintMapMultipliers[dot_constr]
               * local_fn_grads(j,dakota_constr+1);
         }
         else if (dakota_constr < num_lin_ineq) { // linear ineq
 	  for (j=0; j<num_vars; ++j)
-	    realWorkSpace[offset+j] = constraintMappingMultipliers[dot_constr] *
+	    realWorkSpace[offset+j] = my_constraintMapMultipliers[dot_constr] *
 	      lin_ineq_coeffs(dakota_constr,j);
 	}
 	else { // linear eq
 	  size_t dakota_leq_constr = dakota_constr - num_lin_ineq;
 	  for (j=0; j<num_vars; ++j)
-	    realWorkSpace[offset+j] = constraintMappingMultipliers[dot_constr] *
+	    realWorkSpace[offset+j] = my_constraintMapMultipliers[dot_constr] *
 	      lin_eq_coeffs(dakota_leq_constr,j);
         }
         offset += num_vars;
@@ -458,10 +455,10 @@ void DOTOptimizer::core_run()
       // offsets/multipliers must be applied.
       size_t dot_constr, dakota_constr;
       for (dot_constr=0; dot_constr<numDotConstr; ++dot_constr) {
-        dakota_constr = constraintMappingIndices[dot_constr];
+        dakota_constr = my_constraintMapIndices[dot_constr];
         if (dot_constr < numDotNlnConstr) // nonlinear ineq & eq
-          constraintValues[dot_constr] = constraintMappingOffsets[dot_constr] +
-            constraintMappingMultipliers[dot_constr] *
+          constraintValues[dot_constr] = my_constraintMapOffsets[dot_constr] +
+            my_constraintMapMultipliers[dot_constr] *
             local_fn_vals[dakota_constr+1];
         else {
           Real Ax = 0.0;
@@ -474,8 +471,8 @@ void DOTOptimizer::core_run()
             for (j=0; j<numContinuousVars; j++)
               Ax += lin_eq_coeffs(dakota_leq_constr,j) * designVars[j];
           }
-          constraintValues[dot_constr] = constraintMappingOffsets[dot_constr] +
-            constraintMappingMultipliers[dot_constr] * Ax;
+          constraintValues[dot_constr] = my_constraintMapOffsets[dot_constr] +
+            my_constraintMapMultipliers[dot_constr] * Ax;
         }
       }
     }
@@ -502,10 +499,10 @@ void DOTOptimizer::core_run()
     // should be OK so long as all of constraintValues is populated
     // (no active set deletions).
     for (size_t i=0; i<numDotNlnConstr; ++i) {
-      size_t dakota_constr = constraintMappingIndices[i];
+      size_t dakota_constr = my_constraintMapIndices[i];
       // back out the offset and multiplier
       best_fns[dakota_constr+1] = ( constraintValues[i] -
-        constraintMappingOffsets[i] ) / constraintMappingMultipliers[i];
+        my_constraintMapOffsets[i] ) / my_constraintMapMultipliers[i];
     }
     bestResponseArray.front().function_values(best_fns);
   }

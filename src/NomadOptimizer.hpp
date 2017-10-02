@@ -158,15 +158,6 @@ private:
   /// Pointer to Nomad lower bounds
   NOMAD::Point lowerBound;
 
-  /// map from Dakota constraint number to Nomad constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
-
   /// defines use of surrogate in NOMAD
   std::string useSurrogate;
 };

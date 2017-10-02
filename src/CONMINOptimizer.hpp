@@ -161,28 +161,6 @@ private:
   int numConminLinConstr;
   /// total number of linear and nonlinear constraints seen by CONMIN
   int numConminConstr;
-  /// a container of indices for referencing the corresponding
-  /// Response constraints used in computing the CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container points to the
-      corresponding DAKOTA constraint. */
-  SizetArray constraintMappingIndices;
-  /// a container of multipliers for mapping the Response constraints to
-  /// the CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container stores a multiplier
-      for the DAKOTA constraint identified with constraintMappingIndices.
-      These multipliers are currently +1 or -1. */
-  RealArray constraintMappingMultipliers;
-  /// a container of offsets for mapping the Response constraints to the
-  /// CONMIN constraints.
-  /** The length of the container corresponds to the number of CONMIN
-      constraints, and each entry in the container stores an offset
-      for the DAKOTA constraint identified with
-      constraintMappingIndices.  These offsets involve inequality
-      bounds or equality targets, since CONMIN assumes constraint
-      allowables = 0. */
-  RealArray constraintMappingOffsets;
 
   // These are variables and arrays that must be declared here prior
   // to calling the F77 CONMIN code.

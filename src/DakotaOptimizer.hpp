@@ -36,6 +36,9 @@ public:
 
 //----------------------------------------------------------------
 
+  int num_nonlin_ineq_constraints_found() const
+    { return numNonlinearIneqConstraintsFound; }
+
   /// Adapter for transferring responses from Dakota data to TPL data
   template <typename VecT>
     void get_responses_from_dakota(
@@ -102,6 +105,9 @@ protected:
   static Optimizer* optimizerInstance;
   /// pointer containing previous value of optimizerInstance
   Optimizer* prevOptInstance;
+
+  /// number of nonlinear ineq constraints actually used (based on conditional and bigRealBoundSize
+  int numNonlinearIneqConstraintsFound;
 
   /// map from Dakota constraint number to APPS constraint number
   std::vector<int> my_constraintMapIndices;
