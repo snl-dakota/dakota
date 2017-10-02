@@ -58,7 +58,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
-  chainSamples(0), chainCycles(1),
+  chainSamples(probDescDB.get_int("method.nond.chain_samples")), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
@@ -143,38 +143,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  // assign default proposalCovarType
-  if (proposalCovarType.empty()) {
-    if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
-    else              proposalCovarType = "prior";       // prior covariance
-  }
-
-  // manage sample partitions and defaults
-  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
-  if (proposalCovarType == "derivatives") {
-    int pc_update_spec
-      = probDescDB.get_int("method.nond.proposal_covariance_updates");
-    if (pc_update_spec < 1) { // default partition: update every 100 samples
-      // if the user specified less than 100 samples, use that,
-      // resulting in chainCycles = 1
-      chainSamples = std::min(samples_spec, 100);
-      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
-    }
-    else { // partition as specified
-      if (samples_spec < pc_update_spec) {
-	// hard error since the user explicitly gave both controls
-	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
-	abort_handler(-1);
-      }
-      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
-      chainCycles  = pc_update_spec;
-    }
-  }
-  else { 
-    chainSamples = samples_spec; 
-    chainCycles = 1; 
-  }
-
   if (randomSeed != 0)
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
   else {
@@ -182,10 +150,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     randomSeed = generate_system_seed();
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
-
-  // assign default maxIterations (DataMethod default is -1)
-  if (adaptPosteriorRefine && maxIterations < 0)
-    maxIterations = 25;
 
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
