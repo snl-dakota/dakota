@@ -10,22 +10,16 @@
 //- Description: Implementation code for NonDMultilevelPolynomialChaos class
 //- Owner:       Mike Eldred, Sandia National Laboratories
 
-#include "dakota_system_defs.hpp"
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
-#include "NonDQuadrature.hpp"
-#include "NonDSampling.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
-#include "SparseGridDriver.hpp"
-#include "TensorProductDriver.hpp"
-#include "CubatureDriver.hpp"
 #include "dakota_data_io.hpp"
-#include "dakota_tabular_io.hpp"
-#include "nested_sampling.hpp"
+#include "dakota_system_defs.hpp"
+
 
 namespace Dakota {
 
@@ -77,8 +71,9 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
-		    const UShortArray& num_int_seq, const RealVector& dim_pref,
-		    short u_space_type, bool piecewise_basis, bool use_derivs):
+			      const UShortArray& num_int_seq,
+			      const RealVector& dim_pref, short u_space_type,
+			      bool piecewise_basis, bool use_derivs):
   NonDPolynomialChaos(BaseConstructor(), model, exp_coeffs_approach,
 		      u_space_type, piecewise_basis, use_derivs), 
   multilevDiscrepEmulation(DISTINCT_EMULATION), sequenceIndex(0)
@@ -96,14 +91,15 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
     that employ regression (least squares, CS, OLI). */
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
-		    const UShortArray& exp_order_seq,
-		    const RealVector& dim_pref,
-		    const SizetArray& colloc_pts_seq, Real colloc_ratio,
-		    int seed, short u_space_type, bool piecewise_basis,
-		    bool use_derivs, bool cv_flag,
-		    const String& import_build_points_file,
-		    unsigned short import_build_format,
-		    bool import_build_active_only): // TO DO: pilot samples
+			      const UShortArray& exp_order_seq,
+			      const RealVector& dim_pref,
+			      const SizetArray& colloc_pts_seq,
+			      Real colloc_ratio, int seed, short u_space_type,
+			      bool piecewise_basis, bool use_derivs,
+			      bool cv_flag,
+			      const String& import_build_points_file,
+			      unsigned short import_build_format,
+			      bool import_build_active_only): // TO DO: pilot samples
   NonDPolynomialChaos(BaseConstructor(), model, exp_coeffs_approach,
 		      u_space_type, piecewise_basis, use_derivs), 
   multilevDiscrepEmulation(DISTINCT_EMULATION),
