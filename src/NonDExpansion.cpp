@@ -67,8 +67,6 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.integration_refinement")),
   refinementSamples(probDescDB.get_iv("method.nond.refinement_samples"))
 {
-  assign_surrogate_response_mode();
-
   // override default definition in NonD ctor.  If there are any aleatory
   // variables, then we will sample on that subset for probabilistic stats.
   epistemicStats = (numEpistemicUncVars && !numAleatoryUncVars);
@@ -80,8 +78,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
-	      short exp_coeffs_approach, short u_space_type,
-	      bool piecewise_basis, bool use_derivs):
+	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
   expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),

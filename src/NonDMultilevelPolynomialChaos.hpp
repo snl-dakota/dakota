@@ -48,10 +48,11 @@ public:
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, int seed, short u_space_type,
+				Real colloc_ratio, const SizetArray& pilot,
+				int seed, short u_space_type,
 				bool piecewise_basis, bool use_derivs,
 				bool cv_flag,
-				const String& import_build_points_file,
+				const String& import_build_pts_file,
 				unsigned short import_build_format,
 				bool import_build_active_only);
   /// destructor

@@ -27,95 +27,8 @@
 #include "dakota_tabular_io.hpp"
 #include "nested_sampling.hpp"
 
+
 namespace Dakota {
-
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
-NonDPolynomialChaos::
-NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
-  NonDExpansion(problem_db, model),
-  expansionExportFile(
-    probDescDB.get_string("method.nond.export_expansion_file")),
-  expansionImportFile(
-    probDescDB.get_string("method.nond.import_expansion_file")),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  randomSeed(probDescDB.get_int("method.random_seed")),
-  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
-  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
-  crossValidNoiseOnly(
-    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
-  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
-//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
-  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
-  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
-  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
-  importBuildPointsFile(
-    probDescDB.get_string("method.import_build_points_file")),
-  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
-  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
-  importApproxPointsFile(
-    probDescDB.get_string("method.import_approx_points_file")),
-  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
-  importApproxActiveOnly(
-    probDescDB.get_bool("method.import_approx_active_only"))
-  //resizedFlag(false), callResize(false)
-{
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dimPrefSpec);
-
-  // Rest is in derived class...
-}
-
-NonDPolynomialChaos::
-NonDPolynomialChaos(BaseConstructor, Model& model, short exp_coeffs_approach,
-		    unsigned short num_int, const RealVector& dim_pref,
-		    short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), 
-  randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
-  normalizedCoeffOutput(false), uSpaceType(u_space_type)
-  //resizedFlag(false), callResize(false), initSGLevel(0)
-{
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dimPrefSpec);
-
-  // Rest is in derived class...
-}
-
-
-NonDPolynomialChaos::
-NonDPolynomialChaos(BaseConstructor, Model& model, short exp_coeffs_approach,
-		    unsigned short exp_order, const RealVector& dim_pref,
-		    size_t colloc_pts, Real colloc_ratio,
-		    int seed, short u_space_type, bool piecewise_basis,
-		    bool use_derivs, bool cv_flag,
-		    const String& import_build_points_file,
-		    unsigned short import_build_format,
-		    bool import_build_active_only): // TO DO: pilot samples
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), 
-  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
-  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
-  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
-{
-  // -------------------
-  // input sanity checks
-  // -------------------
-  check_dimension_preference(dimPrefSpec);
-
-  // Rest is in derived class...
-}
-
 
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
@@ -192,7 +105,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   Real colloc_ratio_terms_order
     = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
   const UShortArray& tensor_grid_order
-    = probDescDB.get_usa("method.nond.tensor_grid_order")
+    = probDescDB.get_usa("method.nond.tensor_grid_order");
   Iterator u_space_sampler;
   String approx_type;
 
@@ -252,8 +165,8 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int, const RealVector& dim_pref,
 		    short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), 
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, piecewise_basis,
+		use_derivs), 
   randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
   normalizedCoeffOutput(false), uSpaceType(u_space_type)
@@ -324,11 +237,11 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    size_t colloc_pts, Real colloc_ratio,
 		    int seed, short u_space_type, bool piecewise_basis,
 		    bool use_derivs, bool cv_flag,
-		    const String& import_build_points_file,
+		    const String& import_build_pts_file,
 		    unsigned short import_build_format,
 		    bool import_build_active_only): // TO DO: pilot samples
-  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs), 
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, piecewise_basis,
+		use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
   l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
@@ -375,17 +288,106 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& g_u_vars = g_u_model.current_variables();
-  if (!import_build_points_file.empty()) pt_reuse = "all";
+  if (!import_build_pts_file.empty()) pt_reuse = "all";
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
   pce_set.request_values(7); // helper mode: support surrogate Hessian evals
                              // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_points_file, import_build_format,
+    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
+}
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the ProblemDescDB. */
+NonDPolynomialChaos::
+NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+  NonDExpansion(problem_db, model),
+  expansionExportFile(
+    probDescDB.get_string("method.nond.export_expansion_file")),
+  expansionImportFile(
+    probDescDB.get_string("method.nond.import_expansion_file")),
+  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
+  randomSeed(probDescDB.get_int("method.random_seed")),
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid")),
+  crossValidation(probDescDB.get_bool("method.nond.cross_validation")),
+  crossValidNoiseOnly(
+    probDescDB.get_bool("method.nond.cross_validation.noise_only")),
+  noiseTols(probDescDB.get_rv("method.nond.regression_noise_tolerance")),
+  l2Penalty(probDescDB.get_real("method.nond.regression_penalty")),
+//initSGLevel(probDescDB.get_ushort("method.nond.adapted_basis.initial_level")),
+  numAdvance(probDescDB.get_ushort("method.nond.adapted_basis.advancements")),
+  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference")),
+  normalizedCoeffOutput(probDescDB.get_bool("method.nond.normalized")),
+  uSpaceType(probDescDB.get_short("method.nond.expansion_type")),
+  cubIntSpec(probDescDB.get_ushort("method.nond.cubature_integrand")),
+  importBuildPointsFile(
+    probDescDB.get_string("method.import_build_points_file")),
+  importBuildFormat(probDescDB.get_ushort("method.import_build_format")),
+  importBuildActiveOnly(probDescDB.get_bool("method.import_build_active_only")),
+  importApproxPointsFile(
+    probDescDB.get_string("method.import_approx_points_file")),
+  importApproxFormat(probDescDB.get_ushort("method.import_approx_format")),
+  importApproxActiveOnly(
+    probDescDB.get_bool("method.import_approx_active_only"))
+  //resizedFlag(false), callResize(false)
+{
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
+  // Rest is in derived class...
+}
+
+
+NonDPolynomialChaos::
+NonDPolynomialChaos(unsigned short method_name, Model& model,
+		    short exp_coeffs_approach, const RealVector& dim_pref,
+		    short u_space_type, bool piecewise_basis, bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
+		use_derivs), 
+  randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false), initSGLevel(0)
+{
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
+  // Rest is in derived class...
+}
+
+
+NonDPolynomialChaos::
+NonDPolynomialChaos(unsigned short method_name, Model& model,
+		    short exp_coeffs_approach, unsigned short exp_order,
+		    const RealVector& dim_pref, size_t colloc_pts,
+		    Real colloc_ratio, int seed, short u_space_type,
+		    bool piecewise_basis, bool use_derivs, bool cv_flag,
+		    const String& import_build_points_file,
+		    unsigned short import_build_format,
+		    bool import_build_active_only):
+  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
+		use_derivs), 
+  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
+  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
+  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
+  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+{
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
+
+  // Rest is in derived class...
 }
 
 
@@ -433,7 +435,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 
 
 bool NonDPolynomialChaos::
-config_expectation(size_t exp_samples, const String& sample_type,
+config_expectation(size_t exp_samples, unsigned short sample_type,
 		   const String& rng, Iterator& u_space_sampler,
 		   Model& g_u_model,  String& approx_type)
 {
@@ -477,7 +479,7 @@ bool NonDPolynomialChaos::
 config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
 		  Real colloc_ratio_terms_order, short regress_type,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
-		  const String& sample_type, const String& rng,
+		  unsigned short sample_type, const String& rng,
 		  Iterator& u_space_sampler, Model& g_u_model,
 		  String& approx_type)
 {

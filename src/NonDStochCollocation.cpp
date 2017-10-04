@@ -38,7 +38,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   short data_order,
     u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)
@@ -147,7 +147,7 @@ NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     const UShortArray& num_int_seq, const RealVector& dim_pref,
 		     short u_space_type, bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, u_space_type,
+  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach,
 		piecewise_basis, use_derivs)
 {
   // -------------------
@@ -160,7 +160,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // ----------------------------------------------
   short data_order;
   resolve_inputs(u_space_type, data_order);
-  initialize(u_space_type);
+  initialize_random(u_space_type);
 
   // -------------------
   // Recast g(x) to G(u)

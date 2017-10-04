@@ -41,19 +41,18 @@ public:
   NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		      const UShortArray& num_int_seq,
-		      const RealVector& dim_pref, short u_space_type,
-		      bool piecewise_basis, bool use_derivs);
+		      unsigned short num_int, const RealVector& dim_pref,
+		      short u_space_type, bool piecewise_basis,
+		      bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
-		      const UShortArray& exp_order_seq,
-		      const RealVector& dim_pref,
-		      const SizetArray& colloc_pts_seq, Real colloc_ratio,
-		      int seed, short u_space_type, bool piecewise_basis,
-		      bool use_derivs, bool cv_flag,
-		      const String& import_build_points_file,
+		      unsigned short exp_order, const RealVector& dim_pref,
+		      size_t colloc_pts, Real colloc_ratio, int seed,
+		      short u_space_type, bool piecewise_basis, bool use_derivs,
+		      bool cv_flag, const String& import_build_pts_file,
 		      unsigned short import_build_format,
 		      bool import_build_active_only);
+
   /// destructor
   ~NonDPolynomialChaos();
 
@@ -64,6 +63,29 @@ public:
   bool resize();
 
 protected:
+
+  //
+  //- Heading: Constructors and destructor
+  //
+ 
+  /// base constructor for DB construction of multilevel/multifidelity PCE
+  NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model);
+  /// base constructor for lightweight construction of 
+  /// multilevel/multifidelity PCE using numerical integration
+  NonDPolynomialChaos(unsigned short method_name, Model& model,
+		      short exp_coeffs_approach, const RealVector& dim_pref,
+		      short u_space_type, bool piecewise_basis,
+		      bool use_derivs);
+  /// base constructor for lightweight construction of 
+  /// multilevel/multifidelity PCE using regression
+  NonDPolynomialChaos(unsigned short method_name, Model& model,
+		      short exp_coeffs_approach, unsigned short exp_order,
+		      const RealVector& dim_pref, size_t colloc_pts,
+		      Real colloc_ratio, int seed, short u_space_type,
+		      bool piecewise_basis, bool use_derivs, bool cv_flag,
+		      const String& import_build_points_file,
+		      unsigned short import_build_format,
+		      bool import_build_active_only);
 
   //
   //- Heading: Virtual function redefinitions
@@ -111,6 +133,31 @@ protected:
 
   /// generate new samples from numSamplesOnModel and update expansion
   void append_expansion(size_t index = _NPOS);
+
+  /// configure exp_orders from inputs
+  void config_expansion_orders(unsigned short exp_order,
+			       const RealVector& dim_pref,
+			       UShortArray& exp_orders);
+  /// configure u_space_sampler and approx_type based on numerical
+  /// integration specification
+  bool config_integration(unsigned short quad_order, unsigned short ssg_level,
+			  unsigned short cub_int, Iterator& u_space_sampler,
+			  Model& g_u_model, String& approx_type);
+  /// configure u_space_sampler and approx_type based on expansion_samples
+  /// specification
+  bool config_expectation(size_t exp_samples, unsigned short sample_type,
+			  const String& rng, Iterator& u_space_sampler,
+			  Model& g_u_model,  String& approx_type);
+  /// configure u_space_sampler and approx_type based on regression
+  /// specification
+  bool config_regression(const UShortArray& exp_orders,
+			 unsigned short colloc_pts,
+			 Real colloc_ratio_terms_order, short regress_type,
+			 short ls_regress_type,
+			 const UShortArray& tensor_grid_order,
+			 unsigned short sample_type, const String& rng,
+			 Iterator& u_space_sampler, Model& g_u_model,
+			 String& approx_type);
 
 private:
 

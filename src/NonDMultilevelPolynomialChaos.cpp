@@ -153,8 +153,8 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 			      const UShortArray& num_int_seq,
 			      const RealVector& dim_pref, short u_space_type,
 			      bool piecewise_basis, bool use_derivs):
-  NonDPolynomialChaos(BaseConstructor(), model, exp_coeffs_approach,
-		      u_space_type, piecewise_basis, use_derivs), 
+  NonDPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS, model, exp_coeffs_approach,
+		      dim_pref, u_space_type, piecewise_basis, use_derivs), 
   multilevDiscrepEmulation(DISTINCT_EMULATION), sequenceIndex(0)
 {
   assign_hierarchical_response_mode();
@@ -176,7 +176,7 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
   // Construct u_space_sampler
   // -------------------------
   unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX,
-    cub_int    = USHRT_MAX;
+                 cub_int    = USHRT_MAX;
   unsigned short num_int_spec = (sequenceIndex < num_int_seq.size()) ?
     num_int_seq[sequenceIndex] : num_int_seq.back();
   switch (exp_coeffs_approach) {
@@ -219,17 +219,17 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
-			      Real colloc_ratio, int seed, short u_space_type,
+			      Real colloc_ratio, const SizetArray& pilot,
+			      int seed, short u_space_type,
 			      bool piecewise_basis, bool use_derivs,
-			      bool cv_flag,
-			      const String& import_build_points_file,
+			      bool cv_flag, const String& import_build_pts_file,
 			      unsigned short import_build_format,
-			      bool import_build_active_only): // TO DO: pilot samples
-  NonDPolynomialChaos(BaseConstructor(), model, exp_coeffs_approach,
-		      u_space_type, piecewise_basis, use_derivs), 
+			      bool import_build_active_only):
+  NonDPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS, model, exp_coeffs_approach,
+		      dim_pref, u_space_type, piecewise_basis, use_derivs), 
   multilevDiscrepEmulation(DISTINCT_EMULATION),
   expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0)
+  sequenceIndex(0), pilotSamples(pilot)
 {
   assign_hierarchical_response_mode();
 
@@ -270,13 +270,13 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& g_u_vars = g_u_model.current_variables();
-  if (!import_build_points_file.empty()) pt_reuse = "all";
+  if (!import_build_pts_file.empty()) pt_reuse = "all";
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
   pce_set.request_values(7); // helper mode: support surrogate Hessian evals
                              // TO DO: consider passing in data_mode
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, import_build_points_file, import_build_format,
+    outputLevel, pt_reuse, import_build_pts_file, import_build_format,
     import_build_active_only), false);
   initialize_u_space_model();
 

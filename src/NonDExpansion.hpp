@@ -38,8 +38,8 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, short u_space_type,
-		bool piecewise_basis, bool use_derivs);
+		short exp_coeffs_approach, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
