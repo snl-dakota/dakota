@@ -68,25 +68,50 @@ NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
   // -------------------
   check_dimension_preference(dimPrefSpec);
 
-  // ----------------------------------------------
-  // Resolve settings and initialize natafTransform
-  // ----------------------------------------------
-  short data_order;
-  resolve_inputs(uSpaceType, data_order);
-  initialize_random(uSpaceType);
+  // Rest is in derived class...
+}
 
-  // --------------------
-  // Data import settings
-  // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
-  if (!importBuildPointsFile.empty() && pt_reuse.empty())
-    pt_reuse = "all"; // reassign default if data import
+NonDPolynomialChaos::
+NonDPolynomialChaos(BaseConstructor, Model& model, short exp_coeffs_approach,
+		    unsigned short num_int, const RealVector& dim_pref,
+		    short u_space_type, bool piecewise_basis, bool use_derivs):
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
+		piecewise_basis, use_derivs), 
+  randomSeed(0), crossValidation(false), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false), initSGLevel(0)
+{
+  // -------------------
+  // input sanity checks
+  // -------------------
+  check_dimension_preference(dimPrefSpec);
 
+  // Rest is in derived class...
+}
+
+
+NonDPolynomialChaos::
+NonDPolynomialChaos(BaseConstructor, Model& model, short exp_coeffs_approach,
+		    unsigned short exp_order, const RealVector& dim_pref,
+		    size_t colloc_pts, Real colloc_ratio,
+		    int seed, short u_space_type, bool piecewise_basis,
+		    bool use_derivs, bool cv_flag,
+		    const String& import_build_points_file,
+		    unsigned short import_build_format,
+		    bool import_build_active_only): // TO DO: pilot samples
+  NonDExpansion(POLYNOMIAL_CHAOS, model, exp_coeffs_approach, u_space_type,
+		piecewise_basis, use_derivs), 
+  collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
+  tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
+  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
+  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
+  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+{
   // -------------------
-  // Recast g(x) to G(u)
+  // input sanity checks
   // -------------------
-  Model g_u_model;
-  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+  check_dimension_preference(dimPrefSpec);
 
   // Rest is in derived class...
 }
@@ -169,23 +194,23 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   const UShortArray& tensor_grid_order
     = probDescDB.get_usa("method.nond.tensor_grid_order")
   Iterator u_space_sampler;
-  UShortArray exp_orders; // defined for expansion_samples/regression
   String approx_type;
-  if (!expansionImportFile.empty()) {
-    // PCE import: regression/projection not needed
-    config_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
+
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  config_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
+
+  if (!expansionImportFile.empty()) // PCE import: no regression/projection
     approx_type = //(piecewiseBasis) ? "piecewise_orthogonal_polynomial" :
       "global_orthogonal_polynomial";
-  }
   else if (!config_integration(quadOrderSpec, ssgLevelSpec, cubIntSpec,
 			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_expectation(expOrderSpec, expSamplesSpec, sample_type, rng,
+	   !config_expectation(expSamplesSpec, sample_type, rng,
 			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_regression(expOrderSpec, collocPtsSpec,
+	   !config_regression(exp_orders, collocPtsSpec,
 			      colloc_ratio_terms_order, regress_type,
 			      ls_regress_type, tensor_grid_order, sample_type,
 			      rng, u_space_sampler, g_u_model, approx_type)) {
-    Cerr << "Error: incomplete configuration in NonDPolynomialCahos "
+    Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -331,11 +356,13 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler;
   UShortArray exp_orders; // defined for expansion_samples/regression
+  config_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
+
+  Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
-  config_regression(expOrderSpec, collocPtsSpec, 1, regress_type,
+  config_regression(exp_orders, collocPtsSpec, 1, regress_type,
 		    ls_regress_type, tensor_grid_order, SUBMETHOD_LHS, rng,
 		    u_space_sampler, g_u_model, approx_type);
 
@@ -406,18 +433,14 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 
 
 bool NonDPolynomialChaos::
-config_expectation(unsigned short exp_order, size_t exp_samples,
-		   const String& sample_type, const String& rng,
-		   Iterator& u_space_sampler, Model& g_u_model,
-		   String& approx_type)
+config_expectation(size_t exp_samples, const String& sample_type,
+		   const String& rng, Iterator& u_space_sampler,
+		   Model& g_u_model,  String& approx_type)
 {
   if (exp_samples == std::numeric_limits<size_t>::max())
     return false;
 
   // expectation of PCE coefficients based on random sampling
-
-  // expansion_order defined for expansion_samples/regression
-  config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
 
   if (refineType) { // no obvious logic for sample refinement
     Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
@@ -451,16 +474,13 @@ config_expectation(unsigned short exp_order, size_t exp_samples,
 
 
 bool NonDPolynomialChaos::
-config_regression(unsigned short exp_order, unsigned short colloc_pts,
+config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
 		  Real colloc_ratio_terms_order, short regress_type,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
 		  const String& sample_type, const String& rng,
 		  Iterator& u_space_sampler, Model& g_u_model,
 		  String& approx_type)
 {
-  // expansion_order defined for expansion_samples/regression
-  config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
-
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
     // adaptive precluded since grid anisotropy not readily supported
     // for synchronization with expansion anisotropy.
@@ -582,54 +602,6 @@ config_regression(unsigned short exp_order, unsigned short colloc_pts,
   if (numSamplesOnModel) // optional with default = 0
     maxEvalConcurrency *= numSamplesOnModel;
 }
-
-
-/*
-void NonDPolynomialChaos::
-select_exp_coeff_approach(unsigned short exp_order, unsigned short colloc_pts,
-			  size_t exp_samples, unsigned short quad_order,
-			  unsigned short ssg_level, unsigned short cub_int)
-{
-  Iterator u_space_sampler;
-  UShortArray exp_orders; // defined for expansion_samples/regression
-  String approx_type;
-
-  if (!expansionImportFile.empty()) {
-    // PCE import: regression/projection not needed
-    config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
-    approx_type = //(piecewiseBasis) ? "piecewise_orthogonal_polynomial" :
-      "global_orthogonal_polynomial";
-  }
-  else if (!config_integration(quad_order, ssg_level, cub_int,
-			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_expectation(exp_order, exp_samples, sample_type, rng,
-			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_regression(exp_order, colloc_pts,
-			      u_space_sampler, g_u_model, approx_type)) {
-    Cerr << "Error: ";
-    abort_handler(METHOD_ERROR);
-  }
-
-  // --------------------------------
-  // Construct G-hat(u) = uSpaceModel
-  // --------------------------------
-  // G-hat(u) uses an orthogonal polynomial approximation over the
-  // active/uncertain variables (using same view as iteratedModel/g_u_model:
-  // not the typical All view for DACE).  No correction is employed.
-  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& g_u_vars = g_u_model.current_variables();
-  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
-  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
-  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
-    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
-    importBuildActiveOnly,
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")), false);
-  initialize_u_space_model();
-}
-*/
 
 
 bool NonDPolynomialChaos::resize()

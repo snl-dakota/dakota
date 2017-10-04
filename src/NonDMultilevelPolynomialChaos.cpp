@@ -41,6 +41,41 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 {
   assign_hierarchical_response_mode();
 
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+  initialize_random(uSpaceType);
+
+  // --------------------
+  // Data import settings
+  // --------------------
+  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+
+  // pull DB settings
+  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
+  const String& rng = probDescDB.get_string("method.random_number_generator");
+  short regress_type = probDescDB.get_short("method.nond.regression_type"),
+    ls_regress_type
+      = probDescDB.get_short("method.nond.least_squares_regression_type");
+  Real colloc_ratio_terms_order
+    = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
+  const UShortArray& tensor_grid_order
+    = probDescDB.get_usa("method.nond.tensor_grid_order")
+
   // extract sequences and invoke shared helper fn with a scalar...
   unsigned short exp_order = USHRT_MAX, quad_order = USHRT_MAX,
     ssg_level = USHRT_MAX, cub_int = USHRT_MAX;
@@ -62,8 +97,52 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
 
-  select_exp_coeff_approach(exp_order, colloc_pts, exp_samples,
-			    quad_order, ssg_level, cubIntSpec);
+  Iterator u_space_sampler;
+  String approx_type;
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+
+  if (!config_integration(quad_order, ssg_level, cubIntSpec,
+			  u_space_sampler, g_u_model, approx_type) &&
+      !config_expectation(exp_samples, sample_type, rng, u_space_sampler,
+			  g_u_model, approx_type) &&
+      !config_regression(exp_orders, colloc_pts, colloc_ratio_terms_order,
+			 regress_type, ls_regress_type, tensor_grid_order,
+			 sample_type, rng, u_space_sampler, g_u_model,
+			 approx_type)) {
+    Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
+	 << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  //const Variables& g_u_vars = g_u_model.current_variables();
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
+    importBuildActiveOnly,
+    probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format")), false);
+  initialize_u_space_model();
+
+  // -------------------------------------
+  // Construct expansionSampler, if needed
+  // -------------------------------------
+  construct_expansion_sampler(importApproxPointsFile, importApproxFormat, 
+			      importApproxActiveOnly);
+
+  if (parallelLib.command_line_check())
+    Cout << "\nPolynomial_chaos construction completed: initial grid size of "
+	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
 }
 
 
@@ -80,8 +159,54 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 {
   assign_hierarchical_response_mode();
 
-  // extract sequences and invoke shared helper fn with a scalar...
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+  initialize_random(uSpaceType);
 
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX,
+    cub_int    = USHRT_MAX;
+  unsigned short num_int_spec = (sequenceIndex < num_int_seq.size()) ?
+    num_int_seq[sequenceIndex] : num_int_seq.back();
+  switch (exp_coeffs_approach) {
+  case Pecos::QUADRATURE:           quad_order = num_int_spec; break;
+  case Pecos::COMBINED_SPARSE_GRID: ssg_level  = num_int_spec; break;
+  case Pecos::CUBATURE:             cub_int    = num_int_spec; break;
+  default:
+    Cerr << "Error: Unsupported expansion coefficients approach." << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+  Iterator u_space_sampler; String approx_type;
+  config_integration(quad_order, ssg_level, cub_int,
+		     u_space_sampler, g_u_model, approx_type);
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  //const Variables& g_u_vars = g_u_model.current_variables();
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                             // TO DO: consider passing in data_mode
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
+  initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
 }
@@ -108,8 +233,52 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 {
   assign_hierarchical_response_mode();
 
-  // extract sequences and invoke shared helper fn with a scalar...
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+  initialize_random(uSpaceType);
 
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  transform_model(iteratedModel, g_u_model); // retain distribution bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  unsigned short exp_order_spec = (sequenceIndex < exp_order_seq.size()) ?
+    exp_order_seq[sequenceIndex] : exp_order_seq.back();
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  config_expansion_orders(exp_order_spec, dimPrefSpec, exp_orders);
+
+  Iterator u_space_sampler;
+  UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
+  String approx_type, rng("mt19937"), pt_reuse;
+  config_regression(exp_orders, collocPtsSpec, 1, regress_type,
+		    ls_regress_type, tensor_grid_order, SUBMETHOD_LHS, rng,
+		    u_space_sampler, g_u_model, approx_type);
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  //const Variables& g_u_vars = g_u_model.current_variables();
+  if (!import_build_points_file.empty()) pt_reuse = "all";
+  ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
+  pce_set.request_values(7); // helper mode: support surrogate Hessian evals
+                             // TO DO: consider passing in data_mode
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse, import_build_points_file, import_build_format,
+    import_build_active_only), false);
+  initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
 }
