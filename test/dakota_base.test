@@ -3459,6 +3459,48 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  3.5870494636e+01  2.3254732876e+00  5.1564034700e-01  2.1230996605e+01
+Test Number 3 succeeded
+<<<<< Function evaluation summary (lofi_IF): 5135 total (5115 new, 20 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.7224263874e-02 uuv_1
+                     -3.2768614635e+00 uuv_2
+                      1.2540082167e+02 uuv_3
+<<<<< Best misfit              =
+                      9.5646840861e-02
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.6791748964e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  2.7828542515e-02  4.5062188075e-03  7.0177553619e-01 -8.6000450456e-01
+         uuv_2 -3.3433814967e+00  3.3152852081e-01 -5.1077320354e-01 -1.1773024817e+00
+         uuv_3  1.2705332085e+02  5.3098861010e+00  1.5882255213e+00  3.2204497144e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  2.7789330831e+01  2.6853996847e+00 -4.1108732287e+00  3.5907392559e+01
+Test Number 4 succeeded
+<<<<< Function evaluation summary (lofi_IF): 5098 total (5070 new, 28 duplicate)
+<<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.6126350992e-02 uuv_1
+                     -3.9230915881e+00 uuv_2
+                      1.3226346937e+02 uuv_3
+<<<<< Best misfit              =
+                      1.5822409931e-01
+<<<<< Best log prior           =
+                     -4.8267124559e+00
+<<<<< Best log posterior       =
+                     -7.7417521549e+00
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+         uuv_1  3.3128791055e-02  3.0044494523e-03  7.0725252149e-01 -5.5527073343e-01
+         uuv_2 -3.7141538447e+00  2.0584926187e-01 -6.1561439919e-01 -4.1222455901e-01
+         uuv_3  1.2957647360e+02  3.3468140730e+00  1.8255497894e+00  8.9366300323e+00
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+least_sq_term_1  4.1577426150e+01  2.1600491303e+00  1.3548455023e+00  1.8452095777e+01
 dakota_bayes_linear.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1800 total (1800 new, 0 duplicate)

@@ -1572,7 +1572,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nonlinear_inequality_scales", P nonlinearIneqScales},
 	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
 	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights}};
+	{"primary_response_fn_weights", P primaryRespFnWeights}, 
+        {"simulation_variance", P simVariance}};
     #undef P
 
     KW<RealVector, DataResponsesRep> *kw;
@@ -3062,6 +3063,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.gpmsa_normalize", P gpmsaNormalize},
 	{"nond.logit_transform", P logitTransform},
 	{"nond.model_discrepancy", P calModelDiscrepancy},
+	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

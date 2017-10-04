@@ -28,13 +28,34 @@ make.x86_64 \
 openmpi.x86_64 \
 openmpi-devel.x86_64 \
 perl.x86_64 \
-python.x86_64
+python.x86_64 \
+epel-release.noarch
+
+# (EPEL needed for CMake 3.x)
+
+RUN yum -y update && yum -y install \
+cmake3.x86_64
 
 # Listing potential packages that may be added later
+
+## For documentation build
 # RUN yum -y install \
-# dos2unix.x86_64 \
 # doxygen.x86_64 \
 # texlive-collection-latexrecommended.noarch
+
+## For developer convenience
+# RUN yum -y install \
+# dos2unix.x86_64 \
+# emacs.x86_64 \
+# gitk.noarch \
+# subversion.x86_64 \
+# valgrind.x86_64
+
+## If later using NFS-mounted TPLs
+# RUN yum -y install \
+# redhat-lsb-core.x86_64
+
+RUN yum -y update 
 
 # ==========================================================================
 # Finish construction

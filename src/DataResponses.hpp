@@ -158,6 +158,8 @@ public:
   size_t numExpConfigVars;
   /// list of num_experiments x num_config_vars configuration variable values
   RealVector expConfigVars;
+  /// list of variances of errors to be added to simulation responses
+  RealVector simVariance;
   /// whether one should interpolate between the experiment and simulation field data 
   bool interpolateFlag;
 

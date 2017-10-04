@@ -154,7 +154,8 @@ DataMethodRep::DataMethodRep():
   modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
-  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
+  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false), 
+  mutualInfoKSG2(false),
   importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),  
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
@@ -298,9 +299,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
     << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
     << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
-    << adaptExpDesign << importCandPtsFile << importCandFormat << numCandidates
-    << maxHifiEvals << numChains << numCR << crossoverChainPairs << grThreshold
-    << jumpStep << dataDistType << dataDistCovInputType << dataDistMeans 
+    << adaptExpDesign << importCandPtsFile << importCandFormat
+    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;
@@ -446,9 +448,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importPredConfigFormat >> modelDiscrepancyType >> approxCorrectionOrder
     >> exportCorrModelFile >> exportCorrModelFormat >> exportCorrVarFile
     >> exportCorrVarFormat >> exportDiscrepFile >> exportDiscrepFormat
-    >> adaptExpDesign >> importCandPtsFile >> importCandFormat >> numCandidates
-    >> maxHifiEvals >> numChains >> numCR >> crossoverChainPairs >> grThreshold
-    >> jumpStep >> dataDistType >> dataDistCovInputType >> dataDistMeans 
+    >> adaptExpDesign >> importCandPtsFile >> importCandFormat
+    >> numCandidates >> maxHifiEvals >> mutualInfoKSG2 >> numChains
+    >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
+    >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
     >> generatePosteriorSamples >> evaluatePosteriorDensity;
@@ -594,9 +597,10 @@ void DataMethodRep::write(std::ostream& s) const
     << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
     << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
     << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
-    << adaptExpDesign << importCandPtsFile << importCandFormat << numCandidates
-    << maxHifiEvals << numChains << numCR << crossoverChainPairs << grThreshold
-    << jumpStep << dataDistType << dataDistCovInputType << dataDistMeans 
+    << adaptExpDesign << importCandPtsFile << importCandFormat
+    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
     << generatePosteriorSamples << evaluatePosteriorDensity;

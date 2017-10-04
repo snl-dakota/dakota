@@ -37,7 +37,8 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
   responsesId(problem_db.get_string("responses.id")), 
-  functionLabels(problem_db.get_sa("responses.labels"))
+  functionLabels(problem_db.get_sa("responses.labels")),
+  simulationVariance(problem_db.get_rv("responses.simulation_variance"))
 {
   // scalar response data types:
   size_t num_scalar_resp_fns
@@ -116,6 +117,13 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   else
     Cerr << "Warning: total number of response functions is zero.  This is "
 	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
+  
+  if (  simulationVariance.length() != 0 && simulationVariance.length() != 1 && 
+        simulationVariance.length() != num_total_responses) {
+    Cerr << "Error: simulation_variance must have length equal to 1 or "
+         << "the total number of calibration terms." << std::endl;
+    abort_handler(-1);
+  }
 
 #ifdef REFCOUNT_DEBUG
   Cout << "SharedResponseDataRep::SharedResponseDataRep(problem_db) "
@@ -157,6 +165,8 @@ void SharedResponseDataRep::copy_rep(SharedResponseDataRep* srd_rep)
   fieldRespGroupLengths = srd_rep->fieldRespGroupLengths;
 
   numCoordsPerField     = srd_rep->numCoordsPerField;
+
+  simulationVariance 	= srd_rep->simulationVariance;
 }
 
 
@@ -209,7 +219,6 @@ void SharedResponseDataRep::build_field_labels()
     for (size_t j=0; j<fieldRespGroupLengths[i]; ++j)
       build_label(functionLabels[unrolled_index++], fieldLabels[i], j+1, "_");
 }
-
 
 /** Deep copies are used when recasting changes the nature of a
     Response set. */
