@@ -196,9 +196,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX,
                  cub_int    = USHRT_MAX;
   switch (exp_coeffs_approach) {
-  case Pecos::QUADRATURE:           quad_order = num_int_spec; break;
-  case Pecos::COMBINED_SPARSE_GRID: ssg_level  = num_int_spec; break;
-  case Pecos::CUBATURE:             cub_int    = num_int_spec; break;
+  case Pecos::QUADRATURE:           quad_order = num_int; break;
+  case Pecos::COMBINED_SPARSE_GRID: ssg_level  = num_int; break;
+  case Pecos::CUBATURE:             cub_int    = num_int; break;
   default:
     Cerr << "Error: Unsupported expansion coefficients approach." << std::endl;
     abort_handler(METHOD_ERROR); break;
@@ -214,7 +214,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  UShortArray exp_orders; // empty for numerical integration approaches
+  UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& g_u_vars = g_u_model.current_variables();
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
@@ -275,6 +275,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
+  unsigned short regress_type(0), ls_regress_type(0); // TO DO
   config_regression(exp_orders, collocPtsSpec, 1, regress_type,
 		    ls_regress_type, tensor_grid_order, SUBMETHOD_LHS, rng,
 		    u_space_sampler, g_u_model, approx_type);
@@ -633,17 +634,15 @@ bool NonDPolynomialChaos::resize()
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
-  // generated using active sampling view:
   Iterator u_space_sampler;
   UShortArray exp_orders; // empty for numerical integration approaches
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSeqSpec,
+    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSpec,
 			 dimPrefSpec);
     break;
   case Pecos::COMBINED_SPARSE_GRID:
-    construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSeqSpec,
+    construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSpec,
 			  dimPrefSpec);
     break;
   case Pecos::CUBATURE:
@@ -651,24 +650,20 @@ bool NonDPolynomialChaos::resize()
     break;
   default:
     if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ||
-	expOrderSeqSpec.empty()) {
+	expOrderSpec == USHRT_MAX) {
       // extract number of collocation points
-      numSamplesOnModel = (sequenceIndex < collocPtsSeqSpec.size()) ?
-	collocPtsSeqSpec[sequenceIndex] : collocPtsSeqSpec.back();
+      numSamplesOnModel = collocPtsSpec;
       // Construct u_space_sampler
       String rng("mt19937");
       construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
 		    numSamplesOnModel, randomSeed, rng, false, ACTIVE);
     }
     else { // expansion_order-based
+      config_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
       // resolve expansionBasisType, exp_terms, numSamplesOnModel
       if (!expansionBasisType)
 	expansionBasisType = (tensorRegression && numContinuousVars <= 5) ?
 	  Pecos::TENSOR_PRODUCT_BASIS : Pecos::TOTAL_ORDER_BASIS;
-      unsigned short scalar = (sequenceIndex < expOrderSeqSpec.size()) ?
-	expOrderSeqSpec[sequenceIndex] : expOrderSeqSpec.back();
-      NonDIntegration::dimension_preference_to_anisotropic_order(scalar,
-	dimPrefSpec, numContinuousVars, exp_orders);
 
       size_t exp_terms;
       switch (expansionBasisType) {
@@ -683,7 +678,7 @@ bool NonDPolynomialChaos::resize()
 	break;
       }
     
-      if (!collocPtsSeqSpec.empty()) // define collocRatio from colloc pts
+      if (collocPtsSpec != std::numeric_limits<size_t>::max()) // ratio from pts
 	collocRatio = terms_samples_to_ratio(exp_terms, numSamplesOnModel);
       else if (collocRatio > 0.)     // define colloc pts from collocRatio
 	numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
@@ -715,22 +710,21 @@ bool NonDPolynomialChaos::resize()
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type;
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
   pce_set.request_values(7);
-  if(expansionCoeffsApproach == Pecos::QUADRATURE ||
+  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::CUBATURE) {
-    String pt_reuse, approx_type = "global_projection_orthogonal_polynomial";
+    approx_type = "global_projection_orthogonal_polynomial";
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
       pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
       outputLevel, pt_reuse), false);
   }
   else {
-    String pt_reuse, approx_type = "global_regression_orthogonal_polynomial";
-
+    approx_type = "global_regression_orthogonal_polynomial";
     if (!importBuildPointsFile.empty())
       pt_reuse = "all";
-
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
       pce_set, approx_type, exp_orders, corr_type, corr_order, data_order,
       outputLevel, pt_reuse, importBuildPointsFile, importBuildFormat,
