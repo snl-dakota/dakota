@@ -37,7 +37,6 @@ function( set_configure_command _filename )
     #message("setting subdir ${_addnl_args_SUBDIR}") 
     set( localDir "${DAKOTA_LOCAL_CONFIG_DIR}/${_addnl_args_SUBDIR}" )
     set( publicDir "${DAKOTA_CONFIG_DIR}/${_addnl_args_SUBDIR}" )
-  else()
 
   endif()
 
