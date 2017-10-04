@@ -129,13 +129,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_bool("method.import_build_active_only")),
   userConfigVars(expData.num_config_vars()),
   gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
-  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize")),
-  optionsFile(probDescDB.get_string("method.queso_options_file"))
+  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize"))
 {   
-  // quesoEnv: Base class calls init_queso_environment().  May need to
-  // override this to provide additional power-user options to
-  // override Dakota options.
-
   bool found_error = false;
 
   // Input spec should prevent this, but be sure.  It's possible
@@ -164,22 +159,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
       approxImportActiveOnly && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: Experimental data presented to GPMSA has configuration variables, but\n         simulation data import specifies active_only, so nominal values of\n         configuration variables will be used." << std::endl;
 
-  if (!optionsFile.empty()) {
-    if (boost::filesystem::exists(optionsFile)) {
-      if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Any GPMSA options in file '" << optionsFile 
-	     << "' will override Dakota options." << std::endl;
-    } else {
-      Cerr << "\nError: GPMSA options_file '" << optionsFile 
-	   << "' specified, but file not found.\n";
-      found_error = true;
-    }
-  }
-
   if (found_error)
-    abort_handler(-1);
-
-  init_queso_environment(optionsFile);
+    abort_handler(METHOD_ERROR);
 
   // TODO: use base class to manage any problem transformations and
   // probably the surrogate build data management
@@ -272,13 +253,13 @@ void NonDGPMSABayesCalibration::calibrate()
   // Simulation data is needed prior to setting scaling on config vars
   acquire_simulation_data();
 
+  // Construct with default options
   // default constructed options will have recommended settings, then
   // we can override via C++ API or input file (parse)
   gpmsaOptions.reset(new QUESO::GPMSAOptions());
+
+  // C++ API options may override defaults
   // insert Dakota parameters here: gpmsaOptions.m_emulatorPrecisionShape
-  // now override with file-based power user parameters
-  if (!optionsFile.empty())
-    gpmsaOptions->parse(*quesoEnv, "");
 
   // Regarding simulation scenario input values, the user should standardise
   // them so that they exist inside a hypercube.
@@ -308,6 +289,10 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // TODO: Use GPMSA intrinsic data scaling when available
   bool scale_data = gpmsaNormalize;
+
+  // File-based power user parameters have the final say
+  if (!advancedOptionsFile.empty())
+    gpmsaOptions->parse(*quesoEnv, "");
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nGPMSA Final Options:" << *gpmsaOptions << std::endl;

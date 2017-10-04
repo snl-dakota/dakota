@@ -165,9 +165,6 @@ protected:
   /// Configuration options for the GPMSA solver
   boost::shared_ptr<QUESO::GPMSAOptions> gpmsaOptions;
 
-  /// advanced options file name
-  String optionsFile;
-
   /// core factory that manages a GP-based likelihood
   boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
   gpmsaFactory; 
