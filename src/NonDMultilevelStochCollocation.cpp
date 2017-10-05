@@ -55,21 +55,17 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  const UShortArray& quad_order_seq
-    = probDescDB.get_usa("method.nond.quadrature_order");
-  const UShortArray& ssg_level_seq
-    = probDescDB.get_usa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rv("method.nond.dimension_preference");
   check_dimension_preference(dim_pref);
-  if (!quad_order_seq.empty()) {
+  if (!quadOrderSeqSpec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
-    unsigned short quad_order = (sequenceIndex < quad_order_seq.size()) ?
-      quad_order_seq[sequenceIndex] : quad_order_seq.back();
+    unsigned short quad_order = (sequenceIndex < quadOrderSeqSpec.size()) ?
+      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
   }
-  else if (!ssg_level_seq.empty()) {
+  else if (!ssgLevelSeqSpec.empty()) {
     switch (expansionBasisType) {
     case Pecos::HIERARCHICAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
@@ -100,8 +96,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
     }
     */
-    unsigned short ssg_level = (sequenceIndex < ssg_level_seq.size()) ?
-      ssg_level_seq[sequenceIndex] : ssg_level_seq.back();
+    unsigned short ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
+      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref);
   }
 
@@ -186,15 +182,15 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
+    quadOrderSeqSpec = num_int_seq;
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
-  case Pecos::COMBINED_SPARSE_GRID:
-    expansionBasisType = Pecos::NODAL_INTERPOLANT;
-    construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
-    break;
-  case Pecos::HIERARCHICAL_SPARSE_GRID:
-    expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+    ssgLevelSeqSpec = num_int_seq;
+    expansionBasisType
+      = (expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) ?
+      Pecos::HIERARCHICAL_INTERPOLANT : Pecos::NODAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
   }
@@ -287,6 +283,12 @@ void NonDMultilevelStochCollocation::core_run()
   compute_print_converged_results();
   update_final_statistics(); // virtual fn redefined below
   ++numUncertainQuant;
+}
+
+
+void NonDMultilevelStochCollocation::increment_specification_sequence()
+{
+  // TO DO
 }
 
 } // namespace Dakota

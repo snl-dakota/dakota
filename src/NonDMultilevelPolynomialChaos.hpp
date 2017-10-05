@@ -71,9 +71,7 @@ protected:
   //
 
   void core_run();
-
   void increment_specification_sequence();
-
   void print_results(std::ostream& s);
 
   //

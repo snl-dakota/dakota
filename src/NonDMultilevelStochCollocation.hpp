@@ -59,6 +59,7 @@ protected:
   //
 
   void core_run();
+  void increment_specification_sequence();
 
 private:
 
