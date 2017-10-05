@@ -23,6 +23,7 @@
 #include "NonDPolynomialChaos.hpp"
 #include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
 //#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
@@ -413,10 +414,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new NonDPolynomialChaos(problem_db, model);           break;
   case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     return new NonDMultilevelPolynomialChaos(problem_db, model); break;
-  case STOCH_COLLOCATION: case MULTIFIDELITY_STOCH_COLLOCATION:
+  case STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
-  //case MULTIFIDELITY_STOCH_COLLOCATION:
-  //  return new NonDMultilevelStochCollocation(problem_db, model); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return new NonDMultilevelStochCollocation(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {

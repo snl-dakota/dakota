@@ -70,20 +70,22 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void core_run();
+
   void increment_specification_sequence();
 
-  void multilevel_expansion();
+  void print_results(std::ostream& s);
 
   //
   //- Heading: Member functions
   //
 
-  /// special case of multilevel_expansion() for multilevel allocation of
-  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
+  /// option within core_run() for multilevel allocation of samples
+  /// (mirroring NonDMultilevelSampling for PCE regression), forming
   /// distinct PCE expansions for model discrepancies
   void multilevel_regression(size_t model_form);
-  /// special case of multilevel_expansion() for multilevel allocation of
-  /// samples (mirroring NonDMultilevelSampling for PCE regression), forming
+  /// option within core_run() for multilevel allocation of samples
+  /// (mirroring NonDMultilevelSampling for PCE regression), forming
   /// recursive PCE expansions for hierarchical surpluses
   void recursive_regression(size_t model_form);
 

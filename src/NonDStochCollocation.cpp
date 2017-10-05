@@ -52,19 +52,19 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  const UShortArray& quad_order_spec
-    = probDescDB.get_usa("method.nond.quadrature_order");
-  const UShortArray& ssg_level_spec
-    = probDescDB.get_usa("method.nond.sparse_grid_level");
+  unsigned short quad_order_spec
+    = probDescDB.get_ushort("method.nond.quadrature_order");
+  unsigned short ssg_level_spec
+    = probDescDB.get_ushort("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rv("method.nond.dimension_preference");
   check_dimension_preference(dim_pref);
-  if (!quad_order_spec.empty()) {
+  if (quad_order_spec != USHRT_MAX) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
-  else if (!ssg_level_spec.empty()) {
+  else if (ssg_level_spec != USHRT_MAX) {
     switch (expansionBasisType) {
     case Pecos::HIERARCHICAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
@@ -145,7 +145,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
-		     const UShortArray& num_int_seq, const RealVector& dim_pref,
+		     unsigned short num_int, const RealVector& dim_pref,
 		     short u_space_type, bool piecewise_basis, bool use_derivs):
   NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach,
 		piecewise_basis, use_derivs)
@@ -177,15 +177,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
-    construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
+    construct_quadrature(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
   case Pecos::COMBINED_SPARSE_GRID:
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
-    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
   case Pecos::HIERARCHICAL_SPARSE_GRID:
     expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
-    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
   }
 
@@ -216,6 +216,28 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
+}
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the ProblemDescDB. */
+NonDStochCollocation::
+NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db, Model& model):
+  NonDExpansion(problem_db, model)
+{
+  // Logic delegated to derived class constructor...
+}
+
+
+/** This constructor is used for helper iterator instantiation on the fly. */
+NonDStochCollocation::
+NonDStochCollocation(unsigned short method_name, Model& model,
+		     short exp_coeffs_approach, bool piecewise_basis,
+		     bool use_derivs):
+  NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
+		use_derivs)
+{
+  // Logic delegated to derived class constructor...
 }
 
 

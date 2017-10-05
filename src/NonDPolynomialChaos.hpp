@@ -65,7 +65,7 @@ public:
 protected:
 
   //
-  //- Heading: Constructors and destructor
+  //- Heading: Constructors
   //
  
   /// base constructor for DB construction of multilevel/multifidelity PCE
@@ -79,13 +79,9 @@ protected:
   /// base constructor for lightweight construction of 
   /// multilevel/multifidelity PCE using regression
   NonDPolynomialChaos(unsigned short method_name, Model& model,
-		      short exp_coeffs_approach, unsigned short exp_order,
-		      const RealVector& dim_pref, size_t colloc_pts,
-		      Real colloc_ratio, int seed, short u_space_type,
-		      bool piecewise_basis, bool use_derivs, bool cv_flag,
-		      const String& import_build_points_file,
-		      unsigned short import_build_format,
-		      bool import_build_active_only);
+		      short exp_coeffs_approach, const RealVector& dim_pref,
+		      short u_space_type, bool piecewise_basis, bool use_derivs,
+		      Real colloc_ratio, int seed, bool cv_flag);
 
   //
   //- Heading: Virtual function redefinitions
@@ -98,8 +94,6 @@ protected:
   void resolve_inputs(short& u_space_type, short& data_order);
 
   void initialize_u_space_model();
-
-  void increment_specification_sequence();
 
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion(size_t index = _NPOS);
@@ -151,22 +145,12 @@ protected:
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(const UShortArray& exp_orders,
-			 unsigned short colloc_pts,
-			 Real colloc_ratio_terms_order, short regress_type,
-			 short ls_regress_type,
+			 unsigned short colloc_pts, Real colloc_ratio_order,
+			 short regress_type, short ls_regress_type,
 			 const UShortArray& tensor_grid_order,
 			 unsigned short sample_type, const String& rng,
-			 Iterator& u_space_sampler, Model& g_u_model,
-			 String& approx_type);
-
-private:
-
-  /// define a grid increment that is consistent with an advancement in
-  /// expansion order
-  void increment_grid_from_order();
-  /// define an expansion order that is consistent with an advancement in
-  /// structured/unstructured grid level/density
-  void increment_order_from_grid();
+			 const String& pt_reuse, Iterator& u_space_sampler,
+			 Model& g_u_model, String& approx_type);
 
   /// convert number of expansion terms and collocation ratio to a
   /// number of collocation samples
@@ -177,6 +161,54 @@ private:
   /// convert collocation ratio and number of samples to expansion order
   void ratio_samples_to_order(Real colloc_ratio, int num_samples,
 			      UShortArray& exp_order, bool less_than_or_equal);
+
+  //
+  //- Heading: Data
+  //
+
+  /// user requested expansion type
+  short uSpaceType;
+
+  /// cubature integrand
+  unsigned short cubIntSpec;
+
+  /// user specification for dimension_preference
+  RealVector dimPrefSpec;
+
+  /// factor applied to terms^termsOrder in computing number of regression
+  /// points, either user specified or inferred
+  Real collocRatio;
+  /// option for regression PCE using a filtered set tensor-product points
+  bool tensorRegression;
+
+  /// user specified import build points file
+  String importBuildPointsFile;
+  /// user specified import build file format
+  unsigned short importBuildFormat;
+  /// user specified import build active only
+  bool importBuildActiveOnly;
+
+  /// user specified import approx. points file
+  String importApproxPointsFile;
+  /// user specified import approx. file format
+  unsigned short importApproxFormat;
+  /// user specified import approx. active only
+  bool importApproxActiveOnly;
+
+  /// filename for import of chaos coefficients
+  String expansionImportFile;
+  /// filename for export of chaos coefficients
+  String expansionExportFile;
+
+private:
+
+  /// define a grid increment that is consistent with an advancement in
+  /// expansion order
+  void increment_grid_from_order();
+  /// define an expansion order that is consistent with an advancement in
+  /// structured/unstructured grid level/density
+  void increment_order_from_grid();
+
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector
   void order_to_dim_preference(const UShortArray& order, unsigned short& p,
@@ -186,14 +218,6 @@ private:
   //- Heading: Data
   //
 
-  /// filename for export of chaos coefficients
-  String expansionExportFile;
-  /// filename for import of chaos coefficients
-  String expansionImportFile;
-
-  /// factor applied to terms^termsOrder in computing number of regression
-  /// points, either user specified or inferred
-  Real collocRatio;
   /// exponent applied to number of expansion terms for computing
   /// number of regression points
   Real termsOrder;
@@ -201,9 +225,6 @@ private:
   /// seed for random number generator used for regression with LHS
   /// and sub-sampled tensor grids
   int randomSeed;
-
-  /// option for regression PCE using a filtered set tensor-product points
-  bool tensorRegression;
 
   /// flag for use of cross-validation for selection of parameter settings
   /// in regression approaches
@@ -227,8 +248,6 @@ private:
 
   /// user specification for expansion_order (array for multifidelity)
   unsigned short expOrderSpec;
-  /// user specification for dimension_preference
-  RealVector dimPrefSpec;
   /// user specification for collocation_points (array for multifidelity)
   size_t collocPtsSpec;
   /// user specification for expansion_samples (array for multifidelity)
@@ -237,10 +256,6 @@ private:
   unsigned short quadOrderSpec;
   /// user request of sparse grid level
   unsigned short ssgLevelSpec;
-  /// cubature integrand
-  unsigned short cubIntSpec;
-  /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
-  size_t sequenceIndex;
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
@@ -248,23 +263,6 @@ private:
 
   /// user request for use of normalization when outputting PCE coefficients
   bool normalizedCoeffOutput;
-
-  /// user requested expansion type
-  short uSpaceType;
-
-  /// user specified import build points file
-  String importBuildPointsFile;
-  /// user specified import build file format
-  unsigned short importBuildFormat;
-  /// user specified import build active only
-  bool importBuildActiveOnly;
-
-  /// user specified import approx. points file
-  String importApproxPointsFile;
-  /// user specified import approx. file format
-  unsigned short importApproxFormat;
-  /// user specified import approx. active only
-  bool importApproxActiveOnly;
 
   // local flag to signal a resizing occurred
   //bool resizedFlag;

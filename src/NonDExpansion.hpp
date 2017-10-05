@@ -95,11 +95,6 @@ protected:
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion(size_t index = _NPOS);
-  /// construct a multifidelity expansion, across model forms or
-  /// discretization levels
-  virtual void multifidelity_expansion();
-  /// construct a multilevel expansion across discretization levels
-  virtual void multilevel_expansion();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
@@ -129,9 +124,9 @@ protected:
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
 
-  /// refine the reference expansion found by compute_expansion() using
-  /// uniform/adaptive p-/h-refinement strategies
-  void refine_expansion(size_t index = _NPOS);
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  void assign_hierarchical_response_mode();
 
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
@@ -139,22 +134,23 @@ protected:
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    const UShortArray& quad_order_seq,
+			    unsigned short quad_order,
 			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// generates a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int filtered_samples, const RealVector& dim_pref);
+			    unsigned short quad_order,
+			    const RealVector& dim_pref, int filtered_samples);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// samples randomly from a tensor product multi-index
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int random_samples, int seed,
-			    const UShortArray& quad_order_seq,
-			    const RealVector& dim_pref);
+			    unsigned short quad_order,
+			    const RealVector& dim_pref,
+			    int random_samples, int seed);
   /// assign a NonDSparseGrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-			     const UShortArray& ssg_level_seq,
-			     const RealVector& ssg_dim_pref);
+			     unsigned short ssg_level,
+			     const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
@@ -164,8 +160,19 @@ protected:
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
 
+  /// construct a multifidelity expansion, across model forms or
+  /// discretization levels
+  void multifidelity_expansion();
+
+  /// refine the reference expansion found by compute_expansion() using
+  /// uniform/adaptive p-/h-refinement strategies
+  void refine_expansion(size_t index = _NPOS);
+
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
+
+  /// manage print of results following convergence of iterative refinement
+  void compute_print_converged_results(bool print_override = false);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -243,10 +250,6 @@ private:
   //- Heading: Convenience function definitions
   //
 
-  /// define the surrogate response mode for a hierarchical model in 
-  /// multilevel/multifidelity expansions
-  void assign_hierarchical_response_mode();
-
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
   void reduce_total_sobol_sets(RealVector& avg_sobol);
@@ -290,8 +293,6 @@ private:
   void compute_print_increment_results();
   /// manage print of results following a refinement increment
   void compute_print_iteration_results(bool initialize);
-  /// manage print of results following convergence of iterative refinement
-  void compute_print_converged_results(bool print_override = false);
 
   //
   //- Heading: Data

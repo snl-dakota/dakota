@@ -50,17 +50,18 @@ public:
 
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
-  NonDQuadrature(Model& model, const UShortArray& quad_order_seq,
+  NonDQuadrature(Model& model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode);
-  /// alternate constructor for instantiations "on the fly" that
-  /// generate a filtered tensor product sample set
-  NonDQuadrature(Model& model, int num_filt_samples,
-		 const RealVector& dim_pref, short driver_mode);
-  /// alternate constructor for instantiations "on the fly" that
-  /// sample randomly from a tensor product multi-index
-  NonDQuadrature(Model& model, int num_rand_samples, int seed,
-		 const UShortArray& quad_order_seq, const RealVector& dim_pref,
-		 short driver_mode);
+  /// alternate constructor for instantiations "on the fly" that filter a
+  /// tensor product sample set to include points with highest sample weights
+  NonDQuadrature(Model& model, unsigned short quad_order,
+		 const RealVector& dim_pref, short driver_mode,
+		 int num_filt_samples);
+  /// alternate constructor for instantiations "on the fly" that sub-sample
+  /// quadrature rules by sampling randomly from a tensor product multi-index
+  NonDQuadrature(Model& model, unsigned short quad_order,
+		 const RealVector& dim_pref, short driver_mode,
+		 int num_sub_samples, int seed);
 
   //
   //- Heading: Virtual function redefinitions
@@ -107,7 +108,6 @@ protected:
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid_preference(const RealVector& dim_pref);
-  void increment_specification_sequence();
 
   int num_samples() const;
 
@@ -160,8 +160,8 @@ private:
   /// quadrature rules such as Gauss-Patterson
   bool nestedRules;
 
-  /// a sequence of scalar quadrature orders, one per refinement level
-  UShortArray quadOrderSeqSpec;
+  /// scalar quadrature order, rendered anisotropic via dimPrefSpec
+  unsigned short quadOrderSpec;
   /// reference point for Pecos::TensorProductDriver::quadOrder: the original
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
@@ -208,8 +208,8 @@ inline void NonDQuadrature::samples(size_t samples)
 
 inline void NonDQuadrature::reset()
 {
-  initialize_dimension_quadrature_order(quadOrderSeqSpec[sequenceIndex],
-					dimPrefSpec, dimQuadOrderRef);
+  initialize_dimension_quadrature_order(quadOrderSpec, dimPrefSpec,
+					dimQuadOrderRef);
 }
 
 
@@ -218,7 +218,11 @@ inline void NonDQuadrature::update()
   switch (quadMode) {
   case FILTERED_TENSOR:
     // update settings and propagate to tpqDriver
-    compute_minimum_quadrature_order(numSamples, dimPrefSpec, dimQuadOrderRef);
+    if (quadOrderSpec == USHRT_MAX)
+      compute_minimum_quadrature_order(numSamples, dimPrefSpec,
+				       dimQuadOrderRef);
+    else
+      reset();
     break;
   case RANDOM_TENSOR:
     // revise settings if needed to enforce min order
@@ -236,14 +240,6 @@ inline void NonDQuadrature::increment_grid()
 inline void NonDQuadrature::
 increment_grid_preference(const RealVector& dim_pref)
 { increment_grid_preference(dim_pref, dimQuadOrderRef); }
-
-
-inline void NonDQuadrature::increment_specification_sequence()
-{
-  if (sequenceIndex+1 < quadOrderSeqSpec.size())
-    ++sequenceIndex;
-  reset();
-}
 
 
 inline int NonDQuadrature::num_samples() const

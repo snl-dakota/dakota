@@ -38,6 +38,8 @@ namespace Dakota {
 
 NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
+  multilevDiscrepEmulation(
+    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation")),
   expansionBasisType(probDescDB.get_short("method.nond.expansion_basis_type")),
   numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.nond.samples_on_emulator")),
@@ -80,6 +82,7 @@ NonDExpansion::
 NonDExpansion(unsigned short method_name, Model& model,
 	      short exp_coeffs_approach, bool piecewise_basis, bool use_derivs):
   NonD(method_name, model), expansionCoeffsApproach(exp_coeffs_approach),
+  multilevDiscrepEmulation(DISTINCT_EMULATION),
   expansionBasisType(Pecos::DEFAULT_BASIS), numUncertainQuant(0),
   numSamplesOnModel(0), numSamplesOnExpansion(0), nestedRules(false),
   piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
@@ -285,8 +288,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     const UShortArray& quad_order_seq,
-		     const RealVector& dim_pref)
+		     unsigned short quad_order, const RealVector& dim_pref)
 {
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
@@ -307,13 +309,14 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, quad_order_seq, dim_pref, driver_mode), false);
+    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode), false);
 }
 
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     int filtered_samples, const RealVector& dim_pref)
+		     unsigned short quad_order, const RealVector& dim_pref,
+		     int filtered_samples)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -339,15 +342,15 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, filtered_samples, dim_pref, driver_mode), false);
+    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode,
+		   filtered_samples), false);
 }
 
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     int random_samples, int seed,
-		     const UShortArray& quad_order_seq,
-		     const RealVector& dim_pref)
+		     unsigned short quad_order, const RealVector& dim_pref,
+		     int sub_samples, int seed)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -373,15 +376,14 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, random_samples, seed, quad_order_seq, dim_pref,
-		   driver_mode), false);
+    NonDQuadrature(g_u_model, quad_order, dim_pref, driver_mode,
+		   sub_samples, seed), false);
 }
 
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      const UShortArray& ssg_level_seq,
-		      const RealVector& dim_pref)
+		      unsigned short ssg_level,  const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
   if (!vbdFlag && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
@@ -428,7 +430,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
                     ? Pecos::INTERPOLATION_MODE : Pecos::INTEGRATION_MODE;
 
   u_space_sampler.assign_rep(new
-    NonDSparseGrid(g_u_model, ssg_level_seq, dim_pref, expansionCoeffsApproach,
+    NonDSparseGrid(g_u_model, ssg_level, dim_pref, expansionCoeffsApproach,
 		   driver_mode, growth_rate, refineControl, track_wts,
 		   track_colloc), false);
 }
@@ -609,10 +611,6 @@ construct_expansion_sampler(const String& import_approx_file,
 void NonDExpansion::core_run()
 {
   initialize_expansion();
-
-  //switch (methodName) { // TO DO
-  //case MULTIFIDELITY_STOCH_COLLOCATION:
-  //  multifidelity_expansion(); break;
 
   compute_expansion();  // nominal iso/aniso expansion from input spec
   if (refineType)
@@ -1003,14 +1001,6 @@ void NonDExpansion::refine_expansion(size_t index)
 }
 
 
-void NonDExpansion::multilevel_expansion()
-{
-  Cerr << "Error: no default implementation for multilevel_expansion()."
-       << std::endl;
-  abort_handler(METHOD_ERROR);
-}
-
-
 void NonDExpansion::multifidelity_expansion()
 {
   /* *** TO DO: *** sanity checks + allow discretization levels...
@@ -1117,28 +1107,16 @@ void NonDExpansion::update_expansion(size_t index)
 }
 
 
-/** default implementation is overridden by PCE */
 void NonDExpansion::increment_specification_sequence()
 {
+  Cerr << "Error: no default implementation for increment_specification_"
+       << "sequence() used my multifidelity expansions." << std::endl;
+  abort_handler(METHOD_ERROR);
+
+  /*
   NonDIntegration* nond_integration
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
   nond_integration->increment_specification_sequence(); // TPQ or SSG
-  /*
-  bool multiple_num_int = (nond_integration->{order,level}_spec().size() > 1);
-  switch (refineControl) {
-  case NO_CONTROL:             // no refinement
-    if (multiple_num_int)
-      nond_integration->increment_specification_sequence(); // TPQ or SSG
-    //else the initial spec has not been modified: no u_space_sampler.reset()
-    break;
-  case Pecos::UNIFORM_CONTROL: // uniform refinement
-    if (multiple_num_int)
-      nond_integration->increment_specification_sequence(); // TPQ or SSG
-    // else carry final discrepancy refinement level as initial LF refinement
-    break;
-  default:                     // adaptive refinement
-    break;
-  }
   */
 }
 

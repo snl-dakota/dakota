@@ -102,7 +102,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   short regress_type = probDescDB.get_short("method.nond.regression_type"),
     ls_regress_type
       = probDescDB.get_short("method.nond.least_squares_regression_type");
-  Real colloc_ratio_terms_order
+  Real colloc_ratio_order
     = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
   const UShortArray& tensor_grid_order
     = probDescDB.get_usa("method.nond.tensor_grid_order");
@@ -119,10 +119,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 			       u_space_sampler, g_u_model, approx_type) &&
 	   !config_expectation(expSamplesSpec, sample_type, rng,
 			       u_space_sampler, g_u_model, approx_type) &&
-	   !config_regression(exp_orders, collocPtsSpec,
-			      colloc_ratio_terms_order, regress_type,
-			      ls_regress_type, tensor_grid_order, sample_type,
-			      rng, u_space_sampler, g_u_model, approx_type)) {
+	   !config_regression(exp_orders, collocPtsSpec, colloc_ratio_order,
+			      regress_type, ls_regress_type, tensor_grid_order,
+			      sample_type, rng, pt_reuse, u_space_sampler,
+			      g_u_model, approx_type)) {
     Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -193,19 +193,23 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX,
-                 cub_int    = USHRT_MAX;
+  Iterator u_space_sampler; String approx_type;
   switch (exp_coeffs_approach) {
-  case Pecos::QUADRATURE:           quad_order = num_int; break;
-  case Pecos::COMBINED_SPARSE_GRID: ssg_level  = num_int; break;
-  case Pecos::CUBATURE:             cub_int    = num_int; break;
+  case Pecos::QUADRATURE:
+    config_integration(num_int, USHRT_MAX, USHRT_MAX, u_space_sampler,
+		       g_u_model, approx_type); break;
+  case Pecos::COMBINED_SPARSE_GRID:
+    config_integration(USHRT_MAX, num_int, USHRT_MAX, u_space_sampler,
+		       g_u_model, approx_type); break;
+  case Pecos::CUBATURE:
+    config_integration(USHRT_MAX, USHRT_MAX, num_int, u_space_sampler,
+		       g_u_model, approx_type); break;
   default:
-    Cerr << "Error: Unsupported expansion coefficients approach." << std::endl;
+    Cerr << "Error: Unsupported PCE coefficient estimation approach in "
+	 << "NonDPolynomialChaos constructor."
+	 << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
-  Iterator u_space_sampler; String approx_type;
-  config_integration(quad_order, ssg_level, cub_int,
-		     u_space_sampler, g_u_model, approx_type);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -275,10 +279,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
-  unsigned short regress_type(0), ls_regress_type(0); // TO DO
+  unsigned short regress_type(0), ls_regress_type(0); // *** TO DO ***
   config_regression(exp_orders, collocPtsSpec, 1, regress_type,
 		    ls_regress_type, tensor_grid_order, SUBMETHOD_LHS, rng,
-		    u_space_sampler, g_u_model, approx_type);
+		    pt_reuse, u_space_sampler, g_u_model, approx_type);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -368,20 +372,16 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
-		    short exp_coeffs_approach, unsigned short exp_order,
-		    const RealVector& dim_pref, size_t colloc_pts,
-		    Real colloc_ratio, int seed, short u_space_type,
-		    bool piecewise_basis, bool use_derivs, bool cv_flag,
-		    const String& import_build_points_file,
-		    unsigned short import_build_format,
-		    bool import_build_active_only):
+		    short exp_coeffs_approach, const RealVector& dim_pref,
+		    short u_space_type, bool piecewise_basis, bool use_derivs,
+		    Real colloc_ratio, int seed, bool cv_flag):
   NonDExpansion(method_name, model, exp_coeffs_approach, piecewise_basis,
 		use_derivs), 
   collocRatio(colloc_ratio), termsOrder(1.), randomSeed(seed),
   tensorRegression(false), crossValidation(cv_flag), crossValidNoiseOnly(false),
-  l2Penalty(0.), numAdvance(3), expOrderSpec(exp_order), dimPrefSpec(dim_pref),
-  collocPtsSpec(colloc_pts), normalizedCoeffOutput(false),
-  uSpaceType(u_space_type) //resizedFlag(false), callResize(false)
+  l2Penalty(0.), numAdvance(3), dimPrefSpec(dim_pref),
+  normalizedCoeffOutput(false), uSpaceType(u_space_type)
+  //resizedFlag(false), callResize(false)
 {
   // -------------------
   // input sanity checks
@@ -481,8 +481,8 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
 		  Real colloc_ratio_terms_order, short regress_type,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
 		  unsigned short sample_type, const String& rng,
-		  Iterator& u_space_sampler, Model& g_u_model,
-		  String& approx_type)
+		  const String& pt_reuse, Iterator& u_space_sampler,
+		  Model& g_u_model, String& approx_type)
 {
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
     // adaptive precluded since grid anisotropy not readily supported
@@ -561,20 +561,18 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
 	  dim_quad_order[i] = exp_orders[i] + 1;
       }
 
-      // define order sequence for input to NonDQuadrature
-      UShortArray quad_order_seq(1); // one level of refinement
       // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
       // empty; if aniso, it differs from exp_order aniso due to offset.
-      RealVector dim_pref;
+      unsigned short quad_order; RealVector dim_pref;
       NonDIntegration::anisotropic_order_to_dimension_preference(dim_quad_order,
-	quad_order_seq[0], dim_pref);
+	quad_order, dim_pref);
       // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
       // quadrature points (uSpaceModel.build_approximation() invokes
       // daceIterator.run()).  The quad order inputs are updated within
       // NonDQuadrature as needed to satisfy min order constraints (but
       // not nested constraints: nestedRules is false to retain m >= p+1).
-      construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-			   randomSeed, quad_order_seq, dim_pref);
+      construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref,
+			   numSamplesOnModel, randomSeed);
     }
     else { // unstructured grid: LHS samples
       // if reusing samples within a refinement strategy, ensure different
@@ -638,7 +636,7 @@ bool NonDPolynomialChaos::resize()
   UShortArray exp_orders; // empty for numerical integration approaches
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
-    construct_quadrature(u_space_sampler,  g_u_model, quadOrderSpec,
+    construct_quadrature(u_space_sampler, g_u_model, quadOrderSpec,
 			 dimPrefSpec);
     break;
   case Pecos::COMBINED_SPARSE_GRID:
@@ -684,15 +682,11 @@ bool NonDPolynomialChaos::resize()
 	numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 
       // Construct u_space_sampler
-      if (tensorRegression) { // tensor sub-sampling
-	UShortArray dim_quad_order(numContinuousVars);
+      if (tensorRegression) // tensor sub-sampling
 	// define nominal quadrature order as exp_order + 1
 	// (m > p avoids most of the 0's in the Psi measurement matrix)
-	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_orders[i] + 1;
-	construct_quadrature(u_space_sampler, g_u_model, dim_quad_order,
+	construct_quadrature(u_space_sampler, g_u_model, expOrderSpec+1,
 			     dimPrefSpec);
-      }
       else {
 	String rng("mt19937");
 	construct_lhs(u_space_sampler, g_u_model, SUBMETHOD_LHS,
@@ -1144,14 +1138,6 @@ void NonDPolynomialChaos::print_results(std::ostream& s)
     print_coefficients(s);
   if (!expansionExportFile.empty())
     export_coefficients();
-
-  if (//iteratedModel.subordinate_models(false).size() == 1 &&
-      iteratedModel.truth_model().solution_levels() > 1) {
-    s << "<<<<< Samples per solution level:\n";
-    print_multilevel_evaluation_summary(s, NLev);
-    s << "<<<<< Equivalent number of high fidelity evaluations: "
-      << equivHFEvals << std::endl;
-  }
 
   NonDExpansion::print_results(s);
 }

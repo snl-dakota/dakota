@@ -40,9 +40,9 @@ public:
   NonDStochCollocation(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDStochCollocation(Model& model, short exp_coeffs_approach,
-		       const UShortArray& num_int_seq,
-		       const RealVector& dim_pref, short u_space_type,
-		       bool piecewise_basis, bool use_derivs);
+		       unsigned short num_int, const RealVector& dim_pref,
+		       short u_space_type, bool piecewise_basis,
+		       bool use_derivs);
   /// destructor
   ~NonDStochCollocation();
 
@@ -53,6 +53,18 @@ public:
   bool resize();
 
 protected:
+
+  //
+  //- Heading: Constructors
+  //
+
+  /// short-cut ctor allowing derived class to replace logic in base class ctor
+  NonDStochCollocation(BaseConstructor, ProblemDescDB& problem_db,
+		       Model& model);
+  /// short-cut ctor allowing derived class to replace logic in base class ctor
+  NonDStochCollocation(unsigned short method_name, Model& model,
+		       short exp_coeffs_approach, bool piecewise_basis,
+		       bool use_derivs);
 
   //
   //- Heading: Virtual function redefinitions
