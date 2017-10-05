@@ -2843,17 +2843,16 @@ Interface& Model::derived_interface()
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_levels() const
+size_t Model::solution_levels(bool lwr_bnd) const
 {
   if (modelRep)
-    return modelRep->solution_levels(); // envelope fwd to letter
+    return modelRep->solution_levels(lwr_bnd); // envelope fwd to letter
   else // letter lacking redefinition of virtual fn.
-    return 1;
+    return (lwr_bnd) ? 1 : 0;
 }
 
 
-/** activate a particular level within a solution / discretization
-    hierarchy and return the cost estimate. */
+/** activate a particular level within a solution / discretization hierarchy. */
 void Model::solution_level_index(size_t index)
 {
   if (modelRep)
@@ -2867,7 +2866,33 @@ void Model::solution_level_index(size_t index)
 }
 
 
-RealVector Model::solution_level_cost() const
+size_t Model::solution_level_index() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_index"
+         << "() function.\n       solution_level_index is not supported by this"
+	 << " Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_index(); // envelope fwd to letter
+}
+
+
+RealVector Model::solution_level_costs() const
+{
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual solution_level_costs"
+         << "() function.\n       solution_level_costs is not supported by "
+	 << "this Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return modelRep->solution_level_costs(); // envelope fwd to letter
+}
+
+
+Real Model::solution_level_cost() const
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_cost"

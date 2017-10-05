@@ -6420,17 +6420,17 @@ Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.6604300414e-02  7.7680238821e-03  6.6844505139e-01 -5.4338857908e-01
- response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915606e-01 -7.2020797069e-01
- response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857916e-01
+ response_fn_1  2.6604300414e-02  7.9760800553e-03  7.5818883689e-01 -5.4759144090e-01
+ response_fn_2  1.2995623888e-01  1.8157327003e-02  5.7576216400e-01 -1.3106688413e+00
+ response_fn_3  2.6604300415e-02  7.9760800555e-03  7.5818883687e-01 -5.4759144094e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.5712890625e+01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.6604300414e-02  7.7680238821e-03  6.6844505139e-01 -5.4338857908e-01
- response_fn_2  1.2995623888e-01  1.7575737995e-02  6.5403915606e-01 -7.2020797069e-01
- response_fn_3  2.6604300415e-02  7.7680238819e-03  6.6844505127e-01 -5.4338857916e-01
+ response_fn_1  2.6604300414e-02  7.9760800553e-03  7.5818883689e-01 -5.4759144090e-01
+ response_fn_2  1.2995623888e-01  1.8157327003e-02  5.7576216400e-01 -1.3106688413e+00
+ response_fn_3  2.6604300415e-02  7.9760800555e-03  7.5818883687e-01 -5.4759144094e-01
 dakota_uq_diffusion_mlpce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)

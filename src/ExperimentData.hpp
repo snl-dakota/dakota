@@ -172,6 +172,9 @@ public:
   void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, 
 				 size_t experiment, 
 				 RealSymMatrixArray& weighted_hessians) const;
+  /// apply simulation error to experiment data
+  void apply_simulation_error(const RealVector& simulation_error,
+                              size_t experiment);
 
   /// return a (copy) vector containing the main diagonal entries of a specified
   /// experimental covariance matrix

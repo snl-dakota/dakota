@@ -1316,41 +1316,46 @@ accumulate_moments(const RealVectorArray& fn_samples, size_t q,
   // accumulate central moments (e.g., variance)
   size_t s, num_obs = fn_samples.size(), num_samp = 0;
   Real& mean = moments[0]; // already computed in accumulate_mean()
-  Real sample, centered_fn, pow_fn, cm2 = 0., cm3 = 0., cm4 = 0.;
+  Real sample, centered_fn, pow_fn, sum2 = 0., sum3 = 0., sum4 = 0.;
   for (s=0; s<num_obs; ++s) {
     sample = fn_samples[s][q];
     if (std::isfinite(sample)) { // neither NaN nor +/-Inf
       pow_fn  = centered_fn = sample - mean;
-      pow_fn *= centered_fn; cm2 += pow_fn; // variance
-      pow_fn *= centered_fn; cm3 += pow_fn; // 3rd central moment
-      pow_fn *= centered_fn; cm4 += pow_fn; // 4th central moment
+      pow_fn *= centered_fn; sum2 += pow_fn; // variance
+      pow_fn *= centered_fn; sum3 += pow_fn; // 3rd central moment
+      pow_fn *= centered_fn; sum4 += pow_fn; // 4th central moment
       ++num_samp;
     }
   }
-  Real ns = (Real)num_samp, np1 = ns + 1., nm1 = ns - 1., nm2 = ns - 2.,
-      nm3 = ns - 3.;
-
+  Real ns = (Real)num_samp, nm1 = ns - 1., nm2 = ns - 2.;
   // biased central moment estimators (bypass and use raw sums below):
-  //cm2 /= ns; cm3 /= ns; cm4 /= ns;
+  //biased_cm2 = sum2 / ns; biased_cm3 = sum3 / ns; biased_cm4 = sum4 / ns;
 
   // unbiased moment estimators (central and standardized):
-  bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (cm2 > 0.);
+  bool central = (moments_type == CENTRAL_MOMENTS), pos_var = (sum2 > 0.);
+  Real cm2 = sum2 / nm1;
   if (num_samp > 1 && pos_var)
-    moments[1] = (central) ? cm2 / nm1 : // unbiased central
-      std::sqrt(cm2/nm1);                // unbiased standard
-  else
-    moments[1] = 0.;
+    moments[1] = (central) ? cm2 : std::sqrt(cm2); // unbiased central : std dev
+  else moments[1] = 0.;
+
   if (num_samp > 2 && pos_var)
-    moments[2] = (central) ? cm3 * ns / (nm1*nm2) :        // unbiased central
-      cm3 * ns * std::sqrt(nm1) / (nm2*std::pow(cm2,1.5)); // unbiased standard
-  else
-    moments[2] = 0.;
+    moments[2] = (central) ?
+      // unbiased central:
+      sum3 * ns / (nm1 * nm2) :
+      // unbiased standard: cm3 / sigma^3 = N / (nm1 nm2) sum3 / (cm2)^1.5
+      sum3 * ns / (nm1 * nm2 * std::pow(cm2, 1.5));
+  else moments[2] = 0.;
+
   if (num_samp > 3 && pos_var)
     moments[3] = (central) ?
-      (ns*np1*cm4 - 3.*nm1*cm2*cm2)/(nm1*nm2*nm3) :      // unbiased central
-      nm1 * (np1*ns*cm4/(cm2*cm2) - 3.*nm1) / (nm2*nm3); // unbiased standard
-  else
-    moments[3] = (central) ? 0. : -3.;
+      // unbiased central (non-excess) from "Modeling with Data," Klemens 2009
+      // (Appendix M):  unbiased_cm4 =
+      // ( N^3 biased_cm4 / (N-1) - (6N - 9) unbiased_cm2^2 ) / (N^2 - 3N + 3)
+      (ns * ns * sum4 / nm1 - (6.*ns - 9.) * cm2 * cm2) / (ns*(ns - 3.) + 3.) :
+      // unbiased standard (excess kurtosis) from Wikipedia ("Estimators of
+      // population kurtosis")
+      nm1 * ((ns + 1.) * ns * sum4 / (sum2*sum2) - 3.*nm1) / (nm2*(ns - 3.));
+  else moments[3] = (central) ? 0. : -3.;
 }
 
 

@@ -2709,6 +2709,8 @@
 		      </oneOf>
 		    </optional>
                   </keyword>
+		  <!-- KAM -->
+	          <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
 		</keyword> 
 	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
 		<oneOf>
@@ -3225,10 +3227,10 @@
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer" help="ModelCommands.html#ModelSingle" minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
-          <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" complexity="1">
-            <param type="STRING" />
-	        <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="1" >
-              <param type="REALLIST" />
+          <keyword  id="solution_level_cost" name="solution_level_cost" code="{N_mom(RealDL,solutionLevelCost)}" label="Relative Simulation Cost Factors for Solution Levels" help="ModelCommands.html#ModelSingle" minOccurs="0" complexity="1" >
+            <param type="REALLIST" />
+	    <keyword  id="solution_level_control" name="solution_level_control" code="{N_mom(str,solutionLevelControl)}" label="Simulation Solution Level Control Variable" help="ModelCommands.html#ModelSingle" minOccurs="0" default="use of single default solution level" >
+              <param type="STRING" />
             </keyword>
           </keyword>
         </keyword>
@@ -4840,8 +4842,9 @@
                   <param type="INTEGER" constraint=">= 0" />
 		</keyword>
 
-		<keyword  id="variance_type1" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
+		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
                   <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+		  <alias name="variance_type"/>
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
@@ -4861,8 +4864,9 @@
 		<keyword  id="num_config_variables" name="num_config_variables" code="{N_rem(sizet,numExpConfigVars)}" label="Configuration variable columns in file" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
 		  <param type="INTEGER" constraint=">= 0" />
 		</keyword>
-		<keyword  id="variance_type" name="variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
+		<keyword  id="experiment_variance_type" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
 		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
+		  <alias name="variance_type"/>
 		</keyword>
               </keyword>
 	    </oneOf>
@@ -4870,6 +4874,9 @@
           <!-- #              )
                # The required group immediately inside an optional group with only one alternate was tripping up the Reference manual generation
             -->
+          <keyword id="simulation_variance" name="simulation_variance" code="{N_rem(RealL,simVariance)}" label="Additive model error" help="" minOccurs="0" default="no variance" >
+             <param type="REALLIST" constraint="LEN1 calibration_terms" />
+          </keyword>
           <keyword  id="nonlinear_inequality_constraints1" name="nonlinear_inequality_constraints" code="{N_rem(sizet,numNonlinearIneqConstraints)}" label="Number of nonlinear inequality constraints" help="RespCommands.html#RespFnLS" minOccurs="0" default="0" >
             <alias name="num_nonlinear_inequality_constraints"/>
             <param type="INTEGER" constraint=">= 0" />

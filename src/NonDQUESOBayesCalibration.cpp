@@ -234,6 +234,41 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
 {
+  // Only QUESO supports proposal covariance updates and posterior adaptive
+  // surrogate updates for now, hence this override is in this class
+  // assign default proposalCovarType
+
+  if (proposalCovarType.empty()) {
+    if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
+    else              proposalCovarType = "prior";       // prior covariance
+  }
+
+  // manage sample partitions and defaults
+  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
+  if (proposalCovarType == "derivatives") {
+    int pc_update_spec
+      = probDescDB.get_int("method.nond.proposal_covariance_updates");
+    if (pc_update_spec < 1) { // default partition: update every 100 samples
+      // if the user specified less than 100 samples, use that,
+      // resulting in chainCycles = 1
+      chainSamples = std::min(samples_spec, 100);
+      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
+    }
+    else { // partition as specified
+      if (samples_spec < pc_update_spec) {
+	// hard error since the user explicitly gave both controls
+	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
+	abort_handler(-1);
+      }
+      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
+      chainCycles  = pc_update_spec;
+    }
+  }
+
+  // assign default maxIterations (DataMethod default is -1)
+  if (adaptPosteriorRefine && maxIterations < 0)
+    maxIterations = 25;
+
   init_queso_environment();
 
   // BMA TODO: Want to support these options independently

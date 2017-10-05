@@ -222,8 +222,12 @@ protected:
   size_t solution_levels() const;
   /// activate entry in subModel::solnControlCostMap
   void solution_level_index(size_t lev_index);
+  /// return active entry in subModel::solnControlCostMap
+  size_t solution_level_index() const;
   /// return cost estimates from subModel::solnControlCostMap
-  RealVector solution_level_cost() const;
+  RealVector solution_level_costs() const;
+  /// return active cost estimate from subModel::solnControlCostMap
+  Real solution_level_cost() const;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into subModel
@@ -567,7 +571,15 @@ inline void RecastModel::solution_level_index(size_t lev_index)
 { subModel.solution_level_index(lev_index); }
 
 
-inline RealVector RecastModel::solution_level_cost() const
+inline size_t RecastModel::solution_level_index() const
+{ return subModel.solution_level_index(); }
+
+
+inline RealVector RecastModel::solution_level_costs() const
+{ return subModel.solution_level_costs(); }
+
+
+inline Real RecastModel::solution_level_cost() const
 { return subModel.solution_level_cost(); }
 
 
