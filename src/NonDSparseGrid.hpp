@@ -54,6 +54,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  /// update the sparse grid level (e.g., from a level sequence)
+  void sparse_grid_level(unsigned short ssg_level);
+
   /// increment ssgDriver::ssgLevel
   void increment_grid();
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
@@ -137,6 +140,10 @@ inline void NonDSparseGrid::reset()
   ssgDriver->level(ssgLevelRef);
   ssgDriver->dimension_preference(dimPrefSpec);
 }
+
+
+inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
+{ ssgLevelSpec = ssg_level; reset(); }
 
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const

@@ -80,6 +80,8 @@ public:
   const Pecos::UShortArray& quadrature_order() const;
   /// set dimQuadOrderRef and map to Pecos::TensorProductDriver::quadOrder
   void quadrature_order(const Pecos::UShortArray& dim_quad_order);
+  /// set quadOrderSpec and map to Pecos::TensorProductDriver::quadOrder
+  void quadrature_order(unsigned short quad_order);
 
   /// set numSamples
   void samples(size_t samples);
@@ -179,6 +181,13 @@ private:
 };
 
 
+inline void NonDQuadrature::reset()
+{
+  initialize_dimension_quadrature_order(quadOrderSpec, dimPrefSpec,
+					dimQuadOrderRef);
+}
+
+
 inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
 { return tpqDriver->quadrature_order(); }
 
@@ -192,6 +201,10 @@ quadrature_order(const Pecos::UShortArray& dim_quad_order)
 }
 
 
+inline void NonDQuadrature::quadrature_order(unsigned short quad_order)
+{ quadOrderSpec = quad_order; reset(); }
+
+
 inline void NonDQuadrature::samples(size_t samples)
 {
   switch (quadMode) {
@@ -203,13 +216,6 @@ inline void NonDQuadrature::samples(size_t samples)
   case FILTERED_TENSOR: case RANDOM_TENSOR:
     numSamples = samples; break;
   }
-}
-
-
-inline void NonDQuadrature::reset()
-{
-  initialize_dimension_quadrature_order(quadOrderSpec, dimPrefSpec,
-					dimQuadOrderRef);
 }
 
 

@@ -12,6 +12,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "NonDMultilevelStochCollocation.hpp"
+#include "NonDQuadrature.hpp"
 #include "NonDSparseGrid.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
@@ -225,7 +226,32 @@ void NonDMultilevelStochCollocation::core_run()
 
 void NonDMultilevelStochCollocation::increment_specification_sequence()
 {
-  // TO DO
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE:
+    // update order if sufficient entries in sequence
+    if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
+      ++sequenceIndex;
+      NonDQuadrature* nond_quad
+	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
+    }
+    break;
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+    // update level if sufficient entries in sequence
+    if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
+      ++sequenceIndex;
+      NonDSparseGrid* nond_sparse
+	= (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
+    }
+    break;
+  default:
+    Cerr << "Error: unsupported expansion coefficient estimation approach in "
+	 << "NonDMultilevelStochCollocation::increment_specification_sequence()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
 }
 
 } // namespace Dakota

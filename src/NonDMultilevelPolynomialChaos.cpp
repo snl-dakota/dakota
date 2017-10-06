@@ -15,6 +15,7 @@
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "NonDQuadrature.hpp"
+#include "NonDSparseGrid.hpp"
 #include "DataFitSurrModel.hpp"
 #include "SharedPecosApproxData.hpp"
 #include "PecosApproximation.hpp"
@@ -486,13 +487,28 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
 {
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
-  case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
-    // update grid order/level, if multiple values were provided
-
-    NonDExpansion::increment_specification_sequence();
-    // *** TO DO ***
-
+  case Pecos::QUADRATURE:
+    // update order if sufficient entries in sequence
+    if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
+      ++sequenceIndex;
+      NonDQuadrature* nond_quad
+	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
+    }
+    break;
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+    // update level if sufficient entries in sequence
+    if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
+      ++sequenceIndex;
+      NonDSparseGrid* nond_sparse
+	= (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
+    }
+    break;
+  case Pecos::CUBATURE:
+    Cerr << "Error: cubature sequences not supported in NonDMultilevel"
+	 << "PolynomialChaos::increment_specification_sequence()" << std::endl;
+    abort_handler(METHOD_ERROR);
     break;
   case Pecos::SAMPLING: {
     // advance expansionOrder and/or expansionSamples, as admissible
