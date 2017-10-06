@@ -3474,6 +3474,15 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 }
 
 
+short Model::correction_type()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_type();
+  else
+    return NO_CORRECTION; // default for non-surrogate models
+}
+
+
 void Model::single_apply(const Variables& vars, Response& resp,
 			 const SizetSizet2DPair& indices)
 {

@@ -466,12 +466,11 @@ void NonDExpansion::initialize_u_space_model()
   // Note: passing outputLevel again is redundant with DataFitSurrModel ctor.
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  Pecos::ExpansionConfigOptions
-    ec_options(expansionCoeffsApproach, expansionBasisType, 
-	       iteratedModel.discrepancy_correction().correction_type(),
-	       multilevDiscrepEmulation, outputLevel,
-	       vbdFlag, vbdOrderLimit, refineControl, maxRefineIterations,
-	       maxSolverIterations, convergenceTol, softConvLimit);
+  Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
+    expansionBasisType, iteratedModel.correction_type(),
+    multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
+    refineControl, maxRefineIterations, maxSolverIterations,
+    convergenceTol, softConvLimit);
   shared_data_rep->configuration_options(ec_options);
 
   // if all variables mode, initialize key to random variable subset

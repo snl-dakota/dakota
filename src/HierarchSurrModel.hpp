@@ -56,11 +56,9 @@ public:
   //- Heading: Member functions
   //
 
-  /// return the active DiscrepancyCorrection instance
-  DiscrepancyCorrection& discrepancy_correction();
-
+  /// return correctionMode
   const unsigned short correction_mode() const;
-
+  /// set correctionMode
   void correction_mode(unsigned short corr_mode);
 
 protected:
@@ -68,6 +66,9 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  DiscrepancyCorrection& discrepancy_correction();
+  short correction_type();
 
   /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
@@ -313,6 +314,10 @@ inline Model& HierarchSurrModel::surrogate_model()
 
 inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 { return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
+
+
+inline short HierarchSurrModel::correction_type()
+{ return discrepancy_correction().correction_type(); }
 
 
 inline SizetSizet2DPair HierarchSurrModel::get_indices()

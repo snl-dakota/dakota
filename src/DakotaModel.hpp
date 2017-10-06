@@ -318,6 +318,9 @@ public:
 
   /// return the DiscrepancyCorrection object used by SurrogateModels
   virtual DiscrepancyCorrection& discrepancy_correction();
+  /// return the correction type from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_type();
   /// apply the DiscrepancyCorrection object to correct an approximation
   /// within a SurrogateModel
   virtual void single_apply(const Variables& vars, Response& resp,

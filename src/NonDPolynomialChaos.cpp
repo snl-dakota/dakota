@@ -490,10 +490,30 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
     Cerr << "Error: only uniform refinement is supported for PCE "
 	 << "regression." << std::endl;
     abort_handler(METHOD_ERROR);
+    return false;
+  }
+  if (exp_orders.empty() &&
+      expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION) {
+    Cerr << "Warning: unsupported regression configuration in "
+	 << "NonDPolynomialChaos::config_regression()." << std::endl;
+    return false;
   }
 
   expansionCoeffsApproach = regress_type;
-  if (expansionCoeffsApproach == Pecos::DEFAULT_LEAST_SQ_REGRESSION) {
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
+
+  switch (expansionCoeffsApproach) {
+  case Pecos::ORTHOG_LEAST_INTERPOLATION:
+    if (colloc_pts == SZ_MAX) {
+      Cerr << "Error: OLI requires collocation_points specification."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+      return false;
+    }
+    else
+      numSamplesOnModel = colloc_pts;
+    break;
+  case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
     switch (ls_regress_type) {
     case SVD_LS:
       expansionCoeffsApproach = Pecos::SVD_LEAST_SQ_REGRESSION;    break;
@@ -501,19 +521,11 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
       expansionCoeffsApproach = Pecos::EQ_CON_LEAST_SQ_REGRESSION; break;
       // else leave as DEFAULT_LEAST_SQ_REGRESSION
     }
-  }
-
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
-  if (expansionCoeffsApproach == Pecos::ORTHOG_LEAST_INTERPOLATION ) {
-    if (colloc_pts == SZ_MAX) {
-      Cerr << "Error: OLI requires collocation_points specification."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    else
-      numSamplesOnModel = colloc_pts;
-  }
-  else {
+    break;
+  case Pecos::DEFAULT_REGRESSION:         case Pecos::SVD_LEAST_SQ_REGRESSION:
+  case Pecos::EQ_CON_LEAST_SQ_REGRESSION: case Pecos::BASIS_PURSUIT:
+  case Pecos::BASIS_PURSUIT_DENOISING:    case Pecos::ORTHOG_MATCH_PURSUIT:
+  case Pecos::LASSO_REGRESSION:           case Pecos::LEAST_ANGLE_REGRESSION: {
     // for sub-sampled tensor grid, seems desirable to use tensor exp,
     // but enforce an arbitrary dimensionality limit of 5.
     // TO DO: only for CS candidate? or true basis for Least sq as well?
@@ -538,6 +550,12 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
     }
     else if (collocRatio > 0.)     // define colloc pts from collocRatio
       numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+    break;
+  }
+  default:
+    Cerr << "Warning: unsupported regression type in NonDPolynomialChaos::"
+	 << "config_regression()." << std::endl;
+    return false;
   }
 
   if (numSamplesOnModel) {
@@ -602,6 +620,8 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
   // and in initialize_u_space_model() for sparse/quad/cub
   if (numSamplesOnModel) // optional with default = 0
     maxEvalConcurrency *= numSamplesOnModel;
+
+  return true;
 }
 
 

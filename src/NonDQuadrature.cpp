@@ -46,20 +46,17 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   // NonDIntegration ctor
   check_variables(natafTransform.x_random_variables());
 
-  Pecos::ExpansionConfigOptions
-    ec_options(Pecos::QUADRATURE,
-	       probDescDB.get_short("method.nond.expansion_basis_type"),
-	       iteratedModel.discrepancy_correction().correction_type(),
-	       probDescDB.get_short(
-		 "method.nond.multilevel_discrepancy_emulation"),
-	       outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
-	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
-	       probDescDB.get_short("method.nond.expansion_refinement_control"),
-	       //maxIterations,
-	       probDescDB.get_int("method.nond.max_refinement_iterations"),
-	       probDescDB.get_int("method.nond.max_solver_iterations"),
-	       convergenceTol,
-	       probDescDB.get_ushort("method.soft_convergence_limit"));
+  Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
+    probDescDB.get_short("method.nond.expansion_basis_type"),
+    iteratedModel.correction_type(),
+    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+    outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
+    probDescDB.get_ushort("method.nond.vbd_interaction_order"),
+    probDescDB.get_short("method.nond.expansion_refinement_control"),
+    //maxIterations,
+    probDescDB.get_int("method.nond.max_refinement_iterations"),
+    probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
+    probDescDB.get_ushort("method.soft_convergence_limit"));
 
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
     probDescDB.get_short("method.nond.expansion_refinement_type") ==

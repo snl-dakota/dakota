@@ -219,7 +219,7 @@ void NonDMultilevelStochCollocation::core_run()
   
   // generate final results
   compute_print_converged_results();
-  update_final_statistics(); // virtual fn redefined below
+  update_final_statistics();
   ++numUncertainQuant;
 }
 

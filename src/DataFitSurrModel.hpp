@@ -73,13 +73,14 @@ public:
   /// set pointsTotal and pointsManagement mode
   void total_points(int points);
 
-  DiscrepancyCorrection& discrepancy_correction();
-
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  DiscrepancyCorrection& discrepancy_correction();
+  short correction_type();
 
   /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
@@ -386,6 +387,10 @@ inline DataFitSurrModel::~DataFitSurrModel()
 
 inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 { return deltaCorr; }
+
+
+inline short DataFitSurrModel::correction_type()
+{ return deltaCorr.correction_type(); }
 
 
 inline void DataFitSurrModel::total_points(int points)

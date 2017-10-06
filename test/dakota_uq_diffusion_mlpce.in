@@ -12,6 +12,7 @@ method,
         multilevel_polynomial_chaos				
 	  expansion_order_sequence = 2			# initial for pilot
 	  collocation_ratio = .9			# eo adapted to ratio
+	  pilot_samples = 10
 	  seed = 1237
 	  orthogonal_matching_pursuit
 #	  max_iterations = 5
