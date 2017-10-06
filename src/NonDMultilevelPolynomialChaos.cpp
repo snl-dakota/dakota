@@ -266,10 +266,10 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
-  unsigned short regress_type(0), ls_regress_type(0); // *** TO DO ***
-  config_regression(exp_orders, colloc_pts, 1, regress_type,
-		    ls_regress_type, tensor_grid_order, SUBMETHOD_LHS, rng,
-		    pt_reuse, u_space_sampler, g_u_model, approx_type);
+  config_regression(exp_orders, colloc_pts, 1, exp_coeffs_approach,
+		    Pecos::DEFAULT_LEAST_SQ_REGRESSION, tensor_grid_order,
+		    SUBMETHOD_LHS, rng, pt_reuse, u_space_sampler,
+		    g_u_model, approx_type);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
