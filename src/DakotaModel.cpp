@@ -3294,6 +3294,15 @@ void Model::combine_approximation()
 }
 
 
+void Model::clear_stored()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->clear_stored();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no stored data to clear
+}
+
+
 void Model::run_dace_iterator(bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter

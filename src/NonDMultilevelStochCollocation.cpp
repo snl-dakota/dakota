@@ -216,10 +216,17 @@ void NonDMultilevelStochCollocation::core_run()
     abort_handler(METHOD_ERROR);
     break;
   }
-  
+
   // generate final results
-  compute_print_converged_results();
+  Cout << "\n----------------------------------------------------"
+       << "\nMultifidelity UQ: approximated high fidelity results"
+       << "\n----------------------------------------------------\n\n";
+  compute_print_results();
   update_final_statistics();
+
+  // clean up for re-entrancy of ML SC
+  uSpaceModel.clear_stored();
+
   ++numUncertainQuant;
 }
 

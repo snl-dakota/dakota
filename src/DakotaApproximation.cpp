@@ -393,6 +393,13 @@ void Approximation::combine(size_t swap_index)
 }
 
 
+void Approximation::clear_stored()
+{
+  if (approxRep) approxRep->clear_stored();
+  else           approxData.clear_stored(); // derived classes augment
+}
+
+
 Real Approximation::value(const Variables& vars)
 {
   if (!approxRep) {

@@ -283,6 +283,7 @@ protected:
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
   void combine_approximation();
+  void clear_stored();
 
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
@@ -680,6 +681,10 @@ inline void RecastModel::remove_stored_approximation(size_t index)
 
 inline void RecastModel::combine_approximation()
 { subModel.combine_approximation(); }
+
+
+inline void RecastModel::clear_stored()
+{ subModel.clear_stored(); }
 
 
 inline std::vector<Approximation>& RecastModel::approximations()

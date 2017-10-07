@@ -172,7 +172,8 @@ protected:
   void compute_statistics();
 
   /// manage print of results following convergence of iterative refinement
-  void compute_print_converged_results(bool print_override = false);
+  /// or multilevel-multifidelity combination
+  void compute_print_results(bool print = false);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -289,10 +290,10 @@ private:
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
+  /// manage print of results following a generalized index set increment
+  void compute_print_index_set_results();
   /// manage print of results following a refinement increment
-  void compute_print_increment_results();
-  /// manage print of results following a refinement increment
-  void compute_print_iteration_results(bool initialize);
+  void compute_print_refinement_results(bool initialize);
 
   //
   //- Heading: Data

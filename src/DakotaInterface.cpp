@@ -1264,6 +1264,16 @@ void Interface::combine_approximation()
   }
 }
 
+
+void Interface::clear_stored()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_stored();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no stored data to clear
+}
+
+
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {

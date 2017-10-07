@@ -107,6 +107,8 @@ public:
   virtual size_t pre_combine();
   /// clean up stored data sets after aggregation
   virtual void post_combine();
+  /// clear stored approximation data
+  virtual void clear_stored();
 
   //
   //- Heading: Member functions

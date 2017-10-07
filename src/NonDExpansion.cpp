@@ -615,9 +615,8 @@ void NonDExpansion::core_run()
   if (refineType)
     refine_expansion(); // uniform/adaptive p-/h-refinement
   
-  // generate final results
-  compute_print_converged_results();
-  update_final_statistics(); // virtual fn redefined below
+  compute_print_results();
+  update_final_statistics(); // augment updates from compute_statistics()
   ++numUncertainQuant;
 }
 
@@ -911,7 +910,7 @@ void NonDExpansion::refine_expansion(size_t index)
 
   // post-process nominal expansion
   if (!converged)
-    compute_print_iteration_results(true);
+    compute_print_refinement_results(true);
 
   // initialize refinement algorithms (if necessary)
   switch (refineControl) {
@@ -987,7 +986,7 @@ void NonDExpansion::refine_expansion(size_t index)
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
     if (!converged)
-      compute_print_iteration_results(false);
+      compute_print_refinement_results(false);
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
 
@@ -1025,7 +1024,7 @@ void NonDExpansion::multifidelity_expansion()
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
        << "\n--------------------------------------\n\n";
-  compute_print_converged_results(true);
+  compute_print_results(true);
 
   // change HierarchSurrModel::responseMode to model discrepancy
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
@@ -1050,14 +1049,11 @@ void NonDExpansion::multifidelity_expansion()
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
-    compute_print_converged_results(true);
+    compute_print_results(true);
   }
 
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
-  Cout << "\n----------------------------------------------------"
-       << "\nMultifidelity UQ: approximated high fidelity results"
-       << "\n----------------------------------------------------\n\n";
 }
 
 
@@ -1181,7 +1177,7 @@ Real NonDExpansion::increment_sets()
 	else                    stats_star = respVariance;
       }
     }
-    compute_print_increment_results();
+    compute_print_index_set_results();
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
@@ -1221,7 +1217,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
 }
 
 
-void NonDExpansion::compute_print_increment_results()
+void NonDExpansion::compute_print_index_set_results()
 {
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
@@ -1240,7 +1236,7 @@ void NonDExpansion::compute_print_increment_results()
 }
 
 
-void NonDExpansion::compute_print_iteration_results(bool initialize)
+void NonDExpansion::compute_print_refinement_results(bool initialize)
 {
 #ifdef CONVERGENCE_DATA
   // full results compute/print mirroring Analyzer::post_run(),
@@ -1277,7 +1273,7 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
     // index set. However, in the case where of non-debug output, we are using
     // partial results updating to eliminate the need to recompute stats for
     // the selected index set. This case also differs from other refinement
-    // cases above in that compute_print_increment_results() has already
+    // cases above in that compute_print_index_set_results() has already
     // provided per increment output, so we do not push output if non-debug.
     if (totalLevelRequests) {
       //if (initialize || outputLevel == DEBUG_OUTPUT)
@@ -1299,7 +1295,7 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
 }
 
 
-void NonDExpansion::compute_print_converged_results(bool print_override)
+void NonDExpansion::compute_print_results(bool print)
 {
 #ifdef CONVERGENCE_DATA
   // output fine-grained data on generalized index sets
@@ -1312,7 +1308,8 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
   }
   // output spectral data for multilevel/multifidelity UQ. For finer grain data,
   // activate DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp
-  if (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS) {// || MULTILEVEL_POLY_CHAOS
+  if (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS ||
+      methodName ==    MULTILEVEL_POLYNOMIAL_CHAOS) {
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; ++i) {
@@ -1323,29 +1320,8 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
   }
 #endif // CONVERGENCE_DATA
 
-  // if not already performed above, compute all stats
-  switch (refineControl) {
-  case Pecos::NO_CONTROL:
-    compute_statistics();
-    break;
-  case Pecos::UNIFORM_CONTROL:
-    if (outputLevel != DEBUG_OUTPUT)
-      compute_statistics();
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    if (outputLevel != DEBUG_OUTPUT)
-      compute_statistics();
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-    compute_statistics();
-    break;
-  }
-
-  // For stand-alone executions, print_results occurs in Analyzer::post_run().
-  // For sub-iterator executions, stats are normally suppressed.
-  if (print_override || (subIteratorFlag && outputLevel == DEBUG_OUTPUT))
-    print_results(Cout);
+  compute_statistics();
+  if (print) print_results(Cout);
 }
 
 

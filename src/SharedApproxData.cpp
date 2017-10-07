@@ -504,11 +504,17 @@ void SharedApproxData::post_combine()
 {
   if (dataRep)
     dataRep->post_combine();
-  else {
-    Cerr << "\nError: post_combine() not defined for this shared approximation "
-	 << "type." << std::endl;
-    abort_handler(-1);
-  }
+  //else
+  //  default: no post combine required
+}
+
+
+void SharedApproxData::clear_stored()
+{
+  if (dataRep)
+    dataRep->clear_stored();
+  //else
+  //  default: no stored data to clear
 }
 
 } // namespace Dakota

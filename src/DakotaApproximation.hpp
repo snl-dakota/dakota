@@ -88,6 +88,8 @@ public:
   virtual void restore(size_t index = _NPOS);
   /// remove a stored approximation prior to combination
   virtual void remove_stored(size_t index = _NPOS);
+  /// clear stored approximation data
+  virtual void clear_stored();
 
   /// combine current approximation with previously stored approximation
   virtual void combine(size_t swap_index);

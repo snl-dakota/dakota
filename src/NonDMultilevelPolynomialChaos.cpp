@@ -459,8 +459,33 @@ void NonDMultilevelPolynomialChaos::core_run()
   }
   */
 
+  // Options for import of discrepancy data.
+  // > There is no good way for import to segregate the desired Q^l sample sets
+  //   from among paired sets for Q^0, Q^1 - Q^0, Q^2 - Q^1, ..., Q^L - Q^Lm1.
+  //   Would have to develop special processing to match up sample pairs (e.g.,
+  //   top down starting from Q^L or bottom up starting from Q^0).
+  // > Could import discrepancy data for lev > 0.  But violates use of low level
+  //   data within restart (the transfer mechanism), and lookup can't use 2
+  //   solution control levels -- would have to rely on, e.g., higher level and
+  //   propagate this level from HF model vars to HierarchSurr vars to DataFit
+  //   vars to capture imported data in build_global()).  Less clean, more
+  //   hack-ish, although may still need better solution level propagation
+  //   across models for import consistency() checks to work properly.
+  // > Migrate to recursive approximation, where each level only imports one
+  //   set of sample data (no solution control hacks or sampling pairing reqd).
+  //   Diverges from MLMC, but is more consistent with HierarchInterpPolyApprox.
+  //   Other advantages: sample set freedom across levels, reduced cost from
+  //   not requiring additional Q^lm1 observations, telescoping consistency of
+  //   level surrogates, local error estimates relative to previous surrogate.
+  //   >> supporting recursive and distinct emulation cases would lead to
+  //      uneven support for import.  Best to implement, verify, migrate?
+  //   >> want to support import for MF PCE as well, including future
+  //      adaptive MF PCE.
+
+  bool multifid_uq = false;
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    multifid_uq = true;
     multifidelity_expansion(); // from NonDExpansion
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
@@ -477,8 +502,17 @@ void NonDMultilevelPolynomialChaos::core_run()
   }
   
   // generate final results
-  compute_print_converged_results();
+  Cout << "\n----------------------------------------------------\n";
+  if (multifid_uq) Cout << "Multifidelity UQ: ";
+  else             Cout <<    "Multilevel UQ: ";
+  Cout << "approximated high fidelity results"
+       << "\n----------------------------------------------------\n\n";
+  compute_print_results();
   update_final_statistics();
+
+  // clean up for re-entrancy of ML PCE
+  uSpaceModel.clear_stored();
+
   ++numUncertainQuant;
 }
 
@@ -715,14 +749,14 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
 	if (iter == 0) { // initial expansion build
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  if (lev == 0) compute_expansion(); // init + build; not hierarchical
-	  else           update_expansion(); //   just build; not hierarchical
+	  if (lev == 0) compute_expansion(); // init + build; not recursive
+	  else           update_expansion(); //   just build; not recursive
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion(); // not hierarchical
+	  append_expansion(); // not recursive
 	}
 
         // compute and accumulate variance of mean estimator from the set of
@@ -832,28 +866,6 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
   SizetArray delta_N_l(num_lev); // sample increments
   load_pilot_sample(pilotSamples, delta_N_l);
   bool import_pilot = !importBuildPointsFile.empty();
-  // Options for import of discrepancy data.
-  // > There is no good way for import to segregate the desired Q^l sample sets
-  //   from among paired sets for Q^0, Q^1 - Q^0, Q^2 - Q^1, ..., Q^L - Q^Lm1.
-  //   Would have to develop special processing to match up sample pairs (e.g.,
-  //   top down starting from Q^L or bottom up starting from Q^0).
-  // > Could import discrepancy data for lev > 0.  But violates use of low level
-  //   data within restart (the transfer mechanism), and lookup can't use 2
-  //   solution control levels -- would have to rely on, e.g., higher level and
-  //   propagate this level from HF model vars to HierarchSurr vars to DataFit
-  //   vars to capture imported data in build_global()).  Less clean, more
-  //   hack-ish, although may still need better solution level propagation
-  //   across models for import consistency() checks to work properly.
-  // > Migrate to hierarchical approximation, where each level only imports one
-  //   set of sample data (no solution control hacks or sampling pairing reqd).
-  //   Diverges from MLMC, but is more consistent with HierarchInterpPolyApprox.
-  //   Other advantages: sample set freedom across levels, reduced cost from
-  //   not requiring additional Q^lm1 observations, telescoping consistency of
-  //   level surrogates, local error estimates relative to previous surrogate.
-  //   >> supporting hierarchical and non-hierarchical cases would lead to
-  //      uneven support for import.  Best to implement, verify, migrate?
-  //   >> want to support import for MF PCE as well, including future
-  //      adaptive MF PCE.
   if (import_pilot)
     Cout << "\nPilot sample to include imported build points.\n";
     // Build point import is active only for the pilot sample and we overlay
@@ -893,8 +905,8 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	if (lev == 0) compute_expansion(lev); // init + build; hierarchical
-	else           update_expansion(lev); //   just build; hierarchical
+	if (lev == 0) compute_expansion(lev); // init + build; recursive
+	else           update_expansion(lev); //   just build; recursive
 
 	// update counts to include imported data
 	if (import_pilot) {
@@ -916,7 +928,7 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
 	// Note: import build data is not re-processed by append_expansion()
-	append_expansion(lev); // hierarchical
+	append_expansion(lev); // recursive
       }
 
       // aggregate variances across QoI for estimating NLev (justification:

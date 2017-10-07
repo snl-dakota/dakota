@@ -182,6 +182,8 @@ public:
   virtual void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current approximation with previously stored data sets
   virtual void combine_approximation();
+  /// clear stored approximation data
+  virtual void clear_stored();
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 

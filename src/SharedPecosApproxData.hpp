@@ -130,6 +130,7 @@ protected:
   void remove_stored(size_t index = _NPOS);
   size_t pre_combine();
   void post_combine();
+  void clear_stored();
 
 private:
 
@@ -221,6 +222,10 @@ inline size_t SharedPecosApproxData::pre_combine()
 
 inline void SharedPecosApproxData::post_combine()
 { pecosSharedDataRep->post_combine_data(); }
+
+
+inline void SharedPecosApproxData::clear_stored()
+{ pecosSharedDataRep->clear_stored_data(); }
 
 
 inline void SharedPecosApproxData::

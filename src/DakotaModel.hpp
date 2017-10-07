@@ -266,6 +266,8 @@ public:
   virtual void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current approximation with previously stored data sets
   virtual void combine_approximation();
+  /// clear stored approximations
+  virtual void clear_stored();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
