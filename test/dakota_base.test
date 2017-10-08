@@ -22988,16 +22988,16 @@ Test Number 9 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_separable_ego_5D.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 120 total (120 new, 0 duplicate)
+<<<<< Function evaluation summary: 149 total (149 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0022862369e+00 cdv_1
-                     -1.0315500686e+00 cdv_2
-                     -9.0534979424e-01 cdv_3
-                      1.1248285322e+00 cdv_4
-                     -9.9314128944e-01 cdv_5
+                      9.4558756287e-01 cdv_1
+                     -9.7302240512e-01 cdv_2
+                     -9.6326779454e-01 cdv_3
+                      9.8033836305e-01 cdv_4
+                     -9.1266575217e-01 cdv_5
 <<<<< Best objective function  =
-                     -1.1097596190e+00
-<<<<< Best data captured at function evaluation 101
+                     -1.1567026783e+00
+<<<<< Best data captured at function evaluation 113
 dakota_short_column.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
