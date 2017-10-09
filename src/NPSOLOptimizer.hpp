@@ -79,7 +79,7 @@ class NPSOLTraits: public TraitsBase
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }
 
-  /// Return the the format used for nonlinear inequality constraints
+  /// Return the format used for nonlinear inequality constraints
   NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 

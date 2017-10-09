@@ -1142,7 +1142,7 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // only fitness assessor b/c it is only for use with the favor
     // feasible selector.  Likewise, the favor feasible selector can
     // only be used with the weighted sum fitness asessor.  Because of
-    // this, we will detect use of the the favor feasible and enforce
+    // this, we will detect use of the favor feasible and enforce
     // the use of the weighted sum only.  We will write a log message
     // about it.
     const string& selector =

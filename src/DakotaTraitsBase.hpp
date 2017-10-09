@@ -58,19 +58,19 @@ public:
   /// Return the flag indicating whether method supports linear inequalities
   virtual bool supports_linear_inequality() { return false; }
 
-  /// Return the the format used for linear inequality constraints
+  /// Return the format used for linear inequality constraints
   virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format() { return LINEAR_INEQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   virtual bool supports_nonlinear_equality() { return false; }
 
-  /// Return the the format used for nonlinear equality constraints
+  /// Return the format used for nonlinear equality constraints
   virtual NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() { return NONLINEAR_EQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   virtual bool supports_nonlinear_inequality() { return false; }
 
-  /// Return the the format used for nonlinear inequality constraints
+  /// Return the format used for nonlinear inequality constraints
   virtual NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() { return NONLINEAR_INEQUALITY_FORMAT::NONE; }
 
   /// Return the flag indicating whether method expects nonlinear inequality

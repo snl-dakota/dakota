@@ -94,14 +94,14 @@ class AppsTraits: public TraitsBase
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }
 
-  /// Return the the format used for nonlinear inequality constraints
+  /// Return the format used for nonlinear equality constraints
   NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
     { return NONLINEAR_EQUALITY_FORMAT::TWO_SIDED; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() { return true; }
 
-  /// Return the the format used for nonlinear inequality constraints
+  /// Return the format used for nonlinear inequality constraints
   NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
 
