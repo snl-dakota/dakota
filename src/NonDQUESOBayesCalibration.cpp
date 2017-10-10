@@ -496,8 +496,15 @@ void NonDQUESOBayesCalibration::init_queso_environment()
   // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
 
   // File-based power user parameters have the final say
-  if (!advancedOptionsFile.empty())
-    envOptionsValues->parse(*quesoEnv, "");
+  //
+  // Unfortunately, there's a chicken-and-egg problem where parsing
+  // EnvOptionsValues requires an Environment, so we defer this parse
+  // to the ctor...
+  //
+  // if (!advancedOptionsFile.empty())
+  //   envOptionsValues->parse(*quesoEnv, "");
+  const char* aof_cstr =
+    advancedOptionsFile.empty() ? NULL : advancedOptionsFile.c_str();
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -505,20 +512,22 @@ void NonDQUESOBayesCalibration::init_queso_environment()
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF, "", "",
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF, aof_cstr, "",
 						envOptionsValues.get()));
   }
   else {
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment("", "", envOptionsValues.get()));
+      quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
+						envOptionsValues.get()));
   }
 #else
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment("", "", envOptionsValues.get()));
+    quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
+					      envOptionsValues.get()));
 #endif
 
 }
@@ -1435,6 +1444,9 @@ void NonDQUESOBayesCalibration::set_ip_options()
   // File-based power user parameters have the final say
   if (!advancedOptionsFile.empty())
     calIpOptionsValues->parse(*quesoEnv, "");
+
+ if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nIP Final Options:" << *calIpOptionsValues << std::endl;
 }
 
 
@@ -1503,18 +1515,21 @@ void NonDQUESOBayesCalibration::set_mh_options()
   if (logitTransform) {
     calIpMhOptionsValues->m_algorithm = "logit_random_walk";
     calIpMhOptionsValues->m_tk = "logit_random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
   }
   else {
     calIpMhOptionsValues->m_algorithm = "random_walk";
     calIpMhOptionsValues->m_tk = "random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
   }
 
   // File-based power user parameters have the final say
   if (!advancedOptionsFile.empty())
     calIpMhOptionsValues->parse(*quesoEnv, "");
-}
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nMH Final Options:" << *calIpMhOptionsValues << std::endl;
+ }
 
 
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
