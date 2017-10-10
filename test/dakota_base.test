@@ -13911,18 +13911,18 @@ Test Number 6 succeeded
                      -7.0110344274e-04
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 2052 total (2014 new, 38 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2867 total (2828 new, 39 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 336 val (327 n, 9 d), 344 grad (335 n, 9 d), 336 Hess (327 n, 9 d)
-  response_fn_3: 1662 val (1642 n, 20 d), 1670 grad (1650 n, 20 d), 1662 Hess (1642 n, 20 d)
+  response_fn_2: 337 val (328 n, 9 d), 345 grad (336 n, 9 d), 337 Hess (328 n, 9 d)
+  response_fn_3: 2476 val (2455 n, 21 d), 2484 grad (2463 n, 21 d), 2476 Hess (2455 n, 21 d)
 <<<<< Best parameters          =
                       2.4535293565e+00 w
                       3.8804559348e+00 t
 <<<<< Best objective function  =
                       9.5208125526e+00
 <<<<< Best constraint values   =
-                     -8.3591705537e-05
-                     -6.9494034466e-04
+                     -8.3591705528e-05
+                     -6.9494036663e-04
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_cantilever_analytic2_verify.in
 Test Number 0 succeeded
