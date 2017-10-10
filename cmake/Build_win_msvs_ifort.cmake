@@ -7,7 +7,7 @@
 set( CTEST_BUILD_NAME "dakota_win_msvs_ifort" )
 
 set( DAKOTA_CMAKE_PLATFORM "win_msvs_ifort.cmake")
-set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
+set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistroStatic.cmake")
 
 set( CTEST_DASHBOARD_ROOT 
      $ENV{WORKSPACE} )
