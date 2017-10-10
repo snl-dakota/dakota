@@ -58011,8 +58011,8 @@ Test Number 1 succeeded
 mean_limit:  Min = -1.1807930097e+01  Max = 1.0220248897e+01
 std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2635 total (2550 new, 85 duplicate)
-mean_limit:  Min = -1.1802556867e+01  Max = 1.0209787534e+01
+<<<<< Function evaluation summary (ALEAT_I): 3570 total (3485 new, 85 duplicate)
+mean_limit:  Min = -1.1802556867e+01  Max = 1.0173771998e+01
 std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 3080 total (3080 new, 0 duplicate)
