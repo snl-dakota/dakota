@@ -7654,18 +7654,18 @@ Test Number 2 succeeded
                       1.0760359983e+00
 <<<<< Best data captured at function evaluation 538
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 370 total (370 new, 0 duplicate)
+<<<<< Function evaluation summary: 706 total (706 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8081736956e-01 x2
+                      2.8213636519e-01 x2
                       0.0000000000e+00 x3
                       0.0000000000e+00 x4
                       0.0000000000e+00 x5
-                      7.5778804700e-01 x6
+                      7.5580753442e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759889300e+00
-<<<<< Best data captured at function evaluation 370
+<<<<< Best data captured at function evaluation 706
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 619 total (619 new, 0 duplicate)
 <<<<< Best parameters          =
