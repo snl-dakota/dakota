@@ -7654,18 +7654,18 @@ Test Number 2 succeeded
                       1.0760359983e+00
 <<<<< Best data captured at function evaluation 538
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 370 total (370 new, 0 duplicate)
+<<<<< Function evaluation summary: 706 total (706 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8081736956e-01 x2
+                      2.8213636519e-01 x2
                       0.0000000000e+00 x3
                       0.0000000000e+00 x4
                       0.0000000000e+00 x5
-                      7.5778804700e-01 x6
+                      7.5580753442e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759889300e+00
-<<<<< Best data captured at function evaluation 370
+<<<<< Best data captured at function evaluation 706
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 619 total (619 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -13911,18 +13911,18 @@ Test Number 6 succeeded
                      -7.0110344274e-04
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 2052 total (2014 new, 38 duplicate)
+<<<<< Function evaluation summary (UQ_I): 2867 total (2828 new, 39 duplicate)
   response_fn_1: 30 val (21 n, 9 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 336 val (327 n, 9 d), 344 grad (335 n, 9 d), 336 Hess (327 n, 9 d)
-  response_fn_3: 1662 val (1642 n, 20 d), 1670 grad (1650 n, 20 d), 1662 Hess (1642 n, 20 d)
+  response_fn_2: 337 val (328 n, 9 d), 345 grad (336 n, 9 d), 337 Hess (328 n, 9 d)
+  response_fn_3: 2476 val (2455 n, 21 d), 2484 grad (2463 n, 21 d), 2476 Hess (2455 n, 21 d)
 <<<<< Best parameters          =
                       2.4535293565e+00 w
                       3.8804559348e+00 t
 <<<<< Best objective function  =
                       9.5208125526e+00
 <<<<< Best constraint values   =
-                     -8.3591705537e-05
-                     -6.9494034466e-04
+                     -8.3591705528e-05
+                     -6.9494036663e-04
 <<<<< Best data not found in evaluation cache
 dakota_rbdo_cantilever_analytic2_verify.in
 Test Number 0 succeeded
@@ -17771,8 +17771,8 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      4.0800696155e-14
-                     -8.1601392310e-14
+                      4.1050496336e-14
+                     -8.2100992671e-14
 <<<<< Best data captured at function evaluation 49
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
@@ -17783,21 +17783,21 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      4.0800696155e-14
-                     -8.1601392310e-14
+                      4.1050496336e-14
+                     -8.2100992671e-14
 <<<<< Best data captured at function evaluation 49
 Test Number 5 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 356 total (356 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 133 total (127 new, 6 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -2.5035529205e-14
-                      5.0071058411e-14
-<<<<< Best data captured at function evaluation 45
+                      6.6613381478e-16
+                     -1.3322676296e-15
+<<<<< Best data captured at function evaluation 78
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 229 total (226 new, 3 duplicate)
@@ -17807,8 +17807,8 @@ Test Number 6 succeeded
 <<<<< Best objective function  =
                       1.2499997601e-01
 <<<<< Best constraint values   =
-                     -2.3985324449e-08
-                      4.7970651174e-08
+                     -2.3985324615e-08
+                      4.7970651507e-08
 <<<<< Best data captured at function evaluation 225
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
@@ -17819,8 +17819,8 @@ Test Number 7 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      8.3266726847e-17
-                     -1.6653345369e-16
+                     -5.5511151231e-17
+                      1.1102230246e-16
 <<<<< Best data captured at function evaluation 49
 dakota_sbouu2_cantilever.in
 Test Number 0 succeeded
@@ -58011,8 +58011,8 @@ Test Number 1 succeeded
 mean_limit:  Min = -1.1807930097e+01  Max = 1.0220248897e+01
 std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 2635 total (2550 new, 85 duplicate)
-mean_limit:  Min = -1.1802556867e+01  Max = 1.0209787534e+01
+<<<<< Function evaluation summary (ALEAT_I): 3570 total (3485 new, 85 duplicate)
+mean_limit:  Min = -1.1802556867e+01  Max = 1.0173771998e+01
 std_dev_limit:  Min = 2.0192896185e-01  Max = 1.1153851585e+01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 3080 total (3080 new, 0 duplicate)

@@ -14,9 +14,13 @@ project("Dakota" NONE)
 # Require C++11 at a minimum, but allow newer standards
 # Do this prior to other flag settings below
 if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 11 CACHE STRING "Dakota strictly requires C++11 or better")
 endif()
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
+  set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
+    "Dakota prefers not to use compiler-specific C++ extensions")
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "Dakota strictly requires C++11 or better")
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
@@ -288,29 +292,30 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-# TODO: Can't this be integrated into the following logic?
-if(MSVC)
-  find_package(LAPACK REQUIRED NO_MODULE)
-  set(BLAS_LIBS blas)
-  set(LAPACK_LIBS lapack)
-endif()
-# first check for a system blas and lapack
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
-  if(NOT DEFINED BLAS_LIBS)
-    find_library(BLAS_LIBS blas)
-  endif()
-  if(NOT DEFINED LAPACK_LIBS)
-    find_library(LAPACK_LIBS lapack)
-  endif()
-  if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
-    # if not a system blas and lapack, then look for a cmake built LAPACK
-    # with find_package
+  # Historically on MSVC, tried to use CMake config file approach first.  
+  # Could probably just use the Unix logic below instead...
+  if(MSVC)
     find_package(LAPACK REQUIRED NO_MODULE)
     set(BLAS_LIBS blas)
     set(LAPACK_LIBS lapack)
+  else()
+    # first check for a system blas and lapack
+    if(NOT DEFINED BLAS_LIBS)
+      find_library(BLAS_LIBS blas)
+    endif()
+    if(NOT DEFINED LAPACK_LIBS)
+      find_library(LAPACK_LIBS lapack)
+    endif()
+    if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
+      # if not a system blas and lapack, then look for a cmake built LAPACK
+      # with find_package
+      find_package(LAPACK REQUIRED NO_MODULE)
+      set(BLAS_LIBS blas)
+      set(LAPACK_LIBS lapack)
+    endif()
   endif()
 endif()
-
 
 # GSL check at top-level due to need for settings in BOTH packages
 # and src subdirectories
