@@ -235,7 +235,7 @@ protected:
   {
     bool split_into_one_sided = true;
     if( (ctype == CONSTRAINT_TYPE::NONLINEAR) &&
-        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TWO_SIDED) )
+        (traits()->nonlinear_equality_format() == NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED) )
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
@@ -687,11 +687,11 @@ void get_linear_constraints( Model & model,
                              typename AdapterT::MatT & lin_ineq_coeffs,
                              typename AdapterT::MatT & lin_eq_coeffs)
 {
-  const RealMatrix& linear_ineq_coeffs = model.linear_ineq_constraint_coeffs();
+  const RealMatrix& linear_ineq_coeffs     = model.linear_ineq_constraint_coeffs();
   const RealVector& linear_ineq_lower_bnds = model.linear_ineq_constraint_lower_bounds();
   const RealVector& linear_ineq_upper_bnds = model.linear_ineq_constraint_upper_bounds();
-  const RealMatrix& linear_eq_coeffs = model.linear_eq_constraint_coeffs();
-  const RealVector& linear_eq_targets = model.linear_eq_constraint_targets();
+  const RealMatrix& linear_eq_coeffs       = model.linear_eq_constraint_coeffs();
+  const RealVector& linear_eq_targets      = model.linear_eq_constraint_targets();
 
   // These are special cases involving Matrices which gets delegated to the adapter for now
   AdapterT::copy_data(linear_ineq_coeffs, lin_ineq_coeffs);
