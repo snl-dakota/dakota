@@ -5512,7 +5512,7 @@ Test Number 0 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325554e-01  4.5981358729372479e-01
+ response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325588e-01  4.5981358729372496e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4585973470495183e+01  7.1844720815422676e+01  3.0271418007545204e+01  5.8138241924658395e+01
@@ -5561,7 +5561,7 @@ Test Number 1 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325554e-01  4.5981358729372479e-01
+ response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325588e-01  4.5981358729372496e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4585973470495183e+01  7.1844720815422676e+01  3.0271418007545204e+01  5.8138241924658395e+01
@@ -5610,7 +5610,7 @@ Test Number 2 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325554e-01  4.5981358729372479e-01
+ response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325588e-01  4.5981358729372496e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4585973470495183e+01  7.1844720815422676e+01  3.0271418007545204e+01  5.8138241924658395e+01
@@ -5659,7 +5659,7 @@ Test Number 3 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.2774586162569264e+01  4.6202590866658277e+01  1.2260010923694280e+00  1.3639571106666608e+00
+ response_fn_1  5.2774586162569264e+01  4.6202590866658277e+01  1.2260010923694282e+00  1.3639571106666608e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.1151108023047790e+01  7.4398064302090745e+01  3.5136626547246799e+01  6.7482193735061969e+01
@@ -5692,7 +5692,7 @@ Test Number 4 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3129964360543717e+01  3.9636699454738689e+01  1.0328483575235172e+00  4.4285912722382736e-01
+ response_fn_1  5.3129964360543717e+01  3.9636699454738689e+01  1.0328483575235174e+00  4.4285912722382775e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4579417992789438e+01  7.1680510728298003e+01  3.0143329198268940e+01  5.7892238972973452e+01
@@ -5733,7 +5733,7 @@ Test Number 5 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325554e-01  4.5981358729372479e-01
+ response_fn_1  5.3215347142958933e+01  3.9805128681762831e+01  9.3971561003325588e-01  4.5981358729372496e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4585973470495183e+01  7.1844720815422676e+01  3.0271418007545204e+01  5.8138241924658395e+01
@@ -5782,7 +5782,7 @@ Test Number 6 succeeded
   response_fn_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  5.3129964360543717e+01  3.9636699454738689e+01  1.0328483575235172e+00  4.4285912722382736e-01
+ response_fn_1  5.3129964360543717e+01  3.9636699454738689e+01  1.0328483575235174e+00  4.4285912722382775e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  3.4579417992789438e+01  7.1680510728298003e+01  3.0143329198268940e+01  5.7892238972973452e+01
