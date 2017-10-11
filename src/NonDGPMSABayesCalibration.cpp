@@ -284,11 +284,19 @@ void NonDGPMSABayesCalibration::calibrate()
 
   // TODO: This should allow scaling by user-provided bounds as well
   bool scale_configs = gpmsaNormalize;
-  if (scale_configs && userConfigVars > 0)
-    normalize_configs();
+  // if (scale_configs && userConfigVars > 0)
+  //   normalize_configs();
+
+  // TODO: Does this break when single config?
+  if (scale_configs)
+    for (unsigned int i = 0; i < gpmsaConfigVars; ++i)
+      gpmsaOptions->set_autoscale_minmax_scenario_parameter(i);
 
   // TODO: Use GPMSA intrinsic data scaling when available
   bool scale_data = gpmsaNormalize;
+  if (scale_data)
+    for (unsigned int i = 0; i < num_eta; i++)
+      gpmsaOptions->set_autoscale_meanvar_output(i);
 
   // File-based power user parameters have the final say
   if (!advancedOptionsFile.empty())
@@ -509,6 +517,8 @@ void NonDGPMSABayesCalibration::normalize_configs()
 
 void NonDGPMSABayesCalibration::fill_simulation_data(bool scale_data)
 {
+  scale_data = false;
+
   // simulations are described by configuration, parameters, output values
   std::vector<QUESO::SharedPtr<GslVector>::Type >
     sim_scenarios(buildSamples),  // config var values
@@ -572,6 +582,8 @@ void NonDGPMSABayesCalibration::fill_simulation_data(bool scale_data)
 
 void NonDGPMSABayesCalibration::fill_experiment_data(bool scale_data)
 {
+  scale_data = false;
+
   unsigned int num_experiments = expData.num_experiments();
   unsigned int experiment_size = expData.all_data(0).length();
 
