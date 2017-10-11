@@ -33,7 +33,7 @@ my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
-my $using_aprun = 0;
+my $using_srun = 0;
 my $run_valgrind = 0;        # boolean for whether to run valgrind
 my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
 
@@ -522,8 +522,8 @@ sub process_command_line {
 
   if (${opt_valgrind} || $ENV{'DAKOTA_TEST_VALGRIND'}) {
     $run_valgrind = 1;
-    if (${opt_parallel} || ${using_aprun}) {
-      die "Error: cannot use valgrind in parallel or aprun mode";
+    if (${opt_parallel} || ${using_srun}) {
+      die "Error: cannot use valgrind in parallel or srun mode";
     }
     if ($ENV{'DAKOTA_TEST_VALGRIND'}) {
       $vg_extra_args = $ENV{'DAKOTA_TEST_VALGRIND_EXTRA_ARGS'};
@@ -569,7 +569,7 @@ sub process_command_line {
 
 # Set options specific to parallel runs or platforms and create machinefile. 
 # Uses global parallelism variable
-# May set environment variables and global option variable using_aprun. 
+# May set environment variables and global option variable using_srun. 
 sub manage_parallelism {
 
   # Create a machines file for platforms where this is needed.
@@ -604,7 +604,7 @@ sub manage_parallelism {
 	( exists $ENV{MOAB_JOBNAME} || 
 	  exists $ENV{PBS_VERSION} ||   
 	  exists $ENV{SLURM_JOB_ID} )) {
-    $using_aprun = 1;
+    $using_srun = 1;
   }
 }
 
@@ -1042,9 +1042,9 @@ sub form_test_command {
     $test_command = "${vg_cmd} ${test_command}";
   }
 
-  # If testing within a Cray XC job, aprun the test and force Dakota into serial mode
-  if( $using_aprun && $parallelism eq "serial") {
-    $test_command = "aprun -e DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+  # If testing within a Cray XC job, srun the test and force Dakota into serial mode
+  if( $using_srun && $parallelism eq "serial") {
+    $test_command = "srun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
   }
  
 
@@ -1058,8 +1058,8 @@ sub form_test_command {
     elsif ($sysname =~ /SunOS/) {
       $test_command = "mprun -np $num_proc $fulldakota $redir";
     }
-    elsif($using_aprun == 1) {
-      $test_command = "aprun -n $num_proc $fulldakota $redir";
+    elsif($using_srun == 1) {
+      $test_command = "srun -n $num_proc $fulldakota $redir";
     } 
     else
     { 
