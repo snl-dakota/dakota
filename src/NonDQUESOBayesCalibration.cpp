@@ -1524,8 +1524,10 @@ void NonDQUESOBayesCalibration::set_mh_options()
   }
 
   // File-based power user parameters have the final say
+  // The options are typically prefixed with ip_mh, so prepend an "ip_" prefix
+  // from the IP options:
   if (!advancedOptionsFile.empty())
-    calIpMhOptionsValues->parse(*quesoEnv, "");
+    calIpMhOptionsValues->parse(*quesoEnv, calIpOptionsValues->m_prefix);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nMH Final Options:" << *calIpMhOptionsValues << std::endl;
