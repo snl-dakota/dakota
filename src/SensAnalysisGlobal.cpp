@@ -18,7 +18,6 @@
 #include "dakota_linear_algebra.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
 
@@ -37,7 +36,7 @@ find_valid_samples(const IntResponseMap& resp_samples, BoolDeque& valid_sample)
 {
   // TODO: later compute correlation on per-response basis to keep
   // partial faults
-  using boost::math::isfinite;
+  using std::isfinite;
 
   size_t num_obs = resp_samples.size(), num_valid_samples = 0;
   IntRespMCIter it = resp_samples.begin();
@@ -150,7 +149,7 @@ void SensAnalysisGlobal::center_rows(RealMatrix& data_matrix)
 
 void SensAnalysisGlobal::correl_adjust(Real& corr_value)
 {
-  if (boost::math::isfinite(corr_value) && std::abs(corr_value) > 1.0)
+  if (std::isfinite(corr_value) && std::abs(corr_value) > 1.0)
     corr_value = corr_value / std::abs(corr_value);
 }
 
@@ -310,7 +309,7 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
 			   total_data, total_data, 0.0);
       for (int i=0; i<num_corr; ++i) {
 	// set finite diagonal values to 1.0
-	if (boost::math::isfinite(corr_matrix(i,i)))
+	if (std::isfinite(corr_matrix(i,i)))
 	  corr_matrix(i,i) = 1.0;
 	// snap all finite values to [-1.0, 1.0]
 	for (int j=0; j<i; ++j) {
@@ -487,7 +486,7 @@ bool SensAnalysisGlobal::has_nan_or_inf(const RealMatrix &corr) const {
   int num_rows = corr.numRows(), num_cols = corr.numCols();
   for(int j = 0; j < num_cols; ++j) 
     for(int i = 0; i < num_rows; ++i) 
-      if( ! boost::math::isfinite(corr(i,j)))
+      if( ! std::isfinite(corr(i,j)))
         return true;
   return false;
 }
