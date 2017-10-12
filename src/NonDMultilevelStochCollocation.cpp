@@ -221,8 +221,7 @@ void NonDMultilevelStochCollocation::core_run()
   Cout << "\n----------------------------------------------------"
        << "\nMultifidelity UQ: approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
-  compute_print_results();
-  update_final_statistics();
+  annotated_results(); // full set of statistics and debug traces (default)
 
   // clean up for re-entrancy of ML SC
   uSpaceModel.clear_stored();

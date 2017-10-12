@@ -169,11 +169,12 @@ protected:
   void refine_expansion(size_t index = _NPOS);
 
   /// calculate analytic and numerical statistics from the expansion
-  void compute_statistics();
+  void compute_statistics(bool full_stats = true);
 
-  /// manage print of results following convergence of iterative refinement
-  /// or multilevel-multifidelity combination
-  void compute_print_results(bool print = false);
+  /// manage computing of results and debugging outputs, for either the final
+  /// set of results (full statistics) or an intermediate set of results
+  /// (reduced set of core results used for levels/fidelities, etc.)
+  void annotated_results(bool full_stats = true);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -267,7 +268,7 @@ private:
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients
-  void compute_analytic_statistics();
+  void compute_analytic_statistics(bool full_stats = true);
   /// numerical portion of compute_statistics() from sampling on the expansion
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
@@ -291,9 +292,9 @@ private:
   void print_local_sensitivity(std::ostream& s);
 
   /// manage print of results following a generalized index set increment
-  void compute_print_index_set_results();
+  void annotated_index_set_results();
   /// manage print of results following a refinement increment
-  void compute_print_refinement_results(bool initialize);
+  void annotated_refinement_results(bool initialize);
 
   //
   //- Heading: Data

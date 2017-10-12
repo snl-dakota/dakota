@@ -615,8 +615,7 @@ void NonDExpansion::core_run()
   if (refineType)
     refine_expansion(); // uniform/adaptive p-/h-refinement
   
-  compute_print_results();
-  update_final_statistics(); // augment updates from compute_statistics()
+  annotated_results(); // full set of statistics and debug traces (default)
   ++numUncertainQuant;
 }
 
@@ -910,7 +909,7 @@ void NonDExpansion::refine_expansion(size_t index)
 
   // post-process nominal expansion
   if (!converged)
-    compute_print_refinement_results(true);
+    annotated_refinement_results(true); // includes initialization of traces
 
   // initialize refinement algorithms (if necessary)
   switch (refineControl) {
@@ -986,7 +985,7 @@ void NonDExpansion::refine_expansion(size_t index)
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
     if (!converged)
-      compute_print_refinement_results(false);
+      annotated_refinement_results(false); // no initialization of traces
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
 
@@ -1024,7 +1023,8 @@ void NonDExpansion::multifidelity_expansion()
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
        << "\n--------------------------------------\n\n";
-  compute_print_results(true);
+  annotated_results(false); // intermediate results
+  print_results(Cout);
 
   // change HierarchSurrModel::responseMode to model discrepancy
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
@@ -1049,7 +1049,8 @@ void NonDExpansion::multifidelity_expansion()
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
 	 << "\n-------------------------------------------\n\n";
-    compute_print_results(true);
+    annotated_results(false); // intermediate results
+    print_results(Cout);
   }
 
   // compute aggregate expansion and generate its statistics
@@ -1177,7 +1178,7 @@ Real NonDExpansion::increment_sets()
 	else                    stats_star = respVariance;
       }
     }
-    compute_print_index_set_results();
+    annotated_index_set_results();
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
@@ -1217,7 +1218,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
 }
 
 
-void NonDExpansion::compute_print_index_set_results()
+void NonDExpansion::annotated_index_set_results()
 {
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
@@ -1227,7 +1228,7 @@ void NonDExpansion::compute_print_index_set_results()
     }
     else { // only covariance available, compute full results if needed
       if (outputLevel == DEBUG_OUTPUT)
-	{ compute_statistics(); print_results(Cout); }
+	{ compute_statistics(false); print_results(Cout); }
       else
 	print_covariance(Cout);
     }
@@ -1236,12 +1237,12 @@ void NonDExpansion::compute_print_index_set_results()
 }
 
 
-void NonDExpansion::compute_print_refinement_results(bool initialize)
+void NonDExpansion::annotated_refinement_results(bool initialize)
 {
 #ifdef CONVERGENCE_DATA
   // full results compute/print mirroring Analyzer::post_run(),
   // allowing output level to be set low in performance testing
-  compute_statistics();
+  compute_statistics(false);
   iteratedModel.print_evaluation_summary(Cout);
   NonDExpansion::print_results(Cout);
   if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
@@ -1256,7 +1257,7 @@ void NonDExpansion::compute_print_refinement_results(bool initialize)
   case Pecos::UNIFORM_CONTROL:
     // In these cases, metric calculations already performed are still valid
     if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
-      { compute_statistics(); print_results(Cout); }
+      { compute_statistics(false); print_results(Cout); }
     else // compute/print subset of stats required for convergence assessment
       { if (initialize) compute_covariance(); print_covariance(Cout); }
     break;
@@ -1264,7 +1265,7 @@ void NonDExpansion::compute_print_refinement_results(bool initialize)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     // In these cases, metric calculations already performed are still valid
     if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
-      { compute_statistics(); print_results(Cout); }
+      { compute_statistics(false); print_results(Cout); }
     else // compute/print subset of stats required for convergence assessment
       { if (initialize) compute_covariance(); print_covariance(Cout); }
     break;
@@ -1273,18 +1274,18 @@ void NonDExpansion::compute_print_refinement_results(bool initialize)
     // index set. However, in the case where of non-debug output, we are using
     // partial results updating to eliminate the need to recompute stats for
     // the selected index set. This case also differs from other refinement
-    // cases above in that compute_print_index_set_results() has already
-    // provided per increment output, so we do not push output if non-debug.
+    // cases above in that annotated_index_set_results() has already provided
+    // per increment output, so we do not push output if non-debug.
     if (totalLevelRequests) {
       //if (initialize || outputLevel == DEBUG_OUTPUT)
-      //  { compute_statistics(); print_results(Cout); }
-      if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
+      //  { compute_statistics(false); print_results(Cout); }
+      if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics(false);
       if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
       // else no output!
     }
     else {
       if (outputLevel == DEBUG_OUTPUT)
-	{ compute_statistics(); print_results(Cout); }
+	{ compute_statistics(false); print_results(Cout); }
       else if (initialize)
 	{ compute_covariance(); print_covariance(Cout); }
       // else no output!
@@ -1295,7 +1296,7 @@ void NonDExpansion::compute_print_refinement_results(bool initialize)
 }
 
 
-void NonDExpansion::compute_print_results(bool print)
+void NonDExpansion::annotated_results(bool full_stats)
 {
 #ifdef CONVERGENCE_DATA
   // output fine-grained data on generalized index sets
@@ -1320,8 +1321,9 @@ void NonDExpansion::compute_print_results(bool print)
   }
 #endif // CONVERGENCE_DATA
 
-  compute_statistics();
-  if (print) print_results(Cout);
+  compute_statistics(full_stats); // full or intermediate set of statistics
+  if (full_stats)
+    update_final_statistics(); // augment updates from compute_statistics()
 }
 
 
@@ -1385,7 +1387,7 @@ Real NonDExpansion::compute_final_statistics_metric()
   // of increments is not available
 
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
-  compute_statistics();                                           //    update
+  compute_statistics(false);                           // intermediate results
   const RealVector& final_stats_new = finalStatistics.function_values();
 #ifdef DEBUG
   Cout << "final_stats_ref:\n" << final_stats_ref
@@ -1454,8 +1456,8 @@ void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
     // InterpPolyApproximation::compute_*_effects() assumes moments are
     // available and compute_statistics() has not been called if !DEBUG_OUTPUT
     if (outputLevel < DEBUG_OUTPUT) {
-      if (all_vars) poly_approx_rep->compute_moments(initialPtU);
-      else          poly_approx_rep->compute_moments();
+      if (all_vars) poly_approx_rep->compute_moments(initialPtU, false);
+      else          poly_approx_rep->compute_moments(false);
     }
 
     if (!vbdOrderLimit) // no order limit --> component used within total
@@ -1583,12 +1585,13 @@ void NonDExpansion::compute_off_diagonal_covariance()
 
 /** Calculate analytic and numerical statistics from the expansion and
     log results within final_stats for use in OUU. */
-void NonDExpansion::compute_statistics()
+void NonDExpansion::compute_statistics(bool full_stats)
 {
   // initialize computed*Levels and expGradsMeanX
   if (totalLevelRequests)
     initialize_level_mappings();
-  if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT && expGradsMeanX.empty())
+  if (full_stats && !subIteratorFlag && outputLevel >= NORMAL_OUTPUT &&
+      expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
 
   // restore variable settings following build/refine: supports local
@@ -1600,7 +1603,7 @@ void NonDExpansion::compute_statistics()
   // -----------------------------
   // Calculate analytic statistics
   // -----------------------------
-  compute_analytic_statistics(); // statistics derived from expansion coeffs
+  compute_analytic_statistics(full_stats); // stats derived from exp coeffs
 
   // ------------------------------
   // Calculate numerical statistics
@@ -1609,18 +1612,20 @@ void NonDExpansion::compute_statistics()
     compute_numerical_statistics();
 
   // archive the active variables with the results
-  if (resultsDB.active()) {
-    resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
-		     iteratedModel.continuous_variable_labels());
-    resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		     iteratedModel.response_labels());
+  if (full_stats) {
+    if (resultsDB.active()) {
+      resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
+		       iteratedModel.continuous_variable_labels());
+      resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
+		       iteratedModel.response_labels());
+    }
+    archive_moments();
+    archive_coefficients();
   }
-  archive_moments();
-  archive_coefficients();
 }
 
 
-void NonDExpansion::compute_analytic_statistics()
+void NonDExpansion::compute_analytic_statistics(bool full_stats)
 {
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
@@ -1648,9 +1653,10 @@ void NonDExpansion::compute_analytic_statistics()
 
     // Note: corresponding logic in NonDExpansion::compute_expansion() defines
     // expansionCoeffFlag as needed to support final data requirements.
+    // If not full stats, suppress secondary moment calculations.
     if (poly_approx_rep->expansion_coefficient_flag()) {
-      if (all_vars) poly_approx_rep->compute_moments(initialPtU);
-      else          poly_approx_rep->compute_moments();
+      if (all_vars) poly_approx_rep->compute_moments(initialPtU, full_stats);
+      else          poly_approx_rep->compute_moments(full_stats));
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments
@@ -1806,7 +1812,7 @@ void NonDExpansion::compute_analytic_statistics()
     cntr += gl_len;
  
     // *** local sensitivities
-    if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT &&
+    if (full_stats && !subIteratorFlag && outputLevel >= NORMAL_OUTPUT &&
 	poly_approx_rep->expansion_coefficient_flag()) {
       // expansion sensitivities are defined from the coefficients and basis
       // polynomial derivatives.  They are computed for the means of the
@@ -1833,12 +1839,14 @@ void NonDExpansion::compute_analytic_statistics()
     }
 
     // *** global sensitivities:
-    if (vbdFlag && poly_approx_rep->expansion_coefficient_flag()) {
+    if (vbdFlag && (full_stats ||
+		    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL) &&
+	poly_approx_rep->expansion_coefficient_flag()) {
       poly_approx_rep->compute_component_effects(); // main or main+interaction
       poly_approx_rep->compute_total_effects();     // total
     }
   }
-  if (numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
+  if (full_stats && numFunctions > 1 && covarianceControl == FULL_COVARIANCE)
     compute_off_diagonal_covariance(); // diagonal entries were filled in above
 }
 

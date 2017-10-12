@@ -445,8 +445,8 @@ Real NonDStochCollocation::compute_final_statistics_metric()
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
       RealVector delta_final_stats;
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
-        delta_final_stats  = finalStatistics.function_values(); // deep copy
-	compute_statistics();                                   // update
+        delta_final_stats  = finalStatistics.function_values();     // deep copy
+	compute_statistics(false);                         // intermediate stats
 	delta_final_stats -= finalStatistics.function_values(); // compute delta
       }
 #ifdef DEBUG

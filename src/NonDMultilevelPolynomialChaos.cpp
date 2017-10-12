@@ -507,8 +507,7 @@ void NonDMultilevelPolynomialChaos::core_run()
   else             Cout <<    "Multilevel UQ: ";
   Cout << "approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
-  compute_print_results();
-  update_final_statistics();
+  annotated_results(); // full set of statistics and debug traces (default)
 
   // clean up for re-entrancy of ML PCE
   uSpaceModel.clear_stored();
