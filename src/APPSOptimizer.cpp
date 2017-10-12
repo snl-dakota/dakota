@@ -353,9 +353,8 @@ void APPSOptimizer::initialize_variables_and_constraints()
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
   // Need to make pre-allocation requirement consistent, eg vectors are allocated, matrices are not
-  get_linear_constraints<AppsTraits>
-                ( iteratedModel, bigRealBoundSize,
-                  lin_ineq_lower_bnds,
+  configure_linear_constraints_and_bounds<AppsTraits>
+                ( lin_ineq_lower_bnds,
                   lin_ineq_upper_bnds,
                   lin_eq_targets,
                   lin_ineq_coeffs,

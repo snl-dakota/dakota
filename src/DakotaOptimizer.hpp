@@ -20,9 +20,11 @@
 namespace Dakota {
 
 
-//----------------------------------------------------------------
+/*----------------------------------------------------------------
+   Adapter for configuring inequality constraint maps used when
+   transferring data between Dakota and a TPL
+  ---------------------------------------------------------------*/
 
-/// Adapter for configuring constraint maps used when transferring data between Dakota and a TPL
 template <typename RVecT, typename IVecT>
 int configure_inequality_constraint_maps(
                                const Model & model,
@@ -62,7 +64,10 @@ int configure_inequality_constraint_maps(
   return num_added;
 }
 
-//----------------------------------------------------------------
+/*----------------------------------------------------------------
+   Adapter for configuring equality constraint maps used when
+   transferring data between Dakota and a TPL
+  ---------------------------------------------------------------*/
 
 template <typename RVecT, typename IVecT>
 void configure_equality_constraint_maps(
@@ -100,6 +105,76 @@ void configure_equality_constraint_maps(
       values.push_back(-eq_targets[i]);
     }
   }
+}
+
+/*----------------------------------------------------------------
+   Utility based on APPSOptimizer for getting bounds data
+
+  ---------------------------------------------------------------*/
+
+template <typename VecT>
+bool get_bounds( const RealVector  & lower_source,
+                 const RealVector  & upper_source,
+                       Real          big_real_bound_size,
+                       Real          no_value,
+                       VecT        & lower_target,
+                       VecT        & upper_target )
+{
+  bool allSet = true;
+
+  int len = lower_source.length();
+  for (int i=0; i<len; i++) {
+    if (lower_source[i] > -big_real_bound_size)
+      lower_target[i] = lower_source[i];
+    else {
+      lower_target[i] = no_value;
+      allSet = false;
+    }
+    if (upper_source[i] < big_real_bound_size)
+      upper_target[i] = upper_source[i];
+    else {
+      upper_target[i] = no_value;
+      allSet = false;
+    }
+  }
+
+  return allSet;
+}
+
+/*----------------------------------------------------------------
+   Adapter based initially on APPSOptimizer for linear constraint
+   maps and including matrix and bounds data;
+       * bundles a few steps together which could (should?) be broken
+         into two or more adapters
+  ---------------------------------------------------------------*/
+
+template <typename AdapterT>
+void get_linear_constraints( Model & model,
+                             Real big_real_bound_size,
+                             typename AdapterT::VecT & lin_ineq_lower_bnds,
+                             typename AdapterT::VecT & lin_ineq_upper_bnds,
+                             typename AdapterT::VecT & lin_eq_targets,
+                             typename AdapterT::MatT & lin_ineq_coeffs,
+                             typename AdapterT::MatT & lin_eq_coeffs)
+{
+  const RealMatrix& linear_ineq_coeffs     = model.linear_ineq_constraint_coeffs();
+  const RealVector& linear_ineq_lower_bnds = model.linear_ineq_constraint_lower_bounds();
+  const RealVector& linear_ineq_upper_bnds = model.linear_ineq_constraint_upper_bounds();
+  const RealMatrix& linear_eq_coeffs       = model.linear_eq_constraint_coeffs();
+  const RealVector& linear_eq_targets      = model.linear_eq_constraint_targets();
+
+  // These are special cases involving Matrices which gets delegated to the adapter for now
+  AdapterT::copy_data(linear_ineq_coeffs, lin_ineq_coeffs);
+  AdapterT::copy_data(linear_eq_coeffs, lin_eq_coeffs);
+
+  get_bounds(linear_ineq_lower_bnds,
+             linear_ineq_upper_bnds,
+             big_real_bound_size,
+             AdapterT::noValue(),
+             lin_ineq_lower_bnds,
+             lin_ineq_upper_bnds);
+
+  copy_data(linear_eq_targets, lin_eq_targets);
 }
 
 //----------------------------------------------------------------
@@ -246,6 +321,26 @@ protected:
         constraintMapMultipliers,
         constraintMapOffsets,
         split_into_one_sided);
+  }
+
+//----------------------------------------------------------------
+
+  template <typename AdapterT>
+  void configure_linear_constraints_and_bounds(
+          typename AdapterT::VecT & lin_ineq_lower_bnds,
+          typename AdapterT::VecT & lin_ineq_upper_bnds,
+          typename AdapterT::VecT & lin_eq_targets,
+          typename AdapterT::MatT & lin_ineq_coeffs,
+          typename AdapterT::MatT & lin_eq_coeffs)
+  {
+    return get_linear_constraints<AdapterT>(
+        iteratedModel,
+        bigRealBoundSize,
+        lin_ineq_lower_bnds,
+        lin_ineq_upper_bnds,
+        lin_eq_targets,
+        lin_ineq_coeffs,
+        lin_eq_coeffs);
   }
 
 private:
@@ -549,38 +644,6 @@ bool get_mixed_bounds( const MaskType& mask_set,
 
 //----------------------------------------------------------------
 
-template <typename OrdinalType, typename ScalarType, typename VectorType2>
-bool get_bounds( const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& lower_source,
-                 const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& upper_source,
-                       VectorType2& lower_target,
-                       VectorType2& upper_target,
-                       ScalarType bigBoundSize,
-                       ScalarType no_value,
-                       int target_offset = 0)
-{
-  bool allSet = true;
-
-  OrdinalType len = lower_source.length();
-  for (OrdinalType i=0; i<len; i++) {
-    if (lower_source[i] > -bigBoundSize)
-      lower_target[i] = lower_source[i];
-    else {
-      lower_target[i] = no_value;
-      allSet = false;
-    }
-    if (upper_source[i] < bigBoundSize)
-      upper_target[i] = upper_source[i];
-    else {
-      upper_target[i] = no_value;
-      allSet = false;
-    }
-  }
-
-  return allSet;
-}
-
-//----------------------------------------------------------------
-
 template <typename SetArray, typename VectorType>
 void get_bounds( const SetArray& source_set,
                        VectorType& lower_target,
@@ -653,14 +716,14 @@ bool get_bounds( Model & model,
 
   // Sanity checks ?
 
-  int offset = 0;
-  bool allSet = get_bounds(lower_bnds_cont, upper_bnds_cont,
-                           lower, upper,
+  bool allSet = get_bounds(lower_bnds_cont,
+                           upper_bnds_cont,
                            big_real_bound_size,
                            AdapterT::noValue(),
-                           offset);
+                           lower,
+                           upper);
 
-  offset = model.cv();
+  int offset = model.cv();
   allSet = allSet && 
               get_mixed_bounds
                 (int_set_bits, init_pt_set_int, lower_bnds_int, upper_bnds_int, 
@@ -673,36 +736,6 @@ bool get_bounds( Model & model,
   get_bounds(init_pt_set_string, lower, upper, offset);
 
   return allSet;
-}
-
-//----------------------------------------------------------------
-
-/// copy the various data associated with linear constraints from Dakota into TPL vectors/matrices
-template <typename AdapterT>
-void get_linear_constraints( Model & model,
-                             Real big_real_bound_size, // It would be nice to clean this up and not need to pass in
-                             typename AdapterT::VecT & lin_ineq_lower_bnds,
-                             typename AdapterT::VecT & lin_ineq_upper_bnds,
-                             typename AdapterT::VecT & lin_eq_targets,
-                             typename AdapterT::MatT & lin_ineq_coeffs,
-                             typename AdapterT::MatT & lin_eq_coeffs)
-{
-  const RealMatrix& linear_ineq_coeffs     = model.linear_ineq_constraint_coeffs();
-  const RealVector& linear_ineq_lower_bnds = model.linear_ineq_constraint_lower_bounds();
-  const RealVector& linear_ineq_upper_bnds = model.linear_ineq_constraint_upper_bounds();
-  const RealMatrix& linear_eq_coeffs       = model.linear_eq_constraint_coeffs();
-  const RealVector& linear_eq_targets      = model.linear_eq_constraint_targets();
-
-  // These are special cases involving Matrices which gets delegated to the adapter for now
-  AdapterT::copy_data(linear_ineq_coeffs, lin_ineq_coeffs);
-  AdapterT::copy_data(linear_eq_coeffs, lin_eq_coeffs);
-
-  get_bounds(linear_ineq_lower_bnds, linear_ineq_upper_bnds,
-              lin_ineq_lower_bnds, lin_ineq_upper_bnds,
-              big_real_bound_size, // hard-wired to Real type; is more gneral type needed?
-              AdapterT::noValue());
-
-  copy_data(linear_eq_targets, lin_eq_targets);
 }
 
 //----------------------------------------------------------------
