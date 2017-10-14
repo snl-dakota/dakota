@@ -2643,7 +2643,7 @@ Test Number 0 succeeded
                       1.3209461836e-16
 <<<<< Best data captured at function evaluation 44
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 30 total (29 new, 1 duplicate)
+<<<<< Function evaluation summary: 31 total (29 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9999668139e-01 x1
                       9.9999334619e-01 x2
@@ -2660,7 +2660,7 @@ Test Number 2 succeeded
                       2.6190315827e-15
 <<<<< Best data captured at function evaluation 26
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
+<<<<< Function evaluation summary: 5 total (3 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9999904377e-01 x1
                       9.9999808276e-01 x2
@@ -3616,7 +3616,7 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 153
 dakota_calibration_configvars.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -3662,7 +3662,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -3689,7 +3689,7 @@ Test Number 2 succeeded
                       1.1280144759e+01
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
+<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -4610,10 +4610,10 @@ Test Number 7 succeeded
                       5.6521134327e-02
 <<<<< Best data captured at function evaluation 23
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 18 total (17 new, 1 duplicate)
-           area: 17 val (17 n, 0 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
-         stress: 17 val (17 n, 0 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
-   displacement: 17 val (17 n, 0 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 19 total (17 new, 2 duplicate)
+           area: 18 val (17 n, 1 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
+         stress: 18 val (17 n, 1 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
+   displacement: 18 val (17 n, 1 d), 18 grad (17 n, 1 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.8499999995e+07 E
                       2.5000000002e+00 w
@@ -6689,12 +6689,12 @@ Test Number 6 succeeded
 <<<<< Best data captured at function evaluation 82
 dakota_experiment_read.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-least_sq_term_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (21 new, 3 duplicate)
+least_sq_term_1: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000030e-01 x1
                       2.0000000000e-01 x2
@@ -6712,12 +6712,12 @@ least_sq_term_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       4.3313658216e-11
 <<<<< Best data captured at function evaluation 19
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-least_sq_term_1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-least_sq_term_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 27 total (24 new, 3 duplicate)
+least_sq_term_1: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_2: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_3: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_4: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+least_sq_term_5: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999984e-01 x1
                       1.9999999997e-01 x2
@@ -6735,12 +6735,12 @@ least_sq_term_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
                       1.5270813414e-10
 <<<<< Best data captured at function evaluation 22
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-   oscillator_1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscillator_5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 27 total (24 new, 3 duplicate)
+   oscillator_1: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_2: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_3: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_4: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscillator_5: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999984e-01 x1
                       1.9999999997e-01 x2
@@ -6758,12 +6758,12 @@ Test Number 2 succeeded
                       1.5270813414e-10
 <<<<< Best data captured at function evaluation 22
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-  oscillatorA_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorA_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (21 new, 3 duplicate)
+  oscillatorA_1: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_2: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_3: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_4: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorA_5: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000000e-01 x1
                       1.9999999999e-01 x2
@@ -6799,57 +6799,57 @@ Sample moment statistics for each response function:
  oscillatorA_4  9.9280618320e-02  7.7509602202e-02  3.1783610786e-01 -7.2350476075e-01
  oscillatorA_5 -1.3776238320e-01  6.0784012262e-02 -9.4179590819e-01  2.4146664583e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
-  oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_6: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_7: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_8: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_9: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_10: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_11: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_12: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_13: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_14: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_15: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_16: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_17: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_18: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_19: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_20: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_21: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_22: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_23: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_24: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_25: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_26: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_27: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_28: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_29: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_30: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_31: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_32: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_33: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_34: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_35: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_36: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_37: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_38: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_39: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_40: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_41: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_42: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_43: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_44: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_45: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_46: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_47: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_48: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 21 total (18 new, 3 duplicate)
+  oscillatorB_1: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_2: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_3: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_4: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_5: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_6: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_7: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_8: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_9: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_10: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_11: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_12: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_13: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_14: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_15: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_16: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_17: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_18: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_19: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_20: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_21: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_22: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_23: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_24: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_25: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_26: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_27: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_28: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_29: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_30: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_31: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_32: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_33: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_34: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_35: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_36: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_37: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_38: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_39: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_40: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_41: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_42: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_43: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_44: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_45: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_46: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_47: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_48: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_49: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_50: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0306964388e-01 x1
                       2.0341048946e-01 x2
@@ -6912,57 +6912,57 @@ Test Number 5 succeeded
                       3.7532921933e-03
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 20 total (18 new, 2 duplicate)
-  oscillatorB_1: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_2: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_3: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_4: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_5: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_6: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_7: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_8: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorB_9: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_10: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_11: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_12: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_13: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_14: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_15: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_16: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_17: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_18: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_19: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_20: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_21: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_22: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_23: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_24: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_25: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_26: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_27: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_28: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_29: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_30: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_31: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_32: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_33: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_34: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_35: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_36: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_37: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_38: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_39: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_40: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_41: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_42: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_43: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_44: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_45: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_46: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_47: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_48: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_49: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- oscillatorB_50: 20 val (18 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 21 total (18 new, 3 duplicate)
+  oscillatorB_1: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_2: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_3: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_4: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_5: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_6: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_7: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_8: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorB_9: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_10: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_11: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_12: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_13: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_14: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_15: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_16: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_17: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_18: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_19: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_20: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_21: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_22: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_23: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_24: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_25: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_26: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_27: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_28: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_29: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_30: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_31: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_32: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_33: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_34: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_35: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_36: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_37: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_38: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_39: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_40: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_41: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_42: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_43: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_44: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_45: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_46: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_47: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_48: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_49: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ oscillatorB_50: 21 val (18 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0161285108e-01 x1
                       2.0141903737e-01 x2
@@ -7028,12 +7028,12 @@ Test Number 6 succeeded
                       2.5606160694e-03
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 26 total (24 new, 2 duplicate)
-   oscB_scalar1: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar3: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar4: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar5: 26 val (24 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 27 total (24 new, 3 duplicate)
+   oscB_scalar1: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar3: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar4: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar5: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.9999999958e-01 x1
                       1.9999999983e-01 x2
@@ -7051,14 +7051,14 @@ Test Number 7 succeeded
                       1.1486983679e-09
 <<<<< Best data captured at function evaluation 22
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
-   oscB_scalar1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   oscB_scalar2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_1: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_2: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_3: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_4: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  oscillatorC_5: 23 val (21 n, 2 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 24 total (21 new, 3 duplicate)
+   oscB_scalar1: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   oscB_scalar2: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_1: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_2: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_3: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_4: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  oscillatorC_5: 24 val (21 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       3.0000000026e-01 x1
                       2.0000000000e-01 x2
@@ -10340,7 +10340,7 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 157
 dakota_nl2test.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+<<<<< Function evaluation summary: 28 total (26 new, 2 duplicate)
 <<<<< Best parameters          =
                       3.7541004764e-01 x1
                       1.9358463401e+00 x2
@@ -10383,7 +10383,7 @@ Test Number 0 succeeded
                       3.0168411055e-04
 <<<<< Best data captured at function evaluation 26
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 22 total (21 new, 1 duplicate)
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
 <<<<< Best parameters          =
                       3.7407390948e-01 x1
                       1.8000000000e+00 x2
@@ -10426,7 +10426,7 @@ Test Number 1 succeeded
                       6.0542769244e-04
 <<<<< Best data captured at function evaluation 21
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 13 total (12 new, 1 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters          =
                      -1.5725086402e-02 x1
                       1.0124348694e+00 x2
@@ -10468,7 +10468,7 @@ Test Number 2 succeeded
                       1.2187591029e-02
 <<<<< Best data captured at function evaluation 12
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 13 total (12 new, 1 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters          =
                      -1.9237618148e-02 x1
                       9.6284865431e-01 x2
@@ -10510,7 +10510,7 @@ Test Number 3 succeeded
                      -3.7521431644e-02
 <<<<< Best data captured at function evaluation 12
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 23 total (22 new, 1 duplicate)
+<<<<< Function evaluation summary: 24 total (22 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.3152740543e-02 x1
                       1.9309081764e-01 x2
@@ -10531,7 +10531,7 @@ Test Number 4 succeeded
                       2.6064541009e-02
 <<<<< Best data captured at function evaluation 22
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 16 total (15 new, 1 duplicate)
+<<<<< Function evaluation summary: 17 total (15 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e-01 x1
                       2.1085050459e-01 x2
@@ -10552,7 +10552,7 @@ Test Number 5 succeeded
                      -7.8969200935e-03
 <<<<< Best data captured at function evaluation 15
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 20 total (19 new, 1 duplicate)
+<<<<< Function evaluation summary: 21 total (19 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.3099741084e+00 x1
                       4.3154657805e-01 x2
@@ -10633,7 +10633,7 @@ Test Number 6 succeeded
                      -1.0602044654e-02
 <<<<< Best data captured at function evaluation 19
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 20 total (19 new, 1 duplicate)
+<<<<< Function evaluation summary: 21 total (19 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.3099741084e+00 x1
                       4.3154657805e-01 x2
@@ -10714,7 +10714,7 @@ Test Number 7 succeeded
                      -1.0602044654e-02
 <<<<< Best data captured at function evaluation 19
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 42 total (41 new, 1 duplicate)
+<<<<< Function evaluation summary: 43 total (41 new, 2 duplicate)
 <<<<< Best parameters          =
                       2.9523620195e-02 x1
                       1.7627677026e-01 x2
@@ -16092,7 +16092,7 @@ Test Number 6 succeeded
                       2.4283400701e-07
 <<<<< Best data captured at function evaluation 73
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 30 total (29 new, 1 duplicate)
+<<<<< Function evaluation summary: 31 total (29 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9999668139e-01 x1
                       9.9999334619e-01 x2
@@ -16109,7 +16109,7 @@ Test Number 8 succeeded
                       3.7410283391e-03
 <<<<< Best data captured at function evaluation 276
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 56 total (55 new, 1 duplicate)
+<<<<< Function evaluation summary: 57 total (55 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9999990607e-01 x1
                       9.9999981455e-01 x2
@@ -16127,7 +16127,7 @@ Test Number 10 succeeded
                       2.2000000000e+00
 <<<<< Best data captured at function evaluation 1
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
+<<<<< Function evaluation summary: 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
@@ -16145,7 +16145,7 @@ Test Number 12 succeeded
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 36
 Test Number 13 succeeded
-<<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
+<<<<< Function evaluation summary: 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
@@ -16409,7 +16409,7 @@ Test Number 2 succeeded
                       7.4943502239e-05
 <<<<< Best data captured at function evaluation 136
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 30 total (29 new, 1 duplicate)
+<<<<< Function evaluation summary: 31 total (29 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.9999668139e-01 x1
                       9.9999334619e-01 x2
@@ -16475,7 +16475,7 @@ Test Number 7 succeeded
                       7.4943514585e-05
 <<<<< Best data captured at function evaluation 135
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
+<<<<< Function evaluation summary: 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
@@ -16689,7 +16689,7 @@ Test Number 0 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_sbnls_rosen.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 49 total (49 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 54 total (54 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -16699,7 +16699,7 @@ Test Number 0 succeeded
                      -6.6613381478e-16
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 88 total (88 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 103 total (103 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -16709,7 +16709,7 @@ Test Number 1 succeeded
                       0.0000000000e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 44 total (44 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 49 total (49 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -16719,7 +16719,7 @@ Test Number 2 succeeded
                       0.0000000000e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 42 total (42 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 47 total (47 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -16729,7 +16729,7 @@ Test Number 3 succeeded
                       0.0000000000e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 10 total (10 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 16 total (16 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 8 total (8 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.0000000000e+00 x1
@@ -16739,7 +16739,7 @@ Test Number 4 succeeded
                       2.0000000000e+00
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 75 total (75 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -26167,7 +26167,7 @@ Partial Rank Correlation Matrix between input and output:
      dussv_1  3.53382e-01 
 dakota_textbook_lsq.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Function evaluation summary: 13 total (11 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
@@ -26181,7 +26181,7 @@ Test Number 0 succeeded
                      -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Function evaluation summary: 13 total (11 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
@@ -26209,7 +26209,7 @@ Test Number 2 succeeded
                      -9.3591988246e-02
 <<<<< Best data captured at function evaluation 61
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 22 total (21 new, 1 duplicate)
+<<<<< Function evaluation summary: 23 total (21 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011599457e+00 x1
                       1.9766102667e+00 x2
@@ -26237,19 +26237,19 @@ Test Number 4 succeeded
                       1.6080243822e-01
 <<<<< Best data captured at function evaluation 4163
 Test Number 5 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 11 total (11 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 12 total (12 new, 0 duplicate)
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0011629190e+00 x1
+                      4.0011629191e+00 x1
                       1.9766149370e+00 x2
 <<<<< Best model responses =
-                      8.2035014708e+01
-                      1.5020997236e+01
-                      1.9064251495e+00
+                      8.2035014712e+01
+                      1.5020997237e+01
+                      1.9064251496e+00
 <<<<< Best residual terms =
-                      3.5014708073e-02
-                     -4.7900276374e-01
-                     -9.3574850518e-02
+                      3.5014712030e-02
+                     -4.7900276339e-01
+                     -9.3574850428e-02
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -26322,7 +26322,7 @@ Test Number 4 succeeded
                       1.1408096690e-12
 <<<<< Best data captured at function evaluation 12
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 14 total (13 new, 1 duplicate)
+<<<<< Function evaluation summary: 15 total (13 new, 2 duplicate)
 <<<<< Best parameters          =
                       5.3351451413e-01 x1
                       5.1648548582e-01 x2
@@ -26333,7 +26333,7 @@ Test Number 5 succeeded
                      -4.5257131376e-12
 <<<<< Best data captured at function evaluation 13
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 6 total (5 new, 1 duplicate)
+<<<<< Function evaluation summary: 7 total (5 new, 2 duplicate)
 <<<<< Best parameters          =
                       5.3351451416e-01 x1
                       5.1648548584e-01 x2
@@ -26344,7 +26344,7 @@ Test Number 6 succeeded
                       1.0319523014e-13
 <<<<< Best data captured at function evaluation 5
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Function evaluation summary: 13 total (11 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
@@ -26358,7 +26358,7 @@ Test Number 7 succeeded
                      -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 8 succeeded
-<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Function evaluation summary: 13 total (11 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
@@ -26372,7 +26372,7 @@ Test Number 8 succeeded
                      -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 12 total (10 new, 2 duplicate)
+<<<<< Function evaluation summary: 13 total (10 new, 3 duplicate)
 <<<<< Best parameters          =
                       4.0017301996e+00 x1
                       2.0807347873e+00 x2
