@@ -532,6 +532,13 @@
 			    </keyword>'
       >
 
+    <!ENTITY ml_pilot_samples
+      '		  <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
+		    <alias name="initial_samples"/>
+		    <param type="INTEGERLIST" />
+		  </keyword>'
+      >
+
     <!ENTITY discrep_emulation
       '		      <keyword  id="discrepancy_emulation" name="discrepancy_emulation" code="{0}" label="Multilevel-multifidelity discrepancy emulation approach" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="distinct" >
 			<oneOf>
@@ -620,6 +627,100 @@
 			</oneOf>
 		      </optional>
 		      <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />'
+      >
+
+    <!ENTITY bayes_pce
+      '		      <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
+			<oneOf>
+			  &expansion_quadrature;
+			  &pce_sparse_grid;
+			  &pce_cubature;
+			  <required>
+			    &pce_expansion_order;
+			    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    &import_build;
+			  </required>
+			  <required>
+			    &pce_orthog_least_interp;
+			    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    &import_build;
+			  </required>
+			</oneOf>
+		      </keyword>'
+      >
+
+    <!ENTITY bayes_ml_pce
+      '		      <keyword  id="ml_pce" name="ml_pce" code="{N_mdm(type,emulatorType_ML_PCE_EMULATOR)}" label="ml_pce" help="" minOccurs="1" >
+			<oneOf>
+			  &pce_expansion_order_sequence;
+			  &pce_orthog_least_interp_sequence;
+			</oneOf>
+			&ml_pilot_samples;
+			<!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
+			<!-- &import_build; -->
+		      </keyword>'
+      >
+
+    <!ENTITY bayes_mf_pce
+      '		      <keyword  id="mf_pce" name="mf_pce" code="{N_mdm(type,emulatorType_MF_PCE_EMULATOR)}" label="mf_pce" help="" minOccurs="1" >
+			<oneOf>
+			  &expansion_quadrature_sequence;
+			  &pce_sparse_grid_sequence;
+			  <!-- <required> -->
+			    &pce_expansion_order_sequence;
+			    <!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
+			    <!-- &import_build; -->
+			  <!-- </required> -->
+			  <!-- <required> -->
+			    &pce_orthog_least_interp_sequence;
+			    <!-- <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
+			    <!-- &import_build; -->
+			  <!-- </required> -->
+			</oneOf>
+		      </keyword>'
+      >
+
+    <!ENTITY bayes_sc
+      '		      <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
+			<oneOf label="Interpolation grid type">
+			  &expansion_quadrature;
+			  &sc_sparse_grid;
+			</oneOf>
+		      </keyword>'
+      >
+
+    <!ENTITY bayes_mf_sc
+      '		      <keyword  id="mf_sc" name="mf_sc" code="{N_mdm(type,emulatorType_MF_SC_EMULATOR)}" label="mf_sc" help="" minOccurs="1" >
+			<oneOf label="Interpolation grid type">
+			  &expansion_quadrature_sequence;
+			  &sc_sparse_grid_sequence;
+			</oneOf>
+		      </keyword>'
+      >
+
+    <!ENTITY bayes_emulator
+      '		  <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
+		    <oneOf label="emulator type" >
+		      <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
+			<alias name="kriging"/>
+			<oneOf>
+			  <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+			  <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+			</oneOf>
+			<keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
+			  <param type="INTEGER" />
+			</keyword>
+			<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			&import_build;
+		      </keyword>
+		      &bayes_pce;
+		      &bayes_ml_pce;
+		      &bayes_mf_pce;
+		      &bayes_sc;
+		      &bayes_mf_sc;
+		    </oneOf>
+		    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+		  </keyword>'
       >
 
     <!-- Options shared by all coliny solvers (depends on previous ENTITYs) -->
@@ -1868,10 +1969,7 @@
 		    <keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
 		      <!-- &pce_refinement; -->
 		      &default_max_iterations;
-		      <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
-			<alias name="initial_samples"/>
-			<param type="INTEGERLIST" />
-		      </keyword>
+		      &ml_pilot_samples;
 		      &discrep_emulation;
 		      <oneOf label="Coefficient computation approach">
 			&pce_expansion_order_sequence;
@@ -1999,10 +2097,7 @@
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
 		  <keyword  id="fixed_seed3" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed" help="" minOccurs="0" default="not fixed; pattern varies run-to-run" />
-		  <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
-		    <alias name="initial_samples"/>
-		    <param type="INTEGERLIST" />
-		  </keyword>
+		  &ml_pilot_samples;
 		  <keyword  id="sample_type3" name="sample_type" code="{0}" label="sample_type" help="" minOccurs="0" default="random" >
 		    <oneOf>
 		      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs" help=""  />
@@ -2373,56 +2468,7 @@
 		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
-		  <keyword  id="emulator" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-		    <oneOf label="emulator type" >
-		      <keyword  id="gaussian_process3" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			<alias name="kriging"/>
-			<oneOf>
-			  <keyword  id="surfpack3" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			  <keyword  id="dakota3" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			</oneOf>
-			<keyword  id="build_samples3" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			  <param type="INTEGER" />
-			</keyword>
-			<keyword  id="posterior_adaptive" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			&import_build;
-		      </keyword>
-		      <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			<oneOf>
-			  <keyword  id="sparse_grid_level_sequence2" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			  </keyword>
-			  <keyword  id="expansion_order_sequence1" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			    <oneOf>
-			      <keyword  id="collocation_points_sequence2" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="INTEGERLIST" />
-			      </keyword>
-			      <keyword  id="collocation_ratio1" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="REAL" />
-			      </keyword>
-			    </oneOf>
-			    <keyword  id="cross_validation1" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0"/>
-			    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			    &import_build;
-			  </keyword>
-			  <keyword  id="orthogonal_least_interpolation1" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <keyword  id="collocation_points_sequence3" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-			      <param type="INTEGERLIST" />
-			    </keyword>
-			    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			    &import_build;
-			  </keyword>
-			</oneOf>
-		      </keyword>
-		      <keyword  id="sc" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-			<keyword  id="sparse_grid_level_sequence3" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			  <param type="INTEGERLIST" />
-			</keyword>
-		      </keyword>
-		    </oneOf>
-		    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-		  </keyword>
+		  &bayes_emulator;
 		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
@@ -2577,61 +2623,8 @@
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
 		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
 		    <param type="INTEGER" constraint="> 0" />
-		    </keyword>
-		  <keyword  id="emulator2" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-		    <oneOf label="emulator type" >
-		      <keyword  id="gaussian_process4" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			<alias name="kriging"/>
-			<oneOf>
-			  <keyword  id="surfpack4" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			  <keyword  id="dakota4" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			</oneOf>
-			<keyword  id="build_samples5" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			  <param type="INTEGER" />
-			</keyword>
-			<keyword  id="posterior_adaptive3" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			</keyword>
-			&import_build;
-		      </keyword>
-		      <keyword  id="pce2" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			<oneOf>
-			  <keyword  id="sparse_grid_level_sequence4" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			  </keyword>
-			  <keyword  id="expansion_order_sequence2" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			    <oneOf>
-			      <keyword  id="collocation_points_sequence4" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="INTEGERLIST" />
-			      </keyword>
-			      <keyword  id="collocation_ratio2" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="REAL" />
-			      </keyword>
-			    </oneOf>
-			    <keyword  id="cross_validation2" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-			    </keyword>
-			    <keyword  id="posterior_adaptive4" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    &import_build;
-			  </keyword>
-			  <keyword  id="orthogonal_least_interpolation2" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <keyword  id="collocation_points_sequence5" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-			      <param type="INTEGERLIST" />
-			    </keyword>
-			    <keyword  id="posterior_adaptive5" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    &import_build;
-			  </keyword>
-			</oneOf>
-		      </keyword>
-		      <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-			<keyword  id="sparse_grid_level_sequence5" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			  <param type="INTEGERLIST" />
-			</keyword>
-		      </keyword>
-		    </oneOf>
-		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>
+		  &bayes_emulator;
 		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
 		  <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
 		    <required>
@@ -2689,60 +2682,7 @@
 		  <keyword  id="jump_step" name="jump_step" code="{N_mdm(int,jumpStep)}" label="Jump-Step " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="5" >
 		    <param type="INTEGER" constraint=">= 0" />
 		  </keyword>
-		  <keyword  id="emulator1" name="emulator" code="{0}" label="emulator" help="" minOccurs="0" >
-		    <oneOf label="emulator type" >
-		      <keyword  id="gaussian_process4" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="1" default="Surfpack Gaussian process" >
-			<alias name="kriging"/>
-			<oneOf>
-			  <keyword  id="surfpack4" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-			  <keyword  id="dakota4" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-			</oneOf>
-			<keyword  id="build_samples5" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help="" minOccurs="0" >
-			  <param type="INTEGER" />
-			</keyword>
-			<keyword  id="posterior_adaptive6" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			</keyword>
-			&import_build;
-		      </keyword>
-		      <keyword  id="pce3" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
-			<oneOf>
-			  <keyword  id="sparse_grid_level_sequence6" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			  </keyword>
-			  <keyword  id="expansion_order_sequence3" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrder)}" label="Sequence of expansion orders" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <param type="INTEGERLIST" />
-			    <oneOf>
-			      <keyword  id="collocation_points_sequence6" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="INTEGERLIST" />
-			      </keyword>
-			      <keyword  id="collocation_ratio3" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-				<param type="REAL" />
-			      </keyword>
-			    </oneOf>
-			    <keyword  id="cross_validation3" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-			    </keyword>
-			    <keyword  id="posterior_adaptive7" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    &import_build;
-			  </keyword>
-			  <keyword  id="orthogonal_least_interpolation3" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
-			    <keyword  id="collocation_points_sequence7" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-			      <param type="INTEGERLIST" />
-			    </keyword>
-			    <keyword  id="posterior_adaptive8" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0" >
-			    </keyword>
-			    &import_build;
-			  </keyword>
-			</oneOf>
-		      </keyword>
-		      <keyword  id="sc2" name="sc" code="{N_mdm(type,emulatorType_SC_EMULATOR)}" label="sc" help="" minOccurs="1" >
-			<keyword  id="sparse_grid_level_sequence7" name="sparse_grid_level_sequence" code="{N_mdm(usharray,sparseGridLevel)}" label="Sequence of Smolyak sparse grid levels" help="" minOccurs="1" >
-			  <param type="INTEGERLIST" />
-			</keyword>
-		      </keyword>
-		    </oneOf>
-		    <keyword  id="use_derivatives6" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
-		  </keyword>
+		  &bayes_emulator;
 		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
 		    <param type="OUTPUT_FILE" />

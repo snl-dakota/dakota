@@ -210,72 +210,46 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   switch (emulatorType) {
 
-  // case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
-  //   mcmcModelHasSurrogate = true;
-  //   const UShortArray& level_seq
-  //     = probDescDB.get_usa("method.nond.sparse_grid_level");
-  //   const RealVector& dim_pref
-  //     = probDescDB.get_rv("method.nond.dimension_preference"); // not exposed
-  //   bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
-  //   NonDExpansion* se_rep;
-  //   if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
-  //     se_rep = new NonDStochCollocation(inbound_model,
-  // 	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
-  // 	false, derivs);
-  //     mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
-  //   }
-  //   else {
-  //     if (!level_seq.empty()) // PCE with spectral projection via sparse grid
-  // 	se_rep = new NonDPolynomialChaos(inbound_model,
-  // 	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
-  // 	  false, false);
-  //     else { 
-  //       // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-  // 	const UShortArray& exp_order_seq
-  // 	  = probDescDB.get_usa("method.nond.expansion_order");
-  // 	short exp_coeffs_approach = (exp_order_seq.empty()) ?
-  // 	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
-  // 	se_rep = new NonDPolynomialChaos(inbound_model,
-  // 	  exp_coeffs_approach, exp_order_seq, dim_pref,
-  // 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
-  // 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-  // 	  randomSeed, EXTENDED_U, false, derivs,	
-  // 	  probDescDB.get_bool("method.nond.cross_validation"),
-  // 	  probDescDB.get_string("method.import_build_points_file"),
-  // 	  probDescDB.get_ushort("method.import_build_format"),
-  // 	  probDescDB.get_bool("method.import_build_active_only"));
-  //     }
-  //     mcmcDerivOrder = 7; // Hessian computations implemented for PCE
-  //   }
-  //   stochExpIterator.assign_rep(se_rep, false);
-  //   // no CDF or PDF level mappings
-  //   RealVectorArray empty_rv_array; // empty
-  //   se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
-  //     empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
-  //   // extract NonDExpansion's uSpaceModel for use in likelihood evals
-  //   mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
-  //   natafTransform = se_rep->variable_transformation();   // shared rep
-  //   break;
-  // }
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     mcmcModelHasSurrogate = true;
-    unsigned short ssg_level
-      = probDescDB.get_ushort("method.nond.sparse_grid_level");
     const RealVector& dim_pref
-      = probDescDB.get_rv("method.nond.dimension_preference");    // not exposed
-    bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
+      = probDescDB.get_rv("method.nond.dimension_preference");
     NonDExpansion* se_rep;
+
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
-      se_rep = new NonDStochCollocation(inbound_model,
-	Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
-	false, derivs);
+      unsigned short ssg_level
+	= probDescDB.get_ushort("method.nond.sparse_grid_level");
+      unsigned short tpq_order
+	= probDescDB.get_ushort("method.nond.quadrature_order");
+      bool derivs = probDescDB.get_bool("method.derivative_usage");
+      if (ssg_level != USHRT_MAX)
+	se_rep = new NonDStochCollocation(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
+	  false, derivs);
+      else if (tpq_order != USHRT_MAX)
+	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
+	  tpq_order, dim_pref, EXTENDED_U, false, derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
-    else {
+
+    else if (emulatorType == PCE_EMULATOR) {
+      unsigned short ssg_level
+	= probDescDB.get_ushort("method.nond.sparse_grid_level");
+      unsigned short tpq_order
+	= probDescDB.get_ushort("method.nond.quadrature_order");
+      unsigned short cub_int
+	= probDescDB.get_ushort("method.nond.cubature_integrand");
       if (ssg_level != USHRT_MAX) // PCE w/ spectral projection via sparse grid
 	se_rep = new NonDPolynomialChaos(inbound_model,
 	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
 	  false, false);
+      else if (tpq_order != USHRT_MAX)
+	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
+	  tpq_order, dim_pref, EXTENDED_U, false, false);
+      else if (cub_int != USHRT_MAX)
+	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
+	  cub_int, dim_pref, EXTENDED_U, false, false);
       else { 
         // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
 	unsigned short exp_order
@@ -294,6 +268,72 @@ void NonDBayesCalibration::construct_mcmc_model()
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
+
+    else if (emulatorType == MF_SC_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= probDescDB.get_usa("method.nond.sparse_grid_level");
+      const UShortArray& tpq_order_seq
+	= probDescDB.get_usa("method.nond.quadrature_order");
+      bool derivs = probDescDB.get_bool("method.derivative_usage");
+      if (!ssg_level_seq.empty())
+	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, EXTENDED_U,
+	  false, derivs);
+      else if (!tpq_order_seq.empty())
+	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, EXTENDED_U, false,derivs);
+      mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
+    }
+
+    else if (emulatorType == MF_PCE_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= probDescDB.get_usa("method.nond.sparse_grid_level");
+      const UShortArray& tpq_order_seq
+	= probDescDB.get_usa("method.nond.quadrature_order");
+      if (!ssg_level_seq.empty())
+	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	  false, false);
+      else if (!tpq_order_seq.empty())
+	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, EXTENDED_U, false, false);
+      else {
+        // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
+	const UShortArray& exp_order_seq
+	  = probDescDB.get_usa("method.nond.expansion_order");
+	short exp_coeffs_approach = (exp_order_seq.empty()) ?
+	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+	SizetArray pilot; // empty for MF PCE
+	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	  exp_coeffs_approach, exp_order_seq, dim_pref,
+	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	  pilot, randomSeed, EXTENDED_U, false, derivs,	
+	  probDescDB.get_bool("method.nond.cross_validation"),
+	  probDescDB.get_string("method.import_build_points_file"),
+	  probDescDB.get_ushort("method.import_build_format"),
+	  probDescDB.get_bool("method.import_build_active_only"));
+      }
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
+    else if (emulatorType == ML_PCE_EMULATOR) {
+      const UShortArray& exp_order_seq
+	= probDescDB.get_usa("method.nond.expansion_order");
+      short exp_coeffs_approach = (exp_order_seq.empty()) ?
+	Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+      se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	exp_coeffs_approach, exp_order_seq, dim_pref,
+	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed, EXTENDED_U,
+	false, derivs, probDescDB.get_bool("method.nond.cross_validation"),
+	probDescDB.get_string("method.import_build_points_file"),
+	probDescDB.get_ushort("method.import_build_format"),
+	probDescDB.get_bool("method.import_build_active_only"));
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
     stochExpIterator.assign_rep(se_rep, false);
     // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
