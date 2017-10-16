@@ -470,6 +470,16 @@
 				</keyword>'
       >
 
+    <!ENTITY core_pce_expansion_order
+      '			      &expansion_dim_pref;
+			      &pce_basis_type;
+			      <oneOf>
+				&pce_regression;
+				&pce_expansion_samples;
+			      </oneOf>
+			      &import_build;'
+      >
+
     <!ENTITY pce_expansion_order_sequence
       '			    <keyword  id="expansion_order_sequence" name="expansion_order_sequence" code="{N_mdm(usharray,expansionOrderSeq)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			      <param type="INTEGERLIST" />
@@ -486,14 +496,22 @@
     <!ENTITY pce_expansion_order
       '			    <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			      <param type="INTEGER" />
-			      &expansion_dim_pref;
-			      &pce_basis_type;
-			      <oneOf>
-				&pce_regression;
-				&pce_expansion_samples;
-			      </oneOf>
-			      &import_build;
+			      &core_pce_expansion_order;
 			    </keyword>'
+      >
+
+    <!ENTITY core_pce_orthog_least_interp
+      '			      <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
+				<param type="INTEGER" />
+			      </keyword>
+			      <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
+			      <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" >
+				<param type="INTEGERLIST" />
+			      </keyword>
+			      <keyword  id="reuse_points2" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+				<alias name="reuse_samples"/>
+			      </keyword>
+			      &import_build;'
       >
 
     <!ENTITY pce_orthog_least_interp_sequence
@@ -518,17 +536,7 @@
       '			    <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
 			      <alias name="least_interpolation"/>
 			      <alias name="oli"/>
-			      <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help=""  >
-				<param type="INTEGER" />
-			      </keyword>
-			      <!-- [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] -->
-			      <keyword  id="tensor_grid1" name="tensor_grid" code="{N_mdm(usharray,tensorGridOrder)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" >
-				<param type="INTEGERLIST" />
-			      </keyword>
-			      <keyword  id="reuse_points2" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
-				<alias name="reuse_samples"/>
-			      </keyword>
-			      &import_build;
+			      &core_pce_orthog_least_interp;
 			    </keyword>'
       >
 
@@ -629,22 +637,31 @@
 		      <keyword  id="use_derivatives2" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative enhancement flag" help="MethodCommands.html#MethodNonDSC" minOccurs="0" default="use function values only" />'
       >
 
+    <!ENTITY bayes_pce_expansion_order
+      '			    <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <param type="INTEGER" />
+			      &core_pce_expansion_order;
+			      <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    </keyword>'
+      >
+
+    <!ENTITY bayes_pce_orthog_least_interp
+      '			    <keyword  id="orthogonal_least_interpolation" name="orthogonal_least_interpolation" code="{N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}" label="Orthogonal Least Interpolation (OLI)" help="MethodCommands.html#MethodNonDPCE" minOccurs="1" >
+			      <alias name="least_interpolation"/>
+			      <alias name="oli"/>
+			      &core_pce_orthog_least_interp;
+			      <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
+			    </keyword>'
+      >
+
     <!ENTITY bayes_pce
       '		      <keyword  id="pce" name="pce" code="{N_mdm(type,emulatorType_PCE_EMULATOR)}" label="pce" help="" minOccurs="1" >
 			<oneOf>
 			  &expansion_quadrature;
 			  &pce_sparse_grid;
 			  &pce_cubature;
-			  <required>
-			    &pce_expansion_order;
-			    <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			    &import_build;
-			  </required>
-			  <required>
-			    &pce_orthog_least_interp;
-			    <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/>
-			    &import_build;
-			  </required>
+			  &bayes_pce_expansion_order;
+			  &bayes_pce_orthog_least_interp;
 			</oneOf>
 		      </keyword>'
       >
@@ -657,7 +674,6 @@
 			</oneOf>
 			&ml_pilot_samples;
 			<!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
-			<!-- &import_build; -->
 		      </keyword>'
       >
 
@@ -669,12 +685,10 @@
 			  <!-- <required> -->
 			    &pce_expansion_order_sequence;
 			    <!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
-			    <!-- &import_build; -->
 			  <!-- </required> -->
 			  <!-- <required> -->
 			    &pce_orthog_least_interp_sequence;
 			    <!-- <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
-			    <!-- &import_build; -->
 			  <!-- </required> -->
 			</oneOf>
 		      </keyword>'
