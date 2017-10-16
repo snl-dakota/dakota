@@ -152,10 +152,10 @@ public:
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
-  void compute_moments();
+  void compute_moments(bool full_stats = true);
   /// compute moments in all-variables mode up to the order supported
   /// by the Pecos polynomial approximation
-  void compute_moments(const Pecos::RealVector& x);
+  void compute_moments(const Pecos::RealVector& x, bool full_stats = true);
   /// return virtual Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
   /// return Pecos::PolynomialApproximation::expansionMoments
@@ -393,12 +393,13 @@ delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
 { return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
 
 
-inline void PecosApproximation::compute_moments()
-{ polyApproxRep->compute_moments(); }
+inline void PecosApproximation::compute_moments(bool full_stats)
+{ polyApproxRep->compute_moments(full_stats); }
 
 
-inline void PecosApproximation::compute_moments(const Pecos::RealVector& x)
-{ polyApproxRep->compute_moments(x); }
+inline void PecosApproximation::
+compute_moments(const Pecos::RealVector& x, bool full_stats)
+{ polyApproxRep->compute_moments(x, full_stats); }
 
 
 inline const RealVector& PecosApproximation::moments() const

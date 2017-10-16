@@ -1656,7 +1656,7 @@ void NonDExpansion::compute_analytic_statistics(bool full_stats)
     // If not full stats, suppress secondary moment calculations.
     if (poly_approx_rep->expansion_coefficient_flag()) {
       if (all_vars) poly_approx_rep->compute_moments(initialPtU, full_stats);
-      else          poly_approx_rep->compute_moments(full_stats));
+      else          poly_approx_rep->compute_moments(full_stats);
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       mu = moments[0]; var = moments[1]; // Pecos provides central moments

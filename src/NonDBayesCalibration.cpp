@@ -17,13 +17,12 @@
 #include "DataFitSurrModel.hpp"
 #include "RecastModel.hpp"
 #include "DataTransformModel.hpp"
-#include "NonDPolynomialChaos.hpp"
-#include "NonDStochCollocation.hpp"
+#include "NonDMultilevelPolynomialChaos.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random.hpp"
@@ -260,7 +259,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeffs_approach, exp_order, dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  randomSeed, EXTENDED_U, false, derivs,	
+	  randomSeed, EXTENDED_U, false,
+	  probDescDB.get_bool("method.derivative_usage"),	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -292,7 +292,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_usa("method.nond.quadrature_order");
       if (!ssg_level_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, EXTENDED_U,
 	  false, false);
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
@@ -308,7 +308,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeffs_approach, exp_order_seq, dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  pilot, randomSeed, EXTENDED_U, false, derivs,	
+	  pilot, randomSeed, EXTENDED_U, false,
+	  probDescDB.get_bool("method.derivative_usage"),	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -327,7 +328,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
 	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed, EXTENDED_U,
-	false, derivs, probDescDB.get_bool("method.nond.cross_validation"),
+	false, probDescDB.get_bool("method.derivative_usage"),
+	probDescDB.get_bool("method.nond.cross_validation"),
 	probDescDB.get_string("method.import_build_points_file"),
 	probDescDB.get_ushort("method.import_build_format"),
 	probDescDB.get_bool("method.import_build_active_only"));
