@@ -326,9 +326,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // For now this requires that the target vector, eg init_point, be allocated properly.
   get_variables<HOPSPACK::Vector>(iteratedModel, init_point);
 
-  bool setScales = !get_bounds<AppsTraits>
-                    (iteratedModel, bigRealBoundSize, bigIntBoundSize, 
-                     lower, upper);
+  bool setScales = !get_variable_bounds_from_dakota<AppsTraits>( lower, upper );
 
   problemParams->setParameter("Number Unknowns", (int) numTotalVars);
   problemParams->setParameter("Variable Types", variable_types);
@@ -353,12 +351,12 @@ void APPSOptimizer::initialize_variables_and_constraints()
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
   // Need to make pre-allocation requirement consistent, eg vectors are allocated, matrices are not
-  configure_linear_constraints_and_bounds<AppsTraits>
-                ( lin_ineq_lower_bnds,
-                  lin_ineq_upper_bnds,
-                  lin_eq_targets,
-                  lin_ineq_coeffs,
-                  lin_eq_coeffs);
+  get_linear_constraints_and_bounds<AppsTraits>(
+                                        lin_ineq_lower_bnds,
+                                        lin_ineq_upper_bnds,
+                                        lin_eq_targets,
+                                        lin_ineq_coeffs,
+                                        lin_eq_coeffs);
 
   linearParams->setParameter("Inequality Matrix", lin_ineq_coeffs);
   linearParams->setParameter("Inequality Lower", lin_ineq_lower_bnds);

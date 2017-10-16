@@ -21,6 +21,165 @@ namespace Dakota {
 
 
 /*----------------------------------------------------------------
+   Adapter for copying continuous variables data from Dakota RealVector
+   into TPL vectors
+  ---------------------------------------------------------------*/
+
+template <typename VecT>
+bool get_bounds( const RealVector  & lower_source,
+                 const RealVector  & upper_source,
+                       Real          big_real_bound_size,
+                       Real          no_value,
+                       VecT        & lower_target,
+                       VecT        & upper_target )
+{
+  bool allSet = true;
+
+  int len = lower_source.length();
+  for (int i=0; i<len; i++) {
+    if (lower_source[i] > -big_real_bound_size)
+      lower_target[i] = lower_source[i];
+    else {
+      lower_target[i] = no_value;
+      allSet = false;
+    }
+    if (upper_source[i] < big_real_bound_size)
+      upper_target[i] = upper_source[i];
+    else {
+      upper_target[i] = no_value;
+      allSet = false;
+    }
+  }
+
+  return allSet;
+}
+
+/*----------------------------------------------------------------
+   Adapter originating from (and somewhat specialized based on)
+   APPSOptimizer for copying discrete variables from a set-based Dakota
+   container into TPL vectors
+  ---------------------------------------------------------------*/
+
+template <typename SetT, typename VecT>
+void get_bounds( const SetT & source_set,
+                       VecT & lower_target,
+                       VecT & upper_target,
+                       int    target_offset = 0)
+{
+  for (size_t i=0; i<source_set.size(); ++i) {
+    lower_target[i+target_offset] = 0;
+    upper_target[i+target_offset] = source_set[i].size() - 1;
+  }
+}
+
+/*----------------------------------------------------------------
+   Adapter originating from (and somewhat specialized based on)
+   APPSOptimizer for copying discrete integer variables data
+   with bit masking from Dakota into TPL vectors
+  ---------------------------------------------------------------*/
+
+template <typename OrdinalType, typename ScalarType, typename VectorType2, typename MaskType, typename SetArray>
+bool get_mixed_bounds( const MaskType& mask_set,
+                       const SetArray& source_set,
+                       const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& lower_source,
+                       const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& upper_source,
+                       VectorType2& lower_target,
+                       VectorType2& upper_target,
+                       ScalarType bigBoundSize,
+                       ScalarType no_value,
+                       int target_offset = 0)
+{
+  bool allSet = true;
+  size_t i, set_cntr, len = lower_source.length();
+
+  for(i=0, set_cntr=0; i<len; ++i)
+  {
+    if (mask_set[i]) {
+      lower_target[i+target_offset] = 0;
+      upper_target[i+target_offset] = source_set[set_cntr].size() - 1;
+      ++set_cntr;
+    }
+    else 
+    {
+      if (lower_source[i] > -bigBoundSize)
+        lower_target[i+target_offset] = lower_source[i];
+      else
+      {
+        lower_target[i] = no_value;
+        allSet = false;
+      }
+      if (upper_source[i] < bigBoundSize)
+        upper_target[i+target_offset] = upper_source[i];
+      else
+      {
+        upper_target[i] = no_value;
+        allSet = false;
+      }
+    }
+  }
+
+  return allSet;
+}
+
+/*----------------------------------------------------------------
+   Adapter originating from (and somewhat specialized based on)
+   APPSOptimizer for copying heterogeneous bounded data from 
+   Dakota::Variables into concatenated TPL vectors
+  ---------------------------------------------------------------*/
+
+template <typename AdapterT>
+bool get_variable_bounds( Model &                   model, // would like to make const but cannot due to discrete_int_sets below
+                          Real                      big_real_bound_size,
+                          int                       big_int_bound_size,
+                          typename AdapterT::VecT & lower,
+                          typename AdapterT::VecT & upper)
+{
+  const RealVector& lower_bnds_cont = model.continuous_lower_bounds();
+  const RealVector& upper_bnds_cont = model.continuous_upper_bounds();
+
+  const IntVector& lower_bnds_int = model.discrete_int_lower_bounds();
+  const IntVector& upper_bnds_int = model.discrete_int_upper_bounds();
+
+  const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
+  const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
+
+  const BitArray& int_set_bits = model.discrete_int_sets(); // appears to be able to modify the model object ...
+  const IntSetArray& init_pt_set_int = model.discrete_set_int_values();
+  const RealSetArray& init_pt_set_real = model.discrete_set_real_values();
+  const StringSetArray& init_pt_set_string = model.discrete_set_string_values();
+
+  // Sanity checks ?
+
+  bool allSet = get_bounds(lower_bnds_cont,
+                           upper_bnds_cont,
+                           big_real_bound_size,
+                           AdapterT::noValue(),
+                           lower,
+                           upper);
+
+  int offset = model.cv();
+  allSet = allSet && 
+           get_mixed_bounds( 
+                   int_set_bits,
+                   init_pt_set_int,
+                   lower_bnds_int,
+                   upper_bnds_int,
+                   lower,
+                   upper,
+                   big_int_bound_size,
+                   (int)AdapterT::noValue(),
+                   offset);
+
+  offset += model.div();
+  get_bounds(init_pt_set_real, lower, upper, offset);
+
+  offset += model.drv();
+  get_bounds(init_pt_set_string, lower, upper, offset);
+
+  return allSet;
+}
+
+/*----------------------------------------------------------------
    Adapter for configuring inequality constraint maps used when
    transferring data between Dakota and a TPL
   ---------------------------------------------------------------*/
@@ -108,40 +267,6 @@ void configure_equality_constraint_maps(
 }
 
 /*----------------------------------------------------------------
-   Utility based on APPSOptimizer for getting bounds data
-
-  ---------------------------------------------------------------*/
-
-template <typename VecT>
-bool get_bounds( const RealVector  & lower_source,
-                 const RealVector  & upper_source,
-                       Real          big_real_bound_size,
-                       Real          no_value,
-                       VecT        & lower_target,
-                       VecT        & upper_target )
-{
-  bool allSet = true;
-
-  int len = lower_source.length();
-  for (int i=0; i<len; i++) {
-    if (lower_source[i] > -big_real_bound_size)
-      lower_target[i] = lower_source[i];
-    else {
-      lower_target[i] = no_value;
-      allSet = false;
-    }
-    if (upper_source[i] < big_real_bound_size)
-      upper_target[i] = upper_source[i];
-    else {
-      upper_target[i] = no_value;
-      allSet = false;
-    }
-  }
-
-  return allSet;
-}
-
-/*----------------------------------------------------------------
    Adapter based initially on APPSOptimizer for linear constraint
    maps and including matrix and bounds data;
        * bundles a few steps together which could (should?) be broken
@@ -163,9 +288,9 @@ void get_linear_constraints( Model & model,
   const RealMatrix& linear_eq_coeffs       = model.linear_eq_constraint_coeffs();
   const RealVector& linear_eq_targets      = model.linear_eq_constraint_targets();
 
-  // These are special cases involving Matrices which gets delegated to the adapter for now
-  AdapterT::copy_data(linear_ineq_coeffs, lin_ineq_coeffs);
-  AdapterT::copy_data(linear_eq_coeffs, lin_eq_coeffs);
+  // These are special cases involving matrices which get delegated to the adapter for now
+  AdapterT::copy_matrix_data(linear_ineq_coeffs, lin_ineq_coeffs);
+  AdapterT::copy_matrix_data(linear_eq_coeffs,   lin_eq_coeffs);
 
   get_bounds(linear_ineq_lower_bnds,
              linear_ineq_upper_bnds,
@@ -197,6 +322,20 @@ public:
 
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
+
+  /// Adapter for transferring variable bounds from Dakota data to TPL data
+  template <typename AdapterT>
+    bool get_variable_bounds_from_dakota(
+        typename AdapterT::VecT & lower,
+        typename AdapterT::VecT & upper)
+    {
+      return get_variable_bounds<AdapterT>(
+                            iteratedModel,
+                            bigRealBoundSize,
+                            bigIntBoundSize,
+                            lower,
+                            upper);
+    }
 
   /// Adapter for transferring responses from Dakota data to TPL data
   template <typename VecT>
@@ -326,7 +465,7 @@ protected:
 //----------------------------------------------------------------
 
   template <typename AdapterT>
-  void configure_linear_constraints_and_bounds(
+  void get_linear_constraints_and_bounds(
           typename AdapterT::VecT & lin_ineq_lower_bnds,
           typename AdapterT::VecT & lin_ineq_upper_bnds,
           typename AdapterT::VecT & lin_eq_targets,
@@ -599,65 +738,6 @@ void get_variables( Model & model,
 
 //----------------------------------------------------------------
 
-template <typename OrdinalType, typename ScalarType, typename VectorType2, typename MaskType, typename SetArray>
-bool get_mixed_bounds( const MaskType& mask_set,
-                       const SetArray& source_set,
-                       const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& lower_source,
-                       const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& upper_source,
-                       VectorType2& lower_target,
-                       VectorType2& upper_target,
-                       ScalarType bigBoundSize,
-                       ScalarType no_value,
-                       int target_offset = 0)
-{
-  bool allSet = true;
-  size_t i, set_cntr, len = lower_source.length();
-
-  for(i=0, set_cntr=0; i<len; ++i)
-  {
-    if (mask_set[i]) {
-      lower_target[i+target_offset] = 0;
-      upper_target[i+target_offset] = source_set[set_cntr].size() - 1;
-      ++set_cntr;
-    }
-    else 
-    {
-      if (lower_source[i] > -bigBoundSize)
-        lower_target[i+target_offset] = lower_source[i];
-      else
-      {
-        lower_target[i] = no_value;
-        allSet = false;
-      }
-      if (upper_source[i] < bigBoundSize)
-        upper_target[i+target_offset] = upper_source[i];
-      else
-      {
-        upper_target[i] = no_value;
-        allSet = false;
-      }
-    }
-  }
-
-  return allSet;
-}
-
-//----------------------------------------------------------------
-
-template <typename SetArray, typename VectorType>
-void get_bounds( const SetArray& source_set,
-                       VectorType& lower_target,
-                       VectorType& upper_target,
-                       int target_offset = 0)
-{
-  for (size_t i=0; i<source_set.size(); ++i) {
-    lower_target[i+target_offset] = 0;
-    upper_target[i+target_offset] = source_set[i].size() - 1;
-  }
-}
-
-//----------------------------------------------------------------
-
 /// Data adapter to transfer data from Dakota to third-party opt packages
 template <typename vectorType>
 void get_responses( const Model & model,
@@ -688,54 +768,6 @@ void get_responses( const Model & model,
     cIneqs_vec[i] = constraint_map_offsets[i+num_nl_eq_constr] +
       constraint_map_multipliers[i+num_nl_eq_constr] * 
       dak_fn_vals[constraint_map_indices[i+num_nl_eq_constr]+1];
-}
-
-//----------------------------------------------------------------
-
-/// copy the various pieces comprising bounds on Dakota::Variables into concatenated TPL vectors
-template <typename AdapterT>
-bool get_bounds( Model & model,
-                 Real big_real_bound_size, // It would be nice to clean this up and not need to pass in
-                 int big_int_bound_size, // It would be nice to clean this up and not need to pass in
-                 typename AdapterT::VecT & lower,
-                 typename AdapterT::VecT & upper)
-{
-  const RealVector& lower_bnds_cont = model.continuous_lower_bounds();
-  const RealVector& upper_bnds_cont = model.continuous_upper_bounds();
-
-  const IntVector& lower_bnds_int = model.discrete_int_lower_bounds();
-  const IntVector& upper_bnds_int = model.discrete_int_upper_bounds();
-
-  const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
-  const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
-
-  const BitArray& int_set_bits = model.discrete_int_sets();
-  const IntSetArray& init_pt_set_int = model.discrete_set_int_values();
-  const RealSetArray& init_pt_set_real = model.discrete_set_real_values();
-  const StringSetArray& init_pt_set_string = model.discrete_set_string_values();
-
-  // Sanity checks ?
-
-  bool allSet = get_bounds(lower_bnds_cont,
-                           upper_bnds_cont,
-                           big_real_bound_size,
-                           AdapterT::noValue(),
-                           lower,
-                           upper);
-
-  int offset = model.cv();
-  allSet = allSet && 
-              get_mixed_bounds
-                (int_set_bits, init_pt_set_int, lower_bnds_int, upper_bnds_int, 
-                 lower, upper, big_int_bound_size, (int)AdapterT::noValue(), offset);
-
-  offset += model.div();
-  get_bounds(init_pt_set_real, lower, upper, offset);
-
-  offset += model.drv();
-  get_bounds(init_pt_set_string, lower, upper, offset);
-
-  return allSet;
 }
 
 //----------------------------------------------------------------

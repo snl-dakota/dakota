@@ -71,7 +71,7 @@ class AppsTraits: public TraitsBase
   // Allows Dakota to use a single call that gets redirected to a unique Optimizer
   static double getBestObj(const OptT &);
 
-  static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
+  static void copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target);
 
   /// destructor
   virtual ~AppsTraits();
@@ -115,7 +115,7 @@ inline double AppsTraits::noValue()
 { return HOPSPACK::dne(); }
 
 
-inline void AppsTraits::copy_data(const RealMatrix& source, HOPSPACK::Matrix& target)
+inline void AppsTraits::copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target)
 {
   HOPSPACK::Vector tmp_vector;
   for (int i=0; i<source.numRows(); ++i) {
