@@ -663,6 +663,7 @@
 			  &bayes_pce_expansion_order;
 			  &bayes_pce_orthog_least_interp;
 			</oneOf>
+			&pce_options;
 		      </keyword>'
       >
 
@@ -672,6 +673,7 @@
 			  &pce_expansion_order_sequence;
 			  &pce_orthog_least_interp_sequence;
 			</oneOf>
+			&pce_options;
 			&ml_pilot_samples;
 			<!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
 		      </keyword>'
@@ -691,6 +693,7 @@
 			    <!-- <keyword  id="posterior_adaptive2" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive" help="" minOccurs="0"/> -->
 			  <!-- </required> -->
 			</oneOf>
+			&pce_options;
 		      </keyword>'
       >
 
@@ -700,6 +703,7 @@
 			  &expansion_quadrature;
 			  &sc_sparse_grid;
 			</oneOf>
+			&sc_options;
 		      </keyword>'
       >
 
@@ -709,6 +713,7 @@
 			  &expansion_quadrature_sequence;
 			  &sc_sparse_grid_sequence;
 			</oneOf>
+			&sc_options;
 		      </keyword>'
       >
 
@@ -733,7 +738,6 @@
 		      &bayes_sc;
 		      &bayes_mf_sc;
 		    </oneOf>
-		    <keyword  id="use_derivatives5" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
 		  </keyword>'
       >
 

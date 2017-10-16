@@ -2230,6 +2230,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -2330,6 +2337,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
             [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
            )
           |
@@ -2454,6 +2468,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -2484,6 +2505,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
           |
           ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
@@ -2514,8 +2543,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
-          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ logit_transform {N_mdm(true,logitTransform)} ]
@@ -2803,6 +2839,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -2903,6 +2946,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
             [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
            )
           |
@@ -3027,6 +3077,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -3057,6 +3114,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
           |
           ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
@@ -3087,8 +3152,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
-          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         ( data_distribution {0}
@@ -3276,6 +3348,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                ]
               [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( ml_pce {N_mdm(type,emulatorType_ML_PCE_EMULATOR)}
@@ -3376,6 +3455,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
             [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
            )
           |
@@ -3500,6 +3586,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ active_only {N_mdm(true,importBuildActive)} ]
                ]
              )
+            [ 
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ normalized {N_mdm(true,normalizedCoeffs)} ]
+            [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
            )
           |
           ( sc {N_mdm(type,emulatorType_SC_EMULATOR)}
@@ -3530,6 +3623,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
           |
           ( mf_sc {N_mdm(type,emulatorType_MF_SC_EMULATOR)}
@@ -3560,8 +3661,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
                ]
              )
+            [ 
+              piecewise {NIDRProblemDescDB::method_piecewise}
+              |
+              askey {N_mdm(type,expansionType_ASKEY_U)}
+              |
+              wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+             ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
            )
-          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
          ]
         [ standardized_space {N_mdm(true,standardizedSpace)} ]
         [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
