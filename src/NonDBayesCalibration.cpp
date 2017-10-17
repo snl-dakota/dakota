@@ -212,6 +212,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     mcmcModelHasSurrogate = true;
+    short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref
       = probDescDB.get_rv("method.nond.dimension_preference");
     NonDExpansion* se_rep;
@@ -221,14 +222,16 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
       unsigned short tpq_order
 	= probDescDB.get_ushort("method.nond.quadrature_order");
-      bool derivs = probDescDB.get_bool("method.derivative_usage");
       if (ssg_level != USHRT_MAX)
 	se_rep = new NonDStochCollocation(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
-	  false, derivs);
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, EXTENDED_U, false, derivs);
+	  tpq_order, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -241,25 +244,21 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
       if (ssg_level != USHRT_MAX) // PCE w/ spectral projection via sparse grid
 	se_rep = new NonDPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, EXTENDED_U,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
 	  false, false);
       else if (tpq_order != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
-	  tpq_order, dim_pref, EXTENDED_U, false, false);
+	  tpq_order, dim_pref, u_space_type, false, false);
       else if (cub_int != USHRT_MAX)
 	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
-	  cub_int, dim_pref, EXTENDED_U, false, false);
-      else { 
-        // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-	unsigned short exp_order
-	  = probDescDB.get_ushort("method.nond.expansion_order");
-	short exp_coeffs_approach = (exp_order == USHRT_MAX) ?
-	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+	  cub_int, dim_pref, u_space_type, false, false);
+      else { // regression PCE: LeastSq/CS, OLI
 	se_rep = new NonDPolynomialChaos(inbound_model,
-	  exp_coeffs_approach, exp_order, dim_pref,
+	  probDescDB.get_short("method.nond.regression_type"), 
+	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  randomSeed, EXTENDED_U, false,
+	  randomSeed, u_space_type, false,
 	  probDescDB.get_bool("method.derivative_usage"),	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
@@ -277,11 +276,14 @@ void NonDBayesCalibration::construct_mcmc_model()
       bool derivs = probDescDB.get_bool("method.derivative_usage");
       if (!ssg_level_seq.empty())
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, EXTENDED_U,
-	  false, derivs);
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelStochCollocation(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, EXTENDED_U, false,derivs);
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
 
@@ -292,23 +294,19 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_usa("method.nond.quadrature_order");
       if (!ssg_level_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, EXTENDED_U,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
 	  false, false);
       else if (!tpq_order_seq.empty())
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, EXTENDED_U, false, false);
-      else {
-        // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-	const UShortArray& exp_order_seq
-	  = probDescDB.get_usa("method.nond.expansion_order");
-	short exp_coeffs_approach = (exp_order_seq.empty()) ?
-	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,false,false);
+      else { // regression PCE: LeastSq/CS, OLI
 	SizetArray pilot; // empty for MF PCE
 	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	  exp_coeffs_approach, exp_order_seq, dim_pref,
+	  probDescDB.get_short("method.nond.regression_type"), 
+	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  pilot, randomSeed, EXTENDED_U, false,
+	  pilot, randomSeed, u_space_type, false,
 	  probDescDB.get_bool("method.derivative_usage"),	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
@@ -319,16 +317,13 @@ void NonDBayesCalibration::construct_mcmc_model()
     }
 
     else if (emulatorType == ML_PCE_EMULATOR) {
-      const UShortArray& exp_order_seq
-	= probDescDB.get_usa("method.nond.expansion_order");
-      short exp_coeffs_approach = (exp_order_seq.empty()) ?
-	Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
       se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	exp_coeffs_approach, exp_order_seq, dim_pref,
+	probDescDB.get_short("method.nond.regression_type"),
+	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed, EXTENDED_U,
-	false, probDescDB.get_bool("method.derivative_usage"),
+	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed,
+	u_space_type, false, probDescDB.get_bool("method.derivative_usage"),
 	probDescDB.get_bool("method.nond.cross_validation"),
 	probDescDB.get_string("method.import_build_points_file"),
 	probDescDB.get_ushort("method.import_build_format"),
