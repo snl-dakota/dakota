@@ -66,34 +66,32 @@
         </optional>"
     >
     <!ENTITY model_full_surfpack_export_format
-        "<optional>
-	      <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'/>
-          <optional>
-		    <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
-              <param type='STRING' />
-            </keyword>
-          </optional>
-		  <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
-		    <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text Archive' maxOccurs='1' minOccurs='0' />
-		    <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary Archive' maxOccurs='1' minOccurs='0'  />
-		    <keyword id='algebraic_file' name='algebraic_file' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)}' label='Algebraic File' maxOccurs='1' minOccurs='0'  />
-		    <keyword id='algebraic_console' name='algebraic_console' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)}' label='Algebraic Console' maxOccurs='1' minOccurs='0'  />
-		  </keyword>
-        </optional>"
+      "
+      <keyword  id='export_model' name='export_model' minOccurs='0' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'>
+        <keyword  id='filename_prefix' name='filename_prefix' minOccurs='0' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
+          <param type='STRING' />
+        </keyword>
+        <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
+          <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text Archive' maxOccurs='1' minOccurs='0' />
+          <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary Archive' maxOccurs='1' minOccurs='0'  />
+          <keyword id='algebraic_file' name='algebraic_file' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_FILE)}' label='Algebraic File' maxOccurs='1' minOccurs='0'  />
+          <keyword id='algebraic_console' name='algebraic_console' code='{N_mom(augment_utype,modelExportFormat_ALGEBRAIC_CONSOLE)}' label='Algebraic Console' maxOccurs='1' minOccurs='0'  />
+        </keyword>
+      </keyword>
+      "
     >
     <!ENTITY model_partial_surfpack_export_format
-        "<optional>
-	       <keyword  id='export_model' name='export_model' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'/>
-             <optional>
-		     <keyword  id='filename_prefix' name='filename_prefix' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
-                 <param type='STRING' />
-               </keyword>
-             </optional>
-		   <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
-		     <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text SPS' maxOccurs='1' minOccurs='0' />
-		     <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary SPS' maxOccurs='1' minOccurs='0'  />
-		   </keyword>
-        </optional>"
+      "
+      <keyword  id='export_model' name='export_model' minOccurs='0' maxOccurs='1' code='{N_mom(true,exportSurrogate)}' label='Export Surrogate Model' help='' complexity='1'>
+        <keyword  id='filename_prefix' name='filename_prefix' minOccurs='0' code='{N_mom(str,modelExportPrefix)}' label='Exported Surrogate Filename Prefix' help='' default='exported_surrogate' complexity='1'>
+          <param type='STRING' />
+        </keyword>
+        <keyword id='formats' name='formats' code='{0}' label='Formats' minOccurs='1' maxOccurs='1' group='Surrogate Export Formats' complexity='1'>
+          <keyword id='text_archive' name='text_archive' code='{N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)}' label='Text SPS' maxOccurs='1' minOccurs='0' />
+          <keyword id='binary_archive' name='binary_archive' code='{N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)}' label='Binary SPS' maxOccurs='1' minOccurs='0'  />
+        </keyword>
+      </keyword>
+      "
     >
     <!ENTITY default_convergence_tolerance
         "<keyword  id='convergence_tolerance' name='convergence_tolerance' code='{N_mdm(Real,convergenceTolerance)}' label='Convergence tolerance' help='MethodCommands.html#MethodIndControl' minOccurs='0' default='1.e-4' >
