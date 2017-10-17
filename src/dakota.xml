@@ -1033,130 +1033,127 @@
       <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1" >
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
+      <!-- Primary method selection alternation -->
       <oneOf>
         <!-- Begin group for concurrent iterator spec: -->
-        <required>
+        <keyword  id="hybrid" name="hybrid" code="{N_mdm(utype,methodName_HYBRID)}" label="Hybrid meta-iterator" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
           <oneOf>
-            <keyword  id="hybrid" name="hybrid" code="{N_mdm(utype,methodName_HYBRID)}" label="Hybrid meta-iterator" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+            <keyword  id="sequential" name="sequential" code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" label="Sequential hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+              <alias name="uncoupled"/>
+              <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
+                   #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
+                -->	
               <oneOf>
-                <keyword  id="sequential" name="sequential" code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" label="Sequential hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                  <alias name="uncoupled"/>
-                  <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
-                       #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
-                    -->	
-                  <oneOf>
-                    <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                      <param type="STRINGLIST" />
-                      <keyword  id="model_pointer_list" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
-                        <param type="STRING" />
-                      </keyword>
-                    </keyword>
-                    <keyword  id="method_pointer_list" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers" help="MethodCommands.html#MethodMetaHybrid"  >
-                      <param type="STRINGLIST" />
-                    </keyword>
-                  </oneOf>
-		  &method_iterator_server_scheduling;
-                </keyword>
-                <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                  <alias name="coupled"/>
-                  <oneOf>
-                    <keyword  id="global_method_name" name="global_method_name" code="{N_mdm(str,hybridGlobalMethodName)}" label="Name of the global method" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                      <param type="STRING" />
-                      <keyword  id="global_model_pointer" name="global_model_pointer" code="{N_mdm(str,hybridGlobalModelPointer)}" label="Pointer to the global model specification" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
-                        <param type="STRING" in_taglist="model" />
-                      </keyword>
-                    </keyword>
-                    <keyword  id="global_method_pointer" name="global_method_pointer" code="{N_mdm(str,hybridGlobalMethodPointer)}" label="Pointer to the global method specification" help="MethodCommands.html#MethodMetaHybrid"  >
-                      <param type="STRING" in_taglist="method" />
-                    </keyword>
-                  </oneOf>
-                  <oneOf>
-                    <keyword  id="local_method_name" name="local_method_name" code="{N_mdm(str,hybridLocalMethodName)}" label="Name of the local method" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                      <param type="STRING" />
-                      <keyword  id="local_model_pointer" name="local_model_pointer" code="{N_mdm(str,hybridLocalModelPointer)}" label="Pointer to the local model specification" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
-                        <param type="STRING" in_taglist="model" />
-                      </keyword>
-                    </keyword>
-                    <keyword  id="local_method_pointer" name="local_method_pointer" code="{N_mdm(str,hybridLocalMethodPointer)}" label="Pointer to the local method specification" help="MethodCommands.html#MethodMetaHybrid"  >
-                      <param type="STRING" in_taglist="method" />
-                    </keyword>
-                  </oneOf>
-                  <keyword  id="local_search_probability" name="local_search_probability" code="{N_mdm(Real,hybridLSProb)}" label="Probability of executing local searches" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
-                    <param type="REAL" />
+                <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+                  <param type="STRINGLIST" />
+                  <keyword  id="model_pointer_list" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
+                    <param type="STRING" />
                   </keyword>
-		  &method_iterator_server_scheduling;
                 </keyword>
-                <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                  <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
-                       #	      | hops {N_mdm(lit,hybridCollabType_hops)}
-                    -->
-                  <oneOf>
-                    <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
-                      <param type="STRINGLIST" />
-                      <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
-                        <param type="STRING" />
-                      </keyword>
-                    </keyword>
-                    <keyword  id="method_pointer_list1" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers" help="MethodCommands.html#MethodMetaHybrid"  >
-                      <param type="STRINGLIST" />
-                    </keyword>
-                  </oneOf>
-		  &method_iterator_server_scheduling;
+                <keyword  id="method_pointer_list" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers" help="MethodCommands.html#MethodMetaHybrid"  >
+                  <param type="STRINGLIST" />
                 </keyword>
               </oneOf>
+	      &method_iterator_server_scheduling;
             </keyword>
-            <keyword  id="multi_start" name="multi_start" code="{N_mdm(utype,methodName_MULTI_START)}" label="Multi-start meta-iterator" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="1" >
+            <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+              <alias name="coupled"/>
               <oneOf>
-                <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of a sub-method by name (no separate specification block)" help="MethodCommands.html#MethodMeta" minOccurs="1" >
+                <keyword  id="global_method_name" name="global_method_name" code="{N_mdm(str,hybridGlobalMethodName)}" label="Name of the global method" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                   <param type="STRING" />
-                  <keyword  id="model_pointer" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Model pointer" help="MethodCommands.html#MethodMeta" minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
+                  <keyword  id="global_model_pointer" name="global_model_pointer" code="{N_mdm(str,hybridGlobalModelPointer)}" label="Pointer to the global model specification" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
                     <param type="STRING" in_taglist="model" />
                   </keyword>
                 </keyword>
-                <keyword  id="method_pointer" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of a sub-method by pointer to a separate specification block" help="MethodCommands.html#MethodMeta"  >
+                <keyword  id="global_method_pointer" name="global_method_pointer" code="{N_mdm(str,hybridGlobalMethodPointer)}" label="Pointer to the global method specification" help="MethodCommands.html#MethodMetaHybrid"  >
                   <param type="STRING" in_taglist="method" />
                 </keyword>
               </oneOf>
-              <keyword  id="random_starts" name="random_starts" code="{N_mdm(int,concurrentRandomJobs)}" label="Number of random starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" >
-                <param type="INTEGER" />
-                <keyword  id="seed" name="seed" code="{N_mdm(int,randomSeed)}" label="Seed for random starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" default="system-generated (non-repeatable)" >
-                  <param type="INTEGER" />
+              <oneOf>
+                <keyword  id="local_method_name" name="local_method_name" code="{N_mdm(str,hybridLocalMethodName)}" label="Name of the local method" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+                  <param type="STRING" />
+                  <keyword  id="local_model_pointer" name="local_model_pointer" code="{N_mdm(str,hybridLocalModelPointer)}" label="Pointer to the local model specification" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
+                    <param type="STRING" in_taglist="model" />
+                  </keyword>
                 </keyword>
-              </keyword>
-              <keyword  id="starting_points" name="starting_points" code="{N_mdm(RealDL,concurrentParameterSets)}" label="List of user-specified starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" >
-                <param type="REALLIST" />
+                <keyword  id="local_method_pointer" name="local_method_pointer" code="{N_mdm(str,hybridLocalMethodPointer)}" label="Pointer to the local method specification" help="MethodCommands.html#MethodMetaHybrid"  >
+                  <param type="STRING" in_taglist="method" />
+                </keyword>
+              </oneOf>
+              <keyword  id="local_search_probability" name="local_search_probability" code="{N_mdm(Real,hybridLSProb)}" label="Probability of executing local searches" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
+                <param type="REAL" />
               </keyword>
 	      &method_iterator_server_scheduling;
             </keyword>
-            <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="1" >
+            <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+              <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
+                   #	      | hops {N_mdm(lit,hybridCollabType_hops)}
+                -->
               <oneOf>
-                <keyword  id="method_name1" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of sub-iterator by name" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="1" >
-                  <alias name="opt_method_name"/>
-                  <param type="STRING" />
-                  <keyword  id="model_pointer1" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Identification of model by pointer" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
-                    <alias name="opt_model_pointer"/>
-                    <param type="STRING" in_taglist="model" />
+                <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
+                  <param type="STRINGLIST" />
+                  <keyword  id="model_pointer_list1" name="model_pointer_list" code="{N_mdm(strL,hybridModelPointers)}" label="List of model pointers" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
+                    <param type="STRING" />
                   </keyword>
                 </keyword>
-                <keyword  id="method_pointer1" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of sub-iterator by pointer" help="MethodCommands.html#MethodMetaMultiStart"  >
-                  <alias name="opt_method_pointer"/>
-                  <param type="STRING" in_taglist="method" />
+                <keyword  id="method_pointer_list1" name="method_pointer_list" code="{N_mdm(strL,hybridMethodPointers)}" label="List of method pointers" help="MethodCommands.html#MethodMetaHybrid"  >
+                  <param type="STRINGLIST" />
                 </keyword>
               </oneOf>
-              <keyword  id="random_weight_sets" name="random_weight_sets" code="{N_mdm(int,concurrentRandomJobs)}" label="Number of random weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" >
-                <param type="INTEGER" />
-                <keyword  id="seed1" name="seed" code="{N_mdm(int,randomSeed)}" label="Seed for random weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" default="system-generated (non-repeatable)" >
-                  <param type="INTEGER" />
-                </keyword>
-              </keyword>
-              <keyword  id="weight_sets" name="weight_sets" code="{N_mdm(RealDL,concurrentParameterSets)}" label="List of user-specified weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" >
-                <alias name="multi_objective_weight_sets"/>
-                <param type="REALLIST" />
-              </keyword>
 	      &method_iterator_server_scheduling;
             </keyword>
           </oneOf>
-        </required>
+        </keyword>
+        <keyword  id="multi_start" name="multi_start" code="{N_mdm(utype,methodName_MULTI_START)}" label="Multi-start meta-iterator" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="1" >
+          <oneOf>
+            <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of a sub-method by name (no separate specification block)" help="MethodCommands.html#MethodMeta" minOccurs="1" >
+              <param type="STRING" />
+              <keyword  id="model_pointer" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Model pointer" help="MethodCommands.html#MethodMeta" minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
+                <param type="STRING" in_taglist="model" />
+              </keyword>
+            </keyword>
+            <keyword  id="method_pointer" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of a sub-method by pointer to a separate specification block" help="MethodCommands.html#MethodMeta"  >
+              <param type="STRING" in_taglist="method" />
+            </keyword>
+          </oneOf>
+          <keyword  id="random_starts" name="random_starts" code="{N_mdm(int,concurrentRandomJobs)}" label="Number of random starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" >
+            <param type="INTEGER" />
+            <keyword  id="seed" name="seed" code="{N_mdm(int,randomSeed)}" label="Seed for random starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" default="system-generated (non-repeatable)" >
+              <param type="INTEGER" />
+            </keyword>
+          </keyword>
+          <keyword  id="starting_points" name="starting_points" code="{N_mdm(RealDL,concurrentParameterSets)}" label="List of user-specified starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" >
+            <param type="REALLIST" />
+          </keyword>
+	  &method_iterator_server_scheduling;
+        </keyword>
+        <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="1" >
+          <oneOf>
+            <keyword  id="method_name1" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of sub-iterator by name" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="1" >
+              <alias name="opt_method_name"/>
+              <param type="STRING" />
+              <keyword  id="model_pointer1" name="model_pointer" code="{N_mdm(str,subModelPointer)}" label="Identification of model by pointer" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" default="method use of last model parsed (or use of default model if none parsed)" >
+                <alias name="opt_model_pointer"/>
+                <param type="STRING" in_taglist="model" />
+              </keyword>
+            </keyword>
+            <keyword  id="method_pointer1" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of sub-iterator by pointer" help="MethodCommands.html#MethodMetaMultiStart"  >
+              <alias name="opt_method_pointer"/>
+              <param type="STRING" in_taglist="method" />
+            </keyword>
+          </oneOf>
+          <keyword  id="random_weight_sets" name="random_weight_sets" code="{N_mdm(int,concurrentRandomJobs)}" label="Number of random weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" >
+            <param type="INTEGER" />
+            <keyword  id="seed1" name="seed" code="{N_mdm(int,randomSeed)}" label="Seed for random weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" default="system-generated (non-repeatable)" >
+              <param type="INTEGER" />
+            </keyword>
+          </keyword>
+          <keyword  id="weight_sets" name="weight_sets" code="{N_mdm(RealDL,concurrentParameterSets)}" label="List of user-specified weighting sets" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="0" >
+            <alias name="multi_objective_weight_sets"/>
+            <param type="REALLIST" />
+          </keyword>
+	  &method_iterator_server_scheduling;
+        </keyword>
 	<!--
 	    # Note: branch_and_bound and surrogate_based_{local,global} are not meta-iterators and use a Model-based
 	    # ctor chain. Therefore, they differ in their model_pointer spec from hybrid & concurrent meta-iterators

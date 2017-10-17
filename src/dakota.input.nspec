@@ -83,70 +83,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
    ]
   [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
-  ( 
-    ( hybrid {N_mdm(utype,methodName_HYBRID)}
-      ( sequential ALIAS uncoupled {N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}
-        ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-          [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
-         )
-        |
-        method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
-        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
-        [ iterator_scheduling {0}
-          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
-          |
-          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
-         ]
-        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+  ( hybrid {N_mdm(utype,methodName_HYBRID)}
+    ( sequential ALIAS uncoupled {N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}
+      ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
+        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
        )
       |
-      ( embedded ALIAS coupled {N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}
-        ( global_method_name STRING {N_mdm(str,hybridGlobalMethodName)}
-          [ global_model_pointer STRING {N_mdm(str,hybridGlobalModelPointer)} ]
-         )
-        |
-        global_method_pointer STRING {N_mdm(str,hybridGlobalMethodPointer)}
-        ( local_method_name STRING {N_mdm(str,hybridLocalMethodName)}
-          [ local_model_pointer STRING {N_mdm(str,hybridLocalModelPointer)} ]
-         )
-        |
-        local_method_pointer STRING {N_mdm(str,hybridLocalMethodPointer)}
-        [ local_search_probability REAL {N_mdm(Real,hybridLSProb)} ]
-        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
-        [ iterator_scheduling {0}
-          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
-          |
-          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
-         ]
-        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
-       )
-      |
-      ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
-        ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
-          [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
-         )
-        |
-        method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
-        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
-        [ iterator_scheduling {0}
-          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
-          |
-          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
-         ]
-        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
-       )
-     )
-    |
-    ( multi_start {N_mdm(utype,methodName_MULTI_START)}
-      ( method_name STRING {N_mdm(str,subMethodName)}
-        [ model_pointer STRING {N_mdm(str,subModelPointer)} ]
-       )
-      |
-      method_pointer STRING {N_mdm(str,subMethodPointer)}
-      [ random_starts INTEGER {N_mdm(int,concurrentRandomJobs)}
-        [ seed INTEGER {N_mdm(int,randomSeed)} ]
-       ]
-      [ starting_points REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+      method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
       [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
       [ iterator_scheduling {0}
         master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
@@ -156,16 +99,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
      )
     |
-    ( pareto_set {N_mdm(utype,methodName_PARETO_SET)}
-      ( method_name ALIAS opt_method_name STRING {N_mdm(str,subMethodName)}
-        [ model_pointer ALIAS opt_model_pointer STRING {N_mdm(str,subModelPointer)} ]
+    ( embedded ALIAS coupled {N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}
+      ( global_method_name STRING {N_mdm(str,hybridGlobalMethodName)}
+        [ global_model_pointer STRING {N_mdm(str,hybridGlobalModelPointer)} ]
        )
       |
-      method_pointer ALIAS opt_method_pointer STRING {N_mdm(str,subMethodPointer)}
-      [ random_weight_sets INTEGER {N_mdm(int,concurrentRandomJobs)}
-        [ seed INTEGER {N_mdm(int,randomSeed)} ]
-       ]
-      [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+      global_method_pointer STRING {N_mdm(str,hybridGlobalMethodPointer)}
+      ( local_method_name STRING {N_mdm(str,hybridLocalMethodName)}
+        [ local_model_pointer STRING {N_mdm(str,hybridLocalModelPointer)} ]
+       )
+      |
+      local_method_pointer STRING {N_mdm(str,hybridLocalMethodPointer)}
+      [ local_search_probability REAL {N_mdm(Real,hybridLSProb)} ]
       [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
       [ iterator_scheduling {0}
         master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
@@ -174,6 +119,59 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
      )
+    |
+    ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
+      ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
+        [ model_pointer_list STRING {N_mdm(strL,hybridModelPointers)} ]
+       )
+      |
+      method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
+      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_scheduling {0}
+        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        |
+        peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+       ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+     )
+   )
+  |
+  ( multi_start {N_mdm(utype,methodName_MULTI_START)}
+    ( method_name STRING {N_mdm(str,subMethodName)}
+      [ model_pointer STRING {N_mdm(str,subModelPointer)} ]
+     )
+    |
+    method_pointer STRING {N_mdm(str,subMethodPointer)}
+    [ random_starts INTEGER {N_mdm(int,concurrentRandomJobs)}
+      [ seed INTEGER {N_mdm(int,randomSeed)} ]
+     ]
+    [ starting_points REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+    [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+    [ iterator_scheduling {0}
+      master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+      |
+      peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+     ]
+    [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
+   )
+  |
+  ( pareto_set {N_mdm(utype,methodName_PARETO_SET)}
+    ( method_name ALIAS opt_method_name STRING {N_mdm(str,subMethodName)}
+      [ model_pointer ALIAS opt_model_pointer STRING {N_mdm(str,subModelPointer)} ]
+     )
+    |
+    method_pointer ALIAS opt_method_pointer STRING {N_mdm(str,subMethodPointer)}
+    [ random_weight_sets INTEGER {N_mdm(int,concurrentRandomJobs)}
+      [ seed INTEGER {N_mdm(int,randomSeed)} ]
+     ]
+    [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+    [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+    [ iterator_scheduling {0}
+      master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+      |
+      peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+     ]
+    [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
    )
   |
   ( branch_and_bound {N_mdm(utype,methodName_BRANCH_AND_BOUND)}
