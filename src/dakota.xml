@@ -765,6 +765,26 @@
       &default_max_function_evaluations;
       &default_scaling;"
       >
+    <!ENTITY method_iterator_server_scheduling
+      '
+      <keyword  id="iterator_servers" name="iterator_servers" code="{N_mdm(pint,iteratorServers)}" label="iterator_servers" help="" minOccurs="0" >
+        <param type="INTEGER" constraint="> 0" />
+      </keyword>
+      <keyword  id="iterator_scheduling" name="iterator_scheduling" code="{0}" label="iterator_scheduling" help="" minOccurs="0" >
+        <oneOf>
+          <keyword  id="master" name="master" code="{N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
+          <keyword  id="peer" name="peer" code="{N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
+          <!-- #	    | ( peer {0}
+               #	      	dynamic  {N_mdm(type,iteratorScheduling_PEER_DYNAMIC_SCHEDULING)}
+               #	      	| static {N_mdm(type,iteratorScheduling_PEER_STATIC_SCHEDULING)} )
+	  -->
+        </oneOf>
+      </keyword>
+      <keyword  id="processors_per_iterator" name="processors_per_iterator" code="{N_mdm(pint,procsPerIterator)}" label="processors_per_iterator" help="" minOccurs="0" >
+        <param type="INTEGER" constraint="> 0" />
+      </keyword>
+      '
+      >
     <!ENTITY numerical_gradient_options '
       <!-- # formerly required for dakota | vendor -->
       <keyword  id="method_source" name="method_source" code="{0}" label="method_source" help="" minOccurs="0" default="dakota" />
@@ -1037,6 +1057,7 @@
                       <param type="STRINGLIST" />
                     </keyword>
                   </oneOf>
+		  &method_iterator_server_scheduling;
                 </keyword>
                 <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                   <alias name="coupled"/>
@@ -1065,6 +1086,7 @@
                   <keyword  id="local_search_probability" name="local_search_probability" code="{N_mdm(Real,hybridLSProb)}" label="Probability of executing local searches" help="MethodCommands.html#MethodMetaHybrid" minOccurs="0" >
                     <param type="REAL" />
                   </keyword>
+		  &method_iterator_server_scheduling;
                 </keyword>
                 <keyword  id="collaborative" name="collaborative" code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" label="Collaborative hybrid" help="MethodCommands.html#MethodMetaHybrid" minOccurs="1" >
                   <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
@@ -1081,6 +1103,7 @@
                       <param type="STRINGLIST" />
                     </keyword>
                   </oneOf>
+		  &method_iterator_server_scheduling;
                 </keyword>
               </oneOf>
             </keyword>
@@ -1105,6 +1128,7 @@
               <keyword  id="starting_points" name="starting_points" code="{N_mdm(RealDL,concurrentParameterSets)}" label="List of user-specified starting points" help="MethodCommands.html#MethodMetaMultiStart" minOccurs="0" >
                 <param type="REALLIST" />
               </keyword>
+	      &method_iterator_server_scheduling;
             </keyword>
             <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization" help="MethodCommands.html#MethodMetaParetoSet" minOccurs="1" >
               <oneOf>
@@ -1131,24 +1155,9 @@
                 <alias name="multi_objective_weight_sets"/>
                 <param type="REALLIST" />
               </keyword>
+	      &method_iterator_server_scheduling;
             </keyword>
           </oneOf>
-          <keyword  id="iterator_servers" name="iterator_servers" code="{N_mdm(pint,iteratorServers)}" label="iterator_servers" help="" minOccurs="0" >
-            <param type="INTEGER" constraint="> 0" />
-          </keyword>
-          <keyword  id="iterator_scheduling" name="iterator_scheduling" code="{0}" label="iterator_scheduling" help="" minOccurs="0" >
-            <oneOf>
-              <keyword  id="master" name="master" code="{N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}" label="master" help=""  />
-              <keyword  id="peer" name="peer" code="{N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}" label="peer" help=""  />
-              <!-- #	    | ( peer {0}
-                   #	      	dynamic  {N_mdm(type,iteratorScheduling_PEER_DYNAMIC_SCHEDULING)}
-                   #	      	| static {N_mdm(type,iteratorScheduling_PEER_STATIC_SCHEDULING)} )
-	      -->
-            </oneOf>
-          </keyword>
-          <keyword  id="processors_per_iterator" name="processors_per_iterator" code="{N_mdm(pint,procsPerIterator)}" label="processors_per_iterator" help="" minOccurs="0" >
-            <param type="INTEGER" constraint="> 0" />
-          </keyword>
         </required>
 	<!--
 	    # Note: branch_and_bound and surrogate_based_{local,global} are not meta-iterators and use a Model-based

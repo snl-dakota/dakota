@@ -91,6 +91,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
+        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+        [ iterator_scheduling {0}
+          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+          |
+          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+         ]
+        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
        )
       |
       ( embedded ALIAS coupled {N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}
@@ -105,6 +112,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         |
         local_method_pointer STRING {N_mdm(str,hybridLocalMethodPointer)}
         [ local_search_probability REAL {N_mdm(Real,hybridLSProb)} ]
+        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+        [ iterator_scheduling {0}
+          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+          |
+          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+         ]
+        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
        )
       |
       ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
@@ -113,6 +127,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
         |
         method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
+        [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+        [ iterator_scheduling {0}
+          master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+          |
+          peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+         ]
+        [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
        )
      )
     |
@@ -126,6 +147,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ seed INTEGER {N_mdm(int,randomSeed)} ]
        ]
       [ starting_points REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_scheduling {0}
+        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        |
+        peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+       ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
      )
     |
     ( pareto_set {N_mdm(utype,methodName_PARETO_SET)}
@@ -138,14 +166,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ seed INTEGER {N_mdm(int,randomSeed)} ]
        ]
       [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
+      [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
+      [ iterator_scheduling {0}
+        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        |
+        peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
+       ]
+      [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
      )
-    [ iterator_servers INTEGER > 0 {N_mdm(pint,iteratorServers)} ]
-    [ iterator_scheduling {0}
-      master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
-      |
-      peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
-     ]
-    [ processors_per_iterator INTEGER > 0 {N_mdm(pint,procsPerIterator)} ]
    )
   |
   ( branch_and_bound {N_mdm(utype,methodName_BRANCH_AND_BOUND)}
