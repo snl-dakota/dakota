@@ -36,6 +36,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)
 {
+  assign_hierarchical_response_mode();
+
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
@@ -114,6 +116,8 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 		       exp_coeffs_approach, piecewise_basis, use_derivs),
   sequenceIndex(0)
 {
+  assign_hierarchical_response_mode();
+
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: quadOrderSeqSpec = num_int_seq; break;
   default:                 ssgLevelSeqSpec = num_int_seq; break;

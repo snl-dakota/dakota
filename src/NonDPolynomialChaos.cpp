@@ -496,8 +496,7 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
     abort_handler(METHOD_ERROR);
     return false;
   }
-  if (exp_orders.empty() &&
-      expansionCoeffsApproach != Pecos::ORTHOG_LEAST_INTERPOLATION) {
+  if (exp_orders.empty() && regress_type != Pecos::ORTHOG_LEAST_INTERPOLATION) {
     Cerr << "Warning: unsupported regression configuration in "
 	 << "NonDPolynomialChaos::config_regression()." << std::endl;
     return false;
