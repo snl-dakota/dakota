@@ -837,6 +837,14 @@
 	     '
 	     >
 
+    <!ENTITY method_ga_mutation_scale
+	     '
+             <keyword  id="mutation_scale" name="mutation_scale" code="{N_mdm(Real01,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.15" >
+               <param type="REAL" />
+             </keyword>
+	     '
+	     >
+
     <!ENTITY method_jega_common_opts
 	     '
              <keyword  id="population_size" name="population_size" code="{N_mdm(nnint,populationSize)}" label="population_size" help="" minOccurs="0" default="50" >
@@ -885,16 +893,15 @@
                <oneOf>
 		 <keyword  id="bit_random" name="bit_random" code="{N_mdm(lit,mutationType_bit_random)}" label="bit_random" help=""  />
 		 <keyword  id="replace_uniform" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
-		 <required>
-                   <oneOf>
-                     <keyword  id="offset_normal" name="offset_normal" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}" label="offset_normal" help=""  />
-                     <keyword  id="offset_cauchy" name="offset_cauchy" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
-                     <keyword  id="offset_uniform" name="offset_uniform" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}" label="offset_uniform" help=""  />
-                   </oneOf>
-                   <keyword  id="mutation_scale" name="mutation_scale" code="{N_mdm(Real01,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.15" >
-                     <param type="REAL" />
-                   </keyword>
-		 </required>
+                 <keyword  id="offset_normal" name="offset_normal" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}" label="offset_normal" help=""  >
+		   &method_ga_mutation_scale;
+		 </keyword>
+                 <keyword  id="offset_cauchy" name="offset_cauchy" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}" label="offset_cauchy" help=""  >
+		   &method_ga_mutation_scale;
+		 </keyword>
+                 <keyword  id="offset_uniform" name="offset_uniform" code="{N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}" label="offset_uniform" help=""  >
+		   &method_ga_mutation_scale;
+		 </keyword>
                </oneOf>
                <keyword  id="mutation_rate" name="mutation_rate" code="{N_mdm(litz,TYPE_DATA_mutationType_null_mutation)}" label="mutation_rate" help="" minOccurs="0" default="0.08" >
 		 <param type="REAL" />
@@ -943,6 +950,29 @@
 	       <param type="OUTPUT_FILE" />
 	       &method_export_approx_format;
 	     </keyword>
+	     '
+	     >
+
+    <!ENTITY method_reliability_opts
+	     '
+             <keyword  id="distribution2" name="distribution" code="{0}" label="distribution" help="" minOccurs="0" default="cumulative (CDF)" >
+               <oneOf>
+		 <keyword  id="cumulative2" name="cumulative" code="{N_mdm(type,distributionType_CUMULATIVE)}" label="cumulative" help=""  />
+		 <keyword  id="complementary2" name="complementary" code="{N_mdm(type,distributionType_COMPLEMENTARY)}" label="complementary" help=""  />
+               </oneOf>
+             </keyword>
+             <keyword  id="probability_levels2" name="probability_levels" code="{N_mdm(resplevs01,probabilityLevels)}" label="probability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
+               <param type="REALLIST" />
+               <keyword  id="num_probability_levels2" name="num_probability_levels" code="{N_mdm(num_resplevs,probabilityLevels)}" label="num_probability_levels" help="" minOccurs="0" default="probability_levels evenly distributed among response functions" >
+		 <param type="INTEGERLIST" />
+               </keyword>
+             </keyword>
+             <keyword  id="gen_reliability_levels2" name="gen_reliability_levels" code="{N_mdm(resplevs,genReliabilityLevels)}" label="gen_reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
+               <param type="REALLIST" />
+               <keyword  id="num_gen_reliability_levels2" name="num_gen_reliability_levels" code="{N_mdm(num_resplevs,genReliabilityLevels)}" label="num_gen_reliability_levels" help="" minOccurs="0" default="gen_reliability_levels evenly distributed among response functions" >
+		 <param type="INTEGERLIST" />
+               </keyword>
+             </keyword>
 	     '
 	     >
 
@@ -3165,159 +3195,141 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <required> <!-- Group with distribution, problev, genrellev -->
-          <oneOf>
-            <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="1" group="Uncertainty Quantification" >
-              <alias name="nond_local_reliability"/>
-              <keyword  id="mpp_search" name="mpp_search" code="{0}" label="MPP search type" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="No MPP search (MV method)" >
-                <oneOf>
-                  <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_X)}" label="x_taylor_mean" help=""  />
-                  <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_U)}" label="u_taylor_mean" help=""  />
-                  <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  >
-                  </keyword>
-                  <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  >
-                  </keyword>
-                  <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  >
-                  </keyword>
-                  <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  >
-                  </keyword>
-                  <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx" help=""  />
-                </oneOf>
-                <optional>
-                  <oneOf>
-                    <keyword  id="sqp4" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help="" default="sqp" />
-                    <keyword  id="nip3" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help="" default="sqp" />
-                  </oneOf>
-                </optional>
-                <keyword  id="integration" name="integration" code="{0}" label="Integration method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="First-order integration" >
-                  <oneOf>
-                    <keyword  id="first_order" name="first_order" code="{N_mdm(lit,reliabilityIntegration_first_order)}" label="first_order" help=""  />
-                    <keyword  id="second_order" name="second_order" code="{N_mdm(lit,reliabilityIntegration_second_order)}" label="second_order" help=""  />
-                  </oneOf>
-                  <keyword  id="probability_refinement2" name="probability_refinement" code="{0}" label="probability_refinement" help="" minOccurs="0" >
-		    <!-- TODO: consider removing this alias -->
-                    <alias name="sample_refinement"/>
-                    <oneOf>
-                      <keyword  id="import3" name="import" code="{N_mdm(utype,integrationRefine_IS)}" label="import" help=""  />
-                      <keyword  id="adapt_import3" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
-                      <keyword  id="mm_adapt_import3" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
-                    </oneOf>
-		    <!-- Old reference default; samples = 0 -->
-                    <keyword  id="refinement_samples3" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
-                      <param type="INTEGERLIST" />
-                    </keyword>
-                    <keyword  id="seed8" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="system-generated (non-repeatable)" >
-                      <param type="INTEGER" constraint="> 0" />
-                    </keyword>
-                  </keyword>
-                </keyword>
+        <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="1" group="Uncertainty Quantification" >
+          <alias name="nond_local_reliability"/>
+          <keyword  id="mpp_search" name="mpp_search" code="{0}" label="MPP search type" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="No MPP search (MV method)" >
+            <oneOf>
+              <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_X)}" label="x_taylor_mean" help=""  />
+              <keyword  id="u_taylor_mean" name="u_taylor_mean" code="{N_mdm(utype,reliabilitySearchType_AMV_U)}" label="u_taylor_mean" help=""  />
+              <keyword  id="x_taylor_mpp" name="x_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}" label="x_taylor_mpp" help=""  >
               </keyword>
-              <keyword  id="response_levels7" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
-                <param type="REALLIST" />
-                <keyword  id="num_response_levels7" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" default="response_levels evenly distributed among response functions" >
-                  <param type="INTEGERLIST" />
-                </keyword>
-                <keyword  id="compute7" name="compute" code="{0}" label="compute" help="" minOccurs="0" default="probabilities" >
-                  <oneOf>
-                    <keyword  id="probabilities7" name="probabilities" code="{N_mdm(type,responseLevelTarget_PROBABILITIES)}" label="probabilities" help=""  />
-                    <keyword  id="reliabilities1" name="reliabilities" code="{N_mdm(type,responseLevelTarget_RELIABILITIES)}" label="reliabilities" help=""  />
-                    <keyword  id="gen_reliabilities7" name="gen_reliabilities" code="{N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}" label="gen_reliabilities" help=""  />
-                  </oneOf>
-                  <keyword  id="system7" name="system" code="{0}" label="system" help="" minOccurs="0" >
-                    <oneOf>
-                      <keyword  id="series7" name="series" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}" label="series" help=""  />
-                      <keyword  id="parallel7" name="parallel" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}" label="parallel" help=""  />
-                    </oneOf>
-                  </keyword>
-                </keyword>
+              <keyword  id="u_taylor_mpp" name="u_taylor_mpp" code="{N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}" label="u_taylor_mpp" help=""  >
               </keyword>
-              <keyword  id="reliability_levels1" name="reliability_levels" code="{N_mdm(resplevs,reliabilityLevels)}" label="reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
-                <param type="REALLIST" />
-                <keyword  id="num_reliability_levels1" name="num_reliability_levels" code="{N_mdm(num_resplevs,reliabilityLevels)}" label="num_reliability_levels" help="" minOccurs="0" default="reliability_levels evenly distributed among response functions" >
-                  <param type="INTEGERLIST" />
-                </keyword>
+              <keyword  id="x_two_point" name="x_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_X)}" label="x_two_point" help=""  >
               </keyword>
-              &default_max_iterations;
-              &default_convergence_tolerance;
-	      &default_final_moments;
-            </keyword>
-            <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability" help="" minOccurs="1" group="Uncertainty Quantification" >
-              <alias name="nond_global_reliability"/>
-	      <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples" help="" minOccurs="0" default="(d+1)(d+2)/2">
-		<param type="INTEGER" />
-	      </keyword>
+              <keyword  id="u_two_point" name="u_two_point" code="{N_mdm(utype,reliabilitySearchType_TANA_U)}" label="u_two_point" help=""  >
+              </keyword>
+              <keyword  id="no_approx" name="no_approx" code="{N_mdm(utype,reliabilitySearchType_NO_APPROX)}" label="no_approx" help=""  />
+            </oneOf>
+            <optional>
               <oneOf>
-                <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_X)}" label="x_gaussian_process" help=""  >
-                  <alias name="x_kriging"/>
-                </keyword>
-                <keyword  id="u_gaussian_process" name="u_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_U)}" label="u_gaussian_process" help=""  >
-                  <alias name="u_kriging"/>
-                </keyword>
+                <keyword  id="sqp4" name="sqp" code="{N_mdm(utype,subMethod_SUBMETHOD_SQP)}" label="sqp" help="" default="sqp" />
+                <keyword  id="nip3" name="nip" code="{N_mdm(utype,subMethod_SUBMETHOD_NIP)}" label="nip" help="" default="sqp" />
               </oneOf>
-              <optional>
+            </optional>
+            <keyword  id="integration" name="integration" code="{0}" label="Integration method" help="MethodCommands.html#MethodNonDLocalRel" minOccurs="0" default="First-order integration" >
+              <oneOf>
+                <keyword  id="first_order" name="first_order" code="{N_mdm(lit,reliabilityIntegration_first_order)}" label="first_order" help=""  />
+                <keyword  id="second_order" name="second_order" code="{N_mdm(lit,reliabilityIntegration_second_order)}" label="second_order" help=""  />
+              </oneOf>
+              <keyword  id="probability_refinement2" name="probability_refinement" code="{0}" label="probability_refinement" help="" minOccurs="0" >
+		<!-- TODO: consider removing this alias -->
+                <alias name="sample_refinement"/>
                 <oneOf>
-                  <keyword  id="surfpack5" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-                  <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+                  <keyword  id="import3" name="import" code="{N_mdm(utype,integrationRefine_IS)}" label="import" help=""  />
+                  <keyword  id="adapt_import3" name="adapt_import" code="{N_mdm(utype,integrationRefine_AIS)}" label="adapt_import" help=""  />
+                  <keyword  id="mm_adapt_import3" name="mm_adapt_import" code="{N_mdm(utype,integrationRefine_MMAIS)}" label="mm_adapt_import" help=""  />
                 </oneOf>
-              </optional>
-	      &import_build;
-              <keyword  id="export_approx_points_file7" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point export to a file" >
-                <alias name="export_points_file"/>
-		<param type="OUTPUT_FILE" />
-		&method_export_approx_format;
-              </keyword>
-              <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="use function values only" />
-              <keyword  id="seed9" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed for initial GP construction" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="system-generated (non-repeatable)" >
-                <param type="INTEGER" constraint="> 0" />
-              </keyword>
-              <keyword  id="rng3" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
-                <oneOf>
-                  <keyword  id="mt199373" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
-                  <keyword  id="rnum23" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
-                </oneOf>
-              </keyword>
-              <keyword  id="response_levels8" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
-                <param type="REALLIST" />
-                <keyword  id="num_response_levels8" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" default="response_levels evenly distributed among response functions" >
+		<!-- Old reference default; samples = 0 -->
+                <keyword  id="refinement_samples3" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="refinement_samples" help="" minOccurs="0" >
                   <param type="INTEGERLIST" />
                 </keyword>
-                <keyword  id="compute8" name="compute" code="{0}" label="compute" help="" minOccurs="0" default="probabilities" >
-                  <oneOf>
-                    <keyword  id="probabilities8" name="probabilities" code="{N_mdm(type,responseLevelTarget_PROBABILITIES)}" label="probabilities" help=""  />
-                    <keyword  id="gen_reliabilities8" name="gen_reliabilities" code="{N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}" label="gen_reliabilities" help=""  />
-                  </oneOf>
-                  <keyword  id="system8" name="system" code="{0}" label="system" help="" minOccurs="0" >
-                    <oneOf>
-                      <keyword  id="series8" name="series" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}" label="series" help=""  />
-                      <keyword  id="parallel8" name="parallel" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}" label="parallel" help=""  />
-                    </oneOf>
-                  </keyword>
+                <keyword  id="seed8" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="system-generated (non-repeatable)" >
+                  <param type="INTEGER" constraint="> 0" />
                 </keyword>
               </keyword>
-              &default_max_iterations;
-              &default_convergence_tolerance;
+            </keyword>
+          </keyword>
+          <keyword  id="response_levels7" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
+            <param type="REALLIST" />
+            <keyword  id="num_response_levels7" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" default="response_levels evenly distributed among response functions" >
+              <param type="INTEGERLIST" />
+            </keyword>
+            <keyword  id="compute7" name="compute" code="{0}" label="compute" help="" minOccurs="0" default="probabilities" >
+              <oneOf>
+                <keyword  id="probabilities7" name="probabilities" code="{N_mdm(type,responseLevelTarget_PROBABILITIES)}" label="probabilities" help=""  />
+                <keyword  id="reliabilities1" name="reliabilities" code="{N_mdm(type,responseLevelTarget_RELIABILITIES)}" label="reliabilities" help=""  />
+                <keyword  id="gen_reliabilities7" name="gen_reliabilities" code="{N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}" label="gen_reliabilities" help=""  />
+              </oneOf>
+              <keyword  id="system7" name="system" code="{0}" label="system" help="" minOccurs="0" >
+                <oneOf>
+                  <keyword  id="series7" name="series" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}" label="series" help=""  />
+                  <keyword  id="parallel7" name="parallel" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}" label="parallel" help=""  />
+                </oneOf>
+              </keyword>
+            </keyword>
+          </keyword>
+          <keyword  id="reliability_levels1" name="reliability_levels" code="{N_mdm(resplevs,reliabilityLevels)}" label="reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
+            <param type="REALLIST" />
+            <keyword  id="num_reliability_levels1" name="num_reliability_levels" code="{N_mdm(num_resplevs,reliabilityLevels)}" label="num_reliability_levels" help="" minOccurs="0" default="reliability_levels evenly distributed among response functions" >
+              <param type="INTEGERLIST" />
+            </keyword>
+          </keyword>
+          &default_max_iterations;
+          &default_convergence_tolerance;
+	  &default_final_moments;
+	  &method_reliability_opts;
+	  &method_optional_model_pointer;
+        </keyword>
+
+        <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability" help="" minOccurs="1" group="Uncertainty Quantification" >
+          <alias name="nond_global_reliability"/>
+	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples" help="" minOccurs="0" default="(d+1)(d+2)/2">
+	    <param type="INTEGER" />
+	  </keyword>
+          <oneOf>
+            <keyword  id="x_gaussian_process" name="x_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_X)}" label="x_gaussian_process" help=""  >
+              <alias name="x_kriging"/>
+            </keyword>
+            <keyword  id="u_gaussian_process" name="u_gaussian_process" code="{N_mdm(utype,reliabilitySearchType_EGRA_U)}" label="u_gaussian_process" help=""  >
+              <alias name="u_kriging"/>
             </keyword>
           </oneOf>
-          <keyword  id="distribution2" name="distribution" code="{0}" label="distribution" help="" minOccurs="0" default="cumulative (CDF)" >
+          <optional>
             <oneOf>
-              <keyword  id="cumulative2" name="cumulative" code="{N_mdm(type,distributionType_CUMULATIVE)}" label="cumulative" help=""  />
-              <keyword  id="complementary2" name="complementary" code="{N_mdm(type,distributionType_COMPLEMENTARY)}" label="complementary" help=""  />
+              <keyword  id="surfpack5" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+              <keyword  id="dakota5" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+            </oneOf>
+          </optional>
+	  &import_build;
+          <keyword  id="export_approx_points_file7" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="File name for exporting approximation-based samples from evaluating the GP" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="no point export to a file" >
+            <alias name="export_points_file"/>
+	    <param type="OUTPUT_FILE" />
+	    &method_export_approx_format;
+          </keyword>
+          <keyword  id="use_derivatives7" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="Derivative usage" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="use function values only" />
+          <keyword  id="seed9" name="seed" code="{N_mdm(pint,randomSeed)}" label="Random seed for initial GP construction" help="MethodCommands.html#MethodNonDGlobalRel" minOccurs="0" default="system-generated (non-repeatable)" >
+            <param type="INTEGER" constraint="> 0" />
+          </keyword>
+          <keyword  id="rng3" name="rng" code="{0}" label="rng" help="" minOccurs="0" default="Mersenne twister ( mt19937 )" >
+            <oneOf>
+              <keyword  id="mt199373" name="mt19937" code="{N_mdm(lit,rngName_mt19937)}" label="mt19937" help=""  />
+              <keyword  id="rnum23" name="rnum2" code="{N_mdm(lit,rngName_rnum2)}" label="rnum2" help=""  />
             </oneOf>
           </keyword>
-          <keyword  id="probability_levels2" name="probability_levels" code="{N_mdm(resplevs01,probabilityLevels)}" label="probability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
+          <keyword  id="response_levels8" name="response_levels" code="{N_mdm(resplevs,responseLevels)}" label="response_levels" help="" minOccurs="0" default="No CDF/CCDF probabilities/reliabilities to compute" >
             <param type="REALLIST" />
-            <keyword  id="num_probability_levels2" name="num_probability_levels" code="{N_mdm(num_resplevs,probabilityLevels)}" label="num_probability_levels" help="" minOccurs="0" default="probability_levels evenly distributed among response functions" >
+            <keyword  id="num_response_levels8" name="num_response_levels" code="{N_mdm(num_resplevs,responseLevels)}" label="num_response_levels" help="" minOccurs="0" default="response_levels evenly distributed among response functions" >
               <param type="INTEGERLIST" />
             </keyword>
-          </keyword>
-          <keyword  id="gen_reliability_levels2" name="gen_reliability_levels" code="{N_mdm(resplevs,genReliabilityLevels)}" label="gen_reliability_levels" help="" minOccurs="0" default="No CDF/CCDF response levels to compute" >
-            <param type="REALLIST" />
-            <keyword  id="num_gen_reliability_levels2" name="num_gen_reliability_levels" code="{N_mdm(num_resplevs,genReliabilityLevels)}" label="num_gen_reliability_levels" help="" minOccurs="0" default="gen_reliability_levels evenly distributed among response functions" >
-              <param type="INTEGERLIST" />
+            <keyword  id="compute8" name="compute" code="{0}" label="compute" help="" minOccurs="0" default="probabilities" >
+              <oneOf>
+                <keyword  id="probabilities8" name="probabilities" code="{N_mdm(type,responseLevelTarget_PROBABILITIES)}" label="probabilities" help=""  />
+                <keyword  id="gen_reliabilities8" name="gen_reliabilities" code="{N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}" label="gen_reliabilities" help=""  />
+              </oneOf>
+              <keyword  id="system8" name="system" code="{0}" label="system" help="" minOccurs="0" >
+                <oneOf>
+                  <keyword  id="series8" name="series" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}" label="series" help=""  />
+                  <keyword  id="parallel8" name="parallel" code="{N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}" label="parallel" help=""  />
+                </oneOf>
+              </keyword>
             </keyword>
           </keyword>
+          &default_max_iterations;
+          &default_convergence_tolerance;
+	  &method_reliability_opts;
 	  &method_optional_model_pointer;
-        </required> <!-- Group with distribution, problev, genrellev -->
+        </keyword>
 
         <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc" help="" minOccurs="1" group="DACE" >
           <oneOf label="sequence type">

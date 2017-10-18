@@ -689,12 +689,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
       |
-      ( 
-        offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
-        |
-        offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
-        |
-        offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
+      ( offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
+        [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
+       )
+      |
+      ( offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
+        [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
+       )
+      |
+      ( offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
@@ -760,12 +763,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
       |
-      ( 
-        offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
-        |
-        offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
-        |
-        offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
+      ( offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
+        [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
+       )
+      |
+      ( offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
+        [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
+       )
+      |
+      ( offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
@@ -4202,135 +4208,145 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( 
-    ( local_reliability ALIAS nond_local_reliability {N_mdm(utype,methodName_LOCAL_RELIABILITY)}
-      [ mpp_search {0}
-        x_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_X)}
-        |
-        u_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_U)}
-        |
-        x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
-        |
-        u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
-        |
-        x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
-        |
-        u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
-        |
-        no_approx {N_mdm(utype,reliabilitySearchType_NO_APPROX)}
-        [ 
-          sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}
-          |
-          nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
-         ]
-        [ integration {0}
-          first_order {N_mdm(lit,reliabilityIntegration_first_order)}
-          |
-          second_order {N_mdm(lit,reliabilityIntegration_second_order)}
-          [ probability_refinement ALIAS sample_refinement {0}
-            import {N_mdm(utype,integrationRefine_IS)}
-            |
-            adapt_import {N_mdm(utype,integrationRefine_AIS)}
-            |
-            mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-            [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-            [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-           ]
-         ]
-       ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-      [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
-        [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
-       ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-      [ final_moments {0}
-        none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-        |
-        standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-        |
-        central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-       ]
-     )
-    |
-    ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
-      [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
-      x_gaussian_process ALIAS x_kriging {N_mdm(utype,reliabilitySearchType_EGRA_X)}
+  ( local_reliability ALIAS nond_local_reliability {N_mdm(utype,methodName_LOCAL_RELIABILITY)}
+    [ mpp_search {0}
+      x_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_X)}
       |
-      u_gaussian_process ALIAS u_kriging {N_mdm(utype,reliabilitySearchType_EGRA_U)}
+      u_taylor_mean {N_mdm(utype,reliabilitySearchType_AMV_U)}
+      |
+      x_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_X)}
+      |
+      u_taylor_mpp {N_mdm(utype,reliabilitySearchType_AMV_PLUS_U)}
+      |
+      x_two_point {N_mdm(utype,reliabilitySearchType_TANA_X)}
+      |
+      u_two_point {N_mdm(utype,reliabilitySearchType_TANA_U)}
+      |
+      no_approx {N_mdm(utype,reliabilitySearchType_NO_APPROX)}
       [ 
-        surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+        sqp {N_mdm(utype,subMethod_SUBMETHOD_SQP)}
         |
-        dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+        nip {N_mdm(utype,subMethod_SUBMETHOD_NIP)}
        ]
-      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-        [ 
-          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-         ]
-        [ active_only {N_mdm(true,importBuildActive)} ]
-       ]
-      [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-        [ 
-          annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-         ]
-       ]
-      [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ rng {0}
-        mt19937 {N_mdm(lit,rngName_mt19937)}
+      [ integration {0}
+        first_order {N_mdm(lit,reliabilityIntegration_first_order)}
         |
-        rnum2 {N_mdm(lit,rngName_rnum2)}
-       ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        second_order {N_mdm(lit,reliabilityIntegration_second_order)}
+        [ probability_refinement ALIAS sample_refinement {0}
+          import {N_mdm(utype,integrationRefine_IS)}
           |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
+          adapt_import {N_mdm(utype,integrationRefine_AIS)}
+          |
+          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+          [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
          ]
        ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-     )
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( global_reliability ALIAS nond_global_reliability {N_mdm(utype,methodName_GLOBAL_RELIABILITY)}
+    [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
+    x_gaussian_process ALIAS x_kriging {N_mdm(utype,reliabilitySearchType_EGRA_X)}
+    |
+    u_gaussian_process ALIAS u_kriging {N_mdm(utype,reliabilitySearchType_EGRA_U)}
+    [ 
+      surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+      |
+      dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+     ]
+    [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importBuildActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ distribution {0}
       cumulative {N_mdm(type,distributionType_CUMULATIVE)}
       |
