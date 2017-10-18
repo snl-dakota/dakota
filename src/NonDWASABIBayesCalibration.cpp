@@ -354,12 +354,15 @@ export_posterior_samples_to_file( const std::string filename,
   export_file_stream.close();
 }
 
-void NonDWASABIBayesCalibration::print_results(std::ostream& s)
+/*
+void NonDWASABIBayesCalibration::
+print_results(std::ostream& s, short results_state)
 {
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
 
   //  additional WASABI output
 }
+*/
 
 void NonDWASABIBayesCalibration::
 compute_responses(RealMatrix & samples, RealMatrix & responses)

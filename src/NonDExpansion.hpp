@@ -55,7 +55,7 @@ public:
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run();
   /// print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   const Model& algorithm_space_model() const;
 
@@ -169,12 +169,12 @@ protected:
   void refine_expansion(size_t index = _NPOS);
 
   /// calculate analytic and numerical statistics from the expansion
-  void compute_statistics(bool full_stats = true);
+  void compute_statistics(short results_state = FINAL_RESULTS);
 
   /// manage computing of results and debugging outputs, for either the final
   /// set of results (full statistics) or an intermediate set of results
   /// (reduced set of core results used for levels/fidelities, etc.)
-  void annotated_results(bool full_stats = true);
+  void annotated_results(short results_state = FINAL_RESULTS);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -268,7 +268,7 @@ private:
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients
-  void compute_analytic_statistics(bool full_stats = true);
+  void compute_analytic_statistics(short results_state = FINAL_RESULTS);
   /// numerical portion of compute_statistics() from sampling on the expansion
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler

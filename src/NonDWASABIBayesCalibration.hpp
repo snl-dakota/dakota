@@ -70,7 +70,7 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// Extract a subset of samples for posterior eval according to the
   /// indices in points_to_keep

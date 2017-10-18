@@ -77,7 +77,7 @@ void PebbldMinimizer::core_run()
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void PebbldMinimizer::print_results(std::ostream& s)
+void PebbldMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {

@@ -1537,10 +1537,10 @@ void Iterator::initialize_graphics(int iterator_server_id)
 
 /** This virtual function provides additional iterator-specific final results
     outputs beyond the function evaluation summary printed in finalize_run(). */
-void Iterator::print_results(std::ostream& s)
+void Iterator::print_results(std::ostream& s, short results_state)
 {
   if (iteratorRep)
-    iteratorRep->print_results(s); // envelope fwd to letter
+    iteratorRep->print_results(s, results_state); // envelope fwd to letter
   // else default base class output is nothing additional beyond the fn
   // evaluation summary printed in finalize_run()
 }

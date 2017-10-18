@@ -1495,9 +1495,10 @@ void NonDQUESOBayesCalibration::set_mh_options()
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
-void NonDQUESOBayesCalibration::print_results(std::ostream& s)
-{
 
+void NonDQUESOBayesCalibration::
+print_results(std::ostream& s, short results_state)
+{
   if (bestSamples.empty()) return;
 
   StringMultiArrayConstView cv_labels = 
@@ -1573,7 +1574,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   */
   
   // Print final stats for variables and responses 
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
 }
 
 

@@ -1016,7 +1016,8 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 }
 
 
-void NonDMultilevelPolynomialChaos::print_results(std::ostream& s)
+void NonDMultilevelPolynomialChaos::
+print_results(std::ostream& s, short results_state)
 {
   if (outputLevel >= NORMAL_OUTPUT)
     print_coefficients(s);
@@ -1030,7 +1031,8 @@ void NonDMultilevelPolynomialChaos::print_results(std::ostream& s)
       << equivHFEvals << std::endl;
   }
 
-  NonDExpansion::print_results(s);
+  // skip over NonDPolynomialChaos::print_results()
+  NonDExpansion::print_results(s, results_state);
 }
 
 } // namespace Dakota

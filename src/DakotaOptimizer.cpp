@@ -181,7 +181,7 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void Optimizer::print_results(std::ostream& s)
+void Optimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {

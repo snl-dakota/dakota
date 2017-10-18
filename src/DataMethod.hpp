@@ -104,6 +104,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
 // Iterator/Model/Interface/Approximation
 enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
        DEBUG_OUTPUT };
+// define special values for printing of different results states
+enum { NO_RESULTS, //REFINEMENT_RESULTS, ITERATION_RESULTS,
+       INTERMEDIATE_RESULTS, FINAL_RESULTS };
+
 // define special values for Iterator and Interface scheduling
 enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING, 
        PEER_DYNAMIC_SCHEDULING, PEER_STATIC_SCHEDULING, DYNAMIC_SCHEDULING,

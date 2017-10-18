@@ -112,7 +112,7 @@ protected:
   void increment_order_and_grid();
 
   /// print the final coefficients and final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
   /// export the PCE coefficient array to expansionExportFile

@@ -878,10 +878,10 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
 }
 
 
-void NonDLHSSampling::print_results(std::ostream& s)
+void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
-    Analyzer::print_results(s);
+    Analyzer::print_results(s, results_state);
 
   if (varBasedDecompFlag)
     print_sobol_indices(s);

@@ -280,14 +280,17 @@ void NonDDREAMBayesCalibration::calibrate()
 }
 
 
-  // BMA: Remove?
-void NonDDREAMBayesCalibration::print_results(std::ostream& s)
+/*
+void NonDDREAMBayesCalibration::
+print_results(std::ostream& s, short results_state)
 {
   // Print variables and response function final stats
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
   
   //additional DREAM output
 }
+*/
+
 
 // BMA TODO: share most of this code with QUESO, general hyperpriors, other distros
 /** Static callback function to evaluate the likelihood */

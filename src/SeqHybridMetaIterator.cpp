@@ -539,7 +539,7 @@ update_local_results(PRPArray& prp_results, int job_id)
 }
 
 
-void SeqHybridMetaIterator::print_results(std::ostream& s)
+void SeqHybridMetaIterator::print_results(std::ostream& s, short results_state)
 {
   // provide a final summary in cases where the default iterator output
   // is insufficient

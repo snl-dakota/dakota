@@ -1769,7 +1769,7 @@ construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model,
 }
 
 // Mohamed and Laura
-void NonDAdaptiveSampling::print_results(std::ostream& s)
+void NonDAdaptiveSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the adaptive sampling calculations:\n";

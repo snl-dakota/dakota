@@ -2115,7 +2115,7 @@ void NonDBayesCalibration::print_intervals_screen
   }
 }
 
-void NonDBayesCalibration::print_results(std::ostream& s)
+void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
 {
   // Print chain moments
   StringArray combined_labels;

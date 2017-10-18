@@ -32,7 +32,7 @@ protected:
         void core_run();
 
         /// Redefinition of default results printing.
-        void print_results(std::ostream& s);
+        void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
         /// Object that implements the branching and bounding logic.

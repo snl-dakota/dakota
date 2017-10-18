@@ -55,7 +55,7 @@ public:
   //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Virtual member function redefinitions

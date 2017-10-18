@@ -72,7 +72,7 @@ protected:
 
   void core_run();
   void increment_specification_sequence();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions

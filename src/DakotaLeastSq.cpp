@@ -186,7 +186,7 @@ void LeastSq::weight_model()
 
 /** Redefines default iterator results printing to include nonlinear
     least squares results (residual terms and constraints). */
-void LeastSq::print_results(std::ostream& s)
+void LeastSq::print_results(std::ostream& s, short results_state)
 {
   // archive the single best point
   size_t num_best = 1, best_ind = 0;

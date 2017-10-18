@@ -67,7 +67,7 @@ protected:
 
   void core_run();
   Real final_probability();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
 

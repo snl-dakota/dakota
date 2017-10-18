@@ -2773,7 +2773,7 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 }
 
 
-void NonDMultilevelSampling::print_results(std::ostream& s)
+void NonDMultilevelSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     print_multilevel_evaluation_summary(s, NLev);

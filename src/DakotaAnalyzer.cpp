@@ -927,7 +927,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 }
 
 
-void Analyzer::print_results(std::ostream& s)
+void Analyzer::print_results(std::ostream& s, short results_state)
 {
   if (!numObjFns && !numLSqTerms) {
     s << "<<<<< Best data metrics not defined for generic response functions\n";
