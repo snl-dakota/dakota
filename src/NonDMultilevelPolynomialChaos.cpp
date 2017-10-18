@@ -35,8 +35,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
-  sequenceIndex(0),
-  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
+  sequenceIndex(0),pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
   //resizedFlag(false), callResize(false)
 {
   assign_hierarchical_response_mode();

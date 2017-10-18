@@ -111,7 +111,8 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
 			       const RealVector& dim_pref, short u_space_type,
 			       bool piecewise_basis, bool use_derivs):
   NonDStochCollocation(MULTIFIDELITY_STOCH_COLLOCATION, model,
-		       exp_coeffs_approach, piecewise_basis, use_derivs)
+		       exp_coeffs_approach, piecewise_basis, use_derivs),
+  sequenceIndex(0)
 {
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: quadOrderSeqSpec = num_int_seq; break;

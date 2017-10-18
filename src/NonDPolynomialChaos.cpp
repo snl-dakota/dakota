@@ -467,6 +467,10 @@ config_expectation(size_t exp_samples, unsigned short sample_type,
     bool vary_pattern = false;
     construct_lhs(u_space_sampler, g_u_model, sample_type, numSamplesOnModel,
 		  randomSeed, rng, vary_pattern, ACTIVE);
+
+    // maxEvalConcurrency updated here for expansion samples and regression
+    // and in initialize_u_space_model() for sparse/quad/cub
+    maxEvalConcurrency *= numSamplesOnModel;
   }
 
   approx_type =
@@ -610,16 +614,15 @@ config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
     // refinement samples
     //if (expansion_sample_type == SUBMETHOD_INCREMENTAL_LHS))
     //  construct_incremental_lhs();
+
+    // maxEvalConcurrency updated here for expansion samples and regression
+    // and in initialize_u_space_model() for sparse/quad/cub
+    maxEvalConcurrency *= numSamplesOnModel;
   }
 
   approx_type =
     //(piecewiseBasis) ? "piecewise_regression_orthogonal_polynomial" :
     "global_regression_orthogonal_polynomial";
-
-  // maxEvalConcurrency updated here for expansion samples and regression
-  // and in initialize_u_space_model() for sparse/quad/cub
-  if (numSamplesOnModel) // optional with default = 0
-    maxEvalConcurrency *= numSamplesOnModel;
 
   return true;
 }
