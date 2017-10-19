@@ -8,5 +8,5 @@ if(PYTHONINTERP_FOUND AND PYTHON_VERSION_STRING VERSION_GREATER 2.7)
 endif()
 
 install(DIRECTORY "dakota" DESTINATION "share/dakota/Python/")
-install(FILES "mpitile" DESTINATION "bin/")
+install(PROGRAMS "mpitile" DESTINATION "bin/")
 
