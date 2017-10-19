@@ -307,7 +307,7 @@ void NonDGPMSABayesCalibration::calibrate()
 
   gpmsaFactory.reset(new QUESO::GPMSAFactory<GslVector, GslMatrix>
                      (*quesoEnv, gpmsaOptions.get(), *priorRv, *configSpace,
-                      *paramSpace, *nEtaSpace, *experimentSpace, buildSamples,
+                      *paramSpace, *nEtaSpace, buildSamples,
                       expData.num_experiments()));
 
   // Scale and populate simulation build data and experiment data
