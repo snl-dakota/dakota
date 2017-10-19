@@ -87,7 +87,7 @@ volumetric_quality(int ndim, int num_samples, double* sample_points)
 }
 
 
-void PStudyDACE::print_results(std::ostream& s)
+void PStudyDACE::print_results(std::ostream& s, short results_state)
 {
   if (volQualityFlag)
     s << "\nVolumetric uniformity measures (smaller values are better):"
@@ -96,7 +96,7 @@ void PStudyDACE::print_results(std::ostream& s)
       << "\n\n";
 
   if (numObjFns || numLSqTerms) // DACE usage
-    Analyzer::print_results(s);
+    Analyzer::print_results(s, results_state);
 
   if (varBasedDecompFlag)
     print_sobol_indices(s);

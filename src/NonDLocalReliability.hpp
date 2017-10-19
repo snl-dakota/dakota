@@ -73,7 +73,7 @@ public:
   /// print the approximate mean, standard deviation, and importance factors
   /// when using the mean value method or the CDF/CCDF information when using
   /// MPP-search-based reliability methods
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// return name of active MPP optimizer
   unsigned short uses_method() const;

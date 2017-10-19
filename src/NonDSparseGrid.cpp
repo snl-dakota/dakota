@@ -18,6 +18,7 @@
 #include "CombinedSparseGridDriver.hpp"
 #include "HierarchSparseGridDriver.hpp"
 #include "DakotaModel.hpp"
+#include "DiscrepancyCorrection.hpp"
 #include "ProblemDescDB.hpp"
 #include "PolynomialApproximation.hpp"
 
@@ -35,8 +36,8 @@ namespace Dakota {
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   NonDIntegration(problem_db, model),
-  ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
-  ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
+  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
+  ssgLevelRef(ssgLevelSpec)
 {
   short exp_basis_type
     = probDescDB.get_short("method.nond.expansion_basis_type");
@@ -56,15 +57,15 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
-  Pecos::ExpansionConfigOptions
-    ec_options(exp_coeffs_soln_approach, exp_basis_type, outputLevel,
-	       probDescDB.get_bool("method.variance_based_decomp"),
-	       probDescDB.get_ushort("method.nond.vbd_interaction_order"),
-	       /*refine_type,*/ refine_control, //maxIterations,
-	       probDescDB.get_int("method.nond.max_refinement_iterations"),
-	       probDescDB.get_int("method.nond.max_solver_iterations"),
-	       convergenceTol,
-	       probDescDB.get_ushort("method.soft_convergence_limit"));
+  Pecos::ExpansionConfigOptions ec_options(exp_coeffs_soln_approach,
+    exp_basis_type, iteratedModel.correction_type(),
+    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
+    outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
+    probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
+    refine_control, //maxIterations,
+    probDescDB.get_int("method.nond.max_refinement_iterations"),
+    probDescDB.get_int("method.nond.max_solver_iterations"), convergenceTol,
+    probDescDB.get_ushort("method.soft_convergence_limit"));
 
   // define BasisConfigOptions
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
@@ -124,12 +125,12 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
-NonDSparseGrid(Model& model, const UShortArray& ssg_level_seq,
+NonDSparseGrid(Model& model, unsigned short ssg_level,
 	       const RealVector& dim_pref, short exp_coeffs_soln_approach,
 	       short driver_mode, short growth_rate, short refine_control,
 	       bool track_uniq_prod_wts, bool track_colloc_indices): 
   NonDIntegration(SPARSE_GRID_INTEGRATION, model, dim_pref),
-  ssgLevelSeqSpec(ssg_level_seq), ssgLevelRef(ssgLevelSeqSpec[sequenceIndex])
+  ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
@@ -201,11 +202,11 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
 void NonDSparseGrid::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // ssgLevelRef (potentially incremented from ssgLevelSeqSpec[numIntSeqIndex]
-  // due to uniform/adaptive refinements) provides the current lower bound
-  // reference point.  Pecos::SparseGridDriver::ssgLevel may be increased
-  // ***or decreased*** to provide at least min_samples subject to this lower
-  // bound.  ssgLevelRef is ***not*** updated by min_samples.
+  // ssgLevelRef (potentially incremented from ssgLevelSpec due to uniform/
+  // adaptive refinements) provides the current lower bound reference point.
+  // Pecos::SparseGridDriver::ssgLevel may be increased ***or decreased***
+  // to provide at least min_samples subject to this lower bound.
+  // ssgLevelRef is ***not*** updated by min_samples.
 
   // should be ssgLevelRef already, unless min_level previous enforced
   ssgDriver->level(ssgLevelRef);

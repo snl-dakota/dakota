@@ -703,11 +703,14 @@ void NonDGPMSABayesCalibration::cache_acceptance_chain()
 }
 
 
-void NonDGPMSABayesCalibration::print_results(std::ostream& s)
+/*
+void NonDGPMSABayesCalibration::
+print_results(std::ostream& s, short results_state)
 {
-  //  TODO: additional QUESO output
+  //  TODO: additional GPMSA output
 
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
 }
+*/
 
 } // namespace Dakota

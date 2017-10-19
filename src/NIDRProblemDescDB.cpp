@@ -6593,8 +6593,6 @@ static Method_mp_lit
         MP2(dataDistCovInputType,matrix),
       //MP2(dataDistType,gaussian),
       //MP2(dataDistType,user),
-	MP2(discrepancyType,global_kriging),
-	MP2(discrepancyType,global_polynomial),
 	MP2(evalSynchronize,blocking),
 	MP2(evalSynchronize,nonblocking),
 	MP2(expansionSampleType,incremental_lhs),
@@ -6628,6 +6626,8 @@ static Method_mp_lit
 	MP2(mcmcType,dram),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
+	MP2(modelDiscrepancyType,global_kriging),
+	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
 	MP2(mutationType,offset_cauchy),
 	MP2(mutationType,offset_normal),
@@ -6763,19 +6763,22 @@ static unsigned short
 	MP_(adaptedBasisAdvancements),
       //MP_(adaptedBasisInitLevel),
 	MP_(cubIntOrder),
+        MP_(expansionOrder),
+        MP_(quadratureOrder),
 	MP_(softConvLimit),
+	MP_(sparseGridLevel),
 	MP_(vbdOrder),
 	MP_(wilksOrder);
 
 static SizetArray
-	MP_(collocationPoints),
-        MP_(expansionSamples),
+	MP_(collocationPointsSeq),
+        MP_(expansionSamplesSeq),
   	MP_(pilotSamples);
 
 static UShortArray
-        MP_(expansionOrder),
-        MP_(quadratureOrder),
-	MP_(sparseGridLevel),
+        MP_(expansionOrderSeq),
+        MP_(quadratureOrderSeq),
+	MP_(sparseGridLevelSeq),
         MP_(tensorGridOrder),
 	MP_(varPartitions);
 
@@ -6908,6 +6911,8 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+	MP_(collocationPoints),
+        MP_(expansionSamples),
         MP_(numCandidateDesigns),
 	MP_(numCandidates),
         MP_(numDesigns),
@@ -6924,6 +6929,9 @@ static Method_mp_type
 	MP2s(distributionType,CUMULATIVE),
 	MP2s(emulatorType,GP_EMULATOR),
 	MP2s(emulatorType,KRIGING_EMULATOR),
+	MP2s(emulatorType,MF_PCE_EMULATOR),
+	MP2s(emulatorType,MF_SC_EMULATOR),
+	MP2s(emulatorType,ML_PCE_EMULATOR),
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
@@ -6954,6 +6962,8 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+	MP2s(multilevDiscrepEmulation,DISTINCT_EMULATION),
+	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
@@ -7090,6 +7100,9 @@ static Method_mp_utype
  	MP2s(methodName,LOCAL_EVIDENCE),
         MP2s(methodName,LOCAL_INTERVAL_EST),
 	MP2s(methodName,LOCAL_RELIABILITY),
+	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
+	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
+	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTILEVEL_SAMPLING),
         MP2s(methodName,POF_DARTS),
 	MP2s(methodName,RKD_DARTS),

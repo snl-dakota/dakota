@@ -764,7 +764,7 @@ inline const RealVector& Variables::continuous_variables() const
 inline void Variables::
 continuous_variables(const RealVector& c_vars)
 {
-  // continuousVars is a view; carefully assign to update the data it points to
+  // continuousVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->continuousVars.assign(c_vars);
   else              continuousVars.assign(c_vars);
 }
@@ -790,7 +790,7 @@ inline const IntVector& Variables::discrete_int_variables() const
 
 inline void Variables::discrete_int_variables(const IntVector& di_vars)
 {
-  // discreteIntVars is a view; carefully assign to update the data it points to
+  // discreteIntVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->discreteIntVars.assign(di_vars);
   else              discreteIntVars.assign(di_vars);
 }
@@ -856,7 +856,7 @@ inline const RealVector& Variables::discrete_real_variables() const
 
 inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
-  // discreteRealVars is a view; carefully assign to update the data it points to
+  // discreteRealVars is a view; use assign() to update the data it points to
   if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
   else              discreteRealVars.assign(dr_vars);
 }
@@ -1138,7 +1138,7 @@ inline const RealVector& Variables::inactive_continuous_variables() const
 
 inline void Variables::inactive_continuous_variables(const RealVector& ic_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars.assign(ic_vars);
   else              inactiveContinuousVars.assign(ic_vars);
 }
@@ -1146,7 +1146,7 @@ inline void Variables::inactive_continuous_variables(const RealVector& ic_vars)
 
 inline void Variables::inactive_continuous_variable(Real ic_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveContinuousVars[index] = ic_var;
   else              inactiveContinuousVars[index] = ic_var;
 }
@@ -1162,7 +1162,7 @@ inline const IntVector& Variables::inactive_discrete_int_variables() const
 inline void Variables::
 inactive_discrete_int_variables(const IntVector& idi_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
   else              inactiveDiscreteIntVars.assign(idi_vars);
 }
@@ -1170,7 +1170,7 @@ inactive_discrete_int_variables(const IntVector& idi_vars)
 
 inline void Variables::inactive_discrete_int_variable(int idi_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteIntVars[index] = idi_var;
   else              inactiveDiscreteIntVars[index] = idi_var;
 }
@@ -1216,7 +1216,7 @@ inline const RealVector& Variables::inactive_discrete_real_variables() const
 inline void Variables::
 inactive_discrete_real_variables(const RealVector& idr_vars)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
   else              inactiveDiscreteRealVars.assign(idr_vars);
 }
@@ -1225,7 +1225,7 @@ inactive_discrete_real_variables(const RealVector& idr_vars)
 inline void Variables::
 inactive_discrete_real_variable(Real idr_var, size_t index)
 {
-  // carefully use assign to update the data the view points to
+  // use assign() to update the data the view points to
   if (variablesRep) variablesRep->inactiveDiscreteRealVars[index] = idr_var;
   else              inactiveDiscreteRealVars[index] = idr_var;
 }

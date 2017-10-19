@@ -731,45 +731,22 @@ void RecastModel::initialize_data_from_submodel()
 /** Update inactive values and labels in currentVariables and inactive
     bound constraints in userDefinedConstraints from variables and
     constraints data within subModel. */
-void RecastModel::update_from_sub_model()
+void RecastModel::update_from_model(Model& model)
 {
-  currentVariables.inactive_continuous_variables(
-    subModel.inactive_continuous_variables());
-  currentVariables.inactive_discrete_int_variables(
-    subModel.inactive_discrete_int_variables());
-  currentVariables.inactive_discrete_real_variables(
-    subModel.inactive_discrete_real_variables());
-
-  userDefinedConstraints.inactive_continuous_lower_bounds(
-    subModel.inactive_continuous_lower_bounds());
-  userDefinedConstraints.inactive_continuous_upper_bounds(
-    subModel.inactive_continuous_upper_bounds());
-  userDefinedConstraints.inactive_discrete_int_lower_bounds(
-    subModel.inactive_discrete_int_lower_bounds());
-  userDefinedConstraints.inactive_discrete_int_upper_bounds(
-    subModel.inactive_discrete_int_upper_bounds());
-  userDefinedConstraints.inactive_discrete_real_lower_bounds(
-    subModel.inactive_discrete_real_lower_bounds());
-  userDefinedConstraints.inactive_discrete_real_upper_bounds(
-    subModel.inactive_discrete_real_upper_bounds());
-
-  currentVariables.inactive_continuous_variable_labels(
-    subModel.inactive_continuous_variable_labels());
-  currentVariables.inactive_discrete_int_variable_labels(
-    subModel.inactive_discrete_int_variable_labels());
-  currentVariables.inactive_discrete_real_variable_labels(
-    subModel.inactive_discrete_real_variable_labels());
-
+  bool update_active_complement = true;
   if (invVarsMapping) {
-    invVarsMapping(subModel.current_variables(), currentVariables);
+    // generally restricted to active variables
+    invVarsMapping(model.current_variables(), currentVariables);
+
     // BMA TODO: there may be cases where we also want to update the
     // constraints and values, but there's currently no mechanism to
     // do so.  The client of a RecastModel must manage this.
-  } else if (variablesMapping) {
-    // no reasonable default
+  }
+  else if (variablesMapping) {
+    // no reasonable default for active vars
 
     // can't just apply variables mapping to values/bounds, since need inverse
-    // of variablesMapping to go from subModel vars to currentVariables
+    // of variablesMapping to go from model vars to currentVariables
 
     // any label, uncertain variable distributions, and linear
     // constraint mappings must be performed explicitly
@@ -778,76 +755,168 @@ void RecastModel::update_from_sub_model()
     // variable transformation, see NonDExpansion::initialize_expansion()
   }
   else {
-    // variable values
-    currentVariables.continuous_variables(subModel.continuous_variables());
-    currentVariables.discrete_int_variables(subModel.discrete_int_variables());
-    currentVariables.discrete_real_variables(
-      subModel.discrete_real_variables());
-    // variable bounds
-    userDefinedConstraints.continuous_lower_bounds(
-      subModel.continuous_lower_bounds());
-    userDefinedConstraints.continuous_upper_bounds(
-      subModel.continuous_upper_bounds());
-    userDefinedConstraints.discrete_int_lower_bounds(
-      subModel.discrete_int_lower_bounds());
-    userDefinedConstraints.discrete_int_upper_bounds(
-      subModel.discrete_int_upper_bounds());
-    userDefinedConstraints.discrete_real_lower_bounds(
-      subModel.discrete_real_lower_bounds());
-    userDefinedConstraints.discrete_real_upper_bounds(
-      subModel.discrete_real_upper_bounds());
-    // variable labels
-    currentVariables.continuous_variable_labels(
-      subModel.continuous_variable_labels());
-    currentVariables.discrete_int_variable_labels(
-      subModel.discrete_int_variable_labels());
-    currentVariables.discrete_real_variable_labels(
-      subModel.discrete_real_variable_labels());
+    update_active_complement = false; // can use all view updates below
 
-    if (!subModel.discrete_design_set_int_values().empty())
-      discreteDesignSetIntValues = subModel.discrete_design_set_int_values();
-    if (!subModel.discrete_design_set_real_values().empty())
-      discreteDesignSetRealValues = subModel.discrete_design_set_real_values();
+    // variable values
+    currentVariables.all_continuous_variables(
+      model.all_continuous_variables());
+    currentVariables.all_discrete_int_variables(
+      model.all_discrete_int_variables());
+    currentVariables.all_discrete_string_variables(
+      model.all_discrete_string_variables());
+    currentVariables.all_discrete_real_variables(
+      model.all_discrete_real_variables());
+    // variable bounds
+    userDefinedConstraints.all_continuous_lower_bounds(
+      model.all_continuous_lower_bounds());
+    userDefinedConstraints.all_continuous_upper_bounds(
+      model.all_continuous_upper_bounds());
+    userDefinedConstraints.all_discrete_int_lower_bounds(
+      model.all_discrete_int_lower_bounds());
+    userDefinedConstraints.all_discrete_int_upper_bounds(
+      model.all_discrete_int_upper_bounds());
+    userDefinedConstraints.all_discrete_real_lower_bounds(
+      model.all_discrete_real_lower_bounds());
+    userDefinedConstraints.all_discrete_real_upper_bounds(
+      model.all_discrete_real_upper_bounds());
+    // variable labels
+    currentVariables.all_continuous_variable_labels(
+      model.all_continuous_variable_labels());
+    currentVariables.all_discrete_int_variable_labels(
+      model.all_discrete_int_variable_labels());
+    currentVariables.all_discrete_string_variable_labels(
+      model.all_discrete_string_variable_labels());
+    currentVariables.all_discrete_real_variable_labels(
+      model.all_discrete_real_variable_labels());
+
+    if (!model.discrete_design_set_int_values().empty())
+      discreteDesignSetIntValues = model.discrete_design_set_int_values();
+    if (!model.discrete_design_set_string_values().empty())
+      discreteDesignSetStringValues = model.discrete_design_set_string_values();
+    if (!model.discrete_design_set_real_values().empty())
+      discreteDesignSetRealValues = model.discrete_design_set_real_values();
 
     // uncertain variable distribution data
-    aleatDistParams.update(subModel.aleatory_distribution_parameters());
-    epistDistParams.update(subModel.epistemic_distribution_parameters());
+    aleatDistParams.update(model.aleatory_distribution_parameters());
+    epistDistParams.update(model.epistemic_distribution_parameters());
 
-    if (!subModel.discrete_state_set_int_values().empty())
-      discreteStateSetIntValues = subModel.discrete_state_set_int_values();
-    if (!subModel.discrete_state_set_real_values().empty())
-      discreteStateSetRealValues = subModel.discrete_state_set_real_values();
+    if (!model.discrete_state_set_int_values().empty())
+      discreteStateSetIntValues = model.discrete_state_set_int_values();
+    if (!model.discrete_state_set_string_values().empty())
+      discreteStateSetStringValues = model.discrete_state_set_string_values();
+    if (!model.discrete_state_set_real_values().empty())
+      discreteStateSetRealValues = model.discrete_state_set_real_values();
 
     // linear constraints
-    if (subModel.num_linear_ineq_constraints()) {
+    if (model.num_linear_ineq_constraints()) {
       userDefinedConstraints.linear_ineq_constraint_coeffs(
-        subModel.linear_ineq_constraint_coeffs());
+        model.linear_ineq_constraint_coeffs());
       userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-        subModel.linear_ineq_constraint_lower_bounds());
+        model.linear_ineq_constraint_lower_bounds());
       userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-        subModel.linear_ineq_constraint_upper_bounds());
+        model.linear_ineq_constraint_upper_bounds());
     }
-    if (subModel.num_linear_eq_constraints()) {
+    if (model.num_linear_eq_constraints()) {
       userDefinedConstraints.linear_eq_constraint_coeffs(
-        subModel.linear_eq_constraint_coeffs());
+        model.linear_eq_constraint_coeffs());
       userDefinedConstraints.linear_eq_constraint_targets(
-        subModel.linear_eq_constraint_targets());
+        model.linear_eq_constraint_targets());
+    }
+  }
+  if (update_active_complement) {
+
+    size_t i, cv_begin = currentVariables.cv_start(),
+      num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
+      num_acv = currentVariables.acv();
+    const RealVector& acv = model.all_continuous_variables();
+    const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
+    const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+    StringMultiArrayConstView acv_labels
+      = model.all_continuous_variable_labels();
+    for (i=0; i<cv_begin; ++i) {
+      currentVariables.all_continuous_variable(acv[i], i);
+      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+      currentVariables.all_continuous_variable_label(acv_labels[i], i);
+    }
+    for (i=cv_end; i<num_acv; ++i) {
+      currentVariables.all_continuous_variable(acv[i], i);
+      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
+      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
+      currentVariables.all_continuous_variable_label(acv_labels[i], i);
+    }
+
+    size_t div_begin = currentVariables.div_start(),
+      num_div  = currentVariables.div(), div_end = div_begin + num_div,
+      num_adiv = currentVariables.adiv();
+    const IntVector& adiv = model.all_discrete_int_variables();
+    const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
+    const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
+    StringMultiArrayConstView adiv_labels
+      = model.all_discrete_int_variable_labels();
+    for (i=0; i<div_begin; ++i) {
+      currentVariables.all_discrete_int_variable(adiv[i], i);
+      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+      currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+    }
+    for (i=div_end; i<num_adiv; ++i) {
+      currentVariables.all_discrete_int_variable(adiv[i], i);
+      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
+      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
+      currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
+    }
+
+    size_t dsv_begin = currentVariables.dsv_start(),
+      num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
+      num_adsv = currentVariables.adsv();
+    StringMultiArrayConstView adsv = model.all_discrete_string_variables();
+    StringMultiArrayConstView adsv_labels
+      = model.all_discrete_string_variable_labels();
+    for (i=0; i<dsv_begin; ++i) {
+      currentVariables.all_discrete_string_variable(adsv[i], i);
+      currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+    }
+    for (i=dsv_end; i<num_adsv; ++i) {
+      currentVariables.all_discrete_string_variable(adsv[i], i);
+      currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
+    }
+
+    size_t drv_begin = currentVariables.drv_start(),
+      num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
+      num_adrv = currentVariables.adrv();
+    const RealVector& adrv = model.all_discrete_real_variables();
+    const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
+    const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
+    StringMultiArrayConstView adrv_labels
+      = model.all_discrete_real_variable_labels();
+    for (i=0; i<drv_begin; ++i) {
+      currentVariables.all_discrete_real_variable(adrv[i], i);
+      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+      currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
+    }
+    for (i=drv_end; i<num_adrv; ++i) {
+      currentVariables.all_discrete_real_variable(adrv[i], i);
+      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
+      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
+      currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
     }
   }
 
   if (primaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so primaryRespMapping could potentially be used to
-    // update currentResponse from subModel primary fns
+    // update currentResponse from model primary fns
   }
   else {
     // primary response function weights
-    primaryRespFnWts = subModel.primary_response_fn_weights();
+    primaryRespFnWts = model.primary_response_fn_weights();
     // primary response function sense (min or max)
-    primaryRespFnSense = subModel.primary_response_fn_sense();
+    primaryRespFnSense = model.primary_response_fn_sense();
 
     // primary response function labels
-    const StringArray& sm_resp_labels = subModel.response_labels();
+    const StringArray& sm_resp_labels = model.response_labels();
     size_t i, num_primary = numFns 
       - userDefinedConstraints.num_nonlinear_eq_constraints()
       - userDefinedConstraints.num_nonlinear_ineq_constraints();
@@ -858,30 +927,30 @@ void RecastModel::update_from_sub_model()
   if (secondaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so secondaryRespMapping could potentially be used to
-    // update currentResponse from subModel secondary fns
+    // update currentResponse from model secondary fns
   }
   else {
     // secondary response function labels
-    const StringArray& sm_resp_labels = subModel.response_labels();
+    const StringArray& sm_resp_labels = model.response_labels();
     size_t i,
       num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
         userDefinedConstraints.num_nonlinear_ineq_constraints(),
       num_primary    = numFns - num_nln_con,
-      num_sm_primary = subModel.num_functions() - num_nln_con;
+      num_sm_primary = model.num_functions() - num_nln_con;
     for (i=0; i<num_nln_con; i++)
       currentResponse.shared_data().function_label(
 	sm_resp_labels[num_sm_primary+i], num_primary+i);
 
     // nonlinear constraint bounds/targets
-    if (subModel.num_nonlinear_ineq_constraints()) {
+    if (model.num_nonlinear_ineq_constraints()) {
       userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-        subModel.nonlinear_ineq_constraint_lower_bounds());
+        model.nonlinear_ineq_constraint_lower_bounds());
       userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-        subModel.nonlinear_ineq_constraint_upper_bounds());
+        model.nonlinear_ineq_constraint_upper_bounds());
     }
-    if (subModel.num_nonlinear_eq_constraints())
+    if (model.num_nonlinear_eq_constraints())
       userDefinedConstraints.nonlinear_eq_constraint_targets(
-        subModel.nonlinear_eq_constraint_targets());
+        model.nonlinear_eq_constraint_targets());
   }
 }
 

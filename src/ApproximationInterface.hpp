@@ -94,11 +94,13 @@ protected:
 			   const IntVector&  di_l_bnds,
 			   const IntVector&  di_u_bnds,
 			   const RealVector& dr_l_bnds,
-			   const RealVector& dr_u_bnds);
+			   const RealVector& dr_u_bnds,
+			   size_t index = _NPOS);
 
   void export_approximation();
 
-  void rebuild_approximation(const BoolDeque& rebuild_deque);
+  void rebuild_approximation(const BoolDeque& rebuild_deque,
+			     size_t index = _NPOS);
   void pop_approximation(bool save_surr_data);
   void push_approximation();
   bool push_available();
@@ -107,7 +109,9 @@ protected:
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
-  void combine_approximation(short corr_type);
+  void clear_stored();
+
+  void combine_approximation();
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
@@ -314,12 +318,20 @@ inline void ApproximationInterface::remove_stored_approximation(size_t index)
 }
 
 
-inline void ApproximationInterface::combine_approximation(short corr_type)
+inline void ApproximationInterface::combine_approximation()
 {
-  size_t swap_index = sharedData.pre_combine(corr_type);//shared aggregation 1st
+  size_t swap_index = sharedData.pre_combine(); // shared aggregation first
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine(corr_type, swap_index);
-  sharedData.post_combine(corr_type); // shared cleanup last
+    functionSurfaces[*it].combine(swap_index);
+  sharedData.post_combine(); // shared cleanup last
+}
+
+
+inline void ApproximationInterface::clear_stored()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].clear_stored();
+  sharedData.clear_stored(); // shared cleanup last
 }
 
 

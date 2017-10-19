@@ -30,9 +30,9 @@ namespace Dakota {
     specification.  It is not currently used, as there are not yet
     separate nond_quadrature/nond_sparse_grid method specifications. */
 NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
-  NonD(problem_db, model), numIntegrations(0), sequenceIndex(0),
+  NonD(problem_db, model), numIntegrations(0),
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
-  //, standAloneMode(true)
+  //standAloneMode(true)
 {
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
@@ -53,8 +53,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical integration points. */
 NonDIntegration::NonDIntegration(unsigned short method_name, Model& model): 
-  NonD(method_name, model), numIntegrations(0), sequenceIndex(0)
-  //, standAloneMode(false)
+  NonD(method_name, model), numIntegrations(0)//, standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
@@ -70,8 +69,8 @@ NonDIntegration::NonDIntegration(unsigned short method_name, Model& model):
 NonDIntegration::
 NonDIntegration(unsigned short method_name, Model& model,
 		const RealVector& dim_pref): 
-  NonD(method_name, model), numIntegrations(0), sequenceIndex(0),
-  dimPrefSpec(dim_pref) //, standAloneMode(false)
+  NonD(method_name, model), numIntegrations(0), dimPrefSpec(dim_pref)
+  //standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
@@ -259,9 +258,5 @@ void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
     dim_pref[i] = 1./aniso_wts[i];
   increment_grid_preference(dim_pref);
 }
-
-
-void NonDIntegration::increment_specification_sequence()
-{ ++sequenceIndex; } // default overridden by NonD{Quadrature,SparseGrid}
 
 } // namespace Dakota

@@ -69,7 +69,7 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment(const String& input_filename = String());

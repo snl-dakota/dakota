@@ -59,21 +59,18 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   if (ssg_level) {
     // L1 isotropic sparse grid --> Linear exp (quadratic main effects ignored)
     // L2 isotropic sparse grid --> Quadratic expansion
-    UShortArray level_seq(1, ssg_level);
     pcePilotExpRepPtr
       = new NonDPolynomialChaos(actual_model, Pecos::COMBINED_SPARSE_GRID,
-				level_seq, dim_pref, EXTENDED_U, false, false);
+				ssg_level, dim_pref, EXTENDED_U, false, false);
   }
   else if (exp_order) { // regression PCE: LeastSq/CS (exp_order,colloc_ratio)
-    UShortArray exp_order_seq(1, exp_order); SizetArray colloc_pts_seq;
     short exp_coeffs_approach = Pecos::DEFAULT_REGRESSION;
     String import_file; unsigned short import_fmt = TABULAR_ANNOTATED;
-    int seed = 12347;
+    size_t colloc_pts; int seed = 12347;
     pcePilotExpRepPtr
-      = new NonDPolynomialChaos(actual_model, exp_coeffs_approach,
-				exp_order_seq, dim_pref, colloc_pts_seq,
-				colloc_ratio, seed, EXTENDED_U,
-				false, false, false,// piecewise,derivs,crossval
+      = new NonDPolynomialChaos(actual_model, exp_coeffs_approach, exp_order,
+				dim_pref, colloc_pts, colloc_ratio, seed,
+				EXTENDED_U, false, false, false,// pw,derivs,CV
 				import_file, import_fmt, false); // active_only
   }
   else {

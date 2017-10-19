@@ -56,11 +56,9 @@ public:
   //- Heading: Member functions
   //
 
-  /// return the active DiscrepancyCorrection instance
-  DiscrepancyCorrection& discrepancy_correction();
-
+  /// return correctionMode
   const unsigned short correction_mode() const;
-
+  /// set correctionMode
   void correction_mode(unsigned short corr_mode);
 
 protected:
@@ -68,6 +66,9 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  DiscrepancyCorrection& discrepancy_correction();
+  short correction_type();
 
   /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
@@ -109,6 +110,10 @@ protected:
   /// return orderedModels and, optionally, their sub-model recursions
   void derived_subordinate_models(ModelList& ml, bool recurse_flag);
 
+  /// update currentVariables using non-active data from the passed model
+  /// (one of the ordered models)
+  void update_from_subordinate_model(size_t depth);
+
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
   void primary_response_fn_weights(const RealVector& wts,
@@ -123,9 +128,10 @@ protected:
 
   /// use the high fidelity model to compute the truth values needed for
   /// correction of the low fidelity model results
-  void build_approximation();
+  void build_approximation(size_t index = _NPOS);
   // Uses the c_vars/response anchor point to define highFidResponse
-  //bool build_approximation(const RealVector& c_vars,const Response& response);
+  //bool build_approximation(const RealVector& c_vars,const Response& response,
+  //                         size_t index = _NPOS);
 
   /// update component parallel mode for supporting parallelism in
   /// the low ad high fidelity models
@@ -158,6 +164,13 @@ protected:
   /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true);
 
+  // return active orderedModels interface identifier?
+  //const String& interface_id() const;
+  /// if recurse_flag, return true if orderedModels evaluation cache usage
+  bool evaluation_cache(bool recurse_flag = true) const;
+  /// if recurse_flag, return true if orderedModels restart file usage
+  bool restart_file(bool recurse_flag = true) const;
+
   /// set the evaluation counter reference points for the HierarchSurrModel
   /// (request forwarded to the low and high fidelity models)
   void set_evaluation_reference();
@@ -183,13 +196,16 @@ private:
   void check_interface_instance();
 
   /// update the passed model (one of the ordered models) with data that could
-  /// change per function evaluation (active variable values/bounds)
-  void update_model(Model& model);
-  /// update the passed model (one of the ordered models) with data that could
   /// change once per set of evaluations (e.g., an outer iterator execution),
   /// including active variable labels, inactive variable values/bounds/labels,
   /// and linear/nonlinear constraint coeffs/bounds
   void init_model(Model& model);
+  /// update the passed model (one of the ordered models) with data that could
+  /// change per function evaluation (active variable values/bounds)
+  void update_model(Model& model);
+  /// update currentVariables using non-active data from the passed model
+  /// (one of the ordered models)
+  void update_from_model(Model& model);
 
   /// called from derived_synchronize() and derived_synchronize_nowait() to
   /// extract and rekey response maps using blocking or nonblocking
@@ -300,6 +316,10 @@ inline DiscrepancyCorrection& HierarchSurrModel::discrepancy_correction()
 { return deltaCorr[std::make_pair(lowFidelityIndices,highFidelityIndices)]; }
 
 
+inline short HierarchSurrModel::correction_type()
+{ return discrepancy_correction().correction_type(); }
+
+
 inline SizetSizet2DPair HierarchSurrModel::get_indices()
 { return std::make_pair(lowFidelityIndices,highFidelityIndices); }
 
@@ -312,8 +332,16 @@ surrogate_model_indices(size_t lf_model_index, size_t lf_soln_lev_index)
   sameModelInstance = (lf_model_index == highFidelityIndices.first);
   check_interface_instance();
 
-  if (lf_soln_lev_index != _NPOS)
+  if (lf_soln_lev_index != _NPOS) {
+    // Activate variable value for solution control within LF model
     orderedModels[lf_model_index].solution_level_index(lf_soln_lev_index);
+    // Pull inactive variable change up into top-level currentVariables,
+    // so that data flows correctly within Model recursions?  No, current
+    // design is that forward pushes are automated, but inverse pulls are 
+    // generally special case invocations from Iterator code (e.g., with
+    // locally-managed Model recursions).
+    //update_from_model(orderedModels[lf_model_index]);
+  }
 
   DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
@@ -347,8 +375,16 @@ truth_model_indices(size_t hf_model_index, size_t hf_soln_lev_index)
   sameModelInstance = (hf_model_index == lowFidelityIndices.first);
   check_interface_instance();
 
-  if (hf_soln_lev_index != _NPOS)
+  if (hf_soln_lev_index != _NPOS) {
+    // Activate variable value for solution control within HF model
     orderedModels[hf_model_index].solution_level_index(hf_soln_lev_index);
+    // Pull inactive variable change up into top-level currentVariables,
+    // so that data flows correctly within Model recursions?  No, current
+    // design is that forward pushes are automated, but inverse pulls are 
+    // generally special case invocations from Iterator code (e.g., with 
+    // locally-managed Model recursions).
+    //update_from_model(orderedModels[hf_model_index]);
+  }
 
   DiscrepancyCorrection& delta_corr = deltaCorr[get_indices()];
   if (!delta_corr.initialized())
@@ -382,6 +418,37 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
     ml.push_back(orderedModels[i]);
     if (recurse_flag)
       orderedModels[i].derived_subordinate_models(ml, true);
+  }
+}
+
+
+inline void HierarchSurrModel::update_from_subordinate_model(size_t depth)
+{
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+    Model& lf_model = surrogate_model();
+    // bottom-up data flow, so recurse first
+    if (depth)
+      lf_model.update_from_subordinate_model(depth - 1);
+    // now pull updates from LF
+    update_from_model(lf_model);
+    break;
+  }
+  case BYPASS_SURROGATE: {
+    Model& hf_model = truth_model();
+    // bottom-up data flow, so recurse first
+    if (depth)
+      hf_model.update_from_subordinate_model(depth - 1);
+    // now pull updates from HF
+    update_from_model(hf_model);
+    break;
+  }
+  default:
+    Cerr << "Warning: an aggregation mode is active in HierarchSurrModel. "
+	 << "Cannot update from a\n         single model in update_from_"
+	 << "subordinate_model()" << std::endl;
+    //abort_handler(MODEL_ERROR);
+    break;
   }
 }
 
@@ -487,6 +554,38 @@ inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
 }
 
 
+//inline const String& HierarchSurrModel::interface_id() const
+//{ return orderedModels[]->interface_id(); }
+
+
+inline bool HierarchSurrModel::evaluation_cache(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i)
+      if (orderedModels[i].evaluation_cache(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
+inline bool HierarchSurrModel::restart_file(bool recurse_flag) const
+{
+  if (recurse_flag) {
+    size_t i, num_models = orderedModels.size();
+    for (i=0; i<num_models; ++i)
+      if (orderedModels[i].restart_file(recurse_flag))
+	return true;
+    return false;
+  }
+  else
+    return false;
+}
+
+
 inline void HierarchSurrModel::set_evaluation_reference()
 {
   //orderedModels[lowFidelityIndices.first].set_evaluation_reference();
@@ -514,8 +613,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 {
   size_t i, num_models = orderedModels.size();
   for (i=0; i<num_models; ++i)
-    orderedModels[i].print_evaluation_summary(s, minimal_header,
-        relative_count);
+    orderedModels[i].print_evaluation_summary(s,minimal_header,relative_count);
 }
 
 

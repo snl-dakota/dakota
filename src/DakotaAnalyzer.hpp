@@ -108,7 +108,7 @@ protected:
 
   void pre_output();
 
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   const Model& algorithm_space_model() const;
 

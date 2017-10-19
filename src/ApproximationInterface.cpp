@@ -622,22 +622,23 @@ append_approximation(const VariablesArray& vars_array,
 void ApproximationInterface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
+		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds,
+		    size_t index)
 {
   // initialize the data shared among approximation instances
   sharedData.set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
 			dr_l_bnds, dr_u_bnds);
-  sharedData.build();
+  sharedData.build(index);
   // build the approximation surface instances
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
+    int fn_index = *it;
     // construct the approximation
-    functionSurfaces[index].build();
+    functionSurfaces[fn_index].build(index);
 
     // manage diagnostics
-    if (functionSurfaces[index].diagnostics_available()) {
+    if (functionSurfaces[fn_index].diagnostics_available()) {
       // print default or user-requested metrics and cross-validation
-      functionSurfaces[index].primary_diagnostics(index);
+      functionSurfaces[fn_index].primary_diagnostics(fn_index);
       // for user-provided challenge data, we assume there are
       // function values for all functions in the analysis, not just
       // the indices for which surrogates are being built
@@ -647,24 +648,24 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
       if (!challengeFile.empty()) {
         if (challengePoints.empty())
           read_challenge_points(active_only);
-        functionSurfaces[index].challenge_diagnostics(index, challengePoints,
-          Teuchos::getCol(Teuchos::View,challengeResponses,index));
+        functionSurfaces[fn_index].challenge_diagnostics(fn_index,
+	  challengePoints, Teuchos::getCol(Teuchos::View, challengeResponses,
+					   fn_index));
       }
     }
   }
 
   /* Old 3D graphics capability:
-  int index = *approxFnIndices.begin();
+  int fn_index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
   if (graph3DFlag && sharedData.num_variables() == 2) {
-    functionSurfaces[index].draw_surface();
+    functionSurfaces[fn_index].draw_surface();
   }
   */
 }
 
 /** This function calls export on each approximation */
-void ApproximationInterface::
-export_approximation()
+void ApproximationInterface::export_approximation()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].export_model();
@@ -674,18 +675,23 @@ export_approximation()
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */
 void ApproximationInterface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+rebuild_approximation(const BoolDeque& rebuild_deque, size_t index)
 {
   // rebuild data shared among approximation instances
-  sharedData.rebuild();
+  sharedData.rebuild(index);
   // rebuild the approximation surfaces
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+    int fn_index = *it;
     // check for rebuild request (defaults to true if no deque defined)
-    if (rebuild_deque.empty() || rebuild_deque[*it]) {
+    if (rebuild_deque.empty() || rebuild_deque[fn_index]) {
       // approx bounds not updated as in build_approximation()
-      functionSurfaces[*it].rebuild(); // invokes increment_coefficients()
+
+      // invokes increment_coefficients()
+      functionSurfaces[fn_index].rebuild(index);
+
       // diagnostics not currently active on rebuild
     }
+  }
 }
 
 

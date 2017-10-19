@@ -173,7 +173,7 @@ void LeastSq::weight_model()
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
-  // update_from_sub_model is used instead.
+  // update_from_model() is used instead.
   bool recurse_flag = false;
   iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
 
@@ -186,7 +186,7 @@ void LeastSq::weight_model()
 
 /** Redefines default iterator results printing to include nonlinear
     least squares results (residual terms and constraints). */
-void LeastSq::print_results(std::ostream& s)
+void LeastSq::print_results(std::ostream& s, short results_state)
 {
   // archive the single best point
   size_t num_best = 1, best_ind = 0;

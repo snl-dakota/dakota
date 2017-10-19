@@ -181,7 +181,7 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void Optimizer::print_results(std::ostream& s)
+void Optimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
@@ -382,7 +382,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
-  // update_from_sub_model is used instead.
+  // update_from_model() is used instead.
   bool recurse_flag = false;
   iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
 

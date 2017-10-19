@@ -73,13 +73,14 @@ public:
   /// set pointsTotal and pointsManagement mode
   void total_points(int points);
 
-  DiscrepancyCorrection& discrepancy_correction();
-
 protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
+
+  DiscrepancyCorrection& discrepancy_correction();
+  short correction_type();
 
   /// Perform any global updates prior to individual evaluate() calls
   bool initialize_mapping(ParLevLIter pl_iter);
@@ -129,44 +130,49 @@ protected:
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
-  void build_approximation();
+  void build_approximation(size_t index = _NPOS);
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points that
   /// augment the passed vars/response anchor point
   bool build_approximation(const Variables& vars,
-			   const IntResponsePair& response_pr);
+			   const IntResponsePair& response_pr,
+			   size_t index = _NPOS);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
-  void update_approximation(bool rebuild_flag);
+  void update_approximation(bool rebuild_flag, size_t index = _NPOS);
   /// replaces the anchor point, and rebuilds the approximation if requested
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag, size_t index = _NPOS);
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag,
+			    size_t index = _NPOS);
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag,
+			    size_t index = _NPOS);
 
   /// appends daceIterator results to a global approximation and rebuilds
   /// it if requested
-  void append_approximation(bool rebuild_flag);
+  void append_approximation(bool rebuild_flag, size_t index = _NPOS);
   /// appends a point to a global approximation and rebuilds it if requested
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag, size_t index = _NPOS);
   /// appends an array of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag,
+			    size_t index = _NPOS);
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag,
+			    size_t index = _NPOS);
 
   /// remove approximation data added on previous append_approximation() call
   /// or a specified number of points
@@ -187,11 +193,13 @@ protected:
   /// store the current data fit approximation for later combination
   void remove_stored_approximation(size_t index = _NPOS);
   /// combine the current data fit approximation with one previously stored
-  void combine_approximation(short corr_type);
+  void combine_approximation();
+  /// clear data stored in the approxInterface
+  void clear_stored();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
-  void run_dace_iterator(bool rebuild_flag);
+  void run_dace_iterator(bool rebuild_flag, size_t index = _NPOS);
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();
@@ -313,9 +321,9 @@ private:
   void build_local_multipoint();
 
   /// Refine the built surrogate until convergence criteria are met
-  void refine_surrogate();
+  void refine_surrogate(size_t index = _NPOS);
   /// Call build_approximation on the interface, passing appropriate constraints
-  void interface_build_approx();
+  void interface_build_approx(size_t index = _NPOS);
 
   /// update actualModel with data from constraints/labels/sets
   void init_model(Model& model);
@@ -324,13 +332,13 @@ private:
   /// update current variables/labels/bounds/targets with data from actualModel
   void update_from_model(const Model& model);
 
-  /// test for exact equality in values between vars and sdv
-  bool vars_exact_compare(const Variables& vars,
-			  const Pecos::SurrogateDataVars& sdv) const;
-  /// test if c_vars and d_vars are within [c_l_bnds,c_u_bnds] and
-  /// [d_l_bnds,d_u_bnds]
-  bool inside(const RealVector& c_vars, const IntVector& di_vars,
-	      const RealVector& dr_vars) const;
+  /// test if inactive state is consistent
+  bool consistent(const Variables& vars) const;
+  /// test if active vars are within [l_bnds, u_bnds]
+  bool inside(const Variables& vars) const;
+  /// test for exact equality in values between active vars and sdv
+  bool active_vars_compare(const Variables& vars,
+			   const Pecos::SurrogateDataVars& sdv) const;
 
   //
   //- Heading: Data members
@@ -376,11 +384,15 @@ private:
 
 /** Virtual destructor handles referenceCount at base Model level. */
 inline DataFitSurrModel::~DataFitSurrModel()
-{ finalize_export(); }
+{ if (!exportPointsFile.empty()) finalize_export(); }
 
 
 inline DiscrepancyCorrection& DataFitSurrModel::discrepancy_correction()
 { return deltaCorr; }
+
+
+inline short DataFitSurrModel::correction_type()
+{ return deltaCorr.correction_type(); }
 
 
 inline void DataFitSurrModel::total_points(int points)
@@ -388,8 +400,8 @@ inline void DataFitSurrModel::total_points(int points)
 
 
 inline bool DataFitSurrModel::
-vars_exact_compare(const Variables& vars,
-		   const Pecos::SurrogateDataVars& sdv) const
+active_vars_compare(const Variables& vars,
+		    const Pecos::SurrogateDataVars& sdv) const
 {
   // Similar to id_vars_exact_compare() in PRPMultiIndex.hpp
 
@@ -491,6 +503,10 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 inline bool DataFitSurrModel::push_available()
 { return approxInterface.push_available(); }
+
+
+inline void DataFitSurrModel::clear_stored()
+{ approxInterface.clear_stored(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

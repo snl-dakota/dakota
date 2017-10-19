@@ -47,8 +47,6 @@ public:
   virtual void increment_grid_preference(const RealVector& dim_pref);
   /// increment SSG level/TPQ order and update anisotropy
   virtual void increment_grid_weights(const RealVector& aniso_wts);
-  /// increment sequenceIndex and update active orders/levels
-  virtual void increment_specification_sequence();
 
   //
   //- Heading: Member functions
@@ -120,9 +118,6 @@ protected:
 
   /// counter for number of integration executions for this object
   size_t numIntegrations;
-  /// index into NonDQuadrature::quadOrderSpec and NonDSparseGrid::ssgLevelSpec
-  /// that defines the current instance of several possible refinement levels
-  size_t sequenceIndex;
 
   /// the user specification for anisotropic dimension preference
   RealVector dimPrefSpec;
