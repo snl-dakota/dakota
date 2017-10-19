@@ -535,16 +535,25 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // best variables is updated using a convenience function from SNLLBase
   snll_post_run(nlfObjective);
 
+  Variables& best_vars = bestVariablesArray.front();
+  // Cache the iterator space vars before storing the native in best
+  const RealVector iter_cv
+    (Teuchos::Copy, best_vars.continuous_variables().values(),
+     best_vars.continuous_variables().length());
+
   // transform variables back to user/native for lookup
   // Default unscaling does not apply in this case, so can't use
   // implementation in LeastSq::post_run
   if (scaleFlag) {
     ScalingModel* scale_model_rep = 
       static_cast<ScalingModel*>(scalingModel.model_rep());
-    bestVariablesArray.front().continuous_variables
-      (scale_model_rep->
-       cv_scaled2native(bestVariablesArray.front().continuous_variables()));
+    best_vars.continuous_variables
+      (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
   }
+
+  // post-process results to compute confidence intervals on parameter estimates
+  get_confidence_intervals(iter_cv, best_vars.continuous_variables());
+
   // update best response to contain the final lsq terms.  Since OPT++ has no
   // knowledge of these terms, the OPT++ final design variables must be matched
   // to final lsq terms using data_pairs.find().
@@ -563,7 +572,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
 
   // The retrieved primary response will be unweighted and unscaled
   PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), bestVariablesArray.front(), search_set);
+    iteratedModel.interface_id(), best_vars, search_set);
   if (cache_it == data_pairs.get<hashed>().end()) {
     // This can occur in model calibration under uncertainty using nested
     // models, or surrogate models so make this non-fatal.
@@ -601,9 +610,6 @@ void SNLLLeastSq::post_run(std::ostream& s)
   }
 
   bestResponseArray.front().function_values(best_fns);
-
-  // post-process results to compute confidence intervals on parameter estimates
-  get_confidence_intervals();
 
   // bypass duplicate post-processing in LeastSq, since we did a DB lookup
   Minimizer::post_run(s);

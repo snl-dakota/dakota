@@ -1,5 +1,5 @@
-# Dakota requires CMake 2.8.12 or newer; some TPLs may require even newer
-cmake_minimum_required(VERSION 2.8.12)
+# Dakota itself requires this CMake version; some TPLs may require even newer
+cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -10,6 +10,17 @@ set(CMAKE_MODULE_PATH
 # We delay enabling languages until developer compiler flags are set,
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
+
+# Require C++11 at a minimum, but allow newer standards
+# Do this prior to other flag settings below
+if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
+  set(CMAKE_CXX_STANDARD 11 CACHE STRING "Dakota strictly requires C++11 or better")
+endif()
+if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
+  set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
+    "Dakota prefers not to use compiler-specific C++ extensions")
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "Dakota strictly requires C++11 or better")
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
@@ -119,7 +130,8 @@ elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
     # Extract the date
     string(SUBSTRING "${Dakota_GIT_DATETIME}" 0 10 Dakota_GIT_DATE)
     # Build revision string
-    string(CONFIGURE "@Dakota_GIT_ABBREV_SHA1@ (@Dakota_GIT_DATE@)" Dakota_GIT_REV)
+    ##string(CONFIGURE "@Dakota_GIT_ABBREV_SHA1@ (@Dakota_GIT_DATE@)" Dakota_GIT_REV)
+    set(Dakota_GIT_REV "${Dakota_GIT_ABBREV_SHA1} (${Dakota_GIT_DATE})")
   endif(GIT_FOUND) # GIT_FOUND
 
   # Create VERSION file
@@ -280,29 +292,30 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-# TODO: Can't this be integrated into the following logic?
-if(MSVC)
-  find_package(LAPACK REQUIRED NO_MODULE)
-  set(BLAS_LIBS blas)
-  set(LAPACK_LIBS lapack)
-endif()
-# first check for a system blas and lapack
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
-  if(NOT DEFINED BLAS_LIBS)
-    find_library(BLAS_LIBS blas)
-  endif()
-  if(NOT DEFINED LAPACK_LIBS)
-    find_library(LAPACK_LIBS lapack)
-  endif()
-  if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
-    # if not a system blas and lapack, then look for a cmake built LAPACK
-    # with find_package
+  # Historically on MSVC, tried to use CMake config file approach first.  
+  # Could probably just use the Unix logic below instead...
+  if(MSVC)
     find_package(LAPACK REQUIRED NO_MODULE)
     set(BLAS_LIBS blas)
     set(LAPACK_LIBS lapack)
+  else()
+    # first check for a system blas and lapack
+    if(NOT DEFINED BLAS_LIBS)
+      find_library(BLAS_LIBS blas)
+    endif()
+    if(NOT DEFINED LAPACK_LIBS)
+      find_library(LAPACK_LIBS lapack)
+    endif()
+    if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
+      # if not a system blas and lapack, then look for a cmake built LAPACK
+      # with find_package
+      find_package(LAPACK REQUIRED NO_MODULE)
+      set(BLAS_LIBS blas)
+      set(LAPACK_LIBS lapack)
+    endif()
   endif()
 endif()
-
 
 # GSL check at top-level due to need for settings in BOTH packages
 # and src subdirectories

@@ -415,13 +415,20 @@ void LeastSq::post_run(std::ostream& s)
     abort_handler(-1);
   }
 
-  // transformations must precede confidence interval calculation
+  // TODO: no LSQ methods return multiple points, so consider removing this
   for (size_t point_index = 0; point_index < num_points; ++point_index) {
     
+    // best_vars / best_resp will now contain residuals and parameters as the
+    // LSQ solver (iterator) saw them
     Variables& best_vars = bestVariablesArray[point_index];
     Response&  best_resp = bestResponseArray[point_index];
 
-    /// transform variables back to inbound model, before any potential lookup
+    // Cache the iterator space vars before storing the native in best
+    const RealVector iter_cv
+      (Teuchos::Copy, best_vars.continuous_variables().values(),
+       best_vars.continuous_variables().length());
+
+    /// Transform variables back to inbound model, before any potential lookup
     if (scaleFlag) {
       ScalingModel* scale_model_rep = 
         static_cast<ScalingModel*>(scalingModel.model_rep());
@@ -429,9 +436,15 @@ void LeastSq::post_run(std::ostream& s)
         (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
     }
 
+    // Only calculate confidence intervals for the first point, before
+    // mucking with best_resp.  Here, best_vars is native space
+    if (point_index == 0)
+      get_confidence_intervals(iter_cv, best_vars.continuous_variables());
+
     if (calibrationDataFlag && expData.interpolate_flag()) {
-      // When interpolation is active, best we can do is a lookup.
-      // This will fail for surrogate models; need approx eval DB
+      // When interpolation is active, best we can do is a lookup to
+      // get the original native Model response function.  This will
+      // fail for surrogate models; need approx eval DB
       local_recast_retrieve(best_vars, best_resp);
     }
     else {
@@ -475,69 +488,85 @@ void LeastSq::post_run(std::ostream& s)
     
   }
 
-  // confidence interval calculation requires best_response
-  get_confidence_intervals();
-
   Minimizer::post_run(s);
 }
 
 
-/** Calculate individual confidence intervals for each parameter. 
-     These bounds are based on a linear approximation of the nonlinear model. */
-void LeastSq::get_confidence_intervals()
+/** Calculate individual confidence intervals for each parameter,
+    based on a linear approximation of the nonlinear model. iter_cv
+    are needed to eval iteratedModel gradients, while native_cv are
+    needed for final reporting.  best_resp must contain the final
+    differenced, scaled, weighted residuals. */
+void LeastSq::
+get_confidence_intervals(const RealVector& iter_cv, const RealVector& native_cv)
 {
+  // TODO: Fix CIs for interpolation and multi-experiment cases.  For
+  // simple multi-experiment cases, can just use the model derivatives
+  // without replication.  Concern is with singular aggregate Jacobian
+  // matrix J.
+
+  // Confidence intervals should be based on weighted/scaled iterator
+  // residuals (since that was the nonlinear regression problem
+  // formulation), but original user parameters, so must use
+  // d(scaled_residual) / d(native_vars).  For now, this implementation
+  // is incorrect as best_resp contains d(scaled_residual) /
+  // d(scaled_vars)
+
+  // TODO: apply/unapply the variable or response scaling
+  // transformation Jacobian to get the right gradients for scaled
+  // case
   if (scaleFlag) {
-    Cerr << "\nWarning: Confidence Interval calculations are not available"
+    Cout << "\nWarning: Confidence Interval calculations are not available"
          << "\n         when scaling is enabled.\n\n";
     return;
   }
+
   if (vendorNumericalGradFlag) {
-    Cerr << "\nWarning: Confidence Interval calculations are not available"
+    Cout << "\nWarning: Confidence Interval calculations are not available"
          << "\n         for vendor numerical gradients.\n\n";
     return;
   }
   if (numLeastSqTerms < numContinuousVars) {
-    Cerr << "\nWarning: Confidence Interval calculations are not available"
+    Cout << "\nWarning: Confidence Interval calculations are not available"
          << "\n         when number of residuals is less than number of"
 	 << "\n         variables.\n\n";
     return;
   }
-
-  const RealVector& best_c_vars
-    = bestVariablesArray.front().continuous_variables();
-
-  Real sigma_sq_hat; 
-  Real sse_total = 0.;
-  Real dof = std::max(double(numLeastSqTerms-numContinuousVars), 1.); 
-  int i, j;
- 
-  Teuchos::LAPACK<int, Real> la;
-
-  // The CI should be based on the residuals the solver worked on
-  // (including data differences), but they are only stored in the
-  // user model space
-  RealVector fn_vals_star;
-  if (calibrationDataFlag) {
-    // TODO: when interpolating field data, best may not be populated
-
-    // NOTE: This doesn't assume current_response() contains best;
-    // just uses it as a temporary object for computing the residuals
-    Response residual_resp(dataTransformModel.current_response().copy());
-    DataTransformModel* dt_model_rep =
-      static_cast<DataTransformModel*>(dataTransformModel.model_rep());
-    dt_model_rep->data_transform_response(bestVariablesArray.front(),
-                                          bestResponseArray.front(),
-                                          residual_resp);
-    fn_vals_star = residual_resp.function_values(); 
+  if (bestVariablesArray.size() > 1) {
+    Cout << "\nWarning: Multiple solutions found, but confidence intervals are "
+	 << "only calculated\n         for the single best point." << std::endl;
   }
-  else 
-    fn_vals_star = bestResponseArray.front().function_values();
+
+  // Due to all the complicated use cases for residual recovery, we
+  // opt to just re-evaluate the necessary models here, performing fn
+  // and grad evals separately, in case they are cached in different
+  // evals
+
+  // recover the iterator space residuals, hopefully via duplicate detection
+  short asv_request = 1;
+  iteratedModel.continuous_variables(iter_cv);
+  activeSet.request_values(asv_request);
+  iteratedModel.evaluate(activeSet);
+  const RealVector& resid_star =
+    iteratedModel.current_response().function_values();
 
   // first calculate the estimate of sigma-squared.
-  for (i=0; i<numLeastSqTerms; i++)
-    sse_total += (fn_vals_star[i]*fn_vals_star[i]);
-  sigma_sq_hat = sse_total/dof;
+  Real dof = std::max(double(numLeastSqTerms-numContinuousVars), 1.);
+  Real sse_total = 0.;
+  for (int i=0; i<numLeastSqTerms; i++)
+    sse_total += (resid_star[i]*resid_star[i]);
+  Real sigma_sq_hat = sse_total/dof;
  
+  // We are using a formulation where the standard error of the
+  // parameter vector is calculated as the square root of the diagonal
+  // elements of sigma_sq_hat*inverse(J'J), where J is the matrix
+  // of derivatives of the model with respect to the parameters,
+  // and J' is the transpose of J.  Insteaad of calculating J'J and
+  // explicitly taking the inverse, we are using a QR decomposition,
+  // where J=QR, and inv(J'J)= inv((QR)'QR)=inv(R'Q'QR)=inv(R'R)=
+  // inv(R)*inv(R').
+  // J must be in column order for the Fortran call
+  Teuchos::LAPACK<int, Real> la;
   int info;
   int M = numLeastSqTerms;
   int N = numContinuousVars;
@@ -545,24 +574,20 @@ void LeastSq::get_confidence_intervals()
   double *tau, *work;
   double* Jmatrix = new double[numLeastSqTerms*numContinuousVars];
   
-  short asv_request = 2;
-  iteratedModel.continuous_variables(best_c_vars);
+  // Unfortunately, best_resp doesn't contain gradients, so we
+  // evaluate the iteratedModel at the iterator variables, aiming to
+  // catch a duplicate eval .  This evaluation will yield
+  // d(scaled_resp) / d(scaled_params), which isn't quite right.
+  asv_request = 2;
+  iteratedModel.continuous_variables(iter_cv);
   activeSet.request_values(asv_request);
   iteratedModel.evaluate(activeSet);
   const RealMatrix& fn_grads
     = iteratedModel.current_response().function_gradients();
 
-  // We are using a formulation where the standard error of the 
-  // parameter vector is calculated as the square root of the diagonal 
-  // elements of sigma_sq_hat*inverse(J'J), where J is the matrix 
-  // of derivatives of the model with respect to the parameters, 
-  // and J' is the transpose of J.  Insteaad of calculating J'J and 
-  // explicitly taking the inverse, we are using a QR decomposition, 
-  // where J=QR, and inv(J'J)= inv((QR)'QR)=inv(R'Q'QR)=inv(R'R)=
-  // inv(R)*inv(R'). 
-  // J must be in column order for the Fortran call
-  for (i=0; i<numLeastSqTerms; i++)
-    for (j=0; j<numContinuousVars; j++)
+  // BMA: TODO we don't need to transpose this matrix...
+  for (int i=0; i<numLeastSqTerms; i++)
+    for (int j=0; j<numContinuousVars; j++)
       Jmatrix[(j*numLeastSqTerms)+i]=fn_grads(j,i);
 
   // This is the QR decomposition, the results are returned in J
@@ -588,8 +613,8 @@ void LeastSq::get_confidence_intervals()
 
   RealVector standard_error(numContinuousVars);
   RealVector diag(numContinuousVars, true);
-  for (i=0; i<numContinuousVars; i++) {
-    for (j=i; j<numContinuousVars; j++)
+  for (int i=0; i<numContinuousVars; i++) {
+    for (int j=i; j<numContinuousVars; j++)
       diag(i) += Jmatrix[j*numLeastSqTerms+i]*Jmatrix[j*numLeastSqTerms+i];
     standard_error[i] = std::sqrt(diag(i)*sigma_sq_hat);
   }
@@ -597,21 +622,13 @@ void LeastSq::get_confidence_intervals()
 
   confBoundsLower.sizeUninitialized(numContinuousVars);
   confBoundsUpper.sizeUninitialized(numContinuousVars); 
-//#ifdef HAVE_BOOST
+
   Pecos::students_t_dist t_dist(dof);
   Real tdist =  bmth::quantile(t_dist,0.975);
-/*
-#elif HAVE_GSL
-  Real tdist = gsl_cdf_tdist_Pinv(0.975,dof);
-#else
-  Real tdist = 0.;
-  Cerr << "\nWarning: Confidence Interval calculations are not available"
-       << "\n         (DAKOTA configured without GSL or BOOST).\n\n";
-#endif // HAVE_GSL or HAVE_BOOST
-*/
-  for (j=0; j<numContinuousVars; j++) {
-    confBoundsLower[j] = best_c_vars[j] - tdist * standard_error[j];
-    confBoundsUpper[j] = best_c_vars[j] + tdist * standard_error[j];
+
+  for (int j=0; j<numContinuousVars; j++) {
+    confBoundsLower[j] = native_cv[j] - tdist * standard_error[j];
+    confBoundsUpper[j] = native_cv[j] + tdist * standard_error[j];
   }
 }
 

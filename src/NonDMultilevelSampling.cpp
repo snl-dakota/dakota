@@ -19,7 +19,6 @@
 #include "DakotaResponse.hpp"
 #include "NonDMultilevelSampling.hpp"
 #include "ProblemDescDB.hpp"
-#include <boost/math/special_functions/fpclassify.hpp>
 
 static const char rcsId[]="@(#) $Id: NonDMultilevelSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -1311,7 +1310,7 @@ void NonDMultilevelSampling::
 accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
 		    const RealVector& offset, SizetArray& num_Q)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
   Real q_l, q_l_prod;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter q_it;
@@ -1351,7 +1350,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   if (lev == 0)
     accumulate_ml_Qsums(sum_Ql, lev, offset, num_Q);
   else {
-    using boost::math::isfinite;
+    using std::isfinite;
     Real q_l, q_lm1, q_l_prod, q_lm1_prod, qq_prod;
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it; IntIntPair pr;
@@ -1416,7 +1415,7 @@ void NonDMultilevelSampling::
 accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 		    const RealVector& offset, SizetArray& num_Y)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
   Real lf_fn, lf_prod;
   int y_ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter y_it;
@@ -1488,7 +1487,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L, const RealVector& offset,
   // uses one set of allResponses in UNCORRECTED_SURROGATE mode
   // IntRealVectorMap is not a multilevel case --> no discrepancies
 
-  using boost::math::isfinite;
+  using std::isfinite;
   Real fn_val, prod;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRVMIter l_it;
@@ -1528,7 +1527,7 @@ accumulate_cv_sums(IntRealVectorMap& sum_L_shared,
   // uses one set of allResponses in AGGREGATED_MODELS mode
   // IntRealVectorMap is not a multilevel case so no discrepancies
 
-  using boost::math::isfinite;
+  using std::isfinite;
   Real lf_fn, hf_fn, lf_prod, hf_prod;
   IntRespMCIter r_it; IntRVMIter ls_it, lr_it, h_it, ll_it, lh_it;
   int ls_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord; size_t qoi;
@@ -1606,7 +1605,7 @@ accumulate_mlcv_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   if (lev == 0)
     accumulate_ml_Qsums(sum_Ql, lev, offset, num_Q);
   else {
-    using boost::math::isfinite;
+    using std::isfinite;
     Real q_l, q_l_prod, q_lm1_prod, q_lm1;
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it;
@@ -1665,7 +1664,7 @@ accumulate_mlcv_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
   if (lev == 0)
     accumulate_ml_Qsums(sum_Y, lev, offset, num_Y);
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
-    using boost::math::isfinite;
+    using std::isfinite;
     Real fn_l, prod_l, fn_lm1, prod_lm1;
     int ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter y_it;
@@ -1711,7 +1710,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 		      const RealVector& lf_offset, const RealVector& hf_offset,
 		      SizetArray& num_L, SizetArray& num_H)
 {
-  using boost::math::isfinite;
+  using std::isfinite;
   Real lf_l, hf_l, lf_l_prod, hf_l_prod;
   IntRespMCIter lf_r_it, hf_r_it;
   IntRMMIter ls_it, lr_it, h_it, ll_it, lh_it, hh_it;
@@ -1810,7 +1809,7 @@ accumulate_mlcv_Ysums(const IntResponseMap& lf_resp_map,
 			  sum_L_refined, sum_H, sum_LL, sum_LH, sum_HH,
 			  lev, lf_offset, hf_offset, num_L, num_H);
   else { // AGGREGATED_MODELS -> 2 sets of qoi per response map
-    using boost::math::isfinite;
+    using std::isfinite;
     Real lf_l, lf_l_prod, lf_lm1, lf_lm1_prod,
          hf_l, hf_l_prod, hf_lm1, hf_lm1_prod;
     IntRespMCIter lf_r_it, hf_r_it;
@@ -1933,7 +1932,7 @@ accumulate_mlcv_Qsums(const IntResponseMap& lf_resp_map,
 			  sum_Hl, sum_Ll_Ll, sum_Hl_Ll, sum_Hl_Hl, lev,
 			  lf_offset, hf_offset, num_L, num_H);
   else {
-    using boost::math::isfinite;
+    using std::isfinite;
     Real lf_l_prod, lf_l, lf_lm1_prod, lf_lm1,
       hf_l_prod, hf_l, hf_lm1_prod, hf_lm1;
     IntRespMCIter lf_r_it, hf_r_it;
