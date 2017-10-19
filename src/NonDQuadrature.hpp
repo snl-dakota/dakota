@@ -76,6 +76,10 @@ public:
   /// propagate any numSamples updates and/or grid updates/increments
   void update();
 
+  /// set dimQuadOrderRef to dimension orders indicated by quadOrderSpec
+  /// and dimPrefSpec, following refinement or sequence advancement
+  void reset();
+
   /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
   /// set dimQuadOrderRef and map to Pecos::TensorProductDriver::quadOrder
@@ -106,7 +110,6 @@ protected:
 
   void get_parameter_sets(Model& model);
 
-  void reset();
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid_preference(const RealVector& dim_pref);

@@ -144,9 +144,9 @@ protected:
 			  Model& g_u_model,  String& approx_type);
   /// configure u_space_sampler and approx_type based on regression
   /// specification
-  bool config_regression(const UShortArray& exp_orders,
-			 unsigned short colloc_pts, Real colloc_ratio_order,
-			 short regress_type, short ls_regress_type,
+  bool config_regression(const UShortArray& exp_orders, size_t colloc_pts,
+			 Real colloc_ratio_order, short regress_type,
+			 short ls_regress_type,
 			 const UShortArray& tensor_grid_order,
 			 unsigned short sample_type, const String& rng,
 			 const String& pt_reuse, Iterator& u_space_sampler,

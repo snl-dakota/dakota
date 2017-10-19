@@ -238,24 +238,28 @@ void NonDMultilevelStochCollocation::core_run()
 void NonDMultilevelStochCollocation::increment_specification_sequence()
 {
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:
-    // update order if sufficient entries in sequence
+  case Pecos::QUADRATURE: {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
-      ++sequenceIndex;
-      NonDQuadrature* nond_quad
-	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
+    else if (refineControl)
+      nond_quad->reset();   // reset driver to pre-refinement state
     break;
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
-    // update level if sufficient entries in sequence
+  }
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
-      ++sequenceIndex;
-      NonDSparseGrid* nond_sparse
-	= (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
+    else if (refineControl)
+      nond_sparse->reset(); // reset driver to pre-refinement state
     break;
+  }
   default:
     Cerr << "Error: unsupported expansion coefficient estimation approach in "
 	 << "NonDMultilevelStochCollocation::increment_specification_sequence()"

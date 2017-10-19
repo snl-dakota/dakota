@@ -63,6 +63,10 @@ public:
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
 
+  /// set level and dimension preference within ssgDriver based on ssgLevelSpec
+  /// and dimPrefSpec, following refinement or sequence advancement
+  void reset();
+
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;
 
@@ -112,7 +116,6 @@ protected:
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
-  void reset();
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
 
 private:

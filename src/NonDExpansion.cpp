@@ -1106,13 +1106,13 @@ void NonDExpansion::update_expansion(size_t index)
 void NonDExpansion::increment_specification_sequence()
 {
   Cerr << "Error: no default implementation for increment_specification_"
-       << "sequence() used my multifidelity expansions." << std::endl;
+       << "sequence() used by multifidelity expansions." << std::endl;
   abort_handler(METHOD_ERROR);
 
   /*
   NonDIntegration* nond_integration
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-  nond_integration->increment_specification_sequence(); // TPQ or SSG
+  nond_integration->reset(); // TPQ or SSG
   */
 }
 
@@ -1653,8 +1653,13 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
     outputLevel >= NORMAL_OUTPUT);
   bool vbd_stats = ( vbdFlag && ( full_stats ||
     refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ) );
-  bool covar_stats = ( full_stats || ( !totalLevelRequests &&
-    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ) );
+  bool refine_by_covar = (refineControl == Pecos::UNIFORM_CONTROL ||
+    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL ||
+    refineControl   == Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY ||
+    ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
+      !totalLevelRequests ) );
+  bool full_covar_stats = ( covarianceControl == FULL_COVARIANCE &&
+			    ( full_stats || refine_by_covar ) );
 
   if (local_grad_stats && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
@@ -1868,7 +1873,7 @@ void NonDExpansion::compute_analytic_statistics(short results_state)
       poly_approx_rep->compute_total_effects();     // total
     }
   }
-  if (covar_stats && covarianceControl == FULL_COVARIANCE)
+  if (full_covar_stats)
     compute_off_diagonal_covariance(); // diagonal entries were filled in above
 }
 

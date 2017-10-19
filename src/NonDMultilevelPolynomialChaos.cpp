@@ -251,7 +251,8 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  unsigned short exp_order_spec = USHRT_MAX, colloc_pts = USHRT_MAX;
+  unsigned short exp_order_spec = USHRT_MAX;
+  size_t colloc_pts = std::numeric_limits<size_t>::max();
   UShortArray exp_orders; // defined for expansion_samples/regression
   if (!expOrderSeqSpec.empty()) {
     exp_order_spec = (sequenceIndex  < expOrderSeqSpec.size()) ?
@@ -519,24 +520,28 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
 {
   bool update_exp = false, update_sampler = false, update_from_ratio = false;
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE:
-    // update order if sufficient entries in sequence
+  case Pecos::QUADRATURE: {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
-      ++sequenceIndex;
-      NonDQuadrature* nond_quad
-	= (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+      ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
+    else if (refineControl)
+      nond_quad->reset();   // reset driver to pre-refinement state
     break;
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
-    // update level if sufficient entries in sequence
+  }
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
-      ++sequenceIndex;
-      NonDSparseGrid* nond_sparse
-	= (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+      ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
+    else if (refineControl)
+      nond_sparse->reset(); // reset driver to pre-refinement state
     break;
+  }
   case Pecos::CUBATURE:
     Cerr << "Error: cubature sequences not supported in NonDMultilevel"
 	 << "PolynomialChaos::increment_specification_sequence()" << std::endl;

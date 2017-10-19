@@ -481,7 +481,7 @@ config_expectation(size_t exp_samples, unsigned short sample_type,
 
 
 bool NonDPolynomialChaos::
-config_regression(const UShortArray& exp_orders, unsigned short colloc_pts,
+config_regression(const UShortArray& exp_orders, size_t colloc_pts,
 		  Real colloc_ratio_terms_order, short regress_type,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
 		  unsigned short sample_type, const String& rng,
