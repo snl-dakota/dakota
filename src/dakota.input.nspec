@@ -1749,6 +1749,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       |
       ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
+        initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
         [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
         [ emulator {0}
           ( gaussian_process ALIAS kriging {0}
