@@ -502,9 +502,19 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
     return false;
   }
 
-  expansionCoeffsApproach = regress_type;
-  size_t SZ_MAX = std::numeric_limits<size_t>::max();
+  if (regress_type == Pecos::DEFAULT_LEAST_SQ_REGRESSION)
+    switch (ls_regress_type) {
+    case SVD_LS:
+      expansionCoeffsApproach = Pecos::SVD_LEAST_SQ_REGRESSION;    break;
+    case EQ_CON_LS:
+      expansionCoeffsApproach = Pecos::EQ_CON_LEAST_SQ_REGRESSION; break;
+    default: // else leave as DEFAULT_LEAST_SQ_REGRESSION
+      expansionCoeffsApproach = regress_type; break;
+    }
+  else
+    expansionCoeffsApproach = regress_type;
 
+  size_t SZ_MAX = std::numeric_limits<size_t>::max();
   switch (expansionCoeffsApproach) {
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
     if (colloc_pts == SZ_MAX) {
@@ -516,19 +526,11 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
     else
       numSamplesOnModel = colloc_pts;
     break;
-  case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
-    switch (ls_regress_type) {
-    case SVD_LS:
-      expansionCoeffsApproach = Pecos::SVD_LEAST_SQ_REGRESSION;    break;
-    case EQ_CON_LS:
-      expansionCoeffsApproach = Pecos::EQ_CON_LEAST_SQ_REGRESSION; break;
-      // else leave as DEFAULT_LEAST_SQ_REGRESSION
-    }
-    break;
-  case Pecos::DEFAULT_REGRESSION:         case Pecos::SVD_LEAST_SQ_REGRESSION:
-  case Pecos::EQ_CON_LEAST_SQ_REGRESSION: case Pecos::BASIS_PURSUIT:
-  case Pecos::BASIS_PURSUIT_DENOISING:    case Pecos::ORTHOG_MATCH_PURSUIT:
-  case Pecos::LASSO_REGRESSION:           case Pecos::LEAST_ANGLE_REGRESSION: {
+  case Pecos::DEFAULT_REGRESSION:      case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
+  case Pecos::SVD_LEAST_SQ_REGRESSION: case Pecos::EQ_CON_LEAST_SQ_REGRESSION:
+  case Pecos::BASIS_PURSUIT:           case Pecos::BASIS_PURSUIT_DENOISING:
+  case Pecos::ORTHOG_MATCH_PURSUIT:    case Pecos::LASSO_REGRESSION:
+  case Pecos::LEAST_ANGLE_REGRESSION: {
     // for sub-sampled tensor grid, seems desirable to use tensor exp,
     // but enforce an arbitrary dimensionality limit of 5.
     // TO DO: only for CS candidate? or true basis for Least sq as well?

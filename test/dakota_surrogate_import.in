@@ -1,4 +1,4 @@
-#@ s*: ReqFiles=surrogate_build_pts.dat,surrogate_build_pts_ff.dat,surrogate_build_pts_unc.dat,surrogate_build_pts_unc_ff.dat
+#@ s*: ReqFiles=dakota_surrogate_import.dat,dakota_surrogate_import.ff.dat,dakota_surrogate_import.unc.dat,dakota_surrogate_import.unc_ff.dat,dakota_surrogate_import.design_fixedothers.dat,dakota_surrogate_import.unc_fixedothers.dat,dakota_surrogate_import.design_state.dat,dakota_surrogate_import.unc_state.dat
 ## DAKOTA INPUT FILE - dakota_surrogate_import.in
 
 # Test s6 imports only the (active) uncertain variable values from
@@ -22,18 +22,18 @@ method,
 model,                                         
         id_model = 'SURR'                        
         surrogate global,                        
-        import_build_points_file = 'surrogate_build_pts.dat' annotated        #s0,#s2
-#        import_build_points_file = 'surrogate_build_pts_ff.dat' freeform     #s1,#s3
-#        import_build_points_file = 'surrogate_build_pts_design_fixedothers.dat' annotated  #s4
-#        import_build_points_file = 'surrogate_build_pts_unc_fixedothers.dat' annotated   #s5
-#        import_build_points_file = 'surrogate_build_pts_unc.dat' annotated   #s6
-#        import_build_points_file = 'surrogate_build_pts_design_state.dat' annotated   #s7
-#        import_build_points_file = 'surrogate_build_pts_unc_state.dat' annotated   #s8
+        import_build_points_file = 'dakota_surrogate_import.dat' annotated        #s0,#s2
+#        import_build_points_file = 'dakota_surrogate_import.ff.dat' freeform     #s1,#s3
+#        import_build_points_file = 'dakota_surrogate_import.design_fixedothers.dat' annotated  #s4
+#        import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat' annotated   #s5
+#        import_build_points_file = 'dakota_surrogate_import.unc.dat' annotated   #s6
+#        import_build_points_file = 'dakota_surrogate_import.design_state.dat' annotated   #s7
+#        import_build_points_file = 'dakota_surrogate_import.unc_state.dat' annotated   #s8
 #          active_only                                                  #s6
         polynomial quadratic                   
-        challenge_points_file = 'surrogate_build_pts_ff.dat' freeform        #s0,#s3
-#        challenge_points_file = 'surrogate_build_pts.dat' annotated         #s1,#s2,#s4,#s5
-#        challenge_points_file = 'surrogate_build_pts_unc_ff.dat' freeform   #s6
+        challenge_points_file = 'dakota_surrogate_import.ff.dat' freeform        #s0,#s3
+#        challenge_points_file = 'dakota_surrogate_import.dat' annotated         #s1,#s2,#s4,#s5
+#        challenge_points_file = 'dakota_surrogate_import.unc_ff.dat' freeform   #s6
 #        active_only                                                         #s6
         metrics = "root_mean_squared" "mean_abs" "rsquared" #s0
 #        metrics = "sum_squared" "mean_squared" "root_mean_squared" "sum_abs" "mean_abs" "max_abs" "rsquared" #s1,#s2
