@@ -232,8 +232,11 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   precondRequestValue(0),
-  logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
+  logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
+  advancedOptionsFile(probDescDB.get_string("method.queso_options_file"))
 {
+  bool found_error = false;
+
   // Only QUESO supports proposal covariance updates and posterior adaptive
   // surrogate updates for now, hence this override is in this class
   // assign default proposalCovarType
@@ -258,7 +261,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
       if (samples_spec < pc_update_spec) {
 	// hard error since the user explicitly gave both controls
 	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
-	abort_handler(-1);
+	found_error = true;
       }
       chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
       chainCycles  = pc_update_spec;
@@ -269,14 +272,29 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   if (adaptPosteriorRefine && maxIterations < 0)
     maxIterations = 25;
 
-  init_queso_environment();
+  if (!advancedOptionsFile.empty()) {
+    if (boost::filesystem::exists(advancedOptionsFile)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Any QUESO options in file '" << advancedOptionsFile
+	     << "' will override Dakota options." << std::endl;
+    } else {
+      Cerr << "\nError: QUESO options_file '" << advancedOptionsFile
+	   << "' specified, but file not found.\n";
+      found_error = true;
+    }
+  }
 
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
          << "but have not provided experimental data information." << std::endl;
-    abort_handler(METHOD_ERROR);
+    found_error = true;
   }
+
+  if (found_error)
+    abort_handler(METHOD_ERROR);
+
+  init_queso_environment();
 }
 
 
@@ -453,11 +471,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 }
 
 
-/** The input filename is only passed by GPMSA as there's no way to
-    override the C++ options with file-based options for the QUESO
-    ctors. */
-void NonDQUESOBayesCalibration::
-init_queso_environment(const String& input_filename)
+void NonDQUESOBayesCalibration::init_queso_environment()
 {
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
@@ -468,21 +482,29 @@ init_queso_environment(const String& input_filename)
   // needs envOptionsValues:
   quesoEnv.reset();
 
-  // Unfortunately, if we set these options, can't load the GPMSA options!
-  // For now, require all options from file when using it
-  if (input_filename.empty()) {
-    // TODO: see if this can be a local, or if the env retains a pointer
-    envOptionsValues.reset(new QUESO::EnvOptionsValues());
-    envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
-    envOptionsValues->m_subDisplayAllowedSet.insert(0);
-    envOptionsValues->m_subDisplayAllowedSet.insert(1);
-    envOptionsValues->m_displayVerbosity = 2;  
-    // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
-    envOptionsValues->m_seed = randomSeed; 
-    // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
-  }
-  else
-    envOptionsValues.reset();
+  // Construct with default options
+  // TODO: see if this can be a local, or if the env retains a pointer
+  envOptionsValues.reset(new QUESO::EnvOptionsValues());
+
+  // C++ API options may override defaults
+  envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
+  envOptionsValues->m_subDisplayAllowedSet.insert(0);
+  envOptionsValues->m_subDisplayAllowedSet.insert(1);
+  envOptionsValues->m_displayVerbosity = 2;
+  // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
+  envOptionsValues->m_seed = randomSeed;
+  // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
+
+  // File-based power user parameters have the final say
+  //
+  // Unfortunately, there's a chicken-and-egg problem where parsing
+  // EnvOptionsValues requires an Environment, so we defer this parse
+  // to the ctor...
+  //
+  // if (!advancedOptionsFile.empty())
+  //   envOptionsValues->parse(*quesoEnv, "");
+  const char* aof_cstr =
+    advancedOptionsFile.empty() ? NULL : advancedOptionsFile.c_str();
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -490,22 +512,21 @@ init_queso_environment(const String& input_filename)
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,
-						input_filename.c_str(),
-						"", envOptionsValues.get()));
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF, aof_cstr, "",
+						envOptionsValues.get()));
   }
   else {
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
+      quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
 						envOptionsValues.get()));
   }
 #else
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
+    quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
 					      envOptionsValues.get()));
 #endif
 
@@ -1410,19 +1431,31 @@ void NonDQUESOBayesCalibration::validate_proposal()
 /// set inverse problem options common to all solvers
 void NonDQUESOBayesCalibration::set_ip_options() 
 {
+  // Construct with default options
   calIpOptionsValues.reset(new QUESO::SipOptionsValues());
+
+  // C++ API options may override defaults
   //definitely want to retain computeSolution
   calIpOptionsValues->m_computeSolution    = true;
   calIpOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/invpb_output";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
+
+  // File-based power user parameters have the final say
+  if (!advancedOptionsFile.empty())
+    calIpOptionsValues->parse(*quesoEnv, "");
+
+ if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nIP Final Options:" << *calIpOptionsValues << std::endl;
 }
 
 
 void NonDQUESOBayesCalibration::set_mh_options() 
 {
+  // Construct with default options
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
+  // C++ API options may override defaults
   calIpMhOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/mh_output";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
@@ -1482,14 +1515,23 @@ void NonDQUESOBayesCalibration::set_mh_options()
   if (logitTransform) {
     calIpMhOptionsValues->m_algorithm = "logit_random_walk";
     calIpMhOptionsValues->m_tk = "logit_random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
   }
   else {
     calIpMhOptionsValues->m_algorithm = "random_walk";
     calIpMhOptionsValues->m_tk = "random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
   }
-}
+
+  // File-based power user parameters have the final say
+  // The options are typically prefixed with ip_mh, so prepend an "ip_" prefix
+  // from the IP options:
+  if (!advancedOptionsFile.empty())
+    calIpMhOptionsValues->parse(*quesoEnv, calIpOptionsValues->m_prefix);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nMH Final Options:" << *calIpMhOptionsValues << std::endl;
+ }
 
 
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
