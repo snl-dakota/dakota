@@ -2108,7 +2108,7 @@ void NonDBayesCalibration::print_intervals_screen
 	    << std::setw(width) << ' ' << std::setw(width) 
 	    << col_vec1[upper_index] << ' '<< std::setw(width) 
 	    << 1-alpha << '\n';
-	    //<< std::setw(width) << ' ' <<  "        -----             -----\n";
+	  //<< std::setw(width) << ' ' <<  "        -----             -----\n";
         }
       }
     }
@@ -2119,7 +2119,7 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
 {
   // Print chain moments
   StringArray combined_labels;
-        copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(residualModel.continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
       "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
@@ -2132,18 +2132,17 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
     int num_filtered = filteredFnVals.numCols();
     RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
     RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
-    print_intervals_screen(s, filteredFnVals_transpose, 
-      			 predVals_transpose, num_filtered);
+    print_intervals_screen(s, filteredFnVals_transpose,
+			   predVals_transpose, num_filtered);
   }
 
   // Print posterior stats
-  if(posteriorStatsKL)
+  if (posteriorStatsKL)
     print_kl(s);
 }
 
 void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
 {
- 
   // sub-sample posterior chain
   int num_params = numContinuousVars + numHyperparams;
   int num_post_samples = acceptanceChain.numCols();

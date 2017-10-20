@@ -16,6 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "NonDSampling.hpp"
 
 // BMA TODO: remove this header
 // for uniform PDF and samples
@@ -38,6 +39,7 @@ namespace Dakota {
 NonDWASABIBayesCalibration::
 NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
+  numPriorSamples(probDescDB.get_int("method.samples")),
   dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
   dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),
   dataDistFilename(probDescDB.get_string("method.nond.data_dist_filename")),
@@ -120,12 +122,12 @@ void NonDWASABIBayesCalibration::calibrate()
 
   // diagnostic information
   // BMA: changed this from chainSamples to avoid confusion
-  int prior_samples = 1000;
-  Cout << "INFO (WASABI): Num Samples " << prior_samples << '\n';
+  //int prior_samples = 1000;
+  Cout << "INFO (WASABI): Num Samples " << numPriorSamples << '\n';
  
-  RealMatrix samples_from_prior((int)numContinuousVars, prior_samples, false);
+  RealMatrix samples_from_prior((int)numContinuousVars, numPriorSamples, false);
  
-  for (int j=0; j<prior_samples; j++) {
+  for (int j=0; j<numPriorSamples; j++) {
     RealVector samp_j(Teuchos::View, samples_from_prior[j], numContinuousVars);
     prior_sample(rnumGenerator, samp_j);
   }
@@ -195,7 +197,7 @@ void NonDWASABIBayesCalibration::calibrate()
 
   // if prior samples are used, no need to re-evaluate on the surrogate 
   RealMatrix responses_for_posterior_eval;
-  if ( posteriorSamplesImportFile.empty() )
+  if ( !posteriorSamplesImportFile.empty() )
     compute_responses(samples_for_posterior_eval, responses_for_posterior_eval);
   else 
     responses_for_posterior_eval = responses_for_samples_from_prior;
@@ -266,9 +268,22 @@ void NonDWASABIBayesCalibration::calibrate()
 
   RealVector posterior_density(samples_for_posterior_eval.numCols(), false);
   for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-    posterior_density[j] = prior_density_vals[j] * (data_density_vals[j] / 
+    //posterior_density[j] = prior_density_vals[j] * (data_density_vals[j] / 
+    posterior_density[j] = (data_density_vals[j] / 
 			  response_density_vals_for_posterior_eval[j]);
   }
+
+  // calculate information and K-L 
+  Real sum1=0; Real sum2=0;
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    sum1 += posterior_density[j];
+    sum2 += posterior_density[j]*log(posterior_density[j]);
+  }
+  Cout << "Information ratio of observed/push forward prior " 
+       <<  sum1/samples_for_posterior_eval.numCols() << '\n';
+  Cout << "K-L divergence of observed/push forward prior " 
+       <<  sum2/samples_for_posterior_eval.numCols() << '\n';
+    
 #ifdef DEBUG 
   Cout << "Posterior density values " << posterior_density << '\n';
 #endif 
@@ -289,11 +304,27 @@ void NonDWASABIBayesCalibration::calibrate()
 
   if ( generateRandomPosteriorSamples )
     for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
-      double ratio = posterior_density[j] / prior_density_vals[j];
+      //double ratio = posterior_density[j] / prior_density_vals[j];
+      double ratio = posterior_density[j];
       double rnum = distribution(rng);
       if (ratio > rnum)
 	points_to_keep.push_back(j);
     }
+  // Thus far, we have not calculated the true posterior to eliminate 
+  // unnecessary division.  But we need to correct that now and 
+  // multiply by prior.  Also calculate the mean of the posterior now. 
+
+  momentStatistics.shapeUninitialized(1,numFunctions);
+  for (int k=0; k<numFunctions; k++) 
+    momentStatistics(0,k)=0.0; 
+  for (int j=0; j<samples_for_posterior_eval.numCols(); j++) {
+    posterior_density[j] = posterior_density[j]*prior_density_vals[j];
+    for (int k=0; k<numFunctions; k++) 
+      momentStatistics(0,k) += responses_for_posterior_eval(k,j)*posterior_density[j];
+  }
+  for (int k=0; k<numFunctions; k++){ 
+    momentStatistics(0,k) = momentStatistics(0,k)/samples_for_posterior_eval.numCols();
+  }
   if ( !exportPosteriorSamplesFile.empty() ){
     RealMatrix posterior_data;
     extract_selected_posterior_samples(points_to_keep,
@@ -354,15 +385,18 @@ export_posterior_samples_to_file( const std::string filename,
   export_file_stream.close();
 }
 
-/*
+
 void NonDWASABIBayesCalibration::
 print_results(std::ostream& s, short results_state)
 {
-  NonDBayesCalibration::print_results(s, results_state);
+  //NonDBayesCalibration::print_results(s, results_state);
 
-  //  additional WASABI output
+  // WASABI-specific output
+  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  NonDSampling::print_moments(s, momentStatistics, RealMatrix(),
+      "response function", STANDARD_MOMENTS, resp_labels, false);
 }
-*/
+
 
 void NonDWASABIBayesCalibration::
 compute_responses(RealMatrix & samples, RealMatrix & responses)

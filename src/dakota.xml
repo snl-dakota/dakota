@@ -542,7 +542,7 @@
 
     <!ENTITY ml_pilot_samples
       '		  <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
-		    <alias name="initial_samples"/>
+		    <!-- <alias name="initial_samples"/> -->
 		    <param type="INTEGERLIST" />
 		  </keyword>'
       >
@@ -2639,6 +2639,10 @@
 			</keyword>
 		      </keyword>
 		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
+		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Samples from the Prior" help="" default="method-dependent">
+		    <alias name="samples" />
+		    <param type="INTEGER" />
+		  </keyword>
 		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
 		    <param type="INTEGER" constraint="> 0" />
 		  </keyword>
