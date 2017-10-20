@@ -1000,20 +1000,34 @@ void NonDExpansion::refine_expansion(size_t index)
 
 void NonDExpansion::multifidelity_expansion()
 {
-  /* *** TO DO: *** sanity checks + allow discretization levels...
+  // Allow either model forms or discretization levels, but not both
+  // (model form takes precedence)
   size_t num_mf = iteratedModel.subordinate_models(false).size(),
-     num_hf_lev = iteratedModel.truth_model().solution_levels();
-     // for now, only SimulationModel supports solution_levels()
-  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
-    ;
-  */
+    num_hf_lev = iteratedModel.truth_model().solution_levels(), num_fid;
+  bool same_model;
+  if (num_mf > 1) {
+    same_model = false; num_fid = num_mf;
+    if (num_hf_lev)
+      Cerr << "Warning: solution control levels will be ignored in "
+	   << "NonDExpansion::multifidelity_expansion().\n";
+  }
+  else if (num_hf_lev > 1)
+    { same_model = true; num_fid = num_hf_lev; }
+  else {
+    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
+	 << "multifidelity_expansion()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   // ordered_model_fidelities is from low to high --> initial expansion is LF
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  iteratedModel.surrogate_model_indices(0);
+  if (same_model)
+    iteratedModel.surrogate_model_indices(0, 0);
+  else
+    iteratedModel.surrogate_model_indices(0);
 
   bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  size_t   index = (recursive) ? 0 : _NPOS;
+  size_t i, im1, index = (recursive) ? 0 : _NPOS;
 
   // initial low fidelity/lowest discretization expansion
   compute_expansion(index);  // nominal LF expansion from input spec
@@ -1030,16 +1044,21 @@ void NonDExpansion::multifidelity_expansion()
   iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
   // loop over each of the discrepancy levels
-  size_t i, im1, num_mf = iteratedModel.subordinate_models(false).size();
-  for (size_t i=1; i<num_mf; ++i) {
+  for (i=1; i<num_fid; ++i) {
     // store current state for use in combine_approximation() below
     im1 = i - 1;
     if (recursive) uSpaceModel.store_approximation(im1);
     else           uSpaceModel.store_approximation();
 
     increment_specification_sequence(); // advance to next PCE/SC specification
-    iteratedModel.surrogate_model_indices(im1);
-    iteratedModel.truth_model_indices(i);
+    if (same_model) {
+      iteratedModel.surrogate_model_indices(0, im1);
+      iteratedModel.truth_model_indices(0, i);
+    }
+    else {
+      iteratedModel.surrogate_model_indices(im1);
+      iteratedModel.truth_model_indices(i);
+    }
 
     index = (recursive) ? i : _NPOS;
     update_expansion(index);   // nominal discrepancy expansion from input spec

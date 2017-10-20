@@ -6,12 +6,13 @@ method,
 	  delayed_rejection
 	  emulator
 	    pce expansion_order = 2				#s0
-#	    mf_pce expansion_order_sequence = 3 2 2 1 1		#s1
-#	    ml_pce expansion_order_sequence = 2			#s2
-#	      pilot_samples = 100 80 60 40 20			#s2
+#	    mf_pce expansion_order_sequence   = 3 2 2 1 1	#s1
+#	    mf_sc  sparse_grid_level_sequence = 3 2 2 1 1	#s2
+#	    ml_pce expansion_order_sequence = 2			#s3
+#	      pilot_samples = 100 80 60 40 20			#s3
 #	      convergence_tolerance = .1  # not mapped through...
 #	      max_iterations = 1	  # not mapped through...
-	    collocation_ratio = 0.9
+	    collocation_ratio = 0.9				#s0,#s1,#s3
 	  proposal_covariance
 	    derivatives
 	    proposal_updates = 50 # default update is every 100 samples

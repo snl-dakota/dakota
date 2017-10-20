@@ -445,23 +445,6 @@ void NonDMultilevelPolynomialChaos::core_run()
 {
   initialize_expansion();
 
-  /* *** TO DO: *** sanity checks;  Allow model forms?
-  size_t num_mf = iteratedModel.subordinate_models(false).size(),
-     num_hf_lev = iteratedModel.truth_model().solution_levels();
-     // for now, only SimulationModel supports solution_levels()
-  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
-    NonDExpansion::multifidelity_expansion();
-  else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
-	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-
-  }
-  else {
-    Cerr << "Error: unsupported combination of fidelities and levels within "
-	 << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  */
-
   // Options for import of discrepancy data.
   // > There is no good way for import to segregate the desired Q^l sample sets
   //   from among paired sets for Q^0, Q^1 - Q^0, Q^2 - Q^1, ..., Q^L - Q^Lm1.
@@ -489,14 +472,24 @@ void NonDMultilevelPolynomialChaos::core_run()
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    multifidelity_expansion(); // from NonDExpansion
+    multifidelity_expansion(); // from NonDExpansion, includes sanity checks
     break;
-  case MULTILEVEL_POLYNOMIAL_CHAOS:
+  case MULTILEVEL_POLYNOMIAL_CHAOS: {
+    // sanity checks
+    size_t //num_mf = iteratedModel.subordinate_models(false).size(),
+      num_hf_lev = iteratedModel.truth_model().solution_levels();
+    if (num_hf_lev <= 1 || expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION){
+      Cerr << "Error: unsupported multilevel configuration within "
+	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    // run one of the multilevel algorithm variants
     if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
       recursive_regression(0);
     else
       multilevel_regression(0);
     break;
+  }
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
 	 << "core_run()" << std::endl;
@@ -511,6 +504,8 @@ void NonDMultilevelPolynomialChaos::core_run()
   Cout << "approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
   annotated_results(); // full set of statistics and debug traces (default)
+  if (!summaryOutputFlag) // post_run() output is suppressed, leading to
+    print_results(Cout);  // intermediate output wth no final output
 
   // clean up for re-entrancy of ML PCE
   uSpaceModel.clear_stored();

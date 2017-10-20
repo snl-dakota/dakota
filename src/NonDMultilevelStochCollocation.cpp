@@ -211,9 +211,9 @@ void NonDMultilevelStochCollocation::core_run()
     break;
   // case MULTILEVEL_STOCH_COLLOCATION:
   //   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //     recursive_regression(0);
+  //     recursive_sparse_grid(0);
   //   else
-  //     multilevel_regression(0);
+  //     multilevel_sparse_grid(0);
   //   break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
@@ -227,6 +227,8 @@ void NonDMultilevelStochCollocation::core_run()
        << "\nMultifidelity UQ: approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
   annotated_results(); // full set of statistics and debug traces (default)
+  if (!summaryOutputFlag) // post_run() output is suppressed, leading to
+    print_results(Cout);  // intermediate output wth no final output
 
   // clean up for re-entrancy of ML SC
   uSpaceModel.clear_stored();
