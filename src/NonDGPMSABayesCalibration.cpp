@@ -20,13 +20,8 @@
 #include "DakotaModel.hpp"
 
 // then system-related headers
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
-namespace accum = boost::accumulators;
+#include <boost/filesystem/path.hpp>
+namespace bfs = boost::filesystem;
 
 // then list QUESO headers
 #include "queso/GPMSA.h"
@@ -299,9 +294,17 @@ void NonDGPMSABayesCalibration::calibrate()
   // Initial condition of the chain: overlay user params on default GPMSA values
   overlay_initial_params(full_param_initials);
 
+  if (outputLevel >= VERBOSE_OUTPUT)
+    Cout << "INFO (GPMSA): Final initial point\n [ "
+	 << full_param_initials << " ]" << std::endl;
+
   GslMatrix full_proposal_cov(
     gpmsaFactory->prior().imageSet().vectorSpace().zeroVector());
   overlay_proposal_covariance(full_proposal_cov);
+
+  if (outputLevel >= VERBOSE_OUTPUT)
+    Cout << "INFO (GPMSA): Final proposal covariance matrix\n [ "
+	 << full_proposal_cov << " ]" << std::endl;
 
   if (outputLevel >= NORMAL_OUTPUT) {
     Cout << ">>>>> GPMSA: Performing calibration with " << mcmcType << " using "
@@ -358,11 +361,31 @@ overlay_proposal_covariance(GslMatrix& full_prop_cov) const
   // GPMSA hyper-parameters.
   gpmsaFactory->prior().pdf().distributionVariance(full_prop_cov);
 
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "INFO (GPMSA): Proposal covariance matrix from GPMSA prior:\n [ "
+	 << full_prop_cov << " ]" << std::endl;
+
   // Now override with user (or iterative algorithm-updated values)
   unsigned int num_calib_params = numContinuousVars + numHyperparams;
   for (unsigned int i=0; i<num_calib_params; ++i)
     for (unsigned int j=0; j<num_calib_params; ++j)
       full_prop_cov(i,j) = (*proposalCovMatrix)(i,j);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "INFO (GPMSA): Proposal covariance matrix after overlay: [ \n"
+	 << full_prop_cov << " ]" << std::endl;
+
+  // Power users can override the covariance values with a file
+  std::string initial_cov_filename =
+    "initial_proposal_covariance_sub" + quesoEnv->subIdString();
+  if (bfs::exists(initial_cov_filename + ".m")) {
+    std::set<unsigned int> sid_set;
+    sid_set.insert(quesoEnv->subId());
+    full_prop_cov.subReadContents(initial_cov_filename, "m", sid_set);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "INFO (GPMSA): Initial proposal covariance overridden with values"
+	   << " from " << (initial_cov_filename + ".m") << std::endl;
+  }
 }
 
 
@@ -371,6 +394,10 @@ overlay_initial_params(GslVector& full_param_initials)
 {
   // Start with the mean of the prior
   gpmsaFactory->prior().pdf().distributionMean(full_param_initials);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "INFO (GPMSA): Initial point from GPMSA prior:\n [ "
+	 << full_param_initials << " ]" << std::endl;
 
   // But override whatever we want, e.g., with user-specified values:
   unsigned int num_calib_params = numContinuousVars + numHyperparams;;
@@ -394,6 +421,22 @@ overlay_initial_params(GslVector& full_param_initials)
   // full_param_initials[num_calib_params + 11] = 0.97; // discrepancy corr str
   // full_param_initials[num_calib_params + 12] = 8000.0; // emulator data precision
   // full_param_initials[num_calib_params + 13] = 1.0;  // observation error precision
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "INFO (GPMSA): Initial point after overlay:\n [ "
+	 << full_param_initials << " ]" << std::endl;
+
+  // Power users can override the initial values with a file
+  std::string initial_point_filename =
+    "initial_point_sub" + quesoEnv->subIdString();
+  if (bfs::exists(initial_point_filename + ".m")) {
+    std::set<unsigned int> sid_set;
+    sid_set.insert(quesoEnv->subId());
+    full_param_initials.subReadContents(initial_point_filename, "m", sid_set);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "INFO (GPMSA): Initial point overridden with values from " 
+	   << (initial_point_filename + ".m") << std::endl;
+  }
 }
 
 
