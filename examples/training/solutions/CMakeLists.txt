@@ -51,8 +51,7 @@ function(add_training_test _test_input_file aux_file_string extra_file_string
     if (add_this_test)
 
       # Add either one test with all, or the 0-th test, followed by all sub-tests
-      # Prefix test name with examples_
-      dakota_app_test("examples_${test_name}" ${last_subtest}
+      dakota_app_test(${test_name} ${last_subtest}
         FILE_DEPENDENCIES "${test_all_files}" "${test_req_files}"
         LABELS ${test_labels})
 
