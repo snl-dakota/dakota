@@ -36405,6 +36405,22 @@ Moment statistics for each response function:
  response_fn_1  2.5278860253860586e-02  6.6039799715438829e-03
  response_fn_2  1.2897077487378097e-01  1.3734168487509461e-02
  response_fn_3  2.5278860255216029e-02  6.6039799715236968e-03
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 506 total (506 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 2.1326904296875000e+01
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5391410262223343e-02  6.5758769152100532e-03
+ response_fn_2  1.2897663546739019e-01  1.3435806638061348e-02
+ response_fn_3  2.5391410264308668e-02  6.5758769150202076e-03
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 1604 total (1604 new, 0 duplicate)
+<<<<< Equivalent number of high fidelity evaluations: 6.6913818359375000e+01
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5282266143281138e-02  6.5958224168980086e-03
+ response_fn_2  1.2896729812629582e-01  1.3513577129111894e-02
+ response_fn_3  2.5282266150085397e-02  6.5958224280584432e-03
 dakota_uq_genz_pce_lls_adapted.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
