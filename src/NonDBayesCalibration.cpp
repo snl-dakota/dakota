@@ -331,6 +331,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 	probDescDB.get_ushort("method.import_build_format"),
 	probDescDB.get_bool("method.import_build_active_only"));
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+      // ML PCE includes iteration, so propagate controls from Bayes spec:
+      se_rep->maximum_iterations(maxIterations);
+      se_rep->convergence_tolerance(convergenceTol);
     }
 
     stochExpIterator.assign_rep(se_rep, false);
