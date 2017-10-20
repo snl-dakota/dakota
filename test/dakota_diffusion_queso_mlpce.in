@@ -5,9 +5,11 @@ method,
 	  chain_samples = 2000 seed = 348
 	  delayed_rejection
 	  emulator
-	    pce expansion_order = 2			#s0
-#	    ml_pce expansion_order_sequence = 2		#s1
-#	    ml_pce expansion_order_sequence = 2		#s2
+	    pce expansion_order = 2				#s0
+#	    mf_pce expansion_order_sequence = 3 2 2 1 1		#s1
+#	    ml_pce expansion_order_sequence = 2			#s2
+#	      pilot_samples = 100 80 60 40 20			#s2
+#	      max_iterations = 1				#s2
 	    collocation_ratio = 0.9
 	  proposal_covariance
 	    derivatives

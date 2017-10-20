@@ -152,6 +152,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     standardizedSpace = true; break; // natafTransform defined w/i NonDExpansion
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
@@ -577,6 +578,7 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);              break;
   default:
     mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
@@ -596,6 +598,7 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);              break;
   default:
     mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
@@ -610,6 +613,7 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.free_communicators(pl_iter);              break;
   default:
     mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
@@ -625,7 +629,8 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 void NonDBayesCalibration::initialize_model()
 {
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     stochExpIterator.run(pl_iter); break;
   }

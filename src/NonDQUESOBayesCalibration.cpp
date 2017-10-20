@@ -518,10 +518,11 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   // full Hessian requires values/gradients/Hessians of residuals (rv=7)
   precondRequestValue = 0;
   switch (emulatorType) {
-  case PCE_EMULATOR: case KRIGING_EMULATOR:
-    precondRequestValue = 7; break;
-  case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
-    precondRequestValue = 2; break;
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+  case KRIGING_EMULATOR:
+    precondRequestValue = 7; break; // emulator Hessian support
+  case SC_EMULATOR: case MF_SC_EMULATOR: case GP_EMULATOR:
+    precondRequestValue = 2; break; // emulator Hessians not supported yet
   case  NO_EMULATOR:
     // Note: mixed gradients/Hessians are still globally "on", regardless of
     // mixed computation approach
@@ -1026,6 +1027,7 @@ void NonDQUESOBayesCalibration::update_model()
   mcmcModel.surrogate_response_mode(BYPASS_SURROGATE); // actual model evals
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     nondInstance = (NonD*)stochExpIterator.iterator_rep();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     nondInstance = this; // restore
@@ -1045,7 +1047,8 @@ void NonDQUESOBayesCalibration::update_model()
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
     NonDExpansion* se_iterator
@@ -1067,9 +1070,9 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   // than use norm of current coeffs (stopping on small norm is not meaningful)
   if (prevCoeffs.empty()) {
     switch (emulatorType) {
-    case PCE_EMULATOR:
+    case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
       prevCoeffs = mcmcModel.approximation_coefficients(true);  break;
-    case SC_EMULATOR:
+    case SC_EMULATOR: case MF_SC_EMULATOR:
       prevCoeffs = mcmcModel.approximation_coefficients(false); break;
     case GP_EMULATOR: case KRIGING_EMULATOR:
       Cerr << "Warning: convergence norm not yet defined for GP emulators in "
@@ -1082,7 +1085,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 
   Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
   switch (emulatorType) {
-  case PCE_EMULATOR: {
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: {
     // normalized coeffs:
     const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
     size_t i, j, num_qoi = coeffs.size(),
@@ -1111,7 +1114,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     prevCoeffs = coeffs;
     break;
   }
-  case SC_EMULATOR: {
+  case SC_EMULATOR: case MF_SC_EMULATOR: {
     // Interpolation could use a similar concept with the expansion coeffs,
     // although adaptation would imply differences in the grid.
     const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(false);
@@ -1176,6 +1179,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   if (standardizedSpace) { // param domain in u-space
     switch (emulatorType) {
     case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
+    case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
       copy_gsl_partial(init_pt, *paramInitials, 0);
       break;
     default: { // init_pt not already propagated to u-space: use local nataf

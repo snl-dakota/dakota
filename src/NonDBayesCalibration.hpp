@@ -179,7 +179,8 @@ protected:
   String scalarDataFilename;
 
   // technically doesn't apply to GPMSA, but leaving here for now
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
+  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR,
+  /// SC_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, or MF_SC_EMULATOR
   short emulatorType;
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
