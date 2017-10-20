@@ -148,12 +148,14 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
+NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
+			      short exp_coeffs_approach,
 			      const UShortArray& num_int_seq,
 			      const RealVector& dim_pref, short u_space_type,
 			      bool piecewise_basis, bool use_derivs):
-  NonDPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS, model, exp_coeffs_approach,
-		      dim_pref, u_space_type, piecewise_basis, use_derivs), 
+  NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
+		      exp_coeffs_approach, dim_pref, u_space_type,
+		      piecewise_basis, use_derivs), 
   sequenceIndex(0)
 {
   assign_hierarchical_response_mode();
@@ -217,7 +219,8 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression (least squares, CS, OLI). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
+NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
+			      short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
 			      const SizetArray& colloc_pts_seq,
@@ -227,9 +230,9 @@ NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
 			      bool cv_flag, const String& import_build_pts_file,
 			      unsigned short import_build_format,
 			      bool import_build_active_only):
-  NonDPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS, model, exp_coeffs_approach,
-		      dim_pref, u_space_type, piecewise_basis, use_derivs,
-		      colloc_ratio, seed, cv_flag), 
+  NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
+		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
+		      seed, cv_flag), 
   expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
   sequenceIndex(0), pilotSamples(pilot)
 {

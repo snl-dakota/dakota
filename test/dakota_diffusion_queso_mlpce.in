@@ -9,7 +9,8 @@ method,
 #	    mf_pce expansion_order_sequence = 3 2 2 1 1		#s1
 #	    ml_pce expansion_order_sequence = 2			#s2
 #	      pilot_samples = 100 80 60 40 20			#s2
-#	      max_iterations = 1				#s2
+#	      convergence_tolerance = .1  # not mapped through...
+#	      max_iterations = 1	  # not mapped through...
 	    collocation_ratio = 0.9
 	  proposal_covariance
 	    derivatives

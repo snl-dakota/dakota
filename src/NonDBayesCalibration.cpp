@@ -302,7 +302,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,false,false);
       else { // regression PCE: LeastSq/CS, OLI
 	SizetArray pilot; // empty for MF PCE
-	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	se_rep = new NonDMultilevelPolynomialChaos(
+	  MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
@@ -318,8 +319,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     }
 
     else if (emulatorType == ML_PCE_EMULATOR) {
-      se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
-	probDescDB.get_short("method.nond.regression_type"),
+      se_rep = new NonDMultilevelPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS,
+	inbound_model, probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
 	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
 	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar

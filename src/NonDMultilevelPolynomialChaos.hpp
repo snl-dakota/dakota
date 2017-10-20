@@ -39,12 +39,14 @@ public:
   /// standard constructor
   NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
+				short exp_coeffs_approach,
 				const UShortArray& num_int_seq,
 				const RealVector& dim_pref, short u_space_type,
 				bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
-  NonDMultilevelPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
+				short exp_coeffs_approach,
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
 				const SizetArray& colloc_pts_seq,
