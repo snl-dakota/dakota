@@ -181,7 +181,8 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, .git directories, duplicate TPLs, and GPL packages
 # FFTW is GPL, CDDLIB is GPL
-set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/"
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/" ".*\\\\.git.*"
+  "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
   "^${Dakota_SOURCE_DIR}/packages/fftw/"
   "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
   "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
@@ -606,9 +607,6 @@ endif()
 if(NOT MSVC)
   install(PROGRAMS "scripts/dakota.sh" DESTINATION "bin")
 endif()
-
-
-
 
 # Final CPack settings
 
