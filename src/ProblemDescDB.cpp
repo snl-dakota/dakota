@@ -2479,6 +2479,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.x_conv_tol", P xConvTol},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
+	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
 	{"nond.regression_penalty", P regressionL2Penalty},
 	{"npsol.linesearch_tolerance", P lineSearchTolerance},
 	{"optpp.centering_parameter", P centeringParam},

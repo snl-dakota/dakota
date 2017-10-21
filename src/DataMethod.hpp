@@ -929,6 +929,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c estimator_rate selection in \ref MethodMultilevelPCE
+  Real multilevEstimatorRate;
   /// the \c final_moments specification in \ref MethodNonD
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification

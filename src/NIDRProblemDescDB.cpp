@@ -6714,6 +6714,7 @@ static Real
 	MP_(maxStep),
 	MP_(minBoxSize),
 	MP_(minMeshSize),
+	MP_(multilevEstimatorRate),
 	MP_(mutationRate),
 	MP_(mutationScale),
 	MP_(percentVarianceExplained),

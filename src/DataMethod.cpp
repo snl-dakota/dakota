@@ -138,12 +138,12 @@ DataMethodRep::DataMethodRep():
   multilevDiscrepEmulation(DISTINCT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
-  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
-  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
-  posteriorStatsKL(false),
+  multilevEstimatorRate(2.), finalMomentsType(STANDARD_MOMENTS),
+  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
+  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
+  samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
+  mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
+  logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
   posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
   proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
   batchSelectionType("naive"), lipschitzType("local"), 
@@ -283,11 +283,12 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
-    << integrationRefine << refineSamples << pilotSamples << finalMomentsType
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
-    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << integrationRefine << refineSamples << pilotSamples
+    << multilevEstimatorRate << finalMomentsType << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
+    << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
@@ -432,11 +433,12 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> tensorGridFlag >> tensorGridOrder >> multilevDiscrepEmulation
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
-    >> integrationRefine >> refineSamples >> pilotSamples >> finalMomentsType
-    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
-    >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> chainSamples >> buildSamples >> samplesOnEmulator
-    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
+    >> integrationRefine >> refineSamples >> pilotSamples
+    >> multilevEstimatorRate >> finalMomentsType >> distributionType
+    >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
+    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
+    >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
+    >> emulatorType >> mcmcType >> standardizedSpace
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
@@ -581,11 +583,12 @@ void DataMethodRep::write(std::ostream& s) const
     << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
-    << integrationRefine << refineSamples << pilotSamples << finalMomentsType
-    << distributionType << responseLevelTarget << responseLevelTargetReduce
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
-    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
+    << integrationRefine << refineSamples << pilotSamples
+    << multilevEstimatorRate << finalMomentsType << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
+    << emulatorType << mcmcType << standardizedSpace
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType

@@ -1208,6 +1208,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
           [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
           [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
           [ discrepancy_emulation {0}
             distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
             |

@@ -111,6 +111,11 @@ private:
   /// sequence index for {expOrder,collocPts,expSamples}SeqSpec
   size_t sequenceIndex;
 
+  /// rate parameter for estimator variance in ML PCE
+  Real kappaEstimatorRate;
+  /// scale parameter for estimator variance in ML PCE
+  Real gammaEstimatorScale;
+
   /// number of samples allocated to each level of a discretization
   /// hierarchy within multilevel regression
   SizetArray NLev;

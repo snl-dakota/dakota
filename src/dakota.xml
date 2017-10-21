@@ -547,6 +547,12 @@
 		  </keyword>'
       >
 
+    <!ENTITY estimator_conv_rate
+      '		  <keyword  id="estimator_rate" name="estimator_rate" code="{N_mdm(Real,multilevEstimatorRate)}" label="estimator_rate" help="" minOccurs="0" default="2" >
+		    <param type="REAL" />
+		  </keyword>'
+      >
+
     <!ENTITY discrep_emulation
       '		      <keyword  id="discrepancy_emulation" name="discrepancy_emulation" code="{0}" label="Multilevel-multifidelity discrepancy emulation approach" help="MethodCommands.html#MethodNonDPCE" minOccurs="0" default="distinct" >
 			<oneOf>
@@ -1988,6 +1994,7 @@
 		      <!-- &pce_refinement; -->
 		      &default_max_iterations;
 		      &ml_pilot_samples;
+		      &estimator_conv_rate;
 		      &discrep_emulation;
 		      <oneOf label="Coefficient computation approach">
 			&pce_expansion_order_sequence;

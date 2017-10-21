@@ -35,7 +35,11 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
   quadOrderSeqSpec(probDescDB.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
-  sequenceIndex(0),pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
+  sequenceIndex(0),
+  kappaEstimatorRate(
+    probDescDB.get_real("method.nond.multilevel_estimator_rate")),
+  gammaEstimatorScale(1.),
+  pilotSamples(probDescDB.get_sza("method.nond.pilot_samples"))
   //resizedFlag(false), callResize(false)
 {
   assign_hierarchical_response_mode();
@@ -156,7 +160,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   NonDPolynomialChaos(/*method_name*/MULTIFIDELITY_POLYNOMIAL_CHAOS, model,
 		      exp_coeffs_approach, dim_pref, u_space_type,
 		      piecewise_basis, use_derivs), 
-  sequenceIndex(0)
+  sequenceIndex(0), kappaEstimatorRate(2.), gammaEstimatorScale(1.)
 {
   assign_hierarchical_response_mode();
 
@@ -234,7 +238,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
 		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
 		      seed, cv_flag), 
   expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0), pilotSamples(pilot)
+  sequenceIndex(0), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
+  pilotSamples(pilot)
 {
   assign_hierarchical_response_mode();
 
@@ -714,7 +719,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
   RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
-  Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
+  Real inv_k = 1./kappaEstimatorRate, inv_kp1 = 1./(kappaEstimatorRate+1.);
   
   // Initialize for pilot sample
   if (!importBuildPointsFile.empty()) {
@@ -804,8 +809,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
 	last_active = lev;
       }
 
-      sum_root_var_cost
-	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
+      sum_root_var_cost	+= std::pow(agg_var_l * 
+	std::pow(lev_cost, kappaEstimatorRate), inv_kp1);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
     }
@@ -821,7 +826,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
     }
 
     // update targets based on variance estimates
-    Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
+    Real fact
+      = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
       lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
@@ -864,7 +870,7 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
   RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
   // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
-  Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
+  Real inv_k = 1./kappaEstimatorRate, inv_kp1 = 1./(kappaEstimatorRate+1.);
 
   // Initialize for pilot sample
   SizetArray delta_N_l(num_lev); // sample increments
@@ -980,8 +986,8 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 	last_active = lev;
       }
 
-      sum_root_var_cost
-	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
+      sum_root_var_cost	+= std::pow(agg_var_l * 
+	std::pow(lev_cost, kappaEstimatorRate), inv_kp1);
       // MSE reference is MC applied to HF:
       if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
     }
@@ -997,7 +1003,8 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
     }
 
     // update targets based on variance estimates
-    Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
+    Real fact
+      = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
       lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
