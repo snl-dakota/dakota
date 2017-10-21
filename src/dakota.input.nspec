@@ -1040,1222 +1040,1512 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( 
-    ( 
-      ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}
-        [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-          uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-          |
-          ( dimension_adaptive {0}
-            sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-            |
-            decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
-            |
-            generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-           )
-         ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
-        ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        |
-        ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            restricted {N_mdm(type,growthOverride_RESTRICTED)}
-            |
-            unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
-           ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        |
-        cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
-        |
-        ( expansion_order INTEGER {N_mdm(ushint,expansionOrder)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ basis_type {0}
-            tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
-            |
-            total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
-            |
-            ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
-              [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
-              [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
-             )
-           ]
-          ( 
-            collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
-            |
-            collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-            [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-            [ 
-              ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                [ 
-                  svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                  |
-                  equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                 ]
-               )
-              |
-              ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-              |
-              ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-               )
-             ]
-            [ cross_validation {N_mdm(true,crossValidation)}
-              [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-             ]
-            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-            [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-           )
-          |
-          ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
-           )
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
-        |
-        ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-          collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
-          [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
-          [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
-        |
-        import_expansion_file STRING {N_mdm(str,importExpansionFile)}
-        [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
-          |
-          adapt_import {N_mdm(utype,integrationRefine_AIS)}
-          |
-          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ 
-          diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-          |
-          full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-         ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-        [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importApproxActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-        [ 
-          askey {N_mdm(type,expansionType_ASKEY_U)}
-          |
-          wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-         ]
-        [ normalized {N_mdm(true,normalizedCoeffs)} ]
-        [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-       )
+  ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}
+    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
       |
-      ( multifidelity_polynomial_chaos {N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}
-        [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-          uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-          |
-          ( dimension_adaptive {0}
-            sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-            |
-            decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
-            |
-            generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-           )
-         ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
-        [ discrepancy_emulation {0}
-          distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
-          |
-          recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
-         ]
-        ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
+      ( dimension_adaptive {0}
+        sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
         |
-        ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevelSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            restricted {N_mdm(type,growthOverride_RESTRICTED)}
-            |
-            unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
-           ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
+        decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
         |
-        ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ basis_type {0}
-            tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
-            |
-            total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
-            |
-            ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
-              [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
-              [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
-             )
-           ]
-          ( 
-            collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
-            |
-            collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-            [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-            [ 
-              ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                [ 
-                  svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                  |
-                  equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                 ]
-               )
-              |
-              ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-              |
-              ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-               )
-             ]
-            [ cross_validation {N_mdm(true,crossValidation)}
-              [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-             ]
-            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-            [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-           )
-          |
-          ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
-           )
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
-        |
-        ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-          collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
-          [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
-          [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
-        [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
-          |
-          adapt_import {N_mdm(utype,integrationRefine_AIS)}
-          |
-          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ 
-          diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-          |
-          full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-         ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-        [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importApproxActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-        [ 
-          askey {N_mdm(type,expansionType_ASKEY_U)}
-          |
-          wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-         ]
-        [ normalized {N_mdm(true,normalizedCoeffs)} ]
-        [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+        generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
        )
-      |
-      ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
-        [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-        [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
-        [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
-        [ discrepancy_emulation {0}
-          distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
-          |
-          recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
-         ]
-        ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ basis_type {0}
-            tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
-            |
-            total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
-            |
-            ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
-              [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
-              [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
-             )
-           ]
-          ( 
-            collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
-            |
-            collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-            [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-            [ 
-              ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                [ 
-                  svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                  |
-                  equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                 ]
-               )
-              |
-              ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-              |
-              ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-               )
-              |
-              ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-               )
-             ]
-            [ cross_validation {N_mdm(true,crossValidation)}
-              [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-             ]
-            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-            [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-           )
-          |
-          ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
-            [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
-           )
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
         |
-        ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
-          collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
-          [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
-          [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-         )
-        [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
-          |
-          adapt_import {N_mdm(utype,integrationRefine_AIS)}
-          |
-          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ 
-          diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-          |
-          full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-         ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-        [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importApproxActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-        [ 
-          askey {N_mdm(type,expansionType_ASKEY_U)}
-          |
-          wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-         ]
-        [ normalized {N_mdm(true,normalizedCoeffs)} ]
-        [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-       )
-      |
-      ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(utype,methodName_STOCH_COLLOCATION)}
-        [ 
-          ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-            |
-            ( dimension_adaptive {0}
-              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-              |
-              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-             )
-           )
-          |
-          ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
-            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-            |
-            ( dimension_adaptive {0}
-              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-              |
-              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-             )
-            |
-            local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
-           )
-         ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
-        ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        |
-        ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nodal {N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}
-            |
-            hierarchical {N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}
-           ]
-          [ 
-            restricted {N_mdm(type,growthOverride_RESTRICTED)}
-            |
-            unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
-           ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
-          |
-          adapt_import {N_mdm(utype,integrationRefine_AIS)}
-          |
-          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ 
-          diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-          |
-          full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-         ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-        [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importApproxActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-        [ 
-          piecewise {NIDRProblemDescDB::method_piecewise}
-          |
-          askey {N_mdm(type,expansionType_ASKEY_U)}
-          |
-          wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-         ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-       )
-      |
-      ( multifidelity_stoch_collocation {N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}
-        [ 
-          ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-            |
-            ( dimension_adaptive {0}
-              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-              |
-              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-             )
-           )
-          |
-          ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
-            uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
-            |
-            ( dimension_adaptive {0}
-              sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
-              |
-              generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
-             )
-            |
-            local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
-           )
-         ]
-        [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
-        [ discrepancy_emulation {0}
-          distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
-          |
-          recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
-         ]
-        ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        |
-        ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevelSeq)}
-          [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
-          [ 
-            nodal {N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}
-            |
-            hierarchical {N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}
-           ]
-          [ 
-            restricted {N_mdm(type,growthOverride_RESTRICTED)}
-            |
-            unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
-           ]
-          [ 
-            nested {N_mdm(type,nestingOverride_NESTED)}
-            |
-            non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
-           ]
-         )
-        [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
-          |
-          adapt_import {N_mdm(utype,integrationRefine_AIS)}
-          |
-          mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
-          [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ 
-          diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
-          |
-          full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
-         ]
-        [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-        [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-           ]
-          [ active_only {N_mdm(true,importApproxActive)} ]
-         ]
-        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-          [ 
-            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-            |
-            ( 
-              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-               )
-             )
-            |
-            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-           ]
-         ]
-        [ 
-          piecewise {NIDRProblemDescDB::method_piecewise}
-          |
-          askey {N_mdm(type,expansionType_ASKEY_U)}
-          |
-          wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-         ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-       )
-      |
-      ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}
-        [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
-        [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-        [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-        [ sample_type {0}
-          lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-          |
-          incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
-          |
-          incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
-         ]
-        [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-        [ d_optimal {N_mdm(true,dOptimal)}
-          [ 
-            candidate_designs INTEGER > 0 {N_mdm(sizet,numCandidateDesigns)}
-            |
-            leja_oversample_ratio REAL {N_mdm(Real,collocationRatio)}
-           ]
-         ]
-        [ variance_based_decomp {N_mdm(true,vbdFlag)}
-          [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-         ]
-        [ backfill {N_mdm(true,backfillFlag)} ]
-        [ principal_components {N_mdm(true,pcaFlag)}
-          [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
-         ]
-        [ wilks {N_mdm(true,wilksFlag)}
-          [ order INTEGER {N_mdm(ushint,wilksOrder)} ]
-          [ confidence_level REAL {N_mdm(Real,wilksConfidenceLevel)} ]
-          [ one_sided_lower {N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)} ]
-          [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
-          [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
-         ]
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-       )
-      [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
-        [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
-       ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
        ]
      )
     |
-    ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-      [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
-      [ sample_type {0}
-        lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+    ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        restricted {N_mdm(type,growthOverride_RESTRICTED)}
         |
-        random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+        unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
        ]
-      [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
-        [ 
-          annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-         ]
-       ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-      [ final_moments {0}
-        none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
         |
-        standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-        |
-        central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
        ]
      )
     |
-    ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
-      [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
+    |
+    ( expansion_order INTEGER {N_mdm(ushint,expansionOrder)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ basis_type {0}
+        tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
+        |
+        total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
+        |
+        ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+          [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
+          [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
+         )
+       ]
+      ( 
+        collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ 
+          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
+            [ 
+              svd {N_mdm(type,lsRegressionType_SVD_LS)}
+              |
+              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
+             ]
+           )
+          |
+          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
+          |
+          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
+           )
+         ]
+        [ cross_validation {N_mdm(true,crossValidation)}
+          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+       )
+      |
+      ( expansion_samples INTEGER {N_mdm(sizet,expansionSamples)}
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+       )
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    |
+    ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+      collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+      [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+      [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    |
+    import_expansion_file STRING {N_mdm(str,importExpansionFile)}
+    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ probability_refinement ALIAS sample_refinement {0}
       import {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
       mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
       [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-     )
-    |
-    ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
-      [ build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)} ]
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
-      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-        [ 
-          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-         ]
-        [ active_only {N_mdm(true,importBuildActive)} ]
-       ]
-      [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-        [ 
-          annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-         ]
-       ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-     )
-    |
-    ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}
-      [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
-      [ fitness_metric {0}
-        predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
-        |
-        distance {N_mdm(lit,fitnessMetricType_distance)}
-        |
-        gradient {N_mdm(lit,fitnessMetricType_gradient)}
-       ]
-      [ batch_selection {0}
-        naive {N_mdm(lit,batchSelectionType_naive)}
-        |
-        distance_penalty {N_mdm(lit,batchSelectionType_distance_penalty)}
-        |
-        topology {N_mdm(lit,batchSelectionType_topology)}
-        |
-        constant_liar {N_mdm(lit,batchSelectionType_constant_liar)}
-       ]
-      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
-      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-        [ 
-          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-         ]
-        [ active_only {N_mdm(true,importBuildActive)} ]
-       ]
-      [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-        [ 
-          annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-          |
-          ( 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-           )
-          |
-          freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-         ]
-       ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-      [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-     )
-    |
-    ( pof_darts ALIAS nond_pof_darts {N_mdm(utype,methodName_POF_DARTS)}
-      build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ lipschitz {0}
-        local {N_mdm(lit,lipschitzType_local)}
-        |
-        global {N_mdm(lit,lipschitzType_global)}
-       ]
-      [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-     )
-    |
-    ( rkd_darts ALIAS nond_rkd_darts {N_mdm(utype,methodName_RKD_DARTS)}
-      build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
-      [ lipschitz {0}
-        local {N_mdm(lit,lipschitzType_local)}
-        |
-        global {N_mdm(lit,lipschitzType_global)}
-       ]
-      [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
-          |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
-         ]
-       ]
-     )
-    |
-    ( global_evidence ALIAS nond_global_evidence {N_mdm(utype,methodName_GLOBAL_EVIDENCE)}
-      [ samples INTEGER {N_mdm(int,numSamples)} ]
-      [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ 
+      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+      |
+      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
+        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
         ( 
-          sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
-          |
-          ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
-          [ gaussian_process ALIAS kriging {0}
-            surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
-            |
-            dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
-           ]
-          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-          [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
-            [ 
-              annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-             ]
-            [ active_only {N_mdm(true,importBuildActive)} ]
-           ]
-          [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
-            [ 
-              annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
-              |
-              ( 
-                ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-                 )
-               )
-              |
-              freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-             ]
-           ]
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
          )
         |
-        ea {N_mdm(utype,subMethod_SUBMETHOD_EA)}
-        |
-        lhs {N_mdm(utype,subMethod_SUBMETHOD_LHS)}
+        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
-      [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
-        [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
-        [ compute {0}
-          probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+      [ active_only {N_mdm(true,importApproxActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ 
+      askey {N_mdm(type,expansionType_ASKEY_U)}
+      |
+      wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+     ]
+    [ normalized {N_mdm(true,normalizedCoeffs)} ]
+    [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
           |
-          gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
-          [ system {0}
-            series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
-            |
-            parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
-           ]
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
          ]
        ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multifidelity_polynomial_chaos {N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}
+    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+      |
+      ( dimension_adaptive {0}
+        sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+        |
+        decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+        |
+        generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+       )
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ discrepancy_emulation {0}
+      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      |
+      recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+     ]
+    ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
      )
+    |
+    ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevelSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        restricted {N_mdm(type,growthOverride_RESTRICTED)}
+        |
+        unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
+       ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
+     )
+    |
+    ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ basis_type {0}
+        tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
+        |
+        total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
+        |
+        ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+          [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
+          [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
+         )
+       ]
+      ( 
+        collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ 
+          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
+            [ 
+              svd {N_mdm(type,lsRegressionType_SVD_LS)}
+              |
+              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
+             ]
+           )
+          |
+          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
+          |
+          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
+           )
+         ]
+        [ cross_validation {N_mdm(true,crossValidation)}
+          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+       )
+      |
+      ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+       )
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    |
+    ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+      collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+      [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+      [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ probability_refinement ALIAS sample_refinement {0}
+      import {N_mdm(utype,integrationRefine_IS)}
+      |
+      adapt_import {N_mdm(utype,integrationRefine_AIS)}
+      |
+      mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ 
+      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+      |
+      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importApproxActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ 
+      askey {N_mdm(type,expansionType_ASKEY_U)}
+      |
+      wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+     ]
+    [ normalized {N_mdm(true,normalizedCoeffs)} ]
+    [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
+    [ discrepancy_emulation {0}
+      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      |
+      recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+     ]
+    ( expansion_order_sequence INTEGERLIST {N_mdm(usharray,expansionOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ basis_type {0}
+        tensor_product {N_mdm(type,expansionBasisType_TENSOR_PRODUCT_BASIS)}
+        |
+        total_order {N_mdm(type,expansionBasisType_TOTAL_ORDER_BASIS)}
+        |
+        ( adapted {N_mdm(type,expansionBasisType_ADAPTED_BASIS_EXPANDING_FRONT)}
+          [ advancements INTEGER {N_mdm(ushint,adaptedBasisAdvancements)} ]
+          [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
+         )
+       ]
+      ( 
+        collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+        [ 
+          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
+            [ 
+              svd {N_mdm(type,lsRegressionType_SVD_LS)}
+              |
+              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
+             ]
+           )
+          |
+          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
+          |
+          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+           )
+          |
+          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
+            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
+            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
+           )
+         ]
+        [ cross_validation {N_mdm(true,crossValidation)}
+          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
+       )
+      |
+      ( expansion_samples_sequence INTEGERLIST {N_mdm(szarray,expansionSamplesSeq)}
+        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+       )
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    |
+    ( orthogonal_least_interpolation ALIAS least_interpolation ALIAS oli {N_mdm(type,regressionType_ORTHOG_LEAST_INTERPOLATION)}
+      collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+      [ tensor_grid INTEGERLIST {N_mdm(usharray,tensorGridOrder)} ]
+      [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
+      [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+        [ 
+          annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
+          |
+          freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+         ]
+        [ active_only {N_mdm(true,importBuildActive)} ]
+       ]
+     )
+    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ probability_refinement ALIAS sample_refinement {0}
+      import {N_mdm(utype,integrationRefine_IS)}
+      |
+      adapt_import {N_mdm(utype,integrationRefine_AIS)}
+      |
+      mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ 
+      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+      |
+      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importApproxActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ 
+      askey {N_mdm(type,expansionType_ASKEY_U)}
+      |
+      wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+     ]
+    [ normalized {N_mdm(true,normalizedCoeffs)} ]
+    [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(utype,methodName_STOCH_COLLOCATION)}
+    [ 
+      ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        |
+        ( dimension_adaptive {0}
+          sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+          |
+          generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+         )
+       )
+      |
+      ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        |
+        ( dimension_adaptive {0}
+          sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+          |
+          generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+         )
+        |
+        local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+       )
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
+     )
+    |
+    ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nodal {N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}
+        |
+        hierarchical {N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}
+       ]
+      [ 
+        restricted {N_mdm(type,growthOverride_RESTRICTED)}
+        |
+        unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
+       ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
+     )
+    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ probability_refinement ALIAS sample_refinement {0}
+      import {N_mdm(utype,integrationRefine_IS)}
+      |
+      adapt_import {N_mdm(utype,integrationRefine_AIS)}
+      |
+      mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ 
+      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+      |
+      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importApproxActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ 
+      piecewise {NIDRProblemDescDB::method_piecewise}
+      |
+      askey {N_mdm(type,expansionType_ASKEY_U)}
+      |
+      wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+     ]
+    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multifidelity_stoch_collocation {N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}
+    [ 
+      ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        |
+        ( dimension_adaptive {0}
+          sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+          |
+          generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+         )
+       )
+      |
+      ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+        |
+        ( dimension_adaptive {0}
+          sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+          |
+          generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+         )
+        |
+        local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+       )
+     ]
+    [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ discrepancy_emulation {0}
+      distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
+      |
+      recursive {N_mdm(type,multilevDiscrepEmulation_RECURSIVE_EMULATION)}
+     ]
+    ( quadrature_order_sequence INTEGERLIST {N_mdm(usharray,quadratureOrderSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
+     )
+    |
+    ( sparse_grid_level_sequence INTEGERLIST {N_mdm(usharray,sparseGridLevelSeq)}
+      [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
+      [ 
+        nodal {N_mdm(type,expansionBasisType_NODAL_INTERPOLANT)}
+        |
+        hierarchical {N_mdm(type,expansionBasisType_HIERARCHICAL_INTERPOLANT)}
+       ]
+      [ 
+        restricted {N_mdm(type,growthOverride_RESTRICTED)}
+        |
+        unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)}
+       ]
+      [ 
+        nested {N_mdm(type,nestingOverride_NESTED)}
+        |
+        non_nested {N_mdm(type,nestingOverride_NON_NESTED)}
+       ]
+     )
+    [ samples_on_emulator ALIAS samples INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ probability_refinement ALIAS sample_refinement {0}
+      import {N_mdm(utype,integrationRefine_IS)}
+      |
+      adapt_import {N_mdm(utype,integrationRefine_AIS)}
+      |
+      mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+      [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ interaction_order INTEGER > 0 {N_mdm(ushint,vbdOrder)} ]
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ 
+      diagonal_covariance {N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}
+      |
+      full_covariance {N_mdm(type,covarianceControl_FULL_COVARIANCE)}
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importApproxActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ 
+      piecewise {NIDRProblemDescDB::method_piecewise}
+      |
+      askey {N_mdm(type,expansionType_ASKEY_U)}
+      |
+      wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+     ]
+    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( sampling ALIAS nond_sampling {N_mdm(utype,methodName_RANDOM_SAMPLING)}
+    [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+      |
+      incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+    [ d_optimal {N_mdm(true,dOptimal)}
+      [ 
+        candidate_designs INTEGER > 0 {N_mdm(sizet,numCandidateDesigns)}
+        |
+        leja_oversample_ratio REAL {N_mdm(Real,collocationRatio)}
+       ]
+     ]
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+     ]
+    [ backfill {N_mdm(true,backfillFlag)} ]
+    [ principal_components {N_mdm(true,pcaFlag)}
+      [ percent_variance_explained REAL {N_mdm(Real,percentVarianceExplained)} ]
+     ]
+    [ wilks {N_mdm(true,wilksFlag)}
+      [ order INTEGER {N_mdm(ushint,wilksOrder)} ]
+      [ confidence_level REAL {N_mdm(Real,wilksConfidenceLevel)} ]
+      [ one_sided_lower {N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)} ]
+      [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
+      [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( importance_sampling ALIAS nond_importance_sampling {N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}
+    [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    import {N_mdm(utype,integrationRefine_IS)}
+    |
+    adapt_import {N_mdm(utype,integrationRefine_AIS)}
+    |
+    mm_adapt_import {N_mdm(utype,integrationRefine_MMAIS)}
+    [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( gpais ALIAS gaussian_process_adaptive_importance_sampling {N_mdm(utype,methodName_GPAIS)}
+    [ build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importBuildActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}
+    [ initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ fitness_metric {0}
+      predicted_variance {N_mdm(lit,fitnessMetricType_predicted_variance)}
+      |
+      distance {N_mdm(lit,fitnessMetricType_distance)}
+      |
+      gradient {N_mdm(lit,fitnessMetricType_gradient)}
+     ]
+    [ batch_selection {0}
+      naive {N_mdm(lit,batchSelectionType_naive)}
+      |
+      distance_penalty {N_mdm(lit,batchSelectionType_distance_penalty)}
+      |
+      topology {N_mdm(lit,batchSelectionType_topology)}
+      |
+      constant_liar {N_mdm(lit,batchSelectionType_constant_liar)}
+     ]
+    [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
+    [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+      [ 
+        annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importBuildActive)} ]
+     ]
+    [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+      [ 
+        annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
+        |
+        freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( pof_darts ALIAS nond_pof_darts {N_mdm(utype,methodName_POF_DARTS)}
+    build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ lipschitz {0}
+      local {N_mdm(lit,lipschitzType_local)}
+      |
+      global {N_mdm(lit,lipschitzType_global)}
+     ]
+    [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( rkd_darts ALIAS nond_rkd_darts {N_mdm(utype,methodName_RKD_DARTS)}
+    build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ lipschitz {0}
+      local {N_mdm(lit,lipschitzType_local)}
+      |
+      global {N_mdm(lit,lipschitzType_global)}
+     ]
+    [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
+      |
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( global_evidence ALIAS nond_global_evidence {N_mdm(utype,methodName_GLOBAL_EVIDENCE)}
+    [ samples INTEGER {N_mdm(int,numSamples)} ]
+    [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
+    [ 
+      ( 
+        sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
+        |
+        ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
+        [ gaussian_process ALIAS kriging {0}
+          surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+          |
+          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+           ]
+          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
+        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+           ]
+         ]
+       )
+      |
+      ea {N_mdm(utype,subMethod_SUBMETHOD_EA)}
+      |
+      lhs {N_mdm(utype,subMethod_SUBMETHOD_LHS)}
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
     [ distribution {0}
       cumulative {N_mdm(type,distributionType_CUMULATIVE)}
       |
