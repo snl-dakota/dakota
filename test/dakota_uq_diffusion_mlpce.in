@@ -14,6 +14,7 @@ method,
         multilevel_polynomial_chaos			#s0,#s1,#s2,#s3,#s4,#s5
 # exp order is initial for pilot and is adapted based on collocation ratio
 	  collocation_ratio = .9
+#	  estimator_rate = 2.5
 	  expansion_order_sequence = 2	     		#s0,#s1,#s2,#s3,#s4
 	  pilot_samples = 10  				#s0,#s1,#s2,#s3,#s4
 #	  expansion_order_sequence = 1	     		#s5
