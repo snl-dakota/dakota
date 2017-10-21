@@ -622,10 +622,10 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
 
 
 void NonDMultilevelPolynomialChaos::
-increment_sample_sequence(size_t new_samp, size_t total_samp)
+increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 {
   numSamplesOnModel = new_samp;
-  
+
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;
   switch (expansionCoeffsApproach) {
@@ -647,12 +647,15 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
   if (update_exp) {
     if (update_from_ratio) {
       //increment_order_from_grid(); // need total samples
+      unsigned short exp_order = (lev < expOrderSeqSpec.size()) ?
+	expOrderSeqSpec[lev] : expOrderSeqSpec.back();
+      // reset lower bound for each level
+      UShortArray exp_orders;
+      config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+      ratio_samples_to_order(collocRatio, total_samp, exp_orders, false);
       SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
 	uSpaceModel.shared_approximation().data_rep();
-      UShortArray exp_order = shared_data_rep->expansion_order(); // lower bnd
-      // false results in 1st exp_order with terms * colloc_ratio >= total_samp
-      ratio_samples_to_order(collocRatio, total_samp, exp_order, false);
-      shared_data_rep->expansion_order(exp_order);
+      shared_data_rep->expansion_order(exp_orders);
     }
     else
       err_flag = true;
@@ -667,10 +670,10 @@ increment_sample_sequence(size_t new_samp, size_t total_samp)
       if (nond_quad->mode() == RANDOM_TENSOR) { // sub-sampling i/o filtering
 	SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
 	  uSpaceModel.shared_approximation().data_rep();
-	const UShortArray& exp_order = shared_data_rep->expansion_order();
+	const UShortArray& exp_orders = shared_data_rep->expansion_order();
 	UShortArray dim_quad_order(numContinuousVars);
 	for (size_t i=0; i<numContinuousVars; ++i)
-	  dim_quad_order[i] = exp_order[i] + 1;
+	  dim_quad_order[i] = exp_orders[i] + 1;
 	nond_quad->quadrature_order(dim_quad_order);
       }
       nond_quad->update(); // sanity check on sizes, likely a no-op
@@ -749,14 +752,14 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
       if (delta_N_l[lev]) {
 	if (iter == 0) { // initial expansion build
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	  increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	  if (lev == 0) compute_expansion(); // init + build; not recursive
 	  else           update_expansion(); //   just build; not recursive
 	}
 	else { // retrieve prev expansion for this level & append new samples
 	  uSpaceModel.restore_approximation(lev);
 	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	  increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	  append_expansion(); // not recursive
 	}
 
@@ -905,7 +908,7 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 	  uSpaceModel.update_from_subordinate_model(); // max depth
 
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	if (lev == 0) compute_expansion(lev); // init + build; recursive
 	else           update_expansion(lev); //   just build; recursive
 
@@ -927,7 +930,7 @@ void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
 	// retrieve prev expansion for this level & append new samples
 	uSpaceModel.restore_approximation(lev);
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	// Note: import build data is not re-processed by append_expansion()
 	append_expansion(lev); // recursive
       }

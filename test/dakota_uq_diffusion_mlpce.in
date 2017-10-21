@@ -9,15 +9,20 @@ environment,
 
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_polynomial_chaos				
-	  expansion_order_sequence = 2			# initial for pilot
-	  collocation_ratio = .9			# eo adapted to ratio
-	  pilot_samples = 10
+#	multifidelity_polynomial_chaos			#s6
+#	  expansion_order_sequence = 3 2 2 1 1		#s6
+        multilevel_polynomial_chaos			#s0,#s1,#s2,#s3,#s4,#s5
+# exp order is initial for pilot and is adapted based on collocation ratio
+	  collocation_ratio = .9
+	  expansion_order_sequence = 2	     		#s0,#s1,#s2,#s3,#s4
+	  pilot_samples = 10  				#s0,#s1,#s2,#s3,#s4
+#	  expansion_order_sequence = 1	     		#s5
+#	  pilot_samples = 300 150 75 25 7   		#s5
 	  seed = 1237
 	  orthogonal_matching_pursuit
 #	  max_iterations = 5
 	  convergence_tolerance = .1			#s0,#p0,#p1
-#	  convergence_tolerance = .01			#s1,#s3
+#	  convergence_tolerance = .01			#s1,#s3,#s5
 #	  convergence_tolerance = .001			#s2,#s4
 #	  convergence_tolerance = .0001
 #	  discrepancy_emulation recursive		#s3,#s4

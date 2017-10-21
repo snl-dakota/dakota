@@ -1021,10 +1021,8 @@ void NonDExpansion::multifidelity_expansion()
 
   // ordered_model_fidelities is from low to high --> initial expansion is LF
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  if (same_model)
-    iteratedModel.surrogate_model_indices(0, 0);
-  else
-    iteratedModel.surrogate_model_indices(0);
+  if (same_model) iteratedModel.surrogate_model_indices(0, 0);
+  else            iteratedModel.surrogate_model_indices(0);
 
   bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   size_t i, im1, index = (recursive) ? 0 : _NPOS;
