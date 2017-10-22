@@ -909,12 +909,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ mutation_type {0}
       replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
       |
-      ( 
-        offset_normal {N_mdm(lit,mutationType_offset_normal)}
-        |
-        offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
-        |
-        offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
+      ( offset_normal {N_mdm(lit,mutationType_offset_normal)}
+        [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
+        [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
+       )
+      |
+      ( offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
+        [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
+        [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
+       )
+      |
+      ( offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
         [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
         [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
        )
@@ -2486,10 +2491,47 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ 
-      ( 
-        sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
-        |
-        ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
+      ( sbo {N_mdm(utype,subMethod_SUBMETHOD_SBO)}
+        [ gaussian_process ALIAS kriging {0}
+          surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
+          |
+          dakota {N_mdm(type,emulatorType_GP_EMULATOR)}
+         ]
+        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+        [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
+          [ 
+            annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+           ]
+          [ active_only {N_mdm(true,importBuildActive)} ]
+         ]
+        [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
+          [ 
+            annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
+            |
+            freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+           ]
+         ]
+       )
+      |
+      ( ego {N_mdm(utype,subMethod_SUBMETHOD_EGO)}
         [ gaussian_process ALIAS kriging {0}
           surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
           |

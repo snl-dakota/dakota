@@ -89,6 +89,29 @@
                </keyword>
 	     </keyword>
 	     ' >
+
+    <!ENTITY method_gaussian_process '
+ 	     <keyword  id="gaussian_process1" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="0" default="Surfpack Gaussian process" >
+	       <alias name="kriging"/>
+	       <oneOf>
+		 <keyword  id="surfpack1" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
+		 <keyword  id="dakota1" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY method_use_derivatives '
+	     <keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+	     '>
+
+    <!ENTITY method_export_approx_points_file '
+	     <keyword  id="export_approx_points_file5" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file" help="" minOccurs="0" default="no point export to a file" >
+	       <alias name="export_points_file"/>
+	       <param type="OUTPUT_FILE" />
+	       &method_export_approx_format;
+	     </keyword>
+	     ' >
+
     <!ENTITY default_convergence_tolerance '
 	     <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance" help="MethodCommands.html#MethodIndControl" minOccurs="0" default="1.e-4" >
                <param type="REAL" />
@@ -895,6 +918,15 @@
              </keyword>
              &default_convergence_tolerance;
 	     &method_optional_model_pointer;
+	     ' >
+
+    <!ENTITY coliny_mutation_scale_range '
+             <keyword  id="mutation_scale1" name="mutation_scale" code="{N_mdm(Real,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.1" >
+               <param type="REAL" />
+             </keyword>
+             <keyword  id="mutation_range" name="mutation_range" code="{N_mdm(int,mutationRange)}" label="mutation_range" help="" minOccurs="0" default="1" >
+               <param type="INTEGER" />
+             </keyword>
 	     ' >
 
     <!-- Options shared by all coliny solvers (depends on previous ENTITYs) -->
@@ -2025,19 +2057,15 @@
           <keyword  id="mutation_type1" name="mutation_type" code="{0}" label="Mutation type" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="offset_normal" >
             <oneOf>
               <keyword  id="replace_uniform1" name="replace_uniform" code="{N_mdm(lit,mutationType_replace_uniform)}" label="replace_uniform" help=""  />
-              <required>
-                <oneOf>
-                  <keyword  id="offset_normal1" name="offset_normal" code="{N_mdm(lit,mutationType_offset_normal)}" label="offset_normal" help=""  />
-                  <keyword  id="offset_cauchy1" name="offset_cauchy" code="{N_mdm(lit,mutationType_offset_cauchy)}" label="offset_cauchy" help=""  />
-                  <keyword  id="offset_uniform1" name="offset_uniform" code="{N_mdm(lit,mutationType_offset_uniform)}" label="offset_uniform" help=""  />
-                </oneOf>
-                <keyword  id="mutation_scale1" name="mutation_scale" code="{N_mdm(Real,mutationScale)}" label="mutation_scale" help="" minOccurs="0" default="0.1" >
-                  <param type="REAL" />
-                </keyword>
-                <keyword  id="mutation_range" name="mutation_range" code="{N_mdm(int,mutationRange)}" label="mutation_range" help="" minOccurs="0" default="1" >
-                  <param type="INTEGER" />
-                </keyword>
-              </required>
+              <keyword  id="offset_normal1" name="offset_normal" code="{N_mdm(lit,mutationType_offset_normal)}" label="offset_normal" help="" >
+		&coliny_mutation_scale_range;
+	      </keyword>
+              <keyword  id="offset_cauchy1" name="offset_cauchy" code="{N_mdm(lit,mutationType_offset_cauchy)}" label="offset_cauchy" help="" >
+		&coliny_mutation_scale_range;
+	      </keyword>
+              <keyword  id="offset_uniform1" name="offset_uniform" code="{N_mdm(lit,mutationType_offset_uniform)}" label="offset_uniform" help="" >
+		&coliny_mutation_scale_range;
+	      </keyword>
             </oneOf>
             <keyword  id="non_adaptive" name="non_adaptive" code="{N_mdm(false,mutationAdaptive)}" label="Non-adaptive mutation flag" help="MethodCommands.html#MethodSCOLIBEA" minOccurs="0" default="Adaptive mutation" />
           </keyword>
@@ -2628,26 +2656,18 @@
 	  </keyword>
 	  <optional>
 	    <oneOf>
-	      <required>
-		<oneOf>
-		  <keyword  id="sbo" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo" help=""  />
-		  <keyword  id="ego" name="ego" code="{N_mdm(utype,subMethod_SUBMETHOD_EGO)}" label="ego" help=""  />
-		</oneOf>
-		<keyword  id="gaussian_process1" name="gaussian_process" code="{0}" label="gaussian_process" help="" minOccurs="0" default="Surfpack Gaussian process" >
-		  <alias name="kriging"/>
-		  <oneOf>
-		    <keyword  id="surfpack1" name="surfpack" code="{N_mdm(type,emulatorType_KRIGING_EMULATOR)}" label="surfpack" help=""  />
-		    <keyword  id="dakota1" name="dakota" code="{N_mdm(type,emulatorType_GP_EMULATOR)}" label="dakota" help=""  />
-		  </oneOf>
-		</keyword>
-		<keyword  id="use_derivatives3" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only" />
+	      <keyword  id="sbo" name="sbo" code="{N_mdm(utype,subMethod_SUBMETHOD_SBO)}" label="sbo" help="" >
+		&method_gaussian_process;
+		&method_use_derivatives;
 		&import_build;
-		<keyword  id="export_approx_points_file5" name="export_approx_points_file" code="{N_mdm(str,exportApproxPtsFile)}" label="export_approx_points_file" help="" minOccurs="0" default="no point export to a file" >
-		  <alias name="export_points_file"/>
-		  <param type="OUTPUT_FILE" />
-		  &method_export_approx_format;
-		</keyword>
-	      </required>
+		&method_export_approx_points_file;
+	      </keyword>
+	      <keyword  id="ego" name="ego" code="{N_mdm(utype,subMethod_SUBMETHOD_EGO)}" label="ego" help="" >
+		&method_gaussian_process;
+		&method_use_derivatives;
+		&import_build;
+		&method_export_approx_points_file;
+	      </keyword>
 	      <keyword  id="ea" name="ea" code="{N_mdm(utype,subMethod_SUBMETHOD_EA)}" label="ea" help=""  />
 	      <keyword  id="lhs3" name="lhs" code="{N_mdm(utype,subMethod_SUBMETHOD_LHS)}" label="lhs" help=""  />
 	    </oneOf>
