@@ -36,8 +36,8 @@ method
 
 #method,                                  #s2
 #  id_method = 'SBLO'			                #s2
-#  model_pointer = 'SURROGATE'		        #s2
 #  surrogate_based_local		              #s2
+#    model_pointer = 'SURROGATE'		        #s2
 #    approx_method_pointer = 'NLP'	      #s2
 #    trust_region initial_size = .4	      #s2
 
@@ -48,8 +48,8 @@ method
 
 #method,				                          #s2
 #  id_method = 'SAMPLING'		              #s2
-#  model_pointer = 'TRUTH'		            #s2
 #  sampling                               #s2
+#    model_pointer = 'TRUTH'		            #s2
 #    seed = 531				                    #s2
 #    sample_type lhs			                #s2
 

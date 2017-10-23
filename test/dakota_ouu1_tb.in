@@ -105,8 +105,8 @@ responses
 ##########################
 method
   id_method = 'UQ'
-  model_pointer = 'UQ_M'
   sampling
+    model_pointer = 'UQ_M'
     samples = 50  sample_type lhs
     seed = 1					#s0,#s1
 #   seed = 12347 fixed_seed			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9

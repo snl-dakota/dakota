@@ -19,7 +19,7 @@ method
 #    gen_reliability_levels = -0.25 0. 0.25 -0.25 0. 0.25	  #s2,#s3
     distribution cumulative              			              #s0,#s2,#s4,#s5
 #    distribution complementary           			            #s1,#s3
-    output verbose                                       
+  output verbose
 
 variables
   continuous_interval_uncertain = 2
