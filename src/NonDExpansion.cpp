@@ -1039,17 +1039,19 @@ void NonDExpansion::multifidelity_expansion()
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // change HierarchSurrModel::responseMode to model discrepancy
-  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+  if (!recursive)
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
   // loop over each of the discrepancy levels
   for (i=1; i<num_fid; ++i) {
     // store current state for use in combine_approximation() below
-    im1 = i - 1;
-    if (recursive) uSpaceModel.store_approximation(im1);
-    else           uSpaceModel.store_approximation();
+    im1 = i - 1; index = (recursive) ? im1 : _NPOS;
+    uSpaceModel.store_approximation(index);
 
     increment_specification_sequence(); // advance to next PCE/SC specification
-    if (same_model) {
+    if (recursive)
+      iteratedModel.surrogate_model_indices(i);
+    else if (same_model) {
       iteratedModel.surrogate_model_indices(0, im1);
       iteratedModel.truth_model_indices(0, i);
     }
