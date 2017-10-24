@@ -1,18 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE DAKOTA_XML  [
+    <!-- BMA: For all tabular formats, custom_annotated must be first
+         or parser doesn't recognize header, eval_id, interface_id -->
+
     <!-- Reusable definition for a method's approximation data import format -->
     <!ENTITY method_import_build_format '
 	     <optional>
                <oneOf label="Tabular Format" >
+		 <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importBuildFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		   <keyword  id="header" name="header" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		   <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		   <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
+		 </keyword>
 		 <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
-		 <!-- BMA: can"t get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		 <required>
-		   <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importBuildFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
-		     <keyword  id="header" name="header" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
-		     <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
-		     <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
-		   </keyword>
-		 </required>
 		 <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importBuildFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
                </oneOf>
              </optional>
@@ -20,15 +20,12 @@
     <!ENTITY method_import_approx_format '
              <optional>
                <oneOf label="Tabular Format" >
+		 <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		   <keyword  id="header" name="header" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		   <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		   <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
+		 </keyword>
 		 <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
-		 <!-- BMA: can"t get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		 <required>
-		   <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
-		     <keyword  id="header" name="header" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
-		     <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
-		     <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
-		   </keyword>
-		 </required>
 		 <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importApproxFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
                </oneOf>
              </optional>
@@ -36,15 +33,12 @@
     <!ENTITY method_export_approx_format '
 	     <optional>
                <oneOf label="Tabular Format" >
+		 <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+		   <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+		   <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
+		   <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
+		 </keyword>
 		 <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated format" />
-		 <!-- BMA: can"t get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		 <required>
-		   <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
-		     <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
-		     <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" default="no eval_id column" />
-		     <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" default="no interface_id column" />
-		   </keyword>
-		 </required>
 		 <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportApproxFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
                </oneOf>
              </optional>
@@ -53,14 +47,11 @@
     <!ENTITY response_scalar_data_format '
 	     <optional>
                <oneOf label="Tabular Format" >
+        	 <keyword  id="custom_annotated" name="custom_annotated" code="{N_rem(utype,scalarDataFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
+        	   <keyword  id="header" name="header" code="{N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
+        	   <keyword  id="exp_id" name="exp_id" code="{N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)}" label="exp_id" help="" minOccurs="0" default="no exp_id column" />
+        	 </keyword>
 		 <keyword  id="annotated" name="annotated" code="{N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}" label="annotated" help="" default="annotated format" />
-		 <!-- BMA: can"t get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		 <required>
-        	   <keyword  id="custom_annotated" name="custom_annotated" code="{N_rem(utype,scalarDataFormat_TABULAR_NONE)}" label="custom_annotated" help="" default="annotated format" >
-        	     <keyword  id="header" name="header" code="{N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" default="no header" />
-        	     <keyword  id="exp_id" name="exp_id" code="{N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)}" label="exp_id" help="" minOccurs="0" default="no exp_id column" />
-        	   </keyword>
-		 </required>
 		 <keyword  id="freeform" name="freeform" code="{N_rem(utype,scalarDataFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated format" />
                </oneOf>
              </optional>
@@ -1204,15 +1195,12 @@
           </keyword>
           <optional>
             <oneOf label="Tabular Data Format">
+              <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
+		<keyword id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
+		<keyword id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
+		<keyword id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
+	      </keyword>
               <keyword  id="annotated" name="annotated" code="{N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}" label="Annotated" help="" default="annotated format" />
-	          <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-	          <required>
-                <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
-		          <keyword id="header" name="header" code="{N_stm(augment_utype,tabularFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
-		          <keyword id="eval_id" name="eval_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
-		          <keyword id="interface_id" name="interface_id" code="{N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
-	            </keyword>
-	          </required>
               <keyword id="freeform" name="freeform" code="{N_stm(utype,tabularFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated format" />
             </oneOf>
           </optional>
@@ -1252,15 +1240,12 @@
           <param type="STRING" />
           <optional>
             <oneOf label="Tabular Format">
+	      <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
+		<keyword  id="header" name="header" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
+		<keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
+		<keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
+	      </keyword>
               <keyword  id="annotated" name="annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_ANNOTATED)}" label="Annotated" help="" default="annotated format" />
-	          <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-	          <required>
-		        <keyword id="custom_annotated" name="custom_annotated" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
-		          <keyword  id="header" name="header" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
-		          <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
-		          <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
-		        </keyword>
-	          </required>
               <keyword  id="freeform" name="freeform" code="{N_stm(utype,preRunOutputFormat_TABULAR_NONE)}" label="Freeform" help="" default="annotated format" />
             </oneOf>
           </optional>
@@ -1279,15 +1264,12 @@
           <param type="STRING" />
           <optional>
             <oneOf label="Tabular Format">
+	      <keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
+		<keyword  id="header" name="header" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
+		<keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
+		<keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
+	      </keyword>
               <keyword  id="annotated" name="annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_ANNOTATED)}" label="Annotated" help="" default="annotated format" />
-	          <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-	          <required>
-		        <keyword  id="custom_annotated" name="custom_annotated" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="Custom Annotated" help="" default="annotated format" >
-		          <keyword  id="header" name="header" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)}" label="Header Row" help="" minOccurs="0" default="no header" />
-		          <keyword  id="eval_id" name="eval_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)}" label="Eval ID Column" help="" minOccurs="0" default="no eval_id column" />
-		          <keyword  id="interface_id" name="interface_id" code="{N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)}" label="Interface ID Column" help="" minOccurs="0" default="no interface_id column" />
-		        </keyword>
-	          </required>
               <keyword  id="freeform" name="freeform" code="{N_stm(utype,postRunInputFormat_TABULAR_NONE)}" label="Freeform" help="" default="annotated format" />
             </oneOf>
           </optional>
@@ -2375,14 +2357,12 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence" help="" minOccurs="0" >
 	    <optional>
 	      <oneOf label="Tabular Format" >
+		<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		</keyword>
 		<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		<required>
-		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		  </keyword>
-		</required>
 		<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 	      </oneOf>
 	    </optional>
@@ -2740,21 +2720,18 @@
 		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
 		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
 		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-				<param type="OUTPUT_FILE" />
-				<optional>
-				  <oneOf label="Tabular Format" >
-				    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-				    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-				    <required>
-				      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-					<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-					<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-					<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-				      </keyword>
-				    </required>
-				    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-				  </oneOf>
-				</optional>
+			<param type="OUTPUT_FILE" />
+			<optional>
+			  <oneOf label="Tabular Format" >
+			    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			      <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			      <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			      <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			    </keyword>
+			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+			  </oneOf>
+			</optional>
 		      </keyword>
 		     <optional>
 			    <oneOf label="MCMC algorithm type" >
@@ -2830,15 +2807,12 @@
 			<param type="OUTPUT_FILE" />
 			<optional>
 			  <oneOf label="Tabular Format" >
+			    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			      <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			      <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			      <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			    </keyword>
 			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-			    <required>
-			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-				<keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-				<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-				<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			      </keyword>
-			    </required>
 			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 			  </oneOf>
 			</optional>
@@ -2960,15 +2934,12 @@
 		    <param type="OUTPUT_FILE" />
 		    <optional>
 		      <oneOf label="Tabular Format" >
+			<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			</keyword>
 			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			<!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-			<required>
-			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			  </keyword>
-			</required>
 			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 		      </oneOf>
 		    </optional>
@@ -2991,15 +2962,12 @@
                     <param type="INPUT_FILE" />
 		    <optional>
 		      <oneOf label="tabular_format" >
+			<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+			</keyword>
 		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		        <required>
-			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			  </keyword>
-		        </required>
 		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="freeform" help=""  />
 		      </oneOf>
 		    </optional>
@@ -3056,34 +3024,28 @@
 		</keyword>
                 <keyword  id="import_prediction_configs" name="import_prediction_configs" code="{N_mdm(str,importPredConfigs)}" label="Filename for Prediction Configs" help="" minOccurs="0" default="no point import from a file" >
                   <param type="INPUT_FILE" />
-		    <optional>
-		      <oneOf label="tabular_format" >
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		        <required>
-			  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			  </keyword>
-		        </required>
-		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="freeform" help=""  />
-		      </oneOf>
-		    </optional>
+		  <optional>
+		    <oneOf label="tabular_format" >
+		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			<keyword  id="header" name="header" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		      </keyword>
+		      <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+		      <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="freeform" help=""  />
+		    </oneOf>
+		  </optional>
                   </keyword>
 	          <keyword  id="export_discrepancy_file" name="export_discrepancy_file" code="{N_mdm(str,exportDiscrepFile)}" label="File export of model discrepancy values" help="" minOccurs="0" default="discrepancy export to default filename" >
 		    <param type="OUTPUT_FILE" />
 		    <optional>
 		      <oneOf label="Tabular Format" >
+		        <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		        </keyword>
 		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		        <required>
-		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		          </keyword>
-		        </required>
 		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 		      </oneOf>
 		    </optional>
@@ -3092,15 +3054,12 @@
 		    <param type="OUTPUT_FILE" />
 		    <optional>
 		      <oneOf label="Tabular Format" >
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		        <required>
 		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
 			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
 			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
 			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
 		          </keyword>
-		        </required>
+		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
 		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 		      </oneOf>
 		    </optional>
@@ -3109,15 +3068,12 @@
 		    <param type="OUTPUT_FILE" />
 		    <optional>
 		      <oneOf label="Tabular Format" >
+ 		        <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		        </keyword>
 		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		        <required>
-		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		          </keyword>
-		        </required>
 		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
 		      </oneOf>
 		    </optional>
@@ -3460,15 +3416,12 @@
               <param type="INPUT_FILE" />
 	      <optional>
 		<oneOf label="tabular_format" >
+		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
 		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,pstudyFileFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		  <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		  <required>
-		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		      <keyword  id="header" name="header" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		      <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		      <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,pstudyFileFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		    </keyword>
-		  </required>
 		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}" label="freeform" help=""  />
 		</oneOf>
 	      </optional>
@@ -3724,17 +3677,15 @@
 		<alias name="samples_file"/>
                 <param type="INPUT_FILE" />
 		<optional>
-				<oneOf label="Tabular Format" >
-				  <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
-		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		    <required>
-				    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
-					  <keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
-					  <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
-					  <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0"/>
-		      </keyword>
-		    </required>
-				  <keyword  id="freeform" name="freeform" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
+		  <oneOf label="Tabular Format" >
+		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+		      <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+		      <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0"/>
+		    </keyword>
+
+		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
+		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importBuildFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
 		    <keyword  id="active_only20" name="active_only" code="{N_mom(true,importBuildActive)}" label="Active Variables Only" help="" minOccurs="0" />
@@ -3744,14 +3695,12 @@
 		<param type="INPUT_FILE" />
 		<optional>
 		  <oneOf label="Tabular Format" >
+		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    	<keyword  id="header" name="header" code="{N_mom(augment_utype,importApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    	<keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    	<keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		    </keyword>
 		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importApproxFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		    <required>
-		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importApproxFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			<keyword  id="header" name="header" code="{N_mom(augment_utype,importApproxFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			<keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importApproxFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			<keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importApproxFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		      </keyword>
-		    </required>
 		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importApproxFormat_TABULAR_NONE)}" label="freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
@@ -3762,17 +3711,14 @@
                 <alias name="export_points_file"/>
 		<param type="OUTPUT_FILE" />
 		<optional>
-			  <oneOf label="Tabular Format" >
-			    <keyword  id="annotated" name="annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
-		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		    <required>
-			      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
-				    <keyword  id="header" name="header" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
-				    <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
-				    <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
-		      </keyword>
-		    </required>
-			    <keyword  id="freeform" name="freeform" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Freeform" help="" default="annotated" />
+		  <oneOf label="Tabular Format" >
+		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+		      <keyword  id="header" name="header" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+		      <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+		      <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
+		    </keyword>
+		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
+		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,exportApproxFormat_TABULAR_NONE)}" label="Freeform" help="" default="annotated" />
 		  </oneOf>
 		</optional>
               </keyword>
@@ -3811,16 +3757,13 @@
                 <param type="STRING" />
 		<optional>
 		  <oneOf label="Tabular Format" >
-					    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
-		    <!-- BMA: can't get parser to recognize header, eval_id, interface_id without required tag on the group -->
-		    <required>
-					      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
-						    <keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
-						    <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
-						    <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
-		      </keyword>
-		    </required>
-					    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
+		    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Custom Annotated" help="" >
+		      <keyword  id="header" name="header" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)}" label="Header" help="" minOccurs="0" />
+		      <keyword  id="eval_id" name="eval_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)}" label="Eval ID" help="" minOccurs="0" />
+		      <keyword  id="interface_id" name="interface_id" code="{N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)}" label="Interface ID" help="" minOccurs="0" />
+		    </keyword>
+		    <keyword  id="annotated" name="annotated" code="{N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}" label="Annotated" help=""  default="annotated" />
+		    <keyword  id="freeform" name="freeform" code="{N_mom(utype,importChallengeFormat_TABULAR_NONE)}" label="Freeform" help=""  default="annotated" />
 		  </oneOf>
 		</optional>
 		          <keyword  id="active_only22" name="active_only" code="{N_mom(true,importChallengeActive)}" label="Active Variables Only" help="" minOccurs="0" />
