@@ -23,8 +23,8 @@ environment
   tabular_data
 
 method,
-       bayes_calibration queso
 #          #output debug						#s1
+       bayes_calibration queso
           dram
 	  seed = 34785				
           chain_samples = 500

@@ -1,3 +1,4 @@
+#@ *: DakotaConfig=HAVE_QUESO
 
 method,
 	model_pointer = 'HIERARCH'

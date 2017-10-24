@@ -21,9 +21,9 @@ environment
 method
   id_method = 'SBLO'
   surrogate_based_local
-  model_pointer = 'SURROGATE'
-  method_pointer = 'NLP'
-  max_iterations = 500
+    model_pointer = 'SURROGATE'
+    method_pointer = 'NLP'
+    max_iterations = 500
 #	soft_convergence_limit = 10
 ###############################################
 # the trust region (TR) commands specify the
@@ -44,7 +44,7 @@ method
 ###############################################
 method
   id_method = 'NLP'
-#	output verbose
+# output verbose
   conmin_frcg
 #	optpp_q_newton
 #	npsol_sqp

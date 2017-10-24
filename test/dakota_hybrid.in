@@ -43,10 +43,10 @@ method
   coliny_ea
     seed = 1234
     population_size = 5 
+    model_pointer = 'M1'
 # final_solutions = 3              #s3,#p0
   final_solutions = 1               #s0,#s1,#s2
   output verbose
-  model_pointer = 'M1'
 
 method
   id_method = 'PS'
@@ -57,8 +57,8 @@ method
     threshold_delta = 1.e-4
     solution_target = 1.e-10
     exploratory_moves basic_pattern
-    output verbose
     model_pointer = 'M1'
+  output verbose
 
 #method,                              #s1,#s2
 #  id_method = 'PS2'				          #s1,#s2
@@ -69,16 +69,16 @@ method
 #    threshold_delta = 1.e-4			    #s1,#s2
 #    solution_target = 1.e-10			    #s1,#s2
 #    exploratory_moves basic_pattern	#s1,#s2
-#    output verbose    				        #s1,#s2
 #    model_pointer = 'M1'				      #s1,#s2
+#  output verbose    				        #s1,#s2
 
 method	  	  				                #s0,#s3,#p0
   id_method = 'NLP'				            #s0,#s3,#p0
   optpp_newton  				              #s0,#s3,#p0
     gradient_tolerance = 1.e-12			  #s0,#s3,#p0
     convergence_tolerance = 1.e-15		#s0,#s3,#p0
-    output verbose	  			          #s0,#s3,#p0
     model_pointer = 'M2'				      #s0,#s3,#p0
+  output verbose	  			          #s0,#s3,#p0
 
 model
   id_model = 'M1'
