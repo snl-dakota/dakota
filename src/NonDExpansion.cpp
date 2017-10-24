@@ -1019,13 +1019,13 @@ void NonDExpansion::multifidelity_expansion()
     abort_handler(METHOD_ERROR);
   }
 
-  // ordered_model_fidelities is from low to high --> initial expansion is LF
-  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-  if (same_model) iteratedModel.surrogate_model_indices(0, 0);
-  else            iteratedModel.surrogate_model_indices(0);
-
   bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   size_t i, im1, index = (recursive) ? 0 : _NPOS;
+
+  // ordered_model_fidelities is from low to high --> initial expansion is LF
+  iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  if (same_model) iteratedModel.truth_model_indices(0, 0);
+  else            iteratedModel.truth_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
   compute_expansion(index);  // nominal LF expansion from input spec
@@ -1048,18 +1048,20 @@ void NonDExpansion::multifidelity_expansion()
     im1 = i - 1; index = (recursive) ? im1 : _NPOS;
     uSpaceModel.store_approximation(index);
 
-    increment_specification_sequence(); // advance to next PCE/SC specification
-    if (recursive)
-      iteratedModel.surrogate_model_indices(i);
-    else if (same_model) {
-      iteratedModel.surrogate_model_indices(0, im1);
+    // advance to the next PCE/SC specification within the MF sequence
+    increment_specification_sequence();
+
+    // set hierarchical indices for single and paired model evaluations
+    if (same_model) {
+      if (!recursive) iteratedModel.surrogate_model_indices(0, im1);
       iteratedModel.truth_model_indices(0, i);
     }
     else {
-      iteratedModel.surrogate_model_indices(im1);
+      if (!recursive) iteratedModel.surrogate_model_indices(im1);
       iteratedModel.truth_model_indices(i);
     }
 
+    // form the expansion for level i
     index = (recursive) ? i : _NPOS;
     update_expansion(index);   // nominal discrepancy expansion from input spec
     if (refineType)

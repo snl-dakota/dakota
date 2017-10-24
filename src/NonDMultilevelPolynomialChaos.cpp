@@ -736,8 +736,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
     // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
+    iteratedModel.truth_model_indices(model_form, 0); // solution level 0
 
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
