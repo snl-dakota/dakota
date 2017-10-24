@@ -81,13 +81,8 @@ protected:
   //
 
   /// option within core_run() for multilevel allocation of samples
-  /// (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// distinct PCE expansions for model discrepancies
-  void multilevel_regression(size_t model_form);
-  /// option within core_run() for multilevel allocation of samples
-  /// (mirroring NonDMultilevelSampling for PCE regression), forming
-  /// recursive PCE expansions for hierarchical surpluses
-  void recursive_regression(size_t model_form);
+  /// (mirroring NonDMultilevelSampling for PCE regression)
+  void multilevel_regression();
 
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp,size_t total_samp,size_t lev);

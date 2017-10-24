@@ -1002,17 +1002,17 @@ void NonDExpansion::multifidelity_expansion()
 {
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  size_t num_mf = iteratedModel.subordinate_models(false).size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(), num_fid;
-  bool same_model;
+  size_t num_fid, num_mf = iteratedModel.subordinate_models(false).size(),
+    num_hf_lev = iteratedModel.truth_model().solution_levels(), model_form;
+  bool multilevel;
   if (num_mf > 1) {
-    same_model = false; num_fid = num_mf;
+    multilevel = false; num_fid = num_mf;
     if (num_hf_lev)
       Cerr << "Warning: solution control levels will be ignored in "
 	   << "NonDExpansion::multifidelity_expansion().\n";
   }
   else if (num_hf_lev > 1)
-    { same_model = true; num_fid = num_hf_lev; }
+    { multilevel = true; num_fid = num_hf_lev; model_form = 0;/* num_mf-1 */ }
   else {
     Cerr << "Error: no model hierarchy evident in NonDExpansion::"
 	 << "multifidelity_expansion()." << std::endl;
@@ -1024,7 +1024,7 @@ void NonDExpansion::multifidelity_expansion()
 
   // ordered_model_fidelities is from low to high --> initial expansion is LF
   iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  if (same_model) iteratedModel.truth_model_indices(0, 0);
+  if (multilevel) iteratedModel.truth_model_indices(model_form, 0);
   else            iteratedModel.truth_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
@@ -1052,9 +1052,9 @@ void NonDExpansion::multifidelity_expansion()
     increment_specification_sequence();
 
     // set hierarchical indices for single and paired model evaluations
-    if (same_model) {
-      if (!recursive) iteratedModel.surrogate_model_indices(0, im1);
-      iteratedModel.truth_model_indices(0, i);
+    if (multilevel) {
+      if (!recursive) iteratedModel.surrogate_model_indices(model_form, im1);
+      iteratedModel.truth_model_indices(model_form, i);
     }
     else {
       if (!recursive) iteratedModel.surrogate_model_indices(im1);

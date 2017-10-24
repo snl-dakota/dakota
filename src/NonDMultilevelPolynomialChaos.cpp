@@ -480,19 +480,12 @@ void NonDMultilevelPolynomialChaos::core_run()
     multifidelity_expansion(); // from NonDExpansion, includes sanity checks
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS: {
-    // sanity checks
-    size_t //num_mf = iteratedModel.subordinate_models(false).size(),
-      num_hf_lev = iteratedModel.truth_model().solution_levels();
-    if (num_hf_lev <= 1 || expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION){
-      Cerr << "Error: unsupported multilevel configuration within "
+    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
+      Cerr << "Error: unsupported solver configuration within "
 	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    // run one of the multilevel algorithm variants
-    if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-      recursive_regression(0);
-    else
-      multilevel_regression(0);
+    multilevel_regression();
     break;
   }
   default:
@@ -700,112 +693,160 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 }
 
 
-void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
+void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+  // Allow either model forms or discretization levels, but not both
+  // (discretization levels take precedence)
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  size_t form, num_mf = ordered_models.size();
+  ModelLIter   m_iter = ordered_models.begin();
+  std::advance(m_iter, num_mf - 1); // HF model
+  size_t i, index, lev, num_lev, num_hf_lev = m_iter->solution_levels();
+  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  RealVector cost;
+  if (num_hf_lev > 1) {
+    multilev = true; num_lev = num_hf_lev; form = num_mf - 1;
+    cost = m_iter->solution_level_costs();
+    if (num_mf > 1)
+      Cerr << "Warning: multiple model forms will be ignored in "
+	   << "NonDMultilevelPolynomialChaos::multilevel_regression().\n";
+  }
+  else if (num_mf > 1) {
+    multilev = false; num_lev = num_mf;
+    cost.sizeUninitialized(num_mf);
+    for (i=0, m_iter=ordered_models.begin(); i<num_mf; ++i, ++m_iter)
+      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+  }
+  else {
+    Cerr << "Error: no model hierarchy evident in NonDMultilevel"
+	 << "PolynomialChaos::multilevel_regression()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
   // Multilevel variance aggregation requires independent sample sets
   Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
   if (u_sub_iter != NULL)
     ((Analyzer*)u_sub_iter)->vary_pattern(true);
 
-  Model& truth_model  = iteratedModel.truth_model();
-  size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, new_N_l, last_active = 0;
+  size_t iter = 0, new_N_l, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
   // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
+  RealVector agg_var(num_lev);
   // factors for relationship between variance of mean estimator and NLev
   // (hard coded for right now; TO DO: fit params)
   Real inv_k = 1./kappaEstimatorRate, inv_kp1 = 1./(kappaEstimatorRate+1.);
   
-  // Initialize for pilot sample
-  if (!importBuildPointsFile.empty()) {
-    Cerr << "Error: build data import not currently supported in NonDMultilevel"
-	 << "PolynomialChaos::multilevel_regression()." << std::endl;
-    abort_handler(METHOD_ERROR);
+  // Build point import is active only for the pilot sample and we overlay an
+  // additional pilot_sample spec, but we do not augment with samples from a
+  // collocation pts/ratio enforcement (pts/ratio controls take over on
+  // subsequent iterations).
+  bool import_pilot = (!importBuildPointsFile.empty());// && recursive);
+  if (import_pilot) {
+    if (recursive)
+      Cout << "\nPilot sample to include imported build points.\n";
+    else {
+      Cerr << "Error: build data import only supported for recursive emulation "
+	   << "in NonDMultilevelPolynomialChaos::multilevel_regression()."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
   }
+  // Load the pilot sample from user specification
   SizetArray delta_N_l(num_lev);
   load_pilot_sample(pilotSamples, delta_N_l);
 
   // now converge on sample counts per level (NLev)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   NLev.assign(num_lev, 0);
-  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+  while ( iter <= max_iter &&
+	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // LF
-    iteratedModel.truth_model_indices(model_form, 0); // solution level 0
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
 
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
       lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
+      if (multilev) iteratedModel.truth_model_indices(form, lev);
+      else          iteratedModel.truth_model_indices(lev);
+      if (lev && !recursive) {
+	if (lev == 1) iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+	if (multilev) iteratedModel.surrogate_model_indices(form, lev-1);
+	else          iteratedModel.surrogate_model_indices(lev-1);
 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+      }
+      index = (recursive) ? lev : _NPOS;
+
+      if (iter == 0) { // initial expansion build
+	// Update solution control variable in uSpaceModel to support
+	// DataFitSurrModel::consistent() logic
+	if (import_pilot)
+	  uSpaceModel.update_from_subordinate_model(); // max depth
+
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+	if (lev == 0) compute_expansion(index); // init + build; not recursive
+	else           update_expansion(index); //   just build; not recursive
+
+	if (import_pilot) { // update counts to include imported data
+	  NLev[lev] = delta_N_l[lev]
+	    = uSpaceModel.approximation_data(0).points();
+	  Cout << "Pilot count including import = " << delta_N_l[lev] << "\n\n";
+	  // Trap zero samples as it will cause FPE downstream
+	  if (NLev[lev] == 0) { // no pilot spec, no import match
+	    Cerr << "Error: insufficient sample recovery for level " << lev
+		 << " in multilevel_regression()." << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	}
+      }
+      else if (delta_N_l[lev]) {
+	// retrieve prev expansion for this level & append new samples
+	uSpaceModel.restore_approximation(lev);
+	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
+	// Note: import build data is not re-processed by append_expansion()
+	append_expansion(index); // not recursive
       }
 
       // aggregate variances across QoI for estimating NLev (justification:
       // for independent QoI, sum of QoI variances = variance of QoI sum)
       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
       if (delta_N_l[lev]) {
-	if (iter == 0) { // initial expansion build
-	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	  if (lev == 0) compute_expansion(); // init + build; not recursive
-	  else           update_expansion(); //   just build; not recursive
-	}
-	else { // retrieve prev expansion for this level & append new samples
-	  uSpaceModel.restore_approximation(lev);
-	  NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	  append_expansion(); // not recursive
-	}
-
         // compute and accumulate variance of mean estimator from the set of
 	// fold results within the selected settings from cross-validation:
 	agg_var_l = 0.;
-	for (qoi=0; qoi<numFunctions; ++qoi) {
+	for (i=0; i<numFunctions; ++i) {
 	  PecosApproximation* poly_approx_q
-	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-
-	  // We must assume a functional dependence on NLev for formulating the
-	  // optimum of the cost functional subject to error balance constraint.
+	    = (PecosApproximation*)poly_approxs[i].approx_rep();
+	  var_l = poly_approx_q->variance();
+	  agg_var_l += var_l;
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Variance (lev " << lev << ", qoi " << i
+		 << ", iter " << iter << ") = " << var_l << '\n';
+	  // We assume a functional dependence of estimator variance on NLev
+	  // for minimizing aggregate cost subject to an MSE error balance:
 	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
-	  // the parameters kappa and gamma for PCE regression.
-	  
-	  // To fit these parameters, one approach is to numerically estimate
-	  // the variance in the mean estimator (alpha_0) from two sources:
+	  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
+	  // one approach is to numerically estimate the variance in the mean
+	  // estimator (alpha_0) from two sources:
 	  // > from variation across k folds for the selected CV settings
-	  //   (estimate gamma?)
-	  // > from var decrease as NLev increases across iters (estim kappa?)
+	  // > from var decrease as NLev increases across iters
           //Real cv_var_i = poly_approx_rep->
 	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
 	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
 	  //   cv_iterator class scope)
-	  // To validate this approach, the actual
-	  // estimator variance can also be computed and compared with the CV
-	  // variance approximation (similar to traditional CV erro plots, but
-	  // predicting estimator variance instead of actual L2 fit error).
-	  
-	  var_l = poly_approx_q->variance();
-	  agg_var_l += var_l;
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Variance (lev " << lev << ", qoi " << qoi
-		 << ", iter " << iter << ") = " << var_l << '\n';
+	  // To validate this approach, the actual estimator variance can be
+	  // computed and compared with the CV variance approximation (as for
+	  // traditional CV error plots, but predicting estimator variance
+	  // instead of L2 fit error).
 	}
         // store all approximation levels, whenever recomputed.
-	// Note: the active approximation upon completion of this loop may be
-	// any level --> this requires passing the current approximation index
-	// within combine_approximation().
 	uSpaceModel.store_approximation(lev);
+	// The active approximation upon completion of the refinement loop may
+	// be any level -> store the last approximation index for use within
+	// combine_approximation().
 	last_active = lev;
       }
 
@@ -829,7 +870,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
     Real fact
       = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale, inv_k);
     for (lev=0; lev<num_lev; ++lev) {
-      lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
+      lev_cost = cost[lev];
+      if (lev && !recursive) lev_cost += cost[lev-1];
       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
       delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
     }
@@ -846,184 +888,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression(size_t model_form)
   // compute the equivalent number of HF evaluations
   equivHFEvals = NLev[0] * cost[0]; // first level is single eval
   for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-    equivHFEvals += NLev[lev] * (cost[lev] + cost[lev-1]);
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
-}
-
-
-void NonDMultilevelPolynomialChaos::recursive_regression(size_t model_form)
-{
-  //iteratedModel.surrogate_model_indices(model_form);//soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);     // soln lev not updated yet
-
-  // Multilevel variance aggregation requires independent sample sets
-  Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
-  if (u_sub_iter != NULL)
-    ((Analyzer*)u_sub_iter)->vary_pattern(true);
-
-  Model& truth_model  = iteratedModel.truth_model();
-  size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, new_N_l, last_active = 0;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
-  // factors for relationship between variance of mean estimator and NLev
-  // (hard coded for right now; TO DO: fit params)
-  Real inv_k = 1./kappaEstimatorRate, inv_kp1 = 1./(kappaEstimatorRate+1.);
-
-  // Initialize for pilot sample
-  SizetArray delta_N_l(num_lev); // sample increments
-  load_pilot_sample(pilotSamples, delta_N_l);
-  bool import_pilot = !importBuildPointsFile.empty();
-  if (import_pilot)
-    Cout << "\nPilot sample to include imported build points.\n";
-    // Build point import is active only for the pilot sample and we overlay
-    // an additional pilot_sample spec, but we do not augment with samples from
-    // a collocation pts/ratio enforcement (pts/ratio controls take over on
-    // subsequent iterations).
-
-  // now converge on sample counts per level (NLev)
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  NLev.assign(num_lev, 0); // total samples
-  while ( iter <= max_iter &&
-	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
-
-    // set initial surrogate responseMode and model indices for lev 0
-    //iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    //iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // HF
-    iteratedModel.truth_model_indices(model_form, 0); // solution level 0
-
-    sum_root_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
-
-      lev_cost = cost[lev];
-      if (lev) {
-	//if (lev == 1) // update responseMode for levels 1:num_lev-1
-	//  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
-	//iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form, lev);
-	//lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
-
-      if (iter == 0) { // initial expansion build
-	// Update solution control variable in uSpaceModel to support
-	// DataFitSurrModel::consistent() logic
-	if (import_pilot)
-	  uSpaceModel.update_from_subordinate_model(); // max depth
-
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	if (lev == 0) compute_expansion(lev); // init + build; recursive
-	else           update_expansion(lev); //   just build; recursive
-
-	// update counts to include imported data
-	if (import_pilot) {
-	  NLev[lev] = delta_N_l[lev]
-	    = uSpaceModel.approximation_data(0).points();
-	  //Cout << "\nRetrieved count = " << delta_N_l[lev] << "\n\n";
-	  // Trap zero samples as it will cause FPE downstream
-	  if (NLev[lev] == 0) { // no pilot spec, no import match
-	    Cerr << "Error: insufficient sample recovery for level " << lev
-		 << " in NonDMultilevelPolynomialChaos::recursive_regression()."
-		 << std::endl;
-	    abort_handler(METHOD_ERROR);
-	  }
-	}
-      }
-      else if (delta_N_l[lev]) {
-	// retrieve prev expansion for this level & append new samples
-	uSpaceModel.restore_approximation(lev);
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
-	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	// Note: import build data is not re-processed by append_expansion()
-	append_expansion(lev); // recursive
-      }
-
-      // aggregate variances across QoI for estimating NLev (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
-      if (delta_N_l[lev]) {
-        // compute and accumulate variance of mean estimator from the set of
-	// fold results within the selected settings from cross-validation:
-	agg_var_l = 0.;
-	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  PecosApproximation* poly_approx_q
-	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-
-	  // We must assume a functional dependence on NLev for formulating the
-	  // optimum of the cost functional subject to error balance constraint.
-	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
-	  // the parameters kappa and gamma for PCE regression.
-	  
-	  // To fit these parameters, one approach is to numerically estimate
-	  // the variance in the mean estimator (alpha_0) from two sources:
-	  // > from variation across k folds for the selected CV settings
-	  //   (estimate gamma?)
-	  // > from var decrease as NLev increases across iters (estim kappa?)
-          //Real cv_var_i = poly_approx_rep->
-	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
-	  //   cv_iterator class scope)
-	  // To validate this approach, the actual
-	  // estimator variance can also be computed and compared with the CV
-	  // variance approximation (similar to traditional CV erro plots, but
-	  // predicting estimator variance instead of actual L2 fit error).
-	  
-	  var_l = poly_approx_q->variance();
-	  agg_var_l += var_l;
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Variance (lev " << lev << ", qoi " << qoi
-		 << ", iter " << iter << ") = " << var_l << '\n';
-	}
-        // store all approximation levels, whenever recomputed.
-	// Note: the active approximation upon completion of this loop may be
-	// any level --> this requires passing the current approximation index
-	// within combine_approximation().
-	uSpaceModel.store_approximation(lev);
-	last_active = lev;
-      }
-
-      sum_root_var_cost	+= std::pow(agg_var_l * 
-	std::pow(lev_cost, kappaEstimatorRate), inv_kp1);
-      // MSE reference is MC applied to HF:
-      if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
-    }
-    // compute epsilon target based on relative tolerance: total MSE = eps^2
-    // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
-      eps_sq_div_2 = estimator_var0 * convergenceTol;
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
-    }
-
-    // update targets based on variance estimates
-    Real fact
-      = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale, inv_k);
-    for (lev=0; lev<num_lev; ++lev) {
-      lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
-      new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
-      delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
-    }
-    ++iter;
-    Cout << "\nML PCE iteration " << iter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-  }
-
-  // remove redundancy between current active and stored, prior to combining
-  uSpaceModel.remove_stored_approximation(last_active);
-  // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation();
-
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = NLev[0] * cost[0];// first level incurs single model cost
-  for (lev=1; lev<num_lev; ++lev)  // subsequent levels also incur 1 model cost
-    equivHFEvals += NLev[lev] * cost[lev];//(cost[lev] + cost[lev-1]);
+    equivHFEvals += (recursive) ? NLev[lev] * cost[lev] :
+      NLev[lev] * (cost[lev] + cost[lev-1]);
   equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
 }
 
