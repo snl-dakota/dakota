@@ -2873,29 +2873,23 @@
 		  &bayes_emulator;
 		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
 		  <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
-		    <required>
-		      <oneOf>
-			<keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian" help="" minOccurs="1" >
-			  <required>
-			    <keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data" help="" minOccurs="1" >
-			      <param type="REALLIST"/>
-			    </keyword>
-			  </required>
-			  <keyword  id="covariance" name="covariance" code="{N_mdm(RealDL,dataDistCovariance)}" label="User-provided proposal covariance of gaussian dist on data" help="" minOccurs="1" >
-			    <param type="REALLIST"/>
-			    <required>
-			      <oneOf>
-				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,dataDistCovInputType_diagonal)}" label="Diagonal data distribution covariance input" help="" />
-				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,dataDistCovInputType_matrix)}" label="Matrix data distribution covariance input" help="" />
-			      </oneOf>
-			    </required>
-			  </keyword>
+		    <oneOf>
+		      <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian" help="" >
+			<keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data" help="" >
+			  <param type="REALLIST"/>
 			</keyword>
-			<keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data" help="" minOccurs="1" >
-			  <param type="INPUT_FILE"/>  
+			<keyword  id="covariance" name="covariance" code="{N_mdm(RealDL,dataDistCovariance)}" label="User-provided proposal covariance of gaussian dist on data" help="" >
+			  <param type="REALLIST"/>
+			  <oneOf>
+			    <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,dataDistCovInputType_diagonal)}" label="Diagonal data distribution covariance input" help="" />
+			    <keyword  id="matrix" name="matrix" code="{N_mdm(lit,dataDistCovInputType_matrix)}" label="Matrix data distribution covariance input" help="" />
+			  </oneOf>
 			</keyword>
-		      </oneOf>
-		    </required>
+		      </keyword>
+		      <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data" help="" minOccurs="1" >
+			<param type="INPUT_FILE"/>
+		      </keyword>
+		    </oneOf>
 		  </keyword>
 		  <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 		  <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>

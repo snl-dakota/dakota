@@ -4015,22 +4015,16 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
       ( data_distribution {0}
-        ( 
-          ( gaussian {0}
-            ( 
-              means REALLIST {N_mdm(RealDL,dataDistMeans)}
-             )
-            ( covariance REALLIST {N_mdm(RealDL,dataDistCovariance)}
-              ( 
-                diagonal {N_mdm(lit,dataDistCovInputType_diagonal)}
-                |
-                matrix {N_mdm(lit,dataDistCovInputType_matrix)}
-               )
-             )
+        ( gaussian {0}
+          means REALLIST {N_mdm(RealDL,dataDistMeans)}
+          ( covariance REALLIST {N_mdm(RealDL,dataDistCovariance)}
+            diagonal {N_mdm(lit,dataDistCovInputType_diagonal)}
+            |
+            matrix {N_mdm(lit,dataDistCovInputType_matrix)}
            )
-          |
-          obs_data_filename STRING {N_mdm(str,dataDistFile)}
          )
+        |
+        obs_data_filename STRING {N_mdm(str,dataDistFile)}
        )
       [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
       [ posterior_samples_export_filename STRING {N_mdm(str,posteriorSamplesExportFilename)} ]
