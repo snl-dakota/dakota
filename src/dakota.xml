@@ -414,56 +414,47 @@
 	     </keyword>
 	     ' >
 
+
+    <!ENTITY pce_regression_opts '
+	     <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+	       <param type="REAL" />
+	     </keyword>
+	     &pce_regression_alg_select;
+	     <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
+	       <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
+	     </keyword>
+	     <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
+	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
+	     <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
+	       <alias name="reuse_samples"/>
+	     </keyword>
+	     &default_max_solver_iterations;
+	     '>
+
     <!ENTITY pce_regression_sequence '
-      	     <required>
-	       <oneOf>
-		 <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-		   <param type="INTEGERLIST" />
-		 </keyword>
-		 <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-		   <param type="REAL" />
-		 </keyword>
-	       </oneOf>
-	       <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+	     <oneOf>
+	       <keyword  id="collocation_points_sequence" name="collocation_points_sequence" code="{N_mdm(szarray,collocationPointsSeq)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+		 <param type="INTEGERLIST" />
+		 &pce_regression_opts;
+	       </keyword>
+	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
 		 <param type="REAL" />
+		 &pce_regression_opts;
 	       </keyword>
-	       &pce_regression_alg_select;
-	       <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-		 <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
-	       </keyword>
-	       <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
-	       <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
-	       <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
-		 <alias name="reuse_samples"/>
-	       </keyword>
-	       &default_max_solver_iterations;
-	     </required>
+	     </oneOf>
 	     ' >
 
     <!ENTITY pce_regression '
-      	     <required>
-	       <oneOf>
-		 <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-		   <param type="INTEGER" />
-		 </keyword>
-		 <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
-		   <param type="REAL" />
-		 </keyword>
-	       </oneOf>
-	       <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+	     <oneOf>
+	       <keyword  id="collocation_points" name="collocation_points" code="{N_mdm(sizet,collocationPoints)}" label="Number collocation points to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
+		 <param type="INTEGER" />
+		 &pce_regression_opts;
+	       </keyword>
+	       <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" help="MethodCommands.html#MethodNonDPCE"  >
 		 <param type="REAL" />
+		 &pce_regression_opts;
 	       </keyword>
-	       &pce_regression_alg_select;
-	       <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
-		 <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
-	       </keyword>
-	       <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
-	       <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
-	       <keyword  id="reuse_points" name="reuse_points" code="{N_mdm(lit,pointReuse_all)}" label="reuse_points" help="" minOccurs="0" default="no sample reuse in coefficient estimation" >
-		 <alias name="reuse_samples"/>
-	       </keyword>
-	       &default_max_solver_iterations;
-	     </required>
+	     </oneOf>
 	     ' >
 
     <!ENTITY pce_expansion_samples_sequence '
@@ -1613,8 +1604,8 @@
 	  &method_dot_common_opts;
 	</keyword>
 
-	<!-- BMA: leaving this group as the GUI might be using it? -->
-        <required>
+	<!-- BMA: leaving this group and labeled oneOf as the GUI might be using it? -->
+        <!-- <required> -->
           <oneOf label="OPT method">
             <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg" help=""  group="Optimization: Local, Derivative-based" >
 	      &method_conmin_common_opts;
@@ -1630,7 +1621,7 @@
 	      &method_conmin_common_opts;
             </keyword>
           </oneOf>
-        </required>
+        <!-- </required> -->
 
         <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
           <!-- store method name AND incoming STRING -->
