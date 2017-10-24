@@ -6310,9 +6310,7 @@ Moment statistics for each response function:
  response_fn_1  7.9232432728e-08  3.1101547994e-06
  response_fn_2  4.5504402068e-06  8.2518722326e-05
  response_fn_3  7.9226314841e-08  3.1101554788e-06
-<<<<< Function evaluation summary (LF_INT): 1718 total (1519 new, 199 duplicate)
-<<<<< Function evaluation summary (MF_INT): 218 total (199 new, 19 duplicate)
-<<<<< Function evaluation summary (HF_INT): 19 total (19 new, 0 duplicate)
+<<<<< Function evaluation summary: 1955 total (1737 new, 218 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273478517e-02  6.5975181292e-03
@@ -6337,9 +6335,7 @@ Moment statistics for each response function:
  response_fn_1  8.8558159503e-08  3.8689875092e-06
  response_fn_2  6.9950250425e-06  1.0093030907e-04
  response_fn_3  8.8576046192e-08  3.8689833463e-06
-<<<<< Function evaluation summary (LF_INT): 10958 total (9439 new, 1519 duplicate)
-<<<<< Function evaluation summary (MF_INT): 1718 total (1519 new, 199 duplicate)
-<<<<< Function evaluation summary (HF_INT): 199 total (199 new, 0 duplicate)
+<<<<< Function evaluation summary: 12875 total (11157 new, 1718 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5273313435e-02  6.5968685886e-03
