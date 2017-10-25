@@ -252,6 +252,30 @@ protected:
   Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
 
   //
+  //- Heading: Member functions
+  //
+
+  /// Check number of build points against minimum required
+  void check_points(size_t num_build_pts);
+
+  /// helper pop() component that is modular on approx_data instance
+  void pop_data(Pecos::SurrogateData& approx_data, bool save_data);
+  /// helper push() component that is modular on approx_data instance
+  void push_data(Pecos::SurrogateData& approx_data);
+  /// helper finalize() component that is modular on approx_data instance
+  void finalize_data(Pecos::SurrogateData& approx_data);
+  /// helper store() component that is modular on approx_data instance
+  void store_data(Pecos::SurrogateData& approx_data, size_t index);
+  /// helper restore() component that is modular on approx_data instance
+  void restore_data(Pecos::SurrogateData& approx_data, size_t index);
+  /// helper remove_stored() component that is modular on approx_data instance
+  void remove_stored_data(Pecos::SurrogateData& approx_data, size_t index);
+  /// helper combine() component that is modular on approx_data instance
+  void swap_data(Pecos::SurrogateData& approx_data, size_t index);
+  /// helper clear_stored() component that is modular on approx_data instance
+  void clear_stored_data(Pecos::SurrogateData& approx_data);
+
+  //
   //- Heading: Data
   //
 
@@ -456,6 +480,70 @@ inline void Approximation::clear_popped()
     approxData.clear_popped();
   }
 }
+
+
+inline void Approximation::check_points(size_t num_build_pts)
+{
+  int min_samp = min_points(true); // account for anchor point & buildDataOrder
+  if (num_build_pts < min_samp) {
+    Cerr << "\nError: not enough samples to build approximation.  Construction "
+	 << "of this approximation\n       requires at least " << min_samp
+	 << " samples for " << sharedDataRep->numVars << " variables.  Only "
+	 << num_build_pts << " samples were provided." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+}
+
+
+inline void Approximation::
+pop_data(Pecos::SurrogateData& approx_data, bool save_data)
+{
+  if (popCountStack.empty()) {
+    Cerr << "\nError: empty count stack in Approximation::pop_data()."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  approx_data.pop(popCountStack.back(), save_data);
+  popCountStack.pop_back();
+}
+
+
+inline void Approximation::push_data(Pecos::SurrogateData& approx_data)
+{ popCountStack.push_back(approx_data.push(sharedDataRep->retrieval_index())); }
+
+
+inline void Approximation::finalize_data(Pecos::SurrogateData& approx_data)
+{
+  // finalization has to apply restorations in the correct order
+  size_t i, num_popped = approx_data.popped_sets(); // # of popped trials
+  for (i=0; i<num_popped; ++i)
+    approx_data.push(sharedDataRep->finalization_index(i), false);
+  clear_popped(); // clear only after process completed
+}
+
+
+inline void Approximation::
+store_data(Pecos::SurrogateData& approx_data, size_t index)
+{ approx_data.store(index); }
+
+
+inline void Approximation::
+restore_data(Pecos::SurrogateData& approx_data, size_t index)
+{ approx_data.restore(index); }
+
+
+inline void Approximation::
+remove_stored_data(Pecos::SurrogateData& approx_data, size_t index)
+{ approx_data.remove_stored(index); }
+
+
+inline void Approximation::
+swap_data(Pecos::SurrogateData& approx_data, size_t index)
+{ approx_data.swap(index); }
+
+
+inline void Approximation::clear_stored_data(Pecos::SurrogateData& approx_data)
+{ approx_data.clear_stored(); }
 
 } // namespace Dakota
 

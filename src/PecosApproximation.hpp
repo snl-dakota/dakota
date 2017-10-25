@@ -439,9 +439,7 @@ augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 
 
 inline const Pecos::SurrogateData& PecosApproximation::surrogate_data() const
-{
-  return ((Pecos::PolynomialApproximation*)polyApproxRep)->surrogate_data();
-}
+{ return polyApproxRep->surrogate_data(); }
 
 
 inline Pecos::BasisApproximation& PecosApproximation::
@@ -480,6 +478,7 @@ inline void PecosApproximation::build(size_t index)
 {
   // base class implementation checks data set against min required
   Approximation::build(index);
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients(index);
 }
@@ -487,10 +486,6 @@ inline void PecosApproximation::build(size_t index)
 
 inline void PecosApproximation::rebuild(size_t index)
 {
-  // base class default invokes build() for derived Approximations
-  // that do not supply rebuild()
-  //Approximation::rebuild(index);
-
   // TO DO: increment_coefficients() below covers current usage of
   // append_approximation() in NonDExpansion.  For more general
   // support of both update and append, need a mechanism to detect
@@ -510,6 +505,9 @@ inline void PecosApproximation::pop(bool save_data)
 {
   // base class implementation removes data from currentPoints
   Approximation::pop(save_data);
+  //if (polyApproxRep->surrogate_data_copied())
+  //  pop_data(polyApproxRep->surrogate_data(), save_data);
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.decrement_coefficients();
 }
@@ -519,6 +517,9 @@ inline void PecosApproximation::push()
 {
   // base class implementation updates currentPoints
   Approximation::push();
+  //if (polyApproxRep->surrogate_data_copied())
+  //  push_data(polyApproxRep->surrogate_data());
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.push_coefficients();
 }
@@ -528,6 +529,9 @@ inline void PecosApproximation::finalize()
 {
   // base class implementation appends currentPoints with popped data sets
   Approximation::finalize();
+  //if (polyApproxRep->surrogate_data_copied())
+  //  finalize_data(polyApproxRep->surrogate_data());
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.finalize_coefficients();
 }
@@ -537,6 +541,9 @@ inline void PecosApproximation::store(size_t index)
 {
   // base class implementation manages approx data
   Approximation::store(index);
+  //if (polyApproxRep->surrogate_data_copied())
+  //  store_data(polyApproxRep->surrogate_data(), index);
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.store_coefficients(index);
 }
@@ -546,6 +553,9 @@ inline void PecosApproximation::restore(size_t index)
 {
   // base class implementation manages approx data
   Approximation::restore(index);
+  //if (polyApproxRep->surrogate_data_copied())
+  //  restore_data(polyApproxRep->surrogate_data(), index);
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.restore_coefficients(index);
 }
@@ -555,6 +565,9 @@ inline void PecosApproximation::remove_stored(size_t index)
 {
   // base class implementation manages approx data
   Approximation::remove_stored(index);
+  //if (polyApproxRep->surrogate_data_copied())
+  //  remove_stored_data(polyApproxRep->surrogate_data(), index);
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.remove_stored_coefficients(index);
 }
@@ -562,9 +575,10 @@ inline void PecosApproximation::remove_stored(size_t index)
 
 inline void PecosApproximation::combine(size_t swap_index)
 {
-  // base class implementation manages approxData state
-  //Approximation::combine();
-  if (swap_index != _NPOS) approxData.swap(swap_index);
+  // base class implementation manages approx data
+  Approximation::combine(swap_index);
+  //if (polyApproxRep->surrogate_data_copied())
+  //  swap_data(polyApproxRep->surrogate_data(), swap_index);
 
   // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
   // PECOS combination type enumerations coincide.
@@ -574,8 +588,11 @@ inline void PecosApproximation::combine(size_t swap_index)
 
 inline void PecosApproximation::clear_stored()
 {
-  // base class implementation manages approxData state
+  // base class implementation manages approx data
   Approximation::clear_stored();
+  //if (polyApproxRep->surrogate_data_copied())
+  //  clear_stored_data(polyApproxRep->surrogate_data());
+
   // map to Pecos::BasisApproximation
   pecosBasisApprox.clear_stored();
 }

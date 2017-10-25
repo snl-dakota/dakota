@@ -407,12 +407,12 @@
 
 
     <!ENTITY pce_regression_opts '
-	     <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
-	       <param type="REAL" />
-	     </keyword>
 	     &pce_regression_alg_select;
 	     <keyword  id="cross_validation" name="cross_validation" code="{N_mdm(true,crossValidation)}" label="cross_validation" help="" minOccurs="0" >
 	       <keyword  id="noise_only" name="noise_only" code="{N_mdm(true,crossValidNoiseOnly)}" label="noise_only" help="" minOccurs="0" default="false" />
+	     </keyword>
+	     <keyword  id="ratio_order" name="ratio_order" code="{N_mdm(Realp,collocRatioTermsOrder)}" label="ratio_order" help="" minOccurs="0" default="1." >
+	       <param type="REAL" />
 	     </keyword>
 	     <keyword  id="use_derivatives1" name="use_derivatives" code="{N_mdm(true,methodUseDerivsFlag)}" label="use_derivatives" help="" minOccurs="0" default="use function values only"/>
 	     <keyword  id="tensor_grid" name="tensor_grid" code="{N_mdm(true,tensorGridFlag)}" label="tensor_grid" help="" minOccurs="0" default="regression with LHS sample set (point collocation)" />
