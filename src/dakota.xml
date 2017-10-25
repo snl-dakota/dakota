@@ -1586,24 +1586,19 @@
 	  &method_dot_common_opts;
 	</keyword>
 
-	<!-- BMA: leaving this group and labeled oneOf as the GUI might be using it? -->
-        <!-- <required> -->
-          <oneOf label="OPT method">
-            <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg" help=""  group="Optimization: Local, Derivative-based" >
-	      &method_conmin_common_opts;
-	    </keyword>
-            <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd" help=""  group="Optimization: Local, Derivative-based" >
-	      &method_conmin_common_opts;
-	    </keyword>
-            <keyword  id="conmin" name="conmin" code="{0}" label="conmin" help="" minOccurs="1" >
-              <oneOf>
-                <keyword  id="frcg1" name="frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="frcg" help=""  />
-                <keyword  id="mfd" name="mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="mfd" help=""  />
-              </oneOf>
-	      &method_conmin_common_opts;
-            </keyword>
+        <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg" help=""  group="Optimization: Local, Derivative-based" >
+	  &method_conmin_common_opts;
+	</keyword>
+        <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd" help=""  group="Optimization: Local, Derivative-based" >
+	  &method_conmin_common_opts;
+	</keyword>
+        <keyword  id="conmin" name="conmin" code="{0}" label="conmin" help="" minOccurs="1" >
+          <oneOf>
+            <keyword  id="frcg1" name="frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="frcg" help=""  />
+            <keyword  id="mfd" name="mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="mfd" help=""  />
           </oneOf>
-        <!-- </required> -->
+	  &method_conmin_common_opts;
+        </keyword>
 
         <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver" help=""  group="Optimization: Other" >
           <!-- store method name AND incoming STRING -->
