@@ -654,8 +654,6 @@ void NonDGPMSABayesCalibration::cache_acceptance_chain()
   }
 }
 
-
-/*
 void NonDGPMSABayesCalibration::
 print_results(std::ostream& s, short results_state)
 {
@@ -663,6 +661,5 @@ print_results(std::ostream& s, short results_state)
 
   NonDBayesCalibration::print_results(s, results_state);
 }
-*/
 
 } // namespace Dakota

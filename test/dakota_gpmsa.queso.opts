@@ -1,0 +1,80 @@
+###############################################
+# UQ Environment
+###############################################
+#env_help                = anything
+env_numSubEnvironments   = 1
+env_subDisplayFileName   = QuesoDiagnostics/display
+env_subDisplayAllowAll   = 0
+env_subDisplayAllowedSet = 0
+env_displayVerbosity     = 2
+env_syncVerbosity        = 0
+#env_seed                 = -1
+env_seed                 = 2460 
+ 
+###############################################
+# Statistical inverse problem (ip)
+###############################################
+#ip_help                 = anything
+ip_computeSolution      = 1
+ip_dataOutputFileName   = QuesoDiagnostics/sipOutput
+ip_dataOutputAllowedSet = 0
+ 
+###############################################
+# 'ip_': information for Metropolis-Hastings algorithm
+###############################################
+#ip_mh_help                 = anything
+#ip_mh_dataOutputFileName   = outputData/sipOutput
+ip_mh_dataOutputAllowedSet = "0 1"
+ 
+ip_mh_rawChain_dataInputFileName    = .
+ip_mh_rawChain_size                 = 1000
+ip_mh_rawChain_generateExtra        = 0
+ip_mh_rawChain_displayPeriod        = 2000
+ip_mh_rawChain_measureRunTimes      = 1
+ip_mh_rawChain_dataOutputFileName   = QuesoDiagnostics/raw_chain
+ip_mh_rawChain_dataOutputAllowedSet = "0 1"
+ip_mh_rawChain_computeStats         = 1
+ 
+ip_mh_displayCandidates             = 0
+ip_mh_putOutOfBoundsInChain         = 0
+ip_mh_tk_useLocalHessian            = 0
+ip_mh_tk_useNewtonComponent         = 0
+ip_mh_dr_maxNumExtraStages          = 0
+ip_mh_dr_listOfScalesForExtraStages = "5. 10. 20."
+ip_mh_am_initialNonAdaptInterval    = 1000
+ip_mh_am_adaptInterval              = 10000
+ip_mh_am_eta                        = 0.384
+ip_mh_am_epsilon                    = 1.e-5
+ip_mh_algorithm = logit_random_walk
+ip_mh_tk = logit_random_walk
+ip_mh_doLogitTransform = 1
+
+ 
+ip_mh_filteredChain_generate             = 0
+ 
+# -----
+# GPMSA Options with data precision adjusted per Brian William
+s
+# -----
+gpmsa_emulator_precision_shape = 5.0
+gpmsa_emulator_precision_scale = 0.2
+gpmsa_emulator_correlation_strength_alpha = 1.0
+gpmsa_emulator_correlation_strength_beta = 0.1
+gpmsa_discrepancy_precision_shape = 1.0
+ 
+gpmsa_discrepancy_precision_scale = 1e3
+ 
+gpmsa_discrepancy_correlation_strength_alpha = 1.0
+gpmsa_discrepancy_correlation_strength_beta = 0.1
+ 
+gpmsa_emulator_data_precision_shape = 3.0
+gpmsa_emulator_data_precision_scale = 333.3333333333333
+ 
+# Calibration of obs error multiplier is critical for this pro
+blem
+ 
+gpmsa_calibrate_observational_precision = 1
+gpmsa_observational_precision_shape = 64
+# 1/64 (0.015625)
+gpmsa_observational_precision_scale = 0.015625
+

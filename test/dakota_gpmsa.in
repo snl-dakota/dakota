@@ -1,0 +1,54 @@
+#@ *: Label=Experimental
+#@ *: DakotaConfig=HAVE_QUESO
+#@ s0: ReqFiles=initial_point_sub0.m,initial_proposal_covariance_sub0.m
+#
+# Try to replicate the CASL-verif1 case 
+#   rm -rf QuesoDiagnostics/
+#   awk '{print $3,$4,$5}' dakota_mcmc_tabular.dat > dmt.100000.dat
+#   # strip first line
+#   # use plot_hist.m
+#
+## DAKOTA INPUT FILE - dakota_gpmsa_queso.in
+#
+environment 
+  tabular_data
+    output_precision 16
+
+method
+  bayes_calibration gpmsa 	#s0
+    chain_samples 1000
+    seed 2460
+    build_samples 60
+    import_build_points_file  'dakota_gpmsa.sim_data.ff.dat'
+      freeform
+    export_chain_points_file 'posterior.dat'
+    options_file 'dakota_gpmsa.queso.opts'
+    gpmsa_normalize
+    output debug 
+
+variables
+  uniform_uncertain  3
+    upper_bounds   0.4500   -0.1000    0.4000
+    initial_point  0.1750   -0.3000    0.1000
+    lower_bounds  -0.1000   -0.5000   -0.2000
+
+##  normal_uncertain 3
+##    means      0.2750   -0.3000    0.1000
+##    std_deviations 0.1 0.1 0.1
+##    descriptors   'beta0'   'beta1'   'beta2' 
+
+  continuous_state  3
+    upper_bounds   1.1 1.0 0.5 
+    initial_state  1.0  0.0 -0.5
+    lower_bounds   0.9 -1.5 -1.5
+
+responses
+  descriptors 'lin'
+  calibration_terms   1
+  calibration_data_file 'dakota_gpmsa.exp_data_with_var.dat'
+    freeform
+    num_experiments  5
+      num_config_variables   3
+    variance_type 'scalar'
+  no_gradients
+  no_hessians
