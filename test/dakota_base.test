@@ -3210,6 +3210,19 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       1.0323630296e+01
 <<<<< Best data captured at function evaluation 741
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 43 total (32 new, 11 duplicate)
+         obj_fn: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   nln_eq_con_1: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      6.1675011764e-08 x1
+                      1.7560655608e-04 x2
+                      1.9944520366e+00 x3
+                      1.0000000000e+00 z1
+<<<<< Best objective function  =
+                      2.9772896557e+00
+<<<<< Best data captured at function evaluation 28
 dakota_batch_sampling.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 700 total (700 new, 0 duplicate)
@@ -4083,6 +4096,21 @@ Test Number 3 succeeded
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-01   4.3315114884e-04                      3.3306925389e+00
    6.0000000000e-01   1.8365843041e-01                      9.0151067458e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1666892468e+00 w
+                      3.6476909008e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.9034126503e+00
+<<<<< Best constraint values   =
+                     -4.1718652668e-02
+                      9.5162019089e-03
+<<<<< Best data captured at function evaluation 11
 dakota_cantilever_examples.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
@@ -5470,6 +5498,18 @@ Test Number 34 succeeded
                       4.9689435400e-04
                       4.9689435400e-04
 <<<<< Best data captured at function evaluation 208
+Test Number 35 succeeded
+<<<<< Function evaluation summary: 391 total (391 new, 0 duplicate)
+<<<<< Best parameters          =
+                      8.2050500432e-02 x1
+                      2.0093481685e-01 x2
+                      1.0001016105e+00 x3
+<<<<< Best objective function  =
+                      1.1177163286e+00
+<<<<< Best constraint values   =
+                     -9.3735123802e-02
+                     -6.5044959457e-04
+<<<<< Best data captured at function evaluation 370
 dakota_coliny_p.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
@@ -10991,6 +11031,25 @@ Test Number 17 succeeded
 <<<<< Best objective function  =
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 12
+Test Number 18 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 10225 total (10225 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 1055 total (1055 new, 0 duplicate)
+<<<<< Best parameters          =
+                      3.7500000000e-01 x1
+                      4.0527343750e-01 x2
+                      8.8867187500e-01 x3
+                                     1 y1
+                                     1 y2
+                                     4 z1
+                                     8 z2
+                      1.2000000000e+00 y3
+                      1.2000000000e+00 y4
+<<<<< Best objective function  =
+                      2.4822810450e+03
+<<<<< Best constraint values   =
+                     -6.2011718750e-02
+                     -2.3253440857e-02
+<<<<< Best data not found in evaluation cache
 dakota_nonlinear_cg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -22176,6 +22235,24 @@ Test Number 7 succeeded
                       3.0000002297e+00
                       3.2765015666e+00
 <<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
+<<<<< Function evaluation summary (UQ_I): 208 total (152 new, 56 duplicate)
+  response_fn_1: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 208 total (152 new, 56 duplicate)
+  response_fn_1: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 208 val (152 n, 56 d), 110 grad (104 n, 6 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      1.0000000000e+00 w
+                      2.0000000000e+00 t
+<<<<< Best objective function  =
+                      2.0000000000e+00
+<<<<< Best constraint values   =
+                     -7.7379581581e+00
+                     -5.6405973501e+00
+<<<<< Best data not found in evaluation cache
 dakota_scbdo_cantilever_mixed.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 3726 total (2916 new, 810 duplicate)
@@ -25924,6 +26001,30 @@ Test Number 9 succeeded
                       0.0000000000e+00
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 24
+Test Number 10 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 7696 total (7696 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 200 total (111 new, 89 duplicate)
+<<<<< Best parameters          =
+                      1.5566870283e+00 x1
+                      8.8451351318e-01 x2
+<<<<< Best objective function  =
+                      9.6216166356e-02
+<<<<< Best constraint values   =
+                      1.9810177475e+00
+                      4.0206408376e-03
+<<<<< Best data captured at function evaluation 190
+Test Number 11 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 255 total (255 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 506 total (506 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.0000000000e-01 x1
+                      1.1000000000e+00 x2
+<<<<< Best objective function  =
+                      2.0000000000e-04
+<<<<< Best constraint values   =
+                      2.6000000000e-01
+                      7.6000000000e-01
+<<<<< Best data captured at function evaluation 1
 dakota_textbook_increment.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
@@ -26417,6 +26518,30 @@ Test Number 10 succeeded
                      -1.1050547248e+00
                       4.8911396698e-02
 <<<<< Best data captured at function evaluation 113
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.1688200911e-01 x1
+                      7.8191477048e-01 x2
+                      5.0071132361e-01 x3
+<<<<< Best objective function  =
+                      1.1888411828e-01
+<<<<< Best constraint values   =
+                     -1.2379037390e-01
+                      3.5294970375e-01
+<<<<< Best data captured at function evaluation 51
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 2 total (2 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      5.0000000000e-02 x2
+                      5.0000000000e-01 x3
+<<<<< Best residual terms =
+                      9.3950625000e-01
+                      2.2500000000e-01
+<<<<< Best constraint values   =
+                     -2.4750000000e-01
+<<<<< Best data captured at function evaluation 1
 dakota_textbook_num_derivs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)

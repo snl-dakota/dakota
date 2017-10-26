@@ -1,6 +1,7 @@
 #@ s*: Label=FastTest
 #@ s1: DakotaConfig=HAVE_NPSOL
 #@ s2: DakotaConfig=HAVE_ACRO
+# s3: test correct traits coverage
 
 environment
   method_pointer = 'BandB'
@@ -13,7 +14,7 @@ method
 
 method
   id_method = 'SubNLP'
-  conmin_frcg					#s0
+  conmin_frcg					#s0,#s3
 #  npsol_sqp					#s1
 #  coliny_ea					#s2
 #    seed = 12345				#s2
@@ -31,12 +32,12 @@ variables,
 #	  lower_bounds       1     1		#s2
 #	  upper_bounds       4     9		#s2
 #	  descriptors      'y1'   'y2'		#s2
-	discrete_design_set			#s0,#s1
-	  integer = 1				#s0,#s1
-	    num_set_values = 4			#s0,#s1
-	    set_values = 1 2 3 4		#s0,#s1
-	    descriptors  'z1'			#s0,#s1
-	  categorical 'no'			#s0,#s1
+	discrete_design_set			#s0,#s1,#s3
+	  integer = 1				#s0,#s1,#s3
+	    num_set_values = 4			#s0,#s1,#s3
+	    set_values = 1 2 3 4		#s0,#s1,#s3
+	    descriptors  'z1'			#s0,#s1,#s3
+	  categorical 'no'			#s0,#s1,#s3
 
 interface,
 	direct
@@ -44,6 +45,8 @@ interface,
 
 responses,
 	objective_functions = 1
-	nonlinear_inequality_constraints = 2
+	nonlinear_inequality_constraints = 2	#s0,#s1,#s2
+#	nonlinear_inequality_constraints = 1	#s3
+#	nonlinear_equality_constraints = 1		#s3
 	numerical_gradients
 	no_hessians

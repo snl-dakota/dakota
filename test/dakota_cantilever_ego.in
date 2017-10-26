@@ -9,9 +9,10 @@
 # (1) efficient_global for constrained, global opt. with mean random vars
 # (2) efficient_global for constrained, global NLS  with mean random vars
 # (3) global_reliability for UQ at the nominal design
+# s4: test correct traits coverage
 
 method,
-	efficient_global					#s0,#s1,#s2
+	efficient_global					#s0,#s1,#s2,#s4
 	  gaussian_process dakota				#s0
 #	  gaussian_process surfpack				#s1
 #	global_reliability x_gaussian_process		#s3
@@ -23,14 +24,14 @@ method,
 
 variables,
 	continuous_design = 2
-	  initial_point    4.0          4.0			#s0,#s1,#s2
+	  initial_point    4.0          4.0			#s0,#s1,#s2,#s4
 #	  initial_point    2.5          2.5			#s3
 	  upper_bounds    10.0         10.0
 	  lower_bounds     1.0          1.0
 	  descriptors     'w' 't'
-        continuous_state = 4					#s0,#s1,#s2
-          initial_state   40000.  29.E+6  500.  1000.	#s0,#s1,#s2
-	  descriptors       'R'    'E'    'X'    'Y'	#s0,#s1,#s2
+        continuous_state = 4					#s0,#s1,#s2,#s4
+          initial_state   40000.  29.E+6  500.  1000.	#s0,#s1,#s2,#s4
+	  descriptors       'R'    'E'    'X'    'Y'	#s0,#s1,#s2,#s4
 #	normal_uncertain = 4					#s3
 #	  means             =  40000. 29.E+6 500. 1000.	#s3
 #	  std_deviations    =  2000. 1.45E+6 100. 100.	#s3
@@ -41,8 +42,10 @@ interface,
 	  analysis_driver = 'cantilever'
 
 responses,
-	objective_functions = 1				#s0,#s1
+	objective_functions = 1				#s0,#s1,#s4
 	nonlinear_inequality_constraints = 2		#s0,#s1
+#	nonlinear_equality_constraints = 1		#s4
+#	nonlinear_inequality_constraints = 1		#s4
 #	calibration_terms = 3				#s2
 #       response_functions = 3				#s3
 	no_gradients
