@@ -552,7 +552,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
   }
 
   // post-process results to compute confidence intervals on parameter estimates
-  get_confidence_intervals(iter_cv, best_vars.continuous_variables());
+  get_confidence_intervals(iter_cv, best_vars);
 
   // update best response to contain the final lsq terms.  Since OPT++ has no
   // knowledge of these terms, the OPT++ final design variables must be matched

@@ -10240,6 +10240,14 @@ Partial Rank Correlation Matrix between input and output:
            x -3.60197e-01 
            y -2.10952e-01 
       ancomp -9.48409e-01 
+dakota_gpmsa.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 0 total (0 new, 0 duplicate)
+Sample moment statistics for each posterior variable:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+         uuv_1  2.1897335966417755e-01  1.4699260526187483e-01 -2.3363113340970540e-01 -7.1318509795232432e-01
+         uuv_2 -3.5553592249280874e-01  6.1348288630121289e-02 -1.2937717857100500e-01 -4.8534088433767486e-01
+         uuv_3 -9.2574471140873388e-03  1.0671671917024228e-01 -1.2955622509091946e-01 -7.5228930443482889e-01
 dakota_graphics1.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
@@ -24378,7 +24386,7 @@ Test Number 13 succeeded
                      -3.0996818329e+01
 <<<<< Best data captured at function evaluation 954
 Test Number 14 succeeded
-<<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
+<<<<< Function evaluation summary: 9 total (7 new, 2 duplicate)
 <<<<< Best parameters          =
                       5.3363207457e-01 x1
                       5.5034955829e-01 x2
@@ -24388,7 +24396,7 @@ Test Number 14 succeeded
                       3.6068599025e-02
 <<<<< Best data captured at function evaluation 7
 Test Number 15 succeeded
-<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+<<<<< Function evaluation summary: 22 total (19 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.3358366152e-01 x1
                       5.5027646718e-01 x2
@@ -24398,7 +24406,7 @@ Test Number 15 succeeded
                       3.6012359569e-02
 <<<<< Best data captured at function evaluation 16
 Test Number 16 succeeded
-<<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
+<<<<< Function evaluation summary: 11 total (9 new, 2 duplicate)
 <<<<< Best parameters          =
                       5.1956805932e-01 x1
                       5.0969013102e-01 x2
@@ -24409,7 +24417,7 @@ Test Number 16 succeeded
                       1.6653345369e-15
 <<<<< Best data captured at function evaluation 9
 Test Number 17 succeeded
-<<<<< Function evaluation summary: 280 total (280 new, 0 duplicate)
+<<<<< Function evaluation summary: 283 total (280 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.3351424779e-01 x1
                       5.1648575221e-01 x2
@@ -24417,10 +24425,10 @@ Test Number 17 succeeded
                       1.0200956498e-01
                       2.6394576488e-02
 <<<<< Best constraint values   =
-                      4.0834316933e-07
+                      4.0834314752e-07
 <<<<< Best data captured at function evaluation 248
 Test Number 18 succeeded
-<<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
+<<<<< Function evaluation summary: 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
                       5.1956736186e-01 x1
                       5.0968960081e-01 x2
@@ -24431,7 +24439,7 @@ Test Number 18 succeeded
                      -1.9175325894e-07
 <<<<< Best data captured at function evaluation 14
 Test Number 19 succeeded
-<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
+<<<<< Function evaluation summary: 183 total (180 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.3351156238e-01 x1
                       5.1648394378e-01 x2
@@ -24439,7 +24447,7 @@ Test Number 19 succeeded
                       1.0201147308e-01
                       2.6392615300e-02
 <<<<< Best constraint values   =
-                     -1.1700255825e-07
+                     -1.1700255736e-07
 <<<<< Best data captured at function evaluation 178
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
@@ -28941,7 +28949,7 @@ Test Number 5 succeeded
                      -9.3574850428e-02
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
+<<<<< Function evaluation summary: 13 total (11 new, 2 duplicate)
 <<<<< Best parameters          =
                       4.0011598866e+00 x1
                       1.9766117810e+00 x2
