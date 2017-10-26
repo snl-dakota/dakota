@@ -35,9 +35,11 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
     = (SharedPecosApproxData*)sharedDataRep;
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+  pecosBasisApprox.surrogate_data(approxData); // shallow copy (shared rep)
+
+  // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
-  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
 
 
@@ -58,9 +60,11 @@ PecosApproximation(ProblemDescDB& problem_db,
     = (SharedPecosApproxData*)sharedDataRep;
   pecosBasisApprox
     = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+  pecosBasisApprox.surrogate_data(approxData); // shallow copy (shared rep)
+
+  // convenience pointer (we use PolynomialApproximation exclusively)
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
-  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
 
 } // namespace Dakota

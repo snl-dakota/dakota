@@ -439,7 +439,7 @@ augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 
 
 inline const Pecos::SurrogateData& PecosApproximation::surrogate_data() const
-{ return polyApproxRep->surrogate_data(); }
+{ return pecosBasisApprox.surrogate_data(); }
 
 
 inline Pecos::BasisApproximation& PecosApproximation::
@@ -558,11 +558,7 @@ inline void PecosApproximation::combine(size_t swap_index)
 {
   // base class implementation manages approx data
   Approximation::combine(swap_index);
-  //if (polyApproxRep->surrogate_data_copied())
-  //  swap_data(polyApproxRep->surrogate_data(), swap_index);
-
-  // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
-  // PECOS combination type enumerations coincide.
+  // map to Pecos::BasisApproximation
   pecosBasisApprox.combine_coefficients(swap_index);
 }
 
