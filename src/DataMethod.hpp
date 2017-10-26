@@ -1072,7 +1072,9 @@ public:
   int jumpStep; 
 
   // WASABI sub-specification
-
+  /// Number of samples from the prior that is pushed forward
+  /// through the model to obtain the initial set of pushforward samples
+  int numPushforwardSamples;
   /// the type of data distribution: kde, or gaussian
   String dataDistType;
   /// the format of data distribution gaussian covariance input: 

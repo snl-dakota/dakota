@@ -86,8 +86,8 @@ protected:
 
   //
   //- Heading: Data
-  /// number of samples from the prior
-  int numPriorSamples;
+  /// number of samples from the prior that is pushed forward through the model
+  int numPushforwardSamples;
   /// The mean of the multivariate Gaussian distribution of the obs. data
   RealVector dataDistMeans;
   /// The covariance of the multivariate Gaussian distribution of the obs. data

@@ -558,7 +558,7 @@
 
     <!ENTITY ml_pilot_samples '
       	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="pilot_samples" help="" minOccurs="0" >
-	       <!-- <alias name="initial_samples"/> -->
+	       <alias name="initial_samples"/> 
 	       <param type="INTEGERLIST" />
 	     </keyword>
 	     ' >
@@ -2720,8 +2720,7 @@
 	      </keyword>
 	    </keyword>
 	    <keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
-	      <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Samples from the Prior" help="" default="method-dependent">
-		<alias name="samples" />
+	      <keyword  id="pushforward_samples" name="pushforward_samples" code="{N_mdm(int,numPushforwardSamples)}" label="Number of Samples from the Prior that are pushed forward through the model" help="" default="method-dependent">
 		<param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
@@ -2748,13 +2747,13 @@
 		  </keyword>
 		</oneOf>
 	      </keyword>
-	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
-	      <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
 	      <keyword id="posterior_samples_import_filename" name="posterior_samples_import_filename" code="{N_mdm(str,posteriorSamplesImportFilename)}" label="Filename containing samples at which to evaluate the posterior density" help="" minOccurs="0"> <param type="INPUT_FILE"/> </keyword>
-	      <optional>
-		<keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior" help="" minOccurs="1"></keyword>
-		<keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples" help="" minOccurs="1"> </keyword>
-	      </optional>
+	      <keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior" help="" minOccurs="0">
+	      <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
+	      </keyword>
+	      <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples" help="" minOccurs="0"> 
+	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
+	      </keyword>
 	    </keyword>
 	    <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">

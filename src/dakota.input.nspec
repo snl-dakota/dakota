@@ -1582,7 +1582,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   |
   ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
@@ -2223,7 +2223,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
@@ -3074,7 +3074,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -3445,7 +3445,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
-      initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
+      pushforward_samples INTEGER {N_mdm(int,numPushforwardSamples)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ emulator {0}
         ( gaussian_process ALIAS kriging {0}
@@ -3773,7 +3773,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -4027,12 +4027,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         |
         obs_data_filename STRING {N_mdm(str,dataDistFile)}
        )
-      [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
-      [ posterior_samples_export_filename STRING {N_mdm(str,posteriorSamplesExportFilename)} ]
       [ posterior_samples_import_filename STRING {N_mdm(str,posteriorSamplesImportFilename)} ]
-      [ 
-        generate_posterior_samples {N_mdm(true,generatePosteriorSamples)}
-        evaluate_posterior_density {N_mdm(true,evaluatePosteriorDensity)}
+      [ generate_posterior_samples {N_mdm(true,generatePosteriorSamples)}
+        [ posterior_samples_export_filename STRING {N_mdm(str,posteriorSamplesExportFilename)} ]
+       ]
+      [ evaluate_posterior_density {N_mdm(true,evaluatePosteriorDensity)}
+        [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
        ]
      )
     |
@@ -4370,7 +4370,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}

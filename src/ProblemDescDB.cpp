@@ -2582,6 +2582,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
 	{"nond.proposal_covariance_updates", P proposalCovUpdates},
+	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
