@@ -1007,7 +1007,7 @@ void NonDExpansion::multifidelity_expansion()
   bool multilevel;
   if (num_mf > 1) {
     multilevel = false; num_fid = num_mf;
-    if (num_hf_lev)
+    if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
 	   << "NonDExpansion::multifidelity_expansion().\n";
   }

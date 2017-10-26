@@ -224,10 +224,12 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // incoming soln level index is an index into the ordered solnCntlCostMap,
   // not to be confused with the value in the key-value pair that corresponds
   // to the discrete variable value index (val_index below).
-  if (lev_index == _NPOS) { // make this a hard error, rather than no-op return
-    Cerr << "Error: _NPOS passed to SimulationModel::solution_level_index()."
-	 << std::endl;
-    abort_handler(MODEL_ERROR);
+  if (lev_index == _NPOS) { // just return quietly to simplify calling code
+    return;                 // (rather than always checking index validity)
+
+    //Cerr << "Error: _NPOS passed to SimulationModel::solution_level_index()."
+    //     << std::endl;
+    //abort_handler(MODEL_ERROR);
   }
 
   std::map<Real, size_t>::const_iterator cost_cit = solnCntlCostMap.begin();

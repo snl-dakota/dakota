@@ -9,16 +9,14 @@ environment,
 
 method,
 	model_pointer = 'HIERARCH'
-#	multifidelity_polynomial_chaos			#s6
-#	  expansion_order_sequence = 3 2 2 1 1		#s6
-        multilevel_polynomial_chaos		#s0,#s1,#s2,#s3,#s4,#s5,#p0,#p1
+        multilevel_polynomial_chaos
 # exp order is initial for pilot and is adapted based on collocation ratio
-	  collocation_ratio = .9
-#	  estimator_rate = 2.5
 	  expansion_order_sequence = 2	     	#s0,#s1,#s2,#s3,#s4,#p0,#p1
 	  pilot_samples = 10  			#s0,#s1,#s2,#s3,#s4,#p0,#p1
 #	  expansion_order_sequence = 1	     		#s5
 #	  pilot_samples = 300 150 75 25 7   		#s5
+	  collocation_ratio = .9
+#	  estimator_rate = 2.5
 	  seed = 1237
 	  orthogonal_matching_pursuit
 #	  max_iterations = 5
