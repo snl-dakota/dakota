@@ -17,6 +17,7 @@
                </oneOf>
              </optional>
 	     ' >
+
     <!ENTITY method_import_approx_format '
              <optional>
                <oneOf label="Tabular Format" >
@@ -30,6 +31,7 @@
                </oneOf>
              </optional>
 	     ' >
+
     <!ENTITY method_export_approx_format '
 	     <optional>
                <oneOf label="Tabular Format" >
@@ -43,6 +45,21 @@
                </oneOf>
              </optional>
 	     ' >
+
+    <!ENTITY method_export_samples_format '
+	     <optional>
+	       <oneOf label="Tabular Format" >
+		 <keyword  name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated"  >
+		   <keyword  name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header"  minOccurs="0" />
+		   <keyword  name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id"  minOccurs="0" />
+		   <keyword  name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id"  minOccurs="0" />
+		 </keyword>
+		 <keyword  name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated"  default="annotated" />
+		 <keyword  name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform"  default="annotated" />
+	       </oneOf>
+	     </optional>
+	     ' >
+
     <!-- Legacy scalar data format supports exp_id and header options -->
     <!ENTITY response_scalar_data_format '
 	     <optional>
@@ -742,6 +759,33 @@
 		 &bayes_mf_pce;
 		 &bayes_sc;
 		 &bayes_mf_sc;
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY bayes_proposal_covariance '
+	     <keyword  name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
+	       <oneOf label="Proposal Covariance Source">
+		 <keyword  name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
+		   <keyword  name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates"  minOccurs="0" >
+		     <param type="INTEGER" />
+		   </keyword>
+		 </keyword>
+		 <keyword  name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance"   />
+		 <keyword  name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
+		   <param type="REALLIST"/>
+		   <oneOf label="Values For">
+		     <keyword  name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input"   />
+		     <keyword  name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
+		   </oneOf>
+		 </keyword>
+		 <keyword  name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename"  minOccurs="1" >
+		   <param type="INPUT_FILE"/>
+		   <oneOf label="Values For">
+		     <keyword  name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput "   />
+		     <keyword  name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
+		   </oneOf>
+		 </keyword>
 	       </oneOf>
 	     </keyword>
 	     ' >
@@ -2361,17 +2405,7 @@
 	    </oneOf>
 	  </keyword>
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence" help="" minOccurs="0" >
-	    <optional>
-	      <oneOf label="Tabular Format" >
-		<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-		  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-		  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-		  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		</keyword>
-		<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-	      </oneOf>
-	    </optional>
+	    &method_export_samples_format;
 	  </keyword>
 	  &default_max_iterations;
 	  &default_convergence_tolerance;
@@ -2600,374 +2634,301 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	    <!-- BEGIN Bayesian Calibration -->
-	    <keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" group="Calibration" >
-	      <alias name="nond_bayes_calibration"/>
-	      <oneOf label="Bayesian Calibration Method">
-		<keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
-		  <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
-		    <alias name="samples" />
-		    <param type="INTEGER" />
-		  </keyword>
-		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-		    <param type="INTEGER" constraint="> 0" />
-		  </keyword>
-		  &bayes_emulator;
-		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
-		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
-		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-			<param type="OUTPUT_FILE" />
-			<optional>
-			  <oneOf label="Tabular Format" >
-			    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			      <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			      <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			      <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			    </keyword>
-			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-			  </oneOf>
-			</optional>
-		      </keyword>
-		     <optional>
-			    <oneOf label="MCMC Algorithm" >
-			      <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
-			      <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
-			      <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
-			      <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
-			      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
-			    </oneOf>
-			 </optional>
-		     &rng_options;
-		  <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve" help="" minOccurs="0" default="nip pre-solve for emulators" >
-		    <oneOf label="Pre-solve Optimizer">
-		      <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
-		      <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
-		      <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none" help=""  />
-		    </oneOf>
-		  </keyword>
-		  <keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
-		    <oneOf label="Proposal Covariance Source">
-		      <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
-			<keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
-			  <param type="INTEGER" />
-			</keyword>
-		      </keyword>
-		      <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
-		      <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
-			<param type="REALLIST"/>
-			<oneOf label="Values For">
-			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
-			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			</oneOf>
-		      </keyword>
-		      <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
-			<param type="INPUT_FILE"/>
-			<oneOf label="Values For">
-			  <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
-			  <keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			</oneOf>
-		      </keyword>
-		    </oneOf>
-		  </keyword>
-		    </keyword>
-		    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
-		      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
-			<alias name="samples" />
-			<param type="INTEGER" />
-		      </keyword>
-		      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-			<param type="INTEGER" constraint="> 0" />
-			</keyword>
-			<keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
-			  <param type="INTEGER" />
-			</keyword>
-			<keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
-			  <alias name="import_points_file"/>
-			  <param type="INPUT_FILE" />
-			  &method_import_build_format;
-			  <!-- Disable active_only, until we can set the config vars to their nominal value; for now import must include any active config vars as well...
-
-			  <keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
-			  -->
-			</keyword>
-		      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
-		      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
-		      <keyword  id="gpmsa_normalize" name="gpmsa_normalize" code="{N_mdm(true,gpmsaNormalize)}" label="Apply GPMSA normalization" help="" minOccurs="0" />
-		      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-			<param type="OUTPUT_FILE" />
-			<optional>
-			  <oneOf label="Tabular Format" >
-			    <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			      <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			      <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			      <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			    </keyword>
-			    <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			    <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-			  </oneOf>
-			</optional>
-		      </keyword>
-		      	<optional>
-			  <oneOf label="MCMC Algorithm" >
-			    <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
-			    <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
-			    <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
-			    <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
-			    <!--
-			    <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
-			    -->
-			  </oneOf>
-			</optional>
-			&rng_options;
-			<keyword  id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type" help="" minOccurs="0" >
-			  <oneOf label="Proposal Covariance Source">
-			    <keyword  id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance" help="" >
-			      <keyword  id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates" help="" minOccurs="0" >
-				<param type="INTEGER" />
-			      </keyword>
-			    </keyword>
-			    <keyword  id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance" help=""  />
-			    <keyword  id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values" help="" minOccurs="1" >
-			      <param type="REALLIST"/>
-			      <oneOf label="Values For">
-				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input" help=""  />
-				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			      </oneOf>
-			    </keyword>
-			    <keyword  id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename" help="" minOccurs="1" >
-			      <param type="INPUT_FILE"/>
-			      <oneOf label="Values For">
-				<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput " help=""  />
-				<keyword  id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input" help=""  />
-			      </oneOf>
-			    </keyword>
-			  </oneOf>
-			</keyword>
-			<keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File" help="" minOccurs="0" default="no advanced options file" >
-			  <param type="INPUT_FILE" />
-			</keyword>
-		      </keyword>
-		<keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
-		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Samples from the Prior" help="" default="method-dependent">
-		    <alias name="samples" />
-		    <param type="INTEGER" />
-		  </keyword>
-		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-		    <param type="INTEGER" constraint="> 0" />
-		  </keyword>
-		  &bayes_emulator;
-		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
-		  <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
-		    <oneOf label="Data Distribution">
-		      <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian" help="" >
-			<keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data" help="" >
-			  <param type="REALLIST"/>
-			</keyword>
-			<keyword  id="covariance" name="covariance" code="{N_mdm(RealDL,dataDistCovariance)}" label="User-provided proposal covariance of gaussian dist on data" help="" >
-			  <param type="REALLIST"/>
-			  <oneOf label="Values For">
-			    <keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,dataDistCovInputType_diagonal)}" label="Diagonal data distribution covariance input" help="" />
-			    <keyword  id="matrix" name="matrix" code="{N_mdm(lit,dataDistCovInputType_matrix)}" label="Matrix data distribution covariance input" help="" />
-			  </oneOf>
-			</keyword>
-		      </keyword>
-		      <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data" help="" minOccurs="1" >
-			<param type="INPUT_FILE"/>
-		      </keyword>
-		    </oneOf>
-		  </keyword>
-		  <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
-		  <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
-		  <keyword id="posterior_samples_import_filename" name="posterior_samples_import_filename" code="{N_mdm(str,posteriorSamplesImportFilename)}" label="Filename containing samples at which to evaluate the posterior density" help="" minOccurs="0"> <param type="INPUT_FILE"/> </keyword>
-		  <optional>
-		    <keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior" help="" minOccurs="1"></keyword>
-		    <keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples" help="" minOccurs="1"> </keyword>
-		  </optional>
-		</keyword>
-		<keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
-		  <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
-		    <alias name="samples" />
-		    <param type="INTEGER" />
-		  </keyword>
-		  <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
-		    <param type="INTEGER" constraint="> 0" />
-		  </keyword>
-		  <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
-		    <param type="INTEGER" constraint=">= 3" />
-		  </keyword>
-		  <keyword  id="num_cr" name="num_cr" code="{N_mdm(int,numCR)}" label="Number of candidate points used in burn-in adaptation" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="1" >
-		    <param type="INTEGER" constraint=">= 1" />
-		  </keyword>
-		  <keyword  id="crossover_chain_pairs" name="crossover_chain_pairs" code="{N_mdm(int,crossoverChainPairs)}" label="Number of chain pairs used in crossover " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  <keyword  id="gr_threshold" name="gr_threshold" code="{N_mdm(Real,grThreshold)}" label="Gelman-Rubin Threshold for convergence" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="1.2" >
-		    <param type="REAL" constraint="> 0.0" />
-		  </keyword>
-		  <keyword  id="jump_step" name="jump_step" code="{N_mdm(int,jumpStep)}" label="Jump-Step " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="5" >
-		    <param type="INTEGER" constraint=">= 0" />
-		  </keyword>
-		  &bayes_emulator;
-		  <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
-		  <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
-		    <param type="OUTPUT_FILE" />
-		    <optional>
-		      <oneOf label="Tabular Format" >
-			<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			</keyword>
-			<keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-			<keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-		      </oneOf>
-		    </optional>
-		  </keyword>
-		</keyword>
-	      </oneOf>
-		<keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design" help="" minOccurs="0" >
-		  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Hi-fi Samples" help="" default="method-dependent">
-		    <alias name="samples" />
-		    <param type="INTEGER" />
-		  </keyword>
-		  <!--&default_max_function_evaluations;-->
-                  <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="1" >
-                    <param type="INTEGER" constraint="> 0" />
-                  </keyword>
-                  <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0">
-                    <param type="INTEGER" constraint=">= 0" />
-                  </keyword>
-                  <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import" help="" minOccurs="0" default="no point import from a file" >
-                    <param type="INPUT_FILE" />
-		    <optional>
-		      <oneOf label="Tabular Format" >
-			<keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-			</keyword>
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="freeform" help=""  />
-		      </oneOf>
-		    </optional>
-                  </keyword>
-	          <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
-		</keyword> 
-	      <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
-		<oneOf label="Calibrate Error Multipliers">
-		  <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />
-		  <keyword  id="per_experiment" name="per_experiment" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_EXPER)}" label="multiplier per experiment" help=""  />
-		  <keyword  id="per_response" name="per_response" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" label="multiplier per response" help=""  />
-		  <keyword  id="both" name="both" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" label="multiplier for each experiment, response" help=""  />
-		</oneOf>
-		<optional>
-		  <keyword  id="hyperprior_alphas" name="hyperprior_alphas" code="{N_mdm(RealDL,hyperPriorAlphas)}" label="Inverse-gamma hyper-prior alphas" help="" minOccurs="1" >
-		    <param type="REALLIST"/>
-		  </keyword>
-		  <keyword  id="hyperprior_betas" name="hyperprior_betas" code="{N_mdm(RealDL,hyperPriorBetas)}" label="Inverse-gamma hyper-prior betas" help="" minOccurs="1" >
-		    <param type="REALLIST"/>
-		  </keyword>
-		</optional>
+	<!-- BEGIN Bayesian Calibration -->
+	<keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="1" group="Calibration" >
+	  <alias name="nond_bayes_calibration"/>
+	  <oneOf label="Bayesian Calibration Method">
+	    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso" help="" minOccurs="1" >
+	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+		<alias name="samples" />
+		<param type="INTEGER" />
 	      </keyword>
-
-		  <keyword  id="burn_in_samples" name="burn_in_samples" code="{N_mdm(int,burnInSamples)}" label="Burn-in samples" help="" minOccurs="0" default="0">
-		  	<param type="INTEGER" />
-		  </keyword>
-	          <keyword id="posterior_stats" name="posterior_stats" code="{0}" minOccurs="0">
-	             <keyword id="kl_divergence" name="kl_divergence" code="{N_mdm(true,posteriorStatsKL)}" minOccurs="0" />
-	             <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" >
-		        <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
-		     </keyword>
-		  </keyword>
-	      <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
-		<keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type" help="" minOccurs="0" default="gaussian process" >
-    	          <oneOf label="Discrepancy Model">
-    	            <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes" help=""  >
-                      <alias name="kriging"/>
-		    </keyword>
-		    <keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" help=""  />
-    	          </oneOf>
-                  <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction" help="" minOccurs="0" default="2">
-                    <oneOf label="Correction Order">
-		      <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0" help="" />
-                      <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear" help=""  />
-                      <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic" help=""  />
-                    </oneOf>
-                  </keyword>
-    	        </keyword>
-                <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations" help="" minOccurs="0" default="0" >
-                  <param type="INTEGER" constraint=">= 0" />
-                </keyword>
-                <keyword  id="prediction_configs" name="prediction_configs" code="{N_mdm(RealDL,predictionConfigList)}" label="List of Prediction Configurations" help="" minOccurs="0" >
-                  <param type="REALLIST" />
-		</keyword>
-                <keyword  id="import_prediction_configs" name="import_prediction_configs" code="{N_mdm(str,importPredConfigs)}" label="Filename for Prediction Configs" help="" minOccurs="0" default="no point import from a file" >
-                  <param type="INPUT_FILE" />
-		  <optional>
-		    <oneOf label="Tabular Format" >
-		      <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			<keyword  id="header" name="header" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			<keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			<keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		      </keyword>
-		      <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
-		      <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="freeform" help=""  />
-		    </oneOf>
-		  </optional>
-                  </keyword>
-	          <keyword  id="export_discrepancy_file" name="export_discrepancy_file" code="{N_mdm(str,exportDiscrepFile)}" label="File export of model discrepancy values" help="" minOccurs="0" default="discrepancy export to default filename" >
-		    <param type="OUTPUT_FILE" />
-		    <optional>
-		      <oneOf label="Tabular Format" >
-		        <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		        </keyword>
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-		      </oneOf>
-		    </optional>
-	          </keyword>
-		  <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values" help="" minOccurs="0" default="corrected model export to default filename" > 
-		    <param type="OUTPUT_FILE" />
-		    <optional>
-		      <oneOf label="Tabular Format" >
-		          <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		          </keyword>
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-		      </oneOf>
-		    </optional>
-		  </keyword>
-		  <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model" help="" minOccurs="0" default="corrected model variance export to default filename" > 
-		    <param type="OUTPUT_FILE" />
-		    <optional>
-		      <oneOf label="Tabular Format" >
- 		        <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
-			  <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
-			  <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
-			  <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
-		        </keyword>
-		        <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
-		        <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
-		      </oneOf>
-		    </optional>
-		  </keyword>
-		</keyword>
-	      <keyword  id="sub_sampling_period" name="sub_sampling_period" code="{N_mdm(int,subSamplingPeriod)}" label="Chain sampling period for statistics" help="" minOccurs="0" default="0">
-		  	<param type="INTEGER" />
-		  </keyword>
-	      &probability_levels;
-	      &default_convergence_tolerance;
-	      &default_max_iterations;
-	      &method_optional_model_pointer;
+	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
+	      &bayes_emulator;
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
+	      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
+	      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+		<param type="OUTPUT_FILE" />
+		&method_export_samples_format;
+	      </keyword>
+	      <optional>
+		<oneOf label="MCMC Algorithm" >
+		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+		  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+		  <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+		</oneOf>
+	      </optional>
+	      &rng_options;
+	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve" help="" minOccurs="0" default="nip pre-solve for emulators" >
+		<oneOf label="Pre-solve Optimizer">
+		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_SQP)}" label="sqp" help=""  />
+		  <keyword  id="nip" name="nip" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NIP)}" label="nip" help=""  />
+		  <keyword  id="none" name="none" code="{N_mdm(utype,preSolveMethod_SUBMETHOD_NONE)}" label="none" help=""  />
+		</oneOf>
+	      </keyword>
+	      &bayes_proposal_covariance;
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File" help="" minOccurs="0" default="no advanced options file" >
+		<param type="INPUT_FILE" />
+	      </keyword>
 	    </keyword>
-	    <!-- END Bayesian Calibration-->
+	    <keyword  id="gpmsa" name="gpmsa" code="{N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}" label="gpmsa" help="" minOccurs="1" >
+	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+		<alias name="samples" />
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
+	      <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator" help=""  >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="import_build_points_file9" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file" help="" minOccurs="0" default="no point import from a file" >
+		<alias name="import_points_file"/>
+		<param type="INPUT_FILE" />
+		&method_import_build_format;
+		<!-- Disable active_only, until we can set the config vars to their nominal value; for now import must include any active config vars as well...
+
+		     <keyword  id="active_only11" name="active_only" code="{N_mdm(true,importBuildActive)}" label="Active variables only" help="" minOccurs="0" />
+		     -->
+	      </keyword>
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
+	      <keyword  id="logit_transform" name="logit_transform" code="{N_mdm(true,logitTransform)}" label="logit_transform" help="" minOccurs="0" />
+	      <keyword  id="gpmsa_normalize" name="gpmsa_normalize" code="{N_mdm(true,gpmsaNormalize)}" label="Apply GPMSA normalization" help="" minOccurs="0" />
+	      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+		<param type="OUTPUT_FILE" />
+		&method_export_samples_format;
+	      </keyword>
+	      <optional>
+		<oneOf label="MCMC Algorithm" >
+		  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram" help="" minOccurs="1" default="dram" />
+		  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection" help="" default="dram" />
+		  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis" help="" default="dram" />
+		  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings" help="" default="dram" />
+		  <!--
+		      <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel" help="" default="dram" />
+		      -->
+		</oneOf>
+	      </optional>
+	      &rng_options;
+	      &bayes_proposal_covariance;
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File" help="" minOccurs="0" default="no advanced options file" >
+		<param type="INPUT_FILE" />
+	      </keyword>
+	    </keyword>
+	    <keyword  id="wasabi" name="wasabi" code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" label="wasabi" help="" minOccurs="1" >
+	      <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Samples from the Prior" help="" default="method-dependent">
+		<alias name="samples" />
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
+	      &bayes_emulator;
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />		  
+	      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type" help="" minOccurs="1" code="{0}">
+		<oneOf label="Data Distribution">
+		  <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian" help="" >
+		    <keyword  id="means" name="means" code="{N_mdm(RealDL,dataDistMeans)}" label="User-provided proposal means of gaussian dist on data" help="" >
+		      <param type="REALLIST"/>
+		    </keyword>
+		    <keyword  id="covariance" name="covariance" code="{N_mdm(RealDL,dataDistCovariance)}" label="User-provided proposal covariance of gaussian dist on data" help="" >
+		      <param type="REALLIST"/>
+		      <oneOf label="Values For">
+			<keyword  id="diagonal" name="diagonal" code="{N_mdm(lit,dataDistCovInputType_diagonal)}" label="Diagonal data distribution covariance input" help="" />
+			<keyword  id="matrix" name="matrix" code="{N_mdm(lit,dataDistCovInputType_matrix)}" label="Matrix data distribution covariance input" help="" />
+		      </oneOf>
+		    </keyword>
+		  </keyword>
+		  <keyword  id="obs_data_filename" name="obs_data_filename" code="{N_mdm(str,dataDistFile)}" label="User-provided data to build distribution on data" help="" minOccurs="1" >
+		    <param type="INPUT_FILE"/>
+		  </keyword>
+		</oneOf>
+	      </keyword>
+	      <keyword id="posterior_density_export_filename" name="posterior_density_export_filename" code="{N_mdm(str,posteriorDensityExportFilename)}" label="Filename to which posterior density evaluations will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
+	      <keyword id="posterior_samples_export_filename" name="posterior_samples_export_filename" code="{N_mdm(str,posteriorSamplesExportFilename)}" label="Filename to which samples from posterior will be written" help="" minOccurs="0"> <param type="OUTPUT_FILE"/> </keyword>
+	      <keyword id="posterior_samples_import_filename" name="posterior_samples_import_filename" code="{N_mdm(str,posteriorSamplesImportFilename)}" label="Filename containing samples at which to evaluate the posterior density" help="" minOccurs="0"> <param type="INPUT_FILE"/> </keyword>
+	      <optional>
+		<keyword id="generate_posterior_samples" name="generate_posterior_samples" code="{N_mdm(true,generatePosteriorSamples)}" label="Flag specifying whether to generate samples from the posterior" help="" minOccurs="1"></keyword>
+		<keyword id="evaluate_posterior_density" name="evaluate_posterior_density" code="{N_mdm(true,evaluatePosteriorDensity)}" label="Flag specifying whether to evaluate the posterior density at a set of samples" help="" minOccurs="1"> </keyword>
+	      </optional>
+	    </keyword>
+	    <keyword  id="dream" name="dream" code="{N_mdm(utype,subMethod_SUBMETHOD_DREAM)}" label="dream" help="" minOccurs="1" >
+	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples" help="" default="method-dependent">
+		<alias name="samples" />
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="seed7" name="seed" code="{N_mdm(pint,randomSeed)}" label="seed" help="" minOccurs="0" default="system-generated (non-repeatable)" >
+		<param type="INTEGER" constraint="> 0" />
+	      </keyword>
+	      <keyword  id="chains" name="chains" code="{N_mdm(int,numChains)}" label="Number of chains" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
+		<param type="INTEGER" constraint=">= 3" />
+	      </keyword>
+	      <keyword  id="num_cr" name="num_cr" code="{N_mdm(int,numCR)}" label="Number of candidate points used in burn-in adaptation" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="1" >
+		<param type="INTEGER" constraint=">= 1" />
+	      </keyword>
+	      <keyword  id="crossover_chain_pairs" name="crossover_chain_pairs" code="{N_mdm(int,crossoverChainPairs)}" label="Number of chain pairs used in crossover " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="3" >
+		<param type="INTEGER" constraint=">= 0" />
+	      </keyword>
+	      <keyword  id="gr_threshold" name="gr_threshold" code="{N_mdm(Real,grThreshold)}" label="Gelman-Rubin Threshold for convergence" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="1.2" >
+		<param type="REAL" constraint="> 0.0" />
+	      </keyword>
+	      <keyword  id="jump_step" name="jump_step" code="{N_mdm(int,jumpStep)}" label="Jump-Step " help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="5" >
+		<param type="INTEGER" constraint=">= 0" />
+	      </keyword>
+	      &bayes_emulator;
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space" help="" minOccurs="0" />
+	      <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain" help="" minOccurs="0" default="chain export to default filename" >
+		<param type="OUTPUT_FILE" />
+		&method_export_samples_format;
+	      </keyword>
+	    </keyword>
+	  </oneOf>
+	  <keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design" help="" minOccurs="0" >
+	    <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="Initial Hi-fi Samples" help="" default="method-dependent">
+	      <alias name="samples" />
+	      <param type="INTEGER" />
+	    </keyword>
+	    <!--&default_max_function_evaluations;-->
+            <keyword  id="num_candidates" name="num_candidates" code="{N_mdm(sizet,numCandidates)}" label="Number of Candidates" help="" minOccurs="1" default="1" >
+              <param type="INTEGER" constraint="> 0" />
+            </keyword>
+            <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations" help="" minOccurs="0">
+              <param type="INTEGER" constraint=">= 0" />
+            </keyword>
+            <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import" help="" minOccurs="0" default="no point import from a file" >
+              <param type="INPUT_FILE" />
+	      <optional>
+		<oneOf label="Tabular Format" >
+		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
+		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importCandFormat_TABULAR_NONE)}" label="freeform" help=""  />
+		</oneOf>
+	      </optional>
+            </keyword>
+	    <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
+	  </keyword> 
+	  <keyword  id="calibrate_error_multipliers" name="calibrate_error_multipliers" code="{0}" label="calibrate_error_multipliers" help="MethodCommands.html#MethodNonDBayesCalib" minOccurs="0" default="none" >
+	    <oneOf label="Calibrate Error Multipliers">
+	      <keyword  id="one" name="one" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_ONE)}" label="one multiplier" help=""  />
+	      <keyword  id="per_experiment" name="per_experiment" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_EXPER)}" label="multiplier per experiment" help=""  />
+	      <keyword  id="per_response" name="per_response" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" label="multiplier per response" help=""  />
+	      <keyword  id="both" name="both" code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" label="multiplier for each experiment, response" help=""  />
+	    </oneOf>
+	    <optional>
+	      <keyword  id="hyperprior_alphas" name="hyperprior_alphas" code="{N_mdm(RealDL,hyperPriorAlphas)}" label="Inverse-gamma hyper-prior alphas" help="" minOccurs="1" >
+		<param type="REALLIST"/>
+	      </keyword>
+	      <keyword  id="hyperprior_betas" name="hyperprior_betas" code="{N_mdm(RealDL,hyperPriorBetas)}" label="Inverse-gamma hyper-prior betas" help="" minOccurs="1" >
+		<param type="REALLIST"/>
+	      </keyword>
+	    </optional>
+	  </keyword>
+
+	  <keyword  id="burn_in_samples" name="burn_in_samples" code="{N_mdm(int,burnInSamples)}" label="Burn-in samples" help="" minOccurs="0" default="0">
+	    <param type="INTEGER" />
+	  </keyword>
+	  <keyword id="posterior_stats" name="posterior_stats" code="{0}" minOccurs="0">
+	    <keyword id="kl_divergence" name="kl_divergence" code="{N_mdm(true,posteriorStatsKL)}" minOccurs="0" />
+	    <keyword id="mutual_info" name="mutual_info" code="{N_mdm(true,posteriorStatsMutual)}" minOccurs="0" >
+	      <keyword id="ksg2" name="ksg2" code="{N_mdm(true,mutualInfoKSG2)}" minOccurs="0" />
+	    </keyword>
+	  </keyword>
+	  <keyword id="model_discrepancy" name="model_discrepancy" code="{N_mdm(true,calModelDiscrepancy)}" minOccurs="0" >
+	    <keyword  id="discrepancy_type" name="discrepancy_type" code="{0}" label="Model Discrepancy Type" help="" minOccurs="0" default="gaussian process" >
+    	      <oneOf label="Discrepancy Model">
+    	        <keyword  id="gaussian_process" name="gaussian_process" code="{N_mdm(lit,modelDiscrepancyType_global_kriging)}" label="Discrepancy Type Gaussian Processes" help=""  >
+                  <alias name="kriging"/>
+		</keyword>
+		<keyword  id="polynomial" name="polynomial" code="{N_mdm(lit,modelDiscrepancyType_global_polynomial)}" label="Discrepancy Type Polynomial" help=""  />
+    	      </oneOf>
+              <keyword  id="correction_order" name="correction_order" code="{0}" label="Model discrepancy correction" help="" minOccurs="0" default="2">
+                <oneOf label="Correction Order">
+		  <keyword  id="constant" name="constant" code="{N_mdm(order,approxCorrectionOrder_0)}" label="Polynomial Order 0" help="" />
+                  <keyword  id="linear" name="linear" code="{N_mdm(order,approxCorrectionOrder_1)}" label="Linear" help=""  />
+                  <keyword  id="quadratic" name="quadratic" code="{N_mdm(order,approxCorrectionOrder_2)}" label="Quadratic" help=""  />
+                </oneOf>
+              </keyword>
+    	    </keyword>
+            <keyword  id="num_prediction_configs" name="num_prediction_configs" code="{N_mdm(sizet,numPredConfigs)}" label="Number of Prediction Configurations" help="" minOccurs="0" default="0" >
+              <param type="INTEGER" constraint=">= 0" />
+            </keyword>
+            <keyword  id="prediction_configs" name="prediction_configs" code="{N_mdm(RealDL,predictionConfigList)}" label="List of Prediction Configurations" help="" minOccurs="0" >
+              <param type="REALLIST" />
+	    </keyword>
+            <keyword  id="import_prediction_configs" name="import_prediction_configs" code="{N_mdm(str,importPredConfigs)}" label="Filename for Prediction Configs" help="" minOccurs="0" default="no point import from a file" >
+              <param type="INPUT_FILE" />
+	      <optional>
+		<oneOf label="Tabular Format" >
+		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
+		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}" label="annotated" help=""  default="annotated" />
+		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}" label="freeform" help=""  />
+		</oneOf>
+	      </optional>
+            </keyword>
+	    <keyword  id="export_discrepancy_file" name="export_discrepancy_file" code="{N_mdm(str,exportDiscrepFile)}" label="File export of model discrepancy values" help="" minOccurs="0" default="discrepancy export to default filename" >
+	      <param type="OUTPUT_FILE" />
+	      <optional>
+		<oneOf label="Tabular Format" >
+		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
+		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		</oneOf>
+	      </optional>
+	    </keyword>
+	    <keyword  id="export_corrected_model_file" name="export_corrected_model_file" code="{N_mdm(str,exportCorrModelFile)}" label="File export of corrected model values" help="" minOccurs="0" default="corrected model export to default filename" > 
+	      <param type="OUTPUT_FILE" />
+	      <optional>
+		<oneOf label="Tabular Format" >
+		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
+		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		</oneOf>
+	      </optional>
+	    </keyword>
+	    <keyword  id="export_corrected_variance_file" name="export_corrected_variance_file" code="{N_mdm(str,exportCorrVarFile)}" label="File export of variance values of corrected model" help="" minOccurs="0" default="corrected model variance export to default filename" > 
+	      <param type="OUTPUT_FILE" />
+	      <optional>
+		<oneOf label="Tabular Format" >
+ 		  <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="custom_annotated" help="" >
+		    <keyword  id="header" name="header" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)}" label="header" help="" minOccurs="0" />
+		    <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)}" label="eval_id" help="" minOccurs="0" />
+		    <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)}" label="interface_id" help="" minOccurs="0" />
+		  </keyword>
+		  <keyword  id="annotated" name="annotated" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}" label="annotated" help="" default="annotated" />
+		  <keyword  id="freeform" name="freeform" code="{N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}" label="freeform" help="" default="annotated" />
+		</oneOf>
+	      </optional>
+	    </keyword>
+	  </keyword>
+	  <keyword  id="sub_sampling_period" name="sub_sampling_period" code="{N_mdm(int,subSamplingPeriod)}" label="Chain sampling period for statistics" help="" minOccurs="0" default="0">
+	    <param type="INTEGER" />
+	  </keyword>
+	  &probability_levels;
+	  &default_convergence_tolerance;
+	  &default_max_iterations;
+	  &method_optional_model_pointer;
+	</keyword>
+	<!-- END Bayesian Calibration-->
 
         <!-- DACE Methods -->
 	<keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace" help="" minOccurs="1" group="[CHOOSE method category]DACE" >

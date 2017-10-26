@@ -3372,6 +3372,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           matrix {N_mdm(lit,proposalCovInputType_matrix)}
          )
        ]
+      [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
      )
     |
     ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
