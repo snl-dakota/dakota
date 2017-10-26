@@ -36,6 +36,16 @@ APPSOptimizer::APPSOptimizer(Model& model):
   set_apps_parameters(); // set specification values using DB
 }
 
+/** Allows us to initialize nonlinear equality constraint maps
+    before inequality ones, ie a workaround in need of traits to 
+    specify constraint maps packing order - RWH */
+void APPSOptimizer::initialize_run()
+{
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+
+  Optimizer::initialize_run();
+}
+
 /** core_run redefines the Optimizer virtual function to perform
     the optimization using HOPS. It first sets up the problem data,
     then executes minimize() on the HOPS optimizer, and finally
@@ -366,7 +376,8 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   // Define nonlinear equality and inequality constraints.
 
-  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+  // This is now done in initialize_run so that the arrays get populated in the expected order - RWH
+  //configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
 
   int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
 

@@ -156,6 +156,10 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  // Allows us to initialize constraints in a different order than the default behavior
+  //    Could be replaced with better use of traits - RWH
+  void initialize_run();
+
   /// compute the optimal solution
   void core_run();
 
