@@ -933,7 +933,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA variables to Dakota variables.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 
     // The first numContinuousVars of a design will be all the continuous
     // variables of the problem (see LoadTheDesignVariables).
@@ -957,7 +957,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA variables to Dakota variables.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     String variables also need to be remapped.
 
     const StringSetArray& dssv_values = 
@@ -975,7 +975,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
 //PDH: JEGA responses to Dakota responses.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Need to respect constraint ordering.
 
     // BMA TODO: Could always populate constraints and just get
@@ -1142,7 +1142,7 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // only fitness assessor b/c it is only for use with the favor
     // feasible selector.  Likewise, the favor feasible selector can
     // only be used with the weighted sum fitness asessor.  Because of
-    // this, we will detect use of the the favor feasible and enforce
+    // this, we will detect use of the favor feasible and enforce
     // the use of the weighted sum only.  We will write a log message
     // about it.
     const string& selector =
@@ -1526,7 +1526,7 @@ JEGAOptimizer::LoadTheConstraints(
 
 //PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Looks like we don't have to worry about (JEGA) order.  Need to
 //     determine if they have to be two-sided for JEGA.
 
@@ -1548,7 +1548,7 @@ JEGAOptimizer::LoadTheConstraints(
 
 //PDH: Dakota linear constraints to JEGA linear constraints.
 //     Don't know what the JEGA data structure is.  These are all
-//     mapped on entry at a time.
+//     mapped one entry at a time.
 //     Looks like we don't have to worry about (JEGA) order.  Need to
 //     determine if they have to be two-sided for JEGA.
 
@@ -1854,7 +1854,8 @@ Structors
 JEGAOptimizer::JEGAOptimizer(
     ProblemDescDB& problem_db, Model& model
     ) :
-        Optimizer(problem_db, model),
+        //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
         _theParamDB(0x0),
         _theEvalCreator(0x0)
 {

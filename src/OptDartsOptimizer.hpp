@@ -24,6 +24,29 @@ class OptDartsOptimizer;
 
 namespace Dakota {
 
+  /**
+   * \brief A version of TraitsBase specialized for OptDarts
+   *
+   */
+
+  class OptDartsTraits: public TraitsBase
+  {
+    public:
+
+      /// default constructor
+      OptDartsTraits() { }
+
+      /// destructor
+      virtual ~OptDartsTraits() { }
+
+      /// A temporary query used in the refactor
+      virtual bool is_derived() { return true; }
+
+      /// Return the flag indicating whether method supports continuous variables
+      bool supports_continuous_variables() { return true; }
+  };
+
+
      /// Wrapper class for OptDarts Optimizer
 
 

@@ -21,6 +21,36 @@ namespace Dakota {
 
 /// Implementation of Efficient Global Optimization/Least Squares algorithms
 
+
+/**
+ * \brief A version of TraitsBase specialized for efficient global minimizer
+ *
+ */
+
+class EffGlobalTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  EffGlobalTraits() { }
+
+  /// destructor
+  virtual ~EffGlobalTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
+
 /** The EffGlobalMinimizer class provides an implementation of the
     Efficient Global Optimization algorithm developed by Jones, Schonlau,
     & Welch as well as adaptation of the concept to nonlinear least squares. */

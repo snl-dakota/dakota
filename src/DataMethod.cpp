@@ -161,6 +161,8 @@ DataMethodRep::DataMethodRep():
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
+  // Wasabi
+  numPushforwardSamples(10000),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -303,6 +305,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << adaptExpDesign << importCandPtsFile << importCandFormat
     << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -453,6 +456,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> adaptExpDesign >> importCandPtsFile >> importCandFormat
     >> numCandidates >> maxHifiEvals >> mutualInfoKSG2 >> numChains
     >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
+    >> numPushforwardSamples 
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -603,6 +607,7 @@ void DataMethodRep::write(std::ostream& s) const
     << adaptExpDesign << importCandPtsFile << importCandFormat
     << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

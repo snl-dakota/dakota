@@ -121,7 +121,8 @@ public:
   void function_value(const Real& function_val, size_t i);
   /// set all function values
   void function_values(const RealVector& function_vals);
-  
+
+
   /// return the i-th function gradient as a const Real*
   const Real* function_gradient(int i) const;
   /// return the i-th function gradient as a SerialDenseVector view

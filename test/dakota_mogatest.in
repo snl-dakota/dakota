@@ -33,29 +33,29 @@ environment
 #    tabular_data_file = 'mogatest3.dat'	#s2
 
 method
-  moga                #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s10,#s13
-#  soga                                       #s3,#s8,#s9,#s11,#s12
+  moga                #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s10,#s13,#s15,#s17
+#  soga                                       #s3,#s8,#s9,#s11,#s12,#s14,#s16
     seed = 10983
   max_function_evaluations = 2500               #s0,#s4,#s5,#s6,#s7
-#  max_function_evaluations = 3000		          #s1,#s3,#s10,#s12,#s13
-#  max_function_evaluations = 2000		          #s2,#s8,#s9,#s11
+#  max_function_evaluations = 3000		          #s1,#s3,#s10,#s12,#s13,#s14,#s15
+#  max_function_evaluations = 2000		          #s2,#s8,#s9,#s11,#s16,#s17
   initialization_type unique_random
-  crossover_type shuffle_random                 #s0,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-    num_offspring = 2 num_parents = 2		        #s0,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#  crossover_type				                        #s1,#s2
-#    multi_point_parameterized_binary = 2	      #s1,#s2
+  crossover_type shuffle_random                 #s0,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s16
+    num_offspring = 2 num_parents = 2		        #s0,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s16
+#  crossover_type				                        #s1,#s2,#s15,#s17
+#    multi_point_parameterized_binary = 2	      #s1,#s2,#s15,#s17
     crossover_rate = 0.8
-  mutation_type replace_uniform                 #s0,#s1,#s4,#s5,#s6,#s7
-    mutation_rate = 0.1				                  #s0,#s1,#s4,#s5,#s6,#s7
+  mutation_type replace_uniform                 #s0,#s1,#s4,#s5,#s6,#s7,#s15
+    mutation_rate = 0.1				                  #s0,#s1,#s4,#s5,#s6,#s7,#s15
 #  mutation_type offset_normal			            #s2,#s3
 #    mutation_scale = 0.1			                  #s2,#s3
-  fitness_type domination_count                 #s0,#s1,#s2,#s4,#s5,#s6,#s7
-  replacement_type below_limit = 6              #s0,#s1,#s2,#s4,#s5,#s6,#s7
-    shrinkage_fraction = 0.9                    #s0,#s1,#s2,#s4,#s5,#s6,#s7
+  fitness_type domination_count                 #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s15,#s17
+  replacement_type below_limit = 6              #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s15,#s17
+    shrinkage_fraction = 0.9                    #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s15,#s17
 #  replacement_type favor_feasible              #s3
-  convergence_type metric_tracker               #s0,#s1,#s2,#s4,#s5,#s6,#s7
+  convergence_type metric_tracker               #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s15,#s17
     percent_change = 0.05 num_generations = 40  #s0
-#    percent_change = 0.05 num_generations = 10 #s1,#s2,#s4,#s5,#s6,#s7
+#    percent_change = 0.05 num_generations = 10 #s1,#s2,#s4,#s5,#s6,#s7,#s15,#s17
 #  niching_type radial 0.02 0.05		             #s5
 #  niching_type distance 0.02 0.05		          #s6
 #  niching_type max_designs 0.02 0.05	  	      #s7
@@ -65,19 +65,19 @@ method
 
    
 variables
-  continuous_design = 3             #s0,#s12
-    initial_point     0    0    0	  #s0,#s12
-    upper_bounds      4    4    4	  #s0,#s12
-    lower_bounds     -4	  -4   -4	  #s0,#s12
-    descriptors     'x1' 'x2' 'x3'	#s0,#s4,#s5,#s6,#s7,#s12
-#  continuous_design = 2			      #s1,#s2,#s3,#s8,#s11
-#    initial_point    0.5     	0.5	#s1,#s11
-#    upper_bounds     1         1		#s1,#s8,#s11
-#    lower_bounds     0         0		#s1,#s8,#s11
-#    descriptors      'x1'  	'x2'	#s1,#s2,#s3,#s8,#s11
-#    initial_point      0     0    	#s2
-#    upper_bounds      20    20			#s2
-#    lower_bounds     -20   -20			#s2
+  continuous_design = 3             #s0,#s12,#s14
+    initial_point     0    0    0	  #s0,#s12,#s14
+    upper_bounds      4    4    4	  #s0,#s12,#s14
+    lower_bounds     -4	  -4   -4	  #s0,#s12,#s14
+    descriptors     'x1' 'x2' 'x3'	#s0,#s4,#s5,#s6,#s7,#s12,#s14
+#  continuous_design = 2			      #s1,#s2,#s3,#s8,#s11,#s15,#s16,#s17
+#    initial_point    0.5     	0.5	#s1,#s11,#s16
+#    upper_bounds     1         1		#s1,#s8,#s11,#s16
+#    lower_bounds     0         0		#s1,#s8,#s11,#s16
+#    descriptors      'x1'  	'x2'	#s1,#s2,#s3,#s8,#s11,#s15,#s16,#s17
+#    initial_point      0     0    	#s2,#s15,#s17
+#    upper_bounds      20    20			#s2,#s15,#s17
+#    lower_bounds     -20   -20			#s2,#s15,#s17
 #    upper_bounds       2.    2.		#s3
 #    lower_bounds      -2.   -2.		#s3
 #  discrete_design_set              #s4,#s5,#s6,#s7,#s8
@@ -97,21 +97,30 @@ variables
 #    descriptors      'y1'   'y2'   'y3'  #s9,#s10,#s13
 #    linear_inequality_constraint_matrix = 1. 1. 1.  #s12,#s13
 #    linear_inequality_upper_bounds  = -10.0           #s12,#s13
+#    linear_equality_constraint_matrix = 1. 1. 1.    #s14
+#    linear_equality_targets = 4.0                   #s14
+#    linear_equality_scale_types = 'none'            #s14
+#    linear_equality_constraint_matrix = 1. 1.       #s15
+#    linear_equality_targets = 3.0                   #s15
+#    linear_equality_scale_types = 'none'            #s15
 
 interface
   analysis_drivers = 'mogatest1'		#s0,#s4,#s5,#s6,#s7,#s10,#s13
-#  analysis_drivers = 'mogatest2'	#s1
-#  analysis_drivers = 'mogatest3'	#s2
+#  analysis_drivers = 'mogatest2'	#s1,#s15
+#  analysis_drivers = 'mogatest3'	#s2,#s17
 #  analysis_drivers = 'rosenbrock'	#s3
-#  analysis_drivers = 'text_book'      #s8,#s9,#s11,#s12
-    direct					#s0,#s1,#s2,#s3,#s4,#s6,#s8,#s9,#s10,#s11,#s12,#s13
+#  analysis_drivers = 'text_book'      #s8,#s9,#s11,#s12,#s14,#s16
+    direct					#s0,#s1,#s2,#s3,#s4,#s6,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17
 # retain some fork tests of external mogatest drivers that have low eval count
 #    fork						#s5,#s7
 
 responses
-  objective_functions = 2                       #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s10,#s13
-#  objective_functions = 1                     	#s3,#s8,#s9,#s11,#s12
+  objective_functions = 2                       #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s10,#s13,#s15,#s17
+#  objective_functions = 1                     	#s3,#s8,#s9,#s11,#s12,#s14,#s16
 #  nonlinear_inequality_constraints = 2  	      #s2,#s11
-#    upper_bounds = 0.0 0.0	#s2,#s11
+#    upper_bounds = 0.0 0.0	                    #s2,#s11
+#  nonlinear_equality_constraints = 2           #s16,#s17
+#    nonlinear_equality_targets = 0.0 0.0       #s16,#s17
+#    nonlinear_equality_scale_types  = 'none'   #s16,#s17
   no_gradients
   no_hessians

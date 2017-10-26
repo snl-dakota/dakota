@@ -699,17 +699,18 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
 template <typename vecType1, typename vecType2>
 void copy_data_partial(
   const vecType1& source,
+	size_t source_start_idx,
         vecType2& target,
-	size_t start_idx,
+	size_t target_start_idx,
         size_t len)
 {
-  // This requires that the target type supports tghe size() method, which RealVectors don't
+  // This requires that the target type supports the size() method, which RealVectors don't
   //if( len != target.size()) { // could use <, but enforce exact match
   //  Cerr << "Error: bad target vector length copy_data_partial." << std::endl;
   //  abort_handler(-1);
   //}
   for( size_t i=0; i<len; ++i)
-    target[i] = source[i+start_idx];
+    target[i+target_start_idx] = source[i+source_start_idx];
 }
 
 /// copy portion of first SerialDenseVector to all of second SerialDenseVector - used by DataTransformModel::vars_mapping - RWH

@@ -23,6 +23,7 @@
 #include "HOPSPACK_LinConstr.hpp"
 #include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
+#include "DakotaTraitsBase.hpp"
 
 
 namespace Dakota {
@@ -49,6 +50,86 @@ namespace Dakota {
     to the HOPS web site (https://software.sandia.gov/trac/hopspack)
     for additional information on HOPS objects and controls. */
 
+/// HOPSPACK-specific traits class.
+
+/** AppsTraits specializes some traits accessors by over-riding the default 
+accessors in TraitsBase. */
+
+class AppsTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  AppsTraits();
+
+  typedef HOPSPACK::Hopspack OptT;
+  typedef HOPSPACK::Vector VecT;
+  typedef HOPSPACK::Matrix MatT;
+
+  static double noValue();
+
+  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
+  static double getBestObj(const OptT &);
+
+  static void copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target);
+
+  /// destructor
+  virtual ~AppsTraits();
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports discrete variables
+  bool supports_discrete_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the format used for nonlinear equality constraints
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+    { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
+};
+
+inline AppsTraits::~AppsTraits()
+{ }
+
+
+inline double AppsTraits::noValue()
+{ return HOPSPACK::dne(); }
+
+
+inline void AppsTraits::copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target)
+{
+  HOPSPACK::Vector tmp_vector;
+  for (int i=0; i<source.numRows(); ++i) {
+    copy_row_vector(source, i, tmp_vector);
+    target.addRow(tmp_vector);
+  }
+}
+
+
+inline double AppsTraits::getBestObj(const OptT & optimizer)
+{
+  return optimizer.getBestF();
+}
+
 class APPSOptimizer : public Optimizer
 {
 public:
@@ -64,7 +145,7 @@ public:
   APPSOptimizer(Model& model);
 
   /// alternate constructor for even more rudimentary on-the-fly instantiation
-  APPSOptimizer() { }
+  APPSOptimizer():Optimizer(std::shared_ptr<TraitsBase>(new AppsTraits())) { }
 
   /// destructor
   ~APPSOptimizer() {
@@ -74,6 +155,10 @@ public:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  // Allows us to initialize constraints in a different order than the default behavior
+  //    Could be replaced with better use of traits - RWH
+  void initialize_run();
 
   /// compute the optimal solution
   void core_run();
@@ -86,6 +171,9 @@ protected:
 
   /// sets options for specific methods based on user specifications
   void set_apps_parameters();
+
+  /// sets traits for specific TPL
+  void set_apps_traits();
 
   /// initializes problem variables and constraints
   void initialize_variables_and_constraints();
@@ -114,62 +202,7 @@ protected:
 
   /// Pointer to the APPS evaluation manager object
   APPSEvalMgr* evalMgr;
-
-//PDH: Don't think we would need these data members anymore.
-
-  /// map from Dakota constraint number to APPS constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
 };
-
-// --------------------------------------------------
-
-struct APPSOptimizerAdapter {
-
-  typedef HOPSPACK::Hopspack OptT;
-  typedef HOPSPACK::Vector VecT;
-  typedef HOPSPACK::Matrix MatT;
-
-  static double noValue();
-
-  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
-  static double getBestObj(const OptT &);
-
-  static void copy_data(const RealMatrix& source, HOPSPACK::Matrix& target);
-
-}; // namespace APPSOptimizerAdapter
-
-
-// --------------------------------------------------
-
-inline double APPSOptimizerAdapter::noValue()
-{ return HOPSPACK::dne(); }
-
-
-// --------------------------------------------------
-
-inline void APPSOptimizerAdapter::copy_data(const RealMatrix& source, HOPSPACK::Matrix& target)
-{
-  HOPSPACK::Vector tmp_vector;
-  for (int i=0; i<source.numRows(); ++i) {
-    copy_row_vector(source, i, tmp_vector);
-    target.addRow(tmp_vector);
-  }
-}
-
-// --------------------------------------------------
-
-inline double APPSOptimizerAdapter::getBestObj(const OptT & optimizer)
-{
-  return optimizer.getBestF();
-}
-
-// --------------------------------------------------
 
 } // namespace Dakota
 #endif

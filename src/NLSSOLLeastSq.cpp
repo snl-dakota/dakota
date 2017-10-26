@@ -42,7 +42,7 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 
 /** This is the primary constructor.  It accepts a Model reference. */
 NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model), SOLBase(model)
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
@@ -58,7 +58,7 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
 NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
-  LeastSq(NLSSOL_SQP, model), SOLBase(model)
+  LeastSq(NLSSOL_SQP, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
@@ -189,13 +189,7 @@ void NLSSOLLeastSq::core_run()
   RealVector augmented_l_bnds, augmented_u_bnds;
   copy_data(iteratedModel.continuous_lower_bounds(), augmented_l_bnds);
   copy_data(iteratedModel.continuous_upper_bounds(), augmented_u_bnds);
-  augment_bounds(augmented_l_bnds, augmented_u_bnds,
-		 iteratedModel.linear_ineq_constraint_lower_bounds(),
-		 iteratedModel.linear_ineq_constraint_upper_bounds(),
-		 iteratedModel.linear_eq_constraint_targets(),
-		 iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		 iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		 iteratedModel.nonlinear_eq_constraint_targets());
+  augment_bounds(augmented_l_bnds, augmented_u_bnds, iteratedModel);
 
   NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,
 	      num_nonlinear_constraints, linConstraintArraySize,

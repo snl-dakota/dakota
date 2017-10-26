@@ -38,7 +38,8 @@ SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
 
 SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
-  LeastSq(problem_db, model), SNLLBase(problem_db), nlfObjective(NULL),
+  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
+  SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {
   // convenience function from SNLLBase
@@ -125,7 +126,7 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
 
 
 SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
-  LeastSq(OPTPP_G_NEWTON, model), // use default SNLLBase ctor
+  LeastSq(OPTPP_G_NEWTON, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())), // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL)
 {
