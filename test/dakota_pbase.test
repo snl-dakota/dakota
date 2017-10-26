@@ -6659,6 +6659,42 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6416159197759569e+01  5.0724739639806472e+01  1.0145745536428437e+00  1.0077200345425197e+00
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  7.6351270371948416e+01  9.6481048023570722e+01  4.4536668635079153e+01  5.8925674870825368e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  5.76745e-03  1.00000e+00 
+       ssv_3  6.79603e-03 -1.54239e-02  1.00000e+00 
+       ssv_4  1.64123e-02  1.28746e-02  1.00907e-02  1.00000e+00 
+       ssv_5 -8.96362e-03  1.21005e-03  2.86055e-02  8.50865e-03  1.00000e+00 
+response_fn_1 -9.35518e-01  8.94283e-02  1.20055e-02  1.49613e-02  4.16121e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.40907e-01 
+       ssv_2  2.70526e-01 
+       ssv_3  5.51299e-02 
+       ssv_4  8.46852e-02 
+       ssv_5  9.54555e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.61116e-01  1.06859e-01  1.89019e-02  2.49625e-02  3.73237e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.70690e-01 
+       ssv_2  4.84365e-01 
+       ssv_3  1.23747e-01 
+       ssv_4  1.05316e-01 
+       ssv_5 -2.53957e-02 
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  8.6597769214141522e+01  5.1360207877083354e+01  1.0684378453191410e+00  1.3451439359034782e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
@@ -6695,6 +6731,78 @@ Partial Rank Correlation Matrix between input and output:
        ssv_5 -8.94386e-02 
 Test Number 7 succeeded
 <<<<< Function evaluation summary (ID_I): 400 total (400 new, 0 duplicate)
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6416159197759569e+01  5.0724739639806472e+01  1.0145745536428437e+00  1.0077200345425197e+00
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  7.6351270371948416e+01  9.6481048023570722e+01  4.4536668635079153e+01  5.8925674870825368e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  5.76745e-03  1.00000e+00 
+       ssv_3  6.79603e-03 -1.54239e-02  1.00000e+00 
+       ssv_4  1.64123e-02  1.28746e-02  1.00907e-02  1.00000e+00 
+       ssv_5 -8.96362e-03  1.21005e-03  2.86055e-02  8.50865e-03  1.00000e+00 
+response_fn_1 -9.35518e-01  8.94283e-02  1.20055e-02  1.49613e-02  4.16121e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.40907e-01 
+       ssv_2  2.70526e-01 
+       ssv_3  5.51299e-02 
+       ssv_4  8.46852e-02 
+       ssv_5  9.54555e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.61116e-01  1.06859e-01  1.89019e-02  2.49625e-02  3.73237e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.70690e-01 
+       ssv_2  4.84365e-01 
+       ssv_3  1.23747e-01 
+       ssv_4  1.05316e-01 
+       ssv_5 -2.53957e-02 
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.6597769214141522e+01  5.1360207877083354e+01  1.0684378453191410e+00  1.3451439359034782e+00
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  7.9436184801997030e+01  9.3759353626286014e+01  4.6771809520774831e+01  5.6954614491298258e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -6.48720e-03  1.00000e+00 
+       ssv_3 -2.82778e-03 -1.25023e-02  1.00000e+00 
+       ssv_4  3.16439e-03  1.73913e-03 -1.21396e-02  1.00000e+00 
+       ssv_5 -4.81269e-03  8.51426e-04  8.41570e-03  3.19181e-03  1.00000e+00 
+response_fn_1 -9.32382e-01  9.78216e-02  1.91920e-02 -1.20790e-02  5.06373e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.36432e-01 
+       ssv_2  2.54869e-01 
+       ssv_3  5.03309e-02 
+       ssv_4 -2.59970e-02 
+       ssv_5  1.09511e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -6.02265e-03  1.00000e+00 
+       ssv_3  2.77972e-02  5.56964e-03  1.00000e+00 
+       ssv_4  1.19688e-02 -2.01830e-02 -2.87032e-02  1.00000e+00 
+       ssv_5 -1.13808e-02  4.56581e-02 -1.70164e-02  7.69969e-03  1.00000e+00 
+response_fn_1 -9.59589e-01  1.38891e-01  2.74957e-03 -1.01058e-02 -5.44964e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.68848e-01 
+       ssv_2  4.79200e-01 
+       ssv_3  1.15152e-01 
+       ssv_4  2.06761e-02 
+       ssv_5 -8.94386e-02 
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  8.6551981118560505e+01  5.2204292553870772e+01  1.1868239658765556e+00  2.1629496304104365e+00
@@ -6735,6 +6843,42 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (ID_I): 200 total (200 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  6.15127e-04  1.00000e+00 
+       ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
+       ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+       ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+response_fn_1 -9.40193e-01  9.36295e-02  4.31109e-02  2.78542e-02  8.64386e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.45370e-01 
+       ssv_2  2.78822e-01 
+       ssv_3  1.02445e-01 
+       ssv_4  6.94365e-02 
+       ssv_5  6.53512e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.68689e-01  8.86529e-02  3.63276e-02  1.53375e-02 -8.19682e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.76687e-01 
+       ssv_2  4.71821e-01 
+       ssv_3  2.18311e-01 
+       ssv_4  7.28040e-02 
+       ssv_5 -7.71985e-02 
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  8.7335199625091917e+01  4.3839171762321463e+01  8.1567728623429991e-01  7.7161092999772374e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
@@ -6771,6 +6915,78 @@ Partial Rank Correlation Matrix between input and output:
        ssv_5 -1.30760e-01 
 Test Number 9 succeeded
 <<<<< Function evaluation summary (ID_I): 400 total (400 new, 0 duplicate)
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  9.2732777980913539e+01  4.7174021723812032e+01  8.8453569437313029e-01  8.8009441678854283e-01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  8.3372428623024163e+01  1.0209312733880292e+02  4.1419113998737870e+01  5.4800893729283338e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  6.15127e-04  1.00000e+00 
+       ssv_3 -1.07933e-02 -9.63579e-03  1.00000e+00 
+       ssv_4 -4.33500e-03  9.81816e-03  9.91122e-03  1.00000e+00 
+       ssv_5  1.46756e-02  8.95313e-03  1.22000e-02 -1.84714e-03  1.00000e+00 
+response_fn_1 -9.40193e-01  9.36295e-02  4.31109e-02  2.78542e-02  8.64386e-03  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.45370e-01 
+       ssv_2  2.78822e-01 
+       ssv_3  1.02445e-01 
+       ssv_4  6.94365e-02 
+       ssv_5  6.53512e-02 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  2.69787e-02  1.00000e+00 
+       ssv_3  1.55656e-02  3.07591e-02  1.00000e+00 
+       ssv_4 -1.16412e-03 -1.04650e-02 -2.40024e-05  1.00000e+00 
+       ssv_5 -8.88089e-04  6.68587e-02 -6.82868e-03  1.15332e-02  1.00000e+00 
+response_fn_1 -9.68689e-01  8.86529e-02  3.63276e-02  1.53375e-02 -8.19682e-03  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.76687e-01 
+       ssv_2  4.71821e-01 
+       ssv_3  2.18311e-01 
+       ssv_4  7.28040e-02 
+       ssv_5 -7.71985e-02 
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  8.7335199625091917e+01  4.3839171762321463e+01  8.1567728623429991e-01  7.7161092999772374e-01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
+ response_fn_1  8.1222336338289438e+01  9.3448062911894397e+01  3.9922684817066795e+01  4.8614350107700893e+01
+Simple Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2 -1.80088e-03  1.00000e+00 
+       ssv_3 -4.02944e-03 -1.06401e-02  1.00000e+00 
+       ssv_4 -5.95968e-03  1.03840e-02 -5.29748e-03  1.00000e+00 
+       ssv_5  1.31723e-02  1.00507e-02  6.01264e-03  1.43209e-02  1.00000e+00 
+response_fn_1 -9.41911e-01  9.37088e-02  4.10355e-02 -4.76734e-03 -1.04212e-02  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.46644e-01 
+       ssv_2  2.77282e-01 
+       ssv_3  1.18201e-01 
+       ssv_4 -3.47630e-02 
+       ssv_5  3.06605e-03 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
+       ssv_1  1.00000e+00 
+       ssv_2  5.01613e-03  1.00000e+00 
+       ssv_3  1.55134e-02  1.09968e-02  1.00000e+00 
+       ssv_4  1.62034e-02 -1.18323e-02 -2.03075e-02  1.00000e+00 
+       ssv_5 -7.44919e-03  5.66174e-02 -2.12015e-02  9.53874e-03  1.00000e+00 
+response_fn_1 -9.66546e-01  1.14436e-01  2.88847e-02 -1.44844e-02 -1.60369e-02  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       ssv_1 -9.74883e-01 
+       ssv_2  4.77988e-01 
+       ssv_3  1.86661e-01 
+       ssv_4  1.69972e-02 
+       ssv_5 -1.30760e-01 
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  8.8762479041532686e+01  4.9193012828121368e+01  1.0675310636077116e+00  1.5076299065639700e+00

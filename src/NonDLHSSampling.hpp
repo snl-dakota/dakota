@@ -137,6 +137,9 @@ protected:
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
+  /// Print a header and summary statistics
+  void print_header_and_statistics(std::ostream& s, const int& num_samples);
+
 private:
 
   //
