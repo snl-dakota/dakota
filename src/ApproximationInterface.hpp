@@ -158,7 +158,7 @@ private:
   void sample_to_variables(const Real* sample_c_vars, size_t num_cv,
 			   Variables& vars);
 
-  /// append to the popCountStack within each of the functionSurfaces
+  /// append to the stack of pop counts within each of the functionSurfaces
   /// based on the active set definitions within resp_map
   void update_pop_counts(const IntResponseMap& resp_map);
 

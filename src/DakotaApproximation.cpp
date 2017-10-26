@@ -314,7 +314,7 @@ void Approximation::rebuild(size_t index)
 void Approximation::pop(bool save_data)
 {
   if (approxRep) approxRep->pop(save_data);
-  else           pop_data(approxData, save_data);
+  else           approxData.pop(save_data);
 }
 
 
@@ -324,7 +324,7 @@ void Approximation::pop(bool save_data)
 void Approximation::push()
 {
   if (approxRep) approxRep->push();
-  else           push_data(approxData);
+  else           approxData.push(sharedDataRep->retrieval_index());
 }
 
 
@@ -334,42 +334,48 @@ void Approximation::push()
 void Approximation::finalize()
 {
   if (approxRep) approxRep->finalize();
-  else           finalize_data(approxData);
+  else {
+    // finalization has to apply restorations in the correct order
+    size_t i, num_popped = approxData.popped_sets(); // # of popped trials
+    for (i=0; i<num_popped; ++i)
+      approxData.push(sharedDataRep->finalization_index(i), false);
+    approxData.clear_popped(); // only after process completed
+  }
 }
 
 
 void Approximation::store(size_t index)
 {
   if (approxRep) approxRep->store(index);
-  else           store_data(approxData, index);
+  else           approxData.store(index);
 }
 
 
 void Approximation::restore(size_t index)
 {
   if (approxRep) approxRep->restore(index);
-  else           restore_data(approxData, index);
+  else           approxData.restore(index);
 }
 
 
 void Approximation::remove_stored(size_t index)
 {
   if (approxRep) approxRep->remove_stored(index);
-  else           remove_stored_data(approxData, index);
+  else           approxData.remove_stored(index);
 }
 
 
 void Approximation::combine(size_t swap_index)
 {
   if (approxRep) approxRep->combine(swap_index);
-  else           swap_data(approxData, swap_index);
+  else           approxData.swap(swap_index);
 }
 
 
 void Approximation::clear_stored()
 {
   if (approxRep) approxRep->clear_stored();
-  else           clear_stored_data(approxData);
+  else           approxData.clear_stored();
 }
 
 

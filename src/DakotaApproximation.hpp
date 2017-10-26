@@ -203,14 +203,12 @@ public:
   /// assuming continuous variables and function values only
   void add(const RealMatrix& sample_vars, const RealVector& sample_resp);
 
-  /// appends to popCountStack (number of entries to pop from end of
-  /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  /// appends to SurrogateData::popCountStack (number of entries to pop from
+  /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
   void pop_count(size_t count);
-  // returns popCountStack.back() (number of entries to pop from end of
-  // SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  // returns SurrogateData::popCountStack.back() (number of entries to pop from
+  /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count() const;
-  // clear popCountStack
-  //void clear_stack();
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
@@ -218,7 +216,7 @@ public:
   void clear_anchor();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
-  /// clear popCountStack and SurrogateData::popped{Vars,Resp}Trials
+  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack
   void clear_popped();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
@@ -257,23 +255,6 @@ protected:
 
   /// Check number of build points against minimum required
   void check_points(size_t num_build_pts);
-
-  /// helper pop() component that is modular on approx_data instance
-  void pop_data(Pecos::SurrogateData& approx_data, bool save_data);
-  /// helper push() component that is modular on approx_data instance
-  void push_data(Pecos::SurrogateData& approx_data);
-  /// helper finalize() component that is modular on approx_data instance
-  void finalize_data(Pecos::SurrogateData& approx_data);
-  /// helper store() component that is modular on approx_data instance
-  void store_data(Pecos::SurrogateData& approx_data, size_t index);
-  /// helper restore() component that is modular on approx_data instance
-  void restore_data(Pecos::SurrogateData& approx_data, size_t index);
-  /// helper remove_stored() component that is modular on approx_data instance
-  void remove_stored_data(Pecos::SurrogateData& approx_data, size_t index);
-  /// helper combine() component that is modular on approx_data instance
-  void swap_data(Pecos::SurrogateData& approx_data, size_t index);
-  /// helper clear_stored() component that is modular on approx_data instance
-  void clear_stored_data(Pecos::SurrogateData& approx_data);
 
   //
   //- Heading: Data
@@ -316,10 +297,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// a stack managing the number of points previously added by calls
-  /// to append() that can be removed by calls to pop()
-  SizetArray popCountStack;
 
   /// pointer to the letter (initialized only for the envelope)
   Approximation* approxRep;
@@ -398,34 +375,17 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag)
 /*
 inline size_t Approximation::pop_count() const
 {
-  if (approxRep) // envelope fwd to letter
-    return approxRep->pop_count();
-  else { // not virtual: base class implementation
-    if (popCountStack.empty()) {
-      Cerr << "\nError: empty count stack in Approximation::pop_count()."
-	   << std::endl;
-      abort_handler(-1);
-      return 0;
-    }
-    else
-      return popCountStack.back();
-  }
+  if (approxRep) return approxRep->approxData.pop_count();
+  else           return approxData.pop_count();
 }
 */
 
 
 inline void Approximation::pop_count(size_t count)
 {
-  if (approxRep) approxRep->popCountStack.push_back(count);
-  else           popCountStack.push_back(count);
+  if (approxRep) approxRep->approxData.pop_count(count);
+  else           approxData.pop_count(count);
 }
-
-
-//inline void Approximation::clear_stack()
-//{
-//  if (approxRep) approxRep->popCountStack.clear();
-//  else           popCountStack.clear();
-//}
 
 
 /** Clears out any history (e.g., TANA3Approximation use for a
@@ -455,30 +415,22 @@ inline void Approximation::clear_current()
 
 inline void Approximation::clear_anchor()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->approxData.clear_anchor();
-  else // not virtual: base class implementation
-    approxData.clear_anchor();
+  if (approxRep) approxRep->approxData.clear_anchor();
+  else approxData.clear_anchor();
 }
 
 
 inline void Approximation::clear_data()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->approxData.clear_data();
-  else // not virtual: base class implementation
-    approxData.clear_data();
+  if (approxRep) approxRep->approxData.clear_data();
+  else approxData.clear_data();
 }
 
 
 inline void Approximation::clear_popped()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->clear_popped();
-  else { // not virtual: base class implementation
-    popCountStack.clear();
-    approxData.clear_popped();
-  }
+  if (approxRep) approxRep->approxData.clear_popped();
+  else           approxData.clear_popped();
 }
 
 
@@ -493,57 +445,6 @@ inline void Approximation::check_points(size_t num_build_pts)
     abort_handler(APPROX_ERROR);
   }
 }
-
-
-inline void Approximation::
-pop_data(Pecos::SurrogateData& approx_data, bool save_data)
-{
-  if (popCountStack.empty()) {
-    Cerr << "\nError: empty count stack in Approximation::pop_data()."
-	 << std::endl;
-    abort_handler(APPROX_ERROR);
-  }
-  approx_data.pop(popCountStack.back(), save_data);
-  popCountStack.pop_back();
-}
-
-
-inline void Approximation::push_data(Pecos::SurrogateData& approx_data)
-{ popCountStack.push_back(approx_data.push(sharedDataRep->retrieval_index())); }
-
-
-inline void Approximation::finalize_data(Pecos::SurrogateData& approx_data)
-{
-  // finalization has to apply restorations in the correct order
-  size_t i, num_popped = approx_data.popped_sets(); // # of popped trials
-  for (i=0; i<num_popped; ++i)
-    approx_data.push(sharedDataRep->finalization_index(i), false);
-  clear_popped(); // clear only after process completed
-}
-
-
-inline void Approximation::
-store_data(Pecos::SurrogateData& approx_data, size_t index)
-{ approx_data.store(index); }
-
-
-inline void Approximation::
-restore_data(Pecos::SurrogateData& approx_data, size_t index)
-{ approx_data.restore(index); }
-
-
-inline void Approximation::
-remove_stored_data(Pecos::SurrogateData& approx_data, size_t index)
-{ approx_data.remove_stored(index); }
-
-
-inline void Approximation::
-swap_data(Pecos::SurrogateData& approx_data, size_t index)
-{ approx_data.swap(index); }
-
-
-inline void Approximation::clear_stored_data(Pecos::SurrogateData& approx_data)
-{ approx_data.clear_stored(); }
 
 } // namespace Dakota
 
