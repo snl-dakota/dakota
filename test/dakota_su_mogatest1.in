@@ -10,20 +10,20 @@ environment
   top_method_pointer = 'SBGO'
 
 method
-    id_method = 'SBGO'
-    surrogate_based_global
+  id_method = 'SBGO'
+  surrogate_based_global
     model_pointer = 'SURROGATE'
     method_pointer = 'MOGA'
     max_iterations = 5
     replace_points
-    output verbose
+  output verbose
 
 ###############################################
 # begin opt specification
 ###############################################
 method
-    id_method = 'MOGA'
-    moga
+  id_method = 'MOGA'
+  moga
         seed = 10983
     population_size = 300
     max_function_evaluations = 5000
@@ -41,7 +41,7 @@ method
         orthogonal_distance 0.05 0.05
     convergence_type metric_tracker
         percent_change = 0.05 num_generations = 10
-    output silent
+  output silent
 
 model
     id_model = 'SURROGATE'
@@ -57,7 +57,7 @@ method
       samples = 100
       seed = 531
       sample_type lhs
-    model_pointer = 'TRUTH'
+      model_pointer = 'TRUTH'
 
 model
     id_model = 'TRUTH'

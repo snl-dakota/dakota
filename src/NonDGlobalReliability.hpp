@@ -51,7 +51,7 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter);
 
   void core_run();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
 

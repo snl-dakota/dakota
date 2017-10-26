@@ -162,7 +162,8 @@ public:
   virtual void initialize_graphics(int iterator_server_id = 1);
 
   /// print the final iterator results
-  virtual void print_results(std::ostream& s);
+  virtual void print_results(std::ostream& s,
+			     short results_state = FINAL_RESULTS);
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain

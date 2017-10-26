@@ -294,7 +294,7 @@ void RichExtrapVerification::post_run(std::ostream& s)
 */
 
 
-void RichExtrapVerification::print_results(std::ostream& s)
+void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
   copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
@@ -311,7 +311,7 @@ void RichExtrapVerification::print_results(std::ostream& s)
   write_data(Cout, numErrorQOI, fn_labels, cv_labels);
   Cout << '\n';
 
-  Verification::print_results(s);
+  Verification::print_results(s, results_state);
 }
 
 } // namespace Dakota

@@ -91,7 +91,7 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   const Model& algorithm_space_model() const;
 
@@ -179,7 +179,8 @@ protected:
   String scalarDataFilename;
 
   // technically doesn't apply to GPMSA, but leaving here for now
-  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR, or SC_EMULATOR
+  /// the emulator type: NO_EMULATOR, GP_EMULATOR, PCE_EMULATOR,
+  /// SC_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, or MF_SC_EMULATOR
   short emulatorType;
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
@@ -395,8 +396,8 @@ protected:
 		double eps);
   static void ann_dist(const ANNpointArray matrix1, 
                 const ANNpointArray matrix2, RealVector& distances, 
-		IntVector& indices, int NX, int NY, int dim2, IntVector& k, 
-		double eps);
+		Int2DArray& indices, int NX, int NY, int dim2, 
+		IntVector& k, double eps);
   Real kl_est;	
   void print_kl(std::ostream& stream);		
 

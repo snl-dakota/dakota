@@ -375,7 +375,7 @@ void ConcurrentMetaIterator::core_run()
 }
 
 
-void ConcurrentMetaIterator::print_results(std::ostream& s)
+void ConcurrentMetaIterator::print_results(std::ostream& s, short results_state)
 {
   using std::setw;
   s << "\n<<<<< Results summary:\n";

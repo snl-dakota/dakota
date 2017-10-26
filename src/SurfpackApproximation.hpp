@@ -71,7 +71,7 @@ protected:
 
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
-  void build();
+  void build(size_t index = _NPOS);
 
   /// export the Surpack model to disk or console
   void export_model(const String& fn_label, const String& export_prefix = "", 

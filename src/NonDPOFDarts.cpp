@@ -2262,7 +2262,7 @@ void NonDPOFDarts::core_run()
         }
     }
 
-    void NonDPOFDarts::print_results(std::ostream& s)
+    void NonDPOFDarts::print_results(std::ostream& s, short results_state)
     {
         //s << "\nStatistics based on the importance sampling calculations:\n";
         s << "\nStatistics based on MC sampling calculations:\n";

@@ -822,7 +822,7 @@ constraint_violation(const RealVector& fn_vals, const Real& constraint_tol)
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void SurrBasedMinimizer::print_results(std::ostream& s)
+void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {

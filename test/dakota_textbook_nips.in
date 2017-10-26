@@ -17,7 +17,7 @@ method
     merit_function el_bakry   #s0,#s1,#s2,#s3,#s4,#s5,#s11
     max_iterations = 50
     convergence_tolerance = 1e-8
-#    output debug
+#  output debug
 
 variables
   continuous_design = 2           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10

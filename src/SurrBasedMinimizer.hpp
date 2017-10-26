@@ -50,7 +50,7 @@ protected:
 
   /// initialize graphics customized for surrogate-based iteration
   void initialize_graphics(int iterator_server_id = 1);
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Utility member functions

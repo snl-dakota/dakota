@@ -830,7 +830,7 @@ Real NonDAdaptImpSampling::recentered_density(const RealVector& sample_point)
 }
 
 
-void NonDAdaptImpSampling::print_results(std::ostream& s)
+void NonDAdaptImpSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";

@@ -251,12 +251,13 @@ void NonDMultilevelSampling::multilevel_mc_Ysum(size_t model_form)
   initialize_ml_Ysums(sum_Y, num_lev);
 
   // Initialize for pilot sample
-  Sizet2DArray& N_l = NLev[model_form];
-  SizetArray delta_N_l; load_pilot_sample(delta_N_l);
-  Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
+  SizetArray delta_N_l;
+  load_pilot_sample(pilotSamples, NLev, delta_N_l);
+
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
   RealVectorArray mu_hat(num_lev);
+  Sizet2DArray& N_l = NLev[model_form];
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -396,12 +397,13 @@ void NonDMultilevelSampling::multilevel_mc_Qsum(size_t model_form)
   IntIntPair pr11(1,1);
 
   // Initialize for pilot sample
-  Sizet2DArray& N_l = NLev[model_form];
-  SizetArray delta_N_l; load_pilot_sample(delta_N_l);
-  Cout << "\nMLMC pilot sample:\n" << delta_N_l << std::endl;
+  SizetArray delta_N_l;
+  load_pilot_sample(pilotSamples, NLev, delta_N_l);
+
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_l(num_lev, 0);
   RealVectorArray mu_hat(num_lev);
+  Sizet2DArray& N_l = NLev[model_form];
 
   // now converge on sample counts per level (N_l)
   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
@@ -572,7 +574,10 @@ control_variate_mc(const SizetSizetPair& lf_form_level,
   RealVector sum_HH(numFunctions), var_H(numFunctions, false),
             rho2_LH(numFunctions, false);
 
-  SizetArray delta_N_l; load_pilot_sample(delta_N_l);
+  // Initialize for pilot sample
+  SizetArray delta_N_l;
+  load_pilot_sample(pilotSamples, NLev, delta_N_l);
+
   // NLev allocations currently enforce truncation to #HF levels (1)
   SizetArray& N_lf = NLev[lf_form_level.first][0];//[lf_lev_index];
   SizetArray& N_hf = NLev[hf_form_level.first][0];//[hf_lev_index];
@@ -682,10 +687,10 @@ multilevel_control_variate_mc_Ycorr(size_t lf_model_form, size_t hf_model_form)
   // Initialize for pilot sample
   Sizet2DArray&       N_lf =      NLev[lf_model_form];
   Sizet2DArray&       N_hf =      NLev[hf_model_form];
-  Sizet2DArray  delta_N_l;   load_pilot_sample(delta_N_l);
+  Sizet2DArray  delta_N_l; load_pilot_sample(pilotSamples, NLev, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_model_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_model_form]; 
-  Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
+
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat;
@@ -938,10 +943,10 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   // Initialize for pilot sample
   Sizet2DArray&       N_lf =      NLev[lf_model_form];
   Sizet2DArray&       N_hf =      NLev[hf_model_form]; 
-  Sizet2DArray  delta_N_l;   load_pilot_sample(delta_N_l);
+  Sizet2DArray  delta_N_l; load_pilot_sample(pilotSamples, NLev, delta_N_l);
   //SizetArray& delta_N_lf = delta_N_l[lf_model_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_model_form]; 
-  Cout << "\nMLMC pilot sample:\n" << delta_N_hf << std::endl;
+
   // raw eval counts are accumulation of allSamples irrespective of resp faults
   SizetArray raw_N_lf(num_cv_lev, 0), raw_N_hf(num_hf_lev, 0);
   RealVector mu_L_hat, mu_H_hat;
@@ -1162,83 +1167,6 @@ multilevel_control_variate_mc_Qcorr(size_t lf_model_form, size_t hf_model_form)
   for (lev=1; lev<num_cv_lev; ++lev) // subsequent levels incur 2 model costs
     equivHFEvals += raw_N_lf[lev] * (lf_cost[lev] + lf_cost[lev-1]);
   equivHFEvals /= hf_cost[num_hf_lev-1]; // normalize into equivalent HF evals
-}
-
-
-void NonDMultilevelSampling::load_pilot_sample(SizetArray& delta_N_l)
-{
-  size_t num_mf = NLev.size(), pilot_size = pilotSamples.size(), delta_size;
-
-  if (num_mf > 1) { // CV only case
-    delta_size = num_mf;
-    for (size_t i=0; i<num_mf; ++i)
-      if (NLev[i].size() > 1) {
-	Cerr << "Error: multidimensional NLev not expected in 1-dimensional "
-	     << "load_pilot_sample(SizetArray)" << std::endl;
-	abort_handler(METHOD_ERROR);
-      }
-  }
-  else // ML only case
-    delta_size = NLev[0].size();
-
-  if (delta_size == pilot_size)
-    delta_N_l = pilotSamples;
-  else if (pilot_size <= 1) {
-    size_t num_samp = (pilot_size) ? pilotSamples[0] : 100;
-    delta_N_l.assign(delta_size, num_samp);
-  }
-  else {
-    Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	 << ") in load_pilot_sample(SizetArray).  " << delta_size
-	 << " expected." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-void NonDMultilevelSampling::load_pilot_sample(Sizet2DArray& delta_N_l)
-{
-  size_t i, num_samp, pilot_size = pilotSamples.size(), num_mf = NLev.size();
-  delta_N_l.resize(num_mf);
-
-  // allow several different pilot sample specifications
-  if (pilot_size <= 1) {
-    num_samp = (pilot_size) ? pilotSamples[0] : 100;
-    for (i=0; i<num_mf; ++i)
-      delta_N_l[i].assign(NLev[i].size(), num_samp);
-  }
-  else {
-    size_t j, num_lev, num_prev_lev, num_total_lev = 0;
-    bool same_lev = true;
-
-    for (i=0; i<num_mf; ++i) {
-      // for now, only SimulationModel supports solution_levels()
-      num_lev = NLev[i].size();
-      delta_N_l[i].resize(num_lev);
-      if (i && num_lev != num_prev_lev) same_lev = false;
-      num_total_lev += num_lev; num_prev_lev = num_lev;
-    }
-
-    if (same_lev && pilot_size == num_lev)
-      for (j=0; j<num_lev; ++j) {
-	num_samp = pilotSamples[j];
-	for (i=0; i<num_mf; ++i)
-	  delta_N_l[i][j] = num_samp;
-      }
-    else if (pilot_size == num_total_lev) {
-      size_t cntr = 0;
-      for (i=0; i<num_mf; ++i) {
-	SizetArray& delta_N_li = delta_N_l[i]; num_lev = delta_N_li.size();
-	for (j=0; j<num_lev; ++j, ++cntr)
-	  delta_N_li[j] = pilotSamples[cntr];
-      }
-    }
-    else {
-      Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	   << ") in load_pilot_sample(Sizet2DArray)." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-  }
 }
 
 
@@ -2844,7 +2772,7 @@ void NonDMultilevelSampling::post_run(std::ostream& s)
 }
 
 
-void NonDMultilevelSampling::print_results(std::ostream& s)
+void NonDMultilevelSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     print_multilevel_evaluation_summary(s, NLev);

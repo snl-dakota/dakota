@@ -1,9 +1,9 @@
 dakota_cantilever_nl2sol.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 27 total (24 new, 3 duplicate)
-           mass: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   displacement: 27 val (24 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 28 total (24 new, 4 duplicate)
+           mass: 28 val (24 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 28 val (24 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   displacement: 28 val (24 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       1.0436483120e+02 L
                       4.9709808672e+02 p

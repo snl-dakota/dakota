@@ -340,7 +340,7 @@ bool HierarchSurrModel::finalize_mapping()
 }
 
 
-void HierarchSurrModel::build_approximation()
+void HierarchSurrModel::build_approximation(size_t index)
 {
   Cout << "\n>>>>> Building hierarchical approximation.\n";
 
@@ -408,7 +408,8 @@ void HierarchSurrModel::build_approximation()
 
 /*
 bool HierarchSurrModel::
-build_approximation(const RealVector& c_vars, const Response& response)
+build_approximation(const RealVector& c_vars, const Response& response,
+                    size_t index)
 {
   // NOTE: this fn not currently used by SBO, but it could be.
 
@@ -1423,6 +1424,125 @@ void HierarchSurrModel::update_model(Model& model)
   if (currentVariables.dsv())
     model.discrete_string_variables(
       currentVariables.discrete_string_variables());
+}
+
+
+void HierarchSurrModel::update_from_model(Model& model)
+{
+  // update complement of active currentVariables using model data.
+
+  // Note: this approach makes a strong assumption about non-active variable
+  // consistency, which is limiting.  Better to perform an individual variable
+  // mapping (e.g., solution control) when needed and allow for a different
+  // ADV position.
+
+  // active variable vals/bnds (active labels, inactive vals/bnds/labels, and
+  // linear/nonlinear constraint coeffs/bnds updated in init_model())
+
+  // *** TO DO: make this robust to differing inactive parameterizations using 
+  // tag lookups.  Omit mappings for failed lookups.
+
+  const Variables&   vars = model.current_variables();
+  const Constraints& cons = model.user_defined_constraints();
+
+  const RealVector& acv = vars.all_continuous_variables();
+  StringMultiArrayConstView acv_labels = vars.all_continuous_variable_labels();
+  const RealVector& acv_l_bnds = cons.all_continuous_lower_bounds();
+  const RealVector& acv_u_bnds = cons.all_continuous_upper_bounds();
+  StringMultiArrayConstView cv_acv_labels
+    = currentVariables.all_continuous_variable_labels();
+  size_t i, index, cv_begin = vars.cv_start(), num_cv = vars.cv(),
+    cv_end = cv_begin + num_cv, num_acv = vars.acv();
+  for (i=0; i<cv_begin; ++i) {
+    index = find_index(cv_acv_labels, acv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_continuous_variable(acv[i], index);
+      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], index);
+      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], index);
+    }
+  }
+  for (i=cv_end; i<num_acv; ++i) {
+    index = find_index(cv_acv_labels, acv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_continuous_variable(acv[i], index);
+      userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], index);
+      userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], index);
+    }
+  }
+
+  const IntVector& adiv = vars.all_discrete_int_variables();
+  StringMultiArrayConstView adiv_labels
+    = vars.all_discrete_int_variable_labels();
+  const IntVector& adiv_l_bnds = cons.all_discrete_int_lower_bounds();
+  const IntVector& adiv_u_bnds = cons.all_discrete_int_upper_bounds();
+  StringMultiArrayConstView cv_adiv_labels
+    = currentVariables.all_discrete_int_variable_labels();
+  size_t div_begin = vars.div_start(), num_div = vars.div(),
+    div_end = div_begin + num_div, num_adiv = vars.adiv();
+  for (i=0; i<div_begin; ++i) {
+    index = find_index(cv_adiv_labels, adiv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_discrete_int_variable(adiv[i], index);
+      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i],index);
+      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i],index);
+    }
+  }
+  for (i=div_end; i<num_adiv; ++i) {
+    index = find_index(cv_adiv_labels, adiv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_discrete_int_variable(adiv[i], index);
+      userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i],index);
+      userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i],index);
+    }
+  }
+
+  size_t dsv_begin = vars.dsv_start(), num_dsv = vars.dsv(),
+    dsv_end = dsv_begin + num_dsv, num_adsv = vars.adsv();
+  StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
+  StringMultiArrayConstView adsv_labels
+    = vars.all_discrete_string_variable_labels();
+  StringMultiArrayConstView cv_adsv_labels
+    = currentVariables.all_discrete_string_variable_labels();
+  for (i=0; i<dsv_begin; ++i) {
+    index = find_index(cv_adsv_labels, adsv_labels[i]);
+    if (index != _NPOS)
+      currentVariables.all_discrete_string_variable(adsv[i], index);
+  }
+  for (i=dsv_end; i<num_adsv; ++i) {
+    index = find_index(cv_adsv_labels, adsv_labels[i]);
+    if (index != _NPOS)
+      currentVariables.all_discrete_string_variable(adsv[i], index);
+  }
+
+  const RealVector& adrv = vars.all_discrete_real_variables();
+  StringMultiArrayConstView adrv_labels
+    = vars.all_discrete_real_variable_labels();
+  const RealVector& adrv_l_bnds = cons.all_discrete_real_lower_bounds();
+  const RealVector& adrv_u_bnds = cons.all_discrete_real_upper_bounds();
+  StringMultiArrayConstView cv_adrv_labels
+    = currentVariables.all_discrete_real_variable_labels();
+  size_t drv_begin = vars.drv_start(), num_drv = vars.drv(),
+    drv_end = drv_begin + num_drv, num_adrv = vars.adrv();
+  for (i=0; i<drv_begin; ++i) {
+    index = find_index(cv_adrv_labels, adrv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_discrete_real_variable(adrv[i], index);
+      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i],
+							   index);
+      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i],
+							   index);
+    }
+  }
+  for (i=drv_end; i<num_adrv; ++i) {
+    index = find_index(cv_adrv_labels, adrv_labels[i]);
+    if (index != _NPOS) {
+      currentVariables.all_discrete_real_variable(adrv[i], index);
+      userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i],
+							   index);
+      userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i],
+							   index);
+    }
+  }
 }
 
 } // namespace Dakota

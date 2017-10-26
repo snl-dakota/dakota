@@ -60,9 +60,9 @@ bool Verification::resize()
 }
 
 
-void Verification::print_results(std::ostream& s)
+void Verification::print_results(std::ostream& s, short results_state)
 {
-  Analyzer::print_results(s);
+  Analyzer::print_results(s, results_state);
 
   // TO DO
 }

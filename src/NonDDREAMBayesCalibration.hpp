@@ -82,7 +82,7 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s);
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   // Member functions
 

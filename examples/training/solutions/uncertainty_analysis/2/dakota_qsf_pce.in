@@ -3,7 +3,7 @@ environment
 
 method
     polynomial_chaos
-     sparse_grid_level_sequence 3
+     sparse_grid_level 3
      samples_on_emulator 5e5
      response_levels 0.11 0.3
      seed = 12347 

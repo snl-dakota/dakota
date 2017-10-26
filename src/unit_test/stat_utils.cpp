@@ -47,7 +47,7 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg1)
   // Function being tested
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 0);
 
-  Real gold_mi = -0.0438223;
+  Real gold_mi = -0.0218954;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
 }
 
@@ -68,7 +68,7 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
   // Function being tested
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 1);
 
-  Real gold_mi = 0.723413;
+  Real gold_mi = -0.0561375;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
 }
 

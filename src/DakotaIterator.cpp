@@ -22,7 +22,10 @@
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"
 #include "NonDPolynomialChaos.hpp"
+#include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
+//#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -407,9 +410,13 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     default:            return new NonDGlobalEvidence(problem_db, model); break;
     } break;
   case POLYNOMIAL_CHAOS:
-    return new NonDPolynomialChaos(problem_db, model);  break;
+    return new NonDPolynomialChaos(problem_db, model);           break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return new NonDMultilevelPolynomialChaos(problem_db, model); break;
   case STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return new NonDMultilevelStochCollocation(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
@@ -795,6 +802,12 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
   case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
   case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return String("multifidelity_polynomial_chaos"); break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS:
+    return String("multilevel_polynomial_chaos"); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return String("multifidelity_stoch_collocation"); break;
   case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
   case CUBATURE_INTEGRATION:    return String("cubature"); break;
   case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
@@ -885,6 +898,12 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
   else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
   else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
+  else if (method_name == "multifidelity_polynomial_chaos")
+    return MULTIFIDELITY_POLYNOMIAL_CHAOS;
+  else if (method_name == "multilevel_polynomial_chaos")
+    return MULTILEVEL_POLYNOMIAL_CHAOS;
+  else if (method_name == "multifidelity_stoch_collocation")
+    return MULTIFIDELITY_STOCH_COLLOCATION;
   else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
   else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
   else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;
@@ -1520,10 +1539,10 @@ void Iterator::initialize_graphics(int iterator_server_id)
 
 /** This virtual function provides additional iterator-specific final results
     outputs beyond the function evaluation summary printed in finalize_run(). */
-void Iterator::print_results(std::ostream& s)
+void Iterator::print_results(std::ostream& s, short results_state)
 {
   if (iteratorRep)
-    iteratorRep->print_results(s); // envelope fwd to letter
+    iteratorRep->print_results(s, results_state); // envelope fwd to letter
   // else default base class output is nothing additional beyond the fn
   // evaluation summary printed in finalize_run()
 }

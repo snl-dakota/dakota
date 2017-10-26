@@ -155,7 +155,7 @@ namespace Dakota
         int num_constraints()  const;
 
         /// builds the approximation from scratch
-        void build();
+        void build(size_t index = _NPOS);
 
         /// retrieve the predicted function value for a given parameter set
         Real value(const Variables& vars);

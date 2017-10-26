@@ -1886,6 +1886,116 @@ void NonD::initialize_final_statistics()
 }
 
 
+void NonD::
+load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l)
+{
+  size_t pilot_size = pilot_spec.size(), delta_size = delta_N_l.size();
+  if (delta_size == pilot_size)
+    delta_N_l = pilot_spec;
+  else if (pilot_size <= 1) {
+    size_t num_samp = (pilot_size) ? pilot_spec[0] : 100;
+    delta_N_l.assign(delta_size, num_samp);
+  }
+  else {
+    Cerr << "Error: inconsistent pilot sample size (" << pilot_size
+	 << ") in load_pilot_sample(SizetArray).  " << delta_size
+	 << " expected." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  Cout << "\nPilot sample:\n" << delta_N_l << std::endl;
+}
+
+
+void NonD::
+load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+		  SizetArray& delta_N_l)
+{
+  size_t num_mf = N_l.size(), pilot_size = pilot_spec.size(), delta_size;
+
+  if (num_mf > 1) { // CV only case
+    delta_size = num_mf;
+    for (size_t i=0; i<num_mf; ++i)
+      if (N_l[i].size() > 1) {
+	Cerr << "Error: multidimensional N_l not expected in 1-dimensional "
+	     << "load_pilot_sample(SizetArray)" << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+    Cout << "\nnMultifidelity pilot sample:\n";
+  }
+  else { // ML only case
+    delta_size = N_l[0].size();
+    Cout << "\nMultilevel pilot sample:\n";
+  }
+
+  if (delta_size == pilot_size)
+    delta_N_l = pilot_spec;
+  else if (pilot_size <= 1) {
+    size_t num_samp = (pilot_size) ? pilot_spec[0] : 100;
+    delta_N_l.assign(delta_size, num_samp);
+  }
+  else {
+    Cerr << "Error: inconsistent pilot sample size (" << pilot_size
+	 << ") in load_pilot_sample(SizetArray).  " << delta_size
+	 << " expected." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  Cout << delta_N_l << std::endl;
+}
+
+
+void NonD::
+load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+		  Sizet2DArray& delta_N_l)
+{
+  size_t i, num_samp, pilot_size = pilot_spec.size(), num_mf = N_l.size();
+  delta_N_l.resize(num_mf);
+
+  // allow several different pilot sample specifications
+  if (pilot_size <= 1) {
+    num_samp = (pilot_size) ? pilot_spec[0] : 100;
+    for (i=0; i<num_mf; ++i)
+      delta_N_l[i].assign(N_l[i].size(), num_samp);
+  }
+  else {
+    size_t j, num_lev, num_prev_lev, num_total_lev = 0;
+    bool same_lev = true;
+
+    for (i=0; i<num_mf; ++i) {
+      // for now, only SimulationModel supports solution_levels()
+      num_lev = N_l[i].size();
+      delta_N_l[i].resize(num_lev);
+      if (i && num_lev != num_prev_lev) same_lev = false;
+      num_total_lev += num_lev; num_prev_lev = num_lev;
+    }
+
+    if (same_lev && pilot_size == num_lev)
+      for (j=0; j<num_lev; ++j) {
+	num_samp = pilot_spec[j];
+	for (i=0; i<num_mf; ++i)
+	  delta_N_l[i][j] = num_samp;
+      }
+    else if (pilot_size == num_total_lev) {
+      size_t cntr = 0;
+      for (i=0; i<num_mf; ++i) {
+	SizetArray& delta_N_li = delta_N_l[i]; num_lev = delta_N_li.size();
+	for (j=0; j<num_lev; ++j, ++cntr)
+	  delta_N_li[j] = pilot_spec[cntr];
+      }
+    }
+    else {
+      Cerr << "Error: inconsistent pilot sample size (" << pilot_size
+	   << ") in load_pilot_sample(Sizet2DArray)." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+
+  Cout << "\nMultilevel-multifidelity pilot sample:\n";
+  print_multilevel_evaluation_summary(Cout, delta_N_l);
+}
+
+
 void NonD::resize_final_statistics_gradients()
 {
   if (finalStatistics.is_null()) // not all ctor chains track final stats

@@ -30,12 +30,14 @@ bool nearby(const RealVector& rv1, const RealVector& rv2, Real rel_tol)
     return false;
 	
   // Check each value (labels are ignored!)
+  Real abs_tol = DBL_MIN; // ~ 2.2e-308
   for (size_t i=0; i<len; i++)
-    if (rv1[i] == 0.) { // prevent division by 0
-      if (rv2[i] != 0.) //(std::abs(rv2[i]) > abs_tol)
+    // prevent division by 0
+    if (std::abs(rv1[i]) < abs_tol) { //(rv1[i] == 0.)
+      if (std::abs(rv2[i]) > abs_tol) //(rv2[i] != 0.)
 	return false;
     }
-    else if ( fabs(1. - rv2[i]/rv1[i]) > rel_tol ) // DBL_EPSILON
+    else if ( std::abs(1. - rv2[i]/rv1[i]) > rel_tol ) // DBL_EPSILON
       return false;
 
   return true;
@@ -50,8 +52,7 @@ bool operator==(const ShortArray& dsa1, const ShortArray& dsa2)
     return false;
 
   // Check each value
-  size_t i;
-  for (i=0; i<len; ++i)
+  for (size_t i=0; i<len; ++i)
     if ( dsa2[i] != dsa1[i] )
       return false;
 
@@ -67,8 +68,7 @@ bool operator==(const StringArray& dsa1, const StringArray& dsa2)
     return false;
 
   // Check each string
-  size_t i;
-  for (i=0; i<len; ++i)
+  for (size_t i=0; i<len; ++i)
     if ( dsa2[i] != dsa1[i] )
       return false;
 
