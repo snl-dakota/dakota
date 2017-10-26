@@ -41,8 +41,8 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
-Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model): 
-  Iterator(BaseConstructor(), problem_db),
+Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits): 
+  Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
@@ -67,8 +67,8 @@ Minimizer::Minimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Minimizer::Minimizer(unsigned short method_name, Model& model):
-  Iterator(NoDBBaseConstructor(), method_name, model), constraintTol(0.),
+Minimizer::Minimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, model, traits), constraintTol(0.),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
@@ -79,8 +79,8 @@ Minimizer::Minimizer(unsigned short method_name, Model& model):
 
 
 Minimizer::Minimizer(unsigned short method_name, size_t num_lin_ineq,
-		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Iterator(NoDBBaseConstructor(), method_name),
+		     size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Iterator(NoDBBaseConstructor(), method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),
   numNonlinearEqConstraints(num_nln_eq), numLinearIneqConstraints(num_lin_ineq),
@@ -122,11 +122,14 @@ void Minimizer::update_from_model(const Model& model)
 	 << "within Minimizer branch." << std::endl;
     err_flag = true;
   }
-  // Check for active design variables and discrete variable support
-  if (methodName == MOGA        || methodName == SOGA ||
-      methodName == COLINY_EA   || methodName == SURROGATE_BASED_GLOBAL ||
-      methodName == COLINY_BETA || methodName == MESH_ADAPTIVE_SEARCH || 
-      methodName == ASYNCH_PATTERN_SEARCH || methodName == BRANCH_AND_BOUND) {
+  
+  // Check for active design variables and discrete variable support.
+  // Include explicit checking for COLINOptimizer methods that are not
+  // representative of the majority (i.e. other COLINOptimizer methods)
+  if(( traits()->supports_continuous_variables() && 
+      traits()->supports_discrete_variables()) ||
+    (methodName == COLINY_EA  ||  methodName == COLINY_BETA ))
+  {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)
@@ -144,6 +147,7 @@ void Minimizer::update_from_model(const Model& model)
       Cerr << "\nWarning: discrete design variables ignored by "
 	   << method_enum_to_string(methodName) << std::endl;
   }
+
   // Check for response functions
   if ( numFunctions <= 0 ) {
     Cerr << "\nError: number of response functions must be greater than zero."
@@ -192,29 +196,43 @@ void Minimizer::update_from_model(const Model& model)
   // TO DO: hard error if not supported; warning if promoted;
   //        quiet if natively supported
 
+
   // Check for linear constraint support in method selection
-  if ( ( numLinearIneqConstraints   || numLinearEqConstraints ) &&
-       ( methodName == NL2SOL       ||
-	 methodName == NONLINEAR_CG || methodName == OPTPP_CG             || 
-	 ( methodName >= OPTPP_PDS  && methodName <= COLINY_SOLIS_WETS )  ||
-	 methodName == NCSU_DIRECT  || methodName == MESH_ADAPTIVE_SEARCH ||
-	 methodName == GENIE_DIRECT || methodName == GENIE_OPT_DARTS      ||
-         methodName == DL_SOLVER    || methodName == EFFICIENT_GLOBAL ) ) {
-    Cerr << "\nError: linear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  // Include explicit checking for COLINOptimizer and SNLLOptimizer methods
+  // that are not representative of the respective majority
+  // (i.e. other COLINOptimizer or SNLLOptimizer methods)
+  if ( numLinearEqConstraints && (!traits()->supports_linear_equality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
+    Cerr << "\nError: linear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
-  // Check for nonlinear constraint support in method selection.  Note that
-  // CONMIN and DOT swap method selections as needed for constraint support.
-  if ( ( numNonlinearIneqConstraints || numNonlinearEqConstraints ) &&
-       ( methodName == NL2SOL        || methodName == OPTPP_CG    ||
-	 methodName == NONLINEAR_CG  || methodName == OPTPP_PDS   ||
-	 methodName == NCSU_DIRECT   || methodName == GENIE_DIRECT ||
-         methodName == GENIE_OPT_DARTS )) {
-    Cerr << "\nError: nonlinear constraints not currently supported by "
-	 << method_enum_to_string(methodName) << ".\n       Please select a "
-	 << "different method for generally constrained problems." << std::endl;
+  if ( numLinearIneqConstraints && (!traits()->supports_linear_inequality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS ||
+        methodName == COLINY_SOLIS_WETS ))) {
+    Cerr << "\nError: linear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+
+  // Check for nonlinear constraint support in method selection
+  // Include explicit checking for SNLLOptimizer methods that are not
+  // representative of the majority (i.e. other SNLLOptimizer methods)
+  if ( numNonlinearEqConstraints && (!traits()->supports_nonlinear_equality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
+    Cerr << "\nError: nonlinear equality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
+    err_flag = true;
+  }
+  if ( numNonlinearIneqConstraints && (!traits()->supports_nonlinear_inequality() ||
+      ( methodName == OPTPP_CG || methodName == OPTPP_PDS))) {
+    Cerr << "\nError: nonlinear inequality constraints not currently supported by "
+   << method_enum_to_string(methodName) << ".\n       Please select a "
+   << "different method." << std::endl;
     err_flag = true;
   }
 
@@ -877,6 +895,5 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   else
     response.update(cache_it->response());
 }
-
 
 } // namespace Dakota

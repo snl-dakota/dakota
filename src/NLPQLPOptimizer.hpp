@@ -63,6 +63,46 @@ namespace Dakota {
  
     ********************************************************************* */
 
+/**
+ * \brief A version of TraitsBase specialized for NLPQLP optimizers
+ *
+ */
+
+class NLPQLPTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NLPQLPTraits() { }
+
+  /// destructor
+  virtual ~NLPQLPTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
+};
+
+
 class NLPQLPOptimizer: public Optimizer
 {
 public:
@@ -311,15 +351,6 @@ private:
 
   /// total number of constraints seen by NLPQL
   int numNlpqlConstr;
-  /// a list of indices for referencing the DAKOTA nonlinear inequality
-  /// constraints used in computing the corresponding NLPQL constraints.
-  SizetList nonlinIneqConMappingIndices;
-  /// a list of multipliers for mapping the DAKOTA nonlinear inequality
-  /// constraints to the corresponding NLPQL constraints.
-  RealList nonlinIneqConMappingMultipliers;
-  /// a list of offsets for mapping the DAKOTA nonlinear inequality
-  /// constraints to the corresponding NLPQL constraints.
-  RealList nonlinIneqConMappingOffsets;
 
   /// a list of indices for referencing the DAKOTA linear inequality
   /// constraints used in computing the corresponding NLPQL constraints.

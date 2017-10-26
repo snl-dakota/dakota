@@ -48,6 +48,41 @@ namespace Dakota {
     [Hart, W.E., 2006] for additional information on COLIN objects and
     controls. */
 
+/**
+ * \brief A version of TraitsBase specialized for COLIN optimizers
+ *
+ */
+
+class COLINTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  COLINTraits() { }
+
+  /// destructor
+  virtual ~COLINTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
+
+};
+
 class COLINOptimizer : public Optimizer
 {
 public:

@@ -144,6 +144,34 @@ unscale(const RealArray& scaled_x, RealVector& unscaled_x) const
                   + scaled_x[v] * ( upperBounds[v] - lowerBounds[v] );
 }
 
+/**
+ * \brief A version of TraitsBase specialized for NOWPAC optimizers
+ *
+ */
+
+class NOWPACTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NOWPACTraits() { }
+
+  /// destructor
+  virtual ~NOWPACTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
 
 /// Wrapper class for the (S)NOWPAC optimization algorithms from
 /// Florian Augustin (MIT)

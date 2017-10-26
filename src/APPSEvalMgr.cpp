@@ -28,9 +28,9 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-APPSEvalMgr::APPSEvalMgr(Model& model) :
-  iteratedModel(model), modelAsynchFlag(1), blockingSynch(0), numWorkersUsed(0),
-  numWorkersTotal(1), xTrial(model.continuous_variables())
+APPSEvalMgr::APPSEvalMgr(Optimizer& opt, Model& model) :
+  dakOpt(opt), iteratedModel(model), modelAsynchFlag(1), blockingSynch(0),
+  numWorkersUsed(0), numWorkersTotal(1), xTrial(model.continuous_variables())
 {
   // don't use the probDescDB so that this ctor may be used with both
   // the standard and on-the-fly APPSOptimizer ctors
@@ -130,9 +130,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
         const RealVector& local_fn_vals
           = response_iter->second.function_values();
 
-        get_responses<HOPSPACK::Vector>( iteratedModel, local_fn_vals, 
-            constrMapIndices, constrMapMultipliers, constrMapOffsets, 
-            apps_f, apps_cEqs, apps_cIneqs);
+        dakOpt.get_responses_from_dakota(local_fn_vals, apps_f, apps_cEqs, apps_cIneqs);
 
         apps_tag = (*find_tag).second;
         apps_msg = "success";
@@ -163,9 +161,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
       std::map<int, RealVector>::iterator f_iter = functionList.begin();
       const RealVector& local_fn_vals = f_iter->second;
 
-      get_responses<HOPSPACK::Vector>( iteratedModel, local_fn_vals, 
-          constrMapIndices, constrMapMultipliers, constrMapOffsets, 
-          apps_f, apps_cEqs, apps_cIneqs);
+      dakOpt.get_responses_from_dakota(local_fn_vals, apps_f, apps_cEqs, apps_cIneqs);
 
       apps_tag = (*f_iter).first;
       apps_msg = "success";

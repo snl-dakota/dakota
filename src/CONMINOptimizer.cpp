@@ -34,7 +34,7 @@ namespace Dakota {
 
 
 CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
 {
   // If speculativeFlag is set with vendor numerical_gradients, output a warning
   if (speculativeFlag && vendorNumericalGradFlag)
@@ -46,7 +46,7 @@ CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, Model& model):
 
 
 CONMINOptimizer::CONMINOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model)
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
 { initialize(); } // convenience fn for shared ctor code
 
 
@@ -172,77 +172,19 @@ void CONMINOptimizer::allocate_constraints()
   // algorithm cannot handle the nonlinearity created by the two inequalities).
   // This is the reason behind the Modified MFD in DOT.  See Vanderplaats' book,
   // Numer. Opt. Techniques for Eng. Design, for additional details.
-  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
+  size_t 
+    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
     num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints(),
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
     num_lin_eq   = iteratedModel.num_linear_eq_constraints();
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
-  const RealVector& lin_ineq_lwr_bnds
-    = iteratedModel.linear_ineq_constraint_lower_bounds();
-  const RealVector& lin_ineq_upr_bnds
-    = iteratedModel.linear_ineq_constraint_upper_bounds();
-  const RealVector& lin_eq_targets
-    = iteratedModel.linear_eq_constraint_targets();
   numConminNlnConstr = 2*num_nln_eq;
-  for (i=0; i<num_nln_ineq; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numConminNlnConstr++;
-      // nln_ineq_lower_bnd - dakota_constraint <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(-1.0);
-      constraintMappingOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numConminNlnConstr++;
-      // dakota_constraint - nln_ineq_upper_bnd <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(1.0);
-      constraintMappingOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
-  for (i=0; i<num_nln_eq; i++) {
-    // nln_eq_target - dakota_constraint <= 0
-    constraintMappingIndices.push_back(i+num_nln_ineq);
-    constraintMappingMultipliers.push_back(-1.0);
-    constraintMappingOffsets.push_back(nln_eq_targets[i]);
-    // dakota_constraint - nln_eq_target <= 0
-    constraintMappingIndices.push_back(i+num_nln_ineq);
-    constraintMappingMultipliers.push_back(1.0);
-    constraintMappingOffsets.push_back(-nln_eq_targets[i]);
-  }
+  numConminNlnConstr += (int)constraintMapOffsets.size();
 
+  // Augment nonlinear inequality maps (set in Optimizer::configure_constraint_maps) with additional constraint info ...
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, num_nln_ineq);
   numConminLinConstr = 2*num_lin_eq;
-  for (i=0; i<num_lin_ineq; i++) {
-    if (lin_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numConminLinConstr++;
-      // lin_ineq_lower_bnd - Ax <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(-1.0);
-      constraintMappingOffsets.push_back(lin_ineq_lwr_bnds[i]);
-    }
-    if (lin_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numConminLinConstr++;
-      // Ax - lin_ineq_upper_bnd <= 0
-      constraintMappingIndices.push_back(i);
-      constraintMappingMultipliers.push_back(1.0);
-      constraintMappingOffsets.push_back(-lin_ineq_upr_bnds[i]);
-    }
-  }
-  for (i=0; i<num_lin_eq; i++) {
-    // lin_eq_target - Ax <= 0
-    constraintMappingIndices.push_back(i+num_lin_ineq);
-    constraintMappingMultipliers.push_back(-1.0);
-    constraintMappingOffsets.push_back(lin_eq_targets[i]);
-    // Ax - lin_eq_target <= 0
-    constraintMappingIndices.push_back(i+num_lin_ineq);
-    constraintMappingMultipliers.push_back(1.0);
-    constraintMappingOffsets.push_back(-lin_eq_targets[i]);
-  }
+  numConminLinConstr += configure_inequality_constraints(CONSTRAINT_TYPE::LINEAR);
+  configure_equality_constraints(CONSTRAINT_TYPE::LINEAR, num_lin_ineq);
 
   numConminConstr = numConminNlnConstr + numConminLinConstr;
 
@@ -458,7 +400,7 @@ void CONMINOptimizer::core_run()
 	// convenience.
 	size_t conmin_constr = IC[i] - 1; // (0-based)
 	if (conmin_constr < numConminNlnConstr) {
-	  size_t dakota_constr = constraintMappingIndices[conmin_constr];
+	  size_t dakota_constr = constraintMapIndices[conmin_constr];
 	  activeSet.request_value(conminInfo, dakota_constr + numObjectiveFns);
 	  // some DAKOTA equality and 2-sided inequality constraints may
 	  // have their ASV assigned multiple times depending on which of
@@ -487,22 +429,22 @@ void CONMINOptimizer::core_run()
 	// reason, CONMIN's A-matrix has a column length of N1 (and N1 =
 	// numContinuousVars+2).
 	size_t conmin_constr = IC[i]-1;
-	size_t dakota_constr = constraintMappingIndices[conmin_constr];
+	size_t dakota_constr = constraintMapIndices[conmin_constr];
         if (conmin_constr < numConminNlnConstr) { // nonlinear ineq & eq
           // gradients pick up multiplier mapping only (offsets drop out)
           for (j=0; j<num_vars; ++j)
-            A[i*N1 + j] = constraintMappingMultipliers[conmin_constr] *
+            A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      local_fn_grads(j,dakota_constr+1);
         }
         else if (dakota_constr < num_lin_ineq) { // linear ineq
 	  for (j=0; j<num_vars; ++j)
-	    A[i*N1 + j] = constraintMappingMultipliers[conmin_constr] *
+	    A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      lin_ineq_coeffs(dakota_constr,j);
 	}
 	else { // linear eq
 	  size_t dakota_leq_constr = dakota_constr - num_lin_ineq;
 	  for (j=0; j<num_vars; ++j)
-	    A[i*N1 + j] = constraintMappingMultipliers[conmin_constr] *
+	    A[i*N1 + j] = constraintMapMultipliers[conmin_constr] *
 	      lin_eq_coeffs(dakota_leq_constr,j);
         }
       }
@@ -516,11 +458,11 @@ void CONMINOptimizer::core_run()
       // offsets/multipliers must be applied.
       size_t conmin_constr, dakota_constr;
       for (conmin_constr=0; conmin_constr<numConminConstr; conmin_constr++) {
-        dakota_constr = constraintMappingIndices[conmin_constr];
+        dakota_constr = constraintMapIndices[conmin_constr];
         if (conmin_constr < numConminNlnConstr) // nonlinear ineq & eq
           constraintValues[conmin_constr] =
-            constraintMappingOffsets[conmin_constr] +
-            constraintMappingMultipliers[conmin_constr] *
+            constraintMapOffsets[conmin_constr] +
+            constraintMapMultipliers[conmin_constr] *
             local_fn_vals[dakota_constr+1];
         else {
           Real Ax = 0.0;
@@ -534,8 +476,8 @@ void CONMINOptimizer::core_run()
               Ax += lin_eq_coeffs(dakota_leq_constr,j) * local_cdv[j];
           }
           constraintValues[conmin_constr] =
-            constraintMappingOffsets[conmin_constr] +
-            constraintMappingMultipliers[conmin_constr] * Ax;
+            constraintMapOffsets[conmin_constr] +
+            constraintMapMultipliers[conmin_constr] * Ax;
         }
       }
     }
@@ -563,10 +505,10 @@ void CONMINOptimizer::core_run()
     // should be OK so long as all of constraintValues is populated
     // (no active set deletions).
     for (size_t i=0; i<numConminNlnConstr; i++) {
-      size_t dakota_constr = constraintMappingIndices[i];
+      size_t dakota_constr = constraintMapIndices[i];
       // back out the offset and multiplier
       best_fns[dakota_constr+1] = ( constraintValues[i] -
-	constraintMappingOffsets[i] ) / constraintMappingMultipliers[i];
+	constraintMapOffsets[i] ) / constraintMapMultipliers[i];
     }
     bestResponseArray.front().function_values(best_fns);
   }

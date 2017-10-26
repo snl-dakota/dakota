@@ -49,7 +49,8 @@ const int LARGE_SCALE = 100;
 /** This constructor is used for normal instantiations using data from
     the ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), SNLLBase(problem_db), nlfObjective(NULL),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
+  SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL),
   setUpType("model")
 {
@@ -260,7 +261,7 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
   // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("model")
@@ -307,7 +308,8 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
 			 int& result_mode) ): // use default SNLLBase ctor
   Optimizer(OPTPP_Q_NEWTON, initial_pt.length(), 0, 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
-	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length()),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+            std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL), setUpType("user_functions"), initialPoint(initial_pt),
   lowerBounds(var_l_bnds), upperBounds(var_u_bnds)

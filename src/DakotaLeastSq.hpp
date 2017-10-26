@@ -36,11 +36,11 @@ protected:
   //
 
   /// default constructor
-  LeastSq();                                        
+  LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
-  LeastSq(ProblemDescDB& problem_db, Model& model);
+  LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
-  LeastSq(unsigned short method_name, Model& model);
+  LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~LeastSq();
 
@@ -101,7 +101,9 @@ private:
 };
 
 
-inline LeastSq::LeastSq(): weightFlag(false)
+inline LeastSq::LeastSq(std::shared_ptr<Dakota::TraitsBase> traits) :
+  Minimizer(traits),
+  weightFlag(false)
 { }
 
 

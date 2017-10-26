@@ -37,7 +37,7 @@ protected:
   //- Heading: Constructor and destructor
   //
 
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model); ///< constructor
+  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits); ///< constructor
   ~SurrBasedMinimizer();                                       ///< destructor
     
   //

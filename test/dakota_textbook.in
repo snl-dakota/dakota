@@ -13,18 +13,71 @@
 ## Dakota Input File: textbook_opt_conmin.in	#s9
 # This tester populates a test matrix of fork/system vs. synch/asynch
 # vs. temporary/named files for the 1 piece interface.
+# s10-s11: test correct traits coverage of various Minimizer TPLs
 
 environment
   graphics                #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
-#  tabular_data                                      #s9
-#    tabular_data_file = 'textbook_opt_conmin.dat'            #s9
+#  tabular_data                                     #s9
+#    tabular_data_file = 'textbook_opt_conmin.dat'  #s9
+#   top_method_pointer = 'SBGO'                     #s10
+#   method_pointer = 'SBLO'                         #s11
 
 method
-  dot_mmfd,                   #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+  dot_mmfd,                       #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
 ## dot_mmfd #DOT performs better but may not be available     #s9
 #  conmin_mfd				      				                            #s9
-    max_iterations = 50
-    convergence_tolerance = 1e-4
+    max_iterations = 50           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    convergence_tolerance = 1e-4  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# id_method = 'SBGO'              #s10
+# surrogate_based_global          #s10
+# model_pointer = 'SURROGATE'     #s10
+# method_pointer = 'MOGA'         #s10
+# replace_points                  #s10
+# id_method = 'SBLO'              #s11
+# surrogate_based_local           #s11
+# model_pointer = 'SURROGATE'     #s11
+# approx_method_pointer = 'NLP'   #s11
+# max_iterations = 50             #s11
+# trust_region                    #s11
+#   initial_size = 0.10           #s11
+#   contraction_factor = 0.5      #s11
+#   expansion_factor   = 1.50     #s11
+
+# method                                              #s10
+#     id_method = 'MOGA'                              #s10
+#     moga                                            #s10
+#         seed = 10983                                #s10
+#     population_size = 20                            #s10
+#     max_function_evaluations = 200                  #s10
+#     initialization_type unique_random               #s10
+#     crossover_type shuffle_random                   #s10
+#         num_offspring = 2 num_parents = 2           #s10
+#         crossover_rate = 0.8                        #s10
+#     mutation_type replace_uniform                   #s10
+#         mutation_rate = 0.1                         #s10
+#     fitness_type domination_count                   #s10
+#     replacement_type below_limit = 6                #s10
+#         shrinkage_percentage = 0.9                  #s10
+#     niching_type distance 0.05 0.05                 #s10
+#     postprocessor_type                              #s10
+#         orthogonal_distance 0.05 0.05               #s10
+#     convergence_type metric_tracker                 #s10
+#         percent_change = 0.05 num_generations = 10  #s10
+#     output silent                                   #s10
+
+#     method,     #s11
+#       id_method = 'NLP'                   #s11
+#       conmin_mfd                          #s11
+#         max_iterations = 50               #s11
+#         convergence_tolerance = 1e-4      #s11
+
+
+# model                                     #s10,#s11
+#     id_model = 'SURROGATE'                #s10,#s11
+#     responses_pointer = 'SURROGATE_RESP'  #s10,#s11
+#     surrogate global                      #s10,#s11
+#         dace_method_pointer = 'SAMPLING'  #s10,#s11
+#         polynomial quadratic              #s10,#s11
 
 variables
   continuous_design = 2
@@ -32,24 +85,68 @@ variables
     upper_bounds     5.8    2.9
     lower_bounds     0.5   -2.9
     descriptors      'x1'   'x2'
+#   linear_equality_constraint_matrix = 2. 1.       #s10,#s11
+#   linear_equality_targets = 4.0                   #s10,#s11
+#   linear_inequality_constraint_matrix = 1. 1.     #s10,#s11
+#   linear_inequality_upper_bounds = 5.0            #s10,#s11
 
-interface
-  analysis_drivers =       'text_book'
-    fork                              #s0,#s1,#s2,#s3
-#    system 				                  #s4,#s5,#s6,#s7
-#    direct				                    #s8,#s9
+interface                                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  analysis_drivers =       'text_book'    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    fork                                  #s0,#s1,#s2,#s3
+#    system 				                      #s4,#s5,#s6,#s7
+#    direct				                        #s8,#s9
 #      parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
 #      results_file=           'tb.out'	  #s1,#s3,#s5,#s7
-       labeled                               #s0,#s1,#s2,#s3
+       labeled                            #s0,#s1,#s2,#s3
 #      file_tag				                    #s3,#s7
-#  asynchronous			                  #s2,#s3,#s6,#s7
+#  asynchronous			                      #s2,#s3,#s6,#s7
 
-responses
-  objective_functions = 1
-  nonlinear_inequality_constraints = 2
-  descriptors 'f' 'c1' 'c2'
-  numerical_gradients
-    method_source dakota
-    interval_type central
-    fd_step_size = 1.e-4
-  no_hessians
+# responses,                              #s10,#s11
+#   id_responses = 'SURROGATE_RESP'       #s10,#s11
+#   objective_functions = 1               #s10,#s11
+#   nonlinear_inequality_constraints = 1  #s10,#s11
+#   nonlinear_equality_constraints = 1    #s10,#s11
+#   no_gradients                          #s10
+#   numerical_gradients                   #s11
+#     method_source dakota                #s11
+#     interval_type forward               #s11
+#     fd_gradient_step_size = .0001       #s11
+#   no_hessians                           #s10,#s11
+
+# method                        #s10,#s11
+#     id_method = 'SAMPLING'    #s10,#s11
+#     sampling                  #s10,#s11
+#       samples = 100           #s10,#s11
+#       seed = 531              #s10,#s11
+#       sample_type lhs         #s10,#s11
+#     model_pointer = 'TRUTH'   #s10,#s11
+
+# model                                 #s10,#s11
+#     id_model = 'TRUTH'                #s10,#s11
+#     single                            #s10,#s11
+#       interface_pointer = 'TRUE_FN'   #s10,#s11
+#     responses_pointer = 'TRUE_RESP'   #s10,#s11
+
+# interface,                          #s10,#s11
+#   direct                            #s10,#s11
+#   id_interface = 'TRUE_FN'          #s10,#s11
+#     analysis_driver = 'text_book'   #s10,#s11
+
+# responses,                              #s10,#s11
+#   id_responses = 'TRUE_RESP'            #s10,#s11
+#   objective_functions = 1               #s10,#s11
+#   nonlinear_inequality_constraints = 1  #s10,#s11
+#   nonlinear_equality_constraints = 1    #s10,#s11
+#   no_gradients                          #s10,#s11  
+#   no_hessians                           #s10,#s11
+
+
+responses                                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  objective_functions = 1                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  nonlinear_inequality_constraints = 2    #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  descriptors 'f' 'c1' 'c2'               #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  numerical_gradients                     #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    method_source dakota                  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    interval_type central                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+    fd_step_size = 1.e-4                  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+  no_hessians                             #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9

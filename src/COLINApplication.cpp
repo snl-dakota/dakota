@@ -19,6 +19,9 @@
 
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+// Needed for adapter utils
+#include "DakotaOptimizer.hpp"
+
 
 #include <utilib/TypeManager.h>
 using utilib::TypeManager;
@@ -164,37 +167,17 @@ void COLINApplication::set_problem(Model& model) {
     // bounds and equality targets.
 
     RealVector bounds(num_nonlinear_constraints.as<size_t>());
+    RealVector ineq_lower; // will be sized in adapter call
+    RealVector ineq_upper; // will be sized in adapter call
+    RealVector eq_targets; // will be sized in adapter call
 
-    // Get the upper and lower bounds for the inequalities and the
-    // targets for the equalities.
-
-    const RealVector& ineq_lower
-      = model.nonlinear_ineq_constraint_lower_bounds();
-    const RealVector& ineq_upper
-      = model.nonlinear_ineq_constraint_upper_bounds();
-    const RealVector& eq_targets
-      = model.nonlinear_eq_constraint_targets();
-
-    // Lower bounds and targets go together in COLIN lower bounds.
-
-    for (i=0; i<model.num_nonlinear_ineq_constraints(); i++)
-      bounds[i] = ineq_lower[i];
-
-    size_t ndx = model.num_nonlinear_ineq_constraints();
-    for (i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
-      bounds[ndx] = eq_targets[i];
-
+    get_nonlinear_constraints( model, ineq_lower, ineq_upper, eq_targets);
+    copy_data_partial(ineq_lower, bounds, 0 );
+    copy_data_partial(eq_targets, bounds, ineq_lower.length() );
     _nonlinear_constraint_lower_bounds = bounds;
 
-    // Lower bounds and targets go together in COLIN upper bounds.
-
-    for (i=0; i<model.num_nonlinear_ineq_constraints(); i++)
-      bounds[i] = ineq_upper[i];
-
-    ndx = model.num_nonlinear_ineq_constraints();
-    for (i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
-      bounds[ndx] = eq_targets[i];
-
+    copy_data_partial(ineq_upper, bounds, 0 );
+    copy_data_partial(eq_targets, bounds, ineq_upper.length() );
     _nonlinear_constraint_upper_bounds = bounds;
   }
 

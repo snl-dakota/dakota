@@ -20,6 +20,29 @@
 
 namespace Dakota {
 
+/**
+ * \brief A version of TraitsBase specialized for NonlinearCG optimizers
+ *
+ */
+
+class NonlinearCGTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NonlinearCGTraits() { }
+
+  /// destructor
+  virtual ~NonlinearCGTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+};
+
+
 /// NonlinearCG update options
 enum CG_UPDATETYPE {CG_STEEPEST, CG_FLETCHER_REEVES, CG_POLAK_RIBIERE, 
 		    CG_POLAK_RIBIERE_PLUS, CG_HESTENES_STIEFEL};

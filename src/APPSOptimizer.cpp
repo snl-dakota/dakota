@@ -19,21 +19,31 @@ namespace Dakota {
 
 
 APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, iteratedModel);
   set_apps_parameters(); // set specification values using DB
 }
 
 APPSOptimizer::APPSOptimizer(Model& model):
-  Optimizer(ASYNCH_PATTERN_SEARCH, model)
+  Optimizer(ASYNCH_PATTERN_SEARCH, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, iteratedModel);
   set_apps_parameters(); // set specification values using DB
+}
+
+/** Allows us to initialize nonlinear equality constraint maps
+    before inequality ones, ie a workaround in need of traits to 
+    specify constraint maps packing order - RWH */
+void APPSOptimizer::initialize_run()
+{
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+
+  Optimizer::initialize_run();
 }
 
 /** core_run redefines the Optimizer virtual function to perform
@@ -87,7 +97,7 @@ void APPSOptimizer::core_run()
 //     Has to map format of constraints.
 //     Then populate bestResponseArray.
 
-    set_best_responses<APPSOptimizerAdapter>( optimizer, iteratedModel, 
+    set_best_responses<AppsTraits>( optimizer, iteratedModel, 
                                               constraintMapIndices, 
                                               constraintMapMultipliers, 
                                               constraintMapOffsets,
@@ -326,9 +336,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // For now this requires that the target vector, eg init_point, be allocated properly.
   get_variables<HOPSPACK::Vector>(iteratedModel, init_point);
 
-  bool setScales = !get_bounds<APPSOptimizerAdapter>
-                    (iteratedModel, bigRealBoundSize, bigIntBoundSize, 
-                     lower, upper);
+  bool setScales = !get_variable_bounds_from_dakota<AppsTraits>( lower, upper );
 
   problemParams->setParameter("Number Unknowns", (int) numTotalVars);
   problemParams->setParameter("Variable Types", variable_types);
@@ -353,13 +361,12 @@ void APPSOptimizer::initialize_variables_and_constraints()
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
   // Need to make pre-allocation requirement consistent, eg vectors are allocated, matrices are not
-  get_linear_constraints<APPSOptimizerAdapter>
-                ( iteratedModel, bigRealBoundSize,
-                  lin_ineq_lower_bnds,
-                  lin_ineq_upper_bnds,
-                  lin_eq_targets,
-                  lin_ineq_coeffs,
-                  lin_eq_coeffs);
+  get_linear_constraints_and_bounds<AppsTraits>(
+                                        lin_ineq_lower_bnds,
+                                        lin_ineq_upper_bnds,
+                                        lin_eq_targets,
+                                        lin_ineq_coeffs,
+                                        lin_eq_coeffs);
 
   linearParams->setParameter("Inequality Matrix", lin_ineq_coeffs);
   linearParams->setParameter("Inequality Lower", lin_ineq_lower_bnds);
@@ -369,14 +376,10 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   // Define nonlinear equality and inequality constraints.
 
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+  // This is now done in initialize_run so that the arrays get populated in the expected order - RWH
+  //configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
 
-  int numAPPSNonlinearIneqConstraints = 0;
+  int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
 
   // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form
@@ -386,31 +389,16 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // (indices, multipliers, offsets) between the DAKOTA constraints
   // and the HOPSPACK constraints.
 
-  for (int i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
-  }
-
-  for (int i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numAPPSNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numAPPSNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_upr_bnds[i]);
-    }
-  }
-
-  evalMgr->set_constraint_map(constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
 
   problemParams->setParameter("Number Nonlinear Eqs", (int) numNonlinearEqConstraints);
   problemParams->setParameter("Number Nonlinear Ineqs", (int) numAPPSNonlinearIneqConstraints);
+}
+
+AppsTraits::AppsTraits()
+{
+#ifdef REFCOUNT_DEBUG
+  Cout << "AppsTraits::AppsTraits() called to build letter object.\n";
+#endif
 }
 
 } // namespace Dakota

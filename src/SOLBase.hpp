@@ -71,6 +71,11 @@ protected:
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& augmented_l_bnds, 
 		      RealVector& augmented_u_bnds,
+		      const Model& model);
+
+  /// augments variable bounds with linear and nonlinear constraint bounds.
+  void augment_bounds(RealVector& augmented_l_bnds, 
+		      RealVector& augmented_u_bnds,
 		      const RealVector& lin_ineq_l_bnds,
 		      const RealVector& lin_ineq_u_bnds,
 		      const RealVector& lin_eq_targets,
