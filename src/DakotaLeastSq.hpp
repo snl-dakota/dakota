@@ -59,7 +59,7 @@ protected:
 
   /// Calculate confidence intervals on estimated parameters
   void get_confidence_intervals(const RealVector& iter_cv,
-				const RealVector& native_cv);
+				const Variables& native_vars);
 
   //
   //- Heading: Data

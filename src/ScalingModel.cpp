@@ -1088,12 +1088,14 @@ void ScalingModel::response_modify_n2s(const Variables& native_vars,
 
 /** Unscaling response mapping: modifies response from scaled
     (iterator) to native (user) space.  Maps num_responses starting at
-    response_offset */
+    response_offset.  If response_unscale = false, only variables will
+    be unscaled, and responses left in scaled space. */
 void ScalingModel::response_modify_s2n(const Variables& native_vars,
                                        const Response& scaled_response,
                                        Response& native_response,
                                        int start_offset,
-                                       int num_responses) const
+                                       int num_responses,
+				       bool unscale_resp) const
 {
   using std::pow;
 
@@ -1141,11 +1143,11 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
   for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
-      if (responseScaleTypes[i] & SCALE_LOG)
+      if (unscale_resp && responseScaleTypes[i] & SCALE_LOG)
         native_val = pow(SCALING_LOGBASE, scaled_vals[i]) *
           responseScaleMultipliers[i] + responseScaleOffsets[i];
  
-      else if (responseScaleTypes[i] & SCALE_VALUE)
+      else if (unscale_resp && responseScaleTypes[i] & SCALE_VALUE)
         native_val = scaled_vals[i]*responseScaleMultipliers[i] + 
           responseScaleOffsets[i];
       else
@@ -1162,10 +1164,10 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
   for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 2) {
 
-      if (responseScaleTypes[i] & SCALE_LOG)
+      if (unscale_resp && responseScaleTypes[i] & SCALE_LOG)
         df_dfscl = pow(SCALING_LOGBASE, scaled_vals[i]) * SCALING_LN_LOGBASE *
           responseScaleMultipliers[i];	 
-      else if (responseScaleTypes[i] & SCALE_VALUE)
+      else if (unscale_resp && responseScaleTypes[i] & SCALE_VALUE)
         df_dfscl = responseScaleMultipliers[i];
       else
         df_dfscl = 1.;
@@ -1199,10 +1201,10 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
   for (i = start_offset; i < end_offset; ++i)
     if (asv[i] & 4) {
  
-      if (responseScaleTypes[i] & SCALE_LOG)
+      if (unscale_resp && responseScaleTypes[i] & SCALE_LOG)
         df_dfscl = pow(SCALING_LOGBASE, scaled_vals[i]) * SCALING_LN_LOGBASE *
           responseScaleMultipliers[i];
-      else if (responseScaleTypes[i] & SCALE_VALUE)
+      else if (unscale_resp && responseScaleTypes[i] & SCALE_VALUE)
         df_dfscl = responseScaleMultipliers[i];
       else
         df_dfscl = 1.;
@@ -1216,8 +1218,8 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
           size_t xk_index = find_index(var_ids, dvv[k]);
 	  
           // first multiply by d(f_scaled)/d(f) based on scaling type
-
-          if (responseScaleTypes[i] & SCALE_LOG) {
+	  // have to skip the addend when no response scaling...
+          if (unscale_resp && responseScaleTypes[i] & SCALE_LOG) {
 
             native_hess(xj_index,xk_index) += scaled_grads(xj_index,i) *
               scaled_grads(xk_index,i) * SCALING_LN_LOGBASE; 
@@ -1225,7 +1227,7 @@ void ScalingModel::response_modify_s2n(const Variables& native_vars,
             native_hess(xj_index,xk_index) *= df_dfscl; 
 
           }
-          else if (responseScaleTypes[i] & SCALE_VALUE)
+          else if (unscale_resp && responseScaleTypes[i] & SCALE_VALUE)
             native_hess(xj_index,xk_index) *= df_dfscl;
 
           // now multiply by d(x_scaled)/d(x) for j,k

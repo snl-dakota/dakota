@@ -439,7 +439,7 @@ void LeastSq::post_run(std::ostream& s)
     // Only calculate confidence intervals for the first point, before
     // mucking with best_resp.  Here, best_vars is native space
     if (point_index == 0)
-      get_confidence_intervals(iter_cv, best_vars.continuous_variables());
+      get_confidence_intervals(iter_cv, best_vars);
 
     if (calibrationDataFlag && expData.interpolate_flag()) {
       // When interpolation is active, best we can do is a lookup to
@@ -497,8 +497,8 @@ void LeastSq::post_run(std::ostream& s)
     are needed to eval iteratedModel gradients, while native_cv are
     needed for final reporting.  best_resp must contain the final
     differenced, scaled, weighted residuals. */
-void LeastSq::
-get_confidence_intervals(const RealVector& iter_cv, const RealVector& native_cv)
+void LeastSq::get_confidence_intervals(const RealVector& iter_cv,
+				       const Variables& native_vars)
 {
   // TODO: Fix CIs for interpolation and multi-experiment cases.  For
   // simple multi-experiment cases, can just use the model derivatives
@@ -508,19 +508,7 @@ get_confidence_intervals(const RealVector& iter_cv, const RealVector& native_cv)
   // Confidence intervals should be based on weighted/scaled iterator
   // residuals (since that was the nonlinear regression problem
   // formulation), but original user parameters, so must use
-  // d(scaled_residual) / d(native_vars).  For now, this implementation
-  // is incorrect as best_resp contains d(scaled_residual) /
-  // d(scaled_vars)
-
-  // TODO: apply/unapply the variable or response scaling
-  // transformation Jacobian to get the right gradients for scaled
-  // case
-  if (scaleFlag) {
-    Cout << "\nWarning: Confidence Interval calculations are not available"
-         << "\n         when scaling is enabled.\n\n";
-    return;
-  }
-
+  // d(scaled_residual) / d(native_vars).
   if (vendorNumericalGradFlag) {
     Cout << "\nWarning: Confidence Interval calculations are not available"
          << "\n         for vendor numerical gradients.\n\n";
@@ -574,16 +562,35 @@ get_confidence_intervals(const RealVector& iter_cv, const RealVector& native_cv)
   double *tau, *work;
   double* Jmatrix = new double[numLeastSqTerms*numContinuousVars];
   
-  // Unfortunately, best_resp doesn't contain gradients, so we
+  // Unfortunately, best_resp may not contain gradients, so we
   // evaluate the iteratedModel at the iterator variables, aiming to
-  // catch a duplicate eval .  This evaluation will yield
-  // d(scaled_resp) / d(scaled_params), which isn't quite right.
+  // catch a duplicate eval .  This evaluation will potentially yield
+  // d(scaled_resp) / d(scaled_params).
   asv_request = 2;
   iteratedModel.continuous_variables(iter_cv);
   activeSet.request_values(asv_request);
   iteratedModel.evaluate(activeSet);
-  const RealMatrix& fn_grads
-    = iteratedModel.current_response().function_gradients();
+
+  // When parameters are scaled, have to apply the variable
+  // transformation Jacobian to get to
+  // d(scaled_resp) / d(native_params) =
+  //   d(scaled_resp) / d(scaled_params) * d(scaled_params) / d(native_params)
+
+  // envelope to hold the either unscaled or iterator response
+  Response ultimate_resp;
+  if (scaleFlag) {
+    const Response& scaled_resp = iteratedModel.current_response();
+    ultimate_resp = scaled_resp.copy();
+    ScalingModel* scale_model_rep =
+      static_cast<ScalingModel*>(scalingModel.model_rep());
+    bool unscale_resp = false;
+    scale_model_rep->response_modify_s2n(native_vars, scaled_resp,
+					 ultimate_resp, 0, numLeastSqTerms,
+					 unscale_resp);
+  }
+  else
+    ultimate_resp = iteratedModel.current_response();
+  const RealMatrix& fn_grads = ultimate_resp.function_gradients_view();
 
   // BMA: TODO we don't need to transpose this matrix...
   for (int i=0; i<numLeastSqTerms; i++)
@@ -626,6 +633,7 @@ get_confidence_intervals(const RealVector& iter_cv, const RealVector& native_cv)
   Pecos::students_t_dist t_dist(dof);
   Real tdist =  bmth::quantile(t_dist,0.975);
 
+  const RealVector& native_cv = native_vars.continuous_variables();
   for (int j=0; j<numContinuousVars; j++) {
     confBoundsLower[j] = native_cv[j] - tdist * standard_error[j];
     confBoundsUpper[j] = native_cv[j] + tdist * standard_error[j];
