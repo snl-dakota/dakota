@@ -279,12 +279,14 @@ void LeastSq::print_results(std::ostream& s, short results_state)
         << "num_experiments > 1\n";
     }
 
+    s << "Confidence Intervals on Calibrated Parameters:\n";
+
     StringMultiArrayConstView cv_labels
       = iteratedModel.continuous_variable_labels();
     for (size_t i = 0; i < numContinuousVars; i++)
-      s << "Confidence Interval for " << cv_labels[i] << " is [ "
-	<< setw(write_precision+7) << confBoundsLower[i] << ", "
-	<< setw(write_precision+7) << confBoundsUpper[i] << " ]\n";
+      s << std::setw(14) << cv_labels[i] << ": [ "
+	<< setw(write_precision+6) << confBoundsLower[i] << ", "
+	<< setw(write_precision+6) << confBoundsUpper[i] << " ]\n";
   }
 }
 

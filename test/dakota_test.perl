@@ -1428,6 +1428,17 @@ sub parse_test_output {
       }
     }
 
+    while (/^Confidence Intervals/) {
+      print;
+      print TEST_OUT;
+      $_ = <OUTPUT>; # grab next line
+      while (/^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/) {  # may contain nan/inf
+        print;
+        print TEST_OUT;
+        $_ = <OUTPUT>; # grab next line
+      }
+    }
+
   } # end while output lines
 
   # DMD (05/01/2006): the following "if" line may be needed if
