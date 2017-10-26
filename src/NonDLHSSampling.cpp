@@ -655,15 +655,15 @@ void NonDLHSSampling::post_run(std::ostream& s)
 {
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag) {
-    // BMA TODO: always compute all stats, even in VBD mode (stats on
-    // first two replicates)
-    if (varBasedDecompFlag)
+  if (statsFlag)
+    if(varBasedDecompFlag)
       compute_vbd_stats(numSamples, allResponses);
-    else
+    else if(!summaryOutputFlag)
+      // To support incremental reporting of statistics, compute_statistics is 
+      // iteratively called by print_results. However, when the sampling iterator 
+      // is a subiterator (e.g. in a nested model), print_results isn't called.
+      // Compute stats here for all samples.
       compute_statistics(allSamples, allResponses);
-  }
-
   Analyzer::post_run(s);
  
   if (pcaFlag)
@@ -877,6 +877,16 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }
 }
 
+void NonDLHSSampling::print_header_and_statistics(std::ostream& s, 
+    const int& num_samples)
+{
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on " << num_samples << " samples:\n";
+    print_statistics(s);
+    s << "---------------------------------------------------------------------"
+      << "--------" << std::endl;
+}
+
 
 void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
@@ -886,12 +896,33 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
   if (varBasedDecompFlag)
     print_sobol_indices(s);
   else if (statsFlag) {
-    int actual_samples = allSamples.numCols();
-    s << "---------------------------------------------------------------------"
-      << "--------\nStatistics based on " << actual_samples << " samples:\n";
-    print_statistics(s);
-    s << "---------------------------------------------------------------------"
-      << "--------" << std::endl;
+    if(refineSamples.length() == 0) {
+      compute_statistics(allSamples, allResponses);
+      int actual_samples = allSamples.numCols();
+      print_header_and_statistics(s, actual_samples);
+    } else {  // iterate over refinement_samples to generate incremental stats
+      // assume that the keys (eval ids) of allResponses are consecutive
+      const int start_id = allResponses.begin()->first;
+      int running_total = 0;  // total number of samples
+      IntArray samples_vec(1+refineSamples.length(), 0);
+      samples_vec[0] = numSamples;
+      copy_data_partial(refineSamples, samples_vec, 1);
+      IntResponseMap::iterator start_resp = allResponses.begin();
+      IntResponseMap inc_responses; // block of responses for this increment
+      for(const int &inc_size : samples_vec) {
+        running_total += inc_size;
+        RealMatrix inc_samples(Teuchos::View, allSamples, // block of samples for
+            allSamples.numRows(), running_total);         // this increment
+        IntResponseMap::iterator end_resp = allResponses.find(running_total + 
+            start_id);
+        // Response copy ctor just copies a pointer, so this insert should be
+        // cheap.
+        inc_responses.insert(start_resp, end_resp);
+        compute_statistics(inc_samples, inc_responses);
+        print_header_and_statistics(s, running_total);
+        start_resp = end_resp;
+      }
+    }
   }
 }
 

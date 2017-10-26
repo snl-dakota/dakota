@@ -1,0 +1,48 @@
+#@ s*: Label=FastTest
+# Test least squares confidence intervals in presence of transformations
+# Based on dakota_cantilever_examples.in:s8
+#   Calibration to single values of area, stress, displacement
+#     (data generated with E = 2.85e7, w = 2.5, t = 3.0)
+# s0: as in examples, with error file so residuals are nonzero
+# s1: weighted
+# s2: scaled
+
+environment
+  tabular_data
+
+method
+  nl2sol
+    convergence_tolerance 1.0e-6
+  output verbose
+# scaling							#s2
+
+model
+  single
+
+variables
+  active design
+  continuous_design 3
+    upper_bounds 31000000 10 10
+    initial_point 29000000 4 4
+    lower_bounds 27000000 1 1
+    descriptors 'E' 'w' 't'
+#   scale_types 'value'						#s2
+#   scales      1.0e7  0.1  10.0				#s2
+  continuous_state 3
+    initial_state 40000 500 1000
+    descriptors 'R' 'X' 'Y'
+
+interface
+  direct
+    analysis_driver = 'mod_cantilever'
+
+responses
+  calibration_terms 3
+#   weights              1.0  1.0e-3  1.0e1			#s1
+#   primary_scale_types  'value'				#s2
+#   primary_scales 	 1.0  1.0e3   1.0e-1			#s2
+    calibration_data_file = 'dakota_calibration_cis.error.dat'
+    freeform
+  descriptors = 'area' 'stress' 'displacement'
+  analytic_gradients
+  no_hessians
