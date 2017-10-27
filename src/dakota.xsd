@@ -99,7 +99,6 @@
 		<attribute name="minOccurs" type="dak:minMaxType" use="optional" default="1"></attribute>      
 		<attribute name="code" type="string" use="required"></attribute>		
 		<attribute name="label" type="string" use="optional" ></attribute>
-		<attribute name="help" type="string" use="optional" ></attribute>           
 		<attribute name="group" type="string" use="optional" ></attribute>                                                  
 		<attribute name="default" type="string" use="optional" ></attribute>
         <attribute name="complexity" type="dak:minMaxType" use="optional" default="0"></attribute>
