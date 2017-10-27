@@ -58,8 +58,8 @@ protected:
   //
 
   /// Calculate confidence intervals on estimated parameters
-  void get_confidence_intervals(const RealVector& iter_cv,
-				const Variables& native_vars);
+  void get_confidence_intervals(const Variables& native_vars,
+				const Response& iter_resp);
 
   //
   //- Heading: Data
@@ -78,6 +78,13 @@ protected:
   RealVector confBoundsLower;
   /// upper bounds for confidence intervals on calibration parameters
   RealVector confBoundsUpper;
+
+  /// storage for iterator best primary functions (which shouldn't be
+  /// stored in bestResponseArray when there are transformations)
+  RealVector bestIterPriFns;
+  /// whether final primary iterator space functions have been
+  /// retrieved (possibly by a derived class)
+  bool retrievedIterPriFns;
 
 private:
 

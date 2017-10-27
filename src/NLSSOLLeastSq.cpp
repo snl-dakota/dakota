@@ -214,19 +214,22 @@ void NLSSOLLeastSq::core_run()
   // local_des_vars, local_lsq_vals, & local_c_vals contain the optimal design 
   // (not the final fn. eval) since NLSSOL performs this assignment internally 
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
+
+  // Always populate bestVariables; DakotaLeastSq will unscale if needed
   bestVariablesArray.front().continuous_variables(local_des_vars);
 
-  // If no interpolation, numUserPrimaryFns <= numLsqTerms.  Copy the
-  // first block of inbound model fns to best.  If data transform,
-  // will be further transformed back to user space (weights, scale,
-  // data) if needed in LeastSq::post_run
   RealVector best_fns = bestResponseArray.front().function_values_view();
-  // take care with each copy to not resize the best_fns
-  if ( !(calibrationDataFlag && expData.interpolate_flag()) )
-    copy_data_partial(local_lsq_vals, 0, (int)numUserPrimaryFns, best_fns, 0);
+
+  // Always cache best iterator functions
+  bestIterPriFns = local_lsq_vals;
+  retrievedIterPriFns = true;
+
+  // Always populate bestResponse with constraints; DakotaLeastSq will
+  // unscale if needed.
+  // This must use an offset of the # user/native functions since the
+  // bestResponseArray is in original space
   if (numNonlinearConstraints)
-    copy_data_partial(local_c_vals, 0, (int)nlnConstraintArraySize, best_fns,
-		      (int)numUserPrimaryFns);
+    copy_data_partial(local_c_vals, best_fns, (int)numUserPrimaryFns);
 
   /*
   // For better post-processing, could append fort.9 to dakota.out line
