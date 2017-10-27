@@ -1913,7 +1913,7 @@
           &default_scaling;
 	  &method_jega_common_opts;
         </keyword>
-	<!-- END JEGA -->>
+	<!-- END JEGA -->
 
 	<!-- BEGIN coliny methods -->
         <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search" help="" minOccurs="1" group="Optimization: Local, Derivative-free" >
@@ -1972,7 +1972,7 @@
           </keyword>
           <keyword  id="constant_penalty1" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty" help="MethodCommands.html#MethodSCOLIBSW" minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
           <keyword  id="contraction_factor2" name="contraction_factor" code="{N_mdm(Real,contractFactor)}" label="contraction_factor" help="" minOccurs="0" default="0.5" >
- b            <param type="REAL" />
+            <param type="REAL" />
           </keyword>
           <keyword  id="constraint_penalty2" name="constraint_penalty" code="{N_mdm(Real,constraintPenalty)}" label="constraint_penalty" help="" minOccurs="0" default="1.0" >
             <param type="REAL" />
@@ -4842,8 +4842,8 @@
 		</keyword>
 
 		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
-                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
 		  <alias name="variance_type"/>
+                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name" help="RespCommands.html#RespFnLS" minOccurs="0" >
@@ -4864,8 +4864,8 @@
 		  <param type="INTEGER" constraint=">= 0" />
 		</keyword>
 		<keyword  id="experiment_variance_type" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar)" help="RespCommands.html#RespFnLS" minOccurs="0" default="none" >
-		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		  <alias name="variance_type"/>
+		  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		</keyword>
               </keyword>
 	    </oneOf>
