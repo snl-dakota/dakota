@@ -734,7 +734,7 @@ void copy_data_partial(
     sdv2[i] = sdv1[start_index1+i];
 }
 
-/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by MixedVariables - RWH
+/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by MixedVariables - RWH, NLSSOLLeastSq - BMA
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,

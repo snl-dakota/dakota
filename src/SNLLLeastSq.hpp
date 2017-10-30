@@ -126,9 +126,6 @@ protected:
   /// invokes LeastSq::initialize_run(),
   /// SNLLBase::snll_initialize_run(), and performs other set-up
   void initialize_run();
-  /// invokes snll_post_run and re-implements post_run (does not call parent)
-  /// and performs other solution processing
-  void post_run(std::ostream& s);
   /// restores instances 
   void finalize_run();
 
