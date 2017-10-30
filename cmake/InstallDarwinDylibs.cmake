@@ -63,22 +63,23 @@ foreach(loader ${bin_lib_list})
   endif()
 endforeach()
 
-# Probe the CMakeCache.txt for location of the known Boost dynlib dependency
-# The FindBoost.cmake probe was updated in 2.8.11 (or thereabouts) to cache
-# the variable Boost_LIBRARY_DIR:PATH instead of Boost_LIBRARY_DIRS:FILEPATH.
-# Check both.
-
+# Probe the CMakeCache.txt for location of the known Boost dynlib dependency.
+# This method is very fragile because the the FindBoost.cmake probe is frequently 
+# updated, and the relevant cache variable changes from version to version. That
+# is the most likely cause of the FATAL_ERROR below. Consult the docs in the header
+# of the FindBoost.cmake probe for this verion of CMake to determine which variable
+# to use, and update Dakota's top-level CMakeLists.txt accordingly.
+ 
 file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
-      Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIRS:FILEPATH=(.*)$" )
+      Boost_LIBRARY_DIRS_PAIR REGEX "^DAKOTA_Boost_LIB_DIR:PATH=(.*)$" )
 if( "${Boost_LIBRARY_DIRS_PAIR}" STREQUAL "")
-  file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/CMakeCache.txt
-        Boost_LIBRARY_DIRS_PAIR REGEX "^Boost_LIBRARY_DIR:PATH=(.*)$" )
+    message(FATAL_ERROR "Unable to determine Boost library directory!")
 endif()
 
-string( REGEX REPLACE "^Boost_LIBRARY_DIR.+=(.*)$" "\\1"
+string( REGEX REPLACE "^DAKOTA_Boost_LIB_DIR:PATH=(.*)$" "\\1"
         Cached_Boost_LIBRARY_DIRS "${Boost_LIBRARY_DIRS_PAIR}" )
 
-#message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
+# message("Boost rpath=${Cached_Boost_LIBRARY_DIRS}")
 
 # Modify dakota_darwin_dylibs for "special case" of Boost
 #   otool DOES NOT return absolute path to Boost libs, so workaround the issue
