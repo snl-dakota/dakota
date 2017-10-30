@@ -13,7 +13,7 @@ Key options include:
   \li format: whether the data file is in \c annotated, \c
     custom_annotated, or \c freeform format
   \li content: where \c num_experiments, \c
-    num_config_variables, and \c variance_type indicate which
+    num_config_variables, and \c experiment_variance_type indicate which
     columns appear in the data.
 
 In the most general case, the content of the data file is described by
@@ -38,7 +38,7 @@ the arguments of three optional parameters.
     compared to the appropriate experiment data.
 
   </li>
-  <li> \c variance_type ('none' or 'scalar')
+  <li> \c experiment_variance_type ('none' or 'scalar')
 
     This indicates if the data file contains variances for measurement error 
     of the experimental data.  The default is 'none'.
@@ -146,12 +146,12 @@ y^{Data}_{i}. \f]
 <b> With experimental variances:</b> If information is known about the
 measurement error and the uncertainty in the measurement, that can be
 specified by sending the measurement error variance to Dakota.  In
-this case, the keyword \c variance_type is added, followed by a string
-of variance types of length one or of length \f$N_{terms} \f$ , where
+this case, the keyword \c experiment_variance_type is added, followed by a 
+string of variance types of length one or of length \f$N_{terms} \f$ , where
 \f$ N_{terms} \f$ is the value of \ref responses-calibration_terms.
-The \c variance_type for each response can be 'none' or 'scalar'.
-NOTE: you must specify the same \c variance_type for all scalar terms.
-That is, they will all be 'none' or all be 'scalar.'
+The \c experiment_variance_type for each response can be 'none' or 'scalar'.
+NOTE: you must specify the same \c experiment_variance_type for all scalar 
+terms. That is, they will all be 'none' or all be 'scalar.'
 
 \verbatim
 responses
@@ -159,7 +159,7 @@ responses
     descriptors = 'volts' 'amps'
     calibration_data_file = 'circuit.dat'
       annotated
-      variance_type 'scalar'
+      experiment_variance_type 'scalar'
 \endverbatim
 
 For each response that has a 'scalar' variance type, each row of the
@@ -190,7 +190,7 @@ responses
     calibration_data_file = 'circuit.dat'
       annotated
       num_experiments = 4
-      variance_type 'scalar'
+      experiment_variance_type 'scalar'
 \endverbatim
 
 Dakota will expect a data file

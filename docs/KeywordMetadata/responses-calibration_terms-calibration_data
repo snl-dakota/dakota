@@ -34,11 +34,11 @@ experiment number.
      responses-calibration_terms-field_calibration_terms-lengths).
 </li>
 <li> <b>Variances:</b> If \ref
-     responses-calibration_terms-calibration_data-variance_type is
+     responses-calibration_terms-calibration_data-experiment_variance_type is
      specified, variance values are read from files \c DESC.NUM.sigma.
-     Note that a single \c variance_type may be specified, or a unique
-     \c variance_type per response descriptor (per scalar or field).
-     If the \c variance_type is:
+     Note that a single \c experiment_variance_type may be specified, or a 
+     unique \c experiment_variance_type per response descriptor (per scalar 
+     or field). If the \c experiment_variance_type is:
      <ul>
      <li> 'scalar': a single variance value will be read from the file.
      </li>
@@ -129,7 +129,7 @@ responses
     calibration_data
       num_experiments = 4
       num_config_variables = 2
-      variance_type 'diagonal' 'scalar' 'matrix' 
+      experiment_variance_type 'diagonal' 'scalar' 'matrix' 
 \endverbatim
 
 <!-----
@@ -155,7 +155,7 @@ responses
     calibration_data
       num_experiments = 4
       num_config_variables = 2
-      variance_type 'scalar' 'scalar' 'diagonal' 'scalar' 'matrix' 
+      experiment_variance_type 'scalar' 'scalar' 'diagonal' 'scalar' 'matrix' 
       scalar_data_file 'circuit.dat'
         annotated
 \endverbatim
@@ -190,7 +190,7 @@ The field data will be read from separate files:
 <li> <b>Variances:</b> Will be read per-experiment (no covariance
      among experiments is permitted).  The variance information is depicted 
      graphically in \ref 
-     responses-calibration_terms-calibration_data-variance_type
+     responses-calibration_terms-calibration_data-experiment_variance_type
      <ul>
      <li> Volts specifies 'diagonal' covariance, so a column vector of
           length 7 with the diagonal variances will be read from each
