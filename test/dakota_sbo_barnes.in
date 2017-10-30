@@ -39,7 +39,7 @@ model,
 	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
 #	  gaussian_process surfpack		#s14,#s15
 #	  use_derivatives			#s15
-#	  correction additive first_order	#s0,#s3,#s6,#s9
+	  correction additive first_order	#s0,#s3,#s6,#s9
 # 	surrogate local taylor_series		#s1,#s4,#s7,#s10
 #	  actual_model_pointer = 'TRUTH'	#s1,#s4,#s7,#s10
 # 	surrogate multipoint tana		#s12,#s13
@@ -93,8 +93,8 @@ responses,
 	nonlinear_inequality_constraints = 3
 	nonlinear_inequality_lower_bounds = 0.     0.     0.
 	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
-	no_gradients		 	#s0,#s2,#s6,#s8,#s14
+#	no_gradients		 	#s2,#s8,#s14
 #	numerical_gradients		#s7
 #	  method_source dakota		#s7
-#	analytic_gradients		#s1,#s3,#s4,#s5,#s9,#s10,#s11,#s12,#s13,#s15
+	analytic_gradients		#s0,#s1,#s3,#s4,#s5,#s6,#s9,#s10,#s11,#s12,#s13,#s15
 	no_hessians
