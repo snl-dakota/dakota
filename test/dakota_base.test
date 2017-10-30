@@ -3887,7 +3887,7 @@ Confidence Intervals on Calibrated Parameters:
              t: [ 1.8590970482e+00, 3.4429110277e+00 ]
 dakota_calibration_configvars.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -3913,6 +3913,9 @@ Test Number 0 succeeded
                       1.6082874247e+01
                       1.1280144759e+01
 <<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3933,7 +3936,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -3959,8 +3962,11 @@ Test Number 2 succeeded
                       1.6082874247e+01
                       1.1280144759e+01
 <<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 16 total (12 new, 4 duplicate)
+<<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
                       2.8500000211e+07 E
                       2.6313476691e+00 w
@@ -3986,6 +3992,9 @@ Test Number 3 succeeded
                       1.6082874247e+01
                       1.1280144759e+01
 <<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             E: [ 2.8499998058e+07, 2.8500002364e+07 ]
+             w: [ 1.9700278272e+00, 3.2926675111e+00 ]
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 3460 total (3460 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -24774,13 +24783,13 @@ Test Number 10 succeeded
                       7.7409203673e-08
 <<<<< Best data captured at function evaluation 76
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 204 total (202 new, 2 duplicate)
+<<<<< Function evaluation summary: 305 total (303 new, 2 duplicate)
 <<<<< Best parameters          =
-                      9.9873710705e-01 x1
-                      9.9746836914e-01 x2
+                      9.9967590331e-01 x1
+                      9.9935073414e-01 x2
 <<<<< Best objective function  =
-                      1.6004337486e-06
-<<<<< Best data captured at function evaluation 204
+                      1.0517732027e-07
+<<<<< Best data captured at function evaluation 305
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =
@@ -29710,7 +29719,7 @@ Confidence Intervals on Calibrated Parameters:
             x1: [ 3.9238166996e+00, 4.0785030735e+00 ]
             x2: [ 4.3943429713e-01, 3.5137892648e+00 ]
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 12 total (10 new, 2 duplicate)
+<<<<< Function evaluation summary: 11 total (10 new, 1 duplicate)
 <<<<< Best parameters          =
                       4.0017301996e+00 x1
                       2.0807347873e+00 x2

@@ -1016,8 +1016,10 @@ db_lookup(const Variables& search_vars, const ActiveSet& search_set,
   // invoke submodel lookup; making copy to avoid modifying submodel state 
   // during the lookup
   Response sub_model_resp(subModel.current_response().copy());
+  // sub_model_resp must have right ASV so lookup's update will pull right data
+  sub_model_resp.active_set(sub_model_set);
   bool eval_found
-    = subModel.db_lookup(sub_model_vars, search_set, sub_model_resp);
+    = subModel.db_lookup(sub_model_vars, sub_model_set, sub_model_resp);
   if (!eval_found)
     return false;
 
