@@ -235,6 +235,10 @@ protected:
 				  const Response& x_response,
 				  Response& u_response);
 
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(Real current, Real target);
+
   /// allocate results array storage for distribution mappings
   void archive_allocate_mappings();
   /// archive the mappings from specified response levels for specified fn
@@ -567,6 +571,10 @@ inline bool NonD::homogeneous(const SizetArray& N_l) const
       return false;
   return true;
 }
+
+
+inline size_t NonD::one_sided_delta(Real current, Real target)
+{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
 
 } // namespace Dakota
 

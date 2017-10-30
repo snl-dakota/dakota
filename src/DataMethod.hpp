@@ -143,6 +143,8 @@ enum { NO_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 // -------------
 // define special values for lsRegressionType
 enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
+// define special values for multilevRegressCntl
+enum { DEFAULT_ML_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING };
 
 // --------------------
 // NonDBayesCalibration

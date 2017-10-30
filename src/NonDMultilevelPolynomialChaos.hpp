@@ -87,11 +87,30 @@ protected:
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp,size_t total_samp,size_t lev);
 
+  /// Aggregate variance across the set of QoI for a particular model level
+  void aggregate_variance(Real& agg_var_l);
+  /// Retrieve the maximum number of sparse coefficients across the set of QoI
+  /// for a particular model level
+  void maximum_sparsity(Real& max_sparsity_l);
+
+  /// compute delta_N_l for ESTIMATOR_VARIANCE case
+  void compute_sample_increment(const RealVector& agg_var,
+				const RealVector& cost, Real sum_root_var_cost,
+				Real eps_sq_div_2, const SizetArray& N_l,
+				SizetArray& delta_N_l);
+  /// compute delta_N_l for RIP_SAMPLING case
+  void compute_sample_increment(const RealVector& sparsity,
+				const SizetArray& N_l, SizetArray& delta_N_l);
+
 private:
 
   //
   //- Heading: Data
   //
+
+  /// type of sample allocation scheme for PCE levels within
+  /// multilevel_regression()
+  short multilevRegressCntl;
 
   /// user specification for expansion_order (array for multifidelity)
   UShortArray expOrderSeqSpec;

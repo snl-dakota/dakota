@@ -425,10 +425,6 @@ private:
   /// compute average of a set of observations
   Real average(const SizetArray& sa) const;
 
-  /// compute a one-sided sample increment to move current sampling level
-  /// to a new target
-  size_t one_sided_delta(Real current, Real target);
-
   //
   //- Heading: Data
   //
@@ -813,10 +809,6 @@ inline Real NonDMultilevelSampling::average(const SizetArray& sa) const
     sum += sa[i];
   return (Real)sum / (Real)len;
 }
-
-
-inline size_t NonDMultilevelSampling::one_sided_delta(Real current, Real target)
-{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
 
 } // namespace Dakota
 

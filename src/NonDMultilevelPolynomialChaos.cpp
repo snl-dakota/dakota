@@ -30,6 +30,7 @@ namespace Dakota {
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(BaseConstructor(), problem_db, model),
+  multilevRegressCntl(ESTIMATOR_VARIANCE),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
@@ -237,9 +238,9 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
 		      seed, cv_flag), 
-  expOrderSeqSpec(exp_order_seq), collocPtsSeqSpec(colloc_pts_seq),
-  sequenceIndex(0), kappaEstimatorRate(2.), gammaEstimatorScale(1.),
-  pilotSamples(pilot)
+  multilevRegressCntl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
+  collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
+  gammaEstimatorScale(1.), pilotSamples(pilot)
 {
   assign_hierarchical_response_mode();
 
@@ -695,6 +696,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 
 void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
+  // TO DO: set multilevRegressCntl
+  // Requirements for RIP_SAMPLING: L1 regression, CV, ... ?
+  
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
@@ -728,14 +732,10 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   if (u_sub_iter != NULL)
     ((Analyzer*)u_sub_iter)->vary_pattern(true);
 
-  size_t iter = 0, new_N_l, last_active = 0;
+  size_t iter = 0, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector agg_var(num_lev);
-  // factors for relationship between variance of mean estimator and NLev
-  // (hard coded for right now; TO DO: fit params)
-  Real inv_k = 1./kappaEstimatorRate, inv_kp1 = 1./(kappaEstimatorRate+1.);
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
+  RealVector level_metric(num_lev);
   
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
@@ -757,7 +757,6 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   load_pilot_sample(pilotSamples, delta_N_l);
 
   // now converge on sample counts per level (NLev)
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   NLev.assign(num_lev, 0);
   while ( iter <= max_iter &&
 	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
@@ -810,38 +809,20 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	append_expansion(index); // not recursive
       }
 
-      // aggregate variances across QoI for estimating NLev (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
-      if (delta_N_l[lev]) {
-        // compute and accumulate variance of mean estimator from the set of
-	// fold results within the selected settings from cross-validation:
-	agg_var_l = 0.;
-	for (i=0; i<numFunctions; ++i) {
-	  PecosApproximation* poly_approx_q
-	    = (PecosApproximation*)poly_approxs[i].approx_rep();
-	  var_l = poly_approx_q->variance();
-	  agg_var_l += var_l;
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Variance (lev " << lev << ", qoi " << i
-		 << ", iter " << iter << ") = " << var_l << '\n';
-	  // We assume a functional dependence of estimator variance on NLev
-	  // for minimizing aggregate cost subject to an MSE error balance:
-	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-	  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
-	  // one approach is to numerically estimate the variance in the mean
-	  // estimator (alpha_0) from two sources:
-	  // > from variation across k folds for the selected CV settings
-	  // > from var decrease as NLev increases across iters
-          //Real cv_var_i = poly_approx_rep->
-	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
-	  //   cv_iterator class scope)
-	  // To validate this approach, the actual estimator variance can be
-	  // computed and compared with the CV variance approximation (as for
-	  // traditional CV error plots, but predicting estimator variance
-	  // instead of L2 fit error).
-	}
+      bool delta = (delta_N_l[lev] > 0); Real& metric_l = level_metric[lev];
+      switch (multilevRegressCntl) {
+      case ESTIMATOR_VARIANCE:
+	if (delta) aggregate_variance(metric_l);
+	sum_root_var_cost += std::pow(metric_l *
+	  std::pow(lev_cost, kappaEstimatorRate), 1./(kappaEstimatorRate+1.));
+        // MSE reference is ML MC aggregation for pilot(+import) sample:
+	if (iter == 0) estimator_var0 += metric_l / NLev[lev];
+	break;
+      case RIP_SAMPLING:
+	if (delta) maximum_sparsity(metric_l); break;
+      }
+
+      if (delta) {
         // store all approximation levels, whenever recomputed.
 	uSpaceModel.store_approximation(lev);
 	// The active approximation upon completion of the refinement loop may
@@ -849,31 +830,20 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	// combine_approximation().
 	last_active = lev;
       }
-
-      sum_root_var_cost	+= std::pow(agg_var_l * 
-	std::pow(lev_cost, kappaEstimatorRate), inv_kp1);
-      // MSE reference is MC applied to HF:
-      if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
-    }
-    // compute epsilon target based on relative tolerance: total MSE = eps^2
-    // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
-      eps_sq_div_2 = estimator_var0 * convergenceTol;
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }
 
-    // update targets based on variance estimates
-    Real fact
-      = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale, inv_k);
-    for (lev=0; lev<num_lev; ++lev) {
-      lev_cost = cost[lev];
-      if (lev && !recursive) lev_cost += cost[lev-1];
-      new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
-      delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
+    switch (multilevRegressCntl) {
+    case ESTIMATOR_VARIANCE:
+      if (iter == 0) { // eps^2 / 2 = var * relative factor
+	eps_sq_div_2 = estimator_var0 * convergenceTol;
+	if (outputLevel == DEBUG_OUTPUT)
+	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
+      }
+      compute_sample_increment(level_metric, cost, sum_root_var_cost,
+			       eps_sq_div_2, NLev, delta_N_l);
+      break;
+    case RIP_SAMPLING:
+      compute_sample_increment(level_metric, NLev, delta_N_l); break;
     }
     ++iter;
     Cout << "\nML PCE iteration " << iter << " sample increments:\n"
@@ -891,6 +861,114 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     equivHFEvals += (recursive) ? NLev[lev] * cost[lev] :
       NLev[lev] * (cost[lev] + cost[lev-1]);
   equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+}
+
+
+void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
+{
+  // case ESTIMATOR_VARIANCE:
+
+  // control ML using aggregated variance across the vector of QoI
+  // (alternate approach: target QoI with largest variance)
+  agg_var_l = 0.;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    PecosApproximation* poly_approx_q
+      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+    Real var_l = poly_approx_q->variance();
+    agg_var_l += var_l;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Variance(" /*"lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << var_l << '\n';
+  }
+}
+
+
+void NonDMultilevelPolynomialChaos::maximum_sparsity(Real& max_sparsity_l)
+{
+  // case RIP_SAMPLING:
+
+  max_sparsity_l = 0.;
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
+    PecosApproximation* poly_approx_q
+      = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+    // Requires CV? (noise only?)  Else OMP will compute #terms = #samples...
+    Real sparsity_l = 10.;//(Real)poly_approx_q->sparse_indices().size();
+    if (sparsity_l > max_sparsity_l)
+      max_sparsity_l = sparsity_l;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
+	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
+  }
+}
+
+
+void NonDMultilevelPolynomialChaos::
+compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
+			 Real sum_root_var_cost, Real eps_sq_div_2,
+			 const SizetArray& N_l, SizetArray& delta_N_l)
+{
+  // case ESTIMATOR_VARIANCE:
+
+  // eps^2 / 2 target computed based on relative tolerance: total MSE = eps^2
+  // which is equally apportioned (eps^2 / 2) among discretization MSE and
+  // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
+  // discretization error, we compute an initial estimator variance and then
+  // seek to reduce it by a relative_factor <= 1.
+
+  // We assume a functional dependence of estimator variance on NLev
+  // for minimizing aggregate cost subject to an MSE error balance:
+  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
+  // where Monte Carlo has gamma = kappa = 1.  To fit these parameters,
+  // one approach is to numerically estimate the variance in the mean
+  // estimator (alpha_0) from two sources:
+  // > from variation across k folds for the selected CV settings
+  // > from var decrease as NLev increases across iters
+
+  // compute and accumulate variance of mean estimator from the set of
+  // k-fold results within the selected settings from cross-validation:
+  //Real cv_var_i = poly_approx_rep->
+  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
+  //   cv_iterator class scope)
+  // To validate this approach, the actual estimator variance can be
+  // computed and compared with the CV variance approximation (as for
+  // traditional CV error plots, but predicting estimator variance
+  // instead of L2 fit error).
+
+  // update targets based on variance estimates
+  Real new_N_l, lev_cost; size_t lev, num_lev = N_l.size();
+  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
+		       1./kappaEstimatorRate);
+  for (lev=0; lev<num_lev; ++lev) {
+    lev_cost = cost[lev];
+    if (lev && !recursive) lev_cost += cost[lev-1];
+    new_N_l = std::pow(agg_var[lev] / lev_cost, 1./(kappaEstimatorRate+1.))
+            * fact;
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
+  }
+}
+
+
+void NonDMultilevelPolynomialChaos::
+compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
+			 SizetArray& delta_N_l)
+{
+  // case RIP_SAMPLING:
+
+  // update targets based on sparsity estimates
+  Real new_N_l, s; size_t lev, num_lev = N_l.size();
+  for (lev=0; lev<num_lev; ++lev) {
+    s = sparsity[lev];
+    new_N_l = s * std::pow(std::log(s), 3.); // s log^3(s)
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
+    // TO DO: apply an under-relaxation / homotopy parameter ?
+    // > sparsity estimates may tend to grow as increased samples drive
+    //   larger candidate exp orders / dictionaries
+    // > see if this naturally provides an under-relaxation-like effect
+  }
 }
 
 
