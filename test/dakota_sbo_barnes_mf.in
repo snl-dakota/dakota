@@ -22,7 +22,7 @@ method,
 	trust_region
 	  initial_size = 0.10
 	  contraction_factor = 0.5
-#	  constraint_relax homotopy			#s0,#s1,#s6,#s7
+	  constraint_relax homotopy			#s0,#s1,#s6,#s7
 	  expansion_factor   = 1.50
           acceptance_logic
 	    filter                       		#s0,#s2,#s4,#s6

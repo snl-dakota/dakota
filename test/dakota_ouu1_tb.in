@@ -144,7 +144,8 @@ interface
   id_interface = 'UQ_I'
   analysis_drivers = 'text_book_ouu'
     direct
-##    fork asynch evaluation_concurrency = 5		#s0
+# Proliferate as comment to user manual:
+#    fork asynch evaluation_concurrency = 5		#s0
 
 responses
   id_responses = 'UQ_R'

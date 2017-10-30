@@ -8,6 +8,7 @@
 
 environment    
   tabular_data    
+# Proliferate as comment to user manual:
 #    tabular_data_file = 'cantilever_uq_global_interval.dat'  #s0
 
 method									 
