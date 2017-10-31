@@ -14446,12 +14446,11 @@ Test Number 17 succeeded
                       2.0611536224e-09
 <<<<< Best data captured at function evaluation 12
 Test Number 18 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 10225 total (10225 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1055 total (1055 new, 0 duplicate)
+<<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.7500000000e-01 x1
-                      4.0527343750e-01 x2
-                      8.8867187500e-01 x3
+                      3.9062500000e-01 x1
+                      4.3750000000e-01 x2
+                      1.8750000000e+00 x3
                                      1 y1
                                      1 y2
                                      4 z1
@@ -14459,11 +14458,11 @@ Test Number 18 succeeded
                       1.2000000000e+00 y3
                       1.2000000000e+00 y4
 <<<<< Best objective function  =
-                      2.4822810450e+03
+                      2.4828273864e+03
 <<<<< Best constraint values   =
-                     -6.2011718750e-02
-                     -2.3253440857e-02
-<<<<< Best data not found in evaluation cache
+                     -6.6162109375e-02
+                     -3.9062500000e-03
+<<<<< Best data captured at function evaluation 717
 dakota_nonlinear_cg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
