@@ -525,7 +525,8 @@ void Optimizer::initialize_run()
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
 
-  configure_constraint_maps();
+  if (!iteratedModel.is_null())
+    configure_constraint_maps();
 }
 
 
