@@ -89,9 +89,9 @@ protected:
 
   /// Aggregate variance across the set of QoI for a particular model level
   void aggregate_variance(Real& agg_var_l);
-  /// Retrieve the maximum number of sparse coefficients across the set of QoI
-  /// for a particular model level
-  void maximum_sparsity(Real& max_sparsity_l);
+  /// Retrieve the cardinality of the basis and the maximum number of sparse
+  /// coefficients across the set of QoI for a particular model level
+  void sparsity_metrics(size_t& max_sparsity_l, size_t& cardinality_l);
 
   /// compute delta_N_l for ESTIMATOR_VARIANCE case
   void compute_sample_increment(const RealVector& agg_var,
@@ -99,7 +99,8 @@ protected:
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
   /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(const RealVector& sparsity,
+  void compute_sample_increment(const SizetArray& sparsity,
+				const SizetArray& cardinality,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
 private:

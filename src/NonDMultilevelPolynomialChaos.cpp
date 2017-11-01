@@ -101,6 +101,12 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
 
+  // TO DO: multilevRegressCntl config and specification checks:
+  // > RIP_SAMPLING: use OMP for robustness
+  // > RIP_SAMPLING: require CV, else OMP will compute #terms = #samples.
+  //   Use noise only to avoid interaction with any order progression.
+  // > Main accuracy control becomes dictionary size.
+
   Iterator u_space_sampler;
   String approx_type;
   UShortArray exp_orders; // defined for expansion_samples/regression
@@ -735,8 +741,14 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   size_t iter = 0, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
-  RealVector level_metric(num_lev);
-  
+  RealVector agg_var; SizetArray max_sparsity, cardinality;
+  switch (multilevRegressCntl) {
+  case ESTIMATOR_VARIANCE:
+    agg_var.sizeUninitialized(num_lev); break;
+  case RIP_SAMPLING:
+    max_sparsity.resize(num_lev); cardinality.resize(num_lev); break;
+  }
+
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
   // collocation pts/ratio enforcement (pts/ratio controls take over on
@@ -809,17 +821,20 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	append_expansion(index); // not recursive
       }
 
-      bool delta = (delta_N_l[lev] > 0); Real& metric_l = level_metric[lev];
+      bool delta = (delta_N_l[lev] > 0);
       switch (multilevRegressCntl) {
-      case ESTIMATOR_VARIANCE:
-	if (delta) aggregate_variance(metric_l);
-	sum_root_var_cost += std::pow(metric_l *
+      case ESTIMATOR_VARIANCE: {
+	Real& agg_var_l = agg_var[lev];
+	if (delta) aggregate_variance(agg_var_l);
+	sum_root_var_cost += std::pow(agg_var_l *
 	  std::pow(lev_cost, kappaEstimatorRate), 1./(kappaEstimatorRate+1.));
         // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (iter == 0) estimator_var0 += metric_l / NLev[lev];
+	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
 	break;
+      }
       case RIP_SAMPLING:
-	if (delta) maximum_sparsity(metric_l); break;
+	if (delta) sparsity_metrics(max_sparsity[lev], cardinality[lev]);
+	break;
       }
 
       if (delta) {
@@ -839,11 +854,12 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
       }
-      compute_sample_increment(level_metric, cost, sum_root_var_cost,
-			       eps_sq_div_2, NLev, delta_N_l);
+      compute_sample_increment(agg_var, cost, sum_root_var_cost, eps_sq_div_2,
+			       NLev, delta_N_l);
       break;
     case RIP_SAMPLING:
-      compute_sample_increment(level_metric, NLev, delta_N_l); break;
+      compute_sample_increment(max_sparsity, cardinality, NLev, delta_N_l);
+      break;
     }
     ++iter;
     Cout << "\nML PCE iteration " << iter << " sample increments:\n"
@@ -884,17 +900,20 @@ void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 }
 
 
-void NonDMultilevelPolynomialChaos::maximum_sparsity(Real& max_sparsity_l)
+void NonDMultilevelPolynomialChaos::
+sparsity_metrics(size_t& max_sparsity_l, size_t& cardinality_l)
 {
   // case RIP_SAMPLING:
 
-  max_sparsity_l = 0.;
+  max_sparsity_l = 0;
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
       = (PecosApproximation*)poly_approxs[qoi].approx_rep();
-    // Requires CV? (noise only?)  Else OMP will compute #terms = #samples...
-    Real sparsity_l = 10.;//(Real)poly_approx_q->sparse_indices().size();
+    size_t sparsity_l = poly_approx_q->sparsity();
     if (sparsity_l > max_sparsity_l)
       max_sparsity_l = sparsity_l;
     if (outputLevel >= DEBUG_OUTPUT)
@@ -953,16 +972,17 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 
 
 void NonDMultilevelPolynomialChaos::
-compute_sample_increment(const RealVector& sparsity, const SizetArray& N_l,
+compute_sample_increment(const SizetArray& sparsity,
+			 const SizetArray& cardinality, const SizetArray& N_l,
 			 SizetArray& delta_N_l)
 {
   // case RIP_SAMPLING:
 
   // update targets based on sparsity estimates
-  Real new_N_l, s; size_t lev, num_lev = N_l.size();
+  Real new_N_l, s, card; size_t lev, num_lev = N_l.size();
   for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev];
-    new_N_l = s * std::pow(std::log(s), 3.); // s log^3(s)
+    s = (Real)sparsity[lev]; card = (Real)cardinality[lev];
+    new_N_l = s * std::pow(std::log(s), 3.) * std::log(card);//s log^3(s) log(C)
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
     // TO DO: apply an under-relaxation / homotopy parameter ?
     // > sparsity estimates may tend to grow as increased samples drive

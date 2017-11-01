@@ -74,6 +74,9 @@ public:
   const Pecos::RealVector& sobol_indices() const;
   /// return polyApproxRep->totalSobolIndices
   const Pecos::RealVector& total_sobol_indices() const;
+
+  /// return the number of non-zero coefficients for this QoI
+  size_t sparsity() const;
   /// return RegressOrthogPolyApproximation::sparseSobolIndexMap
   Pecos::ULongULongMap sparse_sobol_index_map() const;
 
@@ -287,6 +290,10 @@ inline const Pecos::RealVector& PecosApproximation::sobol_indices() const
 
 inline const Pecos::RealVector& PecosApproximation::total_sobol_indices() const
 { return polyApproxRep->total_sobol_indices(); }
+
+
+inline size_t PecosApproximation::sparsity() const
+{ return polyApproxRep->sparsity(); }
 
 
 inline Pecos::ULongULongMap PecosApproximation::sparse_sobol_index_map() const
