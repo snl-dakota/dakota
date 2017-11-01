@@ -30,7 +30,8 @@ namespace Dakota {
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(BaseConstructor(), problem_db, model),
-  multilevRegressCntl(ESTIMATOR_VARIANCE),
+  multilevAllocControl(
+    probDescDB.get_short("method.nond.multilevel_allocation_control")),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
   expSamplesSeqSpec(probDescDB.get_sza("method.nond.expansion_samples")),
@@ -101,12 +102,6 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
 
-  // TO DO: multilevRegressCntl config and specification checks:
-  // > RIP_SAMPLING: use OMP for robustness
-  // > RIP_SAMPLING: require CV, else OMP will compute #terms = #samples.
-  //   Use noise only to avoid interaction with any order progression.
-  // > Main accuracy control becomes dictionary size.
-
   Iterator u_space_sampler;
   String approx_type;
   UShortArray exp_orders; // defined for expansion_samples/regression
@@ -123,6 +118,33 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
 	 << "constructor." << std::endl;
     abort_handler(METHOD_ERROR);
+  }
+
+  // multilevAllocControl config and specification checks:
+  if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
+    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
+      Cerr << "Error: unsupported solver configuration within "
+	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+
+    switch (multilevAllocControl) {
+    case RIP_SAMPLING:
+      // use OMP for robustness (over or under-determined)
+      if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
+	expansionCoeffsApproach    = Pecos::ORTHOG_MATCH_PURSUIT;
+      // Require CV, else OMP will compute #terms = #samples.
+      // Use noise only to avoid interaction with any order progression.
+      //if (!crossValidation)     Cerr << "Warning: \n";
+      //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
+      crossValidation = crossValidNoiseOnly = true;
+      // Main accuracy control is shared expansion order / dictionary size
+      break;
+    case ESTIMATOR_VARIANCE:
+      break;
+    //case GREEDY_REFINEMENT:
+    //  break;
+    }
   }
 
   // --------------------------------
@@ -244,7 +266,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
 		      seed, cv_flag), 
-  multilevRegressCntl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
+  multilevAllocControl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), pilotSamples(pilot)
 {
@@ -487,11 +509,6 @@ void NonDMultilevelPolynomialChaos::core_run()
     multifidelity_expansion(); // from NonDExpansion, includes sanity checks
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS: {
-    if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
-      Cerr << "Error: unsupported solver configuration within "
-	   << "NonDMultilevelPolynomialChaos::core_run()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
     multilevel_regression();
     break;
   }
@@ -702,9 +719,6 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 
 void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
-  // TO DO: set multilevRegressCntl
-  // Requirements for RIP_SAMPLING: L1 regression, CV, ... ?
-  
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
@@ -742,7 +756,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   RealVector agg_var; SizetArray max_sparsity, cardinality;
-  switch (multilevRegressCntl) {
+  switch (multilevAllocControl) {
   case ESTIMATOR_VARIANCE:
     agg_var.sizeUninitialized(num_lev); break;
   case RIP_SAMPLING:
@@ -822,7 +836,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
 
       bool delta = (delta_N_l[lev] > 0);
-      switch (multilevRegressCntl) {
+      switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = agg_var[lev];
 	if (delta) aggregate_variance(agg_var_l);
@@ -847,7 +861,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
     }
 
-    switch (multilevRegressCntl) {
+    switch (multilevAllocControl) {
     case ESTIMATOR_VARIANCE:
       if (iter == 0) { // eps^2 / 2 = var * relative factor
 	eps_sq_div_2 = estimator_var0 * convergenceTol;

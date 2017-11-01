@@ -138,18 +138,18 @@ DataMethodRep::DataMethodRep():
   multilevDiscrepEmulation(DISTINCT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  multilevEstimatorRate(2.), finalMomentsType(STANDARD_MOMENTS),
-  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
-  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
-  samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
-  mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
-  logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
-  posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
-  proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
-  batchSelectionType("naive"), lipschitzType("local"), 
-  calibrateErrorMode(CALIBRATE_NONE), burnInSamples(0), subSamplingPeriod(1),
-  calModelDiscrepancy(false),
-  // numPredConfigs (BMA TODO this is not initialized...)
+  multilevAllocControl(ESTIMATOR_VARIANCE), multilevEstimatorRate(2.),
+  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
+  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
+  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
+  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
+  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
+  posteriorStatsKL(false), posteriorStatsMutual(false),
+  preSolveMethod(SUBMETHOD_DEFAULT), proposalCovUpdates(0),
+  fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
+  lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
+  burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
+  //numPredConfigs (BMA TODO this is not initialized...)
   importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
@@ -286,7 +286,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << multilevEstimatorRate << finalMomentsType << distributionType
+    << multilevAllocControl << multilevEstimatorRate
+    << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
@@ -437,7 +438,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
     >> integrationRefine >> refineSamples >> pilotSamples
-    >> multilevEstimatorRate >> finalMomentsType >> distributionType
+    >> multilevAllocControl >> multilevEstimatorRate
+    >> finalMomentsType >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
     >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
@@ -588,7 +590,8 @@ void DataMethodRep::write(std::ostream& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << multilevEstimatorRate << finalMomentsType << distributionType
+    << multilevAllocControl << multilevEstimatorRate
+    << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder

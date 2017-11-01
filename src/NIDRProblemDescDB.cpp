@@ -6964,6 +6964,8 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+	MP2s(multilevAllocControl,ESTIMATOR_VARIANCE),
+	MP2s(multilevAllocControl,RIP_SAMPLING),
 	MP2s(multilevDiscrepEmulation,DISTINCT_EMULATION),
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration

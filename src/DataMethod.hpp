@@ -931,6 +931,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c allocation_control selection in \ref MethodMultilevelPCE
+  short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
   /// the \c final_moments specification in \ref MethodNonD

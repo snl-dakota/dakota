@@ -307,8 +307,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 }
 
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation using the ProblemDescDB. */
+/** This constructor is called by derived class constructors. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
   NonDExpansion(problem_db, model),
@@ -350,6 +349,9 @@ NonDPolynomialChaos(BaseConstructor, ProblemDescDB& problem_db, Model& model):
 }
 
 
+/** This constructor is called by derived class constructors for lightweight
+    instantiations that employ numerical integration (quadrature, sparse grid,
+    cubature). */
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
@@ -370,6 +372,8 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 }
 
 
+/** This constructor is called by derived class constructors for lightweight
+    instantiations that employ regression (least squares, CS, OLI). */
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, Model& model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,

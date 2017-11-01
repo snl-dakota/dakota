@@ -563,9 +563,16 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY estimator_conv_rate '
-      	     <keyword  id="estimator_rate" name="estimator_rate" code="{N_mdm(Real,multilevEstimatorRate)}" label="estimator_rate" help="" minOccurs="0" default="2" >
-	       <param type="REAL" />
+    <!ENTITY ml_alloc_control '
+      	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
+	       <oneOf label="Multilevel Regression Control">
+		 <keyword  id="estimator_variance" name="estimator_variance" code="{N_mdm(type,multilevAllocControl_ESTIMATOR_VARIANCE)}" label="estimator_variance" help="" >
+		   <keyword  id="estimator_rate" name="estimator_rate" code="{N_mdm(Real,multilevEstimatorRate)}" label="estimator_rate" help="" minOccurs="0" default="2" >
+		     <param type="REAL" />
+		   </keyword>
+		 </keyword>
+		 <keyword  id="rip_sampling" name="rip_sampling" code="{N_mdm(type,multilevAllocControl_RIP_SAMPLING)}" label="rip_sampling" help="" />
+	       </oneOf>
 	     </keyword>
 	     ' >
 
@@ -2265,7 +2272,7 @@
 	  <!-- &pce_refinement; -->
 	  &default_max_iterations;
 	  &ml_pilot_samples;
-	  &estimator_conv_rate;
+	  &ml_alloc_control;
 	  &discrep_emulation;
 	  <oneOf label="Coefficient Computation Approach">
 	    &pce_expansion_order_sequence;

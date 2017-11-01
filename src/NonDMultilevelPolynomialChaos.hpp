@@ -111,7 +111,7 @@ private:
 
   /// type of sample allocation scheme for PCE levels within
   /// multilevel_regression()
-  short multilevRegressCntl;
+  short multilevAllocControl;
 
   /// user specification for expansion_order (array for multifidelity)
   UShortArray expOrderSeqSpec;

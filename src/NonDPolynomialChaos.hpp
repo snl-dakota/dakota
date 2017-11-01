@@ -181,6 +181,13 @@ protected:
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
 
+  /// flag for use of cross-validation for selection of parameter settings
+  /// in regression approaches
+  bool crossValidation;
+  /// flag to restrict cross-validation to only estimate the noise
+  /// tolerance in order to manage computational cost
+  bool crossValidNoiseOnly;
+
   /// user specified import build points file
   String importBuildPointsFile;
   /// user specified import build file format
@@ -225,13 +232,6 @@ private:
   /// seed for random number generator used for regression with LHS
   /// and sub-sampled tensor grids
   int randomSeed;
-
-  /// flag for use of cross-validation for selection of parameter settings
-  /// in regression approaches
-  bool crossValidation;
-  /// flag to restrict cross-validation to only estimate the noise
-  /// tolerance in order to manage computational cost
-  bool crossValidNoiseOnly;
 
   /// noise tolerance for compressive sensing algorithms; vector form used
   /// in cross-validation
