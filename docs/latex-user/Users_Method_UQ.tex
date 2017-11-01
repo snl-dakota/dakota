@@ -2483,7 +2483,7 @@ by John Burkardt.  The DREAM approach runs concurrent chains for
 global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
 sampling~\cite{Vrugt}.  The prototype WASABI method is an MCMC-free
-Bayesian calibration approach based on interval analysis.  QUESO/DRAM
+Bayesian calibration approach.  QUESO/DRAM
 and variants are the most well-developed within Dakota.
 
 \subsection{QUESO}\label{uq:bayesian:queso}
@@ -2618,6 +2618,41 @@ discrepancy model.  Dakota's GPMSA capability is an experimental
 prototype with a number of limitations.  See the Dakota Reference
 Manual~\cite{RefMan} for more information.
 
+\subsection{WASABI}
+WASABI differs from the other Bayesian approaches in that it is 
+not an MCMC-based approach.  Instead, it is based on the idea of 
+``consistent Bayes'' which is outlined in ~\cite{Butler2017}.
+This approach to stochastic inference uses measure-theoretic 
+principles to construct a probability measure or density on model parameters
+that is consistent with the model and the data.  The idea is that
+the probability measure on the parameters, when ``pushed-foward'' through
+the computational model, will give results that match the probability 
+measure on the observational data.  
+
+We use a similar notation as with the Bayesian methods, but the interpretation 
+is different here.  The goal is to identify the posterior density on the 
+parameters, $\pi_{post}({\theta})$, which is equal to the prior density on the 
+parameters times a ratio.  The numerator of the ratio, $\pi_{D}^{obs}$, 
+describes the relative likelihood that the output of the model corresponds 
+to the observed data ${D}$:  this is the density of the data evaluated at 
+the model output.  
+$q(\boldsymbol{\theta})$ refers to the model output.  
+$\pi_{D}^{q_{prior}}$ refers to the push-forward of the prior through the model 
+and represents a forward propagation of uncertainty. 
+\begin{equation}
+\pi_{post}(\boldsymbol{\theta})=\pi_{prior}(\boldsymbol{\theta})\frac{\pi_{D}^{obs}(q(\boldsymbol{\theta}))}{\pi_{D}^{q_{prior}}(q(\boldsymbol{\theta}))}. 
+\label{eq:consistentBayesEq}
+\end{equation}
+
+The Theory Manual~\cite{TheoMan} has more detail about the assumptions and mathematical foundations 
+for this method.  Note a major difference in interpretation of the posterior results with respect to 
+a standard Bayesian approach:  In a standard Bayesian approach, the posterior reflects an updated state 
+of information about the prior distribution on parameter values induced by the observational data.  
+In consistent Bayes, the posterior reflects a stochastic mapping of parameter values such that the posterior 
+parameters, when pushed-forward through the model, give results that are consistent with the density 
+of the observational data. 
+WASABI is a prototype capability.  See the Dakota Reference
+Manual~\cite{RefMan} for more information.
 
 \subsection{Feature Comparison}
 Table~\ref{tab:bayes_comparison} compares the options available 
