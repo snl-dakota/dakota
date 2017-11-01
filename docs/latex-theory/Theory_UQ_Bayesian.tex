@@ -557,9 +557,10 @@ d\boldsymbol{\theta} d\boldsymbol{d}.
 \end{equation}
 
 The mutual information must, therefore, be computed for each candidate design 
-point $\boldsymbol{\xi}_{j}$. Following~\cite{Lew16}, the $k$-nearest 
-neighbor method proposed in~\cite{Kra04} is used to approximate 
-Eq.~\ref{eq:mutual_info}. Within Dakota, the posterior distribution
+point $\boldsymbol{\xi}_{j}$. There are two $k$-nearest neighbor methods 
+available in Dakota that can be used to approximate Eq.~\ref{eq:mutual_info}, 
+both of which are derived in~\cite{Kra04}. Within Dakota, the posterior 
+distribution 
 $f_{\boldsymbol{\Theta | D}}\left(\boldsymbol{\theta | d(\xi)}\right)$ is given
 by MCMC samples. From these, $N$ samples are drawn and run through the
 low-fidelity model with $\boldsymbol{\xi}_{j}$ fixed. This creates a matrix 
@@ -569,19 +570,55 @@ model responses $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i},
 represent the joint distribution between the parameters and model responses. 
 For each row $X_{i}$, the distance to its $k^{th}$-nearest neighbor among the 
 other rows is approximated $\varepsilon_{i} = \| X_{i} - X_{k(i)} \|_{\infty}$. 
-Then the marginal distributions are considered by calculating  
-$n_{\boldsymbol{\theta}}$, which  is the number of parameter samples that lie 
-within $\varepsilon_{i}$ of $\boldsymbol{\theta}^{i}$, and 
-$n_{\boldsymbol{d}}$, which is the number of responses that lie within 
+As noted in~\cite{Lew16}, $k$ is often taken to be six. The treatment of the 
+marginal distributions is where the two mutual information algorithms differ. 
+In the first algorithm, the marginal distributions are considered by 
+calculating $n_{\boldsymbol{\theta},i}$, which is the number of parameter 
+samples that lie within $\varepsilon_{i}$ of $\boldsymbol{\theta}^{i}$, and 
+$n_{\boldsymbol{d},i}$, which is the number of responses that lie within 
 $\varepsilon_{i}$ of $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, 
-\boldsymbol{\xi}_{j})$. The mutual information is approximated as~\cite{Kra04}
+\boldsymbol{\xi}_{j})$. The mutual information then is approximated 
+as~\cite{Kra04}
 \begin{equation}
+\label{eq:ksg1}
 I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
 \psi(k) + \psi(N) - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
-\psi(n_{\boldsymbol{\theta}}+1) - \psi(n_{\boldsymbol{d}}+1) \right],
+\psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right],
 \end{equation}
-where $\psi(\cdot)$ is the digamma function. As noted in~\cite{Lew16}, $k$ is
-often taken to be six.
+where $\psi(\cdot)$ is the digamma function. 
+
+In the second mutual information approximation method, $X_{i}$ and all of 
+its $k$-nearest neighbors such that $\| X_{i} - X_{l} \|_{\infty} < 
+\varepsilon_{i}$ are projected into the marginal subspaces for 
+$\boldsymbol{\theta}$ and $\tilde{\boldsymbol{d}}$. The quantity 
+$\varepsilon_{\boldsymbol{\theta},i}$ is then defined as the radius of the 
+$l_{\infty}$-ball containing all $k+1$ projected values of 
+$\boldsymbol{\theta}_{l}$. Similarly, $\varepsilon_{\boldsymbol{d},i}$ is 
+defined as the radius of the $l_{\infty}$-ball containing all $k+1$ projected 
+values of $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}_{l}, 
+\boldsymbol{\xi}_{j})$~\cite{Gao14}. In this version of the mutual information 
+calculation, $n_{\boldsymbol{\theta},i}$ is the number of parameter samples 
+that lie within $\varepsilon_{\boldsymbol{\theta},i}$ of 
+$\boldsymbol{\theta}^{i}$, and $n_{\boldsymbol{d},i}$ is the number of 
+responses that lie within $\varepsilon_{\boldsymbol{d}, i}$ of 
+$\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, \boldsymbol{\xi}_{j})$. 
+The mutual information then is approximated as~\cite{Kra04}
+\begin{equation}
+\label{eq:ksg2}
+I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
+\psi(k) + \psi(N) - \frac{1}{k} - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
+\psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right].
+\end{equation}
+
+By default, Dakota uses Eq.~\ref{eq:ksg1} to approximate the mutual
+information. The user may decide to use Eq.~\ref{eq:ksg2} by including the
+keyword \texttt{ksg2} in the Dakota input script. An example can be found 
+in~\cite{RefMan}. Users also have the option of specifying statistical noise
+in the low-fidelity model through the \texttt{simulation\_variance} keyword.
+When this option is included in the Dakota input file, a random ``error" is
+added to the low-fidelity model responses when the matrix $X$ is built. This
+random error is normally distributed, with variance equal to
+\texttt{simulation\_variance}.
 
 Once the optimal design $\boldsymbol{\xi}^{*}$ is identified, it is run 
 through the high-fidelity model to produce a new data point $\boldsymbol{d}(

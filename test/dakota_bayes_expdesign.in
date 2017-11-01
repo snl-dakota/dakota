@@ -33,6 +33,7 @@ method,
 	  num_candidates = 2
 #	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
 #		freeform						#s2
+#	  #ksg2						#s2
 	  max_hifi_evaluations = 1
           model_pointer = 'HIERARCH'
  
@@ -99,8 +100,8 @@ responses,
 #	  num_config_variables = 1				#s1,#s2
 #	  num_experiments = 2				        #s2	
 #	  num_experiments = 1					#s1
-#	  variance_type = 'none'				#s1,#s2
-	  #variance_type = 'scalar'
+#	  experiment_variance_type = 'none'			#s1,#s2
+	  #experiment_variance_type = 'scalar'
 	no_gradients	
 	no_hessians
 #	simulation_variance = 0.5			#s4
