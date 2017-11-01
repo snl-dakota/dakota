@@ -11,16 +11,11 @@ set(CMAKE_MODULE_PATH
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
 
-# Require C++11 at a minimum, but allow newer standards
-# Do this prior to other flag settings below
-if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-  set(CMAKE_CXX_STANDARD 11 CACHE STRING "Dakota strictly requires C++11 or better")
-endif()
-if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
-  set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
-    "Dakota prefers not to use compiler-specific C++ extensions")
-endif()
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "Dakota strictly requires C++11 or better")
+message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
+
+# Dakota requires C++11
+include(DakotaCxxOptions)
+dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
@@ -243,6 +238,7 @@ endif()
 # Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
+dakota_check_cxx11()
 enable_language(Fortran)
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
