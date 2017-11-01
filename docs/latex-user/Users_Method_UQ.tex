@@ -2439,7 +2439,7 @@ where $\boldsymbol{r}$ is the vector of residuals between the data
 points and the model quantity of interest,
 $q(\boldsymbol{\theta})-\boldsymbol{d}$.
 
-Dakota admits four \texttt{variance\_type} options to specify the
+Dakota admits four \texttt{experiment\_variance\_type} options to specify the
 measurement error covariance: \texttt{none} for no measurement error
 specified (in this case, the variance is assumed to be one),
 \texttt{scalar} where a constant value ${\sigma_d}^2$ is given for all
@@ -2564,7 +2564,8 @@ and contain the next experimental or simulated observation with the specified
 probability. Further details can be found in \cite{Smith2013}. If
 \texttt{probability\_levels} is specified, credible intervals will always be 
 calculated. Prediction intervals will only be calculated if 
-\texttt{variance\_type} is also specified in the \texttt{response} block. 
+\texttt{experiment\_variance\_type} is also specified in the \texttt{responses} 
+block. 
 By specifying \texttt{posterior\_stats}, information-theoretic metrics may be 
 calculated using the posterior distribution of parameters. If the 
 \texttt{kl\_divergence} option is selected, the Kullback-Leibler Divergence
@@ -3004,26 +3005,42 @@ block. In this case, \texttt{num\_config\_variables} should be specified and
 set to the number of configuration variables captured in the \texttt{variables} 
 blocks. Furthermore, for use in Bayesian experimental design, 
 \texttt{calibration\_data\_file} should contain the configuration variables 
-and the corresponding high-fidelity model responses; variance information is
-not yet supported. If the number of points taken from this file is less than 
-\texttt{initial\_samples}, or if no such file is provided, Latin Hypercube 
-Sampling is used to draw samples of the design space, and the high-fidelity 
-model is run at these points to supplement the user-specified data. After this 
-initial calibration, a set of design conditions (i.e.\ configuration 
-variables) of size \texttt{num\_candidates} is proposed. Users may specify 
-these candidate points through the \texttt{import\_candidate\_points\_file} 
-command. Again, if the number of points in this file is less than 
-\texttt{num\_candidates}, or if no such file is provided, Latin Hypercube 
-Sampling is used to draw samples of the design space.  
+and the corresponding high-fidelity model responses. Scalar variance 
+information may be included for the calibration data through the use of the 
+\texttt{experimental\_variance\_type} or \texttt{simulation\_variance} command 
+within the high-fidelity \texttt{responses} block. The former is applied to any 
+user-provided data, such as through the \texttt{calibration\_data\_file} 
+keyword, while the latter applies only to those high-fidelity model responses 
+produced by the high-fidelity code run by Dakota. Further information can be 
+found in the Dakota Reference Manual~\cite{RefMan}. If the number of points 
+taken from this file is less than \texttt{initial\_samples}, or if no such 
+file is provided, Latin Hypercube Sampling is used to draw samples of the 
+design space, and the high-fidelity model is run at these points to supplement
+the user-specified data. After this initial calibration, a set of design 
+conditions (i.e.\ configuration variables) of size \texttt{num\_candidates} is 
+proposed. Users may specify these candidate points through the 
+\texttt{import\_candidate\_points\_file} command. Again, if the number of 
+points in this file is less than \texttt{num\_candidates}, or if no such file 
+is provided, Latin Hypercube Sampling is used to draw samples of the design 
+space.  
 
 From these candidate designs, that which maximizes the mutual information with
 respect to the low-fidelity model parameters is deemed ``optimal." The mutual
-information is approximated using the low-fidelity model and the $k$-nearest
-neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed in~\cite{Lew16}
-and the Dakota Theory Manual~\cite{TheoMan}. This optimal design is used in the
-high-fidelity model to create a new observation, which is appended to the 
+information is approximated using the low-fidelity model and a $k$-nearest
+neighbor algorithm, as detailed in~\cite{Lew16}. This optimal design is used in 
+the high-fidelity model to create a new observation, which is appended to the 
 initial data. This updated data is used to recalculate the Bayesian posterior,
 and the process repeats until one of three stopping criteria are met.
+There are two algorithms that may be used to calculate the mutual information,
+both of which are derived in~\cite{Kra04}. The first algorithm discussed 
+therein is used as the default algorithm within Dakota; the second may be 
+selected by including the keyword \texttt{ksg2} in the Dakota input script. 
+Furthermore, the user may choose to include, during the computation of the 
+mutual information, a stochastic error term on the low-fidelity model 
+responses. This is done by specifying \texttt{simulation\_variance} in the 
+\texttt{responses} block corresponding to the low-fidelity model. See the 
+Dakota Theory Manual~\cite{TheoMan} for more information regarding the 
+implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete. 
 The user may specify \texttt{max\_hifi\_evaluations}, which limits the number 

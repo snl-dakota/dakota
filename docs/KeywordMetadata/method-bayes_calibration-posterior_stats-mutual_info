@@ -1,3 +1,50 @@
 Blurb::
-This capability is currently inactive
+Calculate the mutual information between
 
+Description::
+The mutual information quantifies how much information two random variables 
+contain about each other. It is a measure of the mutual dependence of two
+random variables. The mutual information is a non-negative measure, with zero
+representing complete independence of the two random variables. For continuous 
+random variables \f$X\f$ and \f$Y\f$, the mutual information is
+
+\f[
+I(X,Y) = \int \int p(x,y) \log \frac{ p(x,y) }{ p(x)p(y) } dx dy. 
+\f]
+
+The mutual information can also be interpreted as the reduction in
+uncertainty of one random variable due to the knowledge of another. By 
+specifying, \c mutual_info, the mutual information between the posterior 
+parameters and the prior parameters is calculated.
+
+The mutual information is calculated using a \f$k\f$-nearest neighbor
+approximation algorithm. As of Dakota 6.6, there are two such algorithms
+available, both of which are derived in \cite Kra04 . By default, Dakota uses
+the first such algorithm; the second may be selected by specifying the keyword
+\c ksg2. Further details can be found in the Dakota Theory Manual 
+\cite TheoMan .
+
+<b> Expected Output </b>
+
+If \c mutual_information is specified, the calculated value will be reported
+to the screen at the end of the calibration.
+
+<b> Additional Discussion </b>
+
+Due to the necessary approximation of the multidimensional integral above, a 
+negative mutual information may be reported for applications whose true value 
+is close to or equal to zero.
+As of Dakota 6.6, mutual information calculations are primarily used in the
+implementation of the \ref method-bayes_calibration-experimental_design 
+algorithm.
+
+Examples::
+
+\verbatim
+method
+	bayes_calibration queso
+	  dram
+	  seed = 34785
+	  chain_samples = 1000
+	  posterior_stats mutual_info 
+\endverbatim

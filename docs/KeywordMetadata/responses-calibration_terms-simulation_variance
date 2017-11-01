@@ -4,7 +4,7 @@ Variance applied to simulation responses
 Description::
 The variance that is applied to simulations run by Dakota, i.e. using the
 \c analysis_drivers command. The user may supply a single variance
-or a vector of responses of length equal to the number of responses. In both 
+or a vector of variances of length equal to the number of responses. In both 
 cases, the values provided are treated as scalar variance types. If a single 
 variance is provided, it is applied to all responses produced by the 
 simulation code. If a vector is provided, each variance is applied to the
