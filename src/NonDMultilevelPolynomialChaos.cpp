@@ -661,26 +661,30 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
     update_sampler = true; break;
   default: // regression
     update_exp = update_sampler = true;
-    if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
-      update_from_ratio = true;
+    // fix the basis cardinality in the case of RIP_SAMPLING
+    if (multilevAllocControl != RIP_SAMPLING) {
+      if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
+	update_from_ratio = true;
+      else // config via collocation pts sequence not supported
+	err_flag = true;
+    }
     break;
   }
 
   if (update_exp) {
-    if (update_from_ratio) {
-      //increment_order_from_grid(); // need total samples
-      unsigned short exp_order = (lev < expOrderSeqSpec.size()) ?
-	expOrderSeqSpec[lev] : expOrderSeqSpec.back();
-      // reset lower bound for each level
-      UShortArray exp_orders;
-      config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+    //increment_order_from_grid(); // need total samples
+    unsigned short exp_order = (lev < expOrderSeqSpec.size()) ?
+      expOrderSeqSpec[lev] : expOrderSeqSpec.back();
+    // reset lower bound for each level
+    UShortArray exp_orders;
+    config_expansion_orders(exp_order, dimPrefSpec, exp_orders);
+
+    if (update_from_ratio) // update the exp_orders based on total_samp
       ratio_samples_to_order(collocRatio, total_samp, exp_orders, false);
-      SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
-	uSpaceModel.shared_approximation().data_rep();
-      shared_data_rep->expansion_order(exp_orders);
-    }
-    else
-      err_flag = true;
+
+    SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+      uSpaceModel.shared_approximation().data_rep();
+    shared_data_rep->expansion_order(exp_orders);
   }
 
   // udpate sampler settings (NonDQuadrature or NonDSampling)
@@ -755,13 +759,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   size_t iter = 0, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
-  RealVector agg_var; SizetArray max_sparsity, cardinality;
-  switch (multilevAllocControl) {
-  case ESTIMATOR_VARIANCE:
-    agg_var.sizeUninitialized(num_lev); break;
-  case RIP_SAMPLING:
-    max_sparsity.resize(num_lev); cardinality.resize(num_lev); break;
-  }
+  RealVector level_metric(num_lev); SizetArray cardinality;
+  if (multilevAllocControl == RIP_SAMPLING) cardinality.resize(num_lev);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
@@ -838,7 +837,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       bool delta = (delta_N_l[lev] > 0);
       switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
-	Real& agg_var_l = agg_var[lev];
+	Real& agg_var_l = level_metric[lev];
 	if (delta) aggregate_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
 	  std::pow(lev_cost, kappaEstimatorRate), 1./(kappaEstimatorRate+1.));
@@ -846,8 +845,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
 	break;
       }
-      case RIP_SAMPLING:
-	if (delta) sparsity_metrics(max_sparsity[lev], cardinality[lev]);
+      case RIP_SAMPLING: // use RMS of sparsity across QoI
+	if (delta) sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
 	break;
       }
 
@@ -868,11 +867,11 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
       }
-      compute_sample_increment(agg_var, cost, sum_root_var_cost, eps_sq_div_2,
-			       NLev, delta_N_l);
+      compute_sample_increment(level_metric, cost, sum_root_var_cost,
+			       eps_sq_div_2, NLev, delta_N_l);
       break;
     case RIP_SAMPLING:
-      compute_sample_increment(max_sparsity, cardinality, NLev, delta_N_l);
+      compute_sample_increment(cardinality, level_metric, NLev, delta_N_l);
       break;
     }
     ++iter;
@@ -914,26 +913,30 @@ void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 }
 
 
+/* Retrieve basis cardinality and compute power mean of sparsity
+   (common power values: 1 = average, 2 = root mean square). */
 void NonDMultilevelPolynomialChaos::
-sparsity_metrics(size_t& max_sparsity_l, size_t& cardinality_l)
+sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l,
+		 Real power)
 {
   // case RIP_SAMPLING:
 
-  max_sparsity_l = 0;
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
   cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  Real sum = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
       = (PecosApproximation*)poly_approxs[qoi].approx_rep();
     size_t sparsity_l = poly_approx_q->sparsity();
-    if (sparsity_l > max_sparsity_l)
-      max_sparsity_l = sparsity_l;
-    if (outputLevel >= DEBUG_OUTPUT)
+    sum += std::pow((Real)sparsity_l, power);
+    //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
   }
+  sparsity_metric_l = std::pow(sum / numFunctions, 1. / power);
 }
 
 
@@ -986,8 +989,8 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 
 
 void NonDMultilevelPolynomialChaos::
-compute_sample_increment(const SizetArray& sparsity,
-			 const SizetArray& cardinality, const SizetArray& N_l,
+compute_sample_increment(const SizetArray& cardinality,
+			 const RealVector& sparsity, const SizetArray& N_l,
 			 SizetArray& delta_N_l)
 {
   // case RIP_SAMPLING:
@@ -995,8 +998,9 @@ compute_sample_increment(const SizetArray& sparsity,
   // update targets based on sparsity estimates
   Real new_N_l, s, card; size_t lev, num_lev = N_l.size();
   for (lev=0; lev<num_lev; ++lev) {
-    s = (Real)sparsity[lev]; card = (Real)cardinality[lev];
-    new_N_l = s * std::pow(std::log(s), 3.) * std::log(card);//s log^3(s) log(C)
+    s = sparsity[lev]; card = (Real)cardinality[lev];
+    // RIP samples ~= s log^3(s) log(C)
+    new_N_l = s * std::pow(std::log(s), 3.); //* std::log(card);
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
     // TO DO: apply an under-relaxation / homotopy parameter ?
     // > sparsity estimates may tend to grow as increased samples drive
