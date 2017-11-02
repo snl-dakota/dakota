@@ -100,11 +100,20 @@ protected:
 				Real eps_sq_div_2, const SizetArray& N_l,
 				SizetArray& delta_N_l);
   /// compute delta_N_l for RIP_SAMPLING case
-  void compute_sample_increment(const SizetArray& cardinality,
+  void compute_sample_increment(const SizetArray& cardinality, Real factor,
 				const RealVector& sparsity,
 				const SizetArray& N_l, SizetArray& delta_N_l);
 
 private:
+
+  //
+  //- Heading: Utility functions
+  //
+
+  /// scale sample profile new_N_l to retain shape while enforcing an upper
+  /// bound of cardinality * factor
+  void scale_profile(const SizetArray& cardinality, Real factor,
+		     RealVector& new_N_l);
 
   //
   //- Heading: Data

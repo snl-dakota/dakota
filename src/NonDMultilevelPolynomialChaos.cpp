@@ -139,6 +139,9 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       //if (!crossValidNoiseOnly) Cerr << "Warning: \n";
       crossValidation = crossValidNoiseOnly = true;
       // Main accuracy control is shared expansion order / dictionary size
+
+      // TO DO:
+      // 
       break;
     case ESTIMATOR_VARIANCE:
       break;
@@ -508,10 +511,9 @@ void NonDMultilevelPolynomialChaos::core_run()
     multifid_uq = true;
     multifidelity_expansion(); // from NonDExpansion, includes sanity checks
     break;
-  case MULTILEVEL_POLYNOMIAL_CHAOS: {
+  case MULTILEVEL_POLYNOMIAL_CHAOS:
     multilevel_regression();
     break;
-  }
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
 	 << "core_run()" << std::endl;
@@ -871,7 +873,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 			       eps_sq_div_2, NLev, delta_N_l);
       break;
     case RIP_SAMPLING:
-      compute_sample_increment(cardinality, level_metric, NLev, delta_N_l);
+      compute_sample_increment(cardinality, 2., level_metric, NLev, delta_N_l);
       break;
     }
     ++iter;
@@ -989,24 +991,48 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
 
 
 void NonDMultilevelPolynomialChaos::
-compute_sample_increment(const SizetArray& cardinality,
+compute_sample_increment(const SizetArray& cardinality, Real factor,
 			 const RealVector& sparsity, const SizetArray& N_l,
 			 SizetArray& delta_N_l)
 {
   // case RIP_SAMPLING:
 
   // update targets based on sparsity estimates
-  Real new_N_l, s, card; size_t lev, num_lev = N_l.size();
+  Real s/*, card*/; size_t lev, num_lev = N_l.size();
+  RealVector new_N_l(num_lev, false);
   for (lev=0; lev<num_lev; ++lev) {
-    s = sparsity[lev]; card = (Real)cardinality[lev];
-    // RIP samples ~= s log^3(s) log(C)
-    new_N_l = s * std::pow(std::log(s), 3.); //* std::log(card);
-    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
-    // TO DO: apply an under-relaxation / homotopy parameter ?
-    // > sparsity estimates may tend to grow as increased samples drive
-    //   larger candidate exp orders / dictionaries
-    // > see if this naturally provides an under-relaxation-like effect
+    s = sparsity[lev]; //card = (Real)cardinality[lev];
+    // RIP samples ~= s log^3(s) log(C), but we are more interested in the shape
+    // of the profile, since the actual values are conservative upper bounds
+    // --> can omit constant terms that don't affect shape, e.g. log(C)
+    new_N_l[lev] = s * std::pow(std::log(s), 3.); //* std::log(card);
   }
+
+  // Sparsity estimates tend to grow for compressible QoI as increased samples
+  // drive increased accuracy in less important terms --> CV scores improve for
+  // dense solutions.  To control this effect, we retain the shape of the
+  // profile but enforce an upper bound on one of the levels.
+  scale_profile(cardinality, factor, new_N_l); // bound = cardinality * factor
+
+  for (lev=0; lev<num_lev; ++lev)
+    delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l[lev]);
+}
+
+
+void NonDMultilevelPolynomialChaos::
+scale_profile(const SizetArray& cardinality, Real factor, RealVector& new_N_l)
+{
+  size_t lev, num_lev = cardinality.size();
+  Real curr_factor, max_curr_factor = 0., factor_ratio;
+  for (lev=0; lev<num_lev; ++lev) {
+    curr_factor = new_N_l[lev] / cardinality[lev];
+    if (curr_factor > max_curr_factor)
+      max_curr_factor = curr_factor;
+  }
+  factor_ratio = factor / max_curr_factor;
+  if (factor_ratio < 1.) // exceeds upper bound -> scale back
+    for (lev=0; lev<num_lev; ++lev)
+      new_N_l[lev] *= factor_ratio;
 }
 
 
