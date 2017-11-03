@@ -162,11 +162,27 @@ protected:
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
-  void multifidelity_expansion();
+  void multifidelity_expansion(short refine_type);
+  /// construct a multifidelity expansion, across model forms or
+  /// discretization levels
+  void greedy_multifidelity_expansion();
+
+  /// configure fidelity counts from model hierarchy
+  void configure_mf_hierarchy(size_t& num_fid, size_t& model_form,
+			      bool& multilevel);
+  /// configure level counts from model hierarchy
+  void configure_ml_hierarchy(size_t& num_lev, size_t& model_form,
+			      bool& multilevel, RealVector& cost);
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
   void refine_expansion(size_t index = _NPOS);
+  /// initialization of expansion refinement, if necessary
+  void pre_refinement(size_t index);
+  /// advance the refinement strategy one step
+  void core_refinement(size_t index, Real& metric);
+  /// finalization of expansion refinement, if necessary
+  void post_refinement(size_t index, Real& metric);
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);

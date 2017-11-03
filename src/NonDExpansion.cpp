@@ -905,83 +905,17 @@ void NonDExpansion::refine_expansion(size_t index)
   size_t i, iter = 1,
     max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   bool converged = (iter > max_refine);
-  Real metric;
 
   // post-process nominal expansion
   if (!converged)
     annotated_refinement_results(true); // includes initialization of traces
 
-  // initialize refinement algorithms (if necessary)
-  switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-    initialize_sets(); break;
-  }
+  pre_refinement(index);
 
+  Real metric;
   while (!converged) {
 
-    switch (refineControl) {
-    case Pecos::UNIFORM_CONTROL:
-      switch (expansionCoeffsApproach) {
-      case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
-      case Pecos::HIERARCHICAL_SPARSE_GRID: {
-	// ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
-	NonDIntegration* nond_integration = (NonDIntegration*)
-	  uSpaceModel.subordinate_iterator().iterator_rep();
-	nond_integration->increment_grid(); // TPQ or SSG
-	update_expansion(index);
-	break;
-      }
-      case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
-      case Pecos::SVD_LEAST_SQ_REGRESSION:
-      case Pecos::EQ_CON_LEAST_SQ_REGRESSION:
-      case Pecos::BASIS_PURSUIT:        case Pecos::BASIS_PURSUIT_DENOISING:
-      case Pecos::ORTHOG_MATCH_PURSUIT: case Pecos::LASSO_REGRESSION:
-      case Pecos::LEAST_ANGLE_REGRESSION:
-	// ramp expansion order and update regression samples, keeping
-	// initial collocation ratio (either user specified or inferred)
-	increment_order_and_grid(); // virtual fn defined for NonDPCE
-	update_expansion(index); // invokes uSpaceModel.build_approximation()
-	break;
-      }
-      metric = compute_covariance_metric();
-      break;
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
-      // Dimension adaptive refinement: define anisotropic preference
-      // vector from total Sobol' indices, averaged over response fn set.
-      RealVector dim_pref;
-      reduce_total_sobol_sets(dim_pref);
-      // incrementing grid & updating aniso wts best performed together
-      NonDIntegration* nond_integration = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
-      update_expansion(index);
-      metric = compute_covariance_metric();
-      break;
-    }
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
-      // Dimension adaptive refinement: define anisotropic weight vector
-      // from min of spectral decay rates (PCE only) over response fn set.
-      RealVector aniso_wts;
-      reduce_decay_rate_sets(aniso_wts);
-      // incrementing grid & updating aniso wts best performed together
-      NonDIntegration* nond_integration = (NonDIntegration*)
-	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-      update_expansion(index);
-      metric = compute_covariance_metric();
-      break;
-    }
-    case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-      // Dimension adaptive refinement using generalized sparse grids.
-      // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
-      //   most efficient if fully nested; otherwise, unique points from
-      //   lowest levels may not contribute (smolyak coeff = 0).
-      // > Starting GSG from TPQ is conceptually straightforward but
-      //   awkward in implementation (would need something like
-      //   nond_sparse->ssg_driver->compute_tensor_grid()).
-      metric = increment_sets(); // SSG only
-      break;
-    }
+    core_refinement(index, metric);
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
     if (!converged)
@@ -989,6 +923,90 @@ void NonDExpansion::refine_expansion(size_t index)
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
 
+  post_refinement(index, metric);
+}
+
+
+void NonDExpansion::pre_refinement(size_t index)
+{
+  // initialize refinement algorithms (if necessary)
+  switch (refineControl) {
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+    initialize_sets(); break;
+  }
+}
+
+
+void NonDExpansion::core_refinement(size_t index, Real& metric)
+{
+  switch (refineControl) {
+  case Pecos::UNIFORM_CONTROL:
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+    case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+      NonDIntegration* nond_integration = (NonDIntegration*)
+	uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_integration->increment_grid(); // TPQ or SSG
+      update_expansion(index);
+      break;
+    }
+    case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
+    case Pecos::SVD_LEAST_SQ_REGRESSION:
+    case Pecos::EQ_CON_LEAST_SQ_REGRESSION:
+    case Pecos::BASIS_PURSUIT:        case Pecos::BASIS_PURSUIT_DENOISING:
+    case Pecos::ORTHOG_MATCH_PURSUIT: case Pecos::LASSO_REGRESSION:
+    case Pecos::LEAST_ANGLE_REGRESSION:
+      // ramp expansion order and update regression samples, keeping
+      // initial collocation ratio (either user specified or inferred)
+      increment_order_and_grid(); // virtual fn defined for NonDPCE
+      update_expansion(index); // invokes uSpaceModel.build_approximation()
+      break;
+    }
+    metric = compute_covariance_metric();
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
+    // Dimension adaptive refinement: define anisotropic preference
+    // vector from total Sobol' indices, averaged over response fn set.
+    RealVector dim_pref;
+    reduce_total_sobol_sets(dim_pref);
+    // incrementing grid & updating aniso wts best performed together
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
+    update_expansion(index);
+    metric = compute_covariance_metric();
+    break;
+  }
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
+    // Dimension adaptive refinement: define anisotropic weight vector
+    // from min of spectral decay rates (PCE only) over response fn set.
+    RealVector aniso_wts;
+    reduce_decay_rate_sets(aniso_wts);
+    // incrementing grid & updating aniso wts best performed together
+    NonDIntegration* nond_integration = (NonDIntegration*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
+    update_expansion(index);
+    metric = compute_covariance_metric();
+    break;
+  }
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+    // Dimension adaptive refinement using generalized sparse grids.
+    // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
+    //   most efficient if fully nested; otherwise, unique points from
+    //   lowest levels may not contribute (smolyak coeff = 0).
+    // > Starting GSG from TPQ is conceptually straightforward but
+    //   awkward in implementation (would need something like
+    //   nond_sparse->ssg_driver->compute_tensor_grid()).
+    metric = increment_sets(); // SSG only
+    break;
+  }
+}
+
+
+void NonDExpansion::post_refinement(size_t index, Real& metric)
+{
   // finalize refinement algorithms (if necessary)
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
@@ -997,39 +1015,79 @@ void NonDExpansion::refine_expansion(size_t index)
   }
 }
 
-
-void NonDExpansion::multifidelity_expansion()
+  
+void NonDExpansion::
+configure_mf_hierarchy(size_t& num_fid, size_t& model_form, bool& multilevel)
 {
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  size_t num_fid, num_mf = iteratedModel.subordinate_models(false).size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(), model_form;
-  bool multilevel;
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter = --ordered_models.end(); // HF model
+  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
   if (num_mf > 1) {
     multilevel = false; num_fid = num_mf;
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::multifidelity_expansion().\n";
+	   << "NonDExpansion::configure_mf_hierarchy().\n";
   }
   else if (num_hf_lev > 1)
     { multilevel = true; num_fid = num_hf_lev; model_form = 0;/* num_mf-1 */ }
   else {
     Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "multifidelity_expansion()." << std::endl;
+	 << "configure_mf_hierarchy()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
 
-  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  size_t i, im1, index = (recursive) ? 0 : _NPOS;
+  
+void NonDExpansion::
+configure_ml_hierarchy(size_t& num_lev, size_t& model_form, bool& multilevel,
+		       RealVector& cost)
+{
+  // Allow either model forms or discretization levels, but not both
+  // (discretization levels take precedence)
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter = --ordered_models.end(); // HF model
+  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
+  if (num_hf_lev > 1) {
+    multilevel = true; num_lev = num_hf_lev; model_form = num_mf - 1;
+    cost = m_iter->solution_level_costs();
+    if (num_mf > 1)
+      Cerr << "Warning: multiple model forms will be ignored in "
+	   << "NonDExpansion::configure_ml_hierarchy().\n";
+  }
+  else if (num_mf > 1) {
+    multilevel = false; num_lev = num_mf;
+    cost.sizeUninitialized(num_mf);
+    m_iter = ordered_models.begin();
+    for (size_t i=0; i<num_mf; ++i, ++m_iter)
+      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+  }
+  else {
+    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
+      << "configure_ml_hierarchy()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+void NonDExpansion::multifidelity_expansion(short refine_type)
+{
+  // Allow either model forms or discretization levels, but not both
+  // (model form takes precedence)
+  size_t num_fid, form;
+  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  configure_mf_hierarchy(num_fid, form, multilev);
 
   // ordered_model_fidelities is from low to high --> initial expansion is LF
   iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  if (multilevel) iteratedModel.truth_model_indices(model_form, 0);
-  else            iteratedModel.truth_model_indices(0);
+  if (multilev) iteratedModel.truth_model_indices(form, 0);
+  else          iteratedModel.truth_model_indices(0);
 
   // initial low fidelity/lowest discretization expansion
+  size_t i, im1, index = (recursive) ? 0 : _NPOS;
   compute_expansion(index);  // nominal LF expansion from input spec
-  if (refineType)
+  if (refine_type)
     refine_expansion(index); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
@@ -1052,9 +1110,9 @@ void NonDExpansion::multifidelity_expansion()
     increment_specification_sequence();
 
     // set hierarchical indices for single and paired model evaluations
-    if (multilevel) {
-      if (!recursive) iteratedModel.surrogate_model_indices(model_form, im1);
-      iteratedModel.truth_model_indices(model_form, i);
+    if (multilev) {
+      if (!recursive) iteratedModel.surrogate_model_indices(form, im1);
+      iteratedModel.truth_model_indices(form, i);
     }
     else {
       if (!recursive) iteratedModel.surrogate_model_indices(im1);
@@ -1064,7 +1122,7 @@ void NonDExpansion::multifidelity_expansion()
     // form the expansion for level i
     index = (recursive) ? i : _NPOS;
     update_expansion(index);   // nominal discrepancy expansion from input spec
-    if (refineType)
+    if (refine_type)
       refine_expansion(index); // uniform/adaptive refinement
 
     Cout << "\n-------------------------------------------"
@@ -1076,6 +1134,22 @@ void NonDExpansion::multifidelity_expansion()
 
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
+}
+
+
+void NonDExpansion::greedy_multifidelity_expansion()
+{
+  // Generate MF reference expansion that is starting pt for greedy refinement:
+  multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
+
+  bool converged = false;
+  while (!converged) {
+    // Generate candidates at each level -- use refine_expansion_core() ?
+    // > Need to be able to push / pop each refinement type for each level!
+    // > Expand (unify?) saved / stored capabilities
+
+    // Evaluate candidates and select most cost effective level refinement
+  }
 }
 
 

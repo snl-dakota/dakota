@@ -188,33 +188,16 @@ void NonDMultilevelStochCollocation::core_run()
 {
   initialize_expansion();
 
-  /* *** TO DO: *** sanity checks;  Allow model forms?
-  size_t num_mf = iteratedModel.subordinate_models(false).size(),
-     num_hf_lev = iteratedModel.truth_model().solution_levels();
-     // for now, only SimulationModel supports solution_levels()
-  if (num_mf > 1 && num_hf_lev == 1)                     // multifidelity PCE
-    NonDExpansion::multifidelity_expansion();
-  else if (num_mf == 1 && num_hf_lev > 1 &&              // multilevel LLS/CS
-	   expansionCoeffsApproach >= Pecos::DEFAULT_REGRESSION) {
-
-  }
-  else {
-    Cerr << "Error: unsupported combination of fidelities and levels within "
-	 << "NonDMultilevelStochCollocation::core_run()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  */
-
+  bool multifid_uq = true, greedy = false;
   switch (methodName) {
   case MULTIFIDELITY_STOCH_COLLOCATION:
-    multifidelity_expansion(); // from NonDExpansion
+    if (greedy) greedy_multifidelity_expansion();    // from NonDExpansion
+    else        multifidelity_expansion(refineType); // from NonDExpansion
     break;
-  // case MULTILEVEL_STOCH_COLLOCATION:
-  //   if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //     recursive_sparse_grid(0);
-  //   else
-  //     multilevel_sparse_grid(0);
-  //   break;
+  //case MULTILEVEL_STOCH_COLLOCATION:
+  //  multifid_uq = false;
+  //  multilevel_sparse_grid();                  // specific to this class
+  //  break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelStochCollocation::"
 	 << "core_run()" << std::endl;
@@ -222,9 +205,10 @@ void NonDMultilevelStochCollocation::core_run()
     break;
   }
 
-  // generate final results
-  Cout << "\n----------------------------------------------------"
-       << "\nMultifidelity UQ: approximated high fidelity results"
+  Cout << "\n----------------------------------------------------\n";
+  if (multifid_uq) Cout << "Multifidelity UQ: ";
+  else             Cout <<    "Multilevel UQ: ";
+  Cout << "approximated high fidelity results"
        << "\n----------------------------------------------------\n\n";
   annotated_results(); // full set of statistics and debug traces (default)
   if (!summaryOutputFlag) // post_run() output is suppressed, leading to

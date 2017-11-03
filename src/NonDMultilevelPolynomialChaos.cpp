@@ -505,14 +505,15 @@ void NonDMultilevelPolynomialChaos::core_run()
   //   >> want to support import for MF PCE as well, including future
   //      adaptive MF PCE.
 
-  bool multifid_uq = false;
+  bool multifid_uq = false, greedy = false;
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    multifidelity_expansion(); // from NonDExpansion, includes sanity checks
+    if (greedy) greedy_multifidelity_expansion();    // from NonDExpansion
+    else        multifidelity_expansion(refineType); // from NonDExpansion
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    multilevel_regression();
+    multilevel_regression();                     // specific to this class
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
@@ -727,38 +728,16 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  size_t form, num_mf = ordered_models.size();
-  ModelLIter   m_iter = ordered_models.begin();
-  std::advance(m_iter, num_mf - 1); // HF model
-  size_t i, index, lev, num_lev, num_hf_lev = m_iter->solution_levels();
+  size_t lev, num_lev, form, index, iter = 0, last_active = 0;
   bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   RealVector cost;
-  if (num_hf_lev > 1) {
-    multilev = true; num_lev = num_hf_lev; form = num_mf - 1;
-    cost = m_iter->solution_level_costs();
-    if (num_mf > 1)
-      Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDMultilevelPolynomialChaos::multilevel_regression().\n";
-  }
-  else if (num_mf > 1) {
-    multilev = false; num_lev = num_mf;
-    cost.sizeUninitialized(num_mf);
-    for (i=0, m_iter=ordered_models.begin(); i<num_mf; ++i, ++m_iter)
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
-  }
-  else {
-    Cerr << "Error: no model hierarchy evident in NonDMultilevel"
-	 << "PolynomialChaos::multilevel_regression()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  configure_ml_hierarchy(num_lev, form, multilev, cost);
 
   // Multilevel variance aggregation requires independent sample sets
   Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
   if (u_sub_iter != NULL)
     ((Analyzer*)u_sub_iter)->vary_pattern(true);
 
-  size_t iter = 0, last_active = 0;
   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   RealVector level_metric(num_lev); SizetArray cardinality;
@@ -918,8 +897,7 @@ void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 /* Retrieve basis cardinality and compute power mean of sparsity
    (common power values: 1 = average, 2 = root mean square). */
 void NonDMultilevelPolynomialChaos::
-sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l,
-		 Real power)
+sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l, Real power)
 {
   // case RIP_SAMPLING:
 
@@ -928,17 +906,18 @@ sparsity_metrics(size_t& cardinality_l, Real& sparsity_metric_l,
   cardinality_l = shared_data_rep->expansion_terms();// shared multiIndex.size()
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  Real sum = 0.;
+  Real sum = 0.; bool pow1 = (power == 1.); // simple average
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     PecosApproximation* poly_approx_q
       = (PecosApproximation*)poly_approxs[qoi].approx_rep();
     size_t sparsity_l = poly_approx_q->sparsity();
-    sum += std::pow((Real)sparsity_l, power);
+    sum += (pow1) ? sparsity_l : std::pow((Real)sparsity_l, power);
     //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Sparsity(" /*lev " << lev << ", "*/ << "qoi " << qoi
 	/* << ", iter " << iter */ << ") = " << sparsity_l << '\n';
   }
-  sparsity_metric_l = std::pow(sum / numFunctions, 1. / power);
+  sum /= numFunctions;
+  sparsity_metric_l = (pow1) ? sum : std::pow(sum, 1. / power);
 }
 
 
