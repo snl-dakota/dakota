@@ -167,12 +167,16 @@ protected:
   /// discretization levels
   void greedy_multifidelity_expansion();
 
-  /// configure fidelity counts from model hierarchy
-  void configure_mf_hierarchy(size_t& num_fid, size_t& model_form,
-			      bool& multilevel);
-  /// configure level counts from model hierarchy
-  void configure_ml_hierarchy(size_t& num_lev, size_t& model_form,
-			      bool& multilevel, RealVector& cost);
+  /// configure fidelity/level counts from model hierarchy
+  void configure_hierarchy(size_t& num_lev, size_t& model_form,
+			   bool& multilevel, RealVector& cost,
+			   bool optional_cost, bool mf_precedence);
+  /// configure response mode and truth/surrogate model indices within
+  /// hierarchical iteratedModel
+  void configure_model_indices(size_t lev, size_t form, bool multilevel,
+			       const RealVector& cost, Real& lev_cost);
+  /// compute equivHFEvals from samples per level and cost per evaluation
+  void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
@@ -209,6 +213,9 @@ protected:
 
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;
+  /// equivalent number of high fidelity evaluations accumulated using samples
+  /// across multiple model forms and/or discretization levels
+  Real equivHFEvals;
 
   /// type of expansion basis: DEFAULT_BASIS or
   /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or

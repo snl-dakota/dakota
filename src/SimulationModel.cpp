@@ -395,10 +395,13 @@ RealVector SimulationModel::solution_level_costs() const
 Real SimulationModel::solution_level_cost() const
 {
   std::map<Real, size_t>::const_iterator cit = solnCntlCostMap.begin();
-  size_t lev_index = solution_level_index();
-  if (lev_index != _NPOS)
-    std::advance(cit, lev_index);
-  return cit->first;
+  if (cit == solnCntlCostMap.end()) return 0.;
+  else {
+    size_t lev_index = solution_level_index();
+    if (lev_index != _NPOS)
+      std::advance(cit, lev_index);
+    return cit->first;
+  }
 }
 
 

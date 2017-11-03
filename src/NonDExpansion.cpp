@@ -1017,57 +1017,92 @@ void NonDExpansion::post_refinement(size_t index, Real& metric)
 
   
 void NonDExpansion::
-configure_mf_hierarchy(size_t& num_fid, size_t& model_form, bool& multilevel)
+configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
+		    RealVector& cost, bool optional_cost, bool mf_precedence)
 {
   // Allow either model forms or discretization levels, but not both
-  // (model form takes precedence)
+  // (precedence determined by ...)
   ModelList& ordered_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter = --ordered_models.end(); // HF model
   size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
-  if (num_mf > 1) {
-    multilevel = false; num_fid = num_mf;
+
+  multilevel = (num_hf_lev > 1 && ( !mf_precedence || num_mf <= 1 ) );
+  if (multilevel) {
+    num_lev = num_hf_lev; model_form = num_mf - 1;
+    cost = m_iter->solution_level_costs(); // can be empty
+    if (num_mf > 1)
+      Cerr << "Warning: multiple model forms will be ignored in "
+	   << "NonDExpansion::configure_hierarchy().\n";
+    if (!optional_cost && cost.length() != num_lev) {
+      Cerr << "Error: missing required simulation costs in NonDExpansion::"
+	   << "configure_hierarchy()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+  else if ( num_mf > 1 && ( mf_precedence || num_hf_lev <= 1 ) ) {
+    num_lev = num_mf;
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::configure_mf_hierarchy().\n";
+	   << "NonDExpansion::configure_hierarchy().\n";
+    cost.sizeUninitialized(num_mf);
+    m_iter = ordered_models.begin();
+    bool missing_cost = false;
+    for (size_t i=0; i<num_mf; ++i, ++m_iter) {
+      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
+      if (cost[i] <= 0.) missing_cost = true;
+    }
+    if (missing_cost) {
+      if (optional_cost) cost.resize(0); // suppress optional cost usage
+      else {
+	Cerr << "Error: missing required simulation cost in NonDExpansion::"
+	     << "configure_hierarchy()." << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+    }
   }
-  else if (num_hf_lev > 1)
-    { multilevel = true; num_fid = num_hf_lev; model_form = 0;/* num_mf-1 */ }
   else {
     Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "configure_mf_hierarchy()." << std::endl;
+	 << "configure_hierarchy()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
-  
+
 void NonDExpansion::
-configure_ml_hierarchy(size_t& num_lev, size_t& model_form, bool& multilevel,
-		       RealVector& cost)
+configure_model_indices(size_t lev, size_t form, bool multilevel,
+			const RealVector& cost, Real& lev_cost)
 {
-  // Allow either model forms or discretization levels, but not both
-  // (discretization levels take precedence)
-  ModelList& ordered_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter = --ordered_models.end(); // HF model
-  size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
-  if (num_hf_lev > 1) {
-    multilevel = true; num_lev = num_hf_lev; model_form = num_mf - 1;
-    cost = m_iter->solution_level_costs();
-    if (num_mf > 1)
-      Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDExpansion::configure_ml_hierarchy().\n";
+  bool  costs = !cost.empty(),
+    recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  lev_cost = (costs) ? cost[lev] : 0.;
+  if (multilevel) iteratedModel.truth_model_indices(form, lev);
+  else            iteratedModel.truth_model_indices(lev);
+  if (lev == 0)
+    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
+  else if (!recursive) {
+    if (lev == 1) iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
+    if (multilevel) iteratedModel.surrogate_model_indices(form, lev-1);
+    else            iteratedModel.surrogate_model_indices(lev-1);
+    if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
-  else if (num_mf > 1) {
-    multilevel = false; num_lev = num_mf;
-    cost.sizeUninitialized(num_mf);
-    m_iter = ordered_models.begin();
-    for (size_t i=0; i<num_mf; ++i, ++m_iter)
-      cost[i] = m_iter->solution_level_cost(); // cost for active soln index
-  }
-  else {
-    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-      << "configure_ml_hierarchy()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+}
+
+
+void NonDExpansion::
+compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
+{
+  if (cost.empty() || N_l.empty())
+    { equivHFEvals = 0.; return; }
+
+  bool recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  size_t lev, num_lev = N_l.size();
+
+  // compute the equivalent number of HF evaluations
+  equivHFEvals = N_l[0] * cost[0]; // first level is single eval
+  for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
+    equivHFEvals += (recursive) ? N_l[lev] * cost[lev] :
+      N_l[lev] * (cost[lev] + cost[lev-1]);
+  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
 }
 
 
@@ -1077,15 +1112,12 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   // (model form takes precedence)
   size_t num_fid, form;
   bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  configure_mf_hierarchy(num_fid, form, multilev);
-
-  // ordered_model_fidelities is from low to high --> initial expansion is LF
-  iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-  if (multilev) iteratedModel.truth_model_indices(form, 0);
-  else          iteratedModel.truth_model_indices(0);
+  RealVector cost; Real lev_cost;
+  configure_hierarchy(num_fid, form, multilev, cost, true, true);
 
   // initial low fidelity/lowest discretization expansion
-  size_t i, im1, index = (recursive) ? 0 : _NPOS;
+  configure_model_indices(0, form, multilev, cost, lev_cost);
+  size_t i, index = (recursive) ? 0 : _NPOS;
   compute_expansion(index);  // nominal LF expansion from input spec
   if (refine_type)
     refine_expansion(index); // uniform/adaptive refinement
@@ -1096,30 +1128,17 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   annotated_results(false); // intermediate results
   print_results(Cout, INTERMEDIATE_RESULTS);
 
-  // change HierarchSurrModel::responseMode to model discrepancy
-  if (!recursive)
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-
   // loop over each of the discrepancy levels
   for (i=1; i<num_fid; ++i) {
     // store current state for use in combine_approximation() below
-    im1 = i - 1; index = (recursive) ? im1 : _NPOS;
+    index = (recursive) ? i-1 : _NPOS;
     uSpaceModel.store_approximation(index);
 
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
-    // set hierarchical indices for single and paired model evaluations
-    if (multilev) {
-      if (!recursive) iteratedModel.surrogate_model_indices(form, im1);
-      iteratedModel.truth_model_indices(form, i);
-    }
-    else {
-      if (!recursive) iteratedModel.surrogate_model_indices(im1);
-      iteratedModel.truth_model_indices(i);
-    }
-
     // form the expansion for level i
+    configure_model_indices(i, form, multilev, cost, lev_cost);
     index = (recursive) ? i : _NPOS;
     update_expansion(index);   // nominal discrepancy expansion from input spec
     if (refine_type)
@@ -1142,14 +1161,58 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Generate MF reference expansion that is starting pt for greedy refinement:
   multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
 
-  bool converged = false;
-  while (!converged) {
+  size_t lev, form, num_lev, best_lev, index, iter = 0,
+    max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
+  configure_hierarchy(num_lev, form, multilev, cost, true, true);
+
+  //for (lev=0; lev<num_lev; ++lev)
+  //  pre_refinement(lev);
+
+  while ( best_lev_metric > convergenceTol && iter <= max_iter ) {
     // Generate candidates at each level -- use refine_expansion_core() ?
     // > Need to be able to push / pop each refinement type for each level!
     // > Expand (unify?) saved / stored capabilities
 
-    // Evaluate candidates and select most cost effective level refinement
+    best_lev_metric = 0.;
+    for (lev=0; lev<num_lev; ++lev) {
+
+      configure_model_indices(lev, form, multilev, cost, lev_cost);
+      index = (recursive) ? lev : _NPOS;
+
+      // retrieve prev expansion for this level & append new samples
+      uSpaceModel.restore_approximation(index);
+      // This returns the best/only candidate for the current level
+      core_refinement(index, lev_metric);
+
+      // Assess candidate for best across all levels
+      if (lev_metric > best_lev_metric)
+	{ best_lev_metric = lev_metric; best_lev = lev; }
+      // pop the refinement candidate for this level
+
+      // return the unrefined approximation to storage
+      uSpaceModel.store_approximation(index);
+      //last_active = lev;
+    }
+
+    // push best_lev
+    //uSpaceModel._approximation(best_lev);
+
+    ++iter;
   }
+
+  //for (lev=0; lev<num_lev; ++lev)
+  //  post_refinement(lev);
+
+  // remove redundancy between current active and stored, prior to combining
+  uSpaceModel.remove_stored_approximation(num_lev-1);//(last_active);
+  // compute aggregate expansion and generate its statistics
+  uSpaceModel.combine_approximation();
+
+  // compute the equivalent number of HF evaluations
+  // TO DO: accumulate N_l from model / level eval counts
+  //compute_equivalent_cost(N_l, cost);
 }
 
 

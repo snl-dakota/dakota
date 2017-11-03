@@ -146,9 +146,6 @@ private:
   SizetArray NLev;
   /// number of initial samples specified by the user
   SizetArray pilotSamples;
-  /// equivalent number of high fidelity evaluations accumulated using samples
-  /// across multiple model forms and/or discretization levels
-  Real equivHFEvals;
 };
 
 } // namespace Dakota

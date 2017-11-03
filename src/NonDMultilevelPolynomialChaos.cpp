@@ -728,20 +728,20 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
-  size_t lev, num_lev, form, index, iter = 0, last_active = 0;
-  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  RealVector cost;
-  configure_ml_hierarchy(num_lev, form, multilev, cost);
+  size_t lev, num_lev, form, index, iter = 0, last_active = 0,
+    max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
+  RealVector cost, level_metric(num_lev); SizetArray cardinality;
+  bool multilev, optional_cost = false,
+    recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
+  if (multilevAllocControl == RIP_SAMPLING)
+    { cardinality.resize(num_lev); optional_cost = true; }
+  configure_hierarchy(num_lev, form, multilev, cost, optional_cost, false);
 
   // Multilevel variance aggregation requires independent sample sets
   Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
   if (u_sub_iter != NULL)
     ((Analyzer*)u_sub_iter)->vary_pattern(true);
-
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
-  RealVector level_metric(num_lev); SizetArray cardinality;
-  if (multilevAllocControl == RIP_SAMPLING) cardinality.resize(num_lev);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a
@@ -767,20 +767,10 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   while ( iter <= max_iter &&
 	  ( Pecos::l1_norm(delta_N_l) || (iter == 0 && import_pilot) ) ) {
 
-    iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      lev_cost = cost[lev];
-      if (multilev) iteratedModel.truth_model_indices(form, lev);
-      else          iteratedModel.truth_model_indices(lev);
-      if (lev && !recursive) {
-	if (lev == 1) iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
-	if (multilev) iteratedModel.surrogate_model_indices(form, lev-1);
-	else          iteratedModel.surrogate_model_indices(lev-1);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+      configure_model_indices(lev, form, multilev, cost, lev_cost);
       index = (recursive) ? lev : _NPOS;
 
       if (iter == 0) { // initial expansion build
@@ -865,12 +855,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
 
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = NLev[0] * cost[0]; // first level is single eval
-  for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-    equivHFEvals += (recursive) ? NLev[lev] * cost[lev] :
-      NLev[lev] * (cost[lev] + cost[lev-1]);
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+  // compute equivHFEvals
+  compute_equivalent_cost(NLev, cost);
 }
 
 
