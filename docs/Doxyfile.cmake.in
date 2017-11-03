@@ -33,19 +33,6 @@ PROJECT_NAME           = Dakota
 
 PROJECT_NUMBER         = "Version @Dakota_VERSION_SRC@"
 
-# Using the PROJECT_BRIEF tag one can provide an optional one line description
-# for a project that appears at the top of each page and should give viewer
-# a quick idea about the purpose of the project. Keep the description short.
-
-PROJECT_BRIEF          = "Explore and Predict with Confidence"
-
-# With the PROJECT_LOGO tag one can specify an logo or icon that is
-# included in the documentation. The maximum height of the logo should not
-# exceed 55 pixels and the maximum width should not exceed 200 pixels.
-# Doxygen will copy the logo to the output directory.
-
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/images/DAKOTA_Arrow_Name_63x44.png
-
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
 # If a relative path is entered, it will be relative to the location
