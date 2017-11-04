@@ -1189,6 +1189,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
       core_refinement(index, lev_metric); // TO DO: retrieve lev_candidate
+      // TO DO: normalize lev_metric by aggregate cost, either here or within
+      // core_refinement()...
 
       // Assess candidate for best across all levels
       if (lev_metric > best_lev_metric)

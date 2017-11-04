@@ -731,12 +731,13 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   size_t lev, num_lev, form, index, iter = 0, last_active = 0,
     max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
-  RealVector cost, level_metric(num_lev); SizetArray cardinality;
+  RealVector cost; SizetArray cardinality;
   bool multilev, optional_cost = false,
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   if (multilevAllocControl == RIP_SAMPLING)
     { cardinality.resize(num_lev); optional_cost = true; }
   configure_hierarchy(num_lev, form, multilev, cost, optional_cost, false);
+  RealVector level_metric(num_lev);
 
   // Multilevel variance aggregation requires independent sample sets
   Iterator* u_sub_iter = uSpaceModel.subordinate_iterator().iterator_rep();
