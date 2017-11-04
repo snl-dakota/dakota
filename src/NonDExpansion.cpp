@@ -1167,8 +1167,11 @@ void NonDExpansion::greedy_multifidelity_expansion()
   Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
   configure_hierarchy(num_lev, form, multilev, cost, true, true);
 
+  // NEXT STEP: WORK OUT DATA MODEL FOR OVERLAYING STORE/RESTORE AND PUSH/POP
+  // (OUTSIDE OF GSG, PREVIOUS REFINEMENT APPROACHES DID NOT PUSH/POP...)
+
   //for (lev=0; lev<num_lev; ++lev)
-  //  pre_refinement(lev);
+  //  pre_refinement(lev); // initialize_sets() for each level grid
 
   while ( best_lev_metric > convergenceTol && iter <= max_iter ) {
     // Generate candidates at each level -- use refine_expansion_core() ?
@@ -1179,31 +1182,37 @@ void NonDExpansion::greedy_multifidelity_expansion()
     for (lev=0; lev<num_lev; ++lev) {
 
       configure_model_indices(lev, form, multilev, cost, lev_cost);
-      index = (recursive) ? lev : _NPOS;
+      //index = (recursive) ? lev : _NPOS; // this algorithm requires lev spec
 
       // retrieve prev expansion for this level & append new samples
-      uSpaceModel.restore_approximation(index);
+      uSpaceModel.restore_approximation(lev);
       // This returns the best/only candidate for the current level
-      core_refinement(index, lev_metric);
+      // Note: it must roll up contributions from all levels --> lev_metric
+      core_refinement(index, lev_metric); // TO DO: retrieve lev_candidate
 
       // Assess candidate for best across all levels
       if (lev_metric > best_lev_metric)
-	{ best_lev_metric = lev_metric; best_lev = lev; }
-      // pop the refinement candidate for this level
+	{ best_lev_metric = lev_metric; best_lev = lev; }//TO DO: best_candidate
+
+      // TO DO: pop the refinement candidate for this level
+      //uSpaceModel.pop_approximation(lev); // currently assumes trial_set
 
       // return the unrefined approximation to storage
-      uSpaceModel.store_approximation(index);
+      uSpaceModel.store_approximation(lev);
       //last_active = lev;
     }
 
-    // push best_lev
-    //uSpaceModel._approximation(best_lev);
+    // TO DO: push best level refinement (which may need to identify best among
+    // several candidates for this level)
+    uSpaceModel.restore_approximation(best_lev);
+    //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
+    // Note: in case of GSG, this step must update ref/candidate sets
 
     ++iter;
   }
 
   //for (lev=0; lev<num_lev; ++lev)
-  //  post_refinement(lev);
+  //  post_refinement(lev); // finalize_sets() for each level grid
 
   // remove redundancy between current active and stored, prior to combining
   uSpaceModel.remove_stored_approximation(num_lev-1);//(last_active);
