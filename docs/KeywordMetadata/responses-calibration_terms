@@ -10,7 +10,8 @@ between the model and the data:
 
 \f[ R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. \f]
 
-There are two use cases:
+Note that the problem specification affects what must be returned to
+Dakota in the \ref interface-analysis_drivers-fork-results_file :
 
 \li If calibration data <em>is not specified</em>, then each of the
   calibration terms returned to Dakota through the \ref interface is a
@@ -23,35 +24,68 @@ There are two use cases:
 
 <b> Constraints </b>
 
-The keywords \c nonlinear_inequality_constraints, and \c
-nonlinear_equality_constraints specify the number of nonlinear
-inequality constraints, and nonlinear equality constraints,
-respectively.  When interfacing to external applications, the
-responses must be returned to %Dakota in this order: calibration
-terms, nonlinear_inequality_constraints, then
-nonlinear_equality_constraints.
+(See general problem formulation at \ref
+responses-objective_functions.) The keywords \ref
+responses-calibration_terms-nonlinear_inequality_constraints and \ref
+responses-calibration_terms-nonlinear_equality_constraints specify the
+number of nonlinear inequality constraints \em g, and nonlinear
+equality constraints \em h, respectively.  When interfacing to
+external applications, the responses must be returned to %Dakota in
+this order in the \ref interface-analysis_drivers-fork-results_file :
+<ol> <li>calibration terms</li> <li>nonlinear inequality
+constraints</li> <li>nonlinear equality constraints</li> </ol>
 
-Any linear constraints present in an application need only be input to
-an optimizer at start up and do not need to be part of the data
-returned on every function evaluation. These are therefore specified
-in the method block.
+An optimization problem's linear constraints are provided to the
+solver at startup only and do not need to be included in the data
+returned on every function evaluation. Linear constraints are
+therefore specified in the \ref variables block through the \ref
+variables-linear_inequality_constraint_matrix \f$A_i\f$ and \ref
+variables-linear_equality_constraint_matrix \f$A_e\f$.
 
-<b> Optional Keywords </b>
+Lower and upper bounds on the design variables \em x are also
+specified in the \ref variables block.
 
-The optional keywords relate to scaling responses (for better
-numerical results), dealing with multiple residuals, and importing
-data.
+<b> Problem Transformations</b>
 
-See the \c scaling keyword in the \ref method section for more details
-on scaling.  If scaling is specified, then it is applied to each
-residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
-(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
+Weighting or scaling calibration terms is often appropriate to account
+for measurement error or to condition the problem for easier solution.
+Weighting or scaling transformations are applied in the following
+order:
 
-In the case where experimental data uncertainties are supplied, then
-the weights are automatically defined to be the inverse of the
-experimental variance: \f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i}
-(\frac{y^{Model}_i - y^{Data}_i}{s_i})^2\f]
+<ol>
+<li> When present, observation error variance \f$ \sigma_i \f$ or full
+     covariance \f$ \Sigma\f$, optionally specified through \c
+     experiment_variance_type, is applied to residuals first: 
+     
+     \f[  R^{(1)}_i = \frac{R_{i}}{\sigma_{i}} = \frac{y^{Model}_i(\theta) -
+     y^{Data}_{i}}{\sigma_{i}}  \textrm{, or} \f]
+ 
+     \f[
+     R^{(1)} = \Sigma^{-1/2} R = \Sigma^{-1/2} \left(y^{Model}(\theta) -
+     y^{Data}\right), \f]
+     resulting in the typical variance-weighted least squares formulation
+     \f[ \textrm{min}_\theta \; R(\theta)^T \Sigma^{-1} R(\theta) \f]
+</li>
+<li> Any active scaling transformations are applied next, e.g., for
+     characteristic value scaling:
 
+     \f[ R^{(2)}_i = \frac{R^{(1)}_i}{s_i} \f]
+</li>
+<li> Finally the optional weights are applied in a way that preserves
+    backward compatibility:
+
+    \f[ R^{(3)}_i = \sqrt{w_i}{R^{(2)}_i} \f]
+
+    so the ultimate least squares formulation, e.g., in a scaled and
+    weighted case would be
+
+    \f[ f = \sum_{i=1}^{n} w_i \left( \frac{y^{Model}_i -
+    y^{Data}_i}{s_i} \right)^2 \f]
+</li>
+</ol>
+
+<em>Note that specifying observation error variance and weights are mutually
+exclusive in a calibration problem.</em>
 
 Topics::	
 Examples::
