@@ -19,7 +19,7 @@ dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 6)
+set(Dakota_VERSION_MINOR 7)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -34,7 +34,7 @@ set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
 # using the SVN rev date); use format Mmm dd yyyy, as in asctime()
-set(Dakota_RELEASE_DATE "November 15, 2017")    # Versioned release date Mmm dd yyyy
+set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
 #set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
