@@ -1,0 +1,37 @@
+Blurb:: File containing advanced GPMSA options
+
+Description:: 
+Allow power users to override default GPMSA options such as
+hyper-parameter priors.
+
+<b> Default Behavior </b>
+No advanced options used.
+
+<b> Usage Tips </b>
+Known limitation: When using an options file, QUESO/GPMSA base
+environment settings from Dakota will be bypassed.  It is therefore
+necessary to set any relevant Dakota defaults in the options file.
+
+Examples::
+
+\verbatim
+# FILE: dakota_gpmsa.opts
+
+# Base QUESO Environment options
+env_subDisplayFileName   = QuesoDiagnostics/display
+env_subDisplayAllowedSet = 0 1
+env_displayVerbosity     = 2
+env_seed                 = 2460
+
+# GPMSA Options
+gpmsa_emulator_precision_shape = 2.0
+gpmsa_emulator_precision_scale = 0.2
+gpmsa_emulator_correlation_strength_alpha = 1.0
+gpmsa_emulator_correlation_strength_beta = 0.1
+gpmsa_discrepancy_precision_shape = 1.0
+gpmsa_discrepancy_precision_scale = 1e4
+gpmsa_discrepancy_correlation_strength_alpha = 1.0
+gpmsa_discrepancy_correlation_strength_beta = 0.1
+gpmsa_emulator_data_precision_shape = 3.0
+gpmsa_emulator_data_precision_scale = 333.333
+\endverbatim
