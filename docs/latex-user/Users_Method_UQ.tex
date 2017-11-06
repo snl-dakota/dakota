@@ -132,7 +132,8 @@ of N samples, and then re-run an additional incremental study which
 will double the number of samples (to 2N, with the first N being 
 carried from the initial study). The full incremental sample of 
 size 2N is also a Latin Hypercube, with proper stratification and 
-correlation. 
+correlation. Statistics for each increment are reported separately at
+the end of the study.
 
 \textbf{Reliability Methods}: This suite of methods includes both
 local and global reliability methods. Local methods include first- and
@@ -319,7 +320,7 @@ Probabilities and reliabilities may be computed for
 \texttt{response\_levels} specifications, and response levels may be
 computed for either \texttt{probability\_levels} or
 \texttt{reliability\_levels} specifications (refer to the Method
-Commands chapter in the Dakota Reference Manual~\cite{RefMan} for
+keywords section in the Dakota Reference Manual~\cite{RefMan} for
 additional information).
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
@@ -689,8 +690,9 @@ hundred, the benefit of incremental sampling diminishes.
   For example, if the first sample has 50 samples, and 10 more samples
   are desired, the second Dakota run should specify \texttt{samples =
     50}, \texttt{refinement\_samples = 10}.  In this situation, only
-  10 new samples will be generated and the final statistics will be
-  reported on the full sample of 60. The command line syntax for
+  10 new samples will be generated, and the final statistics will be
+  reported at the end of the study both for the initial 50 samples and
+  for the full sample of 60. The command line syntax for
   running the second sample is \texttt{dakota -i input60.in -r
     dakota.50.rst} where \texttt{input60.in} is the input file with
   the refinement samples specification and \texttt{dakota.50.rst} is
@@ -715,8 +717,9 @@ hundred, the benefit of incremental sampling diminishes.
   For example, if the first sample has 50 samples, in the second
   Dakota run, the number of refinement samples should be set to 50 for
   a total of 100. In this situation, only 50 new samples will be
-  generated and the final statistics will be reported on the full
-  sample of 100. The command line syntax for running the second sample
+  generated, and at the end of the study final statistics will be reported 
+  both for the initial 50 samples and for the full sample of 100. The command 
+  line syntax for running the second sample
   is \texttt{dakota -i input100.in -r dakota.50.rst}, where
   \texttt{input100.in} is the input file with the incremental sampling
   specification and \texttt{dakota.50.rst} is the restart file
@@ -910,7 +913,8 @@ no\_approx      & \cellcolor{blue}\textcolor{white}{FORM}
 \end{tabular}
 \end{table}
 
-Within the Dakota specification (refer to the Method Commands chapter
+Within the Dakota specification (refer to \texttt{local\_reliability}
+in the keywords section of the Reference Manual~\cite{RefMan})
 within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response
@@ -1369,7 +1373,7 @@ over-determined systems and compressed sensing methods for
 under-determined systems. Details of these methods are documented in
 the Linear regression section of the Dakota Theory
 Manual~\cite{TheoMan} and the necessary specifications needed to
-activate these techniques are listed in the Methods chapter of the
+activate these techniques are listed in the keyword section of the
 Dakota Reference Manual~\cite{RefMan}.
 
 Stochastic collocation (SC) is another stochastic expansion technique
