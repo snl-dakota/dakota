@@ -30,7 +30,8 @@ table.spec-table {
 }
 
 .spec-table th {
-  background-color: #75CBE0;
+  background-color: #448FAA;
+  color: #FFFFFF;
 }
 
 .spec-table td.centered {
@@ -101,13 +102,13 @@ h5 {
 /* @group Link Styling */
 
 a {
-	color: #295D72;
+	color: #00A6C5;
 	font-weight: normal;
 	text-decoration: none;
 }
 
 .contents a:visited {
-	color: #448FAA;
+	color: #00A6C5;
 }
 
 a:hover {
