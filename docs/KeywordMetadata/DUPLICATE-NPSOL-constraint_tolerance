@@ -13,14 +13,10 @@ be satisfied at convergence of the algorithm. However, if the value is
 set too small the algorithm may terminate with one or more constraints
 being violated.
 
-<b> Defaults </b>
+Dakota's \c convergence_tolerance settings maps to NPSOL's feasbility
+tolerance which is an absolute tolerance on the constraints.
 
-Defaults vary depending on the method.
-\li CONMIN optimizers: 1.0e-3
-\li DOT constrained optimizers: 3.0e-3
-\li \ref method-surrogate_based_local: 1.0e-4
-
-Topics::	method_independent_controls
+Topics::
 Examples::
 Theory::
 Faq::
