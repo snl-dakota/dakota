@@ -1,0 +1,19 @@
+Blurb::
+Number of simulation samples to estimate the PCE coefficients
+
+Description::
+In this case, the expansion order p cannot be inferred from the
+numerical integration specification and it is necessary to provide an
+expansion_order to specify p for a total-order expansion.
+
+<b> Usage Tips </b>
+
+For most use cases, this keyword will specify a single integer number
+of samples.  In more advanced UQ studies with hierarchical models, the
+list of integers can apply to different models and/or model levels
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

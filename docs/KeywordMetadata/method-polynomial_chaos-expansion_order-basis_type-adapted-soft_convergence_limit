@@ -1,0 +1,9 @@
+Blurb::
+The maximum number of times no improvement in cross validation error is allowed before the algorithm is terminated.
+Description::
+Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion. Basis selection uses compressed sensing to identify a initial set of non zero PCE coefficients. Then these non-zero terms are expanded a set number of times (we suggest 3) and compressed sensing is then applied to these three new index sets. Cross valiation is used to choose the best candidate basis. The best basis is then restricted again to the non-zero terms and expanded until no improvement can be gained by adding additional terms.
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::

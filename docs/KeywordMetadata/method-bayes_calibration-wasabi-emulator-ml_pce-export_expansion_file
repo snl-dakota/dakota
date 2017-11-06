@@ -1,0 +1,14 @@
+Blurb:: Export the coefficients and multi-index of a Polynomial Chaos Expansion (PCE) to a file
+
+Description:: 
+
+Export the coefficients and multi-index of a Polynomial
+Chaos Expansion (PCE) to a file. The multi-index written will be
+sparse. Spcifically the expansion will conists only of the indices
+corresponding to the non-zero coefficients of the PCE.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
