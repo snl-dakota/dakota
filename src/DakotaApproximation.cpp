@@ -798,7 +798,7 @@ void Approximation::draw_surface()
     // populate F matrix
     RealVector xtemp(2);
     for (i=0; i<num_axis_pts; i++) {
-      for (j=0; j<num_axis_pts; j++) {  
+      for (j=0; j<num_axis_pts; j++) {
         xtemp[0] = X[i];
         xtemp[1] = Y[j];
         F(j,i)   = value(xtemp);

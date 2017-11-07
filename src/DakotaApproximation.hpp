@@ -207,7 +207,7 @@ public:
   /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
   void pop_count(size_t count);
   // returns SurrogateData::popCountStack.back() (number of entries to pop from
-  /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
+  // end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count() const;
 
   /// clear all build data (current and history) to restore original state
