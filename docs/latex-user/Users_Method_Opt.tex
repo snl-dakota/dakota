@@ -1262,10 +1262,13 @@ Gradient-Based Global & smooth; continuous variables; & hybrid\_strategy, \\
 Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 & optpp\_pds \\
 \hline
+         & nonsmooth; continuous variables; & coliny\_cobyla,  \\
+         & bound constraints, & coliny\_pattern\_search, \\
+         & nonlinear constraints & coliny\_solis\_wets, \\
+\hline
          & nonsmooth; continuous variables; & asynch\_pattern\_search, \\
-         & bound constraints, & coliny\_cobyla, coliny\_pattern\_search, \\
-         & linear and nonlinear constraints & coliny\_solis\_wets, \\
-         &          & surrogate\_based\_local \\
+         & bound constraints, & surrogate\_based\_local \\
+         & linear and nonlinear constraints & \\
 \hline
          & nonsmooth; continuous variables; &  \\
          & discrete variables; bound constraints, & mesh\_adaptive\_search \\
@@ -1274,11 +1277,19 @@ Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 Derivative-Free Global & nonsmooth; continuous variables; bound constraints
 & ncsu\_direct \\
 \hline
-         & nonsmooth; continuous variables; & coliny\_direct, efficient\_global, \\
-         & bound constraints, & surrogate\_based\_global \\
+         & nonsmooth; continuous variables; & coliny\_direct,  \\
+         & bound constraints, & efficient\_global \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables; & surrogate\_based\_global \\
+         & bound constraints, &  \\
          & linear and nonlinear constraints & \\
 \hline
-         & nonsmooth; continuous variables, & coliny\_ea, soga, \\
+         & nonsmooth; continuous variables, & coliny\_ea \\
+         & discrete variables; bound constraints, &  \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables, & soga, \\
          & discrete variables; bound constraints, & moga (multiobjective) \\
          & linear and nonlinear constraints & \\
 \hline
