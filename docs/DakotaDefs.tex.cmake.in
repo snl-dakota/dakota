@@ -20,26 +20,26 @@
 
 % Need to manually break line or Eldred gets incorrectly split
 \newcommand{\DakotaAuthorSAND}{
-Brian~M.~Adams, Lara~E.~Bauman, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
+Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey,\\ 
 John~P.~Eddy, Mohamed~S.~Ebeida, Michael~S.~Eldred, Joseph~R.~Frye,\\
 Gianluca~Geraci, Russell~W.~Hooper, Patricia~D.~Hough, Kenneth~T.~Hu,\\
 John~D.~Jakeman, Mohammad~Khalil, Kathryn~A.~Maupin, Jason~A.~Monschke,\\
-Ahmad~Rushdi, Laura~P.~Swiler, J.~Adam~Stephens, Dena~M.~Vigil,\\
-Timothy~M.~Wildey
+Elliott~M.~Ridgway, Ahmad~Rushdi, J.~Adam~Stephens, Laura~P.~Swiler,\\
+Dena~M.~Vigil, Timothy~M.~Wildey
 }
 
 \newcommand{\authvskip}{0.25cm}
 
 \newcommand{\DakotaAuthorLong}{
 {Brian~M.~Adams, Mohamed~S.~Ebeida, Michael~S.~Eldred, Gianluca~Geraci,}\\
-{John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Laura~P.~Swiler,}\\
-{J.~Adam~Stephens, Dena~M.~Vigil, Timothy~M.~Wildey}\\
+{John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, J.~Adam~Stephens,}\\
+{Laura~P.~Swiler, Dena~M.~Vigil, Timothy~M.~Wildey}\\
 {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
 {William~J.~Bohnhoff,} {\sl Radiation Transport Department} \vspace*{\authvskip} \\
 {John~P.~Eddy,} {\sl System Readiness and Sustainment Technologies Department} \vspace*{\authvskip} \\
 {Joseph~R.~Frye, Russell~W.~Hooper,} {\sl Multiphysics Applications Department} \vspace*{\authvskip} \\
-{Kenneth~T.~Hu,} {\sl Validation and Uncertainty Quantification Department} \vspace*{\authvskip} \\
-{Keith~R.~Dalbey,} {\sl Mission Analysis and Simulation Department} \vspace*{\authvskip} \\
+{Kenneth~T.~Hu,} {\sl W76-0/W88 Stockpile Systems Engineering Department} \vspace*{\authvskip} \\
+{Keith~R.~Dalbey,} {\sl Software Simulation and Data Processing Department} \vspace*{\authvskip} \\
 {Patricia~D.~Hough, Mohammad~Khalil} \\
 {\sl Quantitative Modeling and Analysis Department} \vspace*{\authvskip} \\
 {Elliott~M.~Ridgway,} {\sl Data-driven and Neural Computing} \vspace*{\authvskip} \\
@@ -54,15 +54,15 @@ Davis, CA 95616-5294\\
 
 \newcommand{\DakotaAuthorFormatted}{
 {\large \bf Brian M. Adams, Mohamed S. Ebeida, Michael S. Eldred, Gianluca Geraci,\\ 
-John D. Jakeman, Kathryn A. Maupin, Jason A. Monschke, Laura P. Swiler,\\
-J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey}\\
+John D. Jakeman, Kathryn A. Maupin, Jason A. Monschke, J. Adam Stephens,\\
+Laura P. Swiler, Dena M. Vigil, Timothy M. Wildey}\\
 {\large Optimization and Uncertainty Quantification Department}\\
 \vspace*{\authvskip}
 {\large \bf William J. Bohnhoff}\\
 {\large Radiation Transport Department}\\
 \vspace*{\authvskip}
 {\large \bf Keith R. Dalbey}\\
-{\large Mission Analysis and Simulation Department}\\
+{\large Software Simulation and Data Processing Department}\\
 \vspace*{\authvskip}
 {\large \bf John P. Eddy}\\
 {\large System Readiness and Sustainment Technologies Department}\\
@@ -71,7 +71,7 @@ J. Adam Stephens, Dena M. Vigil, Timothy M. Wildey}\\
 {\large Multiphysics Applications Department}\\
 \vspace*{\authvskip}
 {\large \bf Kenneth T. Hu}\\
-{\large Validation and Uncertainty Quantification Department}\\
+{\large W76-0/W88 Stockpile Systems Engineering Department}\\
 \vspace*{\authvskip}
 {\large \bf Patricia D. Hough, Mohammad Khalil}\\
 {\large Quantitative Modeling and Analysis Department}\\
