@@ -21,7 +21,6 @@ Topics::
 
 Examples::
 \verbatim
-method,
 model,
 	simulation
 	  solution_level_control = 'mesh_size'

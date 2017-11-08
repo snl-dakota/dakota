@@ -24,7 +24,6 @@ Examples::
 In this example, integer solution control values and solution costs are 
 naturally well ordered.
 \verbatim
-method,
 model,
 	simulation
 	  solution_level_control = 'mesh_size'
@@ -43,7 +42,6 @@ variables,
 In this example, string solution control values are lexicographically 
 ordered, and care must be taken to align the solution cost estimates.
 \verbatim
-method,
 model,
 	simulation
 	  solution_level_control = 'mesh_size'
