@@ -18,15 +18,15 @@ control level.  In a bi-fidelity case with low-fidelity (LF) and
 high-fidelity (HF) models, we have:
 
 \f[R = \sum_{i=0}^{P^{LF}} \alpha^{LF}_i \Psi_i(\xi)
-     + \sum_{i=0}^{P^{HF}} \delta^{HF}_i \Psi_i(\xi) \f]
+     + \sum_{i=0}^{P^{HF}}      \delta_i \Psi_i(\xi) \f]
 
-where \f$\delta_i\f$ is the coefficient for the discrepancy expansion.
+where \f$\delta_i\f$ is a coefficient for the discrepancy expansion.
 
 
 
-For the case of regression-based PCE (either least squares 
-or compressed sensing), an optimal sample allocation procedure can
-be applied for the resolution of each level within a multilevel sampling
+For the case of regression-based PCE (least squares, compressed sensing, 
+or orthogonal least interpolation), an optimal sample allocation procedure 
+can be applied for the resolution of each level within a multilevel sampling
 procedure as in \ref method-multilevel_sampling.  The core difference
 is that a Monte Carlo estimator of the statistics is replaced with a
 PCE-based estimator of the statistics, requiring approximation of the 
@@ -39,8 +39,8 @@ future releases.
 
 <b> Additional Resources </b>
 
-%Dakota provides access to PCE methods through the
-NonDMultilevelPolynomialChaos class. Refer to theStochastic Expansion
+%Dakota provides access to multilevel PCE methods through the
+NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
 Methods chapter of the Theory Manual \cite TheoMan for additional
 information on the Multilevel PCE algorithm.
 

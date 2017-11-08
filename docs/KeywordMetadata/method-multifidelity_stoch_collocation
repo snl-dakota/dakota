@@ -1,34 +1,29 @@
-Blurb:: Multifidelity uncertainty quantification using polynomial chaos expansions
+Blurb:: Multifidelity uncertainty quantification using stochastic collocation
 
 Description:: 
-As described in \ref method-polynomial_chaos, the polynomial chaos 
-expansion (PCE) is a general framework for the approximate representation 
-of random response functions in terms of series expansions in standardized 
-random variables:
+As described in \ref method-stoch_collocation, stochastic collocation 
+is a general framework for approximate representation of random response 
+functions in terms of finite-dimensional interpolation bases, using
+interpolation polynomials that may be either local or global
+and either value-based or gradient-enhanced.
 
-\f[R = \sum_{i=0}^P \alpha_i \Psi_i(\xi) \f]
-
-where \f$\alpha_i\f$ is a deterministic coefficient, \f$\Psi_i\f$ is a
-multidimensional orthogonal polynomial and \f$\xi\f$ is a vector of
-standardized random variables. 
-
-In the multilevel and multifidelity cases, we decompose this expansion
+In the multifidelity case, we decompose this interpolant expansion
 into several constituent expansions, one per model form or solution
 control level.  In a bi-fidelity case with low-fidelity (LF) and
 high-fidelity (HF) models and an additive discrepancy approach, we have:
 
-\f[R = \sum_{i=0}^{P^{LF}} \alpha^{LF}_i \Psi_i(\xi)
-     + \sum_{i=0}^{P^{HF}}      \delta_i \Psi_i(\xi) \f]
+\f[R = \sum_{i=1}^{N_p^{LF}} r^{LF}_i \L_i(\xi)
+     + \sum_{i=1}^{N_p^{HF}} \delta_i \L_i(\xi) \f]
 
 where \f$\delta_i\f$ is a coefficient for the discrepancy expansion.
 
 The same specification options are available as described in 
-\ref method-polynomial_chaos with one key difference: many of the
+\ref method-stoch_collocation with one key difference: the
 coefficient estimation inputs change from a scalar input for a single
 expansion to a <i>sequence</i> specification for a low-fidelity expansion
 followed by multiple discrepancy expansions.
 
-To obtain the coefficients \f$\alpha_i\f$ and \f$\delta_i\f$ for each of 
+To obtain the coefficients \f$r_i\f$ and \f$\delta_i\f$ for each of 
 the expansions, the following options are provided:
 
 <ol>
@@ -38,34 +33,16 @@ the expansions, the following options are provided:
 <li> multidimensional integration by the Smolyak sparse grid method
      (specified with \c sparse_grid_level_sequence and, optionally, 
      \c dimension_preference)
-<li> multidimensional integration by Latin hypercube sampling (specified 
-     with \c expansion_order_sequence and \c expansion_samples_sequence).
-<li> linear regression (specified with \c expansion_order_sequence and 
-     either \c collocation_points_sequence or \c collocation_ratio), using 
-     either over-determined (least squares) or under-determined (compressed 
-     sensing) approaches.
-<li> orthogonal least interpolation (specified with 
-     \c orthogonal_least_interpolation and \c collocation_points_sequence)
-<!-- NOT SUPPORTED AT THIS TIME:
-<li> multidimensional integration by Stroud cubature rules 
-     and extensions as specified with \c cubature_integrand.
-<li> coefficient import from a file (specified with \c
-     import_expansion_file). The expansion can be comprised of a 
-     general set of expansion terms, as indicated by the multi-index 
-     annotation within the file.
--->
 </ol>
 
-It is important to note that, while \c quadrature_order_sequence, \c
-sparse_grid_level_sequence, \c expansion_order_sequence, \c
-expansion_samples_sequence, and \c collocation_points_sequence are
+It is important to note that, while \c quadrature_order_sequence and \c
+sparse_grid_level_sequence are
 array inputs, only one scalar from these arrays is active at a time
 for a particular expansion estimation.  In order to specify anisotropy
 in resolution across the random variable set, a \c dimension_preference 
-specification can be used to augment scalar specifications for
-quadrature order, sparse grid level, and expansion order.
+specification can be used to augment these scalar specifications.
 
-Multifidelity UQ using PCE requires that the model selected for
+Multifidelity UQ using SC requires that the model selected for
 iteration by the method specification is a multifidelity surrogate
 model (see \ref model-surrogate-hierarchical), which defines an
 \c ordered_model_sequence (see \ref model-surrogate-hierarchical).
@@ -91,25 +68,21 @@ number of model forms or discretization levels in the hierarchy.
 After formation and refinement of the constituent expansions, each of
 the expansions is combined (added or multiplied) into an expansion
 that approximates the high fidelity model, from which the final set of
-statistics are generated. For polynomial chaos expansions, this high
-fidelity expansion can differ significantly in form from the low
-fidelity and discrepancy expansions, particularly in the \c
-multiplicative case where it is expanded to include all of the basis
-products.
+statistics are generated.
 
 <b> Additional Resources </b>
 
-%Dakota provides access to multifidelity PCE methods through the
-NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
+%Dakota provides access to multifidelity SC methods through the
+NonDMultilevelStochCollocation class. Refer to the Stochastic Expansion
 Methods chapter of the Theory Manual \cite TheoMan for additional
-information on the Multifidelity PCE algorithm.
+information on the Multifidelity SC algorithm.
 
 Topics::
 
 Examples::
 \verbatim
 method,
-	multifidelity_polynomial_chaos
+	multifidelity_stoch_collocation
 	  model_pointer = 'HIERARCH'
 	  sparse_grid_level_sequence = 4 3 2
 
