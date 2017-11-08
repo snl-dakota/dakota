@@ -1,0 +1,14 @@
+Blurb::
+Multifidelity Stochastic Collocation as an emulator model.
+
+Description:: 
+Selects a multifidelity stochastic collocation (MF SC) 
+surrogate model to use in the Bayesian likelihood calculations.  Most
+specification options are carried over for using MF SC as a surrogate
+within the Bayesian framework.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-multifidelity_stoch_collocation

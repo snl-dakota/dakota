@@ -1,0 +1,13 @@
+Blurb::
+Multifidelity Polynomial Chaos Expansion as an emulator model.
+
+Description:: 
+Selects a multifidelity polynomial chaos expansion (MF PCE) surrogate model 
+to use in the Bayesian likelihood calculations.  Most specification options are 
+carried over for using MF PCE as a surrogate within the Bayesian framework.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-multifidelity_polynomial_chaos
