@@ -1110,17 +1110,16 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
 {
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  size_t num_fid, form;
   bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  RealVector cost; Real lev_cost;
-  configure_hierarchy(num_fid, form, multilev, cost, true, true);
+  size_t num_lev, form; RealVector cost;
+  configure_hierarchy(num_lev, form, multilev, cost, true, true);
 
   // initial low fidelity/lowest discretization expansion
-  configure_model_indices(0, form, multilev, cost, lev_cost);
-  size_t i, index = (recursive) ? 0 : _NPOS;
-  compute_expansion(index);  // nominal LF expansion from input spec
+  size_t lev = 0; Real lev_cost;
+  configure_model_indices(lev, form, multilev, cost, lev_cost);
+  compute_expansion(lev);  // nominal LF expansion from input spec
   if (refine_type)
-    refine_expansion(index); // uniform/adaptive refinement
+    refine_expansion(lev); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -1129,20 +1128,18 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   print_results(Cout, INTERMEDIATE_RESULTS);
 
   // loop over each of the discrepancy levels
-  for (i=1; i<num_fid; ++i) {
+  for (lev=1; lev<num_lev; ++lev) {
     // store current state for use in combine_approximation() below
-    index = (recursive) ? i-1 : _NPOS;
-    uSpaceModel.store_approximation(index);
+    uSpaceModel.store_approximation(lev-1);
 
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
     // form the expansion for level i
-    configure_model_indices(i, form, multilev, cost, lev_cost);
-    index = (recursive) ? i : _NPOS;
-    update_expansion(index);   // nominal discrepancy expansion from input spec
+    configure_model_indices(lev, form, multilev, cost, lev_cost);
+    update_expansion(lev);   // nominal discrepancy expansion from input spec
     if (refine_type)
-      refine_expansion(index); // uniform/adaptive refinement
+      refine_expansion(lev); // uniform/adaptive refinement
 
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
@@ -1161,7 +1158,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Generate MF reference expansion that is starting pt for greedy refinement:
   multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
 
-  size_t lev, form, num_lev, best_lev, index, iter = 0,
+  size_t lev, form, num_lev, best_lev, iter = 0,
     max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
@@ -1182,13 +1179,12 @@ void NonDExpansion::greedy_multifidelity_expansion()
     for (lev=0; lev<num_lev; ++lev) {
 
       configure_model_indices(lev, form, multilev, cost, lev_cost);
-      //index = (recursive) ? lev : _NPOS; // this algorithm requires lev spec
 
       // retrieve prev expansion for this level & append new samples
       uSpaceModel.restore_approximation(lev);
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      core_refinement(index, lev_metric); // TO DO: retrieve lev_candidate
+      core_refinement(lev, lev_metric); // TO DO: retrieve lev_candidate
       // TO DO: normalize lev_metric by aggregate cost, either here or within
       // core_refinement()...
 
