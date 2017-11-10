@@ -164,6 +164,11 @@ set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+if(WIN32)
+  # We always build 32-bit Windows binaries and don't want to confuse users
+  # with the processor name from a 64-bit build host
+  set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+endif()
 
 # TODO: insert distribution type into package names, i.e., instead of 
 # ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
