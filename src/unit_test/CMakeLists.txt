@@ -104,6 +104,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     opt_api_traits.cpp
     reduced_basis.cpp
     restart_test.cpp
+    rol_adapters.cpp
     rol_integration.cpp
     opt_tpl_rol_test.cpp
     stat_utils.cpp
