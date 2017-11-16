@@ -78,7 +78,7 @@ private:
 /// Standard constructor.
 
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   iteratedModel(model)
 {
   set_problem();
@@ -88,7 +88,7 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
 
 ROLOptimizer::
 ROLOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   iteratedModel(model)
 {
   set_problem();

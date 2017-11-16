@@ -22,8 +22,62 @@
 #include "ROL_StdObjective.hpp"
 #include "ROL_OptimizationSolver.hpp"
 
+#include "DakotaTraitsBase.hpp"
+
 namespace Dakota {
+
   typedef double RealT;
+
+/** ROLTraits specializes some traits accessors by over-riding the default 
+accessors in TraitsBase. */
+
+class ROLTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  ROLTraits();
+
+  /// destructor
+  virtual ~ROLTraits();
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  ///// Return the flag indicating whether method supports continuous variables
+  //bool supports_continuous_variables() { return true; }
+
+  ///// Return the flag indicating whether method supports discrete variables
+  //bool supports_discrete_variables() { return true; }
+
+  ///// Return the flag indicating whether method supports linear equalities
+  //bool supports_linear_equality() { return true; }
+
+  ///// Return the flag indicating whether method supports linear inequalities
+  //bool supports_linear_inequality() { return true; }
+
+  ///// Return the flag indicating whether method supports nonlinear equalities
+  //bool supports_nonlinear_equality() { return true; }
+
+  ///// Return the format used for nonlinear equality constraints
+  //NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+  //  { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+
+  ///// Return the flag indicating whether method supports nonlinear inequalities
+  //bool supports_nonlinear_inequality() { return true; }
+
+  ///// Return the format used for nonlinear inequality constraints
+  //NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  //  { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
+};
+
+inline ROLTraits::ROLTraits()
+{ }
+
+inline ROLTraits::~ROLTraits()
+{ }
+
 
 class ROLOptimizer : public Optimizer
 {

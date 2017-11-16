@@ -888,6 +888,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       |
       elitist INTEGER {N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}
       [ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
+      rol_ls {N_mdm(utype,methodName_ROL_LS)}
      ]
     [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
     [ crossover_type {0}
@@ -3442,13 +3443,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          )
        ]
       [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
-     )
-    |
-    ( rol_ls {N_mdm(utype,methodName_ROL_LS)}
-      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-      [ scaling {N_mdm(true,methodScaling)} ]
      )
     |
     ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
