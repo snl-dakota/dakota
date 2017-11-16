@@ -17,16 +17,17 @@
 #include "DataFitSurrModel.hpp"
 #include "RecastModel.hpp"
 #include "DataTransformModel.hpp"
-#include "NonDPolynomialChaos.hpp"
-#include "NonDStochCollocation.hpp"
+#include "NonDMultilevelPolynomialChaos.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLHSSampling.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "SNLLOptimizer.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-
 #include "LHSDriver.hpp"
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random.hpp"
+#include "boost/random/normal_distribution.hpp"
+#include "boost/random/variate_generator.hpp"
 #include "boost/generator_iterator.hpp"
 #include "boost/math/special_functions/digamma.hpp"
 // BMA: May need to better manage DLL export / import from ANN in the future
@@ -56,7 +57,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.pre_solve_method")),
-  chainSamples(0), chainCycles(1),
+  chainSamples(probDescDB.get_int("method.nond.chain_samples")), chainCycles(1),
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1),
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
@@ -68,6 +69,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
+  mutualInfoKSG2(probDescDB.get_bool("method.nond.mutual_info_ksg2")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -140,38 +142,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     }
   }
 
-  // assign default proposalCovarType
-  if (proposalCovarType.empty()) {
-    if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
-    else              proposalCovarType = "prior";       // prior covariance
-  }
-
-  // manage sample partitions and defaults
-  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
-  if (proposalCovarType == "derivatives") {
-    int pc_update_spec
-      = probDescDB.get_int("method.nond.proposal_covariance_updates");
-    if (pc_update_spec < 1) { // default partition: update every 100 samples
-      // if the user specified less than 100 samples, use that,
-      // resulting in chainCycles = 1
-      chainSamples = std::min(samples_spec, 100);
-      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
-    }
-    else { // partition as specified
-      if (samples_spec < pc_update_spec) {
-	// hard error since the user explicitly gave both controls
-	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
-	abort_handler(-1);
-      }
-      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
-      chainCycles  = pc_update_spec;
-    }
-  }
-  else { 
-    chainSamples = samples_spec; 
-    chainCycles = 1; 
-  }
-
   if (randomSeed != 0)
     Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
   else {
@@ -180,12 +150,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
 
-  // assign default maxIterations (DataMethod default is -1)
-  if (adaptPosteriorRefine && maxIterations < 0)
-    maxIterations = 25;
-
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     standardizedSpace = true; break; // natafTransform defined w/i NonDExpansion
   default:
     standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
@@ -243,36 +210,57 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   switch (emulatorType) {
 
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     mcmcModelHasSurrogate = true;
-    const UShortArray& level_seq
-      = probDescDB.get_usa("method.nond.sparse_grid_level");
+    short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref
-      = probDescDB.get_rv("method.nond.dimension_preference");    // not exposed
-    bool derivs = probDescDB.get_bool("method.derivative_usage"); // not exposed
+      = probDescDB.get_rv("method.nond.dimension_preference");
     NonDExpansion* se_rep;
+
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
-      se_rep = new NonDStochCollocation(inbound_model,
-	Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
-	false, derivs);
+      unsigned short ssg_level
+	= probDescDB.get_ushort("method.nond.sparse_grid_level");
+      unsigned short tpq_order
+	= probDescDB.get_ushort("method.nond.quadrature_order");
+      if (ssg_level != USHRT_MAX)
+	se_rep = new NonDStochCollocation(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
+      else if (tpq_order != USHRT_MAX)
+	se_rep = new NonDStochCollocation(inbound_model, Pecos::QUADRATURE,
+	  tpq_order, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
     }
-    else {
-      if (!level_seq.empty()) // PCE with spectral projection via sparse grid
+
+    else if (emulatorType == PCE_EMULATOR) {
+      unsigned short ssg_level
+	= probDescDB.get_ushort("method.nond.sparse_grid_level");
+      unsigned short tpq_order
+	= probDescDB.get_ushort("method.nond.quadrature_order");
+      unsigned short cub_int
+	= probDescDB.get_ushort("method.nond.cubature_integrand");
+      if (ssg_level != USHRT_MAX) // PCE w/ spectral projection via sparse grid
 	se_rep = new NonDPolynomialChaos(inbound_model,
-	  Pecos::COMBINED_SPARSE_GRID, level_seq, dim_pref, EXTENDED_U,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level, dim_pref, u_space_type,
 	  false, false);
-      else { 
-        // regression PCE: LeastSq/CS (exp_order,colloc_ratio), OLI (colloc_pts)
-	const UShortArray& exp_order_seq
-	  = probDescDB.get_usa("method.nond.expansion_order");
-	short exp_coeffs_approach = (exp_order_seq.empty()) ?
-	  Pecos::ORTHOG_LEAST_INTERPOLATION : Pecos::DEFAULT_REGRESSION;
+      else if (tpq_order != USHRT_MAX)
+	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::QUADRATURE,
+	  tpq_order, dim_pref, u_space_type, false, false);
+      else if (cub_int != USHRT_MAX)
+	se_rep = new NonDPolynomialChaos(inbound_model, Pecos::CUBATURE,
+	  cub_int, dim_pref, u_space_type, false, false);
+      else { // regression PCE: LeastSq/CS, OLI
 	se_rep = new NonDPolynomialChaos(inbound_model,
-	  exp_coeffs_approach, exp_order_seq, dim_pref,
-	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	  probDescDB.get_short("method.nond.regression_type"), 
+	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
+	  probDescDB.get_sizet("method.nond.collocation_points"),
 	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
-	  randomSeed, EXTENDED_U, false, derivs,	
+	  randomSeed, u_space_type, false,
+	  probDescDB.get_bool("method.derivative_usage"),	
 	  probDescDB.get_bool("method.nond.cross_validation"),
 	  probDescDB.get_string("method.import_build_points_file"),
 	  probDescDB.get_ushort("method.import_build_format"),
@@ -280,6 +268,74 @@ void NonDBayesCalibration::construct_mcmc_model()
       }
       mcmcDerivOrder = 7; // Hessian computations implemented for PCE
     }
+
+    else if (emulatorType == MF_SC_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= probDescDB.get_usa("method.nond.sparse_grid_level");
+      const UShortArray& tpq_order_seq
+	= probDescDB.get_usa("method.nond.quadrature_order");
+      bool derivs = probDescDB.get_bool("method.derivative_usage");
+      if (!ssg_level_seq.empty())
+	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
+      else if (!tpq_order_seq.empty())
+	se_rep = new NonDMultilevelStochCollocation(inbound_model,
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,
+	  probDescDB.get_bool("method.nond.piecewise_basis"),
+	  probDescDB.get_bool("method.derivative_usage"));
+      mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
+    }
+
+    else if (emulatorType == MF_PCE_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= probDescDB.get_usa("method.nond.sparse_grid_level");
+      const UShortArray& tpq_order_seq
+	= probDescDB.get_usa("method.nond.quadrature_order");
+      if (!ssg_level_seq.empty())
+	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	  Pecos::COMBINED_SPARSE_GRID, ssg_level_seq, dim_pref, u_space_type,
+	  false, false);
+      else if (!tpq_order_seq.empty())
+	se_rep = new NonDMultilevelPolynomialChaos(inbound_model,
+	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type,false,false);
+      else { // regression PCE: LeastSq/CS, OLI
+	SizetArray pilot; // empty for MF PCE
+	se_rep = new NonDMultilevelPolynomialChaos(
+	  MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
+	  probDescDB.get_short("method.nond.regression_type"), 
+	  probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
+	  probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	  probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	  pilot, randomSeed, u_space_type, false,
+	  probDescDB.get_bool("method.derivative_usage"),	
+	  probDescDB.get_bool("method.nond.cross_validation"),
+	  probDescDB.get_string("method.import_build_points_file"),
+	  probDescDB.get_ushort("method.import_build_format"),
+	  probDescDB.get_bool("method.import_build_active_only"));
+      }
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
+    else if (emulatorType == ML_PCE_EMULATOR) {
+      se_rep = new NonDMultilevelPolynomialChaos(MULTILEVEL_POLYNOMIAL_CHAOS,
+	inbound_model, probDescDB.get_short("method.nond.regression_type"),
+	probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
+	probDescDB.get_sza("method.nond.collocation_points"), // pts sequence
+	probDescDB.get_real("method.nond.collocation_ratio"), // single scalar
+	probDescDB.get_sza("method.nond.pilot_samples"), randomSeed,
+	u_space_type, false, probDescDB.get_bool("method.derivative_usage"),
+	probDescDB.get_bool("method.nond.cross_validation"),
+	probDescDB.get_string("method.import_build_points_file"),
+	probDescDB.get_ushort("method.import_build_format"),
+	probDescDB.get_bool("method.import_build_active_only"));
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+      // ML PCE includes iteration, so propagate controls from Bayes spec:
+      se_rep->maximum_iterations(maxIterations);
+      se_rep->convergence_tolerance(convergenceTol);
+    }
+
     stochExpIterator.assign_rep(se_rep, false);
     // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
@@ -526,6 +582,7 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.init_communicators(pl_iter);              break;
   default:
     mcmcModel.init_communicators(pl_iter, maxEvalConcurrency); break;
@@ -545,6 +602,7 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   // so no need to manage DB list nodes at this level
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.set_communicators(pl_iter);              break;
   default:
     mcmcModel.set_communicators(pl_iter, maxEvalConcurrency); break;
@@ -559,6 +617,7 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     stochExpIterator.free_communicators(pl_iter);              break;
   default:
     mcmcModel.free_communicators(pl_iter, maxEvalConcurrency); break;
@@ -574,7 +633,8 @@ void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 void NonDBayesCalibration::initialize_model()
 {
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     stochExpIterator.run(pl_iter); break;
   }
@@ -632,6 +692,44 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
     }
 
+  }
+  num_exp = expData.num_experiments();
+  
+  // Apply hifi error
+  const RealVector& hifi_sim_error = hifiModel.current_response().
+                                       shared_data().simulation_error();
+  RealVector hifi_error_vec(numFunctions);
+  if (hifi_sim_error.length() > 0) {
+    int stoch_seed = randomSeed;
+    Real stdev;
+    boost::mt19937 rnumGenerator;
+    if (hifi_sim_error.length() == 1) {
+      for (size_t k = 0; k < num_exp; k++) {
+	stoch_seed += 1;
+        rnumGenerator.seed(stoch_seed);
+        stdev = std::sqrt(hifi_sim_error[0]);
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+        for (size_t j = 0; j < numFunctions; j++)
+          hifi_error_vec[j] = err_gen();
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
+    else {
+      for (size_t k = 0; k < num_exp; k++) {
+        for (size_t j = 0; j < numFunctions; j++) {
+          stoch_seed += 1;
+          stdev = std::sqrt(hifi_sim_error[j]);
+          rnumGenerator.seed(stoch_seed);
+          boost::normal_distribution<> err_dist(0.0, stdev);
+          boost::variate_generator<boost::mt19937,
+          boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+          hifi_error_vec[j] = err_gen();
+        }
+        expData.apply_simulation_error(hifi_error_vec, k);
+      }
+    }
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
@@ -717,6 +815,12 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double MIrel;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
+  // Determine mutual information algorithm
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
 
   std::ofstream out_file("experimental_design_output.txt");
 
@@ -825,6 +929,49 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
+      // Build simulation error matrix
+      RealMatrix sim_error_matrix;
+      const RealVector& sim_error_vec = mcmcModel.current_response().
+                                        shared_data().simulation_error();
+      if (sim_error_vec.length() > 0) {
+        if (num_hifi == 0) {
+          Real stdev;
+          int stoch_seed = randomSeed;
+          sim_error_matrix.reshape(numFunctions, num_filtered);
+          RealVector col_vec(numFunctions);
+          boost::mt19937 rnumGenerator;
+          if (sim_error_vec.length() == 1) {
+            rnumGenerator.seed(randomSeed+1);
+            stdev = std::sqrt(sim_error_vec[0]);
+            boost::normal_distribution<> err_dist(0.0, stdev);
+            boost::variate_generator<boost::mt19937, 
+                                     boost::normal_distribution<> >
+                   err_gen(rnumGenerator, err_dist);
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                col_vec[k] = err_gen();
+	      }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+	    }
+          }
+          else {
+            for (int j = 0; j < num_filtered; j++) {
+              for (size_t k = 0; k < numFunctions; k++) {
+                stoch_seed += 1;
+                rnumGenerator.seed(stoch_seed);
+                stdev = std::sqrt(sim_error_vec[k]);
+                boost::normal_distribution<> err_dist(0.0, stdev);
+                boost::variate_generator<boost::mt19937,
+		                         boost::normal_distribution<> >
+                       err_gen(rnumGenerator, err_dist);
+                col_vec[k] = err_gen();
+              }
+            Teuchos::setCol(col_vec, j, sim_error_matrix);
+            }
+	  }
+        }
+      }
+
       // BMA: You can now use acceptanceChain/acceptedFnVals, though
       // need to be careful about what subset for this chain run (may
       // need indices to track)
@@ -855,12 +1002,18 @@ void NonDBayesCalibration::calibrate_to_hifi()
             col_vec[k] = lofi_params[k];
           }
           for (size_t k = 0; k < numFunctions; k ++) {
-            col_vec[numContinuousVars+k] = lofi_resp_vec[k];
+            if (sim_error_vec.length() > 0) {
+	      RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
+		                                  sim_error_matrix, j);
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k]+sim_error_vec[k];
+	    }
+	    else
+              col_vec[numContinuousVars+k] = lofi_resp_vec[k];
           }
           Teuchos::setCol(col_vec, j, Xmatrix);
         }
         // calculate the mutual information b/w post theta and lofi responses
-        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions);
+        Real MI = knn_mutual_info(Xmatrix, numContinuousVars, numFunctions,alg);
 	if (outputLevel >= DEBUG_OUTPUT) {
 	  Cout << "\n----------------------------------------------\n";
           Cout << "Experimental Design Iteration "<<num_hifi+1<<" Progress";
@@ -1964,18 +2117,18 @@ void NonDBayesCalibration::print_intervals_screen
 	    << std::setw(width) << ' ' << std::setw(width) 
 	    << col_vec1[upper_index] << ' '<< std::setw(width) 
 	    << 1-alpha << '\n';
-	    //<< std::setw(width) << ' ' <<  "        -----             -----\n";
+	  //<< std::setw(width) << ' ' <<  "        -----             -----\n";
         }
       }
     }
   }
 }
 
-void NonDBayesCalibration::print_results(std::ostream& s)
+void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
 {
   // Print chain moments
   StringArray combined_labels;
-        copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(residualModel.continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
       "posterior variable", STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
@@ -1988,18 +2141,17 @@ void NonDBayesCalibration::print_results(std::ostream& s)
     int num_filtered = filteredFnVals.numCols();
     RealMatrix filteredFnVals_transpose(filteredFnVals, Teuchos::TRANS);
     RealMatrix predVals_transpose(predVals, Teuchos::TRANS);
-    print_intervals_screen(s, filteredFnVals_transpose, 
-      			 predVals_transpose, num_filtered);
+    print_intervals_screen(s, filteredFnVals_transpose,
+			   predVals_transpose, num_filtered);
   }
 
   // Print posterior stats
-  if(posteriorStatsKL)
+  if (posteriorStatsKL)
     print_kl(s);
 }
 
 void NonDBayesCalibration::kl_post_prior(RealMatrix& acceptanceChain)
 {
- 
   // sub-sample posterior chain
   int num_params = numContinuousVars + numHyperparams;
   int num_post_samples = acceptanceChain.numCols();
@@ -2139,7 +2291,7 @@ void NonDBayesCalibration::mutual_info_buildX()
    * considered in the mutual info calculation. Each column has the form
    * X_i = [x1_i x2_i ... xn_i y1_i y2_i ... ym_i]
    */
-   
+
   int num_params = numContinuousVars + numHyperparams;
   int num_samples = 1000;
   boost::mt19937 rnumGenerator;
@@ -2192,14 +2344,18 @@ void NonDBayesCalibration::mutual_info_buildX()
 
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
 
-
-  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params);
+  int alg;
+  if (mutualInfoKSG2)
+    alg = 1;
+  else
+    alg = 0; //default is KSG1
+  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params, alg);
   Cout << "MI est = " << mutualinfo_est << '\n';
 
 }
 
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
-    int dimY)
+    int dimY, int alg)
 {
   approxnn::normSelector::instance().method(approxnn::LINF_NORM);
 
@@ -2221,7 +2377,6 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
     }
   }
 
-  /*
   // Normalize data
   ANNpoint meanXY, stdXY;
   meanXY = annAllocPt(dim); //means
@@ -2232,6 +2387,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   }
   for (int j = 0; j < dim; j++){
     meanXY[j] = meanXY[j]/double(num_samples);
+    //Cout << "mean" << j << " = " << meanXY[j] << '\n';
   }
   stdXY = annAllocPt(dim); //standard deviations
   for (int i = 0; i < num_samples; i++){
@@ -2241,23 +2397,25 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   }
   for (int j = 0; j < dim; j++){
     stdXY[j] = sqrt( stdXY[j]/(double(num_samples)-1.0) );
+    //Cout << "std" << j << " = " << stdXY[j] << '\n';
   }
   for (int i = 0; i < num_samples; i++){
     for (int j = 0; j < dim; j++){
       dataXY[i][j] = ( dataXY[i][j] - meanXY[j] )/stdXY[j];
     }
+    //Cout << "dataXY = " << dataXY[i][0] << '\n';
   }
-  */
 
   // Get knn-distances for Xmatrix
   RealVector XYdistances(num_samples);
+  Int2DArray XYindices(num_samples);
   IntVector k_vec(num_samples);
   int k = 6;
   k_vec.putScalar(k); // for self distances, need k+1
   double eps = 0.0;
-  ann_dist(dataXY, dataXY, XYdistances, num_samples, num_samples, dim, 
-      	   k_vec, eps);
-  
+  ann_dist(dataXY, dataXY, XYdistances, XYindices, num_samples, num_samples, 
+           dim, k_vec, eps);
+
   // Build marginals
   ANNpointArray dataX, dataY;
   dataX = annAllocPts(num_samples, dimX);
@@ -2285,25 +2443,49 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   kdTreeX = new ANNkd_tree(dataX, num_samples, dimX);
   kdTreeY = new ANNkd_tree(dataY, num_samples, dimY);
 
+  // KAM 
   double marg_sum = 0.0;
+  int n_x, n_y;
   for(int i = 0; i < num_samples; i++){
-    int n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
-				    NULL, eps);
-    int n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
-				    NULL, eps);
+    if (alg == 1) { //ksg2
+      IntArray XYind_i = XYindices[i];	
+      RealArray ex_vec(XYind_i.size()-1);
+      RealArray ey_vec(XYind_i.size()-1);
+      for(int j = 1; j < XYind_i.size(); j ++) {
+	ex_vec[j-1] = annDist(dimX, dataX[i], dataX[XYind_i[j]]);
+	ey_vec[j-1] = annDist(dimY, dataY[i], dataY[XYind_i[j]]);
+      }
+      ANNdist e_x = *std::max_element(ex_vec.begin(), ex_vec.end());
+      ANNdist e_y = *std::max_element(ey_vec.begin(), ey_vec.end());
+      /*
+      ANNdist e = max(e_x, e_y);
+      n_x = kdTreeX->annkFRSearch(dataX[i], e, 0, NULL, NULL, eps);
+      n_y = kdTreeY->annkFRSearch(dataY[i], e, 0, NULL, NULL, eps);
+      */
+      n_x = kdTreeX->annkFRSearch(dataX[i], e_x, 0, NULL, NULL, eps);
+      n_y = kdTreeY->annkFRSearch(dataY[i], e_y, 0, NULL, NULL, eps);
+    }
+    else { //alg=0, ksg1
+      n_x = kdTreeX->annkFRSearch(dataX[i], XYdistances[i], 0, NULL, 
+  				    NULL, eps);
+      n_y = kdTreeY->annkFRSearch(dataY[i], XYdistances[i], 0, NULL,
+  				    NULL, eps);
+    }
     double psiX = boost::math::digamma(n_x);
     double psiY = boost::math::digamma(n_y);
     //double psiX = boost::math::digamma(n_x+1);
     //double psiY = boost::math::digamma(n_y+1);
     marg_sum += psiX + psiY;
-    //test_stream << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
-    //Cout << "i = " << i << ", nx = " << n_x << ", ny = " << n_y << '\n';
+    //test_stream <<"i = "<< i <<", nx = "<< n_x <<", ny = "<< n_y <<'\n';
     //test_stream << "psiX = " << psiX << '\n';
     //test_stream << "psiY = " << psiY << '\n';
   }
   double psik = boost::math::digamma(k);
   double psiN = boost::math::digamma(num_samples);
   double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
+  if (alg == 1) {
+    MI_est = MI_est - 1/double(k);
+  }
   //test_stream << "psi_k = " << psik << '\n';
   //test_stream << "marg_sum = " << marg_sum << '\n';
   //test_stream << "psiN = " << psiN << '\n';
@@ -2358,6 +2540,50 @@ void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1,
       delete [] knn_dist_i;
     }
     distances[i] = dist;
+    delete [] knn_ind;
+    delete [] knn_dist;
+  }
+  delete kdTree;
+  annClose();
+}
+
+void NonDBayesCalibration::ann_dist(const ANNpointArray matrix1, 
+     const ANNpointArray matrix2, RealVector& distances, Int2DArray& indices, 
+     int NX, int NY, int dim2, IntVector& k_vec, 
+     double eps)
+{
+  ANNkd_tree* kdTree;
+  kdTree = new ANNkd_tree( matrix2, NY, dim2 );
+  for (unsigned int i = 0; i < NX; ++i){
+    int k_i = k_vec[i] ;
+    ANNdistArray knn_dist = new ANNdist[k_i+1];
+    ANNidxArray knn_ind = new ANNidx[k_i+1];
+    //calc min number of distances needed
+    kdTree->annkSearch(matrix1[ i ], k_i+1, knn_ind, knn_dist, eps);
+    double dist = knn_dist[k_i];
+    IntArray ind(k_i+1);
+    for (int j = 0; j < k_i+1; j ++) 
+      ind[j] = knn_ind[j];
+    if (dist == 0.0){
+      ANNdistArray knn_dist_i = new ANNdist[NY];
+      ANNidxArray knn_ind_i = new ANNidx[NY];
+      //calc distances for whole array
+      kdTree->annkSearch(matrix1[ i ], NY, knn_ind_i, knn_dist_i, eps); 
+      for (unsigned int j = k_i+1; j < NY; ++j){
+	if (knn_dist_i[j] > 0.0){
+	  dist = knn_dist_i[j];
+	  ind.resize(j);
+	  for (int k = 0; k < j; k ++)  
+	    ind[k] = knn_ind_i[k];
+	  k_vec[i] = j;
+	  break;
+	}
+      }
+      delete [] knn_ind_i;
+      delete [] knn_dist_i;
+    }
+    distances[i] = dist;
+    indices[i] = ind;
     delete [] knn_ind;
     delete [] knn_dist;
   }

@@ -537,12 +537,13 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDGlobalInterval.cpp NonDGlobalEvidence.cpp NonDGlobalSingleInterval.cpp
     NonDIntegration.cpp NonDCubature.cpp NonDQuadrature.cpp NonDSparseGrid.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
+    NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDCalibration.cpp NonDBayesCalibration.cpp NonDWASABIBayesCalibration.cpp
     NonDSampling.cpp NonDLHSSampling.cpp
     NonDMultilevelSampling.cpp NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp 
     NonDPOFDarts.cpp NonDRKDDarts.cpp
-    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaLeastSq.cpp
-    NonlinearCGOptimizer.cpp 
+    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
+    DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedLevelData.cpp
     HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
@@ -992,9 +993,7 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
 #    include(InstallRequiredSystemLibraries)
     install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
   elseif (WIN32)
-    #include(InstallWinDLLs)
-    # Attempt to migrate to a more standard install using Kitware's helper
-    include(DakotaInstallRequiredSystemLibraries)
+    include(InstallWinDLLs)
   endif()
 endif()
   

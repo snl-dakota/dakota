@@ -1,0 +1,13 @@
+Blurb::
+Multilevel Polynomial Chaos Expansion as an emulator model.
+
+Description:: 
+Selects a multilevel polynomial chaos expansion (ML PCE) surrogate model 
+to use in the Bayesian likelihood calculations.  Most specification options are 
+carried over for using ML PCE as a surrogate within the Bayesian framework.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	method-multilevel_polynomial_chaos

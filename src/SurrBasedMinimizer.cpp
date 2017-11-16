@@ -55,8 +55,8 @@ using namespace std;
 namespace Dakota {
   extern PRPCache data_pairs; // global container
 
-SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model), globalIterCount(0),
+SurrBasedMinimizer::SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
@@ -822,7 +822,7 @@ constraint_violation(const RealVector& fn_vals, const Real& constraint_tol)
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void SurrBasedMinimizer::print_results(std::ostream& s)
+void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {

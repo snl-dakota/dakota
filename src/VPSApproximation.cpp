@@ -3241,10 +3241,10 @@ namespace Dakota
 
 
 
-    void VPSApproximation::build()
+    void VPSApproximation::build(size_t index)
     {
         // base class implementation checks data set against min required
-        Approximation::build();
+        Approximation::build(index);
 
         // Build a VPS surrogate model using the sampled data
         VPS_execute();

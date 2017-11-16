@@ -40,8 +40,8 @@ SurrBasedLocalMinimizer* SurrBasedLocalMinimizer::sblmInstance(NULL);
 
 
 SurrBasedLocalMinimizer::
-SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
-  SurrBasedMinimizer(problem_db, model), 
+SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  SurrBasedMinimizer(problem_db, model, traits), 
   approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
   approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
   meritFnType(probDescDB.get_short("method.sbl.merit_function")),

@@ -11,16 +11,15 @@ set(CMAKE_MODULE_PATH
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
 
-# Require C++11 at a minimum, but allow newer standards
-# Do this prior to other flag settings below
-if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-  set(CMAKE_CXX_STANDARD 11)
-endif()
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
+
+# Dakota requires C++11
+include(DakotaCxxOptions)
+dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 6)
+set(Dakota_VERSION_MINOR 7)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -35,7 +34,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
 # using the SVN rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "May 15 2015")    # Versioned release date Mmm dd yyyy
+#set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
@@ -165,6 +164,11 @@ set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+if(WIN32)
+  # We always build 32-bit Windows binaries and don't want to confuse users
+  # with the processor name from a 64-bit build host
+  set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+endif()
 
 # TODO: insert distribution type into package names, i.e., instead of 
 # ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
@@ -177,7 +181,8 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, .git directories, duplicate TPLs, and GPL packages
 # FFTW is GPL, CDDLIB is GPL
-set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/"
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/" ".*\\\\.git.*"
+  "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
   "^${Dakota_SOURCE_DIR}/packages/fftw/"
   "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
   "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
@@ -238,6 +243,7 @@ endif()
 # Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
+dakota_check_cxx11()
 enable_language(Fortran)
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
@@ -288,29 +294,30 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-# TODO: Can't this be integrated into the following logic?
-if(MSVC)
-  find_package(LAPACK REQUIRED NO_MODULE)
-  set(BLAS_LIBS blas)
-  set(LAPACK_LIBS lapack)
-endif()
-# first check for a system blas and lapack
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
-  if(NOT DEFINED BLAS_LIBS)
-    find_library(BLAS_LIBS blas)
-  endif()
-  if(NOT DEFINED LAPACK_LIBS)
-    find_library(LAPACK_LIBS lapack)
-  endif()
-  if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
-    # if not a system blas and lapack, then look for a cmake built LAPACK
-    # with find_package
+  # Historically on MSVC, tried to use CMake config file approach first.  
+  # Could probably just use the Unix logic below instead...
+  if(MSVC)
     find_package(LAPACK REQUIRED NO_MODULE)
     set(BLAS_LIBS blas)
     set(LAPACK_LIBS lapack)
+  else()
+    # first check for a system blas and lapack
+    if(NOT DEFINED BLAS_LIBS)
+      find_library(BLAS_LIBS blas)
+    endif()
+    if(NOT DEFINED LAPACK_LIBS)
+      find_library(LAPACK_LIBS lapack)
+    endif()
+    if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
+      # if not a system blas and lapack, then look for a cmake built LAPACK
+      # with find_package
+      find_package(LAPACK REQUIRED NO_MODULE)
+      set(BLAS_LIBS blas)
+      set(LAPACK_LIBS lapack)
+    endif()
   endif()
 endif()
-
 
 # GSL check at top-level due to need for settings in BOTH packages
 # and src subdirectories
@@ -386,7 +393,17 @@ if(WIN32)
 endif()
 # Dakota requires Boost 1.49 or newer; enforce for all libs in the build
 find_package(Boost 1.49 REQUIRED COMPONENTS "${dakota_boost_components}")
-
+# This cache variable is used to package the Boost liraries on Darwin (see
+# cmake/InstallDarwinDylibs.cmake). The variable Boost_LIBRARY_DIRS is set
+# in this scope by the CMake Boost probe (at least for CMake 3.5.2), but
+# this changes from version to version of CMake.
+if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+    if("${Boost_LIBRARY_DIRS}" STREQUAL "")
+        message(WARNING "The Boost probe for this version of CMake (${CMAKE_VERSION}) \
+        does not set Boost_LIBRARY_DIRS. Please notify the Dakota development team.")
+    endif()
+    set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
+endif()
 
 include(CTest)
 
@@ -601,9 +618,6 @@ endif()
 if(NOT MSVC)
   install(PROGRAMS "scripts/dakota.sh" DESTINATION "bin")
 endif()
-
-
-
 
 # Final CPack settings
 

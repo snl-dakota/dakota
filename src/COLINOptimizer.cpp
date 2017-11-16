@@ -217,7 +217,7 @@ enum { COBYLA, DIRECT, EA, MS, PS, SW, BETA };
   /// Standard constructor.
 
 COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -232,7 +232,8 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, Model& model):
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model, int seed,
 	       int max_iter, int max_eval):
-  Optimizer(method_string_to_enum(method_string), model), blockingSynch(true)
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
+  blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
@@ -248,7 +249,8 @@ COLINOptimizer(const String& method_string, Model& model, int seed,
 
 COLINOptimizer::
 COLINOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model), rng(NULL),
+  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new COLINTraits())),
+  rng(NULL),
   blockingSynch(true)
 {
   // (iteratedModel initialized in Optimizer(Model&))

@@ -32,7 +32,7 @@ TEUCHOS_UNIT_TEST(stat_utils, kl_divergence)
 
 //------------------------------------
 
-TEUCHOS_UNIT_TEST(stat_utils, mutual_info)
+TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg1)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -45,11 +45,31 @@ TEUCHOS_UNIT_TEST(stat_utils, mutual_info)
   }
 
   // Function being tested
-  Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1); 
+  Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 0);
 
-  Real gold_mi = -0.0438223;
+  Real gold_mi = -0.0218954;
   TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
 }
 
 //------------------------------------
 
+TEUCHOS_UNIT_TEST(stat_utils, mutual_info_ksg2)
+{
+  // Read in matrices 
+  std::ifstream infile1("stat_util_test_files/Matrix1.txt");
+  std::ifstream infile2("stat_util_test_files/Matrix2.txt");
+  RealMatrix Xmatrix;
+  Xmatrix.shapeUninitialized(2,1000);
+  for (int i = 0; i < 1000; ++i){
+    infile1 >> Xmatrix[i][0];
+    infile2 >> Xmatrix[i][1];
+  }
+
+  // Function being tested
+  Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 1);
+
+  Real gold_mi = -0.0561375;
+  TEST_FLOATING_EQUALITY(mutualinfo_est, gold_mi, 1.e-5);
+}
+
+//------------------------------------

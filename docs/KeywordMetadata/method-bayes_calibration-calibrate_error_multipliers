@@ -2,7 +2,7 @@ Blurb:: Calibrate hyper-parameter multipliers on the observation error covarianc
 
 Description:: Calibrate one or more multipliers on the user-provided
 observation error covariance (\ref
-responses-calibration_terms-calibration_data-variance_type).  Options
+responses-calibration_terms-calibration_data-experiment_variance_type).  Options
 include \c one multiplier on the whole block-diagonal covariance
 structure, one multiplier \c per_experiment covariance block, one
 multiplier \c per_response covariance block, or separate multipliers
@@ -54,7 +54,7 @@ responses
     calibration_data_file = 'expdata.withsigma.dat'
       freeform
       num_experiments = 10
-	    variance_type = 'scalar'
+	    experiment_variance_type = 'scalar'
 \endverbatim
 
 Theory::

@@ -1,0 +1,85 @@
+environment,
+	output_precision = 16
+
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_polynomial_chaos				
+# Defines aggregate set of ML samples across all discretization levels
+	  import_build_points_file = 'dakota_uq_heat_eq_mlpce_import.hf.dat'
+# Defines lower bound for pilot comprised of import + new samples.
+# Can be scalar or vector input -- set to zero or <= expected import
+# counts if you want import only.
+	  pilot_samples = 100 40 20 10
+#	  pilot_samples = 0
+# Distinct option does not support data imports (yet)
+	  discrepancy_emulation recursive
+#	  discrepancy_emulation distinct
+# Starting point / lower bound for exp order -- this gets incremented as
+# sample levels increase in order to meet the collocation ratio target
+	  expansion_order = 2
+	  collocation_ratio = .75
+# non-repeatable experiments if any new points:
+#	  seed = 1237
+	  orthogonal_matching_pursuit
+# Don't iterate/adapt -- conv tol only important if adapting
+	  max_iterations = 0
+#	  convergence_tolerance = .001
+# Set to silent to minimize intermediate output
+	output debug
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'LF_VARS'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'HF' #'LF'
+	  correction additive zeroth_order
+
+model,
+	id_model = 'LF'
+	variables_pointer = 'LF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 375. 10125. 81000. 648000.
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 5 15 30 60 # number of spatial coords
+	    	       	 3 	    # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 30 60 100 200 # number of spatial coords
+	    	       	 21 	       # number of Fourier solution modes
+	    initial_state = 30 21
+	    descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

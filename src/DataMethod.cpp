@@ -109,9 +109,8 @@ DataMethodRep::DataMethodRep():
   // COLINY, JEGA, NonD, & DACE
   randomSeed(0),
   // NOMAD
-  initMeshSize(1.0), minMeshSize(1.e-6),
-  historyFile("mads_history"), displayFormat("bbe obj"),
-  vns(0.0), neighborOrder(1), showAllEval(false),
+  initMeshSize(1.0), minMeshSize(1.e-6), historyFile("mads_history"),
+  displayFormat("bbe obj"), vns(0.0), neighborOrder(1), showAllEval(false),
   useSurrogate("none"),
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
@@ -126,37 +125,44 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
+  quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
+  expansionOrder(USHRT_MAX),
+  collocationPoints(std::numeric_limits<size_t>::max()),
+  expansionSamples(std::numeric_limits<size_t>::max()),
+  //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
-  //expansionSampleType("lhs"),
+  multilevDiscrepEmulation(DISTINCT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
-  responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
-  chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
-  emulatorType(NO_EMULATOR), mcmcType("dram"), standardizedSpace(false),
-  adaptPosteriorRefine(false), logitTransform(false), gpmsaNormalize(false),
-  posteriorStatsKL(false),
+  multilevEstimatorRate(2.), finalMomentsType(STANDARD_MOMENTS),
+  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
+  responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
+  samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
+  mcmcType("dram"), standardizedSpace(false), adaptPosteriorRefine(false),
+  logitTransform(false), gpmsaNormalize(false), posteriorStatsKL(false),
   posteriorStatsMutual(false),  preSolveMethod(SUBMETHOD_DEFAULT),
   proposalCovUpdates(0), fitnessMetricType("predicted_variance"), 
   batchSelectionType("naive"), lipschitzType("local"), 
   calibrateErrorMode(CALIBRATE_NONE), burnInSamples(0), subSamplingPeriod(1),
   calModelDiscrepancy(false),
   // numPredConfigs (BMA TODO this is not initialized...)
-  importPredConfigFormat(TABULAR_ANNOTATED), discrepancyType("global_kriging"),
+  importPredConfigFormat(TABULAR_ANNOTATED),
+  modelDiscrepancyType("global_kriging"),
   approxCorrectionOrder(2), exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
-  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
+  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false), 
+  mutualInfoKSG2(false),
   importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),  
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
-
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
-
+  // Wasabi
+  numPushforwardSamples(10000),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -267,36 +273,39 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << regressionType
-    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
+    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
+    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
+    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
+    << expansionOrder << collocationPoints << expansionSamples
+    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+    << collocRatioTermsOrder << regressionType << lsRegressionType
+    << regressionNoiseTol << regressionL2Penalty << crossValidation
+    << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
-    << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples
-    << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << gpmsaNormalize
+    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
+    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << refineSamples << pilotSamples
+    << multilevEstimatorRate << finalMomentsType << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
+    << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode
-    << hyperPriorAlphas << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << calModelDiscrepancy << numPredConfigs << predictionConfigList
-    << importPredConfigs << importPredConfigFormat
-    << discrepancyType << approxCorrectionOrder << exportCorrModelFile
-    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat
-    << exportDiscrepFile << exportDiscrepFormat << adaptExpDesign
-    << importCandPtsFile << importCandFormat << numCandidates << maxHifiEvals
-    << numChains << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << fitnessMetricType << batchSelectionType << lipschitzType
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
+    << numPredConfigs << predictionConfigList << importPredConfigs
+    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
+    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
+    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
+    << adaptExpDesign << importCandPtsFile << importCandFormat
+    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -415,36 +424,39 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> vbdOrder >> covarianceControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> growthOverride >> expansionType
-    >> piecewiseBasis >> expansionBasisType >> expansionOrder
-    >> expansionSamples >> expansionSampleType >> quadratureOrder
-    >> sparseGridLevel >> anisoDimPref >> cubIntOrder >> collocationPoints
-    >> collocationRatio >> collocRatioTermsOrder >> regressionType
-    >> lsRegressionType >> regressionNoiseTol >> regressionL2Penalty
-    >> crossValidation >> crossValidNoiseOnly //>> adaptedBasisInitLevel
+    >> piecewiseBasis >> expansionBasisType >> quadratureOrderSeq
+    >> sparseGridLevelSeq >> expansionOrderSeq >> collocationPointsSeq
+    >> expansionSamplesSeq >> quadratureOrder >> sparseGridLevel
+    >> expansionOrder >> collocationPoints >> expansionSamples
+    >> expansionSampleType >> anisoDimPref >> cubIntOrder >> collocationRatio
+    >> collocRatioTermsOrder >> regressionType >> lsRegressionType
+    >> regressionNoiseTol >> regressionL2Penalty >> crossValidation
+    >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
-    >> tensorGridFlag >> tensorGridOrder >> importExpansionFile
-    >> exportExpansionFile >> sampleType >> dOptimal >> numCandidateDesigns
-    >> reliabilitySearchType
-    >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> pilotSamples >> finalMomentsType >> distributionType >> responseLevelTarget
-    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> chainSamples
-    >> buildSamples >> samplesOnEmulator >> emulatorOrder >> emulatorType
-    >> mcmcType >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
-    >> gpmsaNormalize
+    >> tensorGridFlag >> tensorGridOrder >> multilevDiscrepEmulation
+    >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
+    >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
+    >> integrationRefine >> refineSamples >> pilotSamples
+    >> multilevEstimatorRate >> finalMomentsType >> distributionType
+    >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
+    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
+    >> chainSamples >> buildSamples >> samplesOnEmulator >> emulatorOrder
+    >> emulatorType >> mcmcType >> standardizedSpace
+    >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
     >> proposalCovData >> proposalCovFile >> quesoOptionsFilename
-    >> fitnessMetricType
-    >> batchSelectionType >> lipschitzType >> calibrateErrorMode
-    >> hyperPriorAlphas >> hyperPriorBetas >> burnInSamples >> subSamplingPeriod
-    >> calModelDiscrepancy >> numPredConfigs >> predictionConfigList
-    >> importPredConfigs >> importPredConfigFormat
-    >> discrepancyType >> approxCorrectionOrder >> exportCorrModelFile
-    >> exportCorrModelFormat >> exportCorrVarFile >> exportCorrVarFormat
-    >> exportDiscrepFile >> exportDiscrepFormat >> adaptExpDesign
-    >> importCandPtsFile >> importCandFormat >> numCandidates >> maxHifiEvals
-    >> numChains >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
+    >> fitnessMetricType >> batchSelectionType >> lipschitzType
+    >> calibrateErrorMode >> hyperPriorAlphas >> hyperPriorBetas
+    >> burnInSamples >> subSamplingPeriod >> calModelDiscrepancy
+    >> numPredConfigs >> predictionConfigList >> importPredConfigs
+    >> importPredConfigFormat >> modelDiscrepancyType >> approxCorrectionOrder
+    >> exportCorrModelFile >> exportCorrModelFormat >> exportCorrVarFile
+    >> exportCorrVarFormat >> exportDiscrepFile >> exportDiscrepFormat
+    >> adaptExpDesign >> importCandPtsFile >> importCandFormat
+    >> numCandidates >> maxHifiEvals >> mutualInfoKSG2 >> numChains
+    >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
+    >> numPushforwardSamples 
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -563,36 +575,39 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << vbdOrder << covarianceControl << rngName << refinementType
     << refinementControl << nestingOverride << growthOverride << expansionType
-    << piecewiseBasis << expansionBasisType << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << anisoDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << regressionType
-    << lsRegressionType << regressionNoiseTol << regressionL2Penalty
-    << crossValidation << crossValidNoiseOnly //<< adaptedBasisInitLevel
+    << piecewiseBasis << expansionBasisType << quadratureOrderSeq
+    << sparseGridLevelSeq << expansionOrderSeq << collocationPointsSeq
+    << expansionSamplesSeq << quadratureOrder << sparseGridLevel
+    << expansionOrder << collocationPoints << expansionSamples
+    << expansionSampleType << anisoDimPref << cubIntOrder << collocationRatio
+    << collocRatioTermsOrder << regressionType << lsRegressionType
+    << regressionNoiseTol << regressionL2Penalty << crossValidation
+    << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
-    << tensorGridFlag << tensorGridOrder << importExpansionFile
-    << exportExpansionFile << sampleType << dOptimal << numCandidateDesigns
-    << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << refineSamples
-    << pilotSamples << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples
-    << buildSamples << samplesOnEmulator << emulatorOrder << emulatorType
-    << mcmcType << standardizedSpace << adaptPosteriorRefine << logitTransform
-    << gpmsaNormalize
+    << tensorGridFlag << tensorGridOrder << multilevDiscrepEmulation
+    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
+    << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
+    << integrationRefine << refineSamples << pilotSamples
+    << multilevEstimatorRate << finalMomentsType << distributionType
+    << responseLevelTarget << responseLevelTargetReduce << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << chainSamples << buildSamples << samplesOnEmulator << emulatorOrder
+    << emulatorType << mcmcType << standardizedSpace
+    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
     << proposalCovData << proposalCovFile << quesoOptionsFilename
-    << fitnessMetricType
-    << batchSelectionType << lipschitzType << calibrateErrorMode
-    << hyperPriorAlphas << hyperPriorBetas << burnInSamples << subSamplingPeriod
-    << calModelDiscrepancy << numPredConfigs << predictionConfigList
-    << importPredConfigs << importPredConfigFormat
-    << discrepancyType << approxCorrectionOrder << exportCorrModelFile
-    << exportCorrModelFormat << exportCorrVarFile << exportCorrVarFormat
-    << exportDiscrepFile << exportDiscrepFormat << adaptExpDesign
-    << importCandPtsFile << importCandFormat << numCandidates << maxHifiEvals
-    << numChains << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << fitnessMetricType << batchSelectionType << lipschitzType
+    << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
+    << burnInSamples << subSamplingPeriod << calModelDiscrepancy
+    << numPredConfigs << predictionConfigList << importPredConfigs
+    << importPredConfigFormat << modelDiscrepancyType << approxCorrectionOrder
+    << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
+    << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
+    << adaptExpDesign << importCandPtsFile << importCandFormat
+    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCR << crossoverChainPairs << grThreshold << jumpStep
+    << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

@@ -1,0 +1,11 @@
+Blurb::Planned future capability for local pointwise refinement within a generalized sparse grid.
+
+Description::Sparse grid interpolation admits approaches for pointwise local refinement within the general framework of generalized sparse grids.  This algorithmic capability is currently in a partial prototype stage.
+
+Topics::
+
+Examples::
+
+Theory::
+Faq::
+See_Also::

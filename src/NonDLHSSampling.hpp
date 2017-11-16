@@ -101,7 +101,7 @@ protected:
   void compute_pca(std::ostream& s);
 
   /// print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
@@ -136,6 +136,9 @@ protected:
 
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
+
+  /// Print a header and summary statistics
+  void print_header_and_statistics(std::ostream& s, const int& num_samples);
 
 private:
 

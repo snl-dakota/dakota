@@ -232,16 +232,69 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   precondRequestValue(0),
-  logitTransform(probDescDB.get_bool("method.nond.logit_transform"))
+  logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
+  advancedOptionsFile(probDescDB.get_string("method.queso_options_file"))
 {
-  init_queso_environment();
+  bool found_error = false;
+
+  // Only QUESO supports proposal covariance updates and posterior adaptive
+  // surrogate updates for now, hence this override is in this class
+  // assign default proposalCovarType
+
+  if (proposalCovarType.empty()) {
+    if (emulatorType) proposalCovarType = "derivatives"; // misfit Hessian
+    else              proposalCovarType = "prior";       // prior covariance
+  }
+
+  // manage sample partitions and defaults
+  int samples_spec = probDescDB.get_int("method.nond.chain_samples");
+  if (proposalCovarType == "derivatives") {
+    int pc_update_spec
+      = probDescDB.get_int("method.nond.proposal_covariance_updates");
+    if (pc_update_spec < 1) { // default partition: update every 100 samples
+      // if the user specified less than 100 samples, use that,
+      // resulting in chainCycles = 1
+      chainSamples = std::min(samples_spec, 100);
+      chainCycles  = (int)floor((Real)samples_spec / (Real)chainSamples + .5);
+    }
+    else { // partition as specified
+      if (samples_spec < pc_update_spec) {
+	// hard error since the user explicitly gave both controls
+	Cerr << "\nError: chain_samples must be >= proposal_updates.\n";
+	found_error = true;
+      }
+      chainSamples = (int)floor((Real)samples_spec / (Real)pc_update_spec + .5);
+      chainCycles  = pc_update_spec;
+    }
+  }
+
+  // assign default maxIterations (DataMethod default is -1)
+  if (adaptPosteriorRefine && maxIterations < 0)
+    maxIterations = 25;
+
+  if (!advancedOptionsFile.empty()) {
+    if (boost::filesystem::exists(advancedOptionsFile)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Any QUESO options in file '" << advancedOptionsFile
+	     << "' will override Dakota options." << std::endl;
+    } else {
+      Cerr << "\nError: QUESO options_file '" << advancedOptionsFile
+	   << "' specified, but file not found.\n";
+      found_error = true;
+    }
+  }
 
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
     Cerr << "\nError: you are attempting to calibrate the measurement error " 
          << "but have not provided experimental data information." << std::endl;
-    abort_handler(METHOD_ERROR);
+    found_error = true;
   }
+
+  if (found_error)
+    abort_handler(METHOD_ERROR);
+
+  init_queso_environment();
 }
 
 
@@ -418,11 +471,7 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 }
 
 
-/** The input filename is only passed by GPMSA as there's no way to
-    override the C++ options with file-based options for the QUESO
-    ctors. */
-void NonDQUESOBayesCalibration::
-init_queso_environment(const String& input_filename)
+void NonDQUESOBayesCalibration::init_queso_environment()
 {
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
@@ -433,21 +482,29 @@ init_queso_environment(const String& input_filename)
   // needs envOptionsValues:
   quesoEnv.reset();
 
-  // Unfortunately, if we set these options, can't load the GPMSA options!
-  // For now, require all options from file when using it
-  if (input_filename.empty()) {
-    // TODO: see if this can be a local, or if the env retains a pointer
-    envOptionsValues.reset(new QUESO::EnvOptionsValues());
-    envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
-    envOptionsValues->m_subDisplayAllowedSet.insert(0);
-    envOptionsValues->m_subDisplayAllowedSet.insert(1);
-    envOptionsValues->m_displayVerbosity = 2;  
-    // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
-    envOptionsValues->m_seed = randomSeed; 
-    // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
-  }
-  else
-    envOptionsValues.reset();
+  // Construct with default options
+  // TODO: see if this can be a local, or if the env retains a pointer
+  envOptionsValues.reset(new QUESO::EnvOptionsValues());
+
+  // C++ API options may override defaults
+  envOptionsValues->m_subDisplayFileName = "QuesoDiagnostics/display";
+  envOptionsValues->m_subDisplayAllowedSet.insert(0);
+  envOptionsValues->m_subDisplayAllowedSet.insert(1);
+  envOptionsValues->m_displayVerbosity = 2;
+  // From GPMSA: envOptionsValues->m_displayVerbosity     = 3;
+  envOptionsValues->m_seed = randomSeed;
+  // From GPMSA: envOptionsValues->m_identifyingString="dakota_foo.in"
+
+  // File-based power user parameters have the final say
+  //
+  // Unfortunately, there's a chicken-and-egg problem where parsing
+  // EnvOptionsValues requires an Environment, so we defer this parse
+  // to the ctor...
+  //
+  // if (!advancedOptionsFile.empty())
+  //   envOptionsValues->parse(*quesoEnv, "");
+  const char* aof_cstr =
+    advancedOptionsFile.empty() ? NULL : advancedOptionsFile.c_str();
 
 #ifdef DAKOTA_HAVE_MPI
   // this prototype and MPI_COMM_SELF only available if Dakota/QUESO have MPI
@@ -455,22 +512,21 @@ init_queso_environment(const String& input_filename)
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,"ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF,
-						input_filename.c_str(),
-						"", envOptionsValues.get()));
+      quesoEnv.reset(new QUESO::FullEnvironment(MPI_COMM_SELF, aof_cstr, "",
+						envOptionsValues.get()));
   }
   else {
     if (mcmcType == "multilevel")
       quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
     else // dram, dr, am, or mh
-      quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
+      quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
 						envOptionsValues.get()));
   }
 #else
   if (mcmcType == "multilevel")
     quesoEnv.reset(new QUESO::FullEnvironment("ml.inp","",NULL));
   else // dram, dr, am, or mh
-    quesoEnv.reset(new QUESO::FullEnvironment(input_filename.c_str(), "",
+    quesoEnv.reset(new QUESO::FullEnvironment(aof_cstr, "",
 					      envOptionsValues.get()));
 #endif
 
@@ -483,10 +539,11 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   // full Hessian requires values/gradients/Hessians of residuals (rv=7)
   precondRequestValue = 0;
   switch (emulatorType) {
-  case PCE_EMULATOR: case KRIGING_EMULATOR:
-    precondRequestValue = 7; break;
-  case  SC_EMULATOR: case      GP_EMULATOR: // no Hessian support yet
-    precondRequestValue = 2; break;
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+  case KRIGING_EMULATOR:
+    precondRequestValue = 7; break; // emulator Hessian support
+  case SC_EMULATOR: case MF_SC_EMULATOR: case GP_EMULATOR:
+    precondRequestValue = 2; break; // emulator Hessians not supported yet
   case  NO_EMULATOR:
     // Note: mixed gradients/Hessians are still globally "on", regardless of
     // mixed computation approach
@@ -991,6 +1048,7 @@ void NonDQUESOBayesCalibration::update_model()
   mcmcModel.surrogate_response_mode(BYPASS_SURROGATE); // actual model evals
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     nondInstance = (NonD*)stochExpIterator.iterator_rep();
     evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
     nondInstance = this; // restore
@@ -1010,7 +1068,8 @@ void NonDQUESOBayesCalibration::update_model()
     Cout << "Updating emulator: appending " << allResponses.size()
 	 << " new data sets." << std::endl;
   switch (emulatorType) {
-  case PCE_EMULATOR: case SC_EMULATOR: {
+  case PCE_EMULATOR: case SC_EMULATOR:
+  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel.append_approximation).
     NonDExpansion* se_iterator
@@ -1032,9 +1091,9 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
   // than use norm of current coeffs (stopping on small norm is not meaningful)
   if (prevCoeffs.empty()) {
     switch (emulatorType) {
-    case PCE_EMULATOR:
+    case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
       prevCoeffs = mcmcModel.approximation_coefficients(true);  break;
-    case SC_EMULATOR:
+    case SC_EMULATOR: case MF_SC_EMULATOR:
       prevCoeffs = mcmcModel.approximation_coefficients(false); break;
     case GP_EMULATOR: case KRIGING_EMULATOR:
       Cerr << "Warning: convergence norm not yet defined for GP emulators in "
@@ -1047,7 +1106,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
 
   Real l2_norm_delta_coeffs = 0., delta_coeff_ij;
   switch (emulatorType) {
-  case PCE_EMULATOR: {
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: {
     // normalized coeffs:
     const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(true);
     size_t i, j, num_qoi = coeffs.size(),
@@ -1076,7 +1135,7 @@ Real NonDQUESOBayesCalibration::assess_emulator_convergence()
     prevCoeffs = coeffs;
     break;
   }
-  case SC_EMULATOR: {
+  case SC_EMULATOR: case MF_SC_EMULATOR: {
     // Interpolation could use a similar concept with the expansion coeffs,
     // although adaptation would imply differences in the grid.
     const RealVectorArray& coeffs = mcmcModel.approximation_coefficients(false);
@@ -1141,6 +1200,7 @@ void NonDQUESOBayesCalibration::init_parameter_domain()
   if (standardizedSpace) { // param domain in u-space
     switch (emulatorType) {
     case PCE_EMULATOR: case SC_EMULATOR:// init_pt already propagated to u-space
+    case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
       copy_gsl_partial(init_pt, *paramInitials, 0);
       break;
     default: { // init_pt not already propagated to u-space: use local nataf
@@ -1375,19 +1435,31 @@ void NonDQUESOBayesCalibration::validate_proposal()
 /// set inverse problem options common to all solvers
 void NonDQUESOBayesCalibration::set_ip_options() 
 {
+  // Construct with default options
   calIpOptionsValues.reset(new QUESO::SipOptionsValues());
+
+  // C++ API options may override defaults
   //definitely want to retain computeSolution
   calIpOptionsValues->m_computeSolution    = true;
   calIpOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/invpb_output";
   calIpOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpOptionsValues->m_dataOutputAllowedSet.insert(1);
+
+  // File-based power user parameters have the final say
+  if (!advancedOptionsFile.empty())
+    calIpOptionsValues->parse(*quesoEnv, "");
+
+ if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nIP Final Options:" << *calIpOptionsValues << std::endl;
 }
 
 
 void NonDQUESOBayesCalibration::set_mh_options() 
 {
+  // Construct with default options
   calIpMhOptionsValues.reset(new QUESO::MhOptionsValues());
 
+  // C++ API options may override defaults
   calIpMhOptionsValues->m_dataOutputFileName = "QuesoDiagnostics/mh_output";
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(0);
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
@@ -1447,22 +1519,32 @@ void NonDQUESOBayesCalibration::set_mh_options()
   if (logitTransform) {
     calIpMhOptionsValues->m_algorithm = "logit_random_walk";
     calIpMhOptionsValues->m_tk = "logit_random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = true;  // deprecated
   }
   else {
     calIpMhOptionsValues->m_algorithm = "random_walk";
     calIpMhOptionsValues->m_tk = "random_walk";
-    //calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
+    calIpMhOptionsValues->m_doLogitTransform = false;  // deprecated
   }
-}
+
+  // File-based power user parameters have the final say
+  // The options are typically prefixed with ip_mh, so prepend an "ip_" prefix
+  // from the IP options:
+  if (!advancedOptionsFile.empty())
+    calIpMhOptionsValues->parse(*quesoEnv, calIpOptionsValues->m_prefix);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nMH Final Options:" << *calIpMhOptionsValues << std::endl;
+ }
 
 
 void NonDQUESOBayesCalibration::update_chain_size(unsigned int size)
 { if (size) calIpMhOptionsValues->m_rawChainSize = size; }
 
-void NonDQUESOBayesCalibration::print_results(std::ostream& s)
-{
 
+void NonDQUESOBayesCalibration::
+print_results(std::ostream& s, short results_state)
+{
   if (bestSamples.empty()) return;
 
   StringMultiArrayConstView cv_labels = 
@@ -1538,7 +1620,7 @@ void NonDQUESOBayesCalibration::print_results(std::ostream& s)
   */
   
   // Print final stats for variables and responses 
-  NonDBayesCalibration::print_results(s);
+  NonDBayesCalibration::print_results(s, results_state);
 }
 
 

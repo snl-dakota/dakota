@@ -33,8 +33,8 @@ extern PRPCache data_pairs; // global container
 Optimizer* Optimizer::optimizerInstance(NULL);
 
 
-Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
-  Minimizer(problem_db, model),
+Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
@@ -132,8 +132,8 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Optimizer::Optimizer(unsigned short method_name, Model& model):
-  Minimizer(method_name, model), numObjectiveFns(numUserPrimaryFns),
+Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, model, traits), numObjectiveFns(numUserPrimaryFns),
   localObjectiveRecast(false)
 {
   if (numObjectiveFns > 1) {
@@ -152,8 +152,8 @@ Optimizer::Optimizer(unsigned short method_name, Model& model):
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq):
-  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq),
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+  Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq, traits),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
   numContinuousVars     = num_cv;
@@ -181,7 +181,7 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void Optimizer::print_results(std::ostream& s)
+void Optimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
@@ -382,7 +382,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
-  // update_from_sub_model is used instead.
+  // update_from_model() is used instead.
   bool recurse_flag = false;
   iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
 
@@ -470,6 +470,33 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << std::endl;
 }
 
+/** Implements configuration of constraint maps, etc...  */
+void Optimizer::configure_constraint_maps()
+{
+
+  if( traits()->supports_nonlinear_inequality() ) {
+    // Sanity check consistent specs
+    if( traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::NONE ) {
+      Cerr << "\nError: inconsistent format for NONLINEAR_INEQUALITY_FORMAT in traits." << std::endl;
+      abort_handler(-1);
+    }
+
+    Real scaling = 
+      (traits()->nonlinear_inequality_format() == NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER)
+        ? 1.0 : -1.0;
+
+    numNonlinearIneqConstraintsFound = 
+      configure_inequality_constraint_maps(
+                                  iteratedModel,
+                                  bigRealBoundSize,
+                                  CONSTRAINT_TYPE::NONLINEAR,
+                                  constraintMapIndices,
+                                  constraintMapMultipliers,
+                                  constraintMapOffsets,
+                                  scaling);
+  }
+}
+
 
 /** Implements portions of initialize_run specific to Optimizers. This
     function should be invoked (or reimplemented) by any derived
@@ -497,6 +524,9 @@ void Optimizer::initialize_run()
   // minimizer is NL2SOL and the previous optimizer is NULL).
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
+
+  if (!iteratedModel.is_null())
+    configure_constraint_maps();
 }
 
 

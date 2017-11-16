@@ -17,7 +17,7 @@ method,
 #	    variance_based_decomp
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
-	polynomial_chaos			#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
+	multifidelity_polynomial_chaos		#s0,#s1,#s2,#s6,#s7,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18
 	  non_nested				#s0,#s1,#s2,#s6,#s7
 #	  expansion_order_sequence = 4 2	#s11,#s13,#s15,#s16
 #	  expansion_order_sequence = 5 3	#s12,#s17
@@ -28,14 +28,15 @@ method,
 #	  collocation_points_sequence =  40  10	#s13,#s14
 #	  expansion_samples_sequence = 2000 200	#s15
 #	  seed = 12347	      	  		#s11,#s12,#s13,#s14,#s15,#s16,#s17
-#	stoch_collocation non_nested		#s3,#s4,#s5,#s8,#s9,#s10
+#	multifidelity_stoch_collocation		#s3,#s4,#s5,#s8,#s9,#s10
+#	  non_nested				#s3,#s4,#s5,#s8,#s9,#s10
 	  sparse_grid_level_sequence = 3 1	#s0,#s3
 #	  sparse_grid_level_sequence = 1 3	#s18
 #	  quadrature_order_sequence  = 5 3	#s6,#s8
 #	  uniform p_refinement			#s1,#s4,#s7,#s9
 #	  dimension_adaptive p_refinement generalized	#s2,#s5
-#	  sparse_grid_level = 0		  	#s1,#s2,#s4,#s5
-#	  quadrature_order  = 1			#s7,#s9
+#	  sparse_grid_level_sequence = 0  	#s1,#s2,#s4,#s5
+#	  quadrature_order_sequence  = 1	#s7,#s9
 #	  sparse_grid_level_sequence = 10 5	#s10
 #	  piecewise use_derivatives		#s10
 	  variance_based_decomp

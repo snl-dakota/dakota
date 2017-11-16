@@ -55,7 +55,7 @@ protected:
   void pre_run();
   void core_run();
   void post_run(std::ostream& s);
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
 
@@ -89,11 +89,6 @@ private:
   /// perform final LF sample increment as indicated by the evaluation ratio
   bool lf_increment(Real avg_eval_ratio, const SizetArray& N_lf,
 		    const SizetArray& N_hf, size_t iter, size_t lev);
-
-  /// distribute pilotSamples input across model forms or levels
-  void load_pilot_sample(SizetArray& delta_N_l);
-  /// distribute pilotSamples input across model forms and levels
-  void load_pilot_sample(Sizet2DArray& delta_N_l);
 
   /// initialize the ML accumulators for computing means, variances, and
   /// covariances across fidelity levels

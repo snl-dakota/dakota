@@ -29,7 +29,7 @@ namespace Dakota {
 // Main Class: NomadOptimizer
 
 NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {     
   // Set initial mesh size
   initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
@@ -97,7 +97,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 NomadOptimizer::NomadOptimizer(Model& model):
-  Optimizer(MESH_ADAPTIVE_SEARCH, model)
+  Optimizer(MESH_ADAPTIVE_SEARCH, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {
 }
 
@@ -767,35 +767,12 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   //		nonlinear_inequality_constraints
   //		nonlinear_equality_constraints
 
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
     = iteratedModel.nonlinear_eq_constraint_targets();
 
-  numNomadNonlinearIneqConstraints = 0;
+  numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 
-  for (i=0; i<numNonlinearIneqConstraints; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      numNomadNonlinearIneqConstraints++;
-      constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_upr_bnds[i]);
-    }
-  }
-
-  for (i=0; i<numNonlinearEqConstraints; i++) {
-    constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
-    constraintMapMultipliers.push_back(1.0);
-    constraintMapOffsets.push_back(-nln_eq_targets[i]);
-  }
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
 }
 
 NomadOptimizer::~NomadOptimizer() {};

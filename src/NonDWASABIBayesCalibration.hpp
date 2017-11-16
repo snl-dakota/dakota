@@ -70,7 +70,7 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// Extract a subset of samples for posterior eval according to the
   /// indices in points_to_keep
@@ -86,7 +86,8 @@ protected:
 
   //
   //- Heading: Data
-
+  /// number of samples from the prior that is pushed forward through the model
+  int numPushforwardSamples;
   /// The mean of the multivariate Gaussian distribution of the obs. data
   RealVector dataDistMeans;
   /// The covariance of the multivariate Gaussian distribution of the obs. data
@@ -122,6 +123,10 @@ protected:
 
   /// random number engine for sampling the prior
   boost::mt19937 rnumGenerator;
+ 
+  /// Matrix for moment statistics.  Note that posterior values have density 
+  /// associated with them so we can't use the compute_moments in NonDSampling
+  RealMatrix momentStatistics;
 
 private:
 

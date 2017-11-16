@@ -1572,7 +1572,8 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 	{"nonlinear_inequality_scales", P nonlinearIneqScales},
 	{"nonlinear_inequality_upper_bounds", P nonlinearIneqUpperBnds},
 	{"primary_response_fn_scales", P primaryRespFnScales},
-	{"primary_response_fn_weights", P primaryRespFnWeights}};
+	{"primary_response_fn_weights", P primaryRespFnWeights}, 
+        {"simulation_variance", P simVariance}};
     #undef P
 
     KW<RealVector, DataResponsesRep> *kw;
@@ -1734,8 +1735,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<SizetArray, DataMethodRep> SZAdme[] = {	
       // must be sorted by string (key)
-      {"nond.collocation_points", P collocationPoints},
-      {"nond.expansion_samples", P expansionSamples},
+      {"nond.collocation_points", P collocationPointsSeq},
+      {"nond.expansion_samples", P expansionSamplesSeq},
       {"nond.pilot_samples", P pilotSamples}};
     #undef P
 
@@ -1761,9 +1762,9 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<UShortArray, DataMethodRep> USAdme[] = {	
       // must be sorted by string (key)
-	{"nond.expansion_order", P expansionOrder},
-	{"nond.quadrature_order", P quadratureOrder},
-	{"nond.sparse_grid_level", P sparseGridLevel},
+	{"nond.expansion_order", P expansionOrderSeq},
+	{"nond.quadrature_order", P quadratureOrderSeq},
+	{"nond.sparse_grid_level", P sparseGridLevelSeq},
 	{"nond.tensor_grid_order", P tensorGridOrder},
 	{"partitions", P varPartitions}};
     #undef P
@@ -2310,7 +2311,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nond.data_dist_cov_type", P dataDistCovInputType},
         {"nond.data_dist_filename", P dataDistFile},
 	{"nond.data_dist_type", P dataDistType},
-	{"nond.discrepancy_type", P discrepancyType},
+	{"nond.discrepancy_type", P modelDiscrepancyType},
 	{"nond.expansion_sample_type", P expansionSampleType},
 	{"nond.export_corrected_model_file", P exportCorrModelFile},
 	{"nond.export_corrected_variance_file", P exportCorrVarFile},
@@ -2478,6 +2479,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.x_conv_tol", P xConvTol},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
+	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
 	{"nond.regression_penalty", P regressionL2Penalty},
 	{"npsol.linesearch_tolerance", P lineSearchTolerance},
 	{"optpp.centering_parameter", P centeringParam},
@@ -2580,6 +2582,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.max_refinement_iterations", P maxRefineIterations},
 	{"nond.max_solver_iterations", P maxSolverIterations},
 	{"nond.proposal_covariance_updates", P proposalCovUpdates},
+	{"nond.pushforward_samples", P numPushforwardSamples},
 	{"nond.samples_on_emulator", P samplesOnEmulator},
 	{"nond.surrogate_order", P emulatorOrder},
 	{"npsol.verify_level", P verifyLevel},
@@ -2671,6 +2674,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
+	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},
 	{"nond.response_level_target", P responseLevelTarget},
@@ -2786,13 +2790,16 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       //{"nond.adapted_basis.initial_level", P adaptedBasisInitLevel},
 	{"nond.calibrate_error_mode", P calibrateErrorMode},
 	{"nond.cubature_integrand", P cubIntOrder},
+	{"nond.expansion_order", P expansionOrder},
 	{"nond.export_corrected_model_format", P exportCorrModelFormat},
 	{"nond.export_corrected_variance_format", P exportCorrVarFormat},
 	{"nond.export_discrep_format", P exportDiscrepFormat},
 	{"nond.export_samples_format", P exportSamplesFormat},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.pre_solve_method", P preSolveMethod},
+	{"nond.quadrature_order", P quadratureOrder},
 	{"nond.reliability_search_type", P reliabilitySearchType},
+	{"nond.sparse_grid_level", P sparseGridLevel},
 	{"nond.vbd_interaction_order", P vbdOrder},
 	{"order", P wilksOrder},
 	{"pstudy.import_format", P pstudyFileFormat},
@@ -2878,6 +2885,8 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	{"jega.num_generations", P numGenerations},
 	{"jega.num_offspring", P numOffspring},
 	{"jega.num_parents", P numParents},
+	{"nond.collocation_points", P collocationPoints},
+	{"nond.expansion_samples", P expansionSamples},
 	{"num_candidate_designs", P numCandidateDesigns},
 	{"num_candidates", P numCandidates},
 	{"num_prediction_configs", P numPredConfigs}
@@ -3056,6 +3065,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nond.gpmsa_normalize", P gpmsaNormalize},
 	{"nond.logit_transform", P logitTransform},
 	{"nond.model_discrepancy", P calModelDiscrepancy},
+	{"nond.mutual_info_ksg2", P mutualInfoKSG2},
 	{"nond.normalized", P normalizedCoeffs},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.standardized_space", P standardizedSpace},

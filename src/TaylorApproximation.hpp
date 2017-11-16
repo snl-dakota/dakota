@@ -58,7 +58,7 @@ protected:
 
   //int num_constraints() const; // use default implementation
 
-  void build();
+  void build(size_t index = _NPOS);
 
   Real value(const Variables& vars);
 

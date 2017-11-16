@@ -1,0 +1,41 @@
+Blurb::
+Cost estimates associated with a set of solution control values.
+
+Description:: 
+Simulation-based models may have an associated \c solution_level_control,
+which identifies a hierarchy of solution states, such as a set of mesh
+discretizations from coarse to fine, a set of solver tolerances from
+loose to tight, etc.  In algorithms that manage such a hierarchy and
+perform optimal resource allocation among the solution states (e.g., 
+multilevel Monte Carlo), it is important to estimate a set of costs 
+associated with each state.  These cost estimates can be relative,
+such as in the example below (lowest cost normalized to 1.)
+
+<b>Note:</b> a scalar solution cost can be specified without an associated 
+solution level control.  This is useful when employing a hierarchy of
+model forms (each model has a scalar solution cost and no solution level
+control) instead of a hierarchy of discretization levels (one model has 
+a vector-valued solution cost associated with multiple solution levels).
+
+Topics::
+
+Examples::
+\verbatim
+model,
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1. 8. 64. 512. 4096.
+
+variables,
+	uniform_uncertain = 9
+	  lower_bounds      =  9*-1.
+	  upper_bounds      =  9* 1.
+	discrete_state_set
+	  integer = 1
+      	  set_values = 4 8 16 32 64
+      	  descriptors = 'mesh_size'
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

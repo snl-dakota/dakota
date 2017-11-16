@@ -1,0 +1,18 @@
+Blurb::
+Distinct formulation for emulation of model discrepancies.
+
+Description:: 
+The \c distinct approach to discrepancy emulation directly approximate 
+the difference or ratio between the evaluations of two models 
+or solution levels.  Refer to the parent documentation node for 
+additional discussion.
+
+Topics::
+
+Examples::
+\verbatim
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

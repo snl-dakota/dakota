@@ -53,6 +53,46 @@ namespace Dakota {
        \c max_iterations.
   */
 
+/**
+ * \brief A version of TraitsBase specialized for Nomad
+ *
+ */
+
+class NomadTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  NomadTraits() { }
+
+  /// destructor
+  virtual ~NomadTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports discrete variables
+  bool supports_discrete_variables() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the format used for nonlinear equality constraints
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+    { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+};
+
+
 class NomadOptimizer : public Optimizer
 {
 public:
@@ -121,15 +161,6 @@ private:
 
   /// Pointer to Nomad lower bounds
   NOMAD::Point lowerBound;
-
-  /// map from Dakota constraint number to Nomad constraint number
-  std::vector<int> constraintMapIndices;
-
-  /// multipliers for constraint transformations
-  std::vector<double> constraintMapMultipliers;
-
-  /// offsets for constraint transformations
-  std::vector<double> constraintMapOffsets;
 
   /// defines use of surrogate in NOMAD
   std::string useSurrogate;

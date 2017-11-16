@@ -45,9 +45,9 @@ void print_expected_format(std::ostream& s, unsigned short tabular_format,
   else 
     s << '\n';
   s << "whitespace-separated data";
-  if (num_rows > 0)
+  if (num_rows)
     s << "; " << num_rows << " rows";
-  if (num_cols > 0)
+  if (num_cols)
     s << "; " << num_rows << " columns";
   s << std::endl;
 }
@@ -392,7 +392,7 @@ void read_data_tabular(const std::string& input_filename,
                        unsigned short tabular_format, bool active_only)
 {
   // Disallow string variables for now - RWH
-  if( (active_only && vars.dsv()>0) || (!active_only && vars.adsv()>0) ) {
+  if( (active_only && vars.dsv()) || (!active_only && vars.adsv()) ) {
     Cerr << "\nError (" << context_message
 	 << "): String variables are not currently supported.\n";
     abort_handler(-1);

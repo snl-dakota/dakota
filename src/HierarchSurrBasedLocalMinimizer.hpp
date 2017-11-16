@@ -30,6 +30,42 @@ namespace Dakota {
 /** This minimizer uses SurrogateModel(s) to perform minimization leveraging
     multiple model forms and discretization levels. */
 
+
+/**
+ * \brief A version of TraitsBase specialized for multilevel-multifidelity minimizer
+ *
+ */
+
+class HierarchSurrBasedLocalTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  HierarchSurrBasedLocalTraits() { }
+
+  /// destructor
+  virtual ~HierarchSurrBasedLocalTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+};
+
+
 class HierarchSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
 {
 public:

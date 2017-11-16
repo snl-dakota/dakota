@@ -152,10 +152,10 @@ public:
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
-  void compute_moments();
+  void compute_moments(bool full_stats = true);
   /// compute moments in all-variables mode up to the order supported
   /// by the Pecos polynomial approximation
-  void compute_moments(const Pecos::RealVector& x);
+  void compute_moments(const Pecos::RealVector& x, bool full_stats = true);
   /// return virtual Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
   /// return Pecos::PolynomialApproximation::expansionMoments
@@ -197,15 +197,16 @@ protected:
   int min_coefficients() const;
   //int num_constraints() const; // use default implementation
 
-  void build();
-  void rebuild();
+  void build(size_t index = _NPOS);
+  void rebuild(size_t index = _NPOS);
   void pop(bool save_data);
   void push();
   void finalize();
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  void combine(short corr_type, size_t swap_index);
+  void combine(size_t swap_index);
+  void clear_stored();
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -392,12 +393,13 @@ delta_z(const RealVector& x, bool cdf_flag, Real beta_bar)
 { return polyApproxRep->delta_z(x, cdf_flag, beta_bar); }
 
 
-inline void PecosApproximation::compute_moments()
-{ polyApproxRep->compute_moments(); }
+inline void PecosApproximation::compute_moments(bool full_stats)
+{ polyApproxRep->compute_moments(full_stats); }
 
 
-inline void PecosApproximation::compute_moments(const Pecos::RealVector& x)
-{ polyApproxRep->compute_moments(x); }
+inline void PecosApproximation::
+compute_moments(const Pecos::RealVector& x, bool full_stats)
+{ polyApproxRep->compute_moments(x, full_stats); }
 
 
 inline const RealVector& PecosApproximation::moments() const
@@ -437,9 +439,7 @@ augment_linear_system(const RealVectorArray& samples, RealMatrix& A,
 
 
 inline const Pecos::SurrogateData& PecosApproximation::surrogate_data() const
-{
-  return ((Pecos::PolynomialApproximation*)polyApproxRep)->surrogate_data();
-}
+{ return pecosBasisApprox.surrogate_data(); }
 
 
 inline Pecos::BasisApproximation& PecosApproximation::
@@ -474,21 +474,17 @@ inline int PecosApproximation::min_coefficients() const
 { return pecosBasisApprox.min_coefficients(); }
 
 
-inline void PecosApproximation::build()
+inline void PecosApproximation::build(size_t index)
 {
   // base class implementation checks data set against min required
-  Approximation::build();
+  Approximation::build(index);
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.compute_coefficients();
+  pecosBasisApprox.compute_coefficients(index);
 }
 
 
-inline void PecosApproximation::rebuild()
+inline void PecosApproximation::rebuild(size_t index)
 {
-  // base class default invokes build() for derived Approximations
-  // that do not supply rebuild()
-  //Approximation::rebuild();
-
   // TO DO: increment_coefficients() below covers current usage of
   // append_approximation() in NonDExpansion.  For more general
   // support of both update and append, need a mechanism to detect
@@ -497,10 +493,10 @@ inline void PecosApproximation::rebuild()
   //size_t curr_pts  = approxData.points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
-    pecosBasisApprox.increment_coefficients();
+    pecosBasisApprox.increment_coefficients(index);
   //else if (curr_pts < curr_pecos_pts)
-    //pecosBasisApprox.decrement_coefficients();
-  // else, if number of points is consistent, leave as is
+  //  pecosBasisApprox.decrement_coefficients();
+  //else: if number of points is consistent, leave as is
 }
 
 
@@ -509,7 +505,7 @@ inline void PecosApproximation::pop(bool save_data)
   // base class implementation removes data from currentPoints
   Approximation::pop(save_data);
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.decrement_coefficients();
+  pecosBasisApprox.decrement_coefficients(save_data);
 }
 
 
@@ -558,15 +554,21 @@ inline void PecosApproximation::remove_stored(size_t index)
 }
 
 
-inline void PecosApproximation::combine(short corr_type, size_t swap_index)
+inline void PecosApproximation::combine(size_t swap_index)
 {
-  // base class implementation manages approxData state
-  //Approximation::combine(corr_type);
-  if (swap_index != _NPOS) approxData.swap(swap_index);
+  // base class implementation manages approx data
+  Approximation::combine(swap_index);
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.combine_coefficients(swap_index);
+}
 
-  // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
-  // PECOS combination type enumerations coincide.
-  pecosBasisApprox.combine_coefficients(corr_type, swap_index);
+
+inline void PecosApproximation::clear_stored()
+{
+  // base class implementation manages approx data
+  Approximation::clear_stored();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.clear_stored();
 }
 
 

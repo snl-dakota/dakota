@@ -1,34 +1,42 @@
 ------------------------------------------------------------------------------
 
-DAKOTA:
+Dakota:
 A Multilevel Parallel Object-Oriented Framework for Design Optimization,
 Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis 
 
 ------------------------------------------------------------------------------
+            _/_/_/   
+             _/_/    
+        _/_/_/_/_/_/ 
+       _/  _/_/  _/  
+      _/  _/_/  _/  
+        _/_/_/       
+   
+Sandia National Laboratories
+      Albuquerque, NM
+       Livermore, CA
 
-					Sandia National Laboratories
-
-Brian M. Adams      (Project Lead)                      _/_/_/       
-Michael S. Eldred   (Research Lead)           	         _/_/    
-James R. Stewart    (Business Manager)	 	    _/_/_/_/_/_/ 
-J. Adam Stephens    (Support Analyst)        	   _/  _/_/  _/  
-William Bohnhoff                                   _/  _/_/  _/   
-John P. Eddy	                               	    _/_/_/       
+Brian M. Adams                                       
+William J. Bohnhoff                                  
 Keith R. Dalbey
-Mohamed S.Ebeida
+John P. Eddy	                               	 
+Mohamed S. Ebeida
+Michael S. Eldred                             	 
+Joseph R. Frye
 Gianluca Geraci
 Russell W. Hooper
+Patricia D. Hough		       
 Kenneth T. Hu
 John D. Jakeman
-Kathryn Maupin
+Mohammad Khalil
+Kathryn A. Maupin
 Jason A. Monschke
+Elliott M. Ridgway
 Ahmad Rushdi
+J. Adam Stephens                             	 
 Laura P. Swiler
-Timothy M. Wildey		        P.O. Box 5800, Mail Stop 1318
-Dena M. Vigil				Albuquerque, NM 87185-1318   
-
-Patricia D. Hough			P.O. Box 969, MS 9217
-Lara E. Bauman				Livermore, CA 94551-0969
+Dena M. Vigil			       
+Timothy M. Wildey		       
 
 ------------------------------------------------------------------------------
 License
@@ -107,12 +115,11 @@ GPL/Other: Dakota may optionally depend on GNU GPL-licensed
 components, which are disabled by default, resulting in an
 LGPL-compatible Dakota.  Optional GPL capabilities include:
 
- * dakota/trunk/packages/hopspack/src/src-citizens/citizen-gss/cddlib/;
+ * packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/:
    enable with CMake setting HAVE_CDDLIB.
 
- * dakota/packages/fftw or dakota/packages/pecos/packages/fftw:
-   optionally included with Dakota; enable with CMake setting
-   HAVE_FFTW
+ * packages/external/fftw: optionally included with Dakota; enable 
+   with CMake setting HAVE_FFTW
 
  * GNU Scientific Library: external third-party library; enable with
    CMake setting Dakota_HAVE_GSL and pointer to gsl-config
@@ -166,6 +173,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.7		   11/15/17 (refer to git submodules for TPL SHA1s)
 6.6		   05/15/17 (refer to git submodules for TPL SHA1s)
 6.5		   11/16/16 (refer to git submodules for TPL SHA1s)
 6.4		   05/16/16 (refer to svn externals for TPL tags)

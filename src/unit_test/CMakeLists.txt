@@ -101,6 +101,7 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
     data_conversions.cpp
     opt_api_core_data_xfers.cpp
     opt_tpl_api.cpp
+    opt_api_traits.cpp
     reduced_basis.cpp
     restart_test.cpp
     rol_integration.cpp

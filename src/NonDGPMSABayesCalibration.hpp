@@ -83,10 +83,7 @@ protected:
   void init_queso_solver();
 
   /// Populate simulation data (run design of experiments or load build data)
-  void acquire_simulation_data();
-
-  /// Determine each scenario min/max and set GPMSA scaling options
-  void normalize_configs();
+  void acquire_simulation_data(RealMatrix& sim_data);
 
   /// fill the full proposal covariance, inlcuding hyperparameter
   /// entries with user-specified or default theta covariance
@@ -94,10 +91,10 @@ protected:
   void overlay_proposal_covariance(QUESO::GslMatrix& full_prop_cov) const;
 
   /// populate the simulation data, calculating and applying scaling if needed
-  void fill_simulation_data(bool scale_data);
+  void fill_simulation_data();
 
   /// populate the experiment data, applying scaling if needed
-  void fill_experiment_data(bool scale_data);
+  void fill_experiment_data();
 
   /// overlay the Dakota user's initial parameters on the full GPMSA
   /// vector of parameters
@@ -108,7 +105,7 @@ protected:
   void cache_acceptance_chain(); 
 
   // print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Data
@@ -151,22 +148,8 @@ protected:
   boost::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
   experimentSpace;
 
-  /// simulation data, one row per simulation build sample, columns
-  /// for calibration variables, configuration variables, function
-  /// values (duplicates storage, but unifies import vs. DOE cases)
-  RealMatrix simulationData;
-
-  /// simulation mean values for scaling, one per function
-  RealVector simulationMean;
-
-  /// simulation std deviations for scaling, one per function
-  RealVector simulationStdDev;
-
   /// Configuration options for the GPMSA solver
   boost::shared_ptr<QUESO::GPMSAOptions> gpmsaOptions;
-
-  /// advanced options file name
-  String optionsFile;
 
   /// core factory that manages a GP-based likelihood
   boost::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >

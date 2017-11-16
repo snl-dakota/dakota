@@ -69,10 +69,10 @@ protected:
   //
 
   void calibrate();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
-  void init_queso_environment(const String& input_filename = String());
+  void init_queso_environment();
 
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
@@ -245,6 +245,10 @@ protected:
 
   boost::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
     QUESO::GslMatrix> > inverseProb;
+
+  /// advanced options file name (GPMSA only); settings from this file
+  /// override any C++ / Dakota input file settings
+  String advancedOptionsFile;
 
   /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* nonDQUESOInstance;

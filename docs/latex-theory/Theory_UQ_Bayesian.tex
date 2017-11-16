@@ -1,8 +1,19 @@
 \chapter{Bayesian Methods}\label{uq:bayes}
 
 
-This chapter covers specialized approaches for accelerating the Markov
-chain Monte Carlo (MCMC) sampling process used within Bayesian inference.
+This chapter covers various topics relating to Bayesian methods for inferring input parameter distributions 
+for computer models, which is sometimes called ``Bayesian calibration 
+of computer models.''  One common solution approach for Bayesian calibration involves Markov Chain Monte Carlo (MCMC) 
+sampling.  Sections~\ref{uq:bayes:basic} to ~\ref{uq:bayes:ex} describe Bayesian fundamentals and then cover 
+specialized approaches for accelerating the MCMC sampling process used within Bayesian inference.
+Section~\ref{uq:model_disc} describes ways of handling a discrepancy between the model estimate and the responses. 
+Section~\ref{uq:bayes_experimental_design} describes a way of determining the optimal experimental design to
+identify high-fidelity runs that can be used to best inform the calibration of a low-fidelity model. 
+This is followed by a discussion of information-theoretic metrics in Section~\ref{uq:info_theory}.  
+Finally, we conclude this chapter with a discussion of a new Bayesian approach in Section~\ref{uq:cbayes} 
+which does not use MCMC and relies on a measure-theoretic approach for stochastic inference instead of MCMC.
+In Dakota, the Bayesian methods called QUESO, GPMSA, and DREAM use Markov Chain Monte Carlo sampling. 
+The Bayesian method called WASABI implements the measure-theoretic approach. 
 
 \section{Fundamentals} \label{uq:bayes:basic}
 
@@ -320,7 +331,7 @@ from the two Hessian-based proposals, with average rejection rates of
 70\%, 19.5\%, and 16.4\% for prior-based, misfit Hessian-based, and
 posterior Hessian-based cases, respectively.
 
-\section{Model Discrepancy}
+\section{Model Discrepancy}\label{uq:model_disc}
 
 Whether in a Bayesian setting or otherwise, the goal of model calibration
 is to minimize the difference between the observational data $d_i$ and 
@@ -557,9 +568,10 @@ d\boldsymbol{\theta} d\boldsymbol{d}.
 \end{equation}
 
 The mutual information must, therefore, be computed for each candidate design 
-point $\boldsymbol{\xi}_{j}$. Following~\cite{Lew16}, the $k$-nearest 
-neighbor method proposed in~\cite{Kra04} is used to approximate 
-Eq.~\ref{eq:mutual_info}. Within Dakota, the posterior distribution
+point $\boldsymbol{\xi}_{j}$. There are two $k$-nearest neighbor methods 
+available in Dakota that can be used to approximate Eq.~\ref{eq:mutual_info}, 
+both of which are derived in~\cite{Kra04}. Within Dakota, the posterior 
+distribution 
 $f_{\boldsymbol{\Theta | D}}\left(\boldsymbol{\theta | d(\xi)}\right)$ is given
 by MCMC samples. From these, $N$ samples are drawn and run through the
 low-fidelity model with $\boldsymbol{\xi}_{j}$ fixed. This creates a matrix 
@@ -569,19 +581,55 @@ model responses $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i},
 represent the joint distribution between the parameters and model responses. 
 For each row $X_{i}$, the distance to its $k^{th}$-nearest neighbor among the 
 other rows is approximated $\varepsilon_{i} = \| X_{i} - X_{k(i)} \|_{\infty}$. 
-Then the marginal distributions are considered by calculating  
-$n_{\boldsymbol{\theta}}$, which  is the number of parameter samples that lie 
-within $\varepsilon_{i}$ of $\boldsymbol{\theta}^{i}$, and 
-$n_{\boldsymbol{d}}$, which is the number of responses that lie within 
+As noted in~\cite{Lew16}, $k$ is often taken to be six. The treatment of the 
+marginal distributions is where the two mutual information algorithms differ. 
+In the first algorithm, the marginal distributions are considered by 
+calculating $n_{\boldsymbol{\theta},i}$, which is the number of parameter 
+samples that lie within $\varepsilon_{i}$ of $\boldsymbol{\theta}^{i}$, and 
+$n_{\boldsymbol{d},i}$, which is the number of responses that lie within 
 $\varepsilon_{i}$ of $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, 
-\boldsymbol{\xi}_{j})$. The mutual information is approximated as~\cite{Kra04}
+\boldsymbol{\xi}_{j})$. The mutual information then is approximated 
+as~\cite{Kra04}
 \begin{equation}
+\label{eq:ksg1}
 I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
 \psi(k) + \psi(N) - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
-\psi(n_{\boldsymbol{\theta}}+1) - \psi(n_{\boldsymbol{d}}+1) \right],
+\psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right],
 \end{equation}
-where $\psi(\cdot)$ is the digamma function. As noted in~\cite{Lew16}, $k$ is
-often taken to be six.
+where $\psi(\cdot)$ is the digamma function. 
+
+In the second mutual information approximation method, $X_{i}$ and all of 
+its $k$-nearest neighbors such that $\| X_{i} - X_{l} \|_{\infty} < 
+\varepsilon_{i}$ are projected into the marginal subspaces for 
+$\boldsymbol{\theta}$ and $\tilde{\boldsymbol{d}}$. The quantity 
+$\varepsilon_{\boldsymbol{\theta},i}$ is then defined as the radius of the 
+$l_{\infty}$-ball containing all $k+1$ projected values of 
+$\boldsymbol{\theta}_{l}$. Similarly, $\varepsilon_{\boldsymbol{d},i}$ is 
+defined as the radius of the $l_{\infty}$-ball containing all $k+1$ projected 
+values of $\tilde{\boldsymbol{d}}(\boldsymbol{\theta}_{l}, 
+\boldsymbol{\xi}_{j})$~\cite{Gao14}. In this version of the mutual information 
+calculation, $n_{\boldsymbol{\theta},i}$ is the number of parameter samples 
+that lie within $\varepsilon_{\boldsymbol{\theta},i}$ of 
+$\boldsymbol{\theta}^{i}$, and $n_{\boldsymbol{d},i}$ is the number of 
+responses that lie within $\varepsilon_{\boldsymbol{d}, i}$ of 
+$\tilde{\boldsymbol{d}}(\boldsymbol{\theta}^{i}, \boldsymbol{\xi}_{j})$. 
+The mutual information then is approximated as~\cite{Kra04}
+\begin{equation}
+\label{eq:ksg2}
+I(\boldsymbol{\theta}, \boldsymbol{d}(\boldsymbol{\xi}_{j})) \approx
+\psi(k) + \psi(N) - \frac{1}{k} - \frac{1}{N-1} \sum_{i = 1}^{N} \left[ 
+\psi(n_{\boldsymbol{\theta},i}) - \psi(n_{\boldsymbol{d},i}) \right].
+\end{equation}
+
+By default, Dakota uses Eq.~\ref{eq:ksg1} to approximate the mutual
+information. The user may decide to use Eq.~\ref{eq:ksg2} by including the
+keyword \texttt{ksg2} in the Dakota input script. An example can be found 
+in~\cite{RefMan}. Users also have the option of specifying statistical noise
+in the low-fidelity model through the \texttt{simulation\_variance} keyword.
+When this option is included in the Dakota input file, a random ``error" is
+added to the low-fidelity model responses when the matrix $X$ is built. This
+random error is normally distributed, with variance equal to
+\texttt{simulation\_variance}.
 
 Once the optimal design $\boldsymbol{\xi}^{*}$ is identified, it is run 
 through the high-fidelity model to produce a new data point $\boldsymbol{d}(
@@ -606,7 +654,7 @@ is sufficiently small (less than $5\%$)
 \end{itemize}
 If any one of these criteria is met, the algorithm is considered complete.
 
-\section{Information Theoretic Tools}
+\section{Information Theoretic Tools}\label{uq:info_theory}
 
 The notion of the entropy of a random variable was introduced by C.E. 
 Shannon in 1948~\cite{Sha1948}. So named for its resemblance to the statistical 
@@ -692,13 +740,79 @@ Section~\ref{uq:bayes_experimental_design}.
 
 
 
+\section{Measure-theoretic Stochastic Inversion} \label{uq:cbayes}
+
+% MACROS FOR THIS SECTION
+\newcommand{\pspace}{\mathbf{\Lambda}}
+\newcommand{\dspace}{\mathbf{\mathcal{D}}}
+\newcommand{\pmeas}{\mu_{\pspace}}
+\newcommand{\dmeas}{\mu_{\dspace}}
+\newcommand{\pborel}{\mathcal{B}_{\pspace}}
+\newcommand{\dborel}{\mathcal{B}_{\dspace}}
+\newcommand{\priormeas}{P_{\pspace}^{\text{prior}}}
+\newcommand{\postmeas}{P_{\pspace}^{\text{post}}}
+\newcommand{\priordens}{\pi_{\pspace}^{\text{prior}}}
+\newcommand{\postdens}{\pi_{\pspace}^{\text{post}}}
+\newcommand{\pfpriormeas}{P_{\dspace}^{Q(\text{prior})}}
+\newcommand{\pfpostmeas}{P_{\dspace}^{Q(\text{post})}}
+\newcommand{\pfpriordens}{\pi_{\dspace}^{Q(\text{prior})}}
+\newcommand{\pfpostdens}{\pi_{\dspace}^{Q(\text{post})}}
+\newcommand{\obsmeas}{P_{\dspace}^{\text{obs}}}
+\newcommand{\obsdens}{\pi_{\dspace}^{\text{obs}}}
+\newcommand{\postdenssbayes}{\tilde{\pi}_{\pspace}^{\text{post}}}
 
 
+In this section we present an overview of a specific implementation of the measure-theoretic approach for solving a stochastic inverse problem
+that incorporates prior information and Bayes' rule to define a unique solution.
+This approach differs from the standard Bayesian counterpart described in previous sections in that the posterior satisfies a consistency requirement with the model and the observed data.
+The material in this section is based on the foundational work in \cite{Butler2017, Walsh2017}.
+A more thorough description of this consistent Bayesian approach and a comparison with the standard Bayesian approach can be found in \cite{Butler2017} and an extension to solve an optimal experimental design problem can be found in \cite{Walsh2017}.
 
+Let $M(Y,\lambda)$ denote a deterministic model with solution $Y(\lambda)$ that is an implicit function of model parameters $\lambda\in\pspace \subset \mathbb{R}^n$.
+The set $\pspace$ represents the largest physically meaningful domain of parameter values, and, for simplicity, we assume that $\pspace$ is compact.
+We assume we are only concerned with computing  a relatively small set of quantities of interest (QoI), $\{Q_i(Y)\}_{i=1}^m$, where each $Q_i$ is a real-valued functional dependent on the model solution $Y$.
+Since $Y$ is a function of parameters $\lambda$, so are the QoI and we write $Q_i(\lambda)$ to make this dependence explicit.
+Given a set of QoI, we define the QoI map $Q(\lambda) := (Q_1(\lambda), \cdots, Q_m(\lambda))^\top:\pspace\to\dspace\subset\mathbb{R}^m$ where $\dspace  := Q(\pspace)$ denotes the range of the QoI map.
 
+We assume $(\pspace, \pborel, \pmeas)$ and $(\dspace, \dborel, \dmeas)$ are measure spaces
+and let $\pborel$ and $\dborel$ denote the Borel $\sigma$-algebras inherited from the metric topologies on $\mathbb{R}^n$ and $\mathbb{R}^m$, respectively.
+We also assume that the QoI map $Q$ is at least piecewise smooth implying that $Q$ is a measurable map between the measurable spaces $(\pspace, \pborel)$ and $(\dspace, \dborel)$.
+For any $A\in\dborel$, we then have
+\[Q^{-1}(A) = \left\{ \lambda \in \pspace \ | \ Q(\lambda) \in A \right\}\in\pborel, \quad \text{and} \quad Q(Q^{-1}(A))=A.\]
+Furthermore, given any $B\in\pborel$,
+\begin{equation}\label{:eq:mapprops}
+B \subseteq Q^{-1}(Q(B)),
+\end{equation}
+although we note that in most cases $B\neq Q^{-1}(Q(B))$ even when $n=m$.
 
+Finally, we assume that an observed probability measure, $\obsmeas$, is given on $(\dspace,\dborel)$, and the stochastic inverse problem seeks a probability measure $P_\pspace$
+such that the subsequent push-forward measure induced by the map, $Q(\lambda)$, satisfies
+\begin{equation}\label{:eq:invdefn}
+P_\pspace(Q^{-1}(A)) = P^{Q(P_\pspace)}_\dspace(A) = \obsmeas(A),
+\end{equation}
+for any $A\in \dborel$.
 
+This inverse problem may not have a unique solution, i.e., there
+may be multiple probability measures that have the proper push-forward measure.
+A unique solution may be obtained by imposing additional constraints or structure on the stochastic inverse problem.
+The approach we consider in this section incorporates prior information and Bayes rule to construct a unique
+solution to the stochastic inverse problem.
+The prior probability measure and the map
+induce a push-forward measure $\pfpriormeas$ on $\dspace$, which is defined for all $A\in \dborel$,
+\begin{equation}\label{:eq:pfprior}
+\pfpriormeas(A) = \priormeas(Q^{-1}(A)).
+\end{equation}
 
-
-
-
+We assume that all of the probability measures (prior, observed and push-forward of the prior) are absolutely continuous with respect to some reference measure
+and can be described in terms of a probability densities.
+We use $\priordens$, $\obsdens$ and $\pfpriordens$ to denote the probability densities associated
+with $\priormeas$, $\obsmeas$ and $\pfpriormeas$ respectively.
+From \cite{Butler2017}, the following posterior probability density, when interpreted through a disintegration theorem, solves the stochastic inverse problem:
+\begin{equation}\label{:eq:postpdf}
+\postdens(\lambda) = \priordens(\lambda)\frac{\obsdens(Q(\lambda))}{\pfpriordens(Q(\lambda))}, \quad \lambda \in \pspace.
+\end{equation}
+One can immediately observe that if $\pfpriordens = \obsdens$, i.e., if the prior solves the stochastic inverse problem in the sense that the push-forward of the prior matches the observations,
+then the posterior will be equal to the prior.
+Approximating this posterior density requires an approximation
+of the push-forward of the prior, which is simply a forward
+propagation of uncertainty.

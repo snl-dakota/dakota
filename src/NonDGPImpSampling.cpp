@@ -577,7 +577,7 @@ Real NonDGPImpSampling::calcExpIndPoint(const int resp_fn_count, const Real resp
   return ei;
 }
 
-void NonDGPImpSampling::print_results(std::ostream& s)
+void NonDGPImpSampling::print_results(std::ostream& s, short results_state)
 {
   if (statsFlag) {
     s << "\nStatistics based on the importance sampling calculations:\n";

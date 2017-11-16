@@ -555,7 +555,7 @@ void NonDInterval::compute_evidence_statistics()
 }
 
 
-void NonDInterval::print_results(std::ostream& s)
+void NonDInterval::print_results(std::ostream& s, short results_state)
 {
   const StringArray& fn_labels = iteratedModel.response_labels();
   s << "------------------------------------------------------------------\n"

@@ -1,0 +1,9 @@
+Blurb:: (Experimental Capability) Number of samples of the prior to push forward through the model
+
+Description:  WASABI requires a forward UQ that maps samples from the prior parameter distribution 
+through the model.  The corresponding responses then are used to see their relative likelihood according 
+to the density of the observational data.  The \c pushforward_samples refers to the number of 
+samples taken from the prior and used in the forward UQ.  It typically should be high, e.g. 10000, of which
+only a small fraction may be in a high density region of the posterior. 
+
+ 

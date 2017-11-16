@@ -68,7 +68,7 @@ protected:
   /// Performs the hybrid iteration by executing a sequence of iterators,
   /// using a similar sequence of models that may vary in fidelity
   void core_run();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);

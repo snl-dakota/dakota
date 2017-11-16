@@ -38,7 +38,8 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 // This constructor accepts a Model
 EffGlobalMinimizer::
 EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model): 
-  SurrBasedMinimizer(problem_db, model), setUpType("model"), dataOrder(1)
+  SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
+  setUpType("model"), dataOrder(1)
 {
   bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 

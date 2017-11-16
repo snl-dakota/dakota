@@ -41,6 +41,50 @@ namespace Dakota {
     [Vanderplaats Research and Development, 1995] for information on
     \c IPRM, \c RPRM, and the DOT function call parameter list. */
 
+/**
+ * \brief A version of TraitsBase specialized for DOT optimizers
+ *
+ */
+
+class DOTTraits: public TraitsBase
+{
+  public:
+
+  /// default constructor
+  DOTTraits() { }
+
+  /// destructor
+  virtual ~DOTTraits() { }
+
+  /// A temporary query used in the refactor
+  virtual bool is_derived() { return true; }
+
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
+
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
+
+  /// Return the format used for linear inequality constraints
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format()
+    { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
+
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
+
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+
+};
+
+
 class DOTOptimizer: public Optimizer
 {
 public:
@@ -137,27 +181,6 @@ private:
   int numDotLinConstr;
   /// total number of linear and nonlinear constraints seen by DOT
   int numDotConstr;
-  /// a container of indices for referencing the corresponding
-  /// Response constraints used in computing the DOT constraints.
-  /** The length of the container corresponds to the number of DOT
-      constraints, and each entry in the container points to the
-      corresponding DAKOTA constraint. */
-  SizetArray constraintMappingIndices;
-  /// a container of multipliers for mapping the Response constraints to
-  /// the DOT constraints.
-  /** The length of the container corresponds to the number of DOT
-      constraints, and each entry in the container stores a multiplier
-      for the DAKOTA constraint identified with constraintMappingIndices.
-      These multipliers are currently +1 or -1. */
-  RealArray constraintMappingMultipliers;
-  /// a container of offsets for mapping the Response constraints to the
-  /// DOT constraints.
-  /** The length of the container corresponds to the number of DOT
-      constraints, and each entry in the container stores an offset for
-      the DAKOTA constraint identified with constraintMappingIndices.
-      These offsets involve inequality bounds or equality targets,
-      since DOT assumes constraint allowables = 0. */
-  RealArray constraintMappingOffsets;
 };
 
 

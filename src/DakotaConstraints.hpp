@@ -25,6 +25,7 @@ namespace Dakota {
 
 class ProblemDescDB;
 
+  enum class CONSTRAINT_TYPE { LINEAR, NONLINEAR };
 
 /// Base class for the variable constraints class hierarchy.
 

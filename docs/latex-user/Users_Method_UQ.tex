@@ -132,7 +132,8 @@ of N samples, and then re-run an additional incremental study which
 will double the number of samples (to 2N, with the first N being 
 carried from the initial study). The full incremental sample of 
 size 2N is also a Latin Hypercube, with proper stratification and 
-correlation. 
+correlation. Statistics for each increment are reported separately at
+the end of the study.
 
 \textbf{Reliability Methods}: This suite of methods includes both
 local and global reliability methods. Local methods include first- and
@@ -319,7 +320,7 @@ Probabilities and reliabilities may be computed for
 \texttt{response\_levels} specifications, and response levels may be
 computed for either \texttt{probability\_levels} or
 \texttt{reliability\_levels} specifications (refer to the Method
-Commands chapter in the Dakota Reference Manual~\cite{RefMan} for
+keywords section in the Dakota Reference Manual~\cite{RefMan} for
 additional information).
 
 Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
@@ -689,8 +690,9 @@ hundred, the benefit of incremental sampling diminishes.
   For example, if the first sample has 50 samples, and 10 more samples
   are desired, the second Dakota run should specify \texttt{samples =
     50}, \texttt{refinement\_samples = 10}.  In this situation, only
-  10 new samples will be generated and the final statistics will be
-  reported on the full sample of 60. The command line syntax for
+  10 new samples will be generated, and the final statistics will be
+  reported at the end of the study both for the initial 50 samples and
+  for the full sample of 60. The command line syntax for
   running the second sample is \texttt{dakota -i input60.in -r
     dakota.50.rst} where \texttt{input60.in} is the input file with
   the refinement samples specification and \texttt{dakota.50.rst} is
@@ -715,8 +717,9 @@ hundred, the benefit of incremental sampling diminishes.
   For example, if the first sample has 50 samples, in the second
   Dakota run, the number of refinement samples should be set to 50 for
   a total of 100. In this situation, only 50 new samples will be
-  generated and the final statistics will be reported on the full
-  sample of 100. The command line syntax for running the second sample
+  generated, and at the end of the study final statistics will be reported 
+  both for the initial 50 samples and for the full sample of 100. The command 
+  line syntax for running the second sample
   is \texttt{dakota -i input100.in -r dakota.50.rst}, where
   \texttt{input100.in} is the input file with the incremental sampling
   specification and \texttt{dakota.50.rst} is the restart file
@@ -910,7 +913,8 @@ no\_approx      & \cellcolor{blue}\textcolor{white}{FORM}
 \end{tabular}
 \end{table}
 
-Within the Dakota specification (refer to the Method Commands chapter
+Within the Dakota specification (refer to \texttt{local\_reliability}
+in the keywords section of the Reference Manual~\cite{RefMan})
 within the Reference Manual), the MPP search and integration order
 selections are explicit in the method specification, but the order of
 the approximation is inferred from the associated response
@@ -1369,7 +1373,7 @@ over-determined systems and compressed sensing methods for
 under-determined systems. Details of these methods are documented in
 the Linear regression section of the Dakota Theory
 Manual~\cite{TheoMan} and the necessary specifications needed to
-activate these techniques are listed in the Methods chapter of the
+activate these techniques are listed in the keyword section of the
 Dakota Reference Manual~\cite{RefMan}.
 
 Stochastic collocation (SC) is another stochastic expansion technique
@@ -2439,7 +2443,7 @@ where $\boldsymbol{r}$ is the vector of residuals between the data
 points and the model quantity of interest,
 $q(\boldsymbol{\theta})-\boldsymbol{d}$.
 
-Dakota admits four \texttt{variance\_type} options to specify the
+Dakota admits four \texttt{experiment\_variance\_type} options to specify the
 measurement error covariance: \texttt{none} for no measurement error
 specified (in this case, the variance is assumed to be one),
 \texttt{scalar} where a constant value ${\sigma_d}^2$ is given for all
@@ -2483,7 +2487,7 @@ by John Burkardt.  The DREAM approach runs concurrent chains for
 global exploration, and automatically tunes the proposal covariance
 during the process by a self-adaptive randomized subspace
 sampling~\cite{Vrugt}.  The prototype WASABI method is an MCMC-free
-Bayesian calibration approach based on interval analysis.  QUESO/DRAM
+Bayesian calibration approach.  QUESO/DRAM
 and variants are the most well-developed within Dakota.
 
 \subsection{QUESO}\label{uq:bayesian:queso}
@@ -2564,7 +2568,8 @@ and contain the next experimental or simulated observation with the specified
 probability. Further details can be found in \cite{Smith2013}. If
 \texttt{probability\_levels} is specified, credible intervals will always be 
 calculated. Prediction intervals will only be calculated if 
-\texttt{variance\_type} is also specified in the \texttt{response} block. 
+\texttt{experiment\_variance\_type} is also specified in the \texttt{responses} 
+block. 
 By specifying \texttt{posterior\_stats}, information-theoretic metrics may be 
 calculated using the posterior distribution of parameters. If the 
 \texttt{kl\_divergence} option is selected, the Kullback-Leibler Divergence
@@ -2618,6 +2623,41 @@ discrepancy model.  Dakota's GPMSA capability is an experimental
 prototype with a number of limitations.  See the Dakota Reference
 Manual~\cite{RefMan} for more information.
 
+\subsection{WASABI}
+WASABI differs from the other Bayesian approaches in that it is 
+not an MCMC-based approach.  Instead, it is based on the idea of 
+``consistent Bayes'' which is outlined in ~\cite{Butler2017}.
+This approach to stochastic inference uses measure-theoretic 
+principles to construct a probability measure or density on model parameters
+that is consistent with the model and the data.  The idea is that
+the probability measure on the parameters, when ``pushed-foward'' through
+the computational model, will give results that match the probability 
+measure on the observational data.  
+
+We use a similar notation as with the Bayesian methods, but the interpretation 
+is different here.  The goal is to identify the posterior density on the 
+parameters, $\pi_{post}({\theta})$, which is equal to the prior density on the 
+parameters times a ratio.  The numerator of the ratio, $\pi_{D}^{obs}$, 
+describes the relative likelihood that the output of the model corresponds 
+to the observed data ${D}$:  this is the density of the data evaluated at 
+the model output.  
+$q(\boldsymbol{\theta})$ refers to the model output.  
+$\pi_{D}^{q_{prior}}$ refers to the push-forward of the prior through the model 
+and represents a forward propagation of uncertainty. 
+\begin{equation}
+\pi_{post}(\boldsymbol{\theta})=\pi_{prior}(\boldsymbol{\theta})\frac{\pi_{D}^{obs}(q(\boldsymbol{\theta}))}{\pi_{D}^{q_{prior}}(q(\boldsymbol{\theta}))}. 
+\label{eq:consistentBayesEq}
+\end{equation}
+
+The Theory Manual~\cite{TheoMan} has more detail about the assumptions and mathematical foundations 
+for this method.  Note a major difference in interpretation of the posterior results with respect to 
+a standard Bayesian approach:  In a standard Bayesian approach, the posterior reflects an updated state 
+of information about the prior distribution on parameter values induced by the observational data.  
+In consistent Bayes, the posterior reflects a stochastic mapping of parameter values such that the posterior 
+parameters, when pushed-forward through the model, give results that are consistent with the density 
+of the observational data. 
+WASABI is a prototype capability.  See the Dakota Reference
+Manual~\cite{RefMan} for more information.
 
 \subsection{Feature Comparison}
 Table~\ref{tab:bayes_comparison} compares the options available 
@@ -2969,26 +3009,42 @@ block. In this case, \texttt{num\_config\_variables} should be specified and
 set to the number of configuration variables captured in the \texttt{variables} 
 blocks. Furthermore, for use in Bayesian experimental design, 
 \texttt{calibration\_data\_file} should contain the configuration variables 
-and the corresponding high-fidelity model responses; variance information is
-not yet supported. If the number of points taken from this file is less than 
-\texttt{initial\_samples}, or if no such file is provided, Latin Hypercube 
-Sampling is used to draw samples of the design space, and the high-fidelity 
-model is run at these points to supplement the user-specified data. After this 
-initial calibration, a set of design conditions (i.e.\ configuration 
-variables) of size \texttt{num\_candidates} is proposed. Users may specify 
-these candidate points through the \texttt{import\_candidate\_points\_file} 
-command. Again, if the number of points in this file is less than 
-\texttt{num\_candidates}, or if no such file is provided, Latin Hypercube 
-Sampling is used to draw samples of the design space.  
+and the corresponding high-fidelity model responses. Scalar variance 
+information may be included for the calibration data through the use of the 
+\texttt{experimental\_variance\_type} or \texttt{simulation\_variance} command 
+within the high-fidelity \texttt{responses} block. The former is applied to any 
+user-provided data, such as through the \texttt{calibration\_data\_file} 
+keyword, while the latter applies only to those high-fidelity model responses 
+produced by the high-fidelity code run by Dakota. Further information can be 
+found in the Dakota Reference Manual~\cite{RefMan}. If the number of points 
+taken from this file is less than \texttt{initial\_samples}, or if no such 
+file is provided, Latin Hypercube Sampling is used to draw samples of the 
+design space, and the high-fidelity model is run at these points to supplement
+the user-specified data. After this initial calibration, a set of design 
+conditions (i.e.\ configuration variables) of size \texttt{num\_candidates} is 
+proposed. Users may specify these candidate points through the 
+\texttt{import\_candidate\_points\_file} command. Again, if the number of 
+points in this file is less than \texttt{num\_candidates}, or if no such file 
+is provided, Latin Hypercube Sampling is used to draw samples of the design 
+space.  
 
 From these candidate designs, that which maximizes the mutual information with
 respect to the low-fidelity model parameters is deemed ``optimal." The mutual
-information is approximated using the low-fidelity model and the $k$-nearest
-neighbor algorithm proposed by Kraskov~\cite{Kra04}, as detailed in~\cite{Lew16}
-and the Dakota Theory Manual~\cite{TheoMan}. This optimal design is used in the
-high-fidelity model to create a new observation, which is appended to the 
+information is approximated using the low-fidelity model and a $k$-nearest
+neighbor algorithm, as detailed in~\cite{Lew16}. This optimal design is used in 
+the high-fidelity model to create a new observation, which is appended to the 
 initial data. This updated data is used to recalculate the Bayesian posterior,
 and the process repeats until one of three stopping criteria are met.
+There are two algorithms that may be used to calculate the mutual information,
+both of which are derived in~\cite{Kra04}. The first algorithm discussed 
+therein is used as the default algorithm within Dakota; the second may be 
+selected by including the keyword \texttt{ksg2} in the Dakota input script. 
+Furthermore, the user may choose to include, during the computation of the 
+mutual information, a stochastic error term on the low-fidelity model 
+responses. This is done by specifying \texttt{simulation\_variance} in the 
+\texttt{responses} block corresponding to the low-fidelity model. See the 
+Dakota Theory Manual~\cite{TheoMan} for more information regarding the 
+implementation of the mutual information calculations.
 
 There are three criteria by which this algorithm is considered complete. 
 The user may specify \texttt{max\_hifi\_evaluations}, which limits the number 

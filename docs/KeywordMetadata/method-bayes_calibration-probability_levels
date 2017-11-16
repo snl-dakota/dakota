@@ -6,18 +6,20 @@ Credible and prediction intervals of model responses are computed for specified
 probabilities. Credible intervals are calculated from the response function 
 values corresponding to the final MCMC chain. Calculation of prediction 
 intervals consider these response values as well as the experimental 
-uncertainty, which is specified by the user via the \c variance_type command. 
+uncertainty, which is specified by the user via the \c experiment_variance_type
+command. 
 
 <b> Expected Output </b>
 
 If \c probability_levels is specified, Dakota will create a table containing 
 the credibile intervals for each response function. The corresponding table 
-containing the prediction intervals will also be created if a \c variance_type 
-has been specified. This information is output to the screen and to a file.
-In addition, the output file contains the means and standard deviations of 
-each response function and Gaussian approximations of the 5/95 credible and
-prediction intervals, in which the lower bound is two standard deviations below 
-the mean and the upper bound is two standard deviations above the mean.
+containing the prediction intervals will also be created if a 
+\c experiment_variance_type has been specified. This information is output to 
+the screen and to a file. In addition, the output file contains the means and 
+standard deviations of each response function and Gaussian approximations of 
+the 5/95 credible and prediction intervals, in which the lower bound is two 
+standard deviations below the mean and the upper bound is two standard 
+deviations above the mean.
 
 <b> Usage Tips </b>
 
@@ -69,7 +71,7 @@ responses,
         calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
           freeform
           num_experiments = 10
-          variance_type = 'scalar' 
+          experiment_variance_type = 'scalar' 
         descriptors = 'stress' 'displacement'
         no_gradients
         no_hessians

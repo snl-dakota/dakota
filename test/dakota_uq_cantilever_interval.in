@@ -8,6 +8,7 @@
 
 environment    
   tabular_data    
+# Proliferate as comment to user manual:
 #    tabular_data_file = 'cantilever_uq_global_interval.dat'  #s0
 
 method									 
@@ -16,7 +17,7 @@ method
     seed = 1234567 	#s0,#s1,#p0
 #	local_interval_est sqp		  #s2,#p1
 #	local_interval_est nip		  #s3
-    output verbose	   		  
+  output verbose
 
 variables
   continuous_interval_uncertain = 2

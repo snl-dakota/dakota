@@ -7,8 +7,8 @@ environment
 
 method
   polynomial_chaos
-    quadrature_order_sequence   = 5        #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
-#    expansion_order    = 4	      #s14,#s15,#s16,#s17,#s18,#s19
+    quadrature_order = 5	  #s0,#s1,#s2,#s3,#s4,#s5,#s12,#s13,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
+#    expansion_order = 4	  #s14,#s15,#s16,#s17,#s18,#s19
 #    dimension_preference = 4 2	  #s14,#s15,#s16,#s17,#s18
     dimension_preference = 5 3	  #s0,#s1,#s2,#s3,#s4,#s20,#s21,#s22,#s23,#s24,#s25,#s26,#s27,#s28
 # One SSG level higher for n=5 relative to n=2:

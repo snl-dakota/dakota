@@ -14,7 +14,7 @@ be calibrated.
 
 The algorithm starts with a preliminary Bayesian calibration using the 
 number of data points specified in \c initial_samples. These data points can
-be read in through the \c calibration_data_file command in the \c response 
+be read in through the \c calibration_data_file command in the \c responses 
 block. If \c num_experiments is less than \c initial_samples or if no such data
 file is provided, Latin Hypercube Samples of the design space (specified in the
 \c variables block) will be run through the user-specified high-fidelity code 
@@ -79,10 +79,6 @@ specifications. For example, if \c num_experiments is less than the number of
 experiments in the \c calibration_data_file, only the first lines of the file
 will be used and the rest will be discarded. The same holds true for the 
 \c import_candidate_points_file and \c num_candidates. 
-
-The incorporation of variance information in \c calibration_data_file is not
-yet supported. Only configuration variables and the corresponding 
-high-fidelity model information should be included in the file.
 
 Examples::
 The input file below illustrates the use of \c experimental_design and its

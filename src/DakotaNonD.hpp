@@ -156,6 +156,15 @@ protected:
   //- Heading: Utility routines
   //
 
+  /// distribute pilot sample specification across model levels
+  void load_pilot_sample(const SizetArray& pilot_spec, SizetArray& delta_N_l);
+  /// distribute pilot sample specification across model forms or levels
+  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+			 SizetArray& delta_N_l);
+  /// distribute pilot sample specification across model forms and levels
+  void load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
+			 Sizet2DArray& delta_N_l);
+
   /// Size local variables
   void size();
 

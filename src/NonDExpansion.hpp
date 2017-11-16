@@ -38,8 +38,8 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, short u_space_type,
-		bool piecewise_basis, bool use_derivs);
+		short exp_coeffs_approach, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -55,7 +55,7 @@ public:
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run();
   /// print the final statistics
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   const Model& algorithm_space_model() const;
 
@@ -71,7 +71,8 @@ public:
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
-				const IntResponseMap& resp_map);
+				const IntResponseMap& resp_map,
+				size_t index = _NPOS);
 
 protected:
 
@@ -86,17 +87,14 @@ protected:
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
-  virtual void compute_expansion();
+  virtual void compute_expansion(size_t index = _NPOS);
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
   /// increment the input specification sequence (PCE only)
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
-  virtual void update_expansion();
-  /// construct a multifidelity expansion, across model forms or
-  /// discretization levels
-  virtual void multifidelity_expansion();
+  virtual void update_expansion(size_t index = _NPOS);
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
@@ -121,14 +119,14 @@ protected:
   //
 
   /// common constructor code for initialization of natafTransform
-  void initialize(short u_space_type);
+  void initialize_random(short u_space_type);
 
   /// check length and content of dimension preference vector
   void check_dimension_preference(const RealVector& dim_pref) const;
 
-  /// refine the reference expansion found by compute_expansion() using
-  /// uniform/adaptive p-/h-refinement strategies
-  void refine_expansion();
+  /// define the surrogate response mode for a hierarchical model in 
+  /// multilevel/multifidelity expansions
+  void assign_hierarchical_response_mode();
 
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
@@ -136,22 +134,23 @@ protected:
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    const UShortArray& quad_order_seq,
+			    unsigned short quad_order,
 			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// generates a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int filtered_samples, const RealVector& dim_pref);
+			    unsigned short quad_order,
+			    const RealVector& dim_pref, int filtered_samples);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// samples randomly from a tensor product multi-index
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int random_samples, int seed,
-			    const UShortArray& quad_order_seq,
-			    const RealVector& dim_pref);
+			    unsigned short quad_order,
+			    const RealVector& dim_pref,
+			    int random_samples, int seed);
   /// assign a NonDSparseGrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-			     const UShortArray& ssg_level_seq,
-			     const RealVector& ssg_dim_pref);
+			     unsigned short ssg_level,
+			     const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
@@ -161,8 +160,21 @@ protected:
     unsigned short import_approx_format = TABULAR_ANNOTATED,
     bool import_approx_active_only = false);
 
+  /// construct a multifidelity expansion, across model forms or
+  /// discretization levels
+  void multifidelity_expansion();
+
+  /// refine the reference expansion found by compute_expansion() using
+  /// uniform/adaptive p-/h-refinement strategies
+  void refine_expansion(size_t index = _NPOS);
+
   /// calculate analytic and numerical statistics from the expansion
-  void compute_statistics();
+  void compute_statistics(short results_state = FINAL_RESULTS);
+
+  /// manage computing of results and debugging outputs, for either the final
+  /// set of results (full statistics) or an intermediate set of results
+  /// (reduced set of core results used for levels/fidelities, etc.)
+  void annotated_results(short results_state = FINAL_RESULTS);
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -178,6 +190,9 @@ protected:
   /// method for collocation point generation and subsequent
   /// calculation of the expansion coefficients
   short expansionCoeffsApproach;
+
+  /// emulation approach for multilevel discrepancy: distinct or recursive
+  short multilevDiscrepEmulation;
 
   /// type of expansion basis: DEFAULT_BASIS or
   /// Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT for SC or
@@ -253,7 +268,7 @@ private:
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients
-  void compute_analytic_statistics();
+  void compute_analytic_statistics(short results_state = FINAL_RESULTS);
   /// numerical portion of compute_statistics() from sampling on the expansion
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
@@ -276,12 +291,10 @@ private:
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
+  /// manage print of results following a generalized index set increment
+  void annotated_index_set_results();
   /// manage print of results following a refinement increment
-  void compute_print_increment_results();
-  /// manage print of results following a refinement increment
-  void compute_print_iteration_results(bool initialize);
-  /// manage print of results following convergence of iterative refinement
-  void compute_print_converged_results(bool print_override = false);
+  void annotated_refinement_results(bool initialize);
 
   //
   //- Heading: Data

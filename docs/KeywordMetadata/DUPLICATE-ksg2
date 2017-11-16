@@ -1,0 +1,53 @@
+Blurb::
+Use second Kraskov algorithm to compute mutual information
+
+Description::
+This algorithm is derived in \cite Kra04 . The mutual information between
+\f$m\f$ random variables is approximated by
+
+\f[
+I_{2}(X_{1}, X_{2}, \ldots, X_{m}) = \psi(k) + (m-1)\psi(N) - (m-1)/k - 
+< \psi(n_{x_{1}}) + \psi(n_{x_{2}}) + \ldots + \psi(n_{x_{m}}) >,
+\f] 
+
+where \f$\psi\f$ is the digamma function, \f$k\f$ is the number of nearest 
+neighbors being used, and \f$N\f$ is the
+number of samples available for the joint distribution of the random variables. 
+For each point \f$z_{i} = (x_{1,i}, x_{2,i}, \ldots, x_{m,i})\f$ in the joint 
+distribution, \f$z_{i}\f$ and its \f$k\f$ nearest neighbors are projected into
+each marginal subpsace. For each subspace \f$ j = 1, \ldots, m\f$, 
+\f$\epsilon_{j,i}\f$ is defined as the radius of the \f$l_{\infty}\f$-ball 
+containing all \f$k+1\f$ points. Then, \f$n_{x_{j,i}}\f$ is the number of points
+in the \f$j\f$-th subspace within a distance of \f$\epsilon_{j,i}\f$ from the
+point \f$x_{j,i}\f$. The angular brackets denote that the average of 
+\f$\psi(n_{x_{j,i}})\f$ is taken over all points \f$i = 1, \ldots, N\f$.  
+
+Topics::	
+Examples::
+\verbatim
+method
+	bayes_calibration queso
+	  dram
+	  seed = 34785
+	  chain_samples = 1000
+	  posterior_stats mutual_info 
+		ksg2
+\endverbatim
+
+\verbatim
+method
+	bayes_calibration
+	  queso
+	  dram
+	  chain_samples = 1000 seed = 348
+ 	experimental_design
+	  initial_samples = 5
+	  num_candidates = 10
+	  max_hifi_evaluations = 3
+	  ksg2
+\endverbatim
+
+
+Theory::
+Faq::
+See_Also::	

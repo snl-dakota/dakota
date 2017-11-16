@@ -2537,7 +2537,8 @@ user_space_to_iterator_space(const Variables& user_vars,
 						  iter_vars, iter_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    iter_vars = user_vars; iter_resp = user_resp; // shallow copies
+    iter_vars = user_vars.copy(); // deep copy to preserve inactive in source
+    iter_resp = user_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings bottom up (e.g., for data import)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2549,16 +2550,22 @@ user_space_to_iterator_space(const Variables& user_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_rit->current_variables(); // shallow copy
 	Response  recast_resp = ml_rit->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();    // copy
 	// to propagate vars bottom up, inverse of std transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
 	recast_model_rep->inverse_transform_variables(iter_vars, recast_vars);
-	//recast_model_rep->
-	//  inverse_transform_set(iter_vars, iter_set, recast_set);
+	recast_model_rep->
+	  inverse_transform_set(iter_vars, iter_resp.active_set(), recast_set);
 	// to propagate response bottom up, std transform is used
+	recast_resp.active_set(recast_set);
 	recast_model_rep->
 	  transform_response(recast_vars, iter_vars, iter_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	iter_vars = recast_vars; iter_resp = recast_resp;// iter_set=recast_set;
+	// update active in iter_vars
+	iter_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	iter_resp = recast_resp; // sufficient for now...
+	//iter_resp.active_set(recast_set);
+	//iter_resp.update(recast_resp);
       }
   }
 }
@@ -2574,7 +2581,8 @@ iterator_space_to_user_space(const Variables& iter_vars,
 						  user_vars, user_resp);
   else { // letter lacking redefinition of virtual fn.
 
-    user_vars = iter_vars; user_resp = iter_resp; // shallow copies
+    user_vars = iter_vars.copy(); // deep copy to preserve inactive in source
+    user_resp = iter_resp;//.copy(); // shallow copy currently sufficient
 
     // apply recastings top down (e.g., for data export)
     // modelList assigned in manage_data_recastings() -> subordinate_models()
@@ -2585,16 +2593,23 @@ iterator_space_to_user_space(const Variables& iter_vars,
 	// utilize RecastModel::current{Variables,Response} to xform data
 	Variables recast_vars = ml_it->current_variables(); // shallow copy
 	Response  recast_resp = ml_it->current_response();  // shallow copy
+	ActiveSet recast_set  = recast_resp.active_set();   // copy
 	// to propagate vars top down, forward transform is reqd
 	RecastModel* recast_model_rep = (RecastModel*)ml_it->model_rep();
 	recast_model_rep->transform_variables(user_vars, recast_vars);
-	//recast_model_rep->transform_set(user_vars, user_set, recast_set);
+	recast_model_rep->
+	  transform_set(user_vars, user_resp.active_set(), recast_set);
 	// to propagate response top down, inverse transform is used.  Note:
 	// derivatives are not currently exported --> a no-op for Nataf.
+	recast_resp.active_set(recast_set);
 	recast_model_rep->inverse_transform_response(recast_vars, user_vars,
 						     user_resp, recast_resp);
-	// reassign rep pointers (no actual data copying)
-	user_vars = recast_vars; user_resp = recast_resp;// user_set=recast_set;
+	// update active in iter_vars
+	user_vars.active_variables(recast_vars);
+	// reassign resp rep pointer (no actual data copying)
+	user_resp = recast_resp; // sufficient for now...
+	//user_resp.active_set(recast_set);
+	//user_resp.update(recast_resp);
       }
   }
 }
@@ -3029,10 +3044,10 @@ bool Model::resize_pending() const
 }
 
 
-void Model::build_approximation()
+void Model::build_approximation(size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->build_approximation();
+    modelRep->build_approximation(index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\nThis model does not support approximation "
@@ -3043,7 +3058,8 @@ void Model::build_approximation()
 
 
 bool Model::
-build_approximation(const Variables& vars, const IntResponsePair& response_pr)
+build_approximation(const Variables& vars, const IntResponsePair& response_pr,
+		    size_t index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
@@ -3053,14 +3069,14 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   }
 
   // envelope fwd to letter
-  return modelRep->build_approximation(vars, response_pr);
+  return modelRep->build_approximation(vars, response_pr, index);
 }
 
 
-void Model::update_approximation(bool rebuild_flag)
+void Model::update_approximation(bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(rebuild_flag);
+    modelRep->update_approximation(rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_"
 	 << "approximation(bool) function.\nThis model does not support "
@@ -3072,10 +3088,10 @@ void Model::update_approximation(bool rebuild_flag)
 
 void Model::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars, response_pr, rebuild_flag);
+    modelRep->update_approximation(vars, response_pr, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
@@ -3087,10 +3103,11 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 void Model::
 update_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
+		     const IntResponseMap& resp_map,
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars_array, resp_map, rebuild_flag);
+    modelRep->update_approximation(vars_array, resp_map, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
@@ -3102,10 +3119,10 @@ update_approximation(const VariablesArray& vars_array,
 
 void Model::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(samples, resp_map, rebuild_flag);
+    modelRep->update_approximation(samples, resp_map, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
@@ -3115,10 +3132,10 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 }
 
 
-void Model::append_approximation(bool rebuild_flag)
+void Model::append_approximation(bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(rebuild_flag);
+    modelRep->append_approximation(rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_"
 	 << "approximation(bool) function.\nThis model does not support "
@@ -3130,10 +3147,10 @@ void Model::append_approximation(bool rebuild_flag)
 
 void Model::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars, response_pr, rebuild_flag);
+    modelRep->append_approximation(vars, response_pr, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
@@ -3145,10 +3162,11 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 void Model::
 append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
+		     const IntResponseMap& resp_map,
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars_array, resp_map, rebuild_flag);
+    modelRep->append_approximation(vars_array, resp_map, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
@@ -3160,10 +3178,10 @@ append_approximation(const VariablesArray& vars_array,
 
 void Model::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
+		     bool rebuild_flag, size_t index)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag);
+    modelRep->append_approximation(samples, resp_map, rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
@@ -3263,10 +3281,10 @@ void Model::remove_stored_approximation(size_t index)
 }
 
 
-void Model::combine_approximation(short corr_type)
+void Model::combine_approximation()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->combine_approximation(corr_type);
+    modelRep->combine_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This model does not support "
@@ -3276,10 +3294,19 @@ void Model::combine_approximation(short corr_type)
 }
 
 
-void Model::run_dace_iterator(bool rebuild_flag)
+void Model::clear_stored()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->run_dace_iterator(rebuild_flag);
+    modelRep->clear_stored();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no stored data to clear
+}
+
+
+void Model::run_dace_iterator(bool rebuild_flag, size_t index)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->run_dace_iterator(rebuild_flag, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual run_dace_iterator()"
 	 << "function.\n       This model does not support DACE executions."
@@ -3453,6 +3480,15 @@ DiscrepancyCorrection& Model::discrepancy_correction()
 
   // envelope fwd to letter
   return modelRep->discrepancy_correction();
+}
+
+
+short Model::correction_type()
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->correction_type();
+  else
+    return NO_CORRECTION; // default for non-surrogate models
 }
 
 
@@ -4604,6 +4640,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
     PRPCacheHIter cache_it
       = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
+      found_resp.active_set(search_set);
       found_resp.update(cache_it->response());
       return true;
     }

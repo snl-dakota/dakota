@@ -359,6 +359,7 @@ compute(//const Variables& vars,
   //  compute_combine_factors(add_discrep_response, mult_discrep_response);
 }
 
+
 void DiscrepancyCorrection::
 compute(const VariablesArray& vars_array, const ResponseArray& 
         truth_response_array, const ResponseArray& approx_response_array, 
@@ -369,12 +370,11 @@ compute(const VariablesArray& vars_array, const ResponseArray&
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  int index; ISIter it;
+  int i, index; ISIter it;
   
-  for (int i=0; i < vars_array.size(); i++){
+  for (i=0; i < vars_array.size(); i++)
     compute(vars_array[i], truth_response_array[i], approx_response_array[i], 
 	    quiet_flag);
-  }
 
   if (!approxType.empty()) {
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
@@ -385,7 +385,6 @@ compute(const VariablesArray& vars_array, const ResponseArray&
       //addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
     }
   }
-  
 }
 
 
@@ -415,8 +414,9 @@ compute_additive(const Response& truth_response,
     // Additive 2nd order correction
     // -----------------------------
     if ( (dataOrder & 4) && !discrep_hess.empty() ) {
-      const RealSymMatrix&  truth_hess =  truth_response.function_hessian(index);
-      const RealSymMatrix& approx_hess = approx_response.function_hessian(index);
+      const RealSymMatrix&  truth_hess = truth_response.function_hessian(index);
+      const RealSymMatrix& approx_hess
+	= approx_response.function_hessian(index);
       for (size_t j=0; j<numVars; ++j)
         for (size_t k=0; k<=j; ++k) // lower half
   	discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);

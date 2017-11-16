@@ -48,7 +48,7 @@ public:
   void core_run();
   //void post_run(std::ostream& s);
   //void finalize_run();
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
 private:
 

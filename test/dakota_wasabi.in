@@ -1,0 +1,37 @@
+#@ *: Label=Experimental
+
+environment,
+	  tabular_data
+
+method,
+        bayes wasabi
+         pushforward_samples = 1000
+        emulator gaussian_process surfpack
+         build_samples = 10
+        seed = 2287
+        data_distribution
+           gaussian
+           means = 3.15 3.23
+           covariance  0.1 0.1
+             diagonal
+        #  obs_data_filename = 'interval.dat'
+        evaluate_posterior_density
+	posterior_density_export_filename = 'pdens.txt'
+        generate_posterior_samples
+	posterior_samples_export_filename = 'psamples.txt'
+        #output debug
+
+variables,
+	uniform_uncertain = 2 
+	  lower_bounds = 1.0 1.0
+	  upper_bounds = 2.5 2.5
+
+interface,
+	#system
+        direct
+	  analysis_driver = 'bayes_linear'
+
+responses,
+        calibration_terms = 1
+	no_gradients
+	no_hessians

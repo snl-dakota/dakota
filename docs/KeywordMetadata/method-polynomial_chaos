@@ -96,13 +96,14 @@ options are provided:
      annotation within the file.
 </ol>
 
-It is important to note that, while \c quadrature_order, \c
-sparse_grid_level, and \c expansion_order are array inputs, only one
-scalar from these arrays is active at a time for a particular
-expansion estimation.  These scalars can be augmented with a \c
+It is important to note that, for polynomial chaos using a single
+model fidelity, \c quadrature_order, \c sparse_grid_level, and \c
+expansion_order are scalar inputs used for a single expansion
+estimation.  These scalars can be augmented with a \c
 dimension_preference to support anisotropy across the random dimension
-set.  The array inputs are present to support advanced use cases such
-as multifidelity UQ, where multiple grid resolutions can be employed.
+set.  This differs from the use of sequence arrays in advanced use
+cases such as multilevel and multifidelity polynomial chaos, where
+multiple grid resolutions can be employed across a model hierarchy.
 
 <b> Active Variables </b>
 
@@ -156,46 +157,6 @@ are approximation-based, so management of this expense is less
 critical). This option allows for refinement of probability and
 generalized reliability results using importance sampling.
 
-<b> Multifidelity PCE </b>
-
-The advanced use case of multifidelity UQ using PCE automatically
-becomes active if the model selected for iteration by the method
-specification is a multifidelity surrogate model (see \ref
-model-surrogate-hierarchical). In this case, an expansion will first
-be formed for the low fidelity surrogate model, using the first value
-within the \c quadrature_order_sequence, \c
-sparse_grid_level_sequence, or \c expansion_order_sequence (if
-multiple values are present; the first is reused if not present) along
-with any specified refinement strategy.
-Second, expansions are formed for one or more model discrepancies (the
-difference between response results if \c additive \c correction or
-the ratio of results if \c multiplicative \c correction), using all
-subsequent values in the \c quadrature_order_sequence, \c
-sparse_grid_level_sequence, or \c expansion_order_sequence along with
-any specified refinement strategy.  The number of discrepancy expansions
-is determined by the length of the \c ordered_model_sequence within the
-hierarchical model specification (see \ref model-surrogate-hierarchical).
-Then each of these expansions are combined (added or multiplied) into
-an expansion that approximates the high fidelity model, from which the
-final set of statistics are generated. For polynomial chaos
-expansions, this high fidelity expansion can differ significantly in
-form from the low fidelity and discrepancy expansions, particularly in
-the \c multiplicative case where it is expanded to include all of the
-basis products.
-
-<b> Multilevel PCE </b>
-
-Experimental: For the case of regression-based PCE (either least squares 
-or compressed sensing), an optimal sample allocation procedure can
-be applied for the resolution of each level within a multilevel sampling
-procedure as in \ref method-multilevel_sampling.  The core difference
-is that a Monte Carlo estimator of the statistics is replaced with a
-PCE-based estimator of the statistics, requiring approximation of the 
-variance of these estimators.
-
-Initial prototypes for multilevel PCE can be explored using \c
-dakota/test/dakota_uq_diffusion_mlpce.in, and will be stabilized in
-future releases.
 
 <b> Usage Tips </b>
 

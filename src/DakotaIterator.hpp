@@ -18,6 +18,8 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "ResultsManager.hpp"
+#include "DakotaTraitsBase.hpp"
+#include <memory>
 
 
 namespace Dakota {
@@ -47,18 +49,18 @@ public:
   //
 
   /// default constructor
-  Iterator();
+  Iterator( std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()) );
   /// alternate envelope constructor that assigns a representation pointer
-  Iterator(Iterator* iterator_rep, bool ref_count_incr = true);
+  Iterator(Iterator* iterator_rep, bool ref_count_incr = true, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard envelope constructor, which constructs its own model(s)
-  Iterator(ProblemDescDB& problem_db);
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model);
+  Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model);
+  Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
   Iterator(const Iterator& iterator);
 
@@ -160,7 +162,8 @@ public:
   virtual void initialize_graphics(int iterator_server_id = 1);
 
   /// print the final iterator results
-  virtual void print_results(std::ostream& s);
+  virtual void print_results(std::ostream& s,
+			     short results_state = FINAL_RESULTS);
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain
@@ -316,6 +319,11 @@ public:
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
+
+  /// returns methodTraits for access to derived class member functions
+  /// that are not mapped to the top TraitsBase level
+  std::shared_ptr<TraitsBase> traits() const;
+
   //
   //- Heading: Operator overloaded functions
   //
@@ -335,13 +343,13 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(BaseConstructor, ProblemDescDB& problem_db);
+  Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model);
+  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name);
+  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   //
   //- Heading: Virtual functions
@@ -463,6 +471,10 @@ protected:
   /// valid names for iterator results
   ResultsNames resultsNames;
 
+  /// pointer that retains shared ownership of a TraitsBase object,
+  /// or child thereof
+  std::shared_ptr<TraitsBase> methodTraits;
+
 private:
 
   //
@@ -498,6 +510,10 @@ private:
   int referenceCount;
 };
 
+inline std::shared_ptr<TraitsBase> Iterator::traits() const
+{
+    return (iteratorRep) ? iteratorRep->traits() : methodTraits;
+}
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {

@@ -37,7 +37,7 @@ protected:
   //- Heading: Constructor and destructor
   //
 
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model); ///< constructor
+  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits); ///< constructor
   ~SurrBasedMinimizer();                                       ///< destructor
     
   //
@@ -50,7 +50,7 @@ protected:
 
   /// initialize graphics customized for surrogate-based iteration
   void initialize_graphics(int iterator_server_id = 1);
-  void print_results(std::ostream& s);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Utility member functions

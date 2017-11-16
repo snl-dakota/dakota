@@ -11,13 +11,20 @@
 # while x is the configuration variable. See Section 4.1 of the JCP paper
 # "An information theoretic approach to use high-fidelity codes to
 # calibration low-fidelity codes" by Lewis, et al, published in 2016.  
+#
+# s3 and s4: Second-order diffs due to changes in Boost versions are 
+# expected. These changes occur in boost/random/normal_distribution.hpp. 
+# Baseline uses Boost 1.53.0. Platforms using 1.58.0 are known to diff. 
+# Moments of posterior parameter and response distributions in s3 and s4 
+# should differ from those in s0; baselines for these tests can be 
+# updated as the variate generator is udpated.
 
 environment
   tabular_data
 
 method,
-       bayes_calibration queso
 #          #output debug						#s1
+       bayes_calibration queso
           dram
 	  seed = 34785				
           chain_samples = 500
@@ -26,6 +33,7 @@ method,
 	  num_candidates = 2
 #	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
 #		freeform						#s2
+#	  #ksg2						#s2
 	  max_hifi_evaluations = 1
           model_pointer = 'HIERARCH'
  
@@ -69,19 +77,20 @@ interface,
         id_interface = 'hifi_IF'
         analysis_drivers = 'expdesign_high'
           fork
-        asynchronous evaluation_concurrency=2              #s0
+        asynchronous evaluation_concurrency=2              #s0,#s3,#s4
 
 interface,
         id_interface = 'lofi_IF'
         analysis_drivers = 'expdesign_low'
           fork 
-        asynchronous evaluation_concurrency=4              #s0
+        asynchronous evaluation_concurrency=4              #s0,#s3,#s4
 
 responses,
  	id_responses = 'lofi_resp'
         calibration_terms = 1
 	no_gradients	
 	no_hessians
+#	simulation_variance = 200			#s3
 
 responses,
  	id_responses = 'hifi_resp'
@@ -91,9 +100,10 @@ responses,
 #	  num_config_variables = 1				#s1,#s2
 #	  num_experiments = 2				        #s2	
 #	  num_experiments = 1					#s1
-#	  variance_type = 'none'				#s1,#s2
-	  #variance_type = 'scalar'
+#	  experiment_variance_type = 'none'			#s1,#s2
+	  #experiment_variance_type = 'scalar'
 	no_gradients	
 	no_hessians
+#	simulation_variance = 0.5			#s4
 
 

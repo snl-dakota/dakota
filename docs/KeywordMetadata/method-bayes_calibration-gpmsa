@@ -94,7 +94,7 @@ responses
     freeform
     num_experiments  5
       num_config_variables   3
-    variance_type 'scalar'
+    experiment_variance_type 'scalar'
   no_gradients
   no_hessians
 

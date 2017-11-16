@@ -29,13 +29,14 @@ list_filter_emacs_backups(ref_topic_md)
 file(GLOB ref_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Ref_*.dox")
 file(GLOB ref_images RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "images/*")
 list_filter_emacs_backups(ref_images)
-set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox} Doxyfile-ref 
+set(dox_ref_deps ${ref_kw_md} ${ref_topic_md} ${ref_dox}
+  ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-ref 
   ${ref_images} header-ref.html header-ref.tex Dakota.bib)
 
 # Doxygen developer dependencies
 file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
-set(dox_dev_deps 
-  ${dox_dev_dox} Doxyfile header-dev.html header-dev.tex)
+set(dox_dev_deps ${dox_dev_dox} 
+  ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile header-dev.html header-dev.tex)
 
 
 # Generate the doxygen files for ref man keywords and topics,

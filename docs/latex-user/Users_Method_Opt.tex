@@ -717,9 +717,7 @@ section include:
   multiobjective reduction, in which a composite objective function is
   constructed from a set of individual objective functions using a
   user-specified set of weighting factors. These latter two approaches
-  work with any of the above single objective algorithms. Future
-  multiobjective response data transformations for goal programming,
-  normal boundary intersection, etc. are planned.
+  work with any of the above single objective algorithms.
 \item {\bf Scaling,} where any optimizer (or least squares solver
   described in Section~\ref{nls:solution}), can accept user-specified
   (and in some cases automatic or logarithmic) scaling of continuous
@@ -727,12 +725,13 @@ section include:
   constraints. Some optimization algorithms are sensitive to the
   relative scaling of problem inputs and outputs, and this feature can
   help.
-\item {\bf Solvers in shared libraries}: On computer systems that
-  permit use of shared libraries (most modern systems), Dakota can
-  avail itself of optimization solvers contained in shared libraries.
-  This is a first step toward allowing optional parts of Dakota, such
-  as proprietary solvers, to be accessed from shared
-  libraries.\end{itemize}
+% \item {\bf Solvers in shared libraries}: On computer systems that
+%   permit use of shared libraries (most modern systems), Dakota can
+%   avail itself of optimization solvers contained in shared libraries.
+%   This is a first step toward allowing optional parts of Dakota, such
+%   as proprietary solvers, to be accessed from shared
+%   libraries.
+\end{itemize}
 The Advanced Methods Chapter~\ref{adv_meth} offers details on the 
 following component-based meta-algorithm approaches:
 \begin{itemize}
@@ -769,15 +768,15 @@ following component-based meta-algorithm approaches:
 \subsection{Multiobjective Optimization}
 \label{opt:additional:multiobjective}
 
-Multiobjective optimization means that there are two or more objective
-functions that you wish to optimize simultaneously. Often these are
-conflicting objectives, such as cost and performance. The answer to a
-multi-objective problem is usually not a single point. Rather, it is a
-set of points called the Pareto front. Each point on the Pareto front
-satisfies the Pareto optimality criterion, which is stated as follows:
-a feasible vector $X^{*}$ is Pareto optimal if there exists no other
-feasible vector $X$ which would improve some objective without causing
-a simultaneous worsening in at least one other objective. Thus, if a
+Multiobjective optimization refers to the simultaneous optimization of
+two or more objective functions. Often these are competing objectives,
+such as cost and performance. The optimal design in a multi-objective
+problem is usually not a single point. Rather, it is a set of points
+called the Pareto front. Each point on the Pareto front satisfies the
+Pareto optimality criterion, which is stated as follows: a feasible
+vector $X^{*}$ is Pareto optimal if there exists no other feasible
+vector $X$ which would improve some objective without causing a
+simultaneous worsening in at least one other objective. Thus, if a
 feasible point $X'$ exists that CAN be improved on one or more
 objectives simultaneously, it is not Pareto optimal: it is said to be
 ``dominated'' and the points along the Pareto front are said to be
@@ -814,26 +813,26 @@ optimizations need to be performed to get a good parametric
 understanding of the influence of the weights.  Thus, this approach
 can become computationally expensive.
 
-The selection of a multiobjective optimization problem is made through
-the specification of multiple objective functions in the responses
+A multiobjective optimization problem is indicated by the
+specification of multiple ($R$) objective functions in the responses
 keyword block (i.e., the \texttt{objective\_functions} specification
 is greater than \texttt{1}). The weighting factors on these objective
 functions can be optionally specified using the \texttt{weights}
-keyword (the default is equal weightings). The composite objective
-function for this optimization problem, $F$, is formed using these
-weights as follows: $F=\sum_{k=1}^{R}w_{k}f_{k}$, where the $f_{k}$
-terms are the individual objective function values, the $w_{k}$ terms
-are the weights, and $R$ is the number of objective functions. The
-weighting factors stipulate the relative importance of the design
-concerns represented by the individual objective functions; the higher
-the weighting factor, the more dominant a particular objective
-function will be in the optimization process. Constraints are not
-affected by the weighting factor mapping; therefore, both constrained
-and unconstrained multiobjective optimization problems can be
-formulated and solved with Dakota, assuming selection of an
+keyword (the default is equal weightings $\frac{1}{R}$). The composite
+objective function for this optimization problem, $F$, is formed using
+these weights as follows: $F=\sum_{k=1}^{R}w_{k}f_{k}$, where the
+$f_{k}$ terms are the individual objective function values, the
+$w_{k}$ terms are the weights, and $R$ is the number of objective
+functions. The weighting factors stipulate the relative importance of
+the design concerns represented by the individual objective functions;
+the higher the weighting factor, the more dominant a particular
+objective function will be in the optimization process. Constraints
+are not affected by the weighting factor mapping; therefore, both
+constrained and unconstrained multiobjective optimization problems can
+be formulated and solved with Dakota, assuming selection of an
 appropriate constrained or unconstrained single-objective optimization
-algorithm.  Future multiobjective response data transformations for
-goal programming, normal boundary intersection, etc. are planned.
+algorithm. When both multiobjective weighting and scaling are active,
+response scaling is applied prior to weighting.
 
 \subsubsection{Multiobjective Example 1}
 \label{opt:additional:multiobjective:example1}
@@ -1185,31 +1184,31 @@ see \texttt{Dakota/examples/users/rosen\_opt\_scaled.in} }
 \label{opt:additional:scaling:example:figure01}
 \end{figure}
 
-\subsection{dl\_solver --- Solvers via Shared Libraries}
-\label{opt:additional:dlsolver}
-
-On computer systems that permit use of shared libraries (most modern
-systems), Dakota can avail itself of optimization solvers contained in
-shared libraries.  This is a first step toward allowing optional parts
-of Dakota, such as proprietary solvers, to be accessed from shared
-libraries. For example, the Dakota source distributions illustrate
-making a sample shared-library interface to SNOPT~\cite{GilMS05},
-whose use would be specified by
-\begin{small}
-\begin{verbatim}
-    method,
-          dl_solver = 'dl_snopt.dll'
-\end{verbatim}
-\end{small}
-The quoted string contains the name of the shared library, optionally
-followed by keyword assignments known to the library, such as
-\begin{small}
-\begin{verbatim}
-    method,
-          dl_solver = 'dl_snopt.dll outlev = 1'
-\end{verbatim}
-\end{small}
-which would turn on some diagnostic printing in the SNOPT example.
+%\subsection{dl\_solver --- Solvers via Shared Libraries}
+%\label{opt:additional:dlsolver}
+%
+%On computer systems that permit use of shared libraries (most modern
+%systems), Dakota can avail itself of optimization solvers contained in
+%shared libraries.  This is a first step toward allowing optional parts
+%of Dakota, such as proprietary solvers, to be accessed from shared
+%libraries. For example, the Dakota source distributions illustrate
+%making a sample shared-library interface to SNOPT~\cite{GilMS05},
+%whose use would be specified by
+%\begin{small}
+%\begin{verbatim}
+%    method,
+%          dl_solver = 'dl_snopt.dll'
+%\end{verbatim}
+%\end{small}
+%The quoted string contains the name of the shared library, optionally
+%followed by keyword assignments known to the library, such as
+%\begin{small}
+%\begin{verbatim}
+%    method,
+%          dl_solver = 'dl_snopt.dll outlev = 1'
+%\end{verbatim}
+%\end{small}
+%which would turn on some diagnostic printing in the SNOPT example.
 
 \section{Optimization Usage Guidelines}
 \label{opt:usage}
@@ -1262,10 +1261,13 @@ Gradient-Based Global & smooth; continuous variables; & hybrid\_strategy, \\
 Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 & optpp\_pds \\
 \hline
+         & nonsmooth; continuous variables; & coliny\_cobyla,  \\
+         & bound constraints, & coliny\_pattern\_search, \\
+         & nonlinear constraints & coliny\_solis\_wets, \\
+\hline
          & nonsmooth; continuous variables; & asynch\_pattern\_search, \\
-         & bound constraints, & coliny\_cobyla, coliny\_pattern\_search, \\
-         & linear and nonlinear constraints & coliny\_solis\_wets, \\
-         &          & surrogate\_based\_local \\
+         & bound constraints, & surrogate\_based\_local \\
+         & linear and nonlinear constraints & \\
 \hline
          & nonsmooth; continuous variables; &  \\
          & discrete variables; bound constraints, & mesh\_adaptive\_search \\
@@ -1274,11 +1276,19 @@ Derivative-Free Local & nonsmooth; continuous variables; bound constraints
 Derivative-Free Global & nonsmooth; continuous variables; bound constraints
 & ncsu\_direct \\
 \hline
-         & nonsmooth; continuous variables; & coliny\_direct, efficient\_global, \\
-         & bound constraints, & surrogate\_based\_global \\
+         & nonsmooth; continuous variables; & coliny\_direct,  \\
+         & bound constraints, & efficient\_global \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables; & surrogate\_based\_global \\
+         & bound constraints, &  \\
          & linear and nonlinear constraints & \\
 \hline
-         & nonsmooth; continuous variables, & coliny\_ea, soga, \\
+         & nonsmooth; continuous variables, & coliny\_ea \\
+         & discrete variables; bound constraints, &  \\
+         & nonlinear constraints & \\
+\hline
+         & nonsmooth; continuous variables, & soga, \\
          & discrete variables; bound constraints, & moga (multiobjective) \\
          & linear and nonlinear constraints & \\
 \hline

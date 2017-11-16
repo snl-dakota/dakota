@@ -1121,11 +1121,12 @@ append_approximation(const VariablesArray& vars_array,
 void Interface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
+		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds,
+		    size_t index)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->build_approximation(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
-				      dr_l_bnds, dr_u_bnds);
+				      dr_l_bnds, dr_u_bnds, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\n       This interface does not support "
@@ -1148,10 +1149,10 @@ export_approximation()
 }
 
 void Interface::
-rebuild_approximation(const BoolDeque& rebuild_deque)
+rebuild_approximation(const BoolDeque& rebuild_deque, size_t index)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_deque);
+    interfaceRep->rebuild_approximation(rebuild_deque, index);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "
@@ -1251,10 +1252,10 @@ void Interface::remove_stored_approximation(size_t index)
 }
 
 
-void Interface::combine_approximation(short corr_type)
+void Interface::combine_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combine_approximation(corr_type);
+    interfaceRep->combine_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This interface does not "
@@ -1262,6 +1263,16 @@ void Interface::combine_approximation(short corr_type)
     abort_handler(-1);
   }
 }
+
+
+void Interface::clear_stored()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_stored();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no stored data to clear
+}
+
 
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)

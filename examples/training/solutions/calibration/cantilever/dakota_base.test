@@ -168,3 +168,7 @@ Test Number 0 succeeded
                       1.6596030000e+03
                      -5.1990600000e-03
 <<<<< Best data not found in evaluation cache
+Confidence Intervals on Calibrated Parameters:
+             L: [ -8.3452178641e+04, 8.3660908303e+04 ]
+             p: [ -3.9760273182e+05, 3.9859692800e+05 ]
+             X: [ 2.7247457929e+02, 5.4133758661e+02 ]

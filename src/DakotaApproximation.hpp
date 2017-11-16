@@ -67,13 +67,13 @@ public:
   //
 
   /// builds the approximation from scratch
-  virtual void build();
+  virtual void build(size_t index = _NPOS);
   /// exports the approximation
   virtual void export_model(const String& fn_label = "", 
       const String& export_prefix = "", 
       const unsigned short export_format = NO_MODEL_FORMAT );
   /// rebuilds the approximation incrementally
-  virtual void rebuild();
+  virtual void rebuild(size_t index = _NPOS);
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop(bool save_data);
@@ -88,9 +88,11 @@ public:
   virtual void restore(size_t index = _NPOS);
   /// remove a stored approximation prior to combination
   virtual void remove_stored(size_t index = _NPOS);
+  /// clear stored approximation data
+  virtual void clear_stored();
 
   /// combine current approximation with previously stored approximation
-  virtual void combine(short corr_type, size_t swap_index);
+  virtual void combine(size_t swap_index);
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
@@ -201,14 +203,12 @@ public:
   /// assuming continuous variables and function values only
   void add(const RealMatrix& sample_vars, const RealVector& sample_resp);
 
-  /// appends to popCountStack (number of entries to pop from end of
-  /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  /// appends to SurrogateData::popCountStack (number of entries to pop from
+  /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
   void pop_count(size_t count);
-  // returns popCountStack.back() (number of entries to pop from end of
-  // SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  // returns SurrogateData::popCountStack.back() (number of entries to pop from
+  /// end of SurrogateData::{vars,resp}Data, based on size of last data append)
   //size_t pop_count() const;
-  // clear popCountStack
-  //void clear_stack();
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
@@ -216,7 +216,7 @@ public:
   void clear_anchor();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
-  /// clear popCountStack and SurrogateData::popped{Vars,Resp}Trials
+  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack
   void clear_popped();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
@@ -248,6 +248,13 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
+
+  //
+  //- Heading: Member functions
+  //
+
+  /// Check number of build points against minimum required
+  void check_points(size_t num_build_pts);
 
   //
   //- Heading: Data
@@ -290,10 +297,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// a stack managing the number of points previously added by calls
-  /// to append() that can be removed by calls to pop()
-  SizetArray popCountStack;
 
   /// pointer to the letter (initialized only for the envelope)
   Approximation* approxRep;
@@ -372,34 +375,17 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag)
 /*
 inline size_t Approximation::pop_count() const
 {
-  if (approxRep) // envelope fwd to letter
-    return approxRep->pop_count();
-  else { // not virtual: base class implementation
-    if (popCountStack.empty()) {
-      Cerr << "\nError: empty count stack in Approximation::pop_count()."
-	   << std::endl;
-      abort_handler(-1);
-      return 0;
-    }
-    else
-      return popCountStack.back();
-  }
+  if (approxRep) return approxRep->approxData.pop_count();
+  else           return approxData.pop_count();
 }
 */
 
 
 inline void Approximation::pop_count(size_t count)
 {
-  if (approxRep) approxRep->popCountStack.push_back(count);
-  else           popCountStack.push_back(count);
+  if (approxRep) approxRep->approxData.pop_count(count);
+  else           approxData.pop_count(count);
 }
-
-
-//inline void Approximation::clear_stack()
-//{
-//  if (approxRep) approxRep->popCountStack.clear();
-//  else           popCountStack.clear();
-//}
 
 
 /** Clears out any history (e.g., TANA3Approximation use for a
@@ -429,29 +415,34 @@ inline void Approximation::clear_current()
 
 inline void Approximation::clear_anchor()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->approxData.clear_anchor();
-  else // not virtual: base class implementation
-    approxData.clear_anchor();
+  if (approxRep) approxRep->approxData.clear_anchor();
+  else approxData.clear_anchor();
 }
 
 
 inline void Approximation::clear_data()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->approxData.clear_data();
-  else // not virtual: base class implementation
-    approxData.clear_data();
+  if (approxRep) approxRep->approxData.clear_data();
+  else approxData.clear_data();
 }
 
 
 inline void Approximation::clear_popped()
 {
-  if (approxRep) // envelope fwd to letter
-    approxRep->clear_popped();
-  else { // not virtual: base class implementation
-    popCountStack.clear();
-    approxData.clear_popped();
+  if (approxRep) approxRep->approxData.clear_popped();
+  else           approxData.clear_popped();
+}
+
+
+inline void Approximation::check_points(size_t num_build_pts)
+{
+  int min_samp = min_points(true); // account for anchor point & buildDataOrder
+  if (num_build_pts < min_samp) {
+    Cerr << "\nError: not enough samples to build approximation.  Construction "
+	 << "of this approximation\n       requires at least " << min_samp
+	 << " samples for " << sharedDataRep->numVars << " variables.  Only "
+	 << num_build_pts << " samples were provided." << std::endl;
+    abort_handler(APPROX_ERROR);
   }
 }
 

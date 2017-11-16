@@ -6,7 +6,8 @@ namespace Dakota
 {
 extern PRPCache data_pairs; // global container
 
-PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minimizer(problem_db, model)
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
+  Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
@@ -48,12 +49,12 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model): Minim
 }
 
 PebbldMinimizer::PebbldMinimizer(Model &model)
-	: Minimizer(BRANCH_AND_BOUND, model) 
+	: Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits())) 
 {//branchAndBound(model)
 };
 
 PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, int max_iter, int max_eval) 
-       : Minimizer(BRANCH_AND_BOUND, model)
+       : Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {//branchAndBound(model,random_seed, max_iter, max_eval)
 };
 
@@ -77,7 +78,7 @@ void PebbldMinimizer::core_run()
 
 /** Redefines default iterator results printing to include
     optimization results (objective functions and constraints). */
-void PebbldMinimizer::print_results(std::ostream& s)
+void PebbldMinimizer::print_results(std::ostream& s, short results_state)
 {
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {

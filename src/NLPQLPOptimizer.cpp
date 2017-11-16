@@ -44,11 +44,12 @@ void NLPQLP_F77(int&, int&, int&, int&, int&, int&, int&, double*, double*,
 namespace Dakota {
 
 NLPQLPOptimizer::NLPQLPOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model)
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
 { initialize(); }
 
 
-NLPQLPOptimizer::NLPQLPOptimizer(Model& model): Optimizer(NLPQL_SQP, model)
+NLPQLPOptimizer::NLPQLPOptimizer(Model& model): 
+  Optimizer(NLPQL_SQP, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
 { initialize(); }
 
 
@@ -141,52 +142,25 @@ void NLPQLPOptimizer::allocate_constraints()
   // Compute the number of equalities and 1-sided inequalities to pass to NLPQL
   // as well as the mappings (indices, multipliers, offsets) between the DAKOTA
   // constraints and the NLPQL constraints.
-  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_lin_ineq   = iteratedModel.num_linear_ineq_constraints(),
-    num_nlpql_ineq = 0;
-  const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& lin_ineq_lwr_bnds
-    = iteratedModel.linear_ineq_constraint_lower_bounds();
-  const RealVector& lin_ineq_upr_bnds
-    = iteratedModel.linear_ineq_constraint_upper_bounds();
+
+  // get_inequality constraints
+
+  // This uses the adapter free function directly rather than the method in 
+  // Dakota::Optimizer because it populates a different set of map objects.
+  configure_inequality_constraint_maps(
+                  iteratedModel,
+                  bigRealBoundSize,
+                  CONSTRAINT_TYPE::LINEAR,
+                  linIneqConMappingIndices,
+                  linIneqConMappingMultipliers,
+                  linIneqConMappingOffsets);
+
   numEqConstraints = iteratedModel.num_nonlinear_eq_constraints()
                    + iteratedModel.num_linear_eq_constraints();
-  for (i=0; i<num_nln_ineq; i++) {
-    if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      num_nlpql_ineq++;
-      // dakota_constraint - nln_ineq_lower_bnd >= 0
-      nonlinIneqConMappingIndices.push_back(i);
-      nonlinIneqConMappingMultipliers.push_back(1.0);
-      nonlinIneqConMappingOffsets.push_back(-nln_ineq_lwr_bnds[i]);
-    }
-    if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
-      num_nlpql_ineq++;
-      // nln_ineq_upper_bnd - dakota_constraint >= 0
-      nonlinIneqConMappingIndices.push_back(i);
-      nonlinIneqConMappingMultipliers.push_back(-1.0);
-      nonlinIneqConMappingOffsets.push_back(nln_ineq_upr_bnds[i]);
-    }
-  }
-  for (i=0; i<num_lin_ineq; i++) {
-    if (lin_ineq_lwr_bnds[i] > -bigRealBoundSize) {
-      num_nlpql_ineq++;
-      // Ax - lin_ineq_lower_bnd >= 0
-      linIneqConMappingIndices.push_back(i);
-      linIneqConMappingMultipliers.push_back(1.0);
-      linIneqConMappingOffsets.push_back(-lin_ineq_lwr_bnds[i]);
-    }
-    if (lin_ineq_upr_bnds[i] < bigRealBoundSize) {
-      num_nlpql_ineq++;
-      // lin_ineq_upper_bnd - Ax >= 0
-      linIneqConMappingIndices.push_back(i);
-      linIneqConMappingMultipliers.push_back(-1.0);
-      linIneqConMappingOffsets.push_back(lin_ineq_upr_bnds[i]);
-    }
-  }
-  numNlpqlConstr = numEqConstraints + num_nlpql_ineq;
+
+  numNlpqlConstr   = numEqConstraints
+                   + constraintMapIndices.size()
+                   + linIneqConMappingIndices.size();
 }
 
 
@@ -268,8 +242,6 @@ void NLPQLPOptimizer::core_run()
     = iteratedModel.linear_ineq_constraint_coeffs();
   const RealMatrix& lin_eq_coeffs
     = iteratedModel.linear_eq_constraint_coeffs();
-  const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
   const RealVector& lin_eq_targets
     = iteratedModel.linear_eq_constraint_targets();
 
@@ -295,11 +267,11 @@ void NLPQLPOptimizer::core_run()
 	if (ACTIVE[i])
 	  activeSet.request_value(2, numObjectiveFns+num_nln_ineq+i);
       size_t  cntr = numEqConstraints;
-      StLIter i_iter;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(); // nonlinear ineq
-	   i_iter != nonlinIneqConMappingIndices.end(); i_iter++)
+      auto my_i_iter = constraintMapIndices.begin(),
+           my_i_end  = constraintMapIndices.end();
+      for ( ; my_i_iter != my_i_end; my_i_iter++) // nonlinear ineq
 	if (ACTIVE[cntr++])
-	  activeSet.request_value(2, (*i_iter)+numObjectiveFns);
+	  activeSet.request_value(2, (*my_i_iter)+numObjectiveFns);
     }
     else // initial evaluation: need all functions/gradients
       activeSet.request_values(3);
@@ -317,26 +289,28 @@ void NLPQLPOptimizer::core_run()
     if (IFAIL == 0 || IFAIL == -1) {
       const RealVector& local_fns = local_response.function_values();
       F[0] = (max_flag) ? -local_fns[0] : local_fns[0];
-      for (i=0; i<numEqConstraints; i++) {
-	if (i<num_nln_eq)                // nonlinear eq
-	  G[i] = local_fns[i+num_nln_ineq+1] - nln_eq_targets[i];
-	else {                           // linear eq
-	  size_t index = i - num_nln_eq;
-          Real Ax = 0.;
-	  for (j=0; j<numContinuousVars; j++)
-	    Ax += lin_eq_coeffs(index,j) * X[j];
-	  G[i] = Ax - lin_eq_targets[index];
-	}
+      if( num_nln_eq )  {
+        // This is a bit ungainly but is needed to use the adapter (for now) - RWH
+        const RealVector sliced_local_fns(Teuchos::View, const_cast<Real*>(&local_fns[num_nln_ineq+1]), num_nln_eq);
+        get_nonlinear_eq_constraints(iteratedModel, sliced_local_fns, G, -1.0);
       }
+      for (i=num_nln_eq; i<numEqConstraints; i++) {
+        size_t index = i - num_nln_eq;
+        Real Ax = 0.;
+        for (j=0; j<numContinuousVars; j++)
+          Ax += lin_eq_coeffs(index,j) * X[j];
+        G[i] = Ax - lin_eq_targets[index];
+      }
+      auto my_i_iter = constraintMapIndices.begin();
+      auto my_m_iter = constraintMapMultipliers.begin(),
+           my_o_iter = constraintMapOffsets.begin();
+      size_t  cntr = numEqConstraints;
+      for ( ;
+	   my_i_iter != constraintMapIndices.end();
+	   my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
+	G[cntr++] = (*my_o_iter) + (*my_m_iter) * local_fns[(*my_i_iter)+1];
       StLIter i_iter;
       RLIter  m_iter, o_iter;
-      size_t  cntr = numEqConstraints;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	   m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	   o_iter  = nonlinIneqConMappingOffsets.begin();
-	   i_iter != nonlinIneqConMappingIndices.end();
-	   i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-	G[cntr++] = (*o_iter) + (*m_iter) * local_fns[(*i_iter)+1];
       for (i_iter  = linIneqConMappingIndices.begin(),
 	   m_iter  = linIneqConMappingMultipliers.begin(),
 	   o_iter  = linIneqConMappingOffsets.begin();
@@ -374,23 +348,26 @@ void NLPQLPOptimizer::core_run()
 	  }
 	}
       }
-      StLIter i_iter;
-      RLIter  m_iter, o_iter;
+      auto my_i_iter = constraintMapIndices.begin();
+      auto my_m_iter = constraintMapMultipliers.begin(),
+           my_o_iter = constraintMapOffsets.begin();
       size_t  cntr = numEqConstraints;
       Real    mult;
-      for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	   m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	   o_iter  = nonlinIneqConMappingOffsets.begin();
-	   i_iter != nonlinIneqConMappingIndices.end();
-	   i_iter++, m_iter++, o_iter++) { // nonlinear ineq
+      for (my_i_iter  = constraintMapIndices.begin(),
+	   my_m_iter  = constraintMapMultipliers.begin(),
+	   my_o_iter  = constraintMapOffsets.begin();
+	   my_i_iter != constraintMapIndices.end();
+	   my_i_iter++, my_m_iter++, my_o_iter++) { // nonlinear ineq
 	if (ACTIVE[cntr]) {
-	  index = *i_iter;
-	  mult  = *m_iter;
+	  index = *my_i_iter;
+	  mult  = *my_m_iter;
 	  for (j=0; j<numContinuousVars; j++)
 	    DG[cntr+MMAX*j] = mult * local_grads(j,index+1);
 	}
 	cntr++;
       }
+      StLIter i_iter;
+      RLIter  m_iter, o_iter;
       for (i_iter  = linIneqConMappingIndices.begin(),
 	   m_iter  = linIneqConMappingMultipliers.begin(),
 	   o_iter  = linIneqConMappingOffsets.begin();
@@ -452,23 +429,23 @@ void NLPQLPOptimizer::core_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = (max_flag) ? -F[0] : F[0];
 
-    StLIter i_iter;
-    RLIter  m_iter, o_iter;
+    auto my_i_iter = constraintMapIndices.begin();
+    auto my_m_iter = constraintMapMultipliers.begin(),
+         my_o_iter = constraintMapOffsets.begin();
     size_t  cntr = numEqConstraints;
-    for (i_iter  = nonlinIneqConMappingIndices.begin(),
-	 m_iter  = nonlinIneqConMappingMultipliers.begin(),
-	 o_iter  = nonlinIneqConMappingOffsets.begin();
-	 i_iter != nonlinIneqConMappingIndices.end();
-	 i_iter++, m_iter++, o_iter++)   // nonlinear ineq
-      best_fns[(*i_iter)+1] = (G[cntr++] - (*o_iter))/(*m_iter);
+    for ( ;
+	 my_i_iter != constraintMapIndices.end();
+	 my_i_iter++, my_m_iter++, my_o_iter++)   // nonlinear ineq
+      best_fns[(*my_i_iter)+1] = (G[cntr++] - (*my_o_iter))/(*my_m_iter);
 
     size_t i, 
       num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
       num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
-    const RealVector& nln_eq_targets
-      = iteratedModel.nonlinear_eq_constraint_targets();
-    for (i=0; i<num_nln_eq; i++)
-      best_fns[i+num_nln_ineq+1] = G[i] + nln_eq_targets[i];
+    if( num_nln_eq )  {
+      // This is a bit ungainly but is needed to use the adapter (for now) - RWH
+      const RealVector viewG(Teuchos::View, G, num_nln_eq);
+      get_nonlinear_eq_constraints(iteratedModel, viewG, best_fns, 1.0, num_nln_ineq+1);
+    }
 
     bestResponseArray.front().function_values(best_fns);
   }

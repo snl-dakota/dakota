@@ -13,6 +13,7 @@
 
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
+#include "DakotaTraitsBase.hpp"
 #include "MetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "CollabHybridMetaIterator.hpp"
@@ -21,7 +22,10 @@
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"
 #include "NonDPolynomialChaos.hpp"
+#include "NonDMultilevelPolynomialChaos.hpp"
 #include "NonDStochCollocation.hpp"
+#include "NonDMultilevelStochCollocation.hpp"
+//#include "NonDMultilevelStochCollocation.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
@@ -135,7 +139,7 @@ extern ResultsManager  iterator_results_db;
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
     set to NULL (an uninitialized pointer causes problems in ~Iterator). */
-Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
+Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -160,10 +164,11 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   resultsDB(iterator_results_db), methodId(probDescDB.get_string("method.id")),
-  iteratorRep(NULL), referenceCount(1)
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
+    // iteratorRep = get_iterator(problem_db);
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db) "
@@ -176,7 +181,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db):
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
+Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0),
@@ -185,10 +190,9 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
   subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model.output_level()), summaryOutputFlag(false),
   resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1)
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
   //update_from_model(iteratedModel); // variable/response counts & checks
-
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
        << "class\n";
@@ -202,14 +206,14 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model):
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
+Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib), 
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false),
   resultsDB(iterator_results_db), methodId("NO_SPECIFICATION"),
-  iteratorRep(NULL), referenceCount(1)
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "
@@ -223,9 +227,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name):
     meta-Iterators and Model recursions.  iteratorRep is NULL in this
     case, making it necessary to check for NULL pointers in the copy
     constructor, assignment operator, and destructor. */
-Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
+Iterator::Iterator(std::shared_ptr<TraitsBase> traits): probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
-  iteratorRep(NULL), referenceCount(1)
+  iteratorRep(NULL), referenceCount(1), methodTraits(traits)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator() called to build empty envelope "
@@ -237,12 +241,12 @@ Iterator::Iterator(): probDescDB(dummy_db), parallelLib(dummy_lib),
 /** This constructor assigns a representation pointer and optionally
     increments its reference count.  It behaves the same as a default
     construction followed by assign_rep(). */
-Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
+Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr, std::shared_ptr<TraitsBase> traits):
   // same as default ctor above
   probDescDB(dummy_db), parallelLib(dummy_lib),
   resultsDB(iterator_results_db), myModelLayers(0), methodName(DEFAULT_METHOD),
   // bypass some logic in assign_rep():
-  iteratorRep(iterator_rep), referenceCount(1)
+  iteratorRep(iterator_rep), referenceCount(1), methodTraits(traits)
 {
   // relevant portion of assign_rep():
   if (iteratorRep && ref_count_incr)
@@ -260,17 +264,14 @@ Iterator::Iterator(Iterator* iterator_rep, bool ref_count_incr):
     data.  This version is used for top-level ProblemDescDB-driven
     construction of all Iterators and MetaIterators, which construct
     their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db):
+Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db),
+  resultsDB(iterator_results_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
-#ifdef REFCOUNT_DEBUG
-  Cout << "Iterator::Iterator(ProblemDescDB&) called to instantiate "
-       << "envelope." << std::endl;
-#endif
 
   iteratorRep = get_iterator(problem_db);
+  
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -340,9 +341,9 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db)
     (e.g., a MetaIterator instantiates its sub-iterator(s) by name
     instead of pointer and passes in its iteratedModel, since these
     sub-iterators lack their own model pointers). */
-Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
+Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db),
+  resultsDB(iterator_results_db), methodTraits(traits),
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -352,6 +353,7 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model):
 
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(problem_db, model);
+
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -411,9 +413,13 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     default:            return new NonDGlobalEvidence(problem_db, model); break;
     } break;
   case POLYNOMIAL_CHAOS:
-    return new NonDPolynomialChaos(problem_db, model);  break;
+    return new NonDPolynomialChaos(problem_db, model);           break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS: case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return new NonDMultilevelPolynomialChaos(problem_db, model); break;
   case STOCH_COLLOCATION:
     return new NonDStochCollocation(problem_db, model); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return new NonDMultilevelStochCollocation(problem_db, model); break;
   case BAYES_CALIBRATION:
     // TO DO: add sub_method to bayes_calibration specification
     switch (probDescDB.get_ushort("method.sub_method")) {
@@ -547,9 +553,10 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     execute get_iterator(), since letter holds the actual base class
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
-Iterator::Iterator(const String& method_string, Model& model):
+Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits):
   probDescDB(model.problem_description_db()),
   parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
+  methodTraits(traits), 
   referenceCount(1) // not used since this is the envelope, not the letter
 {
 #ifdef REFCOUNT_DEBUG
@@ -559,6 +566,7 @@ Iterator::Iterator(const String& method_string, Model& model):
 
   // Set the rep pointer to the appropriate iterator type
   iteratorRep = get_iterator(method_string, model);
+
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -673,7 +681,8 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
     of referenceCount. */
 Iterator::Iterator(const Iterator& iterator):
   probDescDB(iterator.problem_description_db()),
-  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db)
+  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db),
+  methodTraits(iterator.traits())
 {
   // Increment new (no old to decrement)
   iteratorRep = iterator.iteratorRep;
@@ -808,6 +817,12 @@ String Iterator::method_enum_to_string(unsigned short method_name) const
   case GLOBAL_EVIDENCE:         return String("global_evidence"); break;
   case POLYNOMIAL_CHAOS:        return String("polynomial_chaos"); break;
   case STOCH_COLLOCATION:       return String("stoch_collocation"); break;
+  case MULTIFIDELITY_POLYNOMIAL_CHAOS:
+    return String("multifidelity_polynomial_chaos"); break;
+  case MULTILEVEL_POLYNOMIAL_CHAOS:
+    return String("multilevel_polynomial_chaos"); break;
+  case MULTIFIDELITY_STOCH_COLLOCATION:
+    return String("multifidelity_stoch_collocation"); break;
   case BAYES_CALIBRATION:       return String("bayes_calibration"); break;
   case CUBATURE_INTEGRATION:    return String("cubature"); break;
   case QUADRATURE_INTEGRATION:  return String("quadrature"); break;
@@ -899,6 +914,12 @@ unsigned short Iterator::method_string_to_enum(const String& method_name) const
   else if (method_name == "global_evidence")       return GLOBAL_EVIDENCE;
   else if (method_name == "polynomial_chaos")      return POLYNOMIAL_CHAOS;
   else if (method_name == "stoch_collocation")     return STOCH_COLLOCATION;
+  else if (method_name == "multifidelity_polynomial_chaos")
+    return MULTIFIDELITY_POLYNOMIAL_CHAOS;
+  else if (method_name == "multilevel_polynomial_chaos")
+    return MULTILEVEL_POLYNOMIAL_CHAOS;
+  else if (method_name == "multifidelity_stoch_collocation")
+    return MULTIFIDELITY_STOCH_COLLOCATION;
   else if (method_name == "bayes_calibration")     return BAYES_CALIBRATION;
   else if (method_name == "cubature")    return CUBATURE_INTEGRATION;
   else if (method_name == "quadrature")  return QUADRATURE_INTEGRATION;
@@ -1535,10 +1556,10 @@ void Iterator::initialize_graphics(int iterator_server_id)
 
 /** This virtual function provides additional iterator-specific final results
     outputs beyond the function evaluation summary printed in finalize_run(). */
-void Iterator::print_results(std::ostream& s)
+void Iterator::print_results(std::ostream& s, short results_state)
 {
   if (iteratorRep)
-    iteratorRep->print_results(s); // envelope fwd to letter
+    iteratorRep->print_results(s, results_state); // envelope fwd to letter
   // else default base class output is nothing additional beyond the fn
   // evaluation summary printed in finalize_run()
 }

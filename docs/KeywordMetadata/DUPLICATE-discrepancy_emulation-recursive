@@ -1,0 +1,18 @@
+Blurb::
+Recursive formulation for emulation of model discrepancies.
+
+Description:: 
+The \c recursive approach to discrepancy emulation approximates a
+difference or ratio among the new model evaluation and the emulator
+approximation of the previous model.  Refer to the parent documentation 
+node for additional discussion.
+
+Topics::
+
+Examples::
+\verbatim
+\endverbatim
+
+Theory::
+Faq::
+See_Also::	

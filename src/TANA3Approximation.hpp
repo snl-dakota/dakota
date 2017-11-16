@@ -56,7 +56,7 @@ protected:
 
   int num_constraints()  const;
 
-  void build();
+  void build(size_t index = _NPOS);
 
   Real value(const Variables& vars);
 

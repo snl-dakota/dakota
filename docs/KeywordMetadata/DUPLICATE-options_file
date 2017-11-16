@@ -1,0 +1,44 @@
+Blurb:: File containing advanced QUESO options
+
+Description:: 
+Allow power users to override default QUESO and QUESO/GPMSA options
+such as hyper-parameter priors, initial chain position, and proposal
+covariance (including hyper-parameters), which might not be accessible
+through Dakota user input.
+
+<b> Default Behavior </b>
+No advanced options used.
+
+<b> Usage Tips </b>
+The \c options_file offers a final override over other options
+settings, which are applied with the folowing precedence:
+<ol>
+<li>QUESO library defaults</li>
+<li>Dakota hard-coded defaults</li>
+<li>Settings from Dakota input file</li>
+<li>Settings from the advaned \c options_file</li>
+</ol>
+
+Examples::
+
+\verbatim
+# FILE: dakota_gpmsa.opts
+
+# Base QUESO Environment options
+env_subDisplayFileName   = QuesoDiagnostics/display
+env_subDisplayAllowedSet = 0 1
+env_displayVerbosity     = 2
+env_seed                 = 2460
+
+# GPMSA Options
+gpmsa_emulator_precision_shape = 2.0
+gpmsa_emulator_precision_scale = 0.2
+gpmsa_emulator_correlation_strength_alpha = 1.0
+gpmsa_emulator_correlation_strength_beta = 0.1
+gpmsa_discrepancy_precision_shape = 1.0
+gpmsa_discrepancy_precision_scale = 1e4
+gpmsa_discrepancy_correlation_strength_alpha = 1.0
+gpmsa_discrepancy_correlation_strength_beta = 0.1
+gpmsa_emulator_data_precision_shape = 3.0
+gpmsa_emulator_data_precision_scale = 333.333
+\endverbatim

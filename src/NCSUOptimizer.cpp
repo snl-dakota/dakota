@@ -49,7 +49,8 @@ NCSUOptimizer* NCSUOptimizer::ncsudirectInstance(NULL);
 
 /** This is the standard constructor with method specification support. */ 
 NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
-  Optimizer(problem_db, model), setUpType(SETUP_MODEL),
+  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  setUpType(SETUP_MODEL),
   minBoxSize(probDescDB.get_real("method.min_boxsize_limit")), 
   volBoxSize(probDescDB.get_real("method.volume_boxsize_limit")),
   solutionTarget(probDescDB.get_real("method.solution_target")),
@@ -65,7 +66,8 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
 NCSUOptimizer::
 NCSUOptimizer(Model& model, const int& max_iter, const int& max_eval,
 	      double min_box_size, double vol_box_size, double solution_target):
-  Optimizer(NCSU_DIRECT, model), setUpType(SETUP_MODEL),
+  Optimizer(NCSU_DIRECT, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  setUpType(SETUP_MODEL),
   minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), userObjectiveEval(NULL)
 { 
@@ -78,7 +80,8 @@ NCSUOptimizer(Model& model, const int& max_iter, const int& max_eval,
 /** This is an alternate constructor for Iterator instantiations by name
     using a Model but no ProblemDescDB. */
 NCSUOptimizer::NCSUOptimizer(Model& model):
-  Optimizer(NCSU_DIRECT, model), setUpType(SETUP_MODEL), minBoxSize(-1.),
+  Optimizer(NCSU_DIRECT, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  setUpType(SETUP_MODEL), minBoxSize(-1.),
   volBoxSize(-1.), solutionTarget(-DBL_MAX), userObjectiveEval(NULL)
 { 
   initialize(); 
@@ -94,7 +97,7 @@ NCSUOptimizer(const RealVector& var_l_bnds,
 	      const int& max_eval,
 	      double (*user_obj_eval) (const RealVector &x),
 	      double min_box_size, double vol_box_size, double solution_target):
-  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0),
+  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_USERFUNC), minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), lowerBounds(var_l_bnds), 
   upperBounds(var_u_bnds), userObjectiveEval(user_obj_eval)

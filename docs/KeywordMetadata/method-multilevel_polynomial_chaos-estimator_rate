@@ -1,0 +1,30 @@
+Blurb:: Rate of convergence of mean estimator within multilevel polynomial chaos
+
+Description:: 
+Multilevel Monte Carlo performs optimal resource allocation based on a
+known estimator variance for the mean statistic:
+
+\f[ Var[\hat{Q}] = \frac{\sigma^2_Q}{N} \f]
+
+Replacing the simple ensemble average estimator in Monte Carlo with a
+polynomial chaos estimator results in a different and unknown
+relationship between the estimator variance and the number of samples.
+In one approach to multilevel PCE, we can employ a parameterized
+estimator variance:
+
+\f[ Var[\hat{Q}] = \frac{\sigma^2_Q}{\gamma N^\kappa} \f]
+
+for free parameters \f$\gamma\f$ and \f$\kappa\f$. 
+
+The default values are \f$\gamma = 1\f$ and \f$\kappa = 2\f$.  This 
+advanced option allows to user to specify \f$\kappa\f$, overriding 
+the default.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+See_Also::

@@ -52,7 +52,8 @@ enum { DEFAULT_METHOD=0,
        DACE, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY, PSUADE_MOAT,
        // NonD Analyzers:
        LOCAL_RELIABILITY=(ANALYZER_BIT | NOND_BIT), GLOBAL_RELIABILITY,
-       POLYNOMIAL_CHAOS, STOCH_COLLOCATION,
+       POLYNOMIAL_CHAOS, STOCH_COLLOCATION, MULTILEVEL_POLYNOMIAL_CHAOS,
+       MULTIFIDELITY_POLYNOMIAL_CHAOS, MULTIFIDELITY_STOCH_COLLOCATION,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
        IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
@@ -104,6 +105,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
 // Iterator/Model/Interface/Approximation
 enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
        DEBUG_OUTPUT };
+// define special values for printing of different results states
+enum { NO_RESULTS, //REFINEMENT_RESULTS, ITERATION_RESULTS,
+       INTERMEDIATE_RESULTS, FINAL_RESULTS };
+
 // define special values for Iterator and Interface scheduling
 enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING, 
        PEER_DYNAMIC_SCHEDULING, PEER_STATIC_SCHEDULING, DYNAMIC_SCHEDULING,
@@ -131,6 +136,8 @@ enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
 enum { CUMULATIVE, COMPLEMENTARY };
 // define special values for finalMomentsType
 enum { NO_MOMENTS, STANDARD_MOMENTS, CENTRAL_MOMENTS };
+// define special values for multilevDiscrepEmulation
+enum { NO_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 
 // -------------
 // NonDExpansion (most enums defined by Pecos in pecos_global_defs.hpp)
@@ -142,8 +149,8 @@ enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
 // NonDBayesCalibration
 // --------------------
 // define special values for emulatorType
-enum { NO_EMULATOR, PCE_EMULATOR, SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR,
-       VPS_EMULATOR };
+enum { NO_EMULATOR, PCE_EMULATOR, ML_PCE_EMULATOR, MF_PCE_EMULATOR, SC_EMULATOR,
+       MF_SC_EMULATOR, GP_EMULATOR, KRIGING_EMULATOR, VPS_EMULATOR };
 // modes for calibrating multipliers on observational error
 enum { CALIBRATE_NONE = 0, CALIBRATE_ONE, CALIBRATE_PER_EXPER, 
        CALIBRATE_PER_RESP, CALIBRATE_BOTH};
@@ -814,26 +821,41 @@ public:
   /// (Pecos::{NODAL,HIERARCHICAL}_INTERPOLANT) or regression
   /// (Pecos::{TENSOR_PRODUCT,TOTAL_ORDER,ADAPTED}_BASIS).
   short expansionBasisType;
+
+  /// the \c quadrature_order_sequence specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  UShortArray quadratureOrderSeq;
+  /// the \c sparse_grid_level_sequence specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  UShortArray sparseGridLevelSeq;
+  /// the \c expansion_order_sequence specification in \ref MethodNonDPCE
+  UShortArray expansionOrderSeq;
+  /// the \c collocation_points_sequence specification in \ref MethodNonDPCE
+  SizetArray collocationPointsSeq;
+  /// the \c expansion_samples_sequence specification in \ref MethodNonDPCE
+  SizetArray expansionSamplesSeq;
+
+  /// the \c quadrature_order specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  unsigned short quadratureOrder;
+  /// the \c sparse_grid_level specification in \ref MethodNonDPCE and
+  /// \ref MethodNonDSC
+  unsigned short sparseGridLevel;
   /// the \c expansion_order specification in \ref MethodNonDPCE
-  UShortArray expansionOrder;
+  unsigned short expansionOrder;
+  /// the \c collocation_points specification in \ref MethodNonDPCE
+  size_t collocationPoints;
   /// the \c expansion_samples specification in \ref MethodNonDPCE
-  SizetArray expansionSamples;
+  size_t expansionSamples;
+
   /// allows for incremental PCE construction using the \c
   /// incremental_lhs specification in \ref MethodNonDPCE
   String expansionSampleType;
-  /// the \c quadrature_order specification in \ref MethodNonDPCE and
-  /// \ref MethodNonDSC
-  UShortArray quadratureOrder;
-  /// the \c sparse_grid_level specification in \ref MethodNonDPCE,
-  /// \ref MethodNonDSC, and other stochastic expansion-enabled methods
-  UShortArray sparseGridLevel;
   /// the \c dimension_preference specification for tensor and sparse grids
   /// and expansion orders in \ref MethodNonDPCE and \ref MethodNonDSC
   RealVector anisoDimPref;
   /// the \c cubature_integrand specification in \ref MethodNonDPCE
   unsigned short cubIntOrder;
-  /// the \c collocation_points specification in \ref MethodNonDPCE
-  SizetArray collocationPoints;
   /// the \c collocation_ratio specification in \ref MethodNonDPCE
   Real collocationRatio;
   /// order applied to the number of expansion terms when applying
@@ -877,6 +899,8 @@ public:
   /// orthogonal least interpolation PCE; based on the \c tensor_grid
   /// specification in \ref MethodNonDPCE
   UShortArray tensorGridOrder;
+  /// type of discrepancy emulation in multilevel methods: distinct or recursive
+  short multilevDiscrepEmulation;
   /// the \c import_expansion_file specification in \ref MethodNonDPCE
   String importExpansionFile;
   /// the \c export_expansion_file specification in \ref MethodNonDPCE
@@ -906,6 +930,8 @@ public:
   IntVector refineSamples;
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
+  /// the \c estimator_rate selection in \ref MethodMultilevelPCE
+  Real multilevEstimatorRate;
   /// the \c final_moments specification in \ref MethodNonD
   short finalMomentsType;
   /// the \c distribution \c cumulative or \c complementary specification
@@ -998,8 +1024,8 @@ public:
   String importPredConfigs;
   /// tabular format for prediction configurations import file
   unsigned short importPredConfigFormat;
-  /// specify type of model discrepancy formulation
-  String discrepancyType;
+  /// type of model discrepancy emulation
+  String modelDiscrepancyType;
   /// correction order for either gaussian process or polynomial model
   /// discrepancy calculations: 0 (=constant), 1 (=linear), 2 (=quadratic)
   short approxCorrectionOrder;
@@ -1019,16 +1045,19 @@ public:
   unsigned short exportDiscrepFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
-  /// whether to import candidate design points for adaptive Bayesian experimtal
-  /// design
+  /// whether to import candidate design points for adaptive Bayesian
+  /// experimental design
   String importCandPtsFile;
   /// tabular format for the candidate design points import file
   unsigned short importCandFormat;
   /// number of candidate designs for adaptive Bayesian experimental design
   size_t numCandidates;
-  /// maximum number of highfidelity model runs to be used for adaptive Bayesian 
-  /// experimental design
+  /// maximum number of highfidelity model runs to be used for
+  /// adaptive Bayesian experimental design
   int maxHifiEvals;
+  /// indicate that the KSG2 algorithm is to be employed in the calculation
+  /// of the mutual information
+  bool mutualInfoKSG2;
 
   // DREAM sub-specification
 
@@ -1044,7 +1073,9 @@ public:
   int jumpStep; 
 
   // WASABI sub-specification
-
+  /// Number of samples from the prior that is pushed forward
+  /// through the model to obtain the initial set of pushforward samples
+  int numPushforwardSamples;
   /// the type of data distribution: kde, or gaussian
   String dataDistType;
   /// the format of data distribution gaussian covariance input: 
@@ -1056,8 +1087,8 @@ public:
   RealVector dataDistCovariance;
   /// file from which to read data distribution data (covariance or samples )
   String dataDistFile;
-  /// The filename of the export file containing an arbitrary set of samples and 
-  /// their corresponding density values
+  /// The filename of the export file containing an arbitrary set of
+  /// samples and their corresponding density values
   String posteriorDensityExportFilename;
   /// The filename of the export file containing samples from the posterior and 
   /// their corresponding density values
