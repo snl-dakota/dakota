@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef SYSTEM_DEFS_H
-#define SYSTEM_DEFS_H
+#ifndef DAKOTA_SYSTEM_DEFS_H
+#define DAKOTA_SYSTEM_DEFS_H
 
 #if defined(HAVE_CONFIG_H) && !defined(DISABLE_DAKOTA_CONFIG_H)
   // Unfortunately, STILL need to set HAVE_CONFIG_H since it is used in many
@@ -36,4 +36,4 @@
 #include <cerrno>
 #include <ctime>
 
-#endif // SYSTEM_DEFS_H
+#endif // DAKOTA_SYSTEM_DEFS_H
