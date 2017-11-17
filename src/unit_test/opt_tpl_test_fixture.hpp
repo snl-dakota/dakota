@@ -36,7 +36,7 @@ namespace {
 
       /// constructor
       OptTestDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
-        Dakota::DirectApplicInterface(problem_db) { }
+        Dakota::DirectApplicInterface(problem_db) { numAnalysisServers = 1;}
 
       /// destructor
       ~OptTestDirectApplicInterface() { }
