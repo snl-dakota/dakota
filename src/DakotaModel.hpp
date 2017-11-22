@@ -1110,6 +1110,11 @@ public:
   static void inactive_variables(const RealVector& config_vars, Model& model,
 				 Variables& updated_vars);
 
+  /// Bulk synchronously evaluate the model for each column in the
+  /// samples matrix and return as columns of the response matrix
+  static void evaluate(const RealMatrix& samples_matrix,
+		       Model& model, RealMatrix& resp_matrix);
+
 protected:
 
   //

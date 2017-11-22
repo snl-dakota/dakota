@@ -974,7 +974,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       // KAM - for loop for batch MI 
       //int batch_n = batchEvals.empty() ? batchEvals : 1;
-      int batchEvals = 3; // KAM TODO: add to input spec
+      int batchEvals = 1; // KAM TODO: add to input spec
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
@@ -1124,13 +1124,31 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       } // end batch_n loop
 
-      // RUN HIFI MODEL WITH NEW POINT
-      // TODO: add multiple points up to concurrency
+      // RUN HIFI MODEL WITH NEW POINT(S)
       // TODO: add check that mod(max_hifi, batchEvals) == 0
-      Model::active_variables(optimal_config, hifiModel);
       if (max_hifi > 0) {
-        hifiModel.evaluate();
-        expData.add_data(optimal_config, hifiModel.current_response().copy());
+
+	// batch evaluate hifiModel, populating resp_matrix
+	RealMatrix resp_matrix;
+	Model::evaluate(optimal_config_matrix, hifiModel, resp_matrix);
+
+	// update hifi experiment data
+	RealMatrix::ordinalType col_ind;
+	RealMatrix::ordinalType num_evals = optimal_config_matrix.numCols();
+	for (col_ind = 0; col_ind < num_evals; ++col_ind) {
+
+	  RealVector config_vars =
+	    Teuchos::getCol(Teuchos::Copy, optimal_config_matrix, col_ind);
+
+	  // ExperimentData requires a new Response for each insertion
+	  RealVector hifi_fn_vals =
+	    Teuchos::getCol(Teuchos::Copy, resp_matrix, col_ind);
+	  Response hifi_resp = hifiModel.current_response().copy();
+	  hifi_resp.function_values(hifi_fn_vals);
+
+	  expData.add_data(optimal_config, hifi_resp);
+	}
+
       }
       num_hifi++;
 
