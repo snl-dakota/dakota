@@ -108,7 +108,10 @@ protected:
   //
   //- Heading: constructor convenience member functions
   //
-  
+
+  /// Convenience function to map Dakota input and power-user parameters to ROL
+  void set_rol_parameters();
+
   /// Helper function called after default construction to extract problem
   /// information from the Model and set it for ROL.
   void set_problem();
@@ -117,8 +120,12 @@ protected:
   //- Heading: Data
   //
 
+  // BMA: commented out as is a base class member
   /// Shallow copy of the model on which ROL will iterate.
-  Model iteratedModel;
+  // Model iteratedModel;
+
+  /// Parameters for the ROL::OptimizationSolver
+  Teuchos::ParameterList optSolverParams;
 
   /// Handle to ROL::OptimizationProblem, part of ROL's simplified interface 
   ROL::OptimizationProblem<RealT> problem;

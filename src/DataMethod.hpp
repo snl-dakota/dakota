@@ -992,7 +992,7 @@ public:
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
   /// file containing advanced QUESO option overrides
-  String quesoOptionsFilename;
+  String advancedOptionsFilename;
   /// the \c fitness metric type specification in \ref
   /// MethodNonDAdaptive
   String fitnessMetricType;

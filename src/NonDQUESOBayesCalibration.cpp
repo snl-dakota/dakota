@@ -233,7 +233,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   precondRequestValue(0),
   logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
-  advancedOptionsFile(probDescDB.get_string("method.queso_options_file"))
+  advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
 {
   bool found_error = false;
 

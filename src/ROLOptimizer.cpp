@@ -22,6 +22,12 @@
 #include "ROL_Bounds.hpp"
 
 #include "ROLOptimizer.hpp"
+
+#include "Teuchos_XMLParameterListHelpers.hpp"
+// BMA TODO: Above will break with newer Teuchos; instead need 
+//#include "Teuchos_XMLParameterListCoreHelpers.hpp"
+#include "Teuchos_StandardCatchMacros.hpp"
+
 #include "ProblemDescDB.hpp"
 using std::endl;
 
@@ -79,8 +85,9 @@ private:
 
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
-  iteratedModel(model)
+  optSolverParams("Dakota::ROL")
 {
+  set_rol_parameters();
   set_problem();
 }
 
@@ -89,10 +96,68 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
 ROLOptimizer::
 ROLOptimizer(const String& method_string, Model& model):
   Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new ROLTraits())),
-  iteratedModel(model)
+  optSolverParams("Dakota::ROL")
 {
+  set_rol_parameters();
   set_problem();
 }
+
+
+/** This function uses ProblemDescDB and therefore must only be called
+    at construct time. */
+void ROLOptimizer::set_rol_parameters()
+{
+  // PRECEDENCE 1: hard-wired default settings
+
+  // (we only support line search for now)
+  optSolverParams.sublist("Step").set("Type","Line Search");
+
+
+  // PRECEDENCE 2: Dakota input file settings
+
+  optSolverParams.sublist("General").
+    set("Print Verbosity", outputLevel < VERBOSE_OUTPUT ? 0 : 1);
+  optSolverParams.sublist("Status Test").
+    set("Gradient Tolerance", probDescDB.get_real("method.gradient_tolerance"));
+  optSolverParams.sublist("Status Test").
+    set("Constraint Tolerance",
+	probDescDB.get_real("method.constraint_tolerance")
+	);
+  optSolverParams.sublist("Status Test").
+    set("Step Tolerance", probDescDB.get_real("method.threshold_delta"));
+  optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
+
+
+  // PRECEDENCE 3: power-user advanced options
+
+  String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
+  if (!adv_opts_file.empty()) {
+    if (boost::filesystem::exists(adv_opts_file)) {
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "Any ROL options in file '" << adv_opts_file
+	     << "' will override Dakota options." << std::endl;
+    }
+    else {
+      Cerr << "\nError: ROL options_file '" << adv_opts_file
+	   << "' specified, but file not found.\n";
+      abort_handler(METHOD_ERROR);
+    }
+
+    bool success;
+    try {
+      Teuchos::Ptr<Teuchos::ParameterList> osp_ptr(&optSolverParams);
+      Teuchos::updateParametersFromXmlFile(adv_opts_file, osp_ptr);
+      if (outputLevel >= VERBOSE_OUTPUT) {
+	Cout << "ROL OptimizationSolver parameters:\n";
+	optSolverParams.print(Cout, 2, true, true);
+      }
+    }
+    TEUCHOS_STANDARD_CATCH_STATEMENTS(outputLevel >= VERBOSE_OUTPUT, Cerr,
+				      success);
+  }
+
+}
+
 
 // need to move functionality from core_run below here.
 void ROLOptimizer::set_problem() {
@@ -186,19 +251,12 @@ void ROLOptimizer::core_run()
   // Call simplified interface problem generator
   ROL::OptimizationProblem<RealT> problem( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
 
-
-
-
   // Print iterates to screen, need to control using Dakota output keyword
   Teuchos::RCP<std::ostream> outStream;
   outStream = Teuchos::rcp(&std::cout, false);
 
-  // Extract method from iteratedModel and pass on to ROL::solver
-  Teuchos::ParameterList parlist;
-  parlist.sublist("Step").set("Type","Line Search");
-  
   // Call simplified interface solver
-  ROL::OptimizationSolver<RealT> solver( problem, parlist );
+  ROL::OptimizationSolver<RealT> solver( problem, optSolverParams );
   solver.solve(*outStream); 
 
   // copy ROL solution to Dakota bestVariablesArray

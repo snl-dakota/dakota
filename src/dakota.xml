@@ -1710,6 +1710,22 @@
 	  &method_optional_model_pointer;
         </keyword>
 
+
+        <keyword  id="rol_ls" name="rol_ls" code="{N_mdm(utype,methodName_ROL_LS)}" label="rol_ls" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
+	  &default_max_iterations;
+          <keyword  id="threshold_delta" name="threshold_delta" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
+            <param type="REAL" />
+          </keyword>
+          <keyword  id="gradient_tolerance" name="gradient_tolerance" code="{N_mdm(Real,gradientTolerance)}" label="gradient_tolerance"  minOccurs="0" default="1.e-4" >
+            <param type="REAL" />
+          </keyword>
+	  &default_constraint_tolerance;
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
+        </keyword>
+
+
         <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search"  minOccurs="1" group="Optimization: Local, Derivative-free" >
           <alias name="coliny_apps"/>
           <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value"  minOccurs="0" default="1.0" >
@@ -2058,8 +2074,6 @@
             </oneOf>
             <keyword  id="new_solutions_generated" name="new_solutions_generated" code="{N_mdm(int,newSolnsGenerated)}" label="New solutions generated"  minOccurs="0" default="population_size - replacement_size" >
               <param type="INTEGER" />
-            </keyword>
-            <keyword  id="rol_ls" name="rol_ls" code="{N_mdm(utype,methodName_ROL_LS)}" label="rol_ls" help="" minOccurs="1" group="Optimization: Local, Derivative-based" >
             </keyword>
           </keyword>
           <keyword  id="crossover_rate1" name="crossover_rate" code="{N_mdm(Real,crossoverRate)}" label="Crossover rate"  minOccurs="0" default="0.8" >
@@ -2673,7 +2687,7 @@
 		</oneOf>
 	      </keyword>
 	      &bayes_proposal_covariance;
-	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>
@@ -2717,7 +2731,7 @@
 	      </optional>
 	      &rng_options;
 	      &bayes_proposal_covariance;
-	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,quesoOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
 	      </keyword>
 	    </keyword>

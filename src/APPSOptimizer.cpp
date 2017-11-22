@@ -240,7 +240,7 @@ void APPSOptimizer::set_apps_parameters()
 	   << "\n         Using default value of 0.5.\n\n";
 
     const Real& thresh_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.threshold_delta");
+      = probDescDB.get_real("method.threshold_delta");
     if (thresh_step_length >= 4.4e-16)
       citizenParams->setParameter("Step Tolerance", thresh_step_length);
     else

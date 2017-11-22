@@ -294,7 +294,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
-    << proposalCovData << proposalCovFile << quesoOptionsFilename
+    << proposalCovData << proposalCovFile << advancedOptionsFilename
     << fitnessMetricType << batchSelectionType << lipschitzType
     << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
     << burnInSamples << subSamplingPeriod << calModelDiscrepancy
@@ -445,7 +445,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
     >> posteriorStatsKL >> posteriorStatsMutual >> preSolveMethod
     >> proposalCovType >> proposalCovUpdates >> proposalCovInputType
-    >> proposalCovData >> proposalCovFile >> quesoOptionsFilename
+    >> proposalCovData >> proposalCovFile >> advancedOptionsFilename
     >> fitnessMetricType >> batchSelectionType >> lipschitzType
     >> calibrateErrorMode >> hyperPriorAlphas >> hyperPriorBetas
     >> burnInSamples >> subSamplingPeriod >> calModelDiscrepancy
@@ -596,7 +596,7 @@ void DataMethodRep::write(std::ostream& s) const
     << adaptPosteriorRefine << logitTransform << gpmsaNormalize
     << posteriorStatsKL << posteriorStatsMutual << preSolveMethod
     << proposalCovType << proposalCovUpdates << proposalCovInputType
-    << proposalCovData << proposalCovFile << quesoOptionsFilename
+    << proposalCovData << proposalCovFile << advancedOptionsFilename
     << fitnessMetricType << batchSelectionType << lipschitzType
     << calibrateErrorMode << hyperPriorAlphas << hyperPriorBetas
     << burnInSamples << subSamplingPeriod << calModelDiscrepancy

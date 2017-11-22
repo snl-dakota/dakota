@@ -13,12 +13,19 @@ using namespace Dakota;
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_apps,text_book)
+TEUCHOS_UNIT_TEST(opt_rol,text_book)
 {
   /// Default Dakota input string:
+  /// This demonstrates setting some Dakota input options that won't
+  /// meet tolerance, but overriding with XML that will
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
+    "     gradient_tolerance 1.0e-3"
+    "     constraint_tolerance 1.0e-3"
+    "     threshold_delta 1.0e-3"
+    "     max_iterations 2"
+    "     options_file 'opt_tpl_test_files/opt_rol-text_book.xml'"
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
