@@ -232,6 +232,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // Model recursion so that they are correct when they propagate back down.
   eifModel.update_from_subordinate_model(); // depth = max
 
+  // We might want a more selective update from submodel. Always want
+  // to minimize the negative expected improvement as posed in the
+  // eifModel; don't let iteratedModel's min/max sense or weights
+  // propagate to eifModel.  Probably don't want things like
+  // constraints to propagate beyond eifModel to the optimizer as it
+  // recasts them in an augmented lagrangian approach...
+  eifModel.primary_response_fn_sense(BoolDeque());
+  eifModel.primary_response_fn_weights(RealVector());
+
   // Build initial GP once for all response functions
   fHatModel.build_approximation();
 
