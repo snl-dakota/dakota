@@ -3,7 +3,6 @@
 ## Dakota Input File: rosen_uq_sc.in			#s36
 
 environment
-  #graphics
 
 method
   stoch_collocation

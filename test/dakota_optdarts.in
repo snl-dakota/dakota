@@ -1,7 +1,6 @@
 # DAKOTA INPUT FILE - dakota_optdarts.in
 
 environment,
-	#graphics
         tabular_data
 
 method,

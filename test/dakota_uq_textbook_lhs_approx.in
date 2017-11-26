@@ -1,7 +1,6 @@
 # DAKOTA INPUT FILE - dakota_textbook_lhs_approx.in
 
 environment,
-	#graphics
 	  method_pointer = 'UQ'
 
 method,

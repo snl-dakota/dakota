@@ -4,7 +4,6 @@
 # Optimization under uncertainty using PCE methods with variable insertion.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

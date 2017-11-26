@@ -3,7 +3,6 @@
 
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,

@@ -14,7 +14,7 @@
 
   
 environment
-        tabular_graphics_data
+        tabular_data
 
 method,
        bayes_calibration queso

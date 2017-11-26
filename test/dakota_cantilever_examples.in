@@ -13,7 +13,6 @@
 
 environment
     tabular_data
-    graphics
 
 method
 # --- Parameter Studies ---

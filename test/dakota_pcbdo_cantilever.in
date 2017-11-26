@@ -3,7 +3,6 @@
 # PCE-based OUU using the cantilever test function.
 
 environment,
-#	graphics
   top_method_pointer = 'OPTIM'
 
 ###########################

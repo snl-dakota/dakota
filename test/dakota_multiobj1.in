@@ -30,7 +30,6 @@
 #       f3 = original textbook constraint 2
 
 environment
-#  graphics
   tabular_data
     tabular_data_file = 'textbook_opt_multiobj1.dat'	#s0
 

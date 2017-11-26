@@ -8,7 +8,6 @@
 # published soln is (b,h) = (8.668, 25.0) with f = 216.7
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################
