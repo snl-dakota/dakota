@@ -17,7 +17,6 @@ Dakota/examples/users/textbook_opt_conmin.in.
 \verbatim
 # Dakota Input File: textbook_opt_conmin.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'textbook_opt_conmin.dat'
 
@@ -61,7 +60,6 @@ Dakota/examples/users/rosen_opt_nls.in
 \verbatim
 # Dakota Input File: rosen_opt_nls.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'rosen_opt_nls.dat'
 
@@ -159,7 +157,6 @@ directory as \c Dakota/examples/users/rosen_ps_vector.in.
 \verbatim
 # Dakota Input File: rosen_ps_vector.in
 environment
- graphics
  tabular_data
   tabular_data_file = 'rosen_ps_vector.dat'
 
@@ -197,7 +194,6 @@ Dakota/examples/users/textbook_hybrid_strat.in.
 
 \verbatim
 environment
- graphics
  hybrid sequential
   method_list = 'PS' 'PS2' 'NLP'
 
@@ -272,8 +268,8 @@ responses
  analytic_hessians
 \endverbatim
 
-Additional example input files, as well as the corresponding output
-and graphics, are provided in the Tutorial chapter of the Users Manual
+Additional example input files, as well as the corresponding output,
+are provided in the Tutorial chapter of the Users Manual
 \cite UsersMan.
 
 

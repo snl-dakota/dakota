@@ -7,10 +7,10 @@ on massively parallel supercomputers, Dakota's output focuses on
 succinct, text-based reporting of the iterations and function
 evaluations performed by an algorithm. In a number of contexts, Dakota
 generates tabular output useful for data analysis and visualization
-with external tools.  Unix versions of Dakota have a basic graphical
-output capability that is useful as a monitoring tool.  The Dakota
-GUI is an emerging capability that will provide more advanced
-visualization facilities in time.
+with external tools.  Unix versions of Dakota have an optional basic
+graphical output capability that can be useful as a monitoring tool.
+The Dakota GUI increasingly provides replacement visualization
+facilities.
 
 \section{Standard Output}\label{output:standard}
 
@@ -56,7 +56,6 @@ Begin DAKOTA input file
 ----------------------------------------------------------------
 # Dakota Input File: container_opt_npsol.in
 environment
-  graphics
 
 <SNIP>
 
@@ -219,7 +218,6 @@ NOTE: see Fortran device 9 file (fort.9 or ftn09)
 DAKOTA execution time in seconds:
   Total CPU        =       0.03 [parent =   0.023997, child =   0.006003]
   Total wall clock =   0.090703
-Exit graphics window to terminate DAKOTA.
 \end{verbatim}
 \end{small}
 
@@ -377,17 +375,22 @@ Dakota restart utility.
 
 \section{Graphics Output}\label{output:graphics}
 
-Graphics capabilities are available for monitoring the progress of an
-iterative study. The graphics option is invoked by adding the
-\texttt{graphics} flag in the environment specification of the Dakota
-input file (see Figure~\ref{output:incont}). The graphics display
-the values of each response function (e.g., objective and constraint
-functions) and each parameter for the function evaluations in the
-study. As for the tabular output described in
-Section~\ref{output:tabular}, internal finite difference evaluations
-are suppressed in order to omit this clutter from the graphics.
-Figure~\ref{output:2dcont} shows the optimization iteration history
-for the container example.
+This section describes Dakota's legacy Unix / X Windows-based graphics
+capabilities, which can help monitor study progress. Dakota plotting
+and visualization capabilities are increasingly available in the
+Dakota graphical user interface (GUI); see the Dakota GUI User Manual
+in the documentation section of the Dakota website for additional
+details.
+
+The X Windows graphics option is invoked by including the
+\texttt{graphics} flag in the environment specification of the input
+file (see Figure~\ref{output:incont}). The graphics display the values
+of each response function (e.g., objective and constraint functions)
+and each parameter for the function evaluations in the study. As with
+the tabular output described in Section~\ref{output:tabular}, internal
+finite difference evaluations are suppressed in order to omit this
+clutter from the graphics.  Figure~\ref{output:2dcont} shows the
+optimization iteration history for the container example.
 
 If Dakota is executed on a remote machine, the DISPLAY variable in the
 user's UNIX environment~\cite{Gil92} may need to be set to the local
