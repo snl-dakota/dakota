@@ -25,6 +25,8 @@ environment
 ###########################
 method
   id_method = 'OPTIM'
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   npsol_sqp
     convergence_tolerance = 1.e-10
     model_pointer = 'OPTIM_M'

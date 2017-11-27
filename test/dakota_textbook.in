@@ -27,7 +27,7 @@ environment
 method
   dot_mmfd,                       #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
 ## dot_mmfd #DOT performs better but may not be available     #s9
-#  conmin_mfd				      				                            #s9
+#  conmin_mfd			                              #s9
     max_iterations = 50           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
     convergence_tolerance = 1e-4  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 # id_method = 'SBGO'              #s10

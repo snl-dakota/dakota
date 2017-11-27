@@ -34,6 +34,8 @@ environment
     tabular_data_file = 'textbook_opt_multiobj1.dat'	#s0
 
 method
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_frcg or optpp_q_newton instead)     			      #s0
   npsol_sqp         #s0,#s5
 #  optpp_newton			#s1,#s6
 #  conmin_frcg			#s2,#s7

@@ -45,6 +45,8 @@ method,
 
 method,
 	id_method = 'NLP'
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_frcg or optpp_newton instead)     			      #s0
 	npsol_sqp
 #	optpp_newton
 	  max_iterations = 50
