@@ -69,8 +69,6 @@ void interpolate_simulation_field_data( const Response &sim_resp,
 					size_t field_num, short total_asv,
 					size_t interp_resp_offset,
 					Response &interp_resp ){
-  int outputLevel = 1;
-  int DEBUG_OUTPUT = 0;
 
   const RealMatrix& sim_coords = sim_resp.field_coords_view(field_num);
   const RealVector sim_vals = sim_resp.field_values_view(field_num);
@@ -85,18 +83,6 @@ void interpolate_simulation_field_data( const Response &sim_resp,
   if ( total_asv & 4 )
     sim_hessians = sim_resp.field_hessians_view(field_num);
 
-
-  if (outputLevel >= DEBUG_OUTPUT){
-    RealVector sim_values;
-    sim_values = sim_resp.field_values_view(field_num);
-    Cout << "sim_values " << sim_values << '\n';
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "sim_coords " << sim_coords << '\n';
-    Cout << "exp_coords " << exp_coords << '\n';
-  }
-  
   RealVector interp_vals;
   RealMatrix interp_grads;
   RealSymMatrixArray interp_hessians;
@@ -106,12 +92,6 @@ void interpolate_simulation_field_data( const Response &sim_resp,
 
   size_t field_size = interp_vals.length();
   
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "field pred " << interp_vals << '\n';
-    Cout << "interp_resp_offset " << interp_resp_offset << '\n';
-    Cout << "field_size " << field_size << '\n';
-  }
-
   copy_field_data(interp_vals, interp_grads, interp_hessians, 
 		  interp_resp_offset, field_size, total_asv, 
 		  interp_resp);
