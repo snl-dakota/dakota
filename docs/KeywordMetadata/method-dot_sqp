@@ -1,7 +1,12 @@
 Blurb::
 Sequential Quadratic Program
+
 Description::
 This is a duplicated keyword. Please use \ref method-dot instead.
+
+<em>DOT requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
 
 Topics::	
 Examples::

@@ -1,16 +1,19 @@
 Blurb::
 Access to methods in the DOT package
 Description::
-The DOT library 
-\cite Van95 
-contains nonlinear programming optimizers, specifically the
-Broyden-Fletcher-Goldfarb-Shanno (%Dakota's \c dot_bfgs method) and
-Fletcher-Reeves conjugate gradient (%Dakota's \c dot_frcg method)
-methods for unconstrained optimization, and the modified method of
-feasible directions (%Dakota's \c dot_mmfd method), sequential linear
-programming (%Dakota's \c dot_slp method), and sequential quadratic
-programming (%Dakota's \c dot_sqp method) methods for constrained
-optimization.
+
+The DOT library \cite Van95 contains nonlinear programming optimizers,
+specifically the Broyden-Fletcher-Goldfarb-Shanno (\ref
+method-dot_bfgs) and Fletcher-Reeves conjugate gradient (\ref
+method-dot_frcg) methods for unconstrained optimization, and the
+modified method of feasible directions (\ref method-dot_mmfd),
+sequential linear programming (\ref method-dot_slp), and
+sequential quadratic programming (\ref method-dot_sqp) methods
+for constrained optimization.
+
+<em>DOT requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
 
 Specialized handling of linear constraints is
 supported with DOT; linear constraint coefficients, bounds, and
