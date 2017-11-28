@@ -2,8 +2,10 @@
 #include "ROL_OptimizationSolver.hpp"
 
 #include "ROL_RandomVector.hpp"
+#include "ROL_StdVector.hpp"
 #include "ROL_StdObjective.hpp"
-#include "ROL_StdConstraint.hpp"
+#include "ROL_Teuchos_Objective.hpp"
+#include "ROL_Teuchos_Constraint.hpp"
 #include "ROL_Bounds.hpp"
 
 #include "Teuchos_UnitTestHarness.hpp"
@@ -14,10 +16,35 @@
 
 using namespace Dakota;
 
+
+//----------------------------------------------------------------
+
+class StdFactory
+{
+  public:
+
+    typedef std::vector<Real> VT;
+    typedef ROL::StdVector<Real> RVT;
+    typedef ROL::StdObjective<Real> RObjT;
+};
+
+  //----------------------------
+
+class TeuchosSerialDenseFactory
+{
+  public:
+
+    typedef RealVector VT;
+    typedef ROL::TeuchosVector<int, Real> RVT;
+    typedef ROL::TeuchosObjective<int, Real> RObjT;
+};
+
+//----------------------------------------------------------------
+
 /* Objective Function based on Wrapped Dakota Model */
 
-template<class ScalarT> 
-class DakotaModelObjective : public ROL::StdObjective<ScalarT>
+template<class FactoryT> 
+class DakotaModelObjective : public FactoryT::RObjT
 {
   private:
 
@@ -31,9 +58,9 @@ class DakotaModelObjective : public ROL::StdObjective<ScalarT>
     { 
     }
 
-    ScalarT value(const std::vector<ScalarT> &x, ScalarT &tol)
+    Real value(const typename FactoryT::VT &x, Real &tol)
     {
-      ScalarT result = 0;
+      Real result = 0;
       dakModel->continuous_variable(x[0], 0);
       dakModel->continuous_variable(x[1], 1);
       dakModel->evaluate();
@@ -52,10 +79,11 @@ class DakotaModelObjective : public ROL::StdObjective<ScalarT>
 
 }; // class DakotaModelObjective
 
-
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(rol, quad)
+template<class FactoryT> 
+void rol_quad_solv( Teuchos::FancyOStream &out,
+                    bool & success )
 {
   LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS);
   LibraryEnvironment & env = *p_env;
@@ -81,37 +109,53 @@ TEUCHOS_UNIT_TEST(rol, quad)
   Teuchos::ParameterList parlist;
   parlist.sublist("Step").set("Type","Line Search");
 
-
-  RCP<std::vector<Real> > x_rcp  = rcp( new std::vector<Real>(5,1.0) );
-  RCP<ROL::Vector<Real> > x      = rcp( new ROL::StdVector<Real>(x_rcp) );
-  RCP<ROL::Objective<Real> > obj = rcp( new DakotaModelObjective<Real>(&model) );
+  RCP<typename FactoryT::VT> x_rcp  = rcp( new typename FactoryT::VT(2) );
+  RCP<ROL::Vector<Real> >    x      = rcp( new typename FactoryT::RVT(x_rcp) );
+  RCP<ROL::Objective<Real> > obj    = rcp( new DakotaModelObjective<FactoryT>(&model) );
 
   try {
  
     ROL::OptimizationProblem<Real> problem( obj, x );
 
     // Not needed but informative ...
-    //problem.check(*outStream);
+    problem.check(*outStream);
 
     ROL::OptimizationSolver<Real> solver( problem, parlist );
 
     solver.solve(*outStream); 
 
     *outStream << "x_opt = [";
-    for(int i=0;i<2;++i) {
+    for(int i=0;i<1;++i) {
       *outStream << (*x_rcp)[i] << ", " ;
     } 
-    *outStream << (*x_rcp)[2] << "]" << std::endl;
+    *outStream << (*x_rcp)[1] << "]" << std::endl;
   }
   catch (std::logic_error err) {
     *outStream << err.what() << "\n";
     TEST_ASSERT( false );
   }; // end try
 
+  // Assess correctness
   TEST_FLOATING_EQUALITY( (*x_rcp)[0], -1.50, 1.e-10 );
   TEST_FLOATING_EQUALITY( (*x_rcp)[1],  0.75, 1.e-10 );
 
   // Make sure to cleanup the object we own
   delete p_env;
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(rol_std, quad)
+{
+  // This works fine
+  rol_quad_solv<StdFactory>(out, success);
+}
+
+//----------------------------------------------------------------
+
+TEUCHOS_UNIT_TEST(rol_teuchos, quad)
+{
+  // This one does not work; not sure why ... RWH
+  rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
 }
 
