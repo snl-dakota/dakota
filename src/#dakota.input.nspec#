@@ -2,13 +2,15 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ tabular_data ALIAS tabular_graphics_data {N_stm(true,tabularDataFlag)}
     [ tabular_data_file ALIAS tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
     [ 
-      ( custom_annotated {N_stm(utype,tabularFormat_TABULAR_NONE)}
-        [ header {N_stm(augment_utype,tabularFormat_TABULAR_HEADER)} ]
-        [ eval_id {N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)} ]
-        [ interface_id {N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)} ]
-       )
-      |
       annotated {N_stm(utype,tabularFormat_TABULAR_ANNOTATED)}
+      |
+      ( 
+        ( custom_annotated {N_stm(utype,tabularFormat_TABULAR_NONE)}
+          [ header {N_stm(augment_utype,tabularFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_stm(augment_utype,tabularFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_stm(augment_utype,tabularFormat_TABULAR_IFACE_ID)} ]
+         )
+       )
       |
       freeform {N_stm(utype,tabularFormat_TABULAR_NONE)}
      ]
@@ -29,13 +31,15 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
     [ input STRING {N_stm(str,preRunInput)} ]
     [ output STRING {N_stm(str,preRunOutput)}
       [ 
-        ( custom_annotated {N_stm(utype,preRunOutputFormat_TABULAR_NONE)}
-          [ header {N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_stm(utype,preRunOutputFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_stm(utype,preRunOutputFormat_TABULAR_NONE)}
+            [ header {N_stm(augment_utype,preRunOutputFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_stm(augment_utype,preRunOutputFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_stm(utype,preRunOutputFormat_TABULAR_NONE)}
        ]
@@ -48,13 +52,15 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
   [ post_run {N_stm(true,postRunFlag)}
     [ input STRING {N_stm(str,postRunInput)}
       [ 
-        ( custom_annotated {N_stm(utype,postRunInputFormat_TABULAR_NONE)}
-          [ header {N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_stm(utype,postRunInputFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_stm(utype,postRunInputFormat_TABULAR_NONE)}
+            [ header {N_stm(augment_utype,postRunInputFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_stm(augment_utype,postRunInputFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_stm(augment_utype,postRunInputFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_stm(utype,postRunInputFormat_TABULAR_NONE)}
        ]
@@ -287,7 +293,16 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( conmin_frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
+  ( dot {0}
+    frcg {N_mdm(utype,methodName_DOT_FRCG)}
+    |
+    mmfd {N_mdm(utype,methodName_DOT_MMFD)}
+    |
+    bfgs {N_mdm(utype,methodName_DOT_BFGS)}
+    |
+    slp {N_mdm(utype,methodName_DOT_SLP)}
+    |
+    sqp {N_mdm(utype,methodName_DOT_SQP)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
@@ -297,14 +312,39 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( conmin_mfd {N_mdm(utype,methodName_CONMIN_MFD)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-    [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-    [ scaling {N_mdm(true,methodScaling)} ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+  ( 
+    ( conmin_frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+      [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+     )
+    |
+    ( conmin_mfd {N_mdm(utype,methodName_CONMIN_MFD)}
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+      [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+     )
+    |
+    ( conmin {0}
+      frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
+      |
+      mfd {N_mdm(utype,methodName_CONMIN_MFD)}
+      [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+      [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+      [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+      [ speculative {N_mdm(true,speculativeFlag)} ]
+      [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+      [ scaling {N_mdm(true,methodScaling)} ]
+      [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+     )
    )
   |
   ( dl_solver STRING {N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}
@@ -327,6 +367,22 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( nlssol_sqp {N_mdm(utype,methodName_NLSSOL_SQP)}
+    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
+    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
+    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+    [ speculative {N_mdm(true,speculativeFlag)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
+    [ scaling {N_mdm(true,methodScaling)} ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( stanford {0}
+    npsol {N_mdm(utype,methodName_NPSOL_SQP)}
+    |
+    nlssol {N_mdm(utype,methodName_NLSSOL_SQP)}
     [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
     [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
@@ -957,13 +1013,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
        ]
@@ -971,13 +1029,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -1035,7 +1095,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
          )
        ]
-      ( collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+      ( 
+        collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ 
           ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
             [ 
@@ -1067,46 +1131,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
          ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-       )
-      |
-      ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-        [ 
-          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-            [ 
-              svd {N_mdm(type,lsRegressionType_SVD_LS)}
-              |
-              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-             ]
-           )
-          |
-          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-          |
-          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-           )
-         ]
-        [ cross_validation {N_mdm(true,crossValidation)}
-          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-         ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -1119,13 +1143,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1139,13 +1165,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1189,13 +1217,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
@@ -1203,13 +1233,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -1311,7 +1343,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
          )
        ]
-      ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+      ( 
+        collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ 
           ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
             [ 
@@ -1343,46 +1379,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
          ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-       )
-      |
-      ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-        [ 
-          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-            [ 
-              svd {N_mdm(type,lsRegressionType_SVD_LS)}
-              |
-              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-             ]
-           )
-          |
-          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-          |
-          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-           )
-         ]
-        [ cross_validation {N_mdm(true,crossValidation)}
-          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-         ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -1395,13 +1391,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1415,13 +1413,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1463,13 +1463,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
@@ -1477,13 +1479,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -1534,7 +1538,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   |
   ( multilevel_polynomial_chaos {N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
@@ -1553,7 +1557,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
          )
        ]
-      ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+      ( 
+        collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+        |
+        collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ 
           ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
             [ 
@@ -1585,46 +1593,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ cross_validation {N_mdm(true,crossValidation)}
           [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
          ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-        [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-        [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-        [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-       )
-      |
-      ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-        [ 
-          ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-            [ 
-              svd {N_mdm(type,lsRegressionType_SVD_LS)}
-              |
-              equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-             ]
-           )
-          |
-          ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-          |
-          ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-           )
-          |
-          ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-            [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-            [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-           )
-         ]
-        [ cross_validation {N_mdm(true,crossValidation)}
-          [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-         ]
-        [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
         [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -1637,13 +1605,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1657,13 +1627,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -1705,13 +1677,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
@@ -1719,13 +1693,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -1861,13 +1837,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
@@ -1875,13 +1853,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -2023,13 +2003,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ import_approx_points_file STRING {N_mdm(str,importApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importApproxFormat_TABULAR_NONE)}
        ]
@@ -2037,13 +2019,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -2175,7 +2159,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
   ( multilevel_sampling ALIAS multilevel_mc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
-    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
@@ -2183,13 +2167,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
@@ -2271,13 +2257,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
        ]
@@ -2285,13 +2273,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -2352,13 +2342,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
        ]
@@ -2366,13 +2358,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -2506,13 +2500,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
@@ -2520,13 +2516,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
            ]
@@ -2542,13 +2540,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
@@ -2556,13 +2556,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
            ]
@@ -2621,13 +2623,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
@@ -2635,13 +2639,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
            ]
@@ -2657,13 +2663,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
         [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
         [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
            ]
@@ -2671,13 +2679,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
          ]
         [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
           [ 
-            ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-              [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-              [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-              [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-             )
-            |
             annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+            |
+            ( 
+              ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+                [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+                [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+                [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+               )
+             )
             |
             freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
            ]
@@ -2709,13 +2719,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
           [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
             [ 
-              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-               )
-              |
               annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+              |
+              ( 
+                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
               |
               freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
              ]
@@ -2761,7 +2773,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+            ( 
+              collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -2793,46 +2809,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -2845,13 +2821,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -2866,13 +2844,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -2902,7 +2882,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -2934,46 +2918,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -2986,13 +2930,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3006,13 +2952,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3026,7 +2974,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -3065,7 +3013,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -3097,46 +3049,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3149,13 +3061,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3169,13 +3083,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3271,13 +3187,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ logit_transform {N_mdm(true,logitTransform)} ]
       [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
          ]
@@ -3324,7 +3242,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           matrix {N_mdm(lit,proposalCovInputType_matrix)}
          )
        ]
-      [ options_file STRING {N_mdm(str,quesoOptionsFilename)} ]
      )
     |
     ( gpmsa {N_mdm(utype,subMethod_SUBMETHOD_GPMSA)}
@@ -3333,13 +3250,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       build_samples INTEGER {N_mdm(int,buildSamples)}
       [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -3349,13 +3268,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ gpmsa_normalize {N_mdm(true,gpmsaNormalize)} ]
       [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
          ]
@@ -3397,7 +3318,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      )
     |
     ( wasabi {N_mdm(utype,subMethod_SUBMETHOD_WASABI)}
-      pushforward_samples INTEGER {N_mdm(int,numPushforwardSamples)}
+      initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
       [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
       [ emulator {0}
         ( gaussian_process ALIAS kriging {0}
@@ -3408,13 +3329,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
           [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
             [ 
-              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-               )
-              |
               annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+              |
+              ( 
+                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
               |
               freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
              ]
@@ -3460,7 +3383,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+            ( 
+              collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -3492,46 +3419,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3544,13 +3431,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3565,13 +3454,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3601,7 +3492,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -3633,46 +3528,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3685,13 +3540,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3705,13 +3562,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3725,7 +3584,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -3764,7 +3623,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -3796,46 +3659,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -3848,13 +3671,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3868,13 +3693,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -3968,23 +3795,36 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        ]
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
       ( data_distribution {0}
-        ( gaussian {0}
-          means REALLIST {N_mdm(RealDL,dataDistMeans)}
-          ( covariance REALLIST {N_mdm(RealDL,dataDistCovariance)}
-            diagonal {N_mdm(lit,dataDistCovInputType_diagonal)}
-            |
-            matrix {N_mdm(lit,dataDistCovInputType_matrix)}
+        ( 
+          ( gaussian {0}
+            ( 
+              means REALLIST {N_mdm(RealDL,dataDistMeans)}
+             )
+            ( covariance REALLIST {N_mdm(RealDL,dataDistCovariance)}
+              ( 
+                diagonal {N_mdm(lit,dataDistCovInputType_diagonal)}
+                |
+                matrix {N_mdm(lit,dataDistCovInputType_matrix)}
+               )
+             )
            )
+          |
+          obs_data_filename STRING {N_mdm(str,dataDistFile)}
          )
-        |
-        obs_data_filename STRING {N_mdm(str,dataDistFile)}
        )
-      [ posterior_samples_import_filename STRING {N_mdm(str,posteriorSamplesImportFilename)} ]
-      [ generate_posterior_samples {N_mdm(true,generatePosteriorSamples)}
+
+      #  evaluate_posterior_density {N_mdm(true,evaluatePosteriorDensity)}
+      [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
+
+      [  generate_posterior_samples {N_mdm(true,generatePosteriorSamples)} 
         [ posterior_samples_export_filename STRING {N_mdm(str,posteriorSamplesExportFilename)} ]
-       ]
-      [ evaluate_posterior_density {N_mdm(true,evaluatePosteriorDensity)}
-        [ posterior_density_export_filename STRING {N_mdm(str,posteriorDensityExportFilename)} ]
+        ]
+
+        prior_samples_import
+      [ posterior_samples_import_filename STRING {N_mdm(str,posteriorSamplesImportFilename)} ]
+      [ 
+
+
        ]
      )
     |
@@ -4005,13 +3845,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
           [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
             [ 
-              ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-               )
-              |
               annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+              |
+              ( 
+                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                 )
+               )
               |
               freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
              ]
@@ -4057,7 +3899,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+            ( 
+              collocation_points INTEGER {N_mdm(sizet,collocationPoints)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -4089,46 +3935,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4141,13 +3947,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4162,13 +3970,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4198,7 +4008,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -4230,46 +4044,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4282,13 +4056,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4302,13 +4078,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4322,7 +4100,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
            ]
           [ normalized {N_mdm(true,normalizedCoeffs)} ]
           [ export_expansion_file STRING {N_mdm(str,exportExpansionFile)} ]
-          [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+          [ pilot_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
          )
         |
         ( mf_pce {N_mdm(type,emulatorType_MF_PCE_EMULATOR)}
@@ -4361,7 +4139,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                 [ soft_convergence_limit INTEGER {N_mdm(ushint,softConvLimit)} ]
                )
              ]
-            ( collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+            ( 
+              collocation_points_sequence INTEGERLIST {N_mdm(szarray,collocationPointsSeq)}
+              |
+              collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ 
                 ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
                   [ 
@@ -4393,46 +4175,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ cross_validation {N_mdm(true,crossValidation)}
                 [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
                ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-              [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-              [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
-              [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
-              [ max_solver_iterations INTEGER >= 0 {N_mdm(nnint,maxSolverIterations)} ]
-             )
-            |
-            ( collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-              [ 
-                ( least_squares {N_mdm(type,regressionType_DEFAULT_LEAST_SQ_REGRESSION)}
-                  [ 
-                    svd {N_mdm(type,lsRegressionType_SVD_LS)}
-                    |
-                    equality_constrained {N_mdm(type,lsRegressionType_EQ_CON_LS)}
-                   ]
-                 )
-                |
-                ( orthogonal_matching_pursuit ALIAS omp {N_mdm(type,regressionType_ORTHOG_MATCH_PURSUIT)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                basis_pursuit ALIAS bp {N_mdm(type,regressionType_BASIS_PURSUIT)}
-                |
-                ( basis_pursuit_denoising ALIAS bpdn {N_mdm(type,regressionType_BASIS_PURSUIT_DENOISING)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_angle_regression ALIAS lars {N_mdm(type,regressionType_LEAST_ANGLE_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                 )
-                |
-                ( least_absolute_shrinkage ALIAS lasso {N_mdm(type,regressionType_LASSO_REGRESSION)}
-                  [ noise_tolerance REALLIST {N_mdm(RealDL,regressionNoiseTol)} ]
-                  [ l2_penalty REAL {N_mdm(Real,regressionL2Penalty)} ]
-                 )
-               ]
-              [ cross_validation {N_mdm(true,crossValidation)}
-                [ noise_only {N_mdm(true,crossValidNoiseOnly)} ]
-               ]
-              [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
               [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
               [ tensor_grid {N_mdm(true,tensorGridFlag)} ]
               [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
@@ -4445,13 +4187,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
              )
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4465,13 +4209,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             [ reuse_points ALIAS reuse_samples {N_mdm(lit,pointReuse_all)} ]
             [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
               [ 
-                ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-                  [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-                  [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-                  [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-                 )
-                |
                 annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+                |
+                ( 
+                  ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+                    [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+                    [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+                    [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+                   )
+                 )
                 |
                 freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
                ]
@@ -4566,13 +4312,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ standardized_space {N_mdm(true,standardizedSpace)} ]
       [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
          ]
@@ -4584,13 +4332,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
       [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,importCandFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importCandFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importCandFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importCandFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importCandFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importCandFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importCandFormat_TABULAR_NONE)}
          ]
@@ -4613,9 +4363,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ burn_in_samples INTEGER {N_mdm(int,burnInSamples)} ]
     [ posterior_stats {0}
       [ kl_divergence {N_mdm(true,posteriorStatsKL)} ]
-      [ mutual_info {N_mdm(true,posteriorStatsMutual)}
-        [ ksg2 {N_mdm(true,mutualInfoKSG2)} ]
-       ]
+      [ mutual_info {N_mdm(true,posteriorStatsMutual)} ]
      ]
     [ model_discrepancy {N_mdm(true,calModelDiscrepancy)}
       [ discrepancy_type {0}
@@ -4634,52 +4382,60 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       [ prediction_configs REALLIST {N_mdm(RealDL,predictionConfigList)} ]
       [ import_prediction_configs STRING {N_mdm(str,importPredConfigs)}
         [ 
-          ( custom_annotated {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,importPredConfigFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,importPredConfigFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,importPredConfigFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,importPredConfigFormat_TABULAR_NONE)}
          ]
        ]
       [ export_discrepancy_file STRING {N_mdm(str,exportDiscrepFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportDiscrepFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportDiscrepFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportDiscrepFormat_TABULAR_NONE)}
          ]
        ]
       [ export_corrected_model_file STRING {N_mdm(str,exportCorrModelFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportCorrModelFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportCorrModelFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportCorrModelFormat_TABULAR_NONE)}
          ]
        ]
       [ export_corrected_variance_file STRING {N_mdm(str,exportCorrVarFile)}
         [ 
-          ( custom_annotated {N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}
-            [ header {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mdm(utype,exportCorrVarFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}
+              [ header {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mdm(augment_utype,exportCorrVarFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mdm(utype,exportCorrVarFormat_TABULAR_NONE)}
          ]
@@ -4879,13 +4635,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ import_build_points_file ALIAS import_points_file STRING {N_mdm(str,importBuildPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,importBuildFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,importBuildFormat_TABULAR_NONE)}
        ]
@@ -4893,13 +4651,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
      ]
     [ export_approx_points_file ALIAS export_points_file STRING {N_mdm(str,exportApproxPtsFile)}
       [ 
-        ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,exportApproxFormat_TABULAR_NONE)}
        ]
@@ -4971,13 +4731,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     |
     ( import_points_file STRING {N_mdm(str,pstudyFilename)}
       [ 
-        ( custom_annotated {N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}
-          [ header {N_mdm(augment_utype,pstudyFileFormat_TABULAR_HEADER)} ]
-          [ eval_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_EVAL_ID)} ]
-          [ interface_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_IFACE_ID)} ]
-         )
-        |
         annotated {N_mdm(utype,pstudyFileFormat_TABULAR_ANNOTATED)}
+        |
+        ( 
+          ( custom_annotated {N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,pstudyFileFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,pstudyFileFormat_TABULAR_IFACE_ID)} ]
+           )
+         )
         |
         freeform {N_mdm(utype,pstudyFileFormat_TABULAR_NONE)}
        ]
@@ -5180,13 +4942,15 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
       [ import_build_points_file ALIAS import_points_file ALIAS samples_file STRING {N_mom(str,importBuildPtsFile)}
         [ 
-          ( custom_annotated {N_mom(utype,importBuildFormat_TABULAR_NONE)}
-            [ header {N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mom(utype,importBuildFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mom(utype,importBuildFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,importBuildFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,importBuildFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,importBuildFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mom(utype,importBuildFormat_TABULAR_NONE)}
          ]
@@ -5194,13 +4958,15 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
       [ export_approx_points_file ALIAS export_points_file STRING {N_mom(str,exportApproxPtsFile)}
         [ 
-          ( custom_annotated {N_mom(utype,exportApproxFormat_TABULAR_NONE)}
-            [ header {N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mom(utype,exportApproxFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mom(utype,exportApproxFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,exportApproxFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,exportApproxFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,exportApproxFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mom(utype,exportApproxFormat_TABULAR_NONE)}
          ]
@@ -5230,13 +4996,15 @@ KEYWORD model {N_mom3(start,0,stop)}
        ]
       [ import_challenge_points_file ALIAS challenge_points_file STRING {N_mom(str,importChallengePtsFile)}
         [ 
-          ( custom_annotated {N_mom(utype,importChallengeFormat_TABULAR_NONE)}
-            [ header {N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)} ]
-            [ eval_id {N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)} ]
-            [ interface_id {N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)} ]
-           )
-          |
           annotated {N_mom(utype,importChallengeFormat_TABULAR_ANNOTATED)}
+          |
+          ( 
+            ( custom_annotated {N_mom(utype,importChallengeFormat_TABULAR_NONE)}
+              [ header {N_mom(augment_utype,importChallengeFormat_TABULAR_HEADER)} ]
+              [ eval_id {N_mom(augment_utype,importChallengeFormat_TABULAR_EVAL_ID)} ]
+              [ interface_id {N_mom(augment_utype,importChallengeFormat_TABULAR_IFACE_ID)} ]
+             )
+           )
           |
           freeform {N_mom(utype,importChallengeFormat_TABULAR_NONE)}
          ]
@@ -5800,12 +5568,14 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
         [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
-            ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
-              [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
-              [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
-             )
-            |
             annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
+            |
+            ( 
+              ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
+                [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
+                [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
+               )
+             )
             |
             freeform {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
            ]
@@ -5815,12 +5585,14 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
       |
       ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,scalarDataFileName)}
         [ 
-          ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
-            [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
-            [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
-           )
-          |
           annotated {N_rem(utype,scalarDataFormat_TABULAR_EXPER_ANNOT)}
+          |
+          ( 
+            ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
+              [ header {N_rem(augment_utype,scalarDataFormat_TABULAR_HEADER)} ]
+              [ exp_id {N_rem(augment_utype,scalarDataFormat_TABULAR_EVAL_ID)} ]
+             )
+           )
           |
           freeform {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
          ]

@@ -1,8 +1,11 @@
 Blurb::
-Method of feasible directions
+DOT modified method of feasible directions
 
 Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+DOT library \cite Van95 implementation of the modified method of
+feasible directions for constrained optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
 
 <em>DOT requires a separate software license and therefore may not
 be available in all versions of Dakota.  CONMIN or OPT++ methods may
@@ -12,4 +15,4 @@ Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-mmfd
+See_Also::

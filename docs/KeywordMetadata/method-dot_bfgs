@@ -1,8 +1,11 @@
-Blurb::
-A conjugate gradient optimization method
+Blurb:: DOT BFGS optimization method
 
 Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+DOT library \cite Van95 implementation of
+Broyden-Fletcher-Goldfarb-Shanno method for unconstrained
+optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
 
 <em>DOT requires a separate software license and therefore may not
 be available in all versions of Dakota.  CONMIN or OPT++ methods may
@@ -12,4 +15,4 @@ Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-bfgs
+See_Also::

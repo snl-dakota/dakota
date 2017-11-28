@@ -1,14 +1,17 @@
 Blurb::
-A conjugate gradient optimization method
+DOT conjugate gradient optimization method
 
 Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+DOT library \cite Van95 implementation of Fletcher-Reeves conjugate
+gradient method for unconstrained optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
 
 <em>DOT requires a separate software license and therefore may not
 be available in all versions of Dakota.  CONMIN or OPT++ methods may
 be suitable alternatives.</em>
 
-We here provide a caution regarding \c dot_frcg. In DOT
+<em>Caution regarding \c dot_frcg.</em> In DOT
 Version 4.20, we have noticed inconsistent behavior of this algorithm
 across different versions of Linux. Our best assessment is that it is
 due to different treatments of uninitialized variables. As we do not
@@ -22,4 +25,4 @@ Topics::
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-frcg
+See_Also::
