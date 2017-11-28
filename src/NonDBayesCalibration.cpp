@@ -815,6 +815,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
   double MIrel;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
   int num_hifi = 0;
+  int num_it = 1;
   // Determine mutual information algorithm
   int alg;
   if (mutualInfoKSG2)
@@ -833,9 +834,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
     // EVALUATE STOPPING CRITERIA
     // check relative MI change
-    if (num_hifi == 1)
+    if (num_it == 1)
       prev_MI = max_MI;
-    else if (num_hifi > 1) {
+    else if (num_it > 1) {
       MIdiff = prev_MI - max_MI;
       MIrel = fabs(MIdiff/prev_MI);
       if (MIrel < 0.05) {
@@ -895,7 +896,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       if (outputLevel >= DEBUG_OUTPUT) {
 	Cout << "\n----------------------------------------------\n";
-        Cout << "Begin Experimental Design Iteration " << num_hifi+1;
+        Cout << "Begin Experimental Design Iteration " << num_it;
 	Cout << "\n----------------------------------------------\n";
       }
 
@@ -934,7 +935,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       const RealVector& sim_error_vec = mcmcModel.current_response().
                                         shared_data().simulation_error();
       if (sim_error_vec.length() > 0) {
-        if (num_hifi == 0) {
+        if (num_it == 0) {
           Real stdev;
           int stoch_seed = randomSeed;
           sim_error_matrix.reshape(numFunctions, num_filtered);
@@ -974,7 +975,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       // KAM - for loop for batch MI 
       //int batch_n = batchEvals.empty() ? batchEvals : 1;
-      int batchEvals = 1; // KAM TODO: add to input spec
+      int batchEvals = 3; // KAM TODO: add to input spec
+      if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
+	batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
@@ -1054,7 +1057,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	    			    batch_n * numFunctions, alg);
 	  if (outputLevel >= DEBUG_OUTPUT) {
 	    Cout << "\n----------------------------------------------\n";
-            Cout << "Experimental Design Iteration "<<num_hifi+1<<" Progress";
+            Cout << "Experimental Design Iteration "<< num_it <<" Progress";
 	    Cout << "\n----------------------------------------------\n";
 	    Cout << "Design candidate " << i << " = " << xi_i;
 	    Cout << "Mutual Information = " << MI << '\n'; 
@@ -1113,7 +1116,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         --num_candidates;
         if (outputLevel >= DEBUG_OUTPUT) {
 	  Cout << "\n----------------------------------------------\n";
-          Cout << "Experimental Design Iteration "<<num_hifi+1<<" Progress";
+          Cout << "Experimental Design Iteration "<< num_it <<" Progress";
 	  Cout << "\n----------------------------------------------\n";
           if (batchEvals > 1) 
             Cout << "Point " << batch_n << " of " << batchEvals 
@@ -1126,10 +1129,10 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       // RUN HIFI MODEL WITH NEW POINT(S)
       // TODO: add check that mod(max_hifi, batchEvals) == 0
+      RealMatrix resp_matrix;
       if (max_hifi > 0) {
 
 	// batch evaluate hifiModel, populating resp_matrix
-	RealMatrix resp_matrix;
 	Model::evaluate(optimal_config_matrix, hifiModel, resp_matrix);
 
 	// update hifi experiment data
@@ -1148,14 +1151,16 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 	  expData.add_data(optimal_config, hifi_resp);
 	}
+	
+	num_hifi += num_evals;
 
       }
-      num_hifi++;
+      num_it++;
 
       // Print results to screen and to file
       if (outputLevel >= VERBOSE_OUTPUT) {
 	Cout << "\n----------------------------------------------\n";
-        Cout << "Experimental Design Iteration " << num_hifi << " Complete";
+        Cout << "Experimental Design Iteration " << num_it-1 << " Complete";
 	Cout << "\n----------------------------------------------\n";
 	if (batchEvals > 1) {
 	  Cout << batchEvals << " optimal designs selected\n";
@@ -1170,7 +1175,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	Cout << "Mutual information = " << max_MI << '\n';
 	Cout << "\n";
       }
-      out_file << "ITERATION " << num_hifi << "\n";
+      out_file << "ITERATION " << num_it -1 << "\n";
       if (batchEvals > 1) {
         out_file << batchEvals << " optimal designs selected\n";
         for (int batch_n = 0; batch_n < batchEvals; batch_n++) {
@@ -1183,7 +1188,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         out_file << "Optimal Design: " << optimal_config;
       out_file << "Mutual Information = " << max_MI << '\n';
       if (max_hifi > 0) 
-        out_file << "Hifi Response: " << hifiModel.current_response();
+        out_file << "Hifi Response: " << resp_matrix;
       // KAM TODO: modify for mutual hifi responses
       out_file << "\n";
     } // end MI loop
