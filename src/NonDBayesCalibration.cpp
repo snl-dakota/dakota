@@ -975,7 +975,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       // KAM - for loop for batch MI 
       //int batch_n = batchEvals.empty() ? batchEvals : 1;
-      int batchEvals = 3; // KAM TODO: add to input spec
+      int batchEvals = 1; // KAM TODO: add to input spec
       if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
 	batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
@@ -1000,58 +1000,43 @@ void NonDBayesCalibration::calibrate_to_hifi()
           // that's what we want if the user said "emulator")
     
           // Declare a matrix to store the low fidelity responses
-          RealVector lofi_resp_vec(numFunctions);
-          RealVector col_vec(numContinuousVars + batch_n * numFunctions);
           RealMatrix Xmatrix(numContinuousVars + batch_n * numFunctions, 
 	    		     num_filtered);
-	  for (int j=0; j<num_filtered; j++) {
-            // for each posterior sample, get the param values and run the model
-            lofi_params = Teuchos::getCol(Teuchos::View, mi_chain, j);
-    	    mcmcModel.continuous_variables(lofi_params);
-    	    mcmcModel.evaluate();
-    
-	    lofi_resp_vec = mcmcModel.current_response().function_values();
- 	    //Teuchos::setCol(lofi_resp_vec, j, lofi_resp_mat);
-            //concatenate posterior_theta and lofi_resp_mat into Xmatrix
-            for (size_t k = 0; k < numContinuousVars; k++) {
-              col_vec[k] = lofi_params[k];
-            }
-            for (size_t k = 0; k < numFunctions; k ++) {
-              if (sim_error_vec.length() > 0) {
-	        RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
-		                                    sim_error_matrix, j);
-                col_vec[numContinuousVars + k] = lofi_resp_vec[k] + 
-		  				 sim_error_vec[k];
-	      }
-	      else
-                col_vec[numContinuousVars + k] = lofi_resp_vec[k];
-            }
-	    // When batch selection, augment Xmatrix with responses from
-	    // previously selected points
-	    size_t colvec_ind = numContinuousVars + numFunctions;
-	    RealVector opt_obs_vec = Teuchos::getCol(Teuchos::View,
-    			      		             optimal_obs, j);
-	    for (size_t k = 0; k < optimal_obs.numRows(); k++) {
-              col_vec[colvec_ind] = opt_obs_vec[k];
-	      ++colvec_ind;
-	    }
-	    /*
-	    for (size_t k = 1; k < batch_n; k++) {
-              for (size_t l = 0; l < numFunctions; l ++) {
-	        ++colvec_ind;
-                if (sim_error_vec.length() > 0) {
-		  // KAM TODO: new sim_error_matrix for each opt design?
-	          RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
-		                                      sim_error_matrix, j);
-                  col_vec[colvec_ind] = opt_obs_vec[l]+sim_error_vec[l];
-	        }
-	        else
-                  col_vec[colvec_ind] = opt_obs_vec[l];
-              }
-	    }
-	    */
-            Teuchos::setCol(col_vec, j, Xmatrix);
-          }
+
+	  // run the model at each posterior sample, with option to batch
+	  // evaluate the lo-fi model
+
+	  // receive the evals in a separate matrix for safety
+	  RealMatrix lofi_resp_matrix;
+	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
+
+	  //concatenate posterior_theta and lofi_resp_mat into Xmatrix
+
+	  RealMatrix xmatrix_theta(Teuchos::View, Xmatrix,
+				   numContinuousVars, num_filtered);
+	  xmatrix_theta.assign(mi_chain);
+
+	  RealMatrix xmatrix_curr_responses
+	    (Teuchos::View, Xmatrix, numFunctions, num_filtered,
+	     numContinuousVars, 0);
+	  xmatrix_curr_responses.assign(lofi_resp_matrix);
+
+	  // KAM TODO: new sim_error_matrix for each opt design?
+	  if (sim_error_vec.length() > 0)
+	    xmatrix_curr_responses += sim_error_matrix;
+
+	  // When batch selection, augment Xmatrix with responses from
+	  // previously selected points
+
+	  // BMA: Is it critical that current batch precedes optimally
+	  // selected previous ones? If not, could just always append
+	  // to Xmatrix and not need separate optimal_obs.
+	  RealMatrix xmatrix_optimal_responses
+	    (Teuchos::View, Xmatrix, optimal_obs.numRows(), num_filtered,
+	     numContinuousVars + numFunctions, 0);
+	  xmatrix_optimal_responses.assign(optimal_obs);
+
+
           // calculate the mutual information b/w post theta and lofi responses
           Real MI = knn_mutual_info(Xmatrix, numContinuousVars, 
 	    			    batch_n * numFunctions, alg);
@@ -1083,34 +1068,29 @@ void NonDBayesCalibration::calibrate_to_hifi()
         if (batchEvals > 1) {
 	  optimal_obs.reshape(batch_n * numFunctions, num_filtered);
           Model::inactive_variables(optimal_config, mcmcModel);
-          for (int j=0; j<num_filtered; j++) {
-            lofi_params = Teuchos::getCol(Teuchos::View, mi_chain, j);
-    	    mcmcModel.continuous_variables(lofi_params);
-    	    mcmcModel.evaluate();
-	    RealVector lofi_resp_vec = mcmcModel.current_response().
-	    				         function_values();
-	    RealVector opt_obs_vec = Teuchos::getCol(Teuchos::View, optimal_obs,
-	      					     j);
-	    size_t newobs_ind = (batch_n-1)*numFunctions;
-	    for (size_t k = 0; k < numFunctions; k++) {
-	      opt_obs_vec[newobs_ind + k] = lofi_resp_vec[k];
-	    } 
-	    /*
-            RealVector col_vec(numFunctions);
-            for (size_t k = 0; k < numFunctions; k ++) {
-              if (sim_error_vec.length() > 0) {
-	        RealVector sim_error_vec = Teuchos::getCol(Teuchos::View, 
-		                                    sim_error_matrix, j);
-                col_vec[k] = lofi_resp_vec[k]+sim_error_vec[k];
-	      }
-	      else
-                col_vec[k] = lofi_resp_vec[k];
-            }
-            Teuchos::setCol(col_vec, j, optimal_obs);
-	    */
-	    Teuchos::setCol(opt_obs_vec, j, optimal_obs);
-          }
+
+	  // with option to batch evaluate the lo-fi model
+
+	  // BMA: Don't we already have these evals completed and
+	  // stored in XMatrix, why need to reevaluate? Can we copy
+	  // them?
+
+	  RealMatrix lofi_resp_matrix;
+	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
+
+	  size_t newobs_ind = (batch_n-1)*numFunctions;
+	  RealMatrix optimal_obs_submatrix
+	    (Teuchos::View, optimal_obs, numFunctions, num_filtered,
+	     newobs_ind, 0);
+
+	  optimal_obs_submatrix.assign(lofi_resp_matrix);
+
+	  // BMA NOTE: This was commented out in the code I replaced
+	  // if (sim_error_vec.length() > 0)
+	  //   optimal_obs_submatrix += sim_error_matrix;
+
         }
+
         // update list of candidates
         remove_column(design_matrix, optimal_ind);
         --num_candidates;
