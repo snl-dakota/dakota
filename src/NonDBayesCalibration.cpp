@@ -935,7 +935,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       const RealVector& sim_error_vec = mcmcModel.current_response().
                                         shared_data().simulation_error();
       if (sim_error_vec.length() > 0) {
-        if (num_it == 0) {
+        if (num_it == 1) {
           Real stdev;
           int stoch_seed = randomSeed;
           sim_error_matrix.reshape(numFunctions, num_filtered);
