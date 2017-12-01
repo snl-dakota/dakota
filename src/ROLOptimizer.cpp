@@ -161,63 +161,10 @@ void ROLOptimizer::set_rol_parameters()
 
 // need to move functionality from core_run below here.
 void ROLOptimizer::set_problem() {
-
-  // typedef double RealT;
-  // size_t j;
-
-  // const RealVector& initial_points = iteratedModel.continuous_variables();
-
-  // std::vector<RealT> x_stdv(iteratedModel.cv(),0.0);
-
-  // for(j=0; j<iteratedModel.cv(); j++){
-  //   x_stdv[j] = initial_points[j];
-  // }
-
-  // Teuchos::RCP<std::vector<RealT> > x_rcp = Teuchos::rcpFromRef( x_stdv );
-  // // x_rcp = Teuchos::rcpFromRef( x_stdv );
-
-  // Teuchos::RCP<ROL::Vector<RealT> > x  = Teuchos::rcp( new ROL::StdVector<RealT>(x_rcp) );
-
-
-
-  // const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-  // const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-
-  // std::vector<RealT> l_stdv(iteratedModel.cv(),0.0);
-  // std::vector<RealT> u_stdv(iteratedModel.cv(),0.0);
-
-  // for(j=0; j<iteratedModel.cv(); j++){
-  //   l_stdv[j] = c_l_bnds[j];
-  //   u_stdv[j] = c_u_bnds[j];
-  // }
-    
-
-  // Teuchos::RCP<std::vector<RealT> > l_rcp = Teuchos::rcpFromRef( l_stdv );
-  // Teuchos::RCP<std::vector<RealT> > u_rcp = Teuchos::rcpFromRef( u_stdv );
-    
-  // Teuchos::RCP<ROL::Vector<RealT> > lower = Teuchos::rcp( new ROL::StdVector<RealT>( l_rcp ) );
-  // Teuchos::RCP<ROL::Vector<RealT> > upper = Teuchos::rcp( new ROL::StdVector<RealT>( u_rcp ) );
-
-  // Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd  = Teuchos::rcp( new ROL::Bounds<RealT>(lower,upper) );
-
-  //   ObjectiveF<RealT> obj_rcp = ObjectiveF<RealT>();
-  //   obj_rcp.pass_model(iteratedModel);
-  //   Teuchos::RCP<ROL::Objective<RealT> > obj  = Teuchos::rcpFromRef( obj_rcp );
-
- 
-  //   problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
-}
-
-
-/** core_run redefines the Optimizer virtual function to perform
-    the optimization using ROL. It first sets up the simplified ROL
-    problem data, then executes solve() on the simplified ROL
-    solver interface and finally catalogues the results. */
-
-void ROLOptimizer::core_run()
-{
   typedef double RealT;
   size_t j;
+
+  Optimizer::initialize_run();
 
   // create ROL variable vector
   const RealVector& initial_points = iteratedModel.continuous_variables();
@@ -248,8 +195,63 @@ void ROLOptimizer::core_run()
   obj_rcp.pass_model(iteratedModel);
   Teuchos::RCP<ROL::Objective<RealT> > obj  = Teuchos::rcpFromRef( obj_rcp );
 
-  // Call simplified interface problem generator
-  ROL::OptimizationProblem<RealT> problem( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
+  // // Call simplified interface problem generator
+  problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
+
+  Teuchos::RCP<std::ostream> outStream_checking;
+  outStream_checking = Teuchos::rcp(&std::cout, false);
+  problem.check(*outStream_checking);
+}
+
+
+/** core_run redefines the Optimizer virtual function to perform
+    the optimization using ROL. It first sets up the simplified ROL
+    problem data, then executes solve() on the simplified ROL
+    solver interface and finally catalogues the results. */
+
+void ROLOptimizer::core_run()
+{
+  typedef double RealT;
+  size_t j;
+
+
+  // Optimizer::initialize_run();
+
+  // // create ROL variable vector
+  // const RealVector& initial_points = iteratedModel.continuous_variables();
+  // std::vector<RealT> x_stdv(iteratedModel.cv(),0.0);
+  // for(j=0; j<iteratedModel.cv(); j++){
+  //   x_stdv[j] = initial_points[j];
+  // }
+  // Teuchos::RCP<std::vector<RealT> > x_rcp = Teuchos::rcpFromRef( x_stdv );
+  // Teuchos::RCP<ROL::Vector<RealT> > x  = Teuchos::rcp( new ROL::StdVector<RealT>(x_rcp) );
+
+  // // create ROL::BoundConstraint object to house variable bounds information
+  // const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
+  // const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
+  // std::vector<RealT> l_stdv(iteratedModel.cv(),0.0);
+  // std::vector<RealT> u_stdv(iteratedModel.cv(),0.0);
+  // for(j=0; j<iteratedModel.cv(); j++){
+  //   l_stdv[j] = c_l_bnds[j];
+  //   u_stdv[j] = c_u_bnds[j];
+  // }
+  // Teuchos::RCP<std::vector<RealT> > l_rcp = Teuchos::rcpFromRef( l_stdv );
+  // Teuchos::RCP<std::vector<RealT> > u_rcp = Teuchos::rcpFromRef( u_stdv );
+  // Teuchos::RCP<ROL::Vector<RealT> > lower = Teuchos::rcp( new ROL::StdVector<RealT>( l_rcp ) );
+  // Teuchos::RCP<ROL::Vector<RealT> > upper = Teuchos::rcp( new ROL::StdVector<RealT>( u_rcp ) );
+  // Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd  = Teuchos::rcp( new ROL::Bounds<RealT>(lower,upper) );
+
+  // // create objective function object and give it access to Dakota model 
+  // ObjectiveF<RealT> obj_rcp = ObjectiveF<RealT>();
+  // obj_rcp.pass_model(iteratedModel);
+  // Teuchos::RCP<ROL::Objective<RealT> > obj  = Teuchos::rcpFromRef( obj_rcp );
+
+  // // // Call simplified interface problem generator
+  // problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
+
+  // Teuchos::RCP<std::ostream> outStream_checking;
+  // outStream_checking = Teuchos::rcp(&std::cout, false);
+  // problem.check(*outStream_checking);
 
   // Print iterates to screen, need to control using Dakota output keyword
   Teuchos::RCP<std::ostream> outStream;
@@ -257,6 +259,7 @@ void ROLOptimizer::core_run()
 
   // Call simplified interface solver
   ROL::OptimizationSolver<RealT> solver( problem, optSolverParams );
+
   solver.solve(*outStream); 
 
   // copy ROL solution to Dakota bestVariablesArray
