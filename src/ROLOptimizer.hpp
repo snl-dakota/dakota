@@ -100,6 +100,9 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  /// define the ROL objectives, constraints, and optimization problem
+  void initialize_run();
+
   /// iterates the ROL solver to determine the optimal solution
   void core_run();
 

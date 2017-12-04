@@ -88,7 +88,6 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   optSolverParams("Dakota::ROL")
 {
   set_rol_parameters();
-  set_problem();
 }
 
 /// Alternate constructor for Iterator instantiations by name.
@@ -99,7 +98,6 @@ ROLOptimizer(const String& method_string, Model& model):
   optSolverParams("Dakota::ROL")
 {
   set_rol_parameters();
-  set_problem();
 }
 
 
@@ -159,41 +157,53 @@ void ROLOptimizer::set_rol_parameters()
 }
 
 
+void ROLOptimizer::initialize_run()
+{
+  // BMA: set_problem can't be called at construct time as
+  // problem.check() evaluates the objective.  Probably want to
+  // disable this check in production code and only enable in tests or
+  // (maybe) debug mode.
+
+  set_problem();
+
+  Optimizer::initialize_run();
+}
+
 // need to move functionality from core_run below here.
 void ROLOptimizer::set_problem() {
   typedef double RealT;
   size_t j;
 
-  Optimizer::initialize_run();
-
   // create ROL variable vector
   const RealVector& initial_points = iteratedModel.continuous_variables();
-  std::vector<RealT> x_stdv(iteratedModel.cv(),0.0);
+
+  x_rcp.reset(new std::vector<RealT>(iteratedModel.cv(), 0.0));
+  // BMA: left this loop for data transfers consolidation
   for(j=0; j<iteratedModel.cv(); j++){
-    x_stdv[j] = initial_points[j];
+    x_rcp->operator[](j) = initial_points[j];
   }
-  Teuchos::RCP<std::vector<RealT> > x_rcp = Teuchos::rcpFromRef( x_stdv );
   Teuchos::RCP<ROL::Vector<RealT> > x  = Teuchos::rcp( new ROL::StdVector<RealT>(x_rcp) );
 
   // create ROL::BoundConstraint object to house variable bounds information
   const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-  std::vector<RealT> l_stdv(iteratedModel.cv(),0.0);
-  std::vector<RealT> u_stdv(iteratedModel.cv(),0.0);
+
+  Teuchos::RCP<std::vector<RealT> >
+    l_rcp(new std::vector<RealT>(iteratedModel.cv(), 0.0));
+  Teuchos::RCP<std::vector<RealT> >
+    u_rcp(new std::vector<RealT>(iteratedModel.cv(), 0.0));
+  // BMA: left this loop for data transfers consolidation
   for(j=0; j<iteratedModel.cv(); j++){
-    l_stdv[j] = c_l_bnds[j];
-    u_stdv[j] = c_u_bnds[j];
+    l_rcp->operator[](j) = c_l_bnds[j];
+    u_rcp->operator[](j) = c_u_bnds[j];
   }
-  Teuchos::RCP<std::vector<RealT> > l_rcp = Teuchos::rcpFromRef( l_stdv );
-  Teuchos::RCP<std::vector<RealT> > u_rcp = Teuchos::rcpFromRef( u_stdv );
-  Teuchos::RCP<ROL::Vector<RealT> > lower = Teuchos::rcp( new ROL::StdVector<RealT>( l_rcp ) );
-  Teuchos::RCP<ROL::Vector<RealT> > upper = Teuchos::rcp( new ROL::StdVector<RealT>( u_rcp ) );
-  Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd  = Teuchos::rcp( new ROL::Bounds<RealT>(lower,upper) );
+  Teuchos::RCP<ROL::Vector<RealT> > lower( new ROL::StdVector<RealT>( l_rcp ) );
+  Teuchos::RCP<ROL::Vector<RealT> > upper( new ROL::StdVector<RealT>( u_rcp ) );
+  Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd( new ROL::Bounds<RealT>(lower,upper) );
 
   // create objective function object and give it access to Dakota model 
-  ObjectiveF<RealT> obj_rcp = ObjectiveF<RealT>();
-  obj_rcp.pass_model(iteratedModel);
-  Teuchos::RCP<ROL::Objective<RealT> > obj  = Teuchos::rcpFromRef( obj_rcp );
+  Teuchos::RCP<ObjectiveF<RealT> > obj(new ObjectiveF<RealT>());
+  obj->pass_model(iteratedModel);
 
   // // Call simplified interface problem generator
   problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
