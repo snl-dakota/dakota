@@ -639,7 +639,7 @@
 	       <oneOf label="Basis Polynomial Family">
 	         <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey"  default="extended (Askey + numerically-generated)" />
 	         <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener"  default="extended (Askey + numerically-generated)" />
-	         <!-- # | piecewise {N_mdm(type,expansionType_} -->
+	         <!-- # | piecewise {N_mdm(type,expansionType_}) -->
 	       </oneOf>
              </optional>
 	     <keyword  id="normalized" name="normalized" code="{N_mdm(true,normalizedCoeffs)}" label="Output PCE coefficients corresponding to normalized basis"  minOccurs="0" default="PCE coefficients correspond to unnormalized basis polynomials" />
@@ -2798,6 +2798,9 @@
             <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations"  minOccurs="0">
               <param type="INTEGER" constraint=">= 0" />
             </keyword>
+  	    <keyword  id="batch_size" name="batch_size" code="{N_mdm(int,batchSize)}" label="Number of optimal experimental designs selected per iteration"  minOccurs="0" >
+	      <param type="INTEGER" constraint=">= 1" />
+  	    </keyword>
             <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import"  minOccurs="0" default="no point import from a file" >
               <param type="INPUT_FILE" />
 	      <optional>

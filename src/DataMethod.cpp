@@ -157,6 +157,7 @@ DataMethodRep::DataMethodRep():
   exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false), 
   mutualInfoKSG2(false),
   importCandFormat(TABULAR_ANNOTATED), numCandidates(0), maxHifiEvals(-1.),  
+  batchSize(1),
   // DREAM
   numChains(3), numCR(3), crossoverChainPairs(3), grThreshold(1.2),
   jumpStep(5),
@@ -303,7 +304,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
     << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
     << adaptExpDesign << importCandPtsFile << importCandFormat
-    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCandidates << maxHifiEvals << batchSize << mutualInfoKSG2 << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep
     << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 
@@ -454,7 +455,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> exportCorrModelFile >> exportCorrModelFormat >> exportCorrVarFile
     >> exportCorrVarFormat >> exportDiscrepFile >> exportDiscrepFormat
     >> adaptExpDesign >> importCandPtsFile >> importCandFormat
-    >> numCandidates >> maxHifiEvals >> mutualInfoKSG2 >> numChains
+    >> numCandidates >> maxHifiEvals >> batchSize >> mutualInfoKSG2 >> numChains
     >> numCR >> crossoverChainPairs >> grThreshold >> jumpStep
     >> numPushforwardSamples 
     >> dataDistType >> dataDistCovInputType >> dataDistMeans 
@@ -605,7 +606,7 @@ void DataMethodRep::write(std::ostream& s) const
     << exportCorrModelFile << exportCorrModelFormat << exportCorrVarFile
     << exportCorrVarFormat << exportDiscrepFile << exportDiscrepFormat
     << adaptExpDesign << importCandPtsFile << importCandFormat
-    << numCandidates << maxHifiEvals << mutualInfoKSG2 << numChains
+    << numCandidates << maxHifiEvals << batchSize << mutualInfoKSG2 << numChains
     << numCR << crossoverChainPairs << grThreshold << jumpStep
     << numPushforwardSamples 
     << dataDistType << dataDistCovInputType << dataDistMeans 

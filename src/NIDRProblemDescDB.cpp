@@ -6876,6 +6876,7 @@ static short
 	MP_(wilksSidedInterval);
 
 static int
+	MP_(batchSize),
 	MP_(buildSamples),
 	MP_(burnInSamples),
 	MP_(chainSamples),

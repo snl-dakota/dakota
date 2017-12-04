@@ -4630,6 +4630,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
       num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
       [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
+      [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)} ]
       [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
         [ 
           ( custom_annotated {N_mdm(utype,importCandFormat_TABULAR_NONE)}

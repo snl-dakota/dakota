@@ -69,6 +69,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.import_candidate_format")),
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
+  batchEvals(probDescDB.get_int("method.batch_size")),
   mutualInfoKSG2(probDescDB.get_bool("method.nond.mutual_info_ksg2")),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
@@ -930,9 +931,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
-      // KAM - for loop for batch MI 
-      //int batch_n = batchEvals.empty() ? batchEvals : 1;
-      int batchEvals = 1; // KAM TODO: add to input spec
       if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
 	batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
@@ -943,6 +941,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       RealVector MI_vec(batchEvals);
       int stoch_seed = randomSeed;
 
+      // For loop for batch MI 
       for (int batch_n = 1; batch_n < batchEvals+1; batch_n ++) {
       
         // Build simulation error matrix
@@ -1024,7 +1023,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	     numContinuousVars, 0);
 	  xmatrix_curr_responses.assign(lofi_resp_matrix);
 
-	  // KAM TODO: new sim_error_matrix for each opt design?
 	  if (sim_error_vec.length() > 0)
 	    xmatrix_curr_responses += sim_error_matrix;
 
@@ -1112,7 +1110,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
       } // end batch_n loop
 
       // RUN HIFI MODEL WITH NEW POINT(S)
-      // TODO: add check that mod(max_hifi, batchEvals) == 0
       RealMatrix resp_matrix;
       if (max_hifi > 0) {
 
