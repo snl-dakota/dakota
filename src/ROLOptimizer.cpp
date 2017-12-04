@@ -198,6 +198,7 @@ void ROLOptimizer::set_problem() {
   // // Call simplified interface problem generator
   problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
 
+  // checking 
   Teuchos::RCP<std::ostream> outStream_checking;
   outStream_checking = Teuchos::rcp(&std::cout, false);
   problem.check(*outStream_checking);
