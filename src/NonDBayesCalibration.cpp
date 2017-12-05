@@ -1130,7 +1130,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  Response hifi_resp = hifiModel.current_response().copy();
 	  hifi_resp.function_values(hifi_fn_vals);
 
-	  expData.add_data(optimal_config, hifi_resp);
+	  expData.add_data(config_vars, hifi_resp);
 	}
 	
 	num_hifi += num_evals;

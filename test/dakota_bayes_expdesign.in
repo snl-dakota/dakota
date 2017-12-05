@@ -30,11 +30,14 @@ method,
           chain_samples = 500
           experimental_design
           initial_samples = 2
-	  num_candidates = 2
+	  num_candidates = 2				#s0,#s1,#s2,#s3,#s4
+#	  num_candidates = 5				#s5
+# 	  batch_size = 2				#s5
 #	  import_candidate_points_file = 'dakota_bayes_expdesign.cand.dat' #s2 
 #		freeform						#s2
 #	  #ksg2						#s2
-	  max_hifi_evaluations = 1
+	  max_hifi_evaluations = 1			#s0,#s1,#s2,#s3,#s4
+#	  max_hifi_evaluations = 3			#s5
           model_pointer = 'HIERARCH'
  
 model,
@@ -77,13 +80,13 @@ interface,
         id_interface = 'hifi_IF'
         analysis_drivers = 'expdesign_high'
           fork
-        asynchronous evaluation_concurrency=2              #s0,#s3,#s4
+        asynchronous evaluation_concurrency=2              #s0,#s3,#s4,#s5
 
 interface,
         id_interface = 'lofi_IF'
         analysis_drivers = 'expdesign_low'
           fork 
-        asynchronous evaluation_concurrency=4              #s0,#s3,#s4
+        asynchronous evaluation_concurrency=4              #s0,#s3,#s4,#s5
 
 responses,
  	id_responses = 'lofi_resp'
@@ -101,7 +104,6 @@ responses,
 #	  num_experiments = 2				        #s2	
 #	  num_experiments = 1					#s1
 #	  experiment_variance_type = 'none'			#s1,#s2
-	  #experiment_variance_type = 'scalar'
 	no_gradients	
 	no_hessians
 #	simulation_variance = 0.5			#s4
