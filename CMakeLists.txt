@@ -220,12 +220,19 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
 endif()
 
 # RPATH settings 
+# These settings must take into consideration the presence of shared libraries in both bin/
+# and /lib, and applications in bin/ and test/.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
   set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib" 
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib")
+   #$ORIGIN is replaced at runtime by the path of the executable (application or .so).
+   # Add:
+   #  $ORIGIN so executables can find shared libs in their own folder
+   #  $ORIGIN/../lib so that executables in bin and test can find shared libs in the lib folder
+   #  $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
+   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin")
 endif()
 
 
