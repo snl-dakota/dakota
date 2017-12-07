@@ -151,7 +151,7 @@ public:
 
     for(size_t i=0;i<num_nln_eq;++i){
       Cout << dakota_fns[i+1+num_nln_ineq] << std::endl;
-      (*cp)[i+num_lin_eq] = -lin_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+      (*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
     }
   }
 
