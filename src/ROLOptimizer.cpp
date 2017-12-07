@@ -64,10 +64,12 @@ private:
 
     num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
 
+    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
+
     num_lin_eq = iteratedModel.num_linear_eq_constraints();
 
     const RealMatrix& lin_eq_coeffs_temp
-    = iteratedModel.linear_eq_constraint_coeffs();
+        = iteratedModel.linear_eq_constraint_coeffs();
 
     lin_eq_coeffs.reshape((int)num_lin_eq,(int)numContinuousVars);
     for(size_t i=0;i<num_lin_eq;++i) {
@@ -76,11 +78,18 @@ private:
     }
 
     const RealVector& lin_eq_targets_temp
-    = iteratedModel.linear_eq_constraint_targets();
+        = iteratedModel.linear_eq_constraint_targets();
 
     lin_eq_targets.resize((int)num_lin_eq);
     for(size_t i=0;i<num_lin_eq;++i)
         lin_eq_targets(i) = lin_eq_targets_temp(i);
+
+    const RealVector& nln_eq_targets_temp
+        = iteratedModel.nonlinear_eq_constraint_targets();
+
+    nln_eq_targets.resize((int)num_nln_eq);
+    for(size_t i=0;i<num_nln_eq;++i)
+        nln_eq_targets(i) = nln_eq_targets_temp(i);
   }
 
   /// Number of continuous variables
@@ -95,8 +104,14 @@ private:
   /// Deep copy of linear equaity targets
   RealVector lin_eq_targets;
 
+  /// Deep copy of nonlinear equaity targets
+  RealVector nln_eq_targets;
+
   /// Number of nonlinear equalities
   size_t num_nln_eq;
+
+  /// Number of nonlinear inequalities
+  size_t num_nln_ineq;
 
   /// Number of linear equalities
   size_t num_lin_eq;
@@ -119,7 +134,25 @@ public:
       (*cp)[i] = -lin_eq_targets(i);
       for (size_t j=0; j<numContinuousVars; j++)
         (*cp)[i] += lin_eq_coeffs(i,j) * (*xp)[j];
-    } 
+    }
+
+    RealVector act_cont_vars(numContinuousVars, false);
+
+    for(size_t i=0; i<numContinuousVars; i++){
+      act_cont_vars[i] = (*xp)[i];
+    }
+    
+    iteratedModel.continuous_variables(act_cont_vars);
+
+    iteratedModel.evaluate();
+
+    const RealVector& dakota_fns
+        = iteratedModel.current_response().function_values();
+
+    for(size_t i=0;i<num_nln_eq;++i){
+      Cout << dakota_fns[i+1+num_nln_ineq] << std::endl;
+      (*cp)[i+num_lin_eq] = -lin_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+    }
   }
 
   // provide access to Dakota model
@@ -341,7 +374,7 @@ void ROLOptimizer::set_problem() {
     // Call simplified interface problem generator
     problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, eqConst, emul); 
   }
-  
+
   // checking, may be enabled in tests or debug mode
 
   // Teuchos::RCP<std::ostream> outStream_checking;

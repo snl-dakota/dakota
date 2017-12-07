@@ -56,8 +56,8 @@ class ROLTraits: public TraitsBase
   ///// Return the flag indicating whether method supports linear inequalities
   //bool supports_linear_inequality() { return true; }
 
-  ///// Return the flag indicating whether method supports nonlinear equalities
-  //bool supports_nonlinear_equality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear equalities
+  bool supports_nonlinear_equality() { return true; }
 
   ///// Return the format used for nonlinear equality constraints
   //NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
