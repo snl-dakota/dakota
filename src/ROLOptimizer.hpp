@@ -44,14 +44,14 @@ class ROLTraits: public TraitsBase
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
 
-  ///// Return the flag indicating whether method supports continuous variables
-  //bool supports_continuous_variables() { return true; }
+  /// Return the flag indicating whether method supports continuous variables
+  bool supports_continuous_variables() { return true; }
 
   ///// Return the flag indicating whether method supports discrete variables
   //bool supports_discrete_variables() { return true; }
 
-  ///// Return the flag indicating whether method supports linear equalities
-  //bool supports_linear_equality() { return true; }
+  /// Return the flag indicating whether method supports linear equalities
+  bool supports_linear_equality() { return true; }
 
   ///// Return the flag indicating whether method supports linear inequalities
   //bool supports_linear_inequality() { return true; }

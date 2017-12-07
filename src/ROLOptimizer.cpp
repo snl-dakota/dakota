@@ -14,21 +14,23 @@
 //- Checked by:
 //- Version: $Id$
 
-#include "ROL_OptimizationSolver.hpp"
-
-#include "ROL_RandomVector.hpp"
-#include "ROL_StdObjective.hpp"
-#include "ROL_StdConstraint.hpp"
-#include "ROL_Bounds.hpp"
-
-#include "ROLOptimizer.hpp"
-
 #include "Teuchos_XMLParameterListHelpers.hpp"
 // BMA TODO: Above will break with newer Teuchos; instead need 
 //#include "Teuchos_XMLParameterListCoreHelpers.hpp"
 #include "Teuchos_StandardCatchMacros.hpp"
 
+#include "ROL_StdVector.hpp"
+#include "ROL_Algorithm.hpp"
+#include "ROL_Objective.hpp"
+#include "ROL_Constraint.hpp"
+#include "ROL_Bounds.hpp"
+
+#include "ROL_OptimizationSolver.hpp"
+
+#include "ROLOptimizer.hpp"
 #include "ProblemDescDB.hpp"
+
+
 using std::endl;
 
 //
@@ -37,24 +39,137 @@ using std::endl;
 
 namespace Dakota {
  
-
- /* ROL Objectibe function class */
+using namespace ROL;
 
 template<class Real> 
-class ObjectiveF : public ROL::StdObjective<Real> {
+class DakotaToROLEqConstraints : public ROL::Constraint<Real> {
+
+private:
+
+  Teuchos::RCP<const std::vector<Real>> getVector( const Vector<Real>& x ) {
+    using Teuchos::dyn_cast;
+    return dyn_cast<const StdVector<Real>>(x).getVector();
+  }
+
+  Teuchos::RCP<std::vector<Real>> getVector( Vector<Real>& x ) {
+    using Teuchos::dyn_cast;
+    return dyn_cast<StdVector<Real>>(x).getVector();
+  }
+
+  // extract model parameters relevant for constraint
+  // evaluation
+  void extract_model_params() {
+
+    numContinuousVars = iteratedModel.cv();
+
+    num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
+
+    num_lin_eq = iteratedModel.num_linear_eq_constraints();
+
+    const RealMatrix& lin_eq_coeffs_temp
+    = iteratedModel.linear_eq_constraint_coeffs();
+
+    lin_eq_coeffs.reshape((int)num_lin_eq,(int)numContinuousVars);
+    for(size_t i=0;i<num_lin_eq;++i) {
+      for (size_t j=0; j<numContinuousVars; j++)
+        lin_eq_coeffs(i,j) = lin_eq_coeffs_temp(i,j);
+    }
+
+    const RealVector& lin_eq_targets_temp
+    = iteratedModel.linear_eq_constraint_targets();
+
+    lin_eq_targets.resize((int)num_lin_eq);
+    for(size_t i=0;i<num_lin_eq;++i)
+        lin_eq_targets(i) = lin_eq_targets_temp(i);
+  }
+
+  /// Number of continuous variables
+  int numContinuousVars;
+
+  /// Shallow copy of the model on which ROL will iterate.
+  Model iteratedModel;
+
+  /// Deep copy of linear equaity coefficients
+  RealMatrix lin_eq_coeffs;
+
+  /// Deep copy of linear equaity targets
+  RealVector lin_eq_targets;
+
+  /// Number of nonlinear equalities
+  size_t num_nln_eq;
+
+  /// Number of linear equalities
+  size_t num_lin_eq;
 
 public:
 
-  ObjectiveF() {}
+  DakotaToROLEqConstraints() {}
 
-  Real value(const std::vector<Real> &x, Real &tol) {
+  void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
 
-    RealVector act_cont_vars(iteratedModel.cv(), false);
+    using Teuchos::RCP;
 
-    size_t j;
+    // Pointer to constraint vector
+    RCP<std::vector<Real>> cp = getVector(c);
 
-    for(j=0; j<iteratedModel.cv(); j++){
-      act_cont_vars[j] = x[j];
+    // Pointer to optimization vector     
+    RCP<const std::vector<Real>> xp = getVector(x);
+
+    for(size_t i=0;i<num_lin_eq;++i) {
+      (*cp)[i] = -lin_eq_targets(i);
+      for (size_t j=0; j<numContinuousVars; j++)
+        (*cp)[i] += lin_eq_coeffs(i,j) * (*xp)[j];
+    } 
+  }
+
+  // provide access to Dakota model
+  void pass_model(Model& model) {
+
+    iteratedModel = model;
+
+    extract_model_params();
+  }
+
+}; // class DakotaToROLEqConstraints
+
+template<class Real> 
+class DakotaToROLObjective : public ROL::Objective<Real> {
+
+private:
+
+  Teuchos::RCP<const std::vector<Real>> getVector( const Vector<Real>& x ) {
+    using Teuchos::dyn_cast;
+    return dyn_cast<const StdVector<Real>>(x).getVector();
+  }
+
+  // extract model parameters relevant for objective
+  // function evaluation
+  void extract_model_params() {
+
+    numContinuousVars = iteratedModel.cv();
+  }
+
+  /// Number of continuous variables
+  int numContinuousVars;
+
+  /// Shallow copy of the model on which ROL will iterate.
+  Model iteratedModel;
+
+public:
+
+  DakotaToROLObjective() {}
+
+  Real value(const Vector<Real> &x, Real &tol) {
+
+    using Teuchos::RCP;   
+
+    // Pointer to opt vector 
+    RCP<const std::vector<Real>> xp = getVector(x); 
+
+    RealVector act_cont_vars(numContinuousVars, false);
+
+    for(size_t i=0; i<numContinuousVars; i++){
+      act_cont_vars[i] = (*xp)[i];
     }
     
     iteratedModel.continuous_variables(act_cont_vars);
@@ -68,18 +183,13 @@ public:
 
   // provide access to Dakota model
   void pass_model(Model& model) {
+
     iteratedModel = model;
+
+    extract_model_params();
   }
 
-private:
-
-  /// Total across all types of variables
-  int numVars;
-
-  /// Shallow copy of the model on which COLIN will iterate.
-  Model iteratedModel;
-
-}; // class ObjectiveF
+}; // class DakotaToROLObjective
 
 /// Standard constructor.
 
@@ -88,6 +198,8 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   optSolverParams("Dakota::ROL")
 {
   set_rol_parameters();
+
+  set_problem();
 }
 
 /// Alternate constructor for Iterator instantiations by name.
@@ -98,6 +210,8 @@ ROLOptimizer(const String& method_string, Model& model):
   optSolverParams("Dakota::ROL")
 {
   set_rol_parameters();
+
+  set_problem();
 }
 
 
@@ -153,7 +267,6 @@ void ROLOptimizer::set_rol_parameters()
     TEUCHOS_STANDARD_CATCH_STATEMENTS(outputLevel >= VERBOSE_OUTPUT, Cerr,
 				      success);
   }
-
 }
 
 
@@ -163,8 +276,12 @@ void ROLOptimizer::initialize_run()
   // problem.check() evaluates the objective.  Probably want to
   // disable this check in production code and only enable in tests or
   // (maybe) debug mode.
+  // MK, in response to above comment: problem.check() can be performed
+  // in core_run without an issue. Thus moved set_problem call to 
+  // constructor and moved problem.check to core_run and commented out
+  // for now.
 
-  set_problem();
+  // set_problem();
 
   Optimizer::initialize_run();
 }
@@ -174,44 +291,62 @@ void ROLOptimizer::set_problem() {
   typedef double RealT;
   size_t j;
 
-  // create ROL variable vector
+  // Extract Dakota variable and bound vectors
   const RealVector& initial_points = iteratedModel.continuous_variables();
-
-  x_rcp.reset(new std::vector<RealT>(iteratedModel.cv(), 0.0));
-  // BMA: left this loop for data transfers consolidation
-  for(j=0; j<iteratedModel.cv(); j++){
-    x_rcp->operator[](j) = initial_points[j];
-  }
-  Teuchos::RCP<ROL::Vector<RealT> > x  = Teuchos::rcp( new ROL::StdVector<RealT>(x_rcp) );
-
-  // create ROL::BoundConstraint object to house variable bounds information
   const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
 
+  // create ROL variable and bound vectors
+  x_rcp.reset(new std::vector<RealT>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<RealT> >
-    l_rcp(new std::vector<RealT>(iteratedModel.cv(), 0.0));
+    l_rcp(new std::vector<RealT>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<RealT> >
-    u_rcp(new std::vector<RealT>(iteratedModel.cv(), 0.0));
+    u_rcp(new std::vector<RealT>(numContinuousVars, 0.0));
+
   // BMA: left this loop for data transfers consolidation
-  for(j=0; j<iteratedModel.cv(); j++){
+  for(j=0; j<numContinuousVars; j++){
+    x_rcp->operator[](j) = initial_points[j];
     l_rcp->operator[](j) = c_l_bnds[j];
     u_rcp->operator[](j) = c_u_bnds[j];
   }
+
+  Teuchos::RCP<ROL::Vector<RealT> > x( new ROL::StdVector<RealT>(x_rcp) );
   Teuchos::RCP<ROL::Vector<RealT> > lower( new ROL::StdVector<RealT>( l_rcp ) );
   Teuchos::RCP<ROL::Vector<RealT> > upper( new ROL::StdVector<RealT>( u_rcp ) );
+
+  // create ROL::BoundConstraint object to house variable bounds information
   Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd( new ROL::Bounds<RealT>(lower,upper) );
 
   // create objective function object and give it access to Dakota model 
-  Teuchos::RCP<ObjectiveF<RealT> > obj(new ObjectiveF<RealT>());
+  Teuchos::RCP<DakotaToROLObjective<RealT> > obj(new DakotaToROLObjective<RealT>());
   obj->pass_model(iteratedModel);
 
-  // // Call simplified interface problem generator
-  problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
+  size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
+  size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
 
-  // checking 
-  Teuchos::RCP<std::ostream> outStream_checking;
-  outStream_checking = Teuchos::rcp(&std::cout, false);
-  problem.check(*outStream_checking);
+  if ((numEqConstraints == 0) && (numIneqConstraints == 0)){
+    // Call simplified interface problem generator
+    problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd);  
+
+  }
+  else if ((numEqConstraints > 0) && (numIneqConstraints == 0)){
+    // create equality constraint object and give it access to Dakota model 
+    Teuchos::RCP<DakotaToROLEqConstraints<RealT> > eqConst(new DakotaToROLEqConstraints<RealT>());
+    eqConst->pass_model(iteratedModel);
+
+    // equality multipliers
+    Teuchos::RCP<std::vector<RealT> > emul_rcp = Teuchos::rcp( new std::vector<RealT>(numEqConstraints,0.0) );
+    Teuchos::RCP<ROL::Vector<RealT> > emul = Teuchos::rcp( new ROL::StdVector<RealT>(emul_rcp) );
+  
+    // Call simplified interface problem generator
+    problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, eqConst, emul); 
+  }
+  
+  // checking, may be enabled in tests or debug mode
+
+  // Teuchos::RCP<std::ostream> outStream_checking;
+  // outStream_checking = Teuchos::rcp(&std::cout, false);
+  // problem.check(*outStream_checking);
 }
 
 
@@ -225,57 +360,19 @@ void ROLOptimizer::core_run()
   typedef double RealT;
   size_t j;
 
-
-  // Optimizer::initialize_run();
-
-  // // create ROL variable vector
-  // const RealVector& initial_points = iteratedModel.continuous_variables();
-  // std::vector<RealT> x_stdv(iteratedModel.cv(),0.0);
-  // for(j=0; j<iteratedModel.cv(); j++){
-  //   x_stdv[j] = initial_points[j];
-  // }
-  // Teuchos::RCP<std::vector<RealT> > x_rcp = Teuchos::rcpFromRef( x_stdv );
-  // Teuchos::RCP<ROL::Vector<RealT> > x  = Teuchos::rcp( new ROL::StdVector<RealT>(x_rcp) );
-
-  // // create ROL::BoundConstraint object to house variable bounds information
-  // const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-  // const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-  // std::vector<RealT> l_stdv(iteratedModel.cv(),0.0);
-  // std::vector<RealT> u_stdv(iteratedModel.cv(),0.0);
-  // for(j=0; j<iteratedModel.cv(); j++){
-  //   l_stdv[j] = c_l_bnds[j];
-  //   u_stdv[j] = c_u_bnds[j];
-  // }
-  // Teuchos::RCP<std::vector<RealT> > l_rcp = Teuchos::rcpFromRef( l_stdv );
-  // Teuchos::RCP<std::vector<RealT> > u_rcp = Teuchos::rcpFromRef( u_stdv );
-  // Teuchos::RCP<ROL::Vector<RealT> > lower = Teuchos::rcp( new ROL::StdVector<RealT>( l_rcp ) );
-  // Teuchos::RCP<ROL::Vector<RealT> > upper = Teuchos::rcp( new ROL::StdVector<RealT>( u_rcp ) );
-  // Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd  = Teuchos::rcp( new ROL::Bounds<RealT>(lower,upper) );
-
-  // // create objective function object and give it access to Dakota model 
-  // ObjectiveF<RealT> obj_rcp = ObjectiveF<RealT>();
-  // obj_rcp.pass_model(iteratedModel);
-  // Teuchos::RCP<ROL::Objective<RealT> > obj  = Teuchos::rcpFromRef( obj_rcp );
-
-  // // // Call simplified interface problem generator
-  // problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);  
-
-  // Teuchos::RCP<std::ostream> outStream_checking;
-  // outStream_checking = Teuchos::rcp(&std::cout, false);
-  // problem.check(*outStream_checking);
+  // Simplified interface solver object
+  ROL::OptimizationSolver<RealT> solver( problem, optSolverParams );
 
   // Print iterates to screen, need to control using Dakota output keyword
   Teuchos::RCP<std::ostream> outStream;
   outStream = Teuchos::rcp(&std::cout, false);
 
   // Call simplified interface solver
-  ROL::OptimizationSolver<RealT> solver( problem, optSolverParams );
-
   solver.solve(*outStream); 
 
   // copy ROL solution to Dakota bestVariablesArray
-  RealVector contVars(iteratedModel.cv());
-  for(j=0; j<iteratedModel.cv(); j++){
+  RealVector contVars(numContinuousVars);
+  for(j=0; j<numContinuousVars; j++){
     contVars[j] = (*x_rcp)[j];
   }
   bestVariablesArray.front().continuous_variables(contVars);
