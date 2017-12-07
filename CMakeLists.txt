@@ -224,7 +224,7 @@ endif()
 # and /lib, and applications in bin/ and test/.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
-  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib" 
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin" 
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
    #$ORIGIN is replaced at runtime by the path of the executable (application or .so).

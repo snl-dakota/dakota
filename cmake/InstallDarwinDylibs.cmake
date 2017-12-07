@@ -19,6 +19,9 @@ function(dakota_install_dll dakota_dll)
       COMMAND 
         ${CMAKE_COMMAND} -E copy "${dakota_dll}" "${CMAKE_INSTALL_PREFIX}/bin" 
       )
+    execute_process(
+      COMMAND chmod u+rwx,g+rx,o+rx "${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}"
+      )
   else()
     message(WARNING "Install couldn't find dynamic dependency ${dakota_dll}")
   endif()
@@ -43,7 +46,9 @@ get_filename_component(resolved_build_dir ${CMAKE_CURRENT_BINARY_DIR} REALPATH)
 # libraries as a semicolon-separated list
 set(dakota_darwin_dylibs "")
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
-                       "${CMAKE_INSTALL_PREFIX}/lib/*")
+                       "${CMAKE_INSTALL_PREFIX}/lib/*"
+                       "${CMAKE_INSTALL_PREFIX}/test/*")
+           
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")
@@ -154,7 +159,7 @@ foreach(bin_dll ${dakota_darwin_dylibs})
   if (EXISTS "${dll_full}")
     execute_process(
       COMMAND 
-        install_name_tool -id @rpath/${dll_filename} ${dll_full} 
+        install_name_tool -id @rpath/${dll_filename} ${dll_full}  
       )
   endif()
 endforeach()
@@ -162,7 +167,8 @@ endforeach()
 # Update the libraries and executables in ${CMAKE_INSTALL_PREFIX}/bin and 
 # ${CMAKE_INSTALL_PREFIX}/lib to refer to libs by their new install names.
 file(GLOB bin_lib_list "${CMAKE_INSTALL_PREFIX}/bin/*" 
-                       "${CMAKE_INSTALL_PREFIX}/lib/*")
+                       "${CMAKE_INSTALL_PREFIX}/lib/*"
+                       "${CMAKE_INSTALL_PREFIX}/test/*")
 foreach(loader ${bin_lib_list})
   # skip directories and static libs
   if(NOT IS_DIRECTORY "${loader}" AND NOT loader MATCHES "\\.a$")
