@@ -72,6 +72,9 @@ public:
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
 				const IntResponseMap& resp_map);
+  virtual void append_expansion();
+
+  virtual void multilevel_regression(size_t model_form);
 
 protected:
 
@@ -105,10 +108,16 @@ protected:
   /// compute 2-norm of change in final statistics
   virtual Real compute_final_statistics_metric();
 
+  /// Increment sample sequence for multilevel regression    
+  virtual void increment_sample_sequence(size_t, size_t);
+
+    
   //
   //- Heading: Virtual function redefinitions
   //
 
+ 
+    
   /// set covarianceControl defaults and shape respCovariance
   void initialize_response_covariance();
   /// update function values within finalStatistics
@@ -164,6 +173,19 @@ protected:
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
 
+  /// analytic portion of compute_statistics() from post-processing of
+  /// expansion coefficients
+  virtual void compute_analytic_statistics();
+
+    
+  /// calculate the response covariance (diagonal or full matrix)
+  void compute_covariance();
+  /// calculate respVariance or diagonal terms respCovariance(i,i)
+  virtual void compute_diagonal_variance();
+  /// calculate respCovariance(i,j) for j<i
+  virtual void compute_off_diagonal_covariance();
+
+    
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
 
@@ -251,6 +273,13 @@ protected:
   /// evaluated at the means (used as uncertainty importance metrics)
   RealMatrix expGradsMeanX;
 
+  // /// number of samples allocated to each level of a discretization
+  // /// hierarchy within multilevel regression
+  SizetArray NLev;
+  // /// equivalent number of high fidelity evaluations accumulated using samples
+  // /// across multiple model forms and/or discretization levels
+  Real equivHFEvals;
+    
 private:
 
   //
@@ -271,21 +300,13 @@ private:
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
-  /// analytic portion of compute_statistics() from post-processing of
-  /// expansion coefficients
-  virtual void compute_analytic_statistics();
+
   /// numerical portion of compute_statistics() from sampling on the expansion
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
   void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 					  RealRealPairArray& min_max_fns);
 
-  /// calculate the response covariance (diagonal or full matrix)
-  void compute_covariance();
-  /// calculate respVariance or diagonal terms respCovariance(i,i)
-  virtual void compute_diagonal_variance();
-  /// calculate respCovariance(i,j) for j<i
-  virtual void compute_off_diagonal_covariance();
 
   /// print expansion and numerical moments
   virtual void print_moments(std::ostream& s);
@@ -372,6 +393,32 @@ check_dimension_preference(const RealVector& dim_pref) const
   }
 }
 
+
+inline void NonDExpansion::
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
+{
+  // adapt the expansion in sync with the dataset
+  numSamplesOnModel += resp_map.size();
+
+  // utilize rebuild following expansion updates
+  uSpaceModel.append_approximation(samples, resp_map, true);
+}
+
+inline void NonDExpansion::append_expansion()
+{
+  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+  //         increment_order_from_grid() called
+
+  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+                                                    true, false);
+  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
+
+  // Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
+  //      << "       NonDExpansion does not support data appending." << std::endl;
+  // abort_handler(-1);
+}
+    
 } // namespace Dakota
 
 #endif

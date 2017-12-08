@@ -1225,150 +1225,150 @@ void NonDPolynomialChaos::multifidelity_expansion()
 }
 
 
-void NonDPolynomialChaos::multilevel_regression(size_t model_form)
-{
-  iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
-  iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
+// void NonDPolynomialChaos::multilevel_regression(size_t model_form)
+// {
+//   iteratedModel.surrogate_model_indices(model_form);// soln lev not updated yet
+//   iteratedModel.truth_model_indices(model_form);    // soln lev not updated yet
 
-  // Multilevel variance aggregation requires independent sample sets
-  Analyzer* sampler
-    = (Analyzer*)uSpaceModel.subordinate_iterator().iterator_rep();
-  sampler->vary_pattern(true);
+//   // Multilevel variance aggregation requires independent sample sets
+//   Analyzer* sampler
+//     = (Analyzer*)uSpaceModel.subordinate_iterator().iterator_rep();
+//   sampler->vary_pattern(true);
 
-  Model& truth_model  = iteratedModel.truth_model();
-  size_t lev, num_lev = truth_model.solution_levels(), // single model form
-    qoi, iter = 0, new_N_l, last_active = 0;
-  size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
-  // retrieve cost estimates across soln levels for a particular model form
-  RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
-  // factors for relationship between variance of mean estimator and NLev
-  // (hard coded for right now; TO DO: fit params)
-  Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
+//   Model& truth_model  = iteratedModel.truth_model();
+//   size_t lev, num_lev = truth_model.solution_levels(), // single model form
+//     qoi, iter = 0, new_N_l, last_active = 0;
+//   size_t max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
+//   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost, var_l; 
+//   // retrieve cost estimates across soln levels for a particular model form
+//   RealVector cost = truth_model.solution_level_costs(), agg_var(num_lev);
+//   // factors for relationship between variance of mean estimator and NLev
+//   // (hard coded for right now; TO DO: fit params)
+//   Real gamma = 1., kappa = 2., inv_k = 1./kappa, inv_kp1 = 1./(kappa+1.);
   
-  // Initialize for pilot sample
-  SizetArray delta_N_l; NLev.assign(num_lev, 0);
-  delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
-  Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
+//   // Initialize for pilot sample
+//   SizetArray delta_N_l; NLev.assign(num_lev, 0);
+//   delta_N_l.assign(num_lev, 10); // TO DO: pilot sample spec
+//   Cout << "\nML PCE pilot sample:\n" << delta_N_l << std::endl;
 
-  // now converge on sample counts per level (NLev)
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
+//   // now converge on sample counts per level (NLev)
+//   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+//   while (Pecos::l1_norm(delta_N_l) && iter <= max_iter) {
 
-    // set initial surrogate responseMode and model indices for lev 0
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
-    iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
+//     // set initial surrogate responseMode and model indices for lev 0
+//     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // LF
+//     iteratedModel.surrogate_model_indices(model_form, 0); // solution level 0
 
-    sum_root_var_cost = 0.;
-    for (lev=0; lev<num_lev; ++lev) {
+//     sum_root_var_cost = 0.;
+//     for (lev=0; lev<num_lev; ++lev) {
 
-      lev_cost = cost[lev];
-      if (lev) {
-	if (lev == 1) // update responseMode for levels 1:num_lev-1
-	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
-	iteratedModel.surrogate_model_indices(model_form, lev-1);
-	iteratedModel.truth_model_indices(model_form,     lev);
-	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
-      }
+//       lev_cost = cost[lev];
+//       if (lev) {
+// 	if (lev == 1) // update responseMode for levels 1:num_lev-1
+// 	  iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY); // HF-LF
+// 	iteratedModel.surrogate_model_indices(model_form, lev-1);
+// 	iteratedModel.truth_model_indices(model_form,     lev);
+// 	lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
+//       }
 
-      // aggregate variances across QoI for estimating NLev (justification:
-      // for independent QoI, sum of QoI variances = variance of QoI sum)
-      Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
-      if (delta_N_l[lev]) {
-	NLev[lev] += delta_N_l[lev]; // update total samples for this level
+//       // aggregate variances across QoI for estimating NLev (justification:
+//       // for independent QoI, sum of QoI variances = variance of QoI sum)
+//       Real& agg_var_l = agg_var[lev]; // carried over from prev iter if no samp
+//       if (delta_N_l[lev]) {
+// 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 
-	if (iter == 0) { // initial expansion build
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  if (lev == 0) compute_expansion(); // init + build
-	  else           update_expansion(); // just build 
-	}
-	else { // retrieve prev expansion for this level & append new samples
-	  uSpaceModel.restore_approximation(lev);
-	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
-	  append_expansion();
-	}
+// 	if (iter == 0) { // initial expansion build
+// 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+// 	  if (lev == 0) compute_expansion(); // init + build
+// 	  else           update_expansion(); // just build 
+// 	}
+// 	else { // retrieve prev expansion for this level & append new samples
+// 	  uSpaceModel.restore_approximation(lev);
+// 	  increment_sample_sequence(delta_N_l[lev], NLev[lev]);
+// 	  append_expansion();
+// 	}
 
-        // compute and accumulate variance of mean estimator from the set of
-	// fold results within the selected settings from cross-validation:
-	agg_var_l = 0.;
-	for (qoi=0; qoi<numFunctions; ++qoi) {
-	  PecosApproximation* poly_approx_q
-	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
+//         // compute and accumulate variance of mean estimator from the set of
+// 	// fold results within the selected settings from cross-validation:
+// 	agg_var_l = 0.;
+// 	for (qoi=0; qoi<numFunctions; ++qoi) {
+// 	  PecosApproximation* poly_approx_q
+// 	    = (PecosApproximation*)poly_approxs[qoi].approx_rep();
 
-	  // We must assume a functional dependence on NLev for formulating the
-	  // optimum of the cost functional subject to error balance constraint.
-	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
-	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
-	  // the parameters kappa and gamma for PCE regression.
+// 	  // We must assume a functional dependence on NLev for formulating the
+// 	  // optimum of the cost functional subject to error balance constraint.
+// 	  //   Var(Q-hat) = sigma_Q^2 / (gamma NLev^kappa)
+// 	  // where Monte Carlo has gamma = kappa = 1.  For now we will select
+// 	  // the parameters kappa and gamma for PCE regression.
 	  
-	  // To fit these parameters, one approach is to numerically estimate
-	  // the variance in the mean estimator (alpha_0) from two sources:
-	  // > from variation across k folds for the selected CV settings
-	  //   (estimate gamma?)
-	  // > from var decrease as NLev increases across iters (estim kappa?)
-          //Real cv_var_i = poly_approx_rep->
-	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
-	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
-	  //   cv_iterator class scope)
-	  // To validate this approach, the actual
-	  // estimator variance can also be computed and compared with the CV
-	  // variance approximation (similar to traditional CV erro plots, but
-	  // predicting estimator variance instead of actual L2 fit error).
+// 	  // To fit these parameters, one approach is to numerically estimate
+// 	  // the variance in the mean estimator (alpha_0) from two sources:
+// 	  // > from variation across k folds for the selected CV settings
+// 	  //   (estimate gamma?)
+// 	  // > from var decrease as NLev increases across iters (estim kappa?)
+//           //Real cv_var_i = poly_approx_rep->
+// 	  //  cross_validation_solver().cv_metrics(MEAN_ESTIMATOR_VARIANCE);
+// 	  //  (need to make MultipleSolutionLinearModelCrossValidationIterator
+// 	  //   cv_iterator class scope)
+// 	  // To validate this approach, the actual
+// 	  // estimator variance can also be computed and compared with the CV
+// 	  // variance approximation (similar to traditional CV erro plots, but
+// 	  // predicting estimator variance instead of actual L2 fit error).
 	  
-	  var_l = poly_approx_q->variance();
-	  agg_var_l += var_l;
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Variance (lev " << lev << ", qoi " << qoi
-		 << ", iter " << iter << ") = " << var_l << '\n';
-	}
-        // store all approximation levels, whenever recomputed.
-	// Note: the active approximation upon completion of this loop may be
-	// any level --> this requires passing the current approximation index
-	// within combine_approximation().
-	uSpaceModel.store_approximation(lev);
-	last_active = lev;
-      }
+// 	  var_l = poly_approx_q->variance();
+// 	  agg_var_l += var_l;
+// 	  if (outputLevel >= DEBUG_OUTPUT)
+// 	    Cout << "Variance (lev " << lev << ", qoi " << qoi
+// 		 << ", iter " << iter << ") = " << var_l << '\n';
+// 	}
+//         // store all approximation levels, whenever recomputed.
+// 	// Note: the active approximation upon completion of this loop may be
+// 	// any level --> this requires passing the current approximation index
+// 	// within combine_approximation().
+// 	uSpaceModel.store_approximation(lev);
+// 	last_active = lev;
+//       }
 
-      sum_root_var_cost
-	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
-      // MSE reference is MC applied to HF:
-      if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
-    }
-    // compute epsilon target based on relative tolerance: total MSE = eps^2
-    // which is equally apportioned (eps^2 / 2) among discretization MSE and
-    // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
-    // discretization error, we compute an initial estimator variance and
-    // then seek to reduce it by a relative_factor <= 1.
-    if (iter == 0) { // eps^2 / 2 = var * relative factor
-      eps_sq_div_2 = estimator_var0 * convergenceTol;
-      if (outputLevel == DEBUG_OUTPUT)
-	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
-    }
+//       sum_root_var_cost
+// 	+= std::pow(agg_var_l * std::pow(lev_cost, kappa), inv_kp1);
+//       // MSE reference is MC applied to HF:
+//       if (iter == 0) estimator_var0 += agg_var_l / NLev[lev];
+//     }
+//     // compute epsilon target based on relative tolerance: total MSE = eps^2
+//     // which is equally apportioned (eps^2 / 2) among discretization MSE and
+//     // estimator variance (\Sum var_Y_l / NLev).  Since we do not know the
+//     // discretization error, we compute an initial estimator variance and
+//     // then seek to reduce it by a relative_factor <= 1.
+//     if (iter == 0) { // eps^2 / 2 = var * relative factor
+//       eps_sq_div_2 = estimator_var0 * convergenceTol;
+//       if (outputLevel == DEBUG_OUTPUT)
+// 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
+//     }
 
-    // update targets based on variance estimates
-    Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
-    for (lev=0; lev<num_lev; ++lev) {
-      lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
-      new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
-      delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
-    }
-    ++iter;
-    Cout << "\nML PCE iteration " << iter << " sample increments:\n"
-	 << delta_N_l << std::endl;
-  }
+//     // update targets based on variance estimates
+//     Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gamma, inv_k);
+//     for (lev=0; lev<num_lev; ++lev) {
+//       lev_cost = (lev) ? cost[lev] + cost[lev-1] : cost[lev];
+//       new_N_l = std::pow(agg_var[lev] / lev_cost, inv_kp1) * fact;
+//       delta_N_l[lev] = (new_N_l > NLev[lev]) ? new_N_l - NLev[lev] : 0;
+//     }
+//     ++iter;
+//     Cout << "\nML PCE iteration " << iter << " sample increments:\n"
+// 	 << delta_N_l << std::endl;
+//   }
 
-  // remove redundancy between current active and stored, prior to combining
-  uSpaceModel.remove_stored_approximation(last_active);
-  // compute aggregate expansion and generate its statistics
-  uSpaceModel.combine_approximation(
-    iteratedModel.discrepancy_correction().correction_type());
+//   // remove redundancy between current active and stored, prior to combining
+//   uSpaceModel.remove_stored_approximation(last_active);
+//   // compute aggregate expansion and generate its statistics
+//   uSpaceModel.combine_approximation(
+//     iteratedModel.discrepancy_correction().correction_type());
 
-  // compute the equivalent number of HF evaluations
-  equivHFEvals = NLev[0] * cost[0]; // first level is single eval
-  for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
-    equivHFEvals += NLev[lev] * (cost[lev] + cost[lev-1]);
-  equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
-}
+//   // compute the equivalent number of HF evaluations
+//   equivHFEvals = NLev[0] * cost[0]; // first level is single eval
+//   for (lev=1; lev<num_lev; ++lev)  // subsequent levels incur 2 model costs
+//     equivHFEvals += NLev[lev] * (cost[lev] + cost[lev-1]);
+//   equivHFEvals /= cost[num_lev-1]; // normalize into equivalent HF evals
+// }
 
 
 void NonDPolynomialChaos::print_results(std::ostream& s)

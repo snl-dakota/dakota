@@ -113,11 +113,11 @@ protected:
 
   /// special case of multifidelity_expansion() for multilevel allocation of
   /// samples, mirroring NonDMultilevelSampling for least sq/compressed sensing
-  void multilevel_regression(size_t model_form);
+  // void multilevel_regression(size_t model_form);
   /// increment the sequence in numSamplesOnModel for multilevel_regression()
   void increment_sample_sequence(size_t new_samp, size_t total_samp);
   /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion();
+  // void append_expansion();
 
 private:
 
@@ -232,12 +232,12 @@ private:
   // local flag to signal an explicit call to resize() is necessary
   //bool callResize;
 
-  /// number of samples allocated to each level of a discretization
-  /// hierarchy within multilevel regression
-  SizetArray NLev;
-  /// equivalent number of high fidelity evaluations accumulated using samples
-  /// across multiple model forms and/or discretization levels
-  Real equivHFEvals;
+  // /// number of samples allocated to each level of a discretization
+  // /// hierarchy within multilevel regression
+  // SizetArray NLev;
+  // /// equivalent number of high fidelity evaluations accumulated using samples
+  // /// across multiple model forms and/or discretization levels
+  // Real equivHFEvals;
 };
 
 
@@ -254,16 +254,16 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 }
 
 
-inline void NonDPolynomialChaos::append_expansion()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
+// inline void NonDPolynomialChaos::append_expansion()
+// {
+//   // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
+//   //         increment_order_from_grid() called
 
-  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
-}
+//   // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
+//   uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
+// 						    true, false);
+//   uSpaceModel.run_dace_iterator(true); // appends and rebuilds
+// }
 
 
 inline int NonDPolynomialChaos::

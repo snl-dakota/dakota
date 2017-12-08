@@ -41,14 +41,12 @@ namespace Dakota {
         //
 
         /// TODO
-        void compute_expansion();
+        // void compute_expansion();
         // void pre_run();
         /// perform a forward uncertainty propagation using PCE/SC methods
-        void core_run();
+        // void core_run();
         /// TODO
         void post_run(std::ostream& s);
-        /// print the final statistics
-        // void print_results(std::ostream& s);
 
     protected:
 
@@ -57,17 +55,7 @@ namespace Dakota {
         //
 
         void resolve_inputs(short& u_space_type, short& data_order);
-        void initialize(short u_space_type);
 
-        // Multilevel stuff
-        void multifidelity_expansion();
-        void multilevel_regression(size_t);
-        void increment_sample_sequence(size_t new_samp, size_t total_samp);
-        /// generate new samples from numSamplesOnModel and update expansion
-        void append_expansion(const RealMatrix& samples,
-                              const IntResponseMap& resp_map);
-        void append_expansion();
-        
         //
         //- Heading: Member function definitions
         //
@@ -115,48 +103,19 @@ namespace Dakota {
         /// file name from \c export_approx_points_file specification
         String exportPointsFile;
 
-
+        void compute_analytic_statistics();
+        
+        /// override certain print functions
+        // I should not have to define my own print functions -- AG
+        // This suggests there needs to be some refactoring to truly separate
+        // computing things and printing things
+        // The only thing I should have to print is FT specific results 
         void print_results(std::ostream&);
-
-        /// override certain print functions 
         void print_moments(std::ostream& s);
         void print_sobol_indices(std::ostream& s);
-        void print_local_sensitivity(std::ostream& s);
     
-        void compute_diagonal_variance();
-        void compute_off_diagonal_covariance();
-        void compute_analytic_statistics();
 
-        /// number of samples allocated to each level of a discretization
-        /// hierarchy within multilevel regression
-        SizetArray NLev;
-        /// equivalent number of high fidelity evaluations accumulated using samples
-        /// across multiple model forms and/or discretization levels
-        Real equivHFEvals;
     };
-
-
-inline void NonDC3FunctionTrain::
-append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
-{
-  // adapt the expansion in sync with the dataset
-  numSamplesOnModel += resp_map.size();
-
-  // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true);
-}
-
-inline void NonDC3FunctionTrain::append_expansion()
-{
-  // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
-  //         increment_order_from_grid() called
-
-  // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
-  uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
-						    true, false);
-  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
-}
-
     
 } // namespace Dakota
 

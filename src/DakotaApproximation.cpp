@@ -446,6 +446,176 @@ Real Approximation::prediction_variance(const Variables& vars)
   return approxRep->prediction_variance(vars);
 }
 
+Real Approximation::mean()
+{
+  if (!approxRep) {
+    Cerr << "Error:mean() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->mean();
+}
+
+Real Approximation::mean(const RealVector & x)
+{
+  if (!approxRep) {
+    Cerr << "Error:mean(x) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->mean(x);
+}
+
+const RealVector& Approximation::mean_gradient()
+{
+    if (!approxRep) {
+        Cerr << "Error: mean_gradient() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->mean_gradient();
+}
+
+const RealVector& Approximation::mean_gradient(const RealVector &x, const SizetArray & ind)
+{
+    if (!approxRep) {
+        Cerr << "Error: mean_gradient(x, ind) not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->mean_gradient(x,ind);
+} 
+    
+Real Approximation::variance()
+{
+  if (!approxRep) {
+    Cerr << "Error:variance() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->variance();
+}
+
+Real Approximation::variance(const RealVector &x)
+{
+  if (!approxRep) {
+    Cerr << "Error:variance(x) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->variance(x);
+}    
+
+const RealVector& Approximation::variance_gradient()
+{
+    if (!approxRep) {
+        Cerr << "Error: variance_gradient() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->variance_gradient();
+}
+
+const RealVector& Approximation::variance_gradient(const RealVector &x, const SizetArray & ind)
+{
+    if (!approxRep) {
+        Cerr << "Error: variance_gradient(x, ind) not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->variance_gradient(x,ind);
+}
+    
+Real Approximation::covariance(Approximation * approx_rep)
+{
+  if (!approxRep) {
+    Cerr << "Error:covariance(other) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+  
+  // THE OTHER APPROXIMATION NEEDS TO HAVE SAME UNDERLYING TYPE -- AG
+  return approxRep->covariance(approx_rep);
+}
+    
+Real Approximation::covariance(const RealVector &x, Approximation * other)
+{
+  if (!approxRep) {
+    Cerr << "Error:covariance(x, other) not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(-1);
+  }
+  
+  // THE OTHER APPROXIMATION NEEDS TO HAVE SAME UNDERLYING TYPE -- AG
+  return approxRep->covariance(x, other);
+}
+
+void Approximation::compute_moments()
+{
+    if (approxRep){
+        approxRep->compute_moments();
+    }
+    else {
+        Cerr << "Error: compute_moments() not available for this "
+             << "approximation type." << std::endl;
+        abort_handler(-1);
+    }
+}
+
+void Approximation::compute_moments(const Pecos::RealVector &x)
+{
+    if (approxRep){
+        approxRep->compute_moments(x);
+    }
+    else{
+        Cerr << "Error: compute_moments(const pecos::RealVector &x) not available for this "
+             << "approximation type." << std::endl;
+        abort_handler(-1);
+    }
+}
+
+const RealVector& Approximation::moments() const
+{
+    if (!approxRep) {
+        Cerr << "Error: moments() not available for this approximation type."
+        << std::endl;
+        abort_handler(-1);
+    }
+        
+    return approxRep->moments();
+}
+
+void Approximation::compute_component_effects()
+{
+    if (approxRep){
+        approxRep->compute_component_effects();
+    }
+    else {
+        Cerr << "Error: compute_component_effects() not available for this "
+             << "approximation type." << std::endl;
+        abort_handler(-1);
+    }
+}
+
+void Approximation::compute_total_effects()
+{
+    if (approxRep){
+        approxRep->compute_total_effects();
+    }
+    else {
+        Cerr << "Error: compute_total_effects() not available for this "
+             << "approximation type." << std::endl;
+        abort_handler(-1);
+    }
+}    
     
 Real Approximation::value(const RealVector& c_vars)
 {

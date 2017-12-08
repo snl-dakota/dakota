@@ -206,12 +206,12 @@ namespace Dakota {
 
     void SharedC3ApproxData::restore(size_t index)
     {
-        (void) (index);
+        (void) (index);        
     }
-
 
     void SharedC3ApproxData::remove_stored(size_t index)
     {
+
         (void)(index);
     }
 

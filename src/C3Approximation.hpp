@@ -81,10 +81,31 @@ public:
     //- Heading: Member functions
     //
 
+
+
+    /// I Dont know what the next 4 are for, but I will leave them in
+    /// in case I ever find out!
+    
+    /// set pecosBasisApprox.configOptions.expansionCoeffFlag
+    void expansion_coefficient_flag(bool coeff_flag);
+    /// get pecosBasisApprox.configOptions.expansionCoeffFlag
+    bool expansion_coefficient_flag() const;
+
+    /// set pecosBasisApprox.configOptions.expansionGradFlag
+    void expansion_gradient_flag(bool grad_flag);
+    /// get pecosBasisApprox.configOptions.expansionGradFlag
+    bool expansion_gradient_flag() const;
+
     void compute_moments();
     void compute_moments(const Pecos::RealVector& x);
     const RealVector& moments() const;
 
+    /// Performs global sensitivity analysis using Sobol' Indices by
+    /// computing component (main and interaction) effects
+    void compute_component_effects();
+    /// Performs global sensitivity analysis using Sobol' Indices by
+    /// computing total effects
+    void compute_total_effects();
 
     void compute_all_sobol_indices(size_t); // computes total and interacting sobol indices
     Real total_sobol_index(size_t);         // returns total sobol index
@@ -133,6 +154,8 @@ protected:
     void restore(size_t index);
     void remove_stored(size_t index);
 
+    bool expansion_coefficient;
+    bool expansion_gradient;
     int min_coefficients() const;
 
 
@@ -143,6 +166,8 @@ private:
     
     bool evalFlag; // build a function_train for the quantity of interest
     bool gradFlag; // build a function_train for the gradient of a quantity of interest
+    bool expansion_coefficient_flag_var;
+    bool expansion_coefficient_gradient_flag_var;
     
     //
     //- Heading: Convenience member functions
@@ -186,6 +211,36 @@ private:
     struct C3SobolSensitivity * ft_sobol;
 };
 
+inline void C3Approximation::expansion_coefficient_flag(bool coeff_flag)
+{ this->expansion_coefficient_flag_var = coeff_flag; }
+
+
+inline bool C3Approximation::expansion_coefficient_flag() const
+{ return this->expansion_coefficient_flag_var; }
+
+
+inline void C3Approximation::expansion_gradient_flag(bool grad_flag)
+{ this->expansion_coefficient_gradient_flag_var = grad_flag; }
+
+
+inline bool C3Approximation::expansion_gradient_flag() const
+{ return this->expansion_coefficient_gradient_flag_var; }
+
+
+// Next two. Should access through compute_all_sobol_indices()
+// Just need these two because NonDExpansion insists on computing
+// all the analysis in one huge function (compute_analytic_statistcs)
+// instead of smaller ones for different analysis.
+// Need these two functions to reuse that code with no errors
+inline void C3Approximation::compute_component_effects()
+{
+}    
+
+inline void C3Approximation::compute_total_effects()
+{
+}    
+    
+    
 } // end namespace
 
 #endif

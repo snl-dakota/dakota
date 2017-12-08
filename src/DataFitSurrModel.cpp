@@ -829,7 +829,7 @@ void DataFitSurrModel::remove_stored_approximation(size_t index)
 
   //Cout << "\n<<<<< Stored approximation removed.\n";
 }
-
+    
 
 void DataFitSurrModel::combine_approximation(short corr_type)
 {
