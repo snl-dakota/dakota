@@ -931,8 +931,10 @@ void NonDBayesCalibration::calibrate_to_hifi()
         }
       }
 
-      if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
-	batchEvals = min(num_candidates, max_hifi - num_hifi);
+      int batch_size = batchEvals;
+      if (max_hifi != 0)  
+        if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
+	  batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
@@ -1096,16 +1098,17 @@ void NonDBayesCalibration::calibrate_to_hifi()
         // update list of candidates
         remove_column(design_matrix, optimal_ind);
         --num_candidates;
-        if (outputLevel >= DEBUG_OUTPUT) {
-	  Cout << "\n----------------------------------------------\n";
-          Cout << "Experimental Design Iteration "<< num_it <<" Progress";
-	  Cout << "\n----------------------------------------------\n";
-          if (batchEvals > 1) 
+	if (batch_size > 1) {
+          if (outputLevel >= DEBUG_OUTPUT) {
+	    Cout << "\n----------------------------------------------\n";
+            Cout << "Experimental Design Iteration "<< num_it <<" Progress";
+	    Cout << "\n----------------------------------------------\n";
             Cout << "Point " << batch_n << " of " << batchEvals 
 	         << " selected\n";
-	  Cout << "Optimal design: " << optimal_config;
-	  Cout << "Mutual information = " << max_MI << '\n';
-	  Cout << "\n";
+	    Cout << "Optimal design: " << optimal_config;
+	    Cout << "Mutual information = " << max_MI << '\n';
+	    Cout << "\n";
+	  }
         }
       } // end batch_n loop
 
