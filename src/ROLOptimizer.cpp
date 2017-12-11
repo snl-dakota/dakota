@@ -56,7 +56,7 @@ private:
     return dyn_cast<StdVector<Real>>(x).getVector();
   }
 
-  // extract model parameters relevant for constraint
+  // extract model parameters relevant for inequality constraint
   // evaluation
   void extract_model_params() {
 
@@ -157,7 +157,7 @@ private:
     return dyn_cast<StdVector<Real>>(x).getVector();
   }
 
-  // extract model parameters relevant for constraint
+  // extract model parameters relevant for equality constraint
   // evaluation
   void extract_model_params() {
 
@@ -403,23 +403,6 @@ void ROLOptimizer::set_rol_parameters()
   }
 }
 
-
-void ROLOptimizer::initialize_run()
-{
-  // BMA: set_problem can't be called at construct time as
-  // problem.check() evaluates the objective.  Probably want to
-  // disable this check in production code and only enable in tests or
-  // (maybe) debug mode.
-  // MK, in response to above comment: problem.check() can be performed
-  // in core_run without an issue. Thus moved set_problem call to 
-  // constructor and moved problem.check to core_run and commented out
-  // for now.
-
-  // set_problem();
-
-  Optimizer::initialize_run();
-}
-
 // need to move functionality from core_run below here.
 void ROLOptimizer::set_problem() {
   typedef double RealT;
@@ -523,10 +506,9 @@ void ROLOptimizer::set_problem() {
     // Call simplified interface problem generator
     problem = ROL::OptimizationProblem<RealT> ( obj, x, bnd, ineqConst, imul,ineq_bnd); 
   }
-
   // Equality and inequality constraints
   else {
-        // create equality constraint object and give it access to Dakota model 
+    // create equality constraint object and give it access to Dakota model 
     Teuchos::RCP<DakotaToROLEqConstraints<RealT> > eqConst(new DakotaToROLEqConstraints<RealT>());
     eqConst->pass_model(iteratedModel);
 
@@ -615,11 +597,12 @@ void ROLOptimizer::core_run()
   }
   bestVariablesArray.front().continuous_variables(contVars);
 
-  // copy ROL objective to Dakota bestResponseArray
+  // Evaluate model for responses at best parameters
   RealVector best_fns(iteratedModel.num_functions());
   iteratedModel.continuous_variables(contVars);
   iteratedModel.evaluate();
-  best_fns[0] = iteratedModel.current_response().function_value(0);
+  // push best responses through Dakota bestResponseArray
+  best_fns = iteratedModel.current_response().function_values();
   bestResponseArray.front().function_values(best_fns);
 }
 

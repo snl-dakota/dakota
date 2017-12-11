@@ -47,9 +47,6 @@ class ROLTraits: public TraitsBase
   /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() { return true; }
 
-  ///// Return the flag indicating whether method supports discrete variables
-  //bool supports_discrete_variables() { return true; }
-
   /// Return the flag indicating whether method supports linear equalities
   bool supports_linear_equality() { return true; }
 
@@ -100,9 +97,6 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  /// define the ROL objectives, constraints, and optimization problem
-  void initialize_run();
-
   /// iterates the ROL solver to determine the optimal solution
   void core_run();
 
@@ -122,10 +116,6 @@ protected:
   //
   //- Heading: Data
   //
-
-  // BMA: commented out as is a base class member
-  /// Shallow copy of the model on which ROL will iterate.
-  // Model iteratedModel;
 
   /// Parameters for the ROL::OptimizationSolver
   Teuchos::ParameterList optSolverParams;
