@@ -53,22 +53,22 @@ class ROLTraits: public TraitsBase
   /// Return the flag indicating whether method supports linear equalities
   bool supports_linear_equality() { return true; }
 
-  ///// Return the flag indicating whether method supports linear inequalities
-  //bool supports_linear_inequality() { return true; }
+  /// Return the flag indicating whether method supports linear inequalities
+  bool supports_linear_inequality() { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() { return true; }
 
-  ///// Return the format used for nonlinear equality constraints
-  //NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
-  //  { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
+  /// Return the format used for nonlinear equality constraints
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+   { return NONLINEAR_EQUALITY_FORMAT::TPL_MANAGED; }
 
-  ///// Return the flag indicating whether method supports nonlinear inequalities
-  //bool supports_nonlinear_inequality() { return true; }
+  /// Return the flag indicating whether method supports nonlinear inequalities
+  bool supports_nonlinear_inequality() { return true; }
 
-  ///// Return the format used for nonlinear inequality constraints
-  //NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
-  //  { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+  /// Return the format used for nonlinear inequality constraints
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+   { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };
 
