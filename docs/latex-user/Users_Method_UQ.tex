@@ -3035,6 +3035,13 @@ neighbor algorithm, as detailed in~\cite{Lew16}. This optimal design is used in
 the high-fidelity model to create a new observation, which is appended to the 
 initial data. This updated data is used to recalculate the Bayesian posterior,
 and the process repeats until one of three stopping criteria are met.
+Multiple optimal designs may be selected concurrently by specifying 
+\texttt{batch\_size} in the input script. These designs are selected using
+the greedy algorithm described in detail in~\cite{TheoMan}. In this case, the
+high-fidelity model is run at all batch-selected optimal designs before the
+Bayesian posterior is recalculated with the updated data for an ensuing 
+iteration of the experimental design algorithm. 
+
 There are two algorithms that may be used to calculate the mutual information,
 both of which are derived in~\cite{Kra04}. The first algorithm discussed 
 therein is used as the default algorithm within Dakota; the second may be 
@@ -3076,20 +3083,22 @@ use \texttt{import\_candidate\_points\_file}, with \texttt{num\_candidates}
 exactly matching the number of candidate points in the file.
 
 By setting \texttt{max\_hifi\_evaluations} to zero, Dakota will run the initial
-calibration of the low-fidelity model, select the ``optimal" design from
+calibration of the low-fidelity model, select the optimal design (or multiple
+optimal designs when \texttt{batch\_size} is greater than 1) from 
 those provided in \texttt{import\_candidate\_points\_file}, and exit 
 \textit{without} running the ``dummy" high-fidelity model code. The selected
-design will be output to the screen, as well as to 
+design(s) will be output to the screen, as well as to 
 \texttt{experimental\_design\_output.txt}, as detailed above. The high-fidelity
-model may then be run offline with the newly selected design point.
+model may then be run offline with the newly selected design point(s).
 
 The user must update \texttt{calibration\_data\_file} with the new 
 high-fidelity data when it becomes available, as well as remove the previously
-selected design point from \texttt{import\_candidate\_points\_file}. Within the Dakota input file, \texttt{initial\_samples}, \texttt{num\_experiments}, and 
-\texttt{num\_candidates} should be correspondingly updated. Dakota may then be
-run again to yield the next optimal experimental design. It should be noted 
-that the stopping criteria will not be automatically evaluated by Dakota when 
-one-at-a-time implementation is used. The user must determine when the 
+selected design point(s) from \texttt{import\_candidate\_points\_file}. Within 
+the Dakota input file, \texttt{initial\_samples}, \texttt{num\_experiments}, 
+and \texttt{num\_candidates} should be correspondingly updated. Dakota may then
+be run again to yield the next optimal experimental design(s). It should be 
+noted that the stopping criteria will not be automatically evaluated by Dakota 
+when one-at-a-time implementation is used. The user must determine when the 
 algorithm should be terminated.
 
 \section{Uncertainty Quantification Usage Guidelines} \label{usage:uq}
