@@ -19506,6 +19506,18 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (APPROX_INTERFACE): 300000 total (300000 new, 0 duplicate)
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+dakota_rol.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 1148 total (532 new, 616 duplicate)
+<<<<< Best parameters          =
+                      5.0040290059e-01 x1
+                      5.0040118831e-01 x2
+<<<<< Best objective function  =
+                      1.2459844021e-01
+<<<<< Best constraint values   =
+                      2.0246876626e-04
+                      1.9989896476e-04
+<<<<< Best data captured at function evaluation 1136
 dakota_rosenbrock.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
