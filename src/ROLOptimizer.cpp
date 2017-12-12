@@ -425,7 +425,7 @@ void ROLOptimizer::set_problem() {
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
 
   // create ROL variable and bound vectors
-  x_rcp.reset(new std::vector<RealT>(numContinuousVars, 0.0));
+  rolX.reset(new std::vector<RealT>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<RealT> >
     l_rcp(new std::vector<RealT>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<RealT> >
@@ -433,12 +433,12 @@ void ROLOptimizer::set_problem() {
 
   // BMA: left this loop for data transfers consolidation
   for(j=0; j<numContinuousVars; j++){
-    x_rcp->operator[](j) = initial_points[j];
+    rolX->operator[](j) = initial_points[j];
     l_rcp->operator[](j) = c_l_bnds[j];
     u_rcp->operator[](j) = c_u_bnds[j];
   }
 
-  x.reset( new ROL::StdVector<RealT>(x_rcp) );
+  x.reset( new ROL::StdVector<RealT>(rolX) );
   Teuchos::RCP<ROL::Vector<RealT> > lower( new ROL::StdVector<RealT>( l_rcp ) );
   Teuchos::RCP<ROL::Vector<RealT> > upper( new ROL::StdVector<RealT>( u_rcp ) );
 
@@ -507,13 +507,13 @@ void ROLOptimizer::set_problem() {
   }
 
   // Call simplified interface problem generator
-  problem = ROL::OptimizationProblem<RealT> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd); 
+  optProblem = ROL::OptimizationProblem<RealT> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
 
   // checking, may be enabled in tests or debug mode
 
   // Teuchos::RCP<std::ostream> outStream_checking;
   // outStream_checking = Teuchos::rcp(&std::cout, false);
-  // problem.check(*outStream_checking);
+  // optProblem.check(*outStream_checking);
 }
 
 
@@ -521,36 +521,31 @@ void ROLOptimizer::set_problem() {
     the optimization using ROL. It first sets up the simplified ROL
     problem data, then executes solve() on the simplified ROL
     solver interface and finally catalogues the results. */
-
 void ROLOptimizer::core_run()
 {
-  typedef double RealT;
-  size_t j;
+  // Setup and call simplified interface solver object
+  ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
+  opt_solver.solve(Cout);
 
-  // Simplified interface solver object
-  ROL::OptimizationSolver<RealT> solver( problem, optSolverParams );
-
-  // Print iterates to screen, need to control using Dakota output keyword
-  Teuchos::RCP<std::ostream> outStream;
-  outStream = Teuchos::rcp(&std::cout, false);
-
-  // Call simplified interface solver
-  solver.solve(*outStream); 
+  // TODO: print termination criteria (based on Step or AlgorithmState?)
 
   // copy ROL solution to Dakota bestVariablesArray
-  RealVector contVars(numContinuousVars);
-  for(j=0; j<numContinuousVars; j++){
-    contVars[j] = (*x_rcp)[j];
-  }
-  bestVariablesArray.front().continuous_variables(contVars);
+  RealVector& cont_vars =
+    bestVariablesArray.front().continuous_variables_view();
+  // TODO: data transfers consolidation: copy_data(rolX, cont_vars)
+  for(int j=0; j<numContinuousVars; j++)
+    cont_vars[j] = (*rolX)[j];
+
+  // TODO: DB lookup for best results and manage ASV
 
   // Evaluate model for responses at best parameters
-  RealVector best_fns(iteratedModel.num_functions());
-  iteratedModel.continuous_variables(contVars);
+  iteratedModel.continuous_variables(cont_vars);
   iteratedModel.evaluate();
   // push best responses through Dakota bestResponseArray
-  best_fns = iteratedModel.current_response().function_values();
+  const RealVector& best_fns =
+    iteratedModel.current_response().function_values();
   bestResponseArray.front().function_values(best_fns);
 }
+
 
 } // namespace Dakota

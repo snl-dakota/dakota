@@ -121,10 +121,10 @@ protected:
   Teuchos::ParameterList optSolverParams;
 
   /// Handle to ROL::OptimizationProblem, part of ROL's simplified interface 
-  ROL::OptimizationProblem<RealT> problem;
+  ROL::OptimizationProblem<RealT> optProblem;
 
   /// Handle to ROL's solution vector 
-  Teuchos::RCP<std::vector<RealT> > x_rcp;
+  Teuchos::RCP<std::vector<RealT> > rolX;
 };
 
 } // namespace Dakota
