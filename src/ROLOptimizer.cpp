@@ -530,21 +530,32 @@ void ROLOptimizer::core_run()
   // TODO: print termination criteria (based on Step or AlgorithmState?)
 
   // copy ROL solution to Dakota bestVariablesArray
-  RealVector& cont_vars =
-    bestVariablesArray.front().continuous_variables_view();
+  Variables& best_vars = bestVariablesArray.front();
+  RealVector& cont_vars = best_vars.continuous_variables_view();
   // TODO: data transfers consolidation: copy_data(rolX, cont_vars)
   for(int j=0; j<numContinuousVars; j++)
     cont_vars[j] = (*rolX)[j];
 
-  // TODO: DB lookup for best results and manage ASV
-
-  // Evaluate model for responses at best parameters
-  iteratedModel.continuous_variables(cont_vars);
-  iteratedModel.evaluate();
-  // push best responses through Dakota bestResponseArray
-  const RealVector& best_fns =
-    iteratedModel.current_response().function_values();
-  bestResponseArray.front().function_values(best_fns);
+  // Attempt DB lookup directly into best, fallback on re-evaluation if needed
+  Response& best_resp = bestResponseArray.front();
+  ActiveSet search_set(best_resp.active_set());
+  enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
+  search_set.request_values(AS_FUNC);
+  best_resp.active_set(search_set);
+  bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+  if (db_found)
+    Cout << "INFO: ROL retrieved best response from cache." << std::endl;
+  else {
+    Cout << "INFO: ROL re-evaluating model to retrieve best response."
+	 << std::endl;
+    // Evaluate model for responses at best parameters
+    iteratedModel.continuous_variables(cont_vars);
+    iteratedModel.evaluate();
+    // push best responses through Dakota bestResponseArray
+    const RealVector& best_fns =
+      iteratedModel.current_response().function_values();
+    best_resp.function_values(best_fns);
+  }
 }
 
 
