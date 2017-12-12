@@ -374,6 +374,32 @@ void ROLOptimizer::set_rol_parameters()
   optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
 
 
+  // BMA: We aren't yet using ROL's Trust Region Step, but Patty
+  // called out these settings that we'll want to map
+
+  // TODO: how to map Dakota vector to ROL scalar?
+  // const RealVector& tr_init_size =
+  //   probDescDB.get_rv("method.trust_region.initial_size");
+  // if (!tr_init_size.empty())
+  //   optSolverParams.sublist("Step").sublist("Trust Region").
+  //      set("Initial Radius", tr_init_size[0]);
+
+  // optSolverParams.sublist("Step").sublist("Trust Region").
+  //   set("Radius Shrinking Threshold",
+  // 	probDescDB.get_real("method.trust_region.contract_threshold"));
+  // optSolverParams.sublist("Step").sublist("Trust Region").
+  //   set("Radius Growing Threshold",
+  // 	probDescDB.get_real("method.trust_region.expand_threshold"));
+  // optSolverParams.sublist("Step").sublist("Trust Region").
+  //   set("Radius Shrinking Rate (Negative rho)",
+  // 	probDescDB.get_real("method.trust_region.contraction_factor"));
+  // optSolverParams.sublist("Step").sublist("Trust Region").
+  //   set("Radius Shrinking Rate (Positive rho)",
+  // 	probDescDB.get_real("method.trust_region.contraction_factor"));
+  // optSolverParams.sublist("Step").sublist("Trust Region").
+  //   set("Radius Growing Rate",
+  // 	probDescDB.get_real("method.trust_region.expansion_factor"));
+
   // PRECEDENCE 3: power-user advanced options
 
   String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
