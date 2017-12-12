@@ -172,6 +172,8 @@ public class RefManInputSpec {
 		if (spec_data.containsKey(kwname)
 				&& spec_data.get(kwname).containsKey("Children")) {
 
+		        kw_os.append("<p><b>Child Keywords:</b></p>\n");
+
 			String children = spec_data.get(kwname).get("Children");
 			String[] lines = children.split("\\n");
 

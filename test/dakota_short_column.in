@@ -14,7 +14,6 @@
 # (6) MPP search with no linearizations     (traditional FORM)
 
 environment,
-	#graphics
 
 method,
 	local_reliability

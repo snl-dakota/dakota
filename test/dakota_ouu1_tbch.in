@@ -4,7 +4,6 @@
 # Optimization under uncertainty
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

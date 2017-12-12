@@ -1,7 +1,6 @@
 #@ *: DakotaConfig=HAVE_NOWPAC
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

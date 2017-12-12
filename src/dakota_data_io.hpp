@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_IO_H
-#define DATA_IO_H
+#ifndef DAKOTA_DATA_IO_H
+#define DAKOTA_DATA_IO_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
@@ -1597,4 +1597,4 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 
 } // namespace Dakota
 
-#endif // DATA_IO_H
+#endif // DAKOTA_DATA_IO_H

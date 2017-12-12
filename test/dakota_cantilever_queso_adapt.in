@@ -4,7 +4,6 @@
 # Reliability analysis using the cantilever test function.
 
 environment
-	#graphics
 	output_precision = 16
 
 method,

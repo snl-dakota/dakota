@@ -15,11 +15,15 @@
 # Dakota Input File: container_opt_npsol.in             #s0
 
 environment
+## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0
+## Consider newer capabilities in the Dakota GUI     	     	      #s0
   graphics
   tabular_data
     tabular_data_file = 'container_opt_npsol.dat'   #s0
 
 method
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   npsol_sqp
 
 variables

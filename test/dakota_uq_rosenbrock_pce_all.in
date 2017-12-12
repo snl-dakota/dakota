@@ -4,7 +4,6 @@
 # for stoch expansions constructed over aleatory + {design,epistemic,both}
 
 environment,
-	#graphics
 
 method,
 	polynomial_chaos				#s0,#s1,#s2

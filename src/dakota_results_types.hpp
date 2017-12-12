@@ -10,8 +10,8 @@
 //  * Data type definitions for keys and meta data
 //  * Free helper functions to create and manage data entries
 
-#ifndef RESULTS_TYPES_H
-#define RESULTS_TYPES_H
+#ifndef DAKOTA_RESULTS_TYPES_H
+#define DAKOTA_RESULTS_TYPES_H
 
 #include <boost/tuple/tuple.hpp>
 #include "dakota_data_types.hpp"
@@ -201,4 +201,4 @@ inline ResultsKeyType make_key(const StrStrSizet& iterator_id,
 
 }  // namespace Dakota
 
-#endif  // RESULTS_TYPES_H
+#endif  // DAKOTA_RESULTS_TYPES_H

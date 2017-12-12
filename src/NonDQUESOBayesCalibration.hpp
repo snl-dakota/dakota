@@ -71,6 +71,10 @@ protected:
   void calibrate();
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  /// convenience function to print calibration parameters, e.g., for
+  /// MAP / best parameters
+  void print_variables(std::ostream& s, const RealVector& c_vars);
+
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
 

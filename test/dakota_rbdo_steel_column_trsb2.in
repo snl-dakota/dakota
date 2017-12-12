@@ -4,7 +4,6 @@
 # fully-analytic sequential RBDO approach.
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,

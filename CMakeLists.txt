@@ -28,14 +28,14 @@ set(Dakota_VERSION_TRIPLE
 
 # --- Release time toggle 
 # Toggle this to append to the version number for stable
-set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
-#set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
+#set(Dakota_VERSION_APPEND_STABLE "")   # Versioned release
+set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
 # using the SVN rev date); use format Mmm dd yyyy, as in asctime()
-set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
-#set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
+#set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
+set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
 set(Dakota_VERSION_STRING "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}.${Dakota_VERSION_PATCH}${Dakota_VERSION_APPEND_STABLE}")
@@ -164,6 +164,11 @@ set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+if(WIN32)
+  # We always build 32-bit Windows binaries and don't want to confuse users
+  # with the processor name from a 64-bit build host
+  set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+endif()
 
 # TODO: insert distribution type into package names, i.e., instead of 
 # ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
@@ -215,12 +220,19 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
 endif()
 
 # RPATH settings 
+# These settings must take into consideration the presence of shared libraries in both bin/
+# and /lib, and applications in bin/ and test/.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
-  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib" 
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin" 
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib")
+   #$ORIGIN is replaced at runtime by the path of the executable (application or .so).
+   # Add:
+   #  $ORIGIN so executables can find shared libs in their own folder
+   #  $ORIGIN/../lib so that executables in bin and test can find shared libs in the lib folder
+   #  $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
+   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin")
 endif()
 
 

@@ -6,7 +6,6 @@
 #@ s*: TimeoutDelay=1200
 
 #environment,
-#	graphics
 
 method,
 	model_pointer = 'HIERARCH'

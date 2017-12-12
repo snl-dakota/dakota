@@ -986,9 +986,7 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
 #    include(InstallRequiredSystemLibraries)
     install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
   elseif (WIN32)
-    #include(InstallWinDLLs)
-    # Attempt to migrate to a more standard install using Kitware's helper
-    include(DakotaInstallRequiredSystemLibraries)
+    include(InstallWinDLLs)
   endif()
 endif()
   

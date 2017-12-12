@@ -203,7 +203,7 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
     // Command-line content didn't suffice.  Check environment variables.
     // MPICH environment variables in preferred order (roughly newest to oldest)
     StringArray env_vars;
-    env_vars.push_back("ALPS_APP_PE");              // MPICH on Cray Linux Environment
+    env_vars.push_back("PMI_CONTROL_PORT");         // SLURM on Cray Linux Environment
     env_vars.push_back("PMI_SIZE");                 // MPICH3
     env_vars.push_back("MPICH_NP");                 // MPICH2, incl shmem
     env_vars.push_back("MPICH_INTERFACE_HOSTNAME"); // MPICH2, old p4 check
