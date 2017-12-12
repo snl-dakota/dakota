@@ -1,0 +1,14 @@
+Blurb::
+Number of optimal designs selected concurrently
+
+Description::
+Each iteration of the \c experimental_design algorithm yields \c batch_size
+optimal designs. If \c max_hifi is set to zero, these values will merely
+be reported in Dakota output and the file \c experimental_design_output.txt.
+Otherwise, the high-fidelity model will be run at all optimal designs, and the
+responses will be added to the list of experiment data before the Bayesian
+calibration is performed in the next iteration of the algorithm.
+
+<b> Default Behavior </b>
+
+By default, optimal designs will be selected one at a time.

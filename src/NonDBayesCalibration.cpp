@@ -1013,6 +1013,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  // receive the evals in a separate matrix for safety
 	  RealMatrix lofi_resp_matrix;
 	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
+	  Cout << "lofi_resp_matrix = " << lofi_resp_matrix << '\n';
 
 	  //concatenate posterior_theta and lofi_resp_mat into Xmatrix
 
@@ -1177,9 +1178,10 @@ void NonDBayesCalibration::calibrate_to_hifi()
       else { 
         out_file << "Optimal Design: " << optimal_config;
         out_file << "Mutual Information = " << max_MI << '\n';
-        if (max_hifi > 0) 
-          out_file << "Hifi Response: " << resp_matrix;
-        out_file << "\n";
+        if (max_hifi > 0) { 
+          RealVector col = Teuchos::getCol(Teuchos::View, resp_matrix, 0);
+          out_file << "Hifi Response = " << col << '\n';
+        }
       }
     } // end MI loop
   } // end while loop
@@ -2480,7 +2482,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   //std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
   //Cout << "Xmatrix = " << Xmatrix << '\n';
-  //Cout << "dimX = " << dimX << ", dimY = " << dimY << '\n';
+  Cout << "dimX = " << dimX << ", dimY = " << dimY << '\n';
 
   int num_samples = Xmatrix.numCols();
   int dim = dimX + dimY;
