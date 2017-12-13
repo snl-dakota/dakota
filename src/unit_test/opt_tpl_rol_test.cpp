@@ -39,7 +39,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -112,7 +112,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -183,7 +183,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -257,7 +257,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -330,7 +330,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -405,7 +405,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -480,7 +480,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -554,7 +554,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -631,7 +631,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -712,7 +712,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
     "   no_gradients"
     "   no_hessians";
 
-  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(text_book_input);
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
