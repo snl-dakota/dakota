@@ -41,6 +41,16 @@ namespace Dakota {
  
 using namespace ROL;
 
+// TODO: data transfers cleanup once decide on std vs Teuchos
+/** Convenience function to set the variables from ROL into a Dakota Model */
+void set_continuous_vars(Teuchos::RCP<const std::vector<Real>> x, Model& model)
+{
+  size_t num_cv = model.cv();
+  for(size_t i=0; i<num_cv; ++i)
+    model.continuous_variable((*x)[i], i);
+}
+
+
 template<class Real> 
 class DakotaToROLIneqConstraints : public ROL::Constraint<Real> {
 
@@ -61,19 +71,13 @@ private:
   void extract_model_params() {
 
     numContinuousVars = iteratedModel.cv();
-
     num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
-
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints();
 
-    const RealMatrix& lin_ineq_coeffs_temp
-        = iteratedModel.linear_ineq_constraint_coeffs();
-
+    // BMA: I don't think we need copies at all, could just access
+    // model, but for now, assign instead of looping... until discuss with MK
     lin_ineq_coeffs.reshape((int)num_lin_ineq,(int)numContinuousVars);
-    for(size_t i=0;i<num_lin_ineq;++i) {
-      for (size_t j=0; j<numContinuousVars; j++)
-        lin_ineq_coeffs(i,j) = lin_ineq_coeffs_temp(i,j);
-    }
+    lin_ineq_coeffs.assign(iteratedModel.linear_ineq_constraint_coeffs());
   }
 
   /// Number of continuous variables
@@ -93,7 +97,10 @@ private:
 
 public:
 
-  DakotaToROLIneqConstraints() {}
+  DakotaToROLIneqConstraints(Model& dakota_model): iteratedModel(dakota_model)
+  {
+    extract_model_params();
+  }
 
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
 
@@ -111,20 +118,14 @@ public:
         (*cp)[i] += lin_ineq_coeffs(i,j) * (*xp)[j];
     }
 
-    if (num_nln_ineq){
+    if (num_nln_ineq > 0) {
 
-      RealVector act_cont_vars(numContinuousVars, false);
-
-      for(size_t i=0; i<numContinuousVars; i++){
-        act_cont_vars[i] = (*xp)[i];
-      }
-      
-      iteratedModel.continuous_variables(act_cont_vars);
+      set_continuous_vars(xp, iteratedModel);
 
       iteratedModel.evaluate();
 
-      const RealVector& dakota_fns
-          = iteratedModel.current_response().function_values();
+      const RealVector& dakota_fns =
+	iteratedModel.current_response().function_values();
 
       for(size_t i=0;i<num_nln_ineq;++i)
         (*cp)[i+num_lin_ineq] = dakota_fns[i+1];
@@ -162,35 +163,18 @@ private:
   void extract_model_params() {
 
     numContinuousVars = iteratedModel.cv();
-
     num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
-
     num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
-
     num_lin_eq = iteratedModel.num_linear_eq_constraints();
 
-    const RealMatrix& lin_eq_coeffs_temp
-        = iteratedModel.linear_eq_constraint_coeffs();
-
+    // BMA: I don't think we need copies at all, could just access
+    // model, but for now, assign instead of looping... until discuss with MK
     lin_eq_coeffs.reshape((int)num_lin_eq,(int)numContinuousVars);
-    for(size_t i=0;i<num_lin_eq;++i) {
-      for (size_t j=0; j<numContinuousVars; j++)
-        lin_eq_coeffs(i,j) = lin_eq_coeffs_temp(i,j);
-    }
-
-    const RealVector& lin_eq_targets_temp
-        = iteratedModel.linear_eq_constraint_targets();
-
+    lin_eq_coeffs.assign(iteratedModel.linear_eq_constraint_coeffs());
     lin_eq_targets.resize((int)num_lin_eq);
-    for(size_t i=0;i<num_lin_eq;++i)
-        lin_eq_targets(i) = lin_eq_targets_temp(i);
-
-    const RealVector& nln_eq_targets_temp
-        = iteratedModel.nonlinear_eq_constraint_targets();
-
+    lin_eq_targets.assign(iteratedModel.linear_eq_constraint_targets());
     nln_eq_targets.resize((int)num_nln_eq);
-    for(size_t i=0;i<num_nln_eq;++i)
-        nln_eq_targets(i) = nln_eq_targets_temp(i);
+    nln_eq_targets.assign(iteratedModel.nonlinear_eq_constraint_targets());
   }
 
   /// Number of continuous variables
@@ -219,7 +203,13 @@ private:
 
 public:
 
-  DakotaToROLEqConstraints() {}
+  DakotaToROLEqConstraints(Model& dakota_model): iteratedModel(dakota_model)
+  {
+    extract_model_params();
+  }
+
+  // BMA TODO: don't we now have data adapters that convert linear to
+  // nonlinear constraints and manage the indexing?
 
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
 
@@ -237,21 +227,18 @@ public:
         (*cp)[i] += lin_eq_coeffs(i,j) * (*xp)[j];
     }
 
-    RealVector act_cont_vars(numContinuousVars, false);
+    if (num_nln_eq > 0) {
 
-    for(size_t i=0; i<numContinuousVars; i++){
-      act_cont_vars[i] = (*xp)[i];
-    }
-    
-    iteratedModel.continuous_variables(act_cont_vars);
+      set_continuous_vars(xp, iteratedModel);
 
-    iteratedModel.evaluate();
+      iteratedModel.evaluate();
 
-    const RealVector& dakota_fns
+      const RealVector& dakota_fns
         = iteratedModel.current_response().function_values();
 
-    for(size_t i=0;i<num_nln_eq;++i)
-      (*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+      for(size_t i=0;i<num_nln_eq;++i)
+	(*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+    }
 
   }
 
@@ -279,7 +266,6 @@ private:
   // extract model parameters relevant for objective
   // function evaluation
   void extract_model_params() {
-
     numContinuousVars = iteratedModel.cv();
   }
 
@@ -291,22 +277,14 @@ private:
 
 public:
 
-  DakotaToROLObjective() {}
+  DakotaToROLObjective(Model& dakota_model): iteratedModel(dakota_model)
+  {
+    extract_model_params();
+  }
 
   Real value(const Vector<Real> &x, Real &tol) {
 
-    using Teuchos::RCP;   
-
-    // Pointer to opt vector 
-    RCP<const std::vector<Real>> xp = getVector(x); 
-
-    RealVector act_cont_vars(numContinuousVars, false);
-
-    for(size_t i=0; i<numContinuousVars; i++){
-      act_cont_vars[i] = (*xp)[i];
-    }
-    
-    iteratedModel.continuous_variables(act_cont_vars);
+    set_continuous_vars(getVector(x), iteratedModel);
 
     iteratedModel.evaluate();
 
@@ -472,8 +450,7 @@ void ROLOptimizer::set_problem() {
   bnd.reset( new ROL::Bounds<RealT>(lower,upper) );
 
   // create objective function object and give it access to Dakota model 
-  obj.reset(new DakotaToROLObjective<RealT>());
-  obj->pass_model(iteratedModel);
+  obj.reset(new DakotaToROLObjective<RealT>(iteratedModel));
 
   size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
@@ -481,8 +458,7 @@ void ROLOptimizer::set_problem() {
   // Equality constraints
   if (numEqConstraints > 0){
     // create equality constraint object and give it access to Dakota model 
-    eqConst.reset(new DakotaToROLEqConstraints<RealT>());
-    eqConst->pass_model(iteratedModel);
+    eqConst.reset(new DakotaToROLEqConstraints<RealT>(iteratedModel));
 
     // equality multipliers
     Teuchos::RCP<std::vector<RealT> > emul_rcp = Teuchos::rcp( new std::vector<RealT>(numEqConstraints,0.0) );
@@ -492,8 +468,7 @@ void ROLOptimizer::set_problem() {
   // Inequality constraints
   if (numIneqConstraints > 0){
     // create inequality constraint object and give it access to Dakota model 
-    ineqConst.reset(new DakotaToROLIneqConstraints<RealT>());
-    ineqConst->pass_model(iteratedModel);
+    ineqConst.reset(new DakotaToROLIneqConstraints<RealT>(iteratedModel));
 
     // inequality multipliers
     Teuchos::RCP<std::vector<RealT> > imul_rcp = Teuchos::rcp( new std::vector<RealT>(numIneqConstraints,0.0) );
