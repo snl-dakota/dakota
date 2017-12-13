@@ -16,8 +16,8 @@ using namespace Dakota;
 TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
 {
   /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Unconstrained 3D textbook problem with known solution of
+  /// {1,1,1}
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -28,8 +28,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     " interface,"
     "   direct"
@@ -88,8 +86,13 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 {
   /// Default Dakota input string:
+  /// Unconstrained 3D textbook problem with known solution of
+  /// {1,1,1}
   /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// meet tolerance, but overriding with XML that will; compare
+  /// tolerances for this test and the looser ones for the above
+  /// test
+
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -101,8 +104,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     " interface,"
     "   direct"
@@ -160,8 +161,11 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 {
   /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// 3D textbook problem with active bound constraints; the 2nd
+  /// variable has a best value at the corresponding upper bound
+  /// constraint of 0.5 (in comparison to a best value of 1 for
+  /// the unconstrained problem; other two variables have expected
+  /// best value of 1 with a best objective 0f 0.5^4
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -231,8 +235,11 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 {
   /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// 3D textbook problem with two active linear equality constrinats; the 2nd
+  /// variable has a best value at the corresponding upper bound
+  /// constraint of 0.5 (in comparision to a best value of 1 for
+  /// the unconstrained problem; other two variables have expected
+  /// best value of 1 with a best objective 0f 0.5^4
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -243,8 +250,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     "     linear_equality_constraint_matrix = 1. 1. 1."
     "                                         0. 0. 1."
@@ -317,8 +322,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     " interface,"
     "   direct"
@@ -390,8 +393,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     upper_bounds  2.0   2.0  2.0"
-    "     lower_bounds     -2.0  -2.0 -2.0"
     "     descriptors 'x1'  'x2'  'x3'"
     "     linear_equality_constraint_matrix = 1. 0. 0."
     "     linear_equality_targets = 1.0"
@@ -465,8 +466,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     "     linear_inequality_constraint_matrix = 1. 1. 1."
     "                                         0. 0. 1."
@@ -540,8 +539,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     " interface,"
     "   direct"
@@ -614,8 +611,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     "     linear_inequality_constraint_matrix = 0. 0. 1."
     "     linear_inequality_upper_bounds = 3.0"
@@ -691,8 +686,6 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     upper_bounds  10.0   10.0  10.0"
-    "     lower_bounds     -10.0  -10.0 -10.0"
     "     descriptors 'x1'  'x2'  'x3'"
     "     linear_equality_constraint_matrix = 1. 1. 1."
     "     linear_equality_targets = 4.0"
