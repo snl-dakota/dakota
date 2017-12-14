@@ -85,7 +85,7 @@ template<class FactoryT>
 void rol_quad_solv( Teuchos::FancyOStream &out,
                     bool & success )
 {
-  LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS);
+  std::shared_ptr<LibraryEnvironment> p_env(Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS));
   LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
@@ -138,25 +138,19 @@ void rol_quad_solv( Teuchos::FancyOStream &out,
   // Assess correctness
   TEST_FLOATING_EQUALITY( (*x_rcp)[0], -1.50, 1.e-10 );
   TEST_FLOATING_EQUALITY( (*x_rcp)[1],  0.75, 1.e-10 );
-
-  // Make sure to cleanup the object we own
-  delete p_env;
 }
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(rol_std, quad)
+TEUCHOS_UNIT_TEST(a_rol_std, quad)
 {
-  // This works fine
   rol_quad_solv<StdFactory>(out, success);
 }
 
 //----------------------------------------------------------------
 
-// MK: commented out until RWH figures out why it's not passing
-// TEUCHOS_UNIT_TEST(rol_teuchos, quad)
-// {
-//   // This one does not work; not sure why ... RWH
-//   rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
-// }
+ TEUCHOS_UNIT_TEST(a_rol_teuchos, quad)
+ {
+   rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
+ }
 
