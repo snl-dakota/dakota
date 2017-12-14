@@ -14,6 +14,8 @@
 //- Checked by:
 //- Version: $Id$
 
+// BMA TODO: Traits should indicate that ROL requires gradients
+
 #include "Teuchos_XMLParameterListHelpers.hpp"
 // BMA TODO: Above will break with newer Teuchos; instead need 
 //#include "Teuchos_XMLParameterListCoreHelpers.hpp"
@@ -38,6 +40,8 @@ using std::endl;
 //
 
 namespace Dakota {
+
+enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
  
 using namespace ROL;
 
@@ -131,6 +135,49 @@ public:
         (*cp)[i+num_lin_ineq] = dakota_fns[i+1];
 
     }
+  }
+
+  void applyJacobian(Vector<Real> &jv,
+        const Vector<Real> &v, const Vector<Real> &x, Real &tol){
+
+    using Teuchos::RCP;
+
+    // Pointer to optimization vector     
+    RCP<const std::vector<Real>> xp = getVector(x);
+
+    // Pointer to jv vector
+    RCP<std::vector<Real>> jvp = getVector(jv);
+
+    // apply linear constraint Jacobian
+    for(size_t i=0;i<num_lin_ineq;++i) {
+      (*jvp)[i] = 0.0;
+      for (size_t j=0; j<numContinuousVars; j++)
+        (*jvp)[i] += lin_ineq_coeffs(i,j) * (*xp)[j];
+    }
+
+    // apply nonlinear constraint Jacobian
+    if (num_nln_ineq > 0) {
+
+      set_continuous_vars(getVector(x), iteratedModel);
+
+      // For now, ROL will always evaluate all objectives, constraints,
+      // and their gradients with every hard update, so hard-wire the ASV
+      // = 1 & 2 = 3
+      ActiveSet eval_set(iteratedModel.current_response().active_set());
+      eval_set.request_values(AS_GRAD);
+      iteratedModel.evaluate(eval_set);
+
+      const RealMatrix& dakota_grads
+        = iteratedModel.current_response().function_gradients();
+
+      for(size_t i=0;i<num_nln_ineq;++i){
+        (*jvp)[i+num_lin_ineq] = 0.0;
+        for (size_t j=0; j<numContinuousVars; j++)
+          (*jvp)[i+num_lin_ineq] += dakota_grads(j,i+1) * (*xp)[j];
+      }
+        
+    }
+
   }
 
   // provide access to Dakota model
@@ -237,7 +284,50 @@ public:
         = iteratedModel.current_response().function_values();
 
       for(size_t i=0;i<num_nln_eq;++i)
-	(*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+        (*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+    }
+
+  }
+
+  void applyJacobian(Vector<Real> &jv,
+        const Vector<Real> &v, const Vector<Real> &x, Real &tol){
+
+    using Teuchos::RCP;
+
+    // Pointer to optimization vector     
+    RCP<const std::vector<Real>> xp = getVector(x);
+
+    // Pointer to jv vector
+    RCP<std::vector<Real>> jvp = getVector(jv);
+
+    // apply linear constraint Jacobian
+    for(size_t i=0;i<num_lin_eq;++i) {
+      (*jvp)[i] = 0.0;
+      for (size_t j=0; j<numContinuousVars; j++)
+        (*jvp)[i] += lin_eq_coeffs(i,j) * (*xp)[j];
+    }
+
+    // apply nonlinear constraint Jacobian
+    if (num_nln_eq > 0) {
+
+      set_continuous_vars(getVector(x), iteratedModel);
+
+      // For now, ROL will always evaluate all objectives, constraints,
+      // and their gradients with every hard update, so hard-wire the ASV
+      // = 1 & 2 = 3
+      ActiveSet eval_set(iteratedModel.current_response().active_set());
+      eval_set.request_values(AS_GRAD);
+      iteratedModel.evaluate(eval_set);
+
+      const RealMatrix& dakota_grads
+        = iteratedModel.current_response().function_gradients();
+
+      for(size_t i=0;i<num_nln_eq;++i){
+        (*jvp)[i+num_lin_eq] = 0.0;
+        for (size_t j=0; j<numContinuousVars; j++)
+          (*jvp)[i+num_lin_eq] += dakota_grads(j,i+1+num_nln_ineq) * (*xp)[j];
+      }
+        
     }
 
   }
@@ -261,6 +351,11 @@ private:
   Teuchos::RCP<const std::vector<Real>> getVector( const Vector<Real>& x ) {
     using Teuchos::dyn_cast;
     return dyn_cast<const StdVector<Real>>(x).getVector();
+  }
+
+  Teuchos::RCP<std::vector<Real>> getVector( Vector<Real>& x ) {
+    using Teuchos::dyn_cast;
+    return dyn_cast<StdVector<Real>>(x).getVector();
   }
 
   // extract model parameters relevant for objective
@@ -291,6 +386,26 @@ public:
     Real fn_val = iteratedModel.current_response().function_value(0);
 
     return fn_val;
+  }
+
+  void gradient( Vector<Real> &g, const Vector<Real> &x, Real &tol ) {
+
+    set_continuous_vars(getVector(x), iteratedModel);
+
+    // For now, ROL will always evaluate all objectives, constraints,
+    // and their gradients with every hard update, so hard-wire the ASV
+    // = 1 & 2 = 3
+    ActiveSet eval_set(iteratedModel.current_response().active_set());
+    eval_set.request_values(AS_GRAD);
+    iteratedModel.evaluate(eval_set);
+
+    const RealMatrix& dakota_grads
+      = iteratedModel.current_response().function_gradients();
+   
+    Teuchos::RCP<std::vector<Real>> gp = getVector(g);
+    for (int i=0; i<numContinuousVars; ++i)
+      (*gp)[i] = dakota_grads(i, 0);
+
   }
 
   // provide access to Dakota model

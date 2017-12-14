@@ -74,11 +74,11 @@ enum { DEFAULT_METHOD=0,
        COLINY_EA,   COLINY_PATTERN_SEARCH, COLINY_SOLIS_WETS,
        MOGA, SOGA, NCSU_DIRECT, MESH_ADAPTIVE_SEARCH, MIT_NOWPAC, MIT_SNOWPAC,
        GENIE_OPT_DARTS, GENIE_DIRECT,
-       ROL_LS,
        // Gradient-based Optimizers / Minimizers:
        NONLINEAR_CG, OPTPP_CG, OPTPP_Q_NEWTON, OPTPP_FD_NEWTON, OPTPP_NEWTON,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
+       ROL_LS,
        // Generic Optimizers / Minimizers:
        DL_SOLVER,
        // Minimizers that are both opt & least sq
