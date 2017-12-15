@@ -438,38 +438,34 @@ if (NOT BUILD_IN_TRILINOS)
   # this will respect Trilinos_DIR if already set
   find_package(Trilinos QUIET)
 
-  if ( NOT Trilinos_DIR )
+  if(Trilinos_DIR)
+    message(STATUS "Dakota using previously specified Trilinos in ${Trilinos_DIR}")
+  else()
 
     # if no one has configured a local src Teuchos, do so
     # this will respect Teuchos_DIR if already set
     if( NOT Teuchos_DIR )
-      if( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/packages/external/teuchos/cmake/tribits )
-        set( Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/teuchos/packages/teuchos )
-        set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
-          "ENABLE TriBITS build of teuchos" FORCE )
 
-        # Map key Dakota variables to TriBITS variables
-        set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
-        set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
-	# Dakota doesn't use any Teuchos MPI features; may want to force off
-        #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
+      set( Teuchos_DIR
+        ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos )
+      set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
+        "ENABLE TriBITS build of teuchos" FORCE )
 
+      # Map key Dakota variables to TriBITS variables
+      set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
+      set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+      # Dakota doesn't use any Teuchos MPI features; may want to force off
+      #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
 
 # This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
 # at all; doesn't just control whether installed!  Want Config.cmake in build
 #        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
 #	  "Dakota is the top-level package; don't write Trilinos config files")
 
-      else()
-        # Use "historical" directory hierarchy, before TriBITS
-        set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
-      endif() # tribits source directory EXISTS
-
-      message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}" )
+      message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}")
       set(DAKOTA_BUILDING_TEUCHOS TRUE CACHE BOOL
         "Dakota is building Teuchos in its build tree" FORCE)
-      add_subdirectory(packages/external/teuchos)
+      add_subdirectory(packages/external/trilinos)
 
     else()
       message(STATUS
@@ -481,9 +477,7 @@ if (NOT BUILD_IN_TRILINOS)
 
     find_package( Teuchos NO_MODULE REQUIRED )
 
-  else()
-    message( "Using system trilinos in ${Trilinos_DIR}" )
-  endif() # NOT Trilinos_DIR
+  endif() # Trilinos_DIR
 
 endif() # NOT BUILD_IN_TRILINOS
 
