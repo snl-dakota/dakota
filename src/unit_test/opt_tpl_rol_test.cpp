@@ -28,7 +28,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     " interface,"
     "   direct"
     "     analysis_driver = 'text_book'"
@@ -49,9 +49,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -83,7 +81,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
 
 //----------------------------------------------------------------
 /// Unconstrained 3D textbook problem with known solution of
-/// {1,1,1}
+/// {1,1,1}:
 /// This demonstrates setting some Dakota input options that won't
 /// meet tolerance, but overriding with XML that will; compare
 /// tolerances for this test and the looser ones for the above
@@ -104,7 +102,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     " interface,"
     "   direct"
     "     analysis_driver = 'text_book'"
@@ -125,9 +123,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -157,11 +153,11 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 }
 
 //----------------------------------------------------------------
-/// 3D textbook problem with active bound constraints; the 2nd
-/// variable has a best value at the corresponding upper bound
-/// constraint of 0.5 (in comparison to a best value of 1 for
-/// the unconstrained problem; other two variables have expected
-/// best value of 1 with a best objective 0f 0.5^4
+/// 3D textbook problem with active bound constraints:
+/// The 2nd variable has a best value at the corresponding upper
+/// bound constraint of 0.5 (in comparison to a best value of 1
+/// for the unconstrained problem; other two variables have
+/// expected best value of 1 with a best objective 0f 0.5^4
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 {
@@ -178,7 +174,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
     "     initial_point  0.2    0.2   0.2"
     "     upper_bounds  2.0   0.5  2.0"
     "     lower_bounds     0.0  0.0 0.0"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     " interface,"
     "   direct"
     "     analysis_driver = 'text_book'"
@@ -199,9 +195,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -232,14 +226,14 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 
 //----------------------------------------------------------------
 /// 3D textbook problem with two active linear equality
-/// constraints; the 2nd constraint forces the 3rd variable to
-/// have a value of 3; as a result, the first constraint is
-/// equivalent to having the sum of the first two variables to
-/// be 1; due to the symmetry of the sub-problem (in terms of
-/// the first two variables), both variables are expected to
-/// have the same best value and therefore each should have a
-/// best value of 0.5 with a corresponding best objective of
-/// 16.125
+/// constraints:
+/// The 2nd constraint forces the 3rd variable to have a value of
+/// 3; as a result, the first constraint is equivalent to having
+/// the sum of the first two variables to be 1; due to the
+/// symmetry of the sub-problem (in terms of the first two
+/// variables), both variables are expected to have the same best
+/// value and therefore each should have a best value of 0.5 with
+/// a corresponding best objective of 16.125
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 {
@@ -254,7 +248,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     "     linear_equality_constraint_matrix = 1. 1. 1."
     "                                         0. 0. 1."
     "     linear_equality_targets = 4.0 3.0"
@@ -278,9 +272,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -311,15 +303,16 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 
 //----------------------------------------------------------------
 /// 3D textbook problem with one active nonlinear equality
-/// constraint; since the non-linear constraint is in terms of the
-/// first two variables (x_1^2 - x_2/2 = 0), and due to the
-/// objective function being decompose-able, the third variable
-/// is expected to have a best value of 1. As for the other two
-/// variables, the constraint can be rewritten as x_2 = 2x_1^2.
-/// Substituting that into the objective function and minimizing,
-/// we get a root finding problem for a 7th-degree polynomial as
-/// the solution to x_1. The only real root (obtained using matlab)
-/// is 0.762750812626551. As a result, the best value for x_2 is
+/// constraint:
+/// Since the non-linear constraint is in terms of the first two
+/// variables (x_1^2 - x_2/2 = 0), and due to the objective
+/// function being decompose-able, the third variable is expected
+/// to have a best value of 1. As for the other two variables, the
+/// constraint can be rewritten as x_2 = 2x_1^2. Substituting that
+/// into the objective function and minimizing, we get a root
+/// finding problem for a 7th-degree polynomial as the solution to
+/// x_1. The only real root (obtained using matlab) is
+/// 0.762750812626551. As a result, the best value for x_2 is
 /// 1.163577604324929. The corresponding best objective is
 /// 3.884217188745469e-03
 
@@ -336,7 +329,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     " interface,"
     "   direct"
     "     analysis_driver = 'text_book'"
@@ -359,9 +352,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -391,12 +382,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with two active equality constraints, one
+/// linear and one nonlinear:
+/// The linear equality forces the first variable to have the
+/// value of 1. The non-linear constraint is in terms of the first
+/// two variables (x_1^2 - x_2/2 = 1), and thus x_2 must be 0.
+/// Also, due to the objective function being decompose-able, the
+/// third variable is expected to have a best value of 1 and
+/// therefore best objective is 1
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 {
-  /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -407,7 +404,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     "     linear_equality_constraint_matrix = 1. 0. 0."
     "     linear_equality_targets = 1.0"
     " interface,"
@@ -432,9 +429,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -464,12 +459,19 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with two active linear inequality
+/// constraints:
+/// The 2nd constraint essentially acts as a bounds constraint for
+/// the 3rd variable, x_3, to be between 3 and 4. The other
+/// constraint (the sum of all variables to be between 3 and 4) is
+/// thus equivalent to 0 < x_1 + x_2 < 1. Due to having a
+/// symmetric and decompose-able objective being sum_i (x_i - 1)^4,
+/// the best x_3 is 3 and x_1 = x_2 = 0.5 with a corresponding best
+/// objective of 16.125
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
 {
-  /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -480,7 +482,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     "     linear_inequality_constraint_matrix = 1. 1. 1."
     "                                         0. 0. 1."
     "     linear_inequality_upper_bounds = 4.0 4.0"
@@ -505,9 +507,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
@@ -530,19 +530,33 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
-  target = 1.6125e+01;
+  target = 16.125;
   max_tol = 1.e-5;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with one active nonlinear inequality
+/// constraint:
+/// Since the non-linear constraint is in terms of the first two
+/// variables, being -0.1 < x_1^2 - x_2/2 < 0.1, and due to the
+/// objective function being decompose-able, the third variable is
+/// expected to have a best value of 1. As for the other two
+/// variables, the constraint can be rewritten as
+/// 2x_1^2 - 0.2 < x_2 < 2x_1^2 + 0.2. Upon close examination, the
+/// objective will be minimized at the 2x_1^2 - 0.2 = x_2
+/// interface of the nonlinear (2-sided) inequality constraint.
+/// Substituting that into the objective function and minimizing,
+/// we get a root finding problem for a 7th-degree polynomial as
+/// the solution to x_1. The only real root (obtained using matlab)
+/// is 0.8140754878147402. As a result, the best value for x_2 is
+/// 1.125437799721614. The corresponding best objective is
+/// 1.442520331911729e-03
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
 {
-  /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -553,7 +567,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     " interface,"
     "   direct"
     "     analysis_driver = 'text_book'"
@@ -577,19 +591,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
 
-  target = 8.1407406910e-01;
+  target = 0.8140754878147402;
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  target = 1.1254320576e+00;
+  target = 1.125437799721614;
   max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
@@ -602,19 +614,33 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
-  target = 1.4425203319e-03;
+  target = 1.442520331911729e-03;
   max_tol = 1.e-4;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with two active inequality constraints,
+/// one linear and one nonlinear:
+/// The linear inequality constraint essentially acts as a bounds
+/// constraint for the 3rd variable, x_3, to be between 2 and 3.
+/// Since the non-linear constraint is in terms of the first two
+/// variables, being -0.1 < x_1^2 - x_2/2 < 0.1, and due to the
+/// objective function being decompose-able, the third variable is
+/// expected to have a best value of 2 while satisfying the linear
+/// inequality. The nonlinear inequality can be rewritten as
+/// 2x_1^2 - 0.2 < x_2 < 2x_1^2 + 0.2. Substituting that into the
+/// objective function and minimizing, we get a root finding
+/// problem for a 7th-degree polynomial as the solution to x_1.
+/// The only real root (obtained using matlab) is
+/// 0.8140754878147402. As a result, the best value for x_2 is
+/// 1.125437799721614. The corresponding best objective is
+/// 1.001442520331912
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
 {
-  /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -625,7 +651,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     "     linear_inequality_constraint_matrix = 0. 0. 1."
     "     linear_inequality_upper_bounds = 3.0"
     "     linear_inequality_lower_bounds = 2.0"
@@ -652,20 +678,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
 
-  target = 8.1407548275e-01;
+  target = 0.8140754878147402;
   max_tol = 1.e-8;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  target = 1.1254377841e+00;
-  max_tol = 1.e-7;
+  target = 1.125437799721614;
+  max_tol = 1.e-8;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -677,19 +701,45 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
-  target = 1.0014425203387e+00;
+  target = 1.001442520331912;
   max_tol = 1.e-4;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with two active inequality constraints,
+/// one linear and one nonlinear, and two active equality
+/// constraints, one linear and one nonlinear:
+/// Constraint (1): x_1 + x_2 + x_3 = 4
+/// Constraint (2): 2 < x_2 < 3
+/// Constraint (3): -0.1 < x_1^2 - x_2/2 < 0.1
+/// Constraint (4): x_2^2 - x_1/2 = 0    ==>    x_1 = 2 x_2^2
+/// (1) & (2): 1 < x_1 + x_2 < 2 (5)
+/// (4) & (5): 1 < 2 x_2^2 + x_2 < 2 (6)
+/// (4) & (3): -0.1 < 4 x_2^4 - x_2/2 < 0.1 (7)
+/// (6) & root finding: (-1.280776406404415 < x_2 < -1) OR 
+///                 (0.5 < x_2 < 0.7807764064044151) (8)
+/// (7) & root finding: (-0.189650762381091 < x_2 < 0.218102125965436) OR
+///                 (0.395256237746866 < x_2 < 0.554094667611217) (9)
+/// (8) & (9): 0.5 < x_2 < 0.554094667611217 (10)
+/// (1) & (4): x_3 = 4 - x_2 - x_2^2/2 (11)
+///
+/// (10) above is the equivalent bound constraint for x_2. Using
+/// identities (4) and (11), we can rewrite the objective function
+/// in terms of x_2, resulting in an 8-th order poynomial in x_2.
+/// MATLAB root finding provides only one root for the derivative,
+/// being a global minimum at 0.648817781347564. Since x_2 is bound
+/// by (10) which does not include the global minimum of
+/// 0.648817781347564, we evaluate the objective at the two bounds
+/// in (10), with the miminum found at x_2 = 0.554094667611217 with
+/// a corresponding x_1 = 0.614041801350369 and
+/// x_3 = 2.831863531038414, along with a best objective of
+/// 11.322607724274398, with all constraints satisfied (and active).
 
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
 {
-  /// Default Dakota input string:
-  /// This demonstrates setting some Dakota input options that won't
-  /// meet tolerance, but overriding with XML that will
+  /// Dakota input string:
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
@@ -700,7 +750,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
-    "     descriptors 'x1'  'x2'  'x3'"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
     "     linear_equality_constraint_matrix = 1. 1. 1."
     "     linear_equality_targets = 4.0"
     "     linear_inequality_constraint_matrix = 0. 0. 1."
@@ -731,15 +781,13 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: "Optimal" solution used for comparison
-  // is obtained using Teuchos unit tests in
-  // opt_tpl_test_exact_soln.cpp
+  // convergence tests: 
   double rel_err;
   double target;
   double max_tol;
 
-  target = 6.1404233466e-01;
-  max_tol = 1.e-12;
+  target = 0.614041801350369;
+  max_tol = 1.e-6;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -748,16 +796,16 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
-  target = 2.8318621616e+00;
-  max_tol = 1.e-11;
+  target = 2.831863531038414;
+  max_tol = 1.e-6;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
-  target = 1.1322573720e+01;
-  max_tol = 1.e-10;
+  target = 11.322607724274398;
+  max_tol = 1.e-5;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
