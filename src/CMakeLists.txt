@@ -23,12 +23,6 @@ set(DAKOTA_EXTPROJ_LIBS)
 # External third-party libraries installed on the system
 set(EXT_TPL_LIBS)
 
-# QUESO libraries have to be managed at end of link due to conflicts
-# with gslcblas (QUESO package built with ExternalProject_add within Dakota)
-set(QUESO_EXTPROJ_LIBS) 
-# QUESO external LIBS to be linked last
-set(QUESO_TPL_LIBS)
-
 list(APPEND DAKOTA_INCDIRS 
   ${Dakota_BINARY_DIR}/generated/src
   # Consider removing these two paths and moving to generated...
@@ -599,52 +593,16 @@ if(HAVE_ADAPTIVE_SAMPLING)
   endif()
 endif()
 
-# Can't do CheckPackage because queso isn't built in CMake and
-# therefore can't be in EXPORT_TARGETS.
-#CheckPackage(QUESO)
+CheckPackage(QUESO)
 if(HAVE_QUESO)
-
+  list(APPEND DAKOTA_INCDIRS
+    ${Dakota_BINARY_DIR}/packages/external/queso/include/)
   list(APPEND iterator_src NonDQUESOBayesCalibration.cpp)
-  add_definitions("-DHAVE_QUESO")
   if(HAVE_QUESO_GPMSA)
     add_definitions("-DHAVE_QUESO_GPMSA")
     list(APPEND iterator_src NonDGPMSABayesCalibration.cpp)
   endif()
-
-  #list(APPEND DAKOTA_INCDIRS "$ENV{QUESO_PREFIX}/include")
-  if(DAKOTA_QUESO_CMAKE)
-
-    list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/queso/include/
-      ${GSL_INCLUDE_DIRS})
-    list(APPEND DAKOTA_PKG_LIBS queso)
-
-  else()
-
-  list(APPEND DAKOTA_INCDIRS 
-    ${Dakota_BINARY_DIR}/packages/queso_ext/include ${GSL_INCLUDE_DIRS})
-
-  #list(APPEND DAKOTA_LIBDIRS "$ENV{QUESO_PREFIX}/lib")
-  # Would prefer to detect 32 vs. 64-bit, but the location is
-  # operating system-specific; should be harmless to add the extra
-  # directory, but put 64-bit first
-  list(APPEND DAKOTA_LIBDIRS 
-    ${Dakota_BINARY_DIR}/packages/queso_ext/lib64)
-  list(APPEND DAKOTA_LIBDIRS 
-    ${Dakota_BINARY_DIR}/packages/queso_ext/lib)
-
-  # Can't put these in DAKOTA_PKG_LIBS; Trilinos will try to export them
-  list(APPEND QUESO_EXTPROJ_LIBS queso)
-
-  # Can't export these as they aren't executables or library targets
-  #list(APPEND EXPORT_TARGETS queso_ext)
-  #list(APPEND EXPORT_TARGETS queso gpmsa_any)
-
-  list(APPEND DAKOTA_EXTPROJ_LIBS ${QUESO_EXTPROJ_LIBS})
-
-  endif()
-
 endif(HAVE_QUESO)
-
 
 # Boost is required, but have to protect against empty DIR list
 if(Boost_FOUND)
@@ -823,16 +781,18 @@ endif(HAVE_AMPL)
 
 # Instead of trying to link GSL and CBLAS last, conditionally link a
 # system CBLAS instead of gslcblas
+#
+# GSL libraries have to be managed at end of link due to conflicts
+# with gslcblas
 if(DAKOTA_HAVE_GSL)
   list(APPEND EXT_TPL_INCDIRS "${GSL_INCLUDE_DIRS}")
   list(APPEND EXT_TPL_LIBDIRS "${GSL_LIBRARY_DIRS}")
   # GSL_LIBRARIES may or may not include a CBLAS library, depending on
   # top-level option GSL_WITHOUT_CBLAS
-  list(APPEND QUESO_TPL_LIBS ${GSL_LIBRARIES})
+  list(APPEND EXT_TPL_LIBS ${GSL_LIBRARIES})
   if(DAKOTA_CBLAS_LIBS) 
-    list(APPEND QUESO_TPL_LIBS ${DAKOTA_CBLAS_LIBS})
+    list(APPEND EXT_LIBS ${DAKOTA_CBLAS_LIBS})
   endif()
-  list(APPEND EXT_TPL_LIBS ${QUESO_TPL_LIBS})
 endif(DAKOTA_HAVE_GSL)
 
 list(APPEND EXT_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
@@ -868,18 +828,11 @@ set(DAKOTA_ALL_LIBS ${DAKOTA_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_PKG_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_EXTPROJ_LIBS})
 list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
-#list(APPEND DAKOTA_ALL_LIBS ${QUESO_EXTPROJ_LIBS})
-#list(APPEND DAKOTA_ALL_LIBS ${QUESO_TPL_LIBS})
 
 # --- Explicit dependencies for Dakota core libraries
 
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
-endif()
-
-if(HAVE_QUESO AND NOT DAKOTA_QUESO_CMAKE)
-  # Enforce QUESO config header creation prior to compiling dakota sources
-  add_dependencies(dakota_src queso_ext)
 endif()
 
 # EXTRA_TPL_LIBS doesn't suffice, due to symbols needed by ParallelLibrary
@@ -1011,12 +964,10 @@ set(Dakota_TPL_LIBRARY_DIRS ${EXT_TPL_LIBDIRS} CACHE INTERNAL
 
 # Any library that will be installed with Dakota, including Queso
 set(Dakota_LIBRARIES ${DAKOTA_LIBS} ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} 
-#  ${QUESO_EXTPROJ_LIBS} 
   CACHE INTERNAL "Dakota libraries") 
 
 # Libraries that will be on the system
 set(Dakota_TPL_LIBRARIES ${EXT_TPL_LIBS}  
-#  ${QUESO_TPL_LIBS}
   CACHE INTERNAL "Dakota TPL libraries") 
  
 message(STATUS "Dakota_LIBRARIES: ${Dakota_LIBRARIES}")
@@ -1055,7 +1006,6 @@ if (BUILD_IN_TRILINOS)
 
   # Libraries built outside of Dakota CMake
   set(Dakota_EXTRA_LIBRARIES ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS}
-#    ${QUESO_EXTPROJ_LIBS}  ${QUESO_TPL_LIBS} 
     CACHE INTERNAL "Dakota extra libraries")
   message(STATUS 
     "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
