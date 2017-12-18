@@ -56,7 +56,7 @@ protected:
 
   int num_constraints()  const;
 
-  void build(size_t index = _NPOS);
+  void build();
 
   Real value(const Variables& vars);
 
@@ -115,12 +115,20 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current()
 {
+  // demote from anchor to regular/previous data
+  approxData.clear_anchor_index();
+  //  previous is deleted and anchor moved to previous
+  if (approxData.points() > 1)
+    approxData.pop_front();
+
+  /*
   approxData.clear_data();
   if (approxData.anchor()) { // anchor becomes previous expansion point
     approxData.push_back(approxData.anchor_variables(),
 			 approxData.anchor_response());
     approxData.clear_anchor();
   }
+  */
 }
 
 } // namespace Dakota

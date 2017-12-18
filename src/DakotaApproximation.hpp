@@ -67,13 +67,13 @@ public:
   //
 
   /// builds the approximation from scratch
-  virtual void build(size_t index = _NPOS);
+  virtual void build();
   /// exports the approximation
   virtual void export_model(const String& fn_label = "", 
       const String& export_prefix = "", 
       const unsigned short export_format = NO_MODEL_FORMAT );
   /// rebuilds the approximation incrementally
-  virtual void rebuild(size_t index = _NPOS);
+  virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
   virtual void pop(bool save_data);
@@ -82,6 +82,7 @@ public:
   /// finalize approximation by applying all remaining trial sets
   virtual void finalize();
 
+  /*
   /// store current approximation state for later combination
   virtual void store(size_t index = _NPOS);
   /// restore previous approximation state
@@ -90,9 +91,10 @@ public:
   virtual void remove_stored(size_t index = _NPOS);
   /// clear stored approximation data
   virtual void clear_stored();
+  */
 
   /// combine current approximation with previously stored approximation
-  virtual void combine(size_t swap_index);
+  virtual void combine();
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
@@ -212,8 +214,6 @@ public:
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
-  /// clear SurrogateData::anchor{Vars,Resp}
-  void clear_anchor();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
   /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack
@@ -394,11 +394,8 @@ inline void Approximation::clear_all()
 {
   if (approxRep) // envelope fwd to letter
     approxRep->clear_all();
-  else { // not virtual: base class implementation
-    if (approxData.anchor())
-      approxData.clear_anchor();
+  else // not virtual: base class implementation
     approxData.clear_data();
-  }
 }
 
 
@@ -410,13 +407,6 @@ inline void Approximation::clear_current()
     approxRep->clear_current();
   else // default implementation
     clear_all();
-}
-
-
-inline void Approximation::clear_anchor()
-{
-  if (approxRep) approxRep->approxData.clear_anchor();
-  else approxData.clear_anchor();
 }
 
 

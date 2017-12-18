@@ -72,7 +72,7 @@ protected:
   int num_constraints()  const;
 
   /// find the covariance parameters governing the Gaussian process response
-  void build(size_t index = _NPOS);
+  void build();
 
   /// retrieve the function value for a given parameter set
   Real value(const Variables& vars);

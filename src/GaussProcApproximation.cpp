@@ -178,10 +178,10 @@ int GaussProcApproximation::num_constraints() const
 { return (approxData.anchor()) ? 1 : 0; }
 
 
-void GaussProcApproximation::build(size_t index)
+void GaussProcApproximation::build()
 {
   // base class implementation checks data set against min required
-  Approximation::build(index);
+  Approximation::build();
 
   size_t i, j, offset = 0, num_v = sharedDataRep->numVars;
   numObs = approxData.points();

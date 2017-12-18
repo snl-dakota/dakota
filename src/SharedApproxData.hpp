@@ -72,10 +72,10 @@ public:
   //
 
   /// builds the shared approximation data from scratch
-  virtual void build(size_t index = _NPOS);
+  virtual void build();
 
   /// rebuilds the shared approximation data incrementally
-  virtual void rebuild(size_t index = _NPOS);
+  virtual void rebuild();
   /// back out the previous increment to the shared approximation data 
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set
@@ -93,6 +93,7 @@ public:
   /// clean up popped bookkeeping following aggregation
   virtual void post_finalize();
 
+  /*
   /// store the current state of the shared approximation data for
   /// later combination (defaults to push_back)
   virtual void store(size_t index = _NPOS);
@@ -102,13 +103,14 @@ public:
   /// remove an instance of stored approximation data prior to combination
   /// (defaults to pop_back)
   virtual void remove_stored(size_t index = _NPOS);
-
-  /// aggregate the shared approximation data from current and stored states
-  virtual size_t pre_combine();
-  /// clean up stored data sets after aggregation
-  virtual void post_combine();
   /// clear stored approximation data
   virtual void clear_stored();
+  */
+
+  /// aggregate the shared approximation data from current and stored states
+  virtual void pre_combine();
+  /// clean up stored data sets after aggregation
+  virtual void post_combine();
 
   //
   //- Heading: Member functions

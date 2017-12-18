@@ -200,16 +200,18 @@ protected:
   int min_coefficients() const;
   //int num_constraints() const; // use default implementation
 
-  void build(size_t index = _NPOS);
-  void rebuild(size_t index = _NPOS);
+  void build();
+  void rebuild();
   void pop(bool save_data);
   void push();
   void finalize();
+  void combine();
+  /*
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  void combine(size_t swap_index);
   void clear_stored();
+  */
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -293,7 +295,7 @@ inline const Pecos::RealVector& PecosApproximation::total_sobol_indices() const
 
 
 inline size_t PecosApproximation::sparsity() const
-{ return polyApproxRep->sparsity(); }
+{ return polyApproxRep->expansion_terms(); }
 
 
 inline Pecos::ULongULongMap PecosApproximation::sparse_sobol_index_map() const
@@ -481,16 +483,16 @@ inline int PecosApproximation::min_coefficients() const
 { return pecosBasisApprox.min_coefficients(); }
 
 
-inline void PecosApproximation::build(size_t index)
+inline void PecosApproximation::build()
 {
   // base class implementation checks data set against min required
-  Approximation::build(index);
+  Approximation::build();
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.compute_coefficients(index);
+  pecosBasisApprox.compute_coefficients();
 }
 
 
-inline void PecosApproximation::rebuild(size_t index)
+inline void PecosApproximation::rebuild()
 {
   // TO DO: increment_coefficients() below covers current usage of
   // append_approximation() in NonDExpansion.  For more general
@@ -500,7 +502,7 @@ inline void PecosApproximation::rebuild(size_t index)
   //size_t curr_pts  = approxData.points(),
   //  curr_pecos_pts = polyApproxRep->data_size();
   //if (curr_pts > curr_pecos_pts)
-    pecosBasisApprox.increment_coefficients(index);
+    pecosBasisApprox.increment_coefficients();
   //else if (curr_pts < curr_pecos_pts)
   //  pecosBasisApprox.decrement_coefficients();
   //else: if number of points is consistent, leave as is
@@ -534,6 +536,7 @@ inline void PecosApproximation::finalize()
 }
 
 
+/*
 inline void PecosApproximation::store(size_t index)
 {
   // base class implementation manages approx data
@@ -561,21 +564,22 @@ inline void PecosApproximation::remove_stored(size_t index)
 }
 
 
-inline void PecosApproximation::combine(size_t swap_index)
-{
-  // base class implementation manages approx data
-  Approximation::combine(swap_index);
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.combine_coefficients(swap_index);
-}
-
-
 inline void PecosApproximation::clear_stored()
 {
   // base class implementation manages approx data
   Approximation::clear_stored();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.clear_stored();
+}
+*/
+
+
+inline void PecosApproximation::combine()
+{
+  // base class implementation manages approx data
+  Approximation::combine();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.combine_coefficients();
 }
 
 

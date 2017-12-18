@@ -113,9 +113,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void build(size_t index = _NPOS);
-
-  void rebuild(size_t index = _NPOS);
+  void build();
+  void rebuild();
   void pop(bool save_surr_data);
   bool push_available();
   size_t retrieval_index();
@@ -124,13 +123,15 @@ protected:
   size_t finalization_index(size_t i);
   void pre_finalize();
   void post_finalize();
+  void pre_combine();
+  void post_combine();
 
+  /*
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  size_t pre_combine();
-  void post_combine();
   void clear_stored();
+  */
 
 private:
 
@@ -164,12 +165,12 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 { }
 
 
-inline void SharedPecosApproxData::build(size_t index)
-{ pecosSharedDataRep->allocate_data(index); }
+inline void SharedPecosApproxData::build()
+{ pecosSharedDataRep->allocate_data(); }
 
 
-inline void SharedPecosApproxData::rebuild(size_t index)
-{ pecosSharedDataRep->increment_data(index); }
+inline void SharedPecosApproxData::rebuild()
+{ pecosSharedDataRep->increment_data(); }
 
 
 inline void SharedPecosApproxData::pop(bool save_surr_data)
@@ -204,6 +205,7 @@ inline void SharedPecosApproxData::post_finalize()
 { pecosSharedDataRep->post_finalize_data(); }
 
 
+/*
 inline void SharedPecosApproxData::store(size_t index)
 { pecosSharedDataRep->store_data(index); }
 
@@ -216,16 +218,16 @@ inline void SharedPecosApproxData::remove_stored(size_t index)
 { pecosSharedDataRep->remove_stored_data(index); }
 
 
-inline size_t SharedPecosApproxData::pre_combine()
-{ return pecosSharedDataRep->pre_combine_data(); }
+inline void SharedPecosApproxData::clear_stored()
+{ pecosSharedDataRep->clear_stored_data(); }
+*/
+
+inline void SharedPecosApproxData::pre_combine()
+{ pecosSharedDataRep->pre_combine_data(); }
 
 
 inline void SharedPecosApproxData::post_combine()
 { pecosSharedDataRep->post_combine_data(); }
-
-
-inline void SharedPecosApproxData::clear_stored()
-{ pecosSharedDataRep->clear_stored_data(); }
 
 
 inline void SharedPecosApproxData::

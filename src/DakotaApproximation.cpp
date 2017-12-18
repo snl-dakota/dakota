@@ -274,10 +274,10 @@ Approximation::~Approximation()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::build(size_t index)
+void Approximation::build()
 {
   if (approxRep)
-    approxRep->build(index);
+    approxRep->build();
   else // default is only a data check, to be augmented by derived class:
     check_points(approxData.points());
 }
@@ -299,12 +299,12 @@ void Approximation::export_model(const String& fn_label,
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::rebuild(size_t index)
+void Approximation::rebuild()
 {
   if (approxRep)
-    approxRep->rebuild(index);
+    approxRep->rebuild();
   else
-    build(index); // if no incremental rebuild(), fall back on full build()
+    build(); // if no incremental rebuild(), fall back on full build()
 }
 
 
@@ -344,6 +344,14 @@ void Approximation::finalize()
 }
 
 
+void Approximation::combine()
+{
+  if (approxRep) approxRep->combine();
+  //else         approxData.swap();
+}
+
+
+/*
 void Approximation::store(size_t index)
 {
   if (approxRep) approxRep->store(index);
@@ -365,18 +373,12 @@ void Approximation::remove_stored(size_t index)
 }
 
 
-void Approximation::combine(size_t swap_index)
-{
-  if (approxRep) approxRep->combine(swap_index);
-  else           approxData.swap(swap_index);
-}
-
-
 void Approximation::clear_stored()
 {
   if (approxRep) approxRep->clear_stored();
   else           approxData.clear_stored();
 }
+*/
 
 
 Real Approximation::value(const Variables& vars)
@@ -622,8 +624,9 @@ int Approximation::num_constraints() const
     return approxRep->num_constraints(); 
   else { // default implementation
     if (approxData.anchor()) { // anchor data may differ from buildDataOrder
-      int ng = approxData.anchor_gradient().length(),
-          nh = approxData.anchor_hessian().numRows();
+      const SurrogateDataResp& anchor_sdr = approxData.anchor_response();
+      int ng = anchor_sdr.response_gradient().length(),
+          nh = anchor_sdr.response_hessian().numRows();
       return 1 + ng + nh*(nh + 1)/2;
     }
     else

@@ -343,20 +343,20 @@ SharedApproxData::~SharedApproxData()
 }
 
 
-void SharedApproxData::build(size_t index)
+void SharedApproxData::build()
 {
   if (dataRep)
-    dataRep->build(index);
+    dataRep->build();
   //else no-op (implementation not required for shared data)
 }
 
 
-void SharedApproxData::rebuild(size_t index)
+void SharedApproxData::rebuild()
 {
   if (dataRep)
-    dataRep->rebuild(index);
+    dataRep->rebuild();
   else // if incremental rebuild not defined, fall back to full build
-    build(index);
+    build();
 }
 
 
@@ -452,6 +452,7 @@ void SharedApproxData::post_finalize()
 }
 
 
+/*
 void SharedApproxData::store(size_t index)
 {
   if (dataRep)
@@ -488,15 +489,25 @@ void SharedApproxData::remove_stored(size_t index)
 }
 
 
-size_t SharedApproxData::pre_combine()
+void SharedApproxData::clear_stored()
 {
-  if (!dataRep) {
+  if (dataRep)
+    dataRep->clear_stored();
+  //else
+  //  default: no stored data to clear
+}
+*/
+
+
+void SharedApproxData::pre_combine()
+{
+  if (dataRep)
+    dataRep->pre_combine();
+  else {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "
 	 << "type." << std::endl;
     abort_handler(-1);
   }
-
-  return dataRep->pre_combine();
 }
 
 
@@ -506,15 +517,6 @@ void SharedApproxData::post_combine()
     dataRep->post_combine();
   //else
   //  default: no post combine required
-}
-
-
-void SharedApproxData::clear_stored()
-{
-  if (dataRep)
-    dataRep->clear_stored();
-  //else
-  //  default: no stored data to clear
 }
 
 } // namespace Dakota
