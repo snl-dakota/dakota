@@ -183,12 +183,8 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 # FFTW is GPL, CDDLIB is GPL
 set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/" ".*\\\\.git.*"
   "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
-  "^${Dakota_SOURCE_DIR}/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
+  "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
+  "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
   )
 
 # Only internal full (developer version) has these things
