@@ -77,11 +77,19 @@ private:
     numContinuousVars = iteratedModel.cv();
     num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
     num_lin_ineq = iteratedModel.num_linear_ineq_constraints();
+    num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
 
     // BMA: I don't think we need copies at all, could just access
     // model, but for now, assign instead of looping... until discuss with MK
     lin_ineq_coeffs.reshape((int)num_lin_ineq,(int)numContinuousVars);
     lin_ineq_coeffs.assign(iteratedModel.linear_ineq_constraint_coeffs());
+
+    dakotaFns.resize((int)(1+num_nln_eq+num_nln_ineq));
+
+    dakotaGrads.reshape((int)numContinuousVars,
+      (int)(1+num_nln_eq+num_nln_ineq));
+
+    update_called = false;
   }
 
   /// Number of continuous variables
@@ -99,13 +107,44 @@ private:
   /// Number of linear inequalities
   size_t num_lin_ineq;
 
+  /// Number of nonlinear equalities
+  size_t num_nln_eq;
+
+  /// Copy of latest function (objective and nonlinear constraints) values
+  RealVector dakotaFns;
+
+  /// Copy of latest function (objective and nonlinear constraints) gradient values
+  RealMatrix dakotaGrads;
+
+  /// Used in checking whether or not update has been called yet
+  bool update_called;
+
 public:
 
   DakotaToROLIneqConstraints(Model& dakota_model): iteratedModel(dakota_model)
   {
     extract_model_params();
   }
+  void update( const Vector<Real> &x, bool flag, int iter ) {
+  
+    // Speculative model evaluation, invoked by ROL's call to update(...)
+    if ( flag && (num_nln_ineq > 0)) {
+      set_continuous_vars(getVector(x), iteratedModel);
 
+      ActiveSet eval_set(iteratedModel.current_response().active_set());
+      eval_set.request_values(0);
+      for(size_t i=0;i<num_nln_ineq;++i)
+        eval_set.request_value(AS_FUNC+AS_GRAD,i+1);
+       
+      iteratedModel.evaluate(eval_set);
+
+      dakotaFns.assign(iteratedModel.current_response().function_values());
+
+      dakotaGrads.assign(iteratedModel.current_response().function_gradients());
+    }
+
+    update_called = true;
+  }
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
 
     using Teuchos::RCP;
@@ -124,16 +163,12 @@ public:
 
     if (num_nln_ineq > 0) {
 
-      set_continuous_vars(xp, iteratedModel);
-
-      iteratedModel.evaluate();
-
-      const RealVector& dakota_fns =
-	iteratedModel.current_response().function_values();
+      // makes sure that update(...) is called prior to first value(...) call
+      if (!update_called)
+        update( x, true, 0 );
 
       for(size_t i=0;i<num_nln_ineq;++i)
-        (*cp)[i+num_lin_ineq] = dakota_fns[i+1];
-
+        (*cp)[i+num_lin_ineq] = dakotaFns[i+1];
     }
   }
 
@@ -158,24 +193,15 @@ public:
     // apply nonlinear constraint Jacobian
     if (num_nln_ineq > 0) {
 
-      set_continuous_vars(getVector(x), iteratedModel);
-
-      // For now, ROL will always evaluate all objectives, constraints,
-      // and their gradients with every hard update, so hard-wire the ASV
-      // = 1 & 2 = 3
-      ActiveSet eval_set(iteratedModel.current_response().active_set());
-      eval_set.request_values(AS_GRAD);
-      iteratedModel.evaluate(eval_set);
-
-      const RealMatrix& dakota_grads
-        = iteratedModel.current_response().function_gradients();
+      // makes sure that update(...) is called prior to first applyJacobian(...) call
+      if (!update_called)
+        update( x, true, 0 );
 
       for(size_t i=0;i<num_nln_ineq;++i){
         (*jvp)[i+num_lin_ineq] = 0.0;
         for (size_t j=0; j<numContinuousVars; j++)
-          (*jvp)[i+num_lin_ineq] += dakota_grads(j,i+1) * (*xp)[j];
+          (*jvp)[i+num_lin_ineq] += dakotaGrads(j,i+1) * (*xp)[j];
       }
-        
     }
 
   }
@@ -222,6 +248,13 @@ private:
     lin_eq_targets.assign(iteratedModel.linear_eq_constraint_targets());
     nln_eq_targets.resize((int)num_nln_eq);
     nln_eq_targets.assign(iteratedModel.nonlinear_eq_constraint_targets());
+
+    dakotaFns.resize((int)(1+num_nln_eq+num_nln_ineq));
+
+    dakotaGrads.reshape((int)numContinuousVars,
+        (int)(1+num_nln_eq+num_nln_ineq));
+
+    update_called = false;
   }
 
   /// Number of continuous variables
@@ -248,6 +281,15 @@ private:
   /// Number of linear equalities
   size_t num_lin_eq;
 
+  /// Copy of latest function (objective and nonlinear constraints) values
+  RealVector dakotaFns;
+
+  /// Copy of latest function (objective and nonlinear constraints) gradient values
+  RealMatrix dakotaGrads;
+
+  /// Used in checking whether or not update has been called yet
+  bool update_called;
+
 public:
 
   DakotaToROLEqConstraints(Model& dakota_model): iteratedModel(dakota_model)
@@ -257,6 +299,26 @@ public:
 
   // BMA TODO: don't we now have data adapters that convert linear to
   // nonlinear constraints and manage the indexing?
+  void update( const Vector<Real> &x, bool flag, int iter ) {
+
+    // Speculative model evaluation, invoked by ROL's call to update(...)
+    if ( flag && (num_nln_eq > 0)) {
+      set_continuous_vars(getVector(x), iteratedModel);
+
+      ActiveSet eval_set(iteratedModel.current_response().active_set());
+      eval_set.request_values(0);
+      for(size_t i=0;i<num_nln_eq;++i)
+        eval_set.request_value(AS_FUNC+AS_GRAD,i+1+num_nln_ineq);
+
+      iteratedModel.evaluate(eval_set);
+
+      dakotaFns.assign(iteratedModel.current_response().function_values());
+
+      dakotaGrads.assign(iteratedModel.current_response().function_gradients());
+    }
+
+    update_called = true;
+  }
 
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
 
@@ -276,15 +338,12 @@ public:
 
     if (num_nln_eq > 0) {
 
-      set_continuous_vars(xp, iteratedModel);
-
-      iteratedModel.evaluate();
-
-      const RealVector& dakota_fns
-        = iteratedModel.current_response().function_values();
+      // makes sure that update(...) is called prior to first value(...) call
+      if (!update_called)
+        update( x, true, 0 );
 
       for(size_t i=0;i<num_nln_eq;++i)
-        (*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakota_fns[i+1+num_nln_ineq];
+        (*cp)[i+num_lin_eq] = -nln_eq_targets(i)+dakotaFns[i+1+num_nln_ineq];
     }
 
   }
@@ -310,22 +369,14 @@ public:
     // apply nonlinear constraint Jacobian
     if (num_nln_eq > 0) {
 
-      set_continuous_vars(getVector(x), iteratedModel);
-
-      // For now, ROL will always evaluate all objectives, constraints,
-      // and their gradients with every hard update, so hard-wire the ASV
-      // = 1 & 2 = 3
-      ActiveSet eval_set(iteratedModel.current_response().active_set());
-      eval_set.request_values(AS_GRAD);
-      iteratedModel.evaluate(eval_set);
-
-      const RealMatrix& dakota_grads
-        = iteratedModel.current_response().function_gradients();
+      // makes sure that update(...) is called prior to first applyJacobian(...) call
+      if (!update_called)
+        update( x, true, 0 );
 
       for(size_t i=0;i<num_nln_eq;++i){
         (*jvp)[i+num_lin_eq] = 0.0;
         for (size_t j=0; j<numContinuousVars; j++)
-          (*jvp)[i+num_lin_eq] += dakota_grads(j,i+1+num_nln_ineq) * (*xp)[j];
+          (*jvp)[i+num_lin_eq] += dakotaGrads(j,i+1+num_nln_ineq) * (*xp)[j];
       }
         
     }
@@ -362,6 +413,11 @@ private:
   // function evaluation
   void extract_model_params() {
     numContinuousVars = iteratedModel.cv();
+
+    num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
+    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
+
+    update_called = false;
   }
 
   /// Number of continuous variables
@@ -370,6 +426,21 @@ private:
   /// Shallow copy of the model on which ROL will iterate.
   Model iteratedModel;
 
+  /// Copy of latest obective function values
+  Real fnVal;
+
+  /// Copy of latest function (objective and nonlinear constraints) gradient values
+  RealMatrix dakotaGrads;
+
+  /// Number of nonlinear equalities
+  size_t num_nln_eq;
+
+  /// Number of nonlinear inequalities
+  size_t num_nln_ineq;
+
+  /// Used in checking whether or not update has been called yet
+  bool update_called;
+
 public:
 
   DakotaToROLObjective(Model& dakota_model): iteratedModel(dakota_model)
@@ -377,35 +448,46 @@ public:
     extract_model_params();
   }
 
+  void update( const Vector<Real> &x, bool flag, int iter ) {
+
+    // Speculative model evaluation, invoked by ROL's call to update(...)
+    if ( flag ) {
+      set_continuous_vars(getVector(x), iteratedModel);
+
+      ActiveSet eval_set(iteratedModel.current_response().active_set());
+      eval_set.request_values(0);
+      eval_set.request_value(AS_FUNC+AS_GRAD,0);
+
+      iteratedModel.evaluate(eval_set);
+
+      fnVal = iteratedModel.current_response().function_value(0);
+
+      dakotaGrads.reshape((int)numContinuousVars,
+        (int)(1+num_nln_eq+num_nln_ineq));
+      dakotaGrads.assign(iteratedModel.current_response().function_gradients());
+    }
+
+    update_called = true;
+  }
+
   Real value(const Vector<Real> &x, Real &tol) {
 
-    set_continuous_vars(getVector(x), iteratedModel);
+    // makes sure that update(...) is called prior to first value(...) call
+    if (!update_called)
+      update( x, true, 0 );
 
-    iteratedModel.evaluate();
-
-    Real fn_val = iteratedModel.current_response().function_value(0);
-
-    return fn_val;
+    return fnVal;
   }
 
   void gradient( Vector<Real> &g, const Vector<Real> &x, Real &tol ) {
-
-    set_continuous_vars(getVector(x), iteratedModel);
-
-    // For now, ROL will always evaluate all objectives, constraints,
-    // and their gradients with every hard update, so hard-wire the ASV
-    // = 1 & 2 = 3
-    ActiveSet eval_set(iteratedModel.current_response().active_set());
-    eval_set.request_values(AS_GRAD);
-    iteratedModel.evaluate(eval_set);
-
-    const RealMatrix& dakota_grads
-      = iteratedModel.current_response().function_gradients();
    
+    // makes sure that update(...) is called prior to first value(...) call
+    if (!update_called)
+      update( x, true, 0 );
+
     Teuchos::RCP<std::vector<Real>> gp = getVector(g);
     for (int i=0; i<numContinuousVars; ++i)
-      (*gp)[i] = dakota_grads(i, 0);
-
+      (*gp)[i] = dakotaGrads(i, 0);
   }
 
   // provide access to Dakota model
@@ -499,8 +581,8 @@ void ROLOptimizer::set_rol_parameters()
   if (!adv_opts_file.empty()) {
     if (boost::filesystem::exists(adv_opts_file)) {
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Any ROL options in file '" << adv_opts_file
-	     << "' will override Dakota options." << std::endl;
+	       Cout << "Any ROL options in file '" << adv_opts_file
+	         << "' will override Dakota options." << std::endl;
     }
     else {
       Cerr << "\nError: ROL options_file '" << adv_opts_file
@@ -513,8 +595,8 @@ void ROLOptimizer::set_rol_parameters()
       Teuchos::Ptr<Teuchos::ParameterList> osp_ptr(&optSolverParams);
       Teuchos::updateParametersFromXmlFile(adv_opts_file, osp_ptr);
       if (outputLevel >= VERBOSE_OUTPUT) {
-	Cout << "ROL OptimizationSolver parameters:\n";
-	optSolverParams.print(Cout, 2, true, true);
+      	Cout << "ROL OptimizationSolver parameters:\n";
+      	   optSolverParams.print(Cout, 2, true, true);
       }
     }
     TEUCHOS_STANDARD_CATCH_STATEMENTS(outputLevel >= VERBOSE_OUTPUT, Cerr,
@@ -655,7 +737,6 @@ void ROLOptimizer::core_run()
   // Attempt DB lookup directly into best, fallback on re-evaluation if needed
   Response& best_resp = bestResponseArray.front();
   ActiveSet search_set(best_resp.active_set());
-  enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
   search_set.request_values(AS_FUNC);
   best_resp.active_set(search_set);
   bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
