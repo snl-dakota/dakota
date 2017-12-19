@@ -2218,8 +2218,9 @@ compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
       size_t m, num_data_pts = exp_data.points(),
 	num_to_is = numSamplesOnExpansion + num_data_pts;
       RealVectorArray initial_points(num_to_is);
+      const Pecos::SDVArray& sdv_array = exp_data.variables_data();
       for (m=0; m<num_data_pts; ++m)
-	initial_points[m] = exp_data.continuous_variables(m); // view OK
+	initial_points[m] = sdv_array[m].continuous_variables(); // view OK
       for (m=0; m<numSamplesOnExpansion; ++m)
 	copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
       for (j=0; j<rl_len; ++j, ++sampler_cntr) {

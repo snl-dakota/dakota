@@ -383,13 +383,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     std::ofstream samsOut(samsfile.c_str(),std::ios::out);
     samsOut << std::scientific;
     const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
+    const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+    const Pecos::SDRArray& sdr_array = gp_data.response_data();
     size_t num_data_pts = gp_data.size(), num_vars = fHatModel.cv();
     for (size_t j=0; j<num_data_pts; ++j) {
       samsOut << '\n';
-      const RealVector& sams = gp_data.continuous_variables(j);
+      const RealVector& sams = sdv_array[j].continuous_variables();
       for (size_t k=0; k<num_vars; k++)
 	samsOut << std::setw(13) << sams[k] << ' ';
-      samsOut << std::setw(13) << gp_data.response_function(j);
+      samsOut << std::setw(13) << sdr_array[j].response_function();
     }
     samsOut << std::endl;
 
@@ -586,11 +588,13 @@ void EffGlobalMinimizer::get_best_sample()
   // to determine fnStar for use in the expected improvement function
 
   const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SDVArray& sdv_array = gp_data_0.variables_data();
+  const Pecos::SDRArray& sdr_array = gp_data_0.response_data();
 
   size_t i, sam_star_idx = 0, num_data_pts = gp_data_0.points();
   Real fn, fn_star = DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
-    const RealVector& sams = gp_data_0.continuous_variables(i);
+    const RealVector& sams = sdv_array[i].continuous_variables();
 
     fHatModel.continuous_variables(sams);
     fHatModel.evaluate();
@@ -605,15 +609,17 @@ void EffGlobalMinimizer::get_best_sample()
       sam_star_idx   = i;
       fn_star        = fn;
       meritFnStar    = fn;
-      truthFnStar[0] = gp_data_0.response_function(i);
+      truthFnStar[0] = sdr_array[i].response_function();
     }
   }
 
   // update truthFnStar with all additional primary/secondary fns corresponding
   // to lowest merit function value
-  for (i=1; i<numFunctions; ++i)
-    truthFnStar[i]
-      = fHatModel.approximation_data(i).response_function(sam_star_idx);
+  for (i=1; i<numFunctions; ++i) {
+    const Pecos::SDRArray& sdr_array
+      = fHatModel.approximation_data(i).response_data();
+    truthFnStar[i] = sdr_array[sam_star_idx].response_function();
+  }
 }
 
 

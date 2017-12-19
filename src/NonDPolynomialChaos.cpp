@@ -941,11 +941,14 @@ select_refinement_points(const RealVectorArray& candidate_samples,
     = (SharedPecosApproxData*)shared_approx.data_rep();
 
   const Pecos::SurrogateData& surr_data = poly_approx_rep->surrogate_data();
-  int num_surr_data_pts = surr_data.points();
+  const Pecos::SDVArray& sdv_array = surr_data.variables_data();
+  int num_surr_data_pts = sdv_array.size();
   RealMatrix current_samples( numContinuousVars, num_surr_data_pts, false );
-  for (int j=0; j<num_surr_data_pts; ++j) 
+  for (int j=0; j<num_surr_data_pts; ++j) {
+    const RealVector& c_vars = sdv_array[j].continuous_variables();
     for (int i=0; i<numContinuousVars; ++i) 
-      current_samples(i,j)=surr_data.continuous_variables(j)[i];
+      current_samples(i,j) = c_vars[i];
+  }
 
   LejaSampler sampler;
   sampler.set_seed(randomSeed);
