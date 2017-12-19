@@ -73,6 +73,8 @@ protected:
   /// functionSurfaces
   int recommended_points(bool constraint_flag) const;
 
+  void active_model_key(const UShortArray& mi_key);
+
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   void update_approximation(const Variables& vars,
@@ -251,6 +253,13 @@ recommended_points(bool constraint_flag) const
     rec_points = std::max(rec_points, 
       functionSurfaces[*cit].recommended_points(constraint_flag));
   return rec_points;
+}
+
+
+inline void ApproximationInterface::active_model_key(const UShortArray& mi_key)
+{
+  //sharedData.active_model_key(mi_key);
+  // functionSurfaces access key through shared data
 }
 
 

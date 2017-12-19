@@ -215,7 +215,7 @@ void NonDMultilevelStochCollocation::core_run()
     print_results(Cout);  // intermediate output wth no final output
 
   // clean up for re-entrancy of ML SC
-  uSpaceModel.clear_stored();
+  //uSpaceModel.clear_stored();
 
   ++numUncertainQuant;
 }

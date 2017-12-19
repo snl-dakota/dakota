@@ -132,6 +132,11 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
+  /// set the active multi-index key within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
+  virtual void active_model_key(const UShortArray& mi_key);
+
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();
   /// set the indices that define the active approximation sub-model
@@ -254,6 +259,10 @@ public:
   /// finalize an approximation by applying all previous trial increments
   virtual void finalize_approximation();
 
+  /// combine the current approximation with previously stored data sets
+  virtual void combine_approximation();
+
+  /*
   /// move the current approximation into storage for later combination;
   /// the index of the stored set can be passed to allow replacement instead
   /// of augmentation (default is push_back)
@@ -264,10 +273,9 @@ public:
   /// remove a stored approximation, due to redundancy with the current
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);
-  /// combine the current approximation with previously stored data sets
-  virtual void combine_approximation();
   /// clear stored approximations
   virtual void clear_stored();
+  */
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated

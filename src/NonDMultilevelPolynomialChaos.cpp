@@ -533,7 +533,7 @@ void NonDMultilevelPolynomialChaos::core_run()
     print_results(Cout);  // intermediate output wth no final output
 
   // clean up for re-entrancy of ML PCE
-  uSpaceModel.clear_stored();
+  //uSpaceModel.clear_stored();
 
   ++numUncertainQuant;
 }
@@ -799,7 +799,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
       else if (delta_N_l[lev]) {
 	// retrieve prev expansion for this level & append new samples
-	uSpaceModel.restore_approximation(lev);
+	//uSpaceModel.restore_approximation(lev);
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	// Note: import build data is not re-processed by append_expansion()
@@ -824,7 +824,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
       if (delta) {
         // store all approximation levels, whenever recomputed.
-	uSpaceModel.store_approximation(lev);
+	//uSpaceModel.store_approximation(lev);
 	// The active approximation upon completion of the refinement loop may
 	// be any level -> store the last approximation index for use within
 	// combine_approximation().
@@ -852,7 +852,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   }
 
   // remove redundancy between current active and stored, prior to combining
-  uSpaceModel.remove_stored_approximation(last_active);
+  //uSpaceModel.remove_stored_approximation(last_active);
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
 

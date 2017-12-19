@@ -103,6 +103,8 @@ protected:
 
   /// return daceIterator
   Iterator& subordinate_iterator();
+  /// set active key within approxInterface
+  void active_model_key(const UShortArray& mi_key);
   /// return this model instance
   Model& surrogate_model();
   /// return actualModel
@@ -186,16 +188,19 @@ protected:
   /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
+  /// combine the current data fit approximation with one previously stored
+  void combine_approximation();
+
+  /*
   /// store the current data fit approximation for later combination
   void store_approximation(size_t index = _NPOS);
   /// restore a previous data fit approximation
   void restore_approximation(size_t index = _NPOS);
   /// store the current data fit approximation for later combination
   void remove_stored_approximation(size_t index = _NPOS);
-  /// combine the current data fit approximation with one previously stored
-  void combine_approximation();
   /// clear data stored in the approxInterface
   void clear_stored();
+  */
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
@@ -421,6 +426,10 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
+inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
+{ approxInterface.active_model_key(mi_key); }
+
+
 inline Model& DataFitSurrModel::surrogate_model()
 {
   // return by reference: OK to return letter instance
@@ -503,10 +512,6 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 inline bool DataFitSurrModel::push_available()
 { return approxInterface.push_available(); }
-
-
-inline void DataFitSurrModel::clear_stored()
-{ approxInterface.clear_stored(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

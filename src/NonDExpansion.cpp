@@ -1026,7 +1026,7 @@ configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
   ModelLIter m_iter = --ordered_models.end(); // HF model
   size_t num_mf = ordered_models.size(), num_hf_lev = m_iter->solution_levels();
 
-  multilevel = (num_hf_lev > 1 && ( !mf_precedence || num_mf <= 1 ) );
+  multilevel = (num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
   if (multilevel) {
     num_lev = num_hf_lev; model_form = num_mf - 1;
     cost = m_iter->solution_level_costs(); // can be empty
@@ -1039,7 +1039,7 @@ configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
       abort_handler(METHOD_ERROR);
     }
   }
-  else if ( num_mf > 1 && ( mf_precedence || num_hf_lev <= 1 ) ) {
+  else if ( num_mf > 1 && ( num_hf_lev <= 1 || mf_precedence ) ) {
     num_lev = num_mf;
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
@@ -1072,6 +1072,8 @@ void NonDExpansion::
 configure_model_indices(size_t lev, size_t form, bool multilevel,
 			const RealVector& cost, Real& lev_cost)
 {
+  // Set the active surrogate/truth models within iteratedModel
+  // (the HierarchSurrModel)
   bool  costs = !cost.empty(),
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   lev_cost = (costs) ? cost[lev] : 0.;
@@ -1085,6 +1087,15 @@ configure_model_indices(size_t lev, size_t form, bool multilevel,
     else            iteratedModel.surrogate_model_indices(lev-1);
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
+
+  // Assign the multi-index key for surrogate model management within
+  // uSpaceModel (the DataFitSurrModel)
+  UShortArray mi_key;
+  if (multilevel) // model form is fixed @ HF; lev enumerates the levels
+    { mi_key.resize(2); mi_key[0] = form; mi_key[1] = lev; }
+  else            // lev enumerates the model forms; levels are ignored
+    { mi_key.resize(1); mi_key[0] = lev; } // mi_key[1] = _NPOS;
+  uSpaceModel.active_model_key(mi_key);
 }
 
 
@@ -1130,7 +1141,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   // loop over each of the discrepancy levels
   for (lev=1; lev<num_lev; ++lev) {
     // store current state for use in combine_approximation() below
-    uSpaceModel.store_approximation(lev-1);
+    //uSpaceModel.store_approximation(lev-1);
 
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
@@ -1181,7 +1192,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
       configure_model_indices(lev, form, multilev, cost, lev_cost);
 
       // retrieve prev expansion for this level & append new samples
-      uSpaceModel.restore_approximation(lev);
+      //uSpaceModel.restore_approximation(lev);
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
       core_refinement(lev, lev_metric); // TO DO: retrieve lev_candidate
@@ -1196,13 +1207,13 @@ void NonDExpansion::greedy_multifidelity_expansion()
       //uSpaceModel.pop_approximation(lev); // currently assumes trial_set
 
       // return the unrefined approximation to storage
-      uSpaceModel.store_approximation(lev);
+      //uSpaceModel.store_approximation(lev);
       //last_active = lev;
     }
 
     // TO DO: push best level refinement (which may need to identify best among
     // several candidates for this level)
-    uSpaceModel.restore_approximation(best_lev);
+    //uSpaceModel.restore_approximation(best_lev);
     //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
     // Note: in case of GSG, this step must update ref/candidate sets
 
@@ -1213,7 +1224,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   //  post_refinement(lev); // finalize_sets() for each level grid
 
   // remove redundancy between current active and stored, prior to combining
-  uSpaceModel.remove_stored_approximation(num_lev-1);//(last_active);
+  //uSpaceModel.remove_stored_approximation(num_lev-1);//(last_active);
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
 

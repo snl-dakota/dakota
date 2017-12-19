@@ -206,6 +206,8 @@ protected:
   Iterator& subordinate_iterator();
   /// return subModel
   Model& subordinate_model();
+  /// set key in subModel
+  void active_model_key(const UShortArray& mi_key);
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
   /// return truth model, if present, within subModel
@@ -278,12 +280,14 @@ protected:
   void push_approximation();
   bool push_available();
   void finalize_approximation();
+  void combine_approximation();
 
+  /*
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
-  void combine_approximation();
   void clear_stored();
+  */
 
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
@@ -536,6 +540,10 @@ inline Model& RecastModel::subordinate_model()
 { return subModel; }
 
 
+inline void RecastModel::active_model_key(const UShortArray& mi_key)
+{ subModel.active_model_key(mi_key); }
+
+
 inline Model& RecastModel::surrogate_model()
 { return subModel.surrogate_model(); }
 
@@ -667,6 +675,11 @@ inline void RecastModel::finalize_approximation()
 { subModel.finalize_approximation(); }
 
 
+inline void RecastModel::combine_approximation()
+{ subModel.combine_approximation(); }
+
+
+/*
 inline void RecastModel::store_approximation(size_t index)
 { subModel.store_approximation(index); }
 
@@ -679,12 +692,9 @@ inline void RecastModel::remove_stored_approximation(size_t index)
 { subModel.remove_stored_approximation(index); }
 
 
-inline void RecastModel::combine_approximation()
-{ subModel.combine_approximation(); }
-
-
 inline void RecastModel::clear_stored()
 { subModel.clear_stored(); }
+*/
 
 
 inline std::vector<Approximation>& RecastModel::approximations()

@@ -1024,6 +1024,14 @@ int Interface::recommended_points(bool constraint_flag) const
 }
 
 
+void Interface::active_model_key(const UShortArray& mi_key)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->active_model_key(mi_key);
+  // else: default implementation is no-op
+}
+
+
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1212,7 +1220,7 @@ void Interface::finalize_approximation()
   }
 }
 
-
+/*
 void Interface::store_approximation(size_t index)
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1252,6 +1260,16 @@ void Interface::remove_stored_approximation(size_t index)
 }
 
 
+void Interface::clear_stored()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_stored();
+  //else // letter lacking redefinition of virtual fn.
+  //  default: no stored data to clear
+}
+*/
+
+
 void Interface::combine_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
@@ -1262,15 +1280,6 @@ void Interface::combine_approximation()
 	 << "support approximation combination." << std::endl;
     abort_handler(-1);
   }
-}
-
-
-void Interface::clear_stored()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_stored();
-  //else // letter lacking redefinition of virtual fn.
-  //  default: no stored data to clear
 }
 
 

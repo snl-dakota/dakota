@@ -802,6 +802,25 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 }
 
 
+void DataFitSurrModel::combine_approximation()
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
+
+  // Manage swap detection here or within Pecos::sharedPolyApproxData?
+  // Note: access to spec sequences are on Dakota side, but need to reach
+  // into Pecos driver levels (TPQ, SSG) and approx orders (regression) for
+  // access to final refinement levels (GSG starting levels could be the same).
+  //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
+  //bool swap = !nond_int->maximal_grid();
+
+  approxInterface.combine_approximation();
+
+  //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
+}
+
+
+/*
 void DataFitSurrModel::store_approximation(size_t index)
 {
   if (outputLevel >= NORMAL_OUTPUT)
@@ -838,22 +857,9 @@ void DataFitSurrModel::remove_stored_approximation(size_t index)
 }
 
 
-void DataFitSurrModel::combine_approximation()
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
-
-  // Manage swap detection here or within Pecos::sharedPolyApproxData?
-  // Note: access to spec sequences are on Dakota side, but need to reach
-  // into Pecos driver levels (TPQ, SSG) and approx orders (regression) for
-  // access to final refinement levels (GSG starting levels could be the same).
-  //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
-  //bool swap = !nond_int->maximal_grid();
-
-  approxInterface.combine_approximation();
-
-  //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
-}
+void DataFitSurrModel::clear_stored()
+{ approxInterface.clear_stored(); }
+*/
 
 
 void DataFitSurrModel::update_local_multipoint()

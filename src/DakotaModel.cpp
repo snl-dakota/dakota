@@ -2702,6 +2702,19 @@ Model& Model::subordinate_model()
 }
 
 
+void Model::active_model_key(const UShortArray& mi_key)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->active_model_key(mi_key);
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
+	 << "function.\n       model key activation is not supported by this "
+	 << "Model class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
@@ -3242,6 +3255,20 @@ void Model::finalize_approximation()
 }
 
 
+void Model::combine_approximation()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->combine_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combine_"
+	 << "approximation() function.\n       This model does not support "
+	 << "approximation combination." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+/*
 void Model::store_approximation(size_t index)
 {
   if (modelRep) // envelope fwd to letter
@@ -3281,19 +3308,6 @@ void Model::remove_stored_approximation(size_t index)
 }
 
 
-void Model::combine_approximation()
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->combine_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual combine_"
-	 << "approximation() function.\n       This model does not support "
-	 << "approximation combination." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
 void Model::clear_stored()
 {
   if (modelRep) // envelope fwd to letter
@@ -3301,6 +3315,7 @@ void Model::clear_stored()
   //else // letter lacking redefinition of virtual fn.
   //  default: no stored data to clear
 }
+*/
 
 
 void Model::run_dace_iterator(bool rebuild_flag, size_t index)
