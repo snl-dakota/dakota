@@ -353,7 +353,9 @@ namespace Dakota
         // process currentPoints from approx data
         _f_min = DBL_MAX;
         _f_max = -_f_min;
-        
+
+	short active_bits_0 = approxData.response_data()[0].active_bits();
+
         #ifdef DEBUG_TEST_FUNCTION
         
         if (_vps_test_function == SmoothHerbie || _vps_test_function == Herbie)
@@ -427,7 +429,7 @@ namespace Dakota
         std::cout << "-- Gradients & Hessians --" << std::endl;
         
         // Retrieve function gradients: If first point has gradients, I am assuming all points have
-        if (_use_derivatives && approxData.response_active_bits(0) & 2)
+        if (_use_derivatives && active_bits_0 & 2)
         {
             _use_gradient = true;
             _fgrad = new double*[_num_inserted_points];
@@ -454,7 +456,7 @@ namespace Dakota
         }
         
         // Retrieve function hessians: If first point has gradients, I am assuming all points have
-        if (_use_derivatives && approxData.response_active_bits(0) & 4)
+        if (_use_derivatives && active_bits_0 & 4)
         {
             _use_hessian = true;
             _fhess = new double**[_num_inserted_points];
@@ -495,9 +497,11 @@ namespace Dakota
         #else
         
         // Retrieve function values
+	const SDVArray& sdv_array = approxData.variables_data();
+	const SDRArray& sdr_array = approxData.response_data();
         for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
         {
-            const RealVector& c_vars = approxData.continuous_variables(ipoint);
+            const RealVector& c_vars = sdv_array[ipoint].continuous_variables();
             
             _sample_points[ipoint] = new double[_n_dim];
             
@@ -513,7 +517,7 @@ namespace Dakota
             _diag = std::sqrt(_diag);
                 
             // response from approxData
-            _fval[ipoint] = approxData.response_function(ipoint);
+            _fval[ipoint] = sdr_array[ipoint].response_function();
             
             if (_fval[ipoint] < _f_min) _f_min = _fval[ipoint];
             if (_fval[ipoint] > _f_max) _f_max = _fval[ipoint];
@@ -527,13 +531,13 @@ namespace Dakota
         std::cout << "-- Gradients & Hessians --" << std::endl;
         
         // Retrieve function gradients: If first point has gradient, I am assuming all points have gradients
-        if (_use_derivatives && approxData.response_active_bits(0) & 2)
+        if (_use_derivatives && active_bits_0 & 2)
         {
             _use_gradient = true;
             _fgrad = new double*[_num_inserted_points];
             for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
             {
-                RealVector fn_grad = approxData.response_gradient(ipoint);
+                RealVector fn_grad = sdr_array[ipoint].response_gradient();
                 _fgrad[ipoint] = new double[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
@@ -549,13 +553,13 @@ namespace Dakota
         }
         
         // Retrieve function hessians: If first point has hessian, I am assuming all points have hessians
-        if (_use_derivatives && approxData.response_active_bits(0) & 4)
+        if (_use_derivatives && active_bits_0 & 4)
         {
             _use_hessian = true;
             _fhess = new double**[_num_inserted_points];
             for (size_t ipoint = 0; ipoint < _num_inserted_points; ipoint++)
             {
-                RealSymMatrix fn_hessian = approxData.response_hessian(ipoint);
+                RealSymMatrix fn_hessian = sdr_array[ipoint].response_hessian();
                 _fhess[ipoint] = new double*[_n_dim];
                 for (size_t idim = 0; idim < _n_dim; idim++)
                 {
@@ -3234,12 +3238,8 @@ namespace Dakota
         return sharedDataRep->numVars + 1;
     }
 
-    int VPSApproximation::num_constraints() const
-    {
-        return (approxData.anchor()) ? 1 : 0;
-    }
-
-
+    //int VPSApproximation::num_constraints() const
+    //{ return (approxData.anchor()) ? 1 : 0; }
 
     void VPSApproximation::build()
     {

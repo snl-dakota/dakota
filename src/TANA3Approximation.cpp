@@ -45,12 +45,14 @@ int TANA3Approximation::min_coefficients() const
 }
 
 
+/*
 int TANA3Approximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
   // the number of constraints within approxData's anchor point.
-  return (approxData.points()) ? sharedDataRep->numVars + 1 : 0;
+  return (approxData.anchor()) ? sharedDataRep->numVars + 1 : 0;
 }
+*/
 
 
 void TANA3Approximation::build()

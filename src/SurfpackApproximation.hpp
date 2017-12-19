@@ -140,7 +140,9 @@ private:
 
   /// set the anchor point (including gradient and hessian if present)
   /// into surf_data
-  void add_anchor_to_surfdata(SurfData& surf_data);
+  void add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
+				   const Pecos::SurrogateDataResp& anchor_resp,
+				   short fail_code, SurfData& surf_data);
 
   //
   //- Heading: Data

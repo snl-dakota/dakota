@@ -54,7 +54,7 @@ protected:
 
   int min_coefficients() const;
 
-  int num_constraints()  const;
+  //int num_constraints() const;
 
   void build();
 
@@ -116,6 +116,7 @@ inline TANA3Approximation::~TANA3Approximation()
 inline void TANA3Approximation::clear_current()
 {
   // demote from anchor to regular/previous data
+  // (for completeness; TANA no longer uses anchor designation)
   approxData.clear_anchor_index();
   //  previous is deleted and anchor moved to previous
   if (approxData.points() > 1)
