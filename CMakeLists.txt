@@ -33,7 +33,7 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
-# using the SVN rev date); use format Mmm dd yyyy, as in asctime()
+# using the Git rev date); use format Mmm dd yyyy, as in asctime()
 #set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
@@ -59,51 +59,10 @@ execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
   "${Dakota_BINARY_DIR}/generated/VERSION")
 
-# Buiding in an SVN checkout or a source package? 
+# Buiding in a Git repo or a source package?
 set(DAKOTA_VERSION_file_path)
-if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
-  set(DAKOTA_SVN_checkout TRUE)
-  # SVN checkout, determine revision level
-
-  if((APPLE AND DEFINED ENV{BUILD_URL}) OR (CYGWIN AND DEFINED ENV{BUILD_URL}))
-    # Workarounds for Jenkins slave shell where svn is different version
-    # than the svn client that performed the 'update' step
-
-    file(STRINGS ${Dakota_SOURCE_DIR}/.svn/entries
-      list_dakota_rev LIMIT_COUNT 4)
-
-    # Get the trailing (or 4th) entry (SVN rev of Dakota)
-    # Would also want to silence CMP0007, or remove blanks
-    list(GET list_dakota_rev -1 Dakota_SVN_REV)
-
-  else()
-    # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
-    # 'update' and 'configure' steps
-    find_package(Subversion)
-
-    if(Subversion_FOUND)
-      # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
-      # and the Dakota/ directory may be symlinked.
-      get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
-      Subversion_WC_INFO(${abs_source_dir} Dakota)
-
-      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
-    endif(Subversion_FOUND) # Subversion_FOUND
-  endif()
-
-  # Create VERSION file
-  file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
-        "DAKOTA Version ${Dakota_VERSION_SRC}
-Built from SVN revision ${Dakota_SVN_REV}
-" )
-  set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
-  install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
-	  .)
-
-  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
-  message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
-
-elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
+set(DAKOTA_GIT_checkout FALSE)
+if(EXISTS ${Dakota_SOURCE_DIR}/.git)
   set(DAKOTA_GIT_checkout TRUE)
   # GIT checkout, determine revision level
 
@@ -141,11 +100,10 @@ Built from GIT revision ${Dakota_GIT_REV}
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
 
-else() # source tree NOT an SVN or GIT checkout
-  set(DAKOTA_SVN_checkout FALSE)
+else() # source tree NOT a Git checkout
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Appear to building from source package.")
-endif() # .svn .git directory conditionals
+endif() # .git directory conditionals
 
 # More widely distributed packages exclude more content
 # So smaller number implies less content
@@ -181,14 +139,10 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, .git directories, duplicate TPLs, and GPL packages
 # FFTW is GPL, CDDLIB is GPL
-set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/" ".*\\\\.git.*"
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.git/" ".*\\\\.git.*"
   "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
-  "^${Dakota_SOURCE_DIR}/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
+  "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
+  "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
   )
 
 # Only internal full (developer version) has these things
@@ -593,7 +547,6 @@ install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
   USE_SOURCE_PERMISSIONS
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.am" EXCLUDE
-  PATTERN ".svn" EXCLUDE
   PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.f" EXCLUDE 
@@ -602,7 +555,6 @@ install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
 install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.*" EXCLUDE
-  PATTERN ".svn" EXCLUDE
   PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.cpp" EXCLUDE 
@@ -623,7 +575,7 @@ endif()
 # Final CPack settings
 
 # Create Add generated files to source package
-if(DAKOTA_SVN_checkout OR DAKOTA_GIT_checkout)
+if(DAKOTA_GIT_checkout)
   SET(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};/") 
   LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
 	"${Dakota_BINARY_DIR}/generated/src/;/src")
