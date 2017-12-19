@@ -388,29 +388,29 @@ set(ExportTarget DakotaTargets CACHE STRING
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
 
-  # first probe for system-installed Trilinos
-  # this will respect Trilinos_DIR if already set
+  # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
   find_package(Trilinos QUIET)
 
   if(Trilinos_DIR)
-    message(STATUS "Dakota using previously specified Trilinos in ${Trilinos_DIR}")
+    message(STATUS
+      "Dakota using previously specified Trilinos in ${Trilinos_DIR}")
   else()
 
-    # if no one has configured a local src Teuchos, do so
-    # this will respect Teuchos_DIR if already set
-    if( NOT Teuchos_DIR )
-
-      set( Teuchos_DIR
-        ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos )
-      set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
-        "ENABLE TriBITS build of teuchos" FORCE )
+    # If no parent project configured Teuchos, do so, using Teuchos_DIR if set
+    if(Teuchos_DIR)
+      message(STATUS
+	"Dakota using previously specified Teuchos in ${Teuchos_DIR}")
+    else()
+      set(Teuchos_DIR
+        ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos)
+      set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
+        "Dakota enabling Trilinos Teuchos" FORCE)
 
       # Map key Dakota variables to TriBITS variables
       set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
       set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
       # Dakota doesn't use any Teuchos MPI features; may want to force off
       #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
-
 # This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
 # at all; doesn't just control whether installed!  Want Config.cmake in build
 #        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
@@ -421,10 +421,7 @@ if (NOT BUILD_IN_TRILINOS)
         "Dakota is building Teuchos in its build tree" FORCE)
       add_subdirectory(packages/external/trilinos)
 
-    else()
-      message(STATUS
-	"In ${CMAKE_CURRENT_BINARY_DIR} using Teuchos_DIR: ${Teuchos_DIR}")
-    endif() # NOT Teuchos_DIR
+    endif() # Teuchos_DIR
 
     # Additional setting to prevent multiple targets with the same name
     set(Trilinos_TARGETS_IMPORTED 1)
