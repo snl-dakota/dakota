@@ -1258,16 +1258,16 @@ void Interface::remove_stored_approximation(size_t index)
     abort_handler(-1);
   }
 }
+*/
 
 
-void Interface::clear_stored()
+void Interface::clear_inactive()
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_stored();
+    interfaceRep->clear_inactive();
   //else // letter lacking redefinition of virtual fn.
-  //  default: no stored data to clear
+  //  default: no inactive data to clear
 }
-*/
 
 
 void Interface::combine_approximation()

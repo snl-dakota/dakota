@@ -273,9 +273,9 @@ public:
   /// remove a stored approximation, due to redundancy with the current
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);
-  /// clear stored approximations
-  virtual void clear_stored();
   */
+  /// clear inactive approximations (finalization + combination completed)
+  virtual void clear_inactive();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated

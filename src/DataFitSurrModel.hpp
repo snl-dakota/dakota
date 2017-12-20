@@ -198,9 +198,9 @@ protected:
   void restore_approximation(size_t index = _NPOS);
   /// store the current data fit approximation for later combination
   void remove_stored_approximation(size_t index = _NPOS);
-  /// clear data stored in the approxInterface
-  void clear_stored();
   */
+  /// clear inactive data stored in the approxInterface
+  void clear_inactive();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
@@ -512,6 +512,10 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 inline bool DataFitSurrModel::push_available()
 { return approxInterface.push_available(); }
+
+
+inline void DataFitSurrModel::clear_inactive()
+{ approxInterface.clear_inactive(); }
 
 
 inline SharedApproxData& DataFitSurrModel::shared_approximation()

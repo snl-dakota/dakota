@@ -71,6 +71,9 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// activate an approximation state based on its multi-index key
+  void active_model_key(const UShortArray& mi_key);
+
   /// builds the shared approximation data from scratch
   virtual void build();
 
@@ -103,9 +106,9 @@ public:
   /// remove an instance of stored approximation data prior to combination
   /// (defaults to pop_back)
   virtual void remove_stored(size_t index = _NPOS);
-  /// clear stored approximation data
-  virtual void clear_stored();
   */
+  /// clear inactive approximation data
+  virtual void clear_inactive();
 
   /// aggregate the shared approximation data from current and stored states
   virtual void pre_combine();

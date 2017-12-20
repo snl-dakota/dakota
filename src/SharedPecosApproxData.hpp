@@ -113,15 +113,20 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void active_model_key(const UShortArray& mi_key);
+
   void build();
   void rebuild();
+
   void pop(bool save_surr_data);
   bool push_available();
   size_t retrieval_index();
   void pre_push();
+
   void post_push();
   size_t finalization_index(size_t i);
   void pre_finalize();
+
   void post_finalize();
   void pre_combine();
   void post_combine();
@@ -130,8 +135,8 @@ protected:
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  void clear_stored();
   */
+  void clear_inactive();
 
 private:
 
@@ -163,6 +168,10 @@ inline SharedPecosApproxData::SharedPecosApproxData():
 
 inline SharedPecosApproxData::~SharedPecosApproxData()
 { }
+
+
+inline void SharedPecosApproxData::active_model_key(const UShortArray& mi_key)
+{ pecosSharedDataRep->active_key(mi_key); }
 
 
 inline void SharedPecosApproxData::build()
@@ -216,11 +225,12 @@ inline void SharedPecosApproxData::restore(size_t index)
 
 inline void SharedPecosApproxData::remove_stored(size_t index)
 { pecosSharedDataRep->remove_stored_data(index); }
-
-
-inline void SharedPecosApproxData::clear_stored()
-{ pecosSharedDataRep->clear_stored_data(); }
 */
+
+
+inline void SharedPecosApproxData::clear_inactive()
+{ pecosSharedDataRep->clear_inactive_data(); }
+
 
 inline void SharedPecosApproxData::pre_combine()
 { pecosSharedDataRep->pre_combine_data(); }

@@ -343,6 +343,14 @@ SharedApproxData::~SharedApproxData()
 }
 
 
+void SharedApproxData::active_model_key(const UShortArray& mi_key)
+{
+  if (dataRep)
+    dataRep->active_model_key(mi_key);
+  //else no-op (implementation not required for shared data)
+}
+
+
 void SharedApproxData::build()
 {
   if (dataRep)
@@ -487,16 +495,16 @@ void SharedApproxData::remove_stored(size_t index)
     abort_handler(-1);
   }
 }
+*/
 
 
-void SharedApproxData::clear_stored()
+void SharedApproxData::clear_inactive()
 {
   if (dataRep)
-    dataRep->clear_stored();
+    dataRep->clear_inactive();
   //else
   //  default: no stored data to clear
 }
-*/
 
 
 void SharedApproxData::pre_combine()

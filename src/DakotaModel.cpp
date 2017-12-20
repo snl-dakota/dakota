@@ -3306,16 +3306,16 @@ void Model::remove_stored_approximation(size_t index)
     abort_handler(MODEL_ERROR);
   }
 }
+*/
 
 
-void Model::clear_stored()
+void Model::clear_inactive()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->clear_stored();
+    modelRep->clear_inactive();
   //else // letter lacking redefinition of virtual fn.
-  //  default: no stored data to clear
+  //  default: no inactive data to clear
 }
-*/
 
 
 void Model::run_dace_iterator(bool rebuild_flag, size_t index)

@@ -371,14 +371,14 @@ void Approximation::remove_stored(size_t index)
   if (approxRep) approxRep->remove_stored(index);
   else           approxData.remove_stored(index);
 }
-
-
-void Approximation::clear_stored()
-{
-  if (approxRep) approxRep->clear_stored();
-  else           approxData.clear_stored();
-}
 */
+
+
+void Approximation::clear_inactive()
+{
+  if (approxRep) approxRep->clear_inactive();
+  else           approxData.clear_inactive();
+}
 
 
 Real Approximation::value(const Variables& vars)

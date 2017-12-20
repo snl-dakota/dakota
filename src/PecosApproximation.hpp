@@ -210,8 +210,8 @@ protected:
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
   void remove_stored(size_t index = _NPOS);
-  void clear_stored();
   */
+  void clear_inactive();
 
   void print_coefficients(std::ostream& s, bool normalized);
 
@@ -536,6 +536,15 @@ inline void PecosApproximation::finalize()
 }
 
 
+inline void PecosApproximation::combine()
+{
+  // base class implementation manages approx data
+  Approximation::combine();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.combine_coefficients();
+}
+
+
 /*
 inline void PecosApproximation::store(size_t index)
 {
@@ -562,24 +571,15 @@ inline void PecosApproximation::remove_stored(size_t index)
   // map to Pecos::BasisApproximation
   pecosBasisApprox.remove_stored_coefficients(index);
 }
-
-
-inline void PecosApproximation::clear_stored()
-{
-  // base class implementation manages approx data
-  Approximation::clear_stored();
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.clear_stored();
-}
 */
 
 
-inline void PecosApproximation::combine()
+inline void PecosApproximation::clear_inactive()
 {
   // base class implementation manages approx data
-  Approximation::combine();
+  Approximation::clear_inactive();
   // map to Pecos::BasisApproximation
-  pecosBasisApprox.combine_coefficients();
+  pecosBasisApprox.clear_inactive();
 }
 
 

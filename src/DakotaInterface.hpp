@@ -123,7 +123,7 @@ public:
   /// ApproximationInterface (used by DataFitSurrModels).
   virtual int recommended_points(bool constraint_flag) const;
 
-  /// activate an approximation state based on a multi-index key
+  /// activate an approximation state based on its multi-index key
   virtual void active_model_key(const UShortArray& mi_key);
 
   /// set the (currently active) approximation function index set
@@ -187,9 +187,9 @@ public:
   /// remove a stored approximation, due to redundancy with the current
   /// approximation, prior to combination (default for no index is pop_back)
   virtual void remove_stored_approximation(size_t index = _NPOS);
-  /// clear stored approximation data
-  virtual void clear_stored();
   */
+  /// clear inactive approximation data
+  virtual void clear_inactive();
 
   /// approximation cross-validation quality metrics per response function
   virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 

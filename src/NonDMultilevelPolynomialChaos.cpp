@@ -533,7 +533,7 @@ void NonDMultilevelPolynomialChaos::core_run()
     print_results(Cout);  // intermediate output wth no final output
 
   // clean up for re-entrancy of ML PCE
-  //uSpaceModel.clear_stored();
+  uSpaceModel.clear_inactive();
 
   ++numUncertainQuant;
 }

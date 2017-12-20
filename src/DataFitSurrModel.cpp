@@ -855,10 +855,6 @@ void DataFitSurrModel::remove_stored_approximation(size_t index)
 
   //Cout << "\n<<<<< Stored approximation removed.\n";
 }
-
-
-void DataFitSurrModel::clear_stored()
-{ approxInterface.clear_stored(); }
 */
 
 

@@ -110,8 +110,8 @@ protected:
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
-  void clear_stored();
   */
+  void clear_inactive();
 
   void combine_approximation();
 
@@ -258,7 +258,7 @@ recommended_points(bool constraint_flag) const
 
 inline void ApproximationInterface::active_model_key(const UShortArray& mi_key)
 {
-  //sharedData.active_model_key(mi_key);
+  sharedData.active_model_key(mi_key);
   // functionSurfaces access key through shared data
 }
 
@@ -335,15 +335,15 @@ inline void ApproximationInterface::remove_stored_approximation(size_t index)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].remove_stored(index);
 }
+*/
 
 
-inline void ApproximationInterface::clear_stored()
+inline void ApproximationInterface::clear_inactive()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].clear_stored();
-  sharedData.clear_stored(); // shared cleanup last
+    functionSurfaces[*it].clear_inactive();
+  sharedData.clear_inactive(); // shared cleanup last
 }
-*/
 
 
 inline void ApproximationInterface::clear_current()
