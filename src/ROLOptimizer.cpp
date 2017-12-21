@@ -134,9 +134,13 @@ public:
       set_continuous_vars(getVector(x), iteratedModel);
 
       ActiveSet eval_set(iteratedModel.current_response().active_set());
-      eval_set.request_values(0);
-      for(size_t i=0;i<num_nln_ineq;++i)
-        eval_set.request_value(AS_FUNC+AS_GRAD,i+1);
+      // eval_set.request_values(0);
+      // for(size_t i=0;i<num_nln_ineq;++i)
+      //   eval_set.request_value(AS_FUNC+AS_GRAD,i+1);
+
+      // Speculative model evaluation, requesting function values and
+      // gradients of all objectives and constraints
+      eval_set.request_values(AS_FUNC+AS_GRAD);
        
       iteratedModel.evaluate(eval_set);
 
@@ -315,9 +319,13 @@ public:
       set_continuous_vars(getVector(x), iteratedModel);
 
       ActiveSet eval_set(iteratedModel.current_response().active_set());
-      eval_set.request_values(0);
-      for(size_t i=0;i<num_nln_eq;++i)
-        eval_set.request_value(AS_FUNC+AS_GRAD,i+1+num_nln_ineq);
+      // eval_set.request_values(0);
+      // for(size_t i=0;i<num_nln_eq;++i)
+      //   eval_set.request_value(AS_FUNC+AS_GRAD,i+1+num_nln_ineq);
+
+      // Speculative model evaluation, requesting function values and
+      // gradients of all objectives and constraints
+      eval_set.request_values(AS_FUNC+AS_GRAD);
 
       iteratedModel.evaluate(eval_set);
 
@@ -470,8 +478,12 @@ public:
       set_continuous_vars(getVector(x), iteratedModel);
 
       ActiveSet eval_set(iteratedModel.current_response().active_set());
-      eval_set.request_values(0);
-      eval_set.request_value(AS_FUNC+AS_GRAD,0);
+      // eval_set.request_values(0);
+      // eval_set.request_value(AS_FUNC+AS_GRAD,0);
+
+      // Speculative model evaluation, requesting function values and
+      // gradients of all objectives and constraints
+      eval_set.request_values(AS_FUNC+AS_GRAD);
 
       iteratedModel.evaluate(eval_set);
 
