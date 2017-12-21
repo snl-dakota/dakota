@@ -175,6 +175,28 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
+/// Applies a RealMatrix to a vector
+template<typename VectorType>
+void apply_matrix(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+{
+  if( M.numCols() > v1.size() ) {
+    Cerr << "apply_matrix Error: incoming vector size is inconsistent with matrix column dimension."
+      << std::endl;
+    abort_handler(-1);
+  }
+
+  // Resize target vector if needed
+  if( M.numRows() > v2.size() )
+    v2.resize(M.numRows());
+
+  // Apply the matrix
+  for(size_t i=0; i<M.numRows(); ++i) {
+    v2[i] = 0.0;
+    for (size_t j=0; j<M.numCols(); ++j)
+      v2[i] += M(i,j) * v1[j];
+  }
+}
+
 // -----
 // Utility functions for manipulating or searching strings
 // -----

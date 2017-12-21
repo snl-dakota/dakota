@@ -148,20 +148,20 @@ void ROLOptimizer::set_rol_parameters()
 }
 
 // need to move functionality from core_run below here.
-void ROLOptimizer::set_problem() {
-  typedef double RealT;
+void ROLOptimizer::set_problem()
+{
   size_t j;
 
   // null defaults for various elements of ROL's simplified interface
   // will be overridden as required
-  Teuchos::RCP<DakotaToROLObjective<RealT> > obj = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<RealT> > x = Teuchos::null;
-  Teuchos::RCP<ROL::BoundConstraint<RealT> > bnd = Teuchos::null;
-  Teuchos::RCP<DakotaToROLEqConstraints<RealT> > eqConst = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<RealT> > emul = Teuchos::null;
-  Teuchos::RCP<DakotaToROLIneqConstraints<RealT> > ineqConst = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<RealT> > imul = Teuchos::null;
-  Teuchos::RCP<ROL::BoundConstraint<RealT> > ineq_bnd = Teuchos::null;
+  Teuchos::RCP<DakotaToROLObjective> obj = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > x = Teuchos::null;
+  Teuchos::RCP<ROL::BoundConstraint<Real> > bnd = Teuchos::null;
+  Teuchos::RCP<DakotaToROLEqConstraints> eqConst = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > emul = Teuchos::null;
+  Teuchos::RCP<DakotaToROLIneqConstraints> ineqConst = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
+  Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
 
   // Extract Dakota variable and bound vectors
   const RealVector& initial_points = iteratedModel.continuous_variables();
@@ -169,11 +169,11 @@ void ROLOptimizer::set_problem() {
   const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
 
   // create ROL variable and bound vectors
-  rolX.reset(new std::vector<RealT>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<RealT> >
-    l_rcp(new std::vector<RealT>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<RealT> >
-    u_rcp(new std::vector<RealT>(numContinuousVars, 0.0));
+  rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
+  Teuchos::RCP<std::vector<Real> >
+    l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
+  Teuchos::RCP<std::vector<Real> >
+    u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
 
   // BMA: left this loop for data transfers consolidation
   for(j=0; j<numContinuousVars; j++){
@@ -182,15 +182,16 @@ void ROLOptimizer::set_problem() {
     u_rcp->operator[](j) = c_u_bnds[j];
   }
 
-  x.reset( new ROL::StdVector<RealT>(rolX) );
-  Teuchos::RCP<ROL::Vector<RealT> > lower( new ROL::StdVector<RealT>( l_rcp ) );
-  Teuchos::RCP<ROL::Vector<RealT> > upper( new ROL::StdVector<RealT>( u_rcp ) );
+  x.reset( new ROL::StdVector<Real>(rolX) );
+  Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );
+  Teuchos::RCP<ROL::Vector<Real> > upper( new ROL::StdVector<Real>( u_rcp ) );
 
   // create ROL::BoundConstraint object to house variable bounds information
-  bnd.reset( new ROL::Bounds<RealT>(lower,upper) );
+  bnd.reset( new ROL::Bounds<Real>(lower,upper) );
 
   // create objective function object and give it access to Dakota model 
-  obj.reset(new DakotaToROLObjective<RealT>(iteratedModel));
+  wrappedDakotaModel.reset( new DakotaROLModelWrapper(iteratedModel) );
+  obj.reset(new DakotaToROLObjective(*wrappedDakotaModel));
 
   size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
@@ -198,28 +199,28 @@ void ROLOptimizer::set_problem() {
   // Equality constraints
   if (numEqConstraints > 0){
     // create equality constraint object and give it access to Dakota model 
-    eqConst.reset(new DakotaToROLEqConstraints<RealT>(iteratedModel));
+    eqConst.reset(new DakotaToROLEqConstraints(*wrappedDakotaModel));
 
     // equality multipliers
-    Teuchos::RCP<std::vector<RealT> > emul_rcp = Teuchos::rcp( new std::vector<RealT>(numEqConstraints,0.0) );
-    emul.reset(new ROL::StdVector<RealT>(emul_rcp) );
+    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(numEqConstraints,0.0) );
+    emul.reset(new ROL::StdVector<Real>(emul_rcp) );
   }
 
   // Inequality constraints
   if (numIneqConstraints > 0){
     // create inequality constraint object and give it access to Dakota model 
-    ineqConst.reset(new DakotaToROLIneqConstraints<RealT>(iteratedModel));
+    ineqConst.reset(new DakotaToROLIneqConstraints(*wrappedDakotaModel));
 
     // inequality multipliers
-    Teuchos::RCP<std::vector<RealT> > imul_rcp = Teuchos::rcp( new std::vector<RealT>(numIneqConstraints,0.0) );
-    imul.reset(new ROL::StdVector<RealT>(imul_rcp) );
+    Teuchos::RCP<std::vector<Real> > imul_rcp = Teuchos::rcp( new std::vector<Real>(numIneqConstraints,0.0) );
+    imul.reset(new ROL::StdVector<Real>(imul_rcp) );
   
 
     // create ROL inequality constraint bound vectors
-    Teuchos::RCP<std::vector<RealT> >
-      ineq_l_rcp(new std::vector<RealT>(numIneqConstraints, 0.0));
-    Teuchos::RCP<std::vector<RealT> >
-      ineq_u_rcp(new std::vector<RealT>(numIneqConstraints, 0.0));
+    Teuchos::RCP<std::vector<Real> >
+      ineq_l_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
+    Teuchos::RCP<std::vector<Real> >
+      ineq_u_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
 
     if (numLinearIneqConstraints){
       const RealVector& lin_eq_lwr_bnds = iteratedModel.linear_ineq_constraint_lower_bounds();
@@ -240,15 +241,15 @@ void ROLOptimizer::set_problem() {
       }
     }
 
-    Teuchos::RCP<ROL::Vector<RealT> > ineq_lower_bounds( new ROL::StdVector<RealT>( ineq_l_rcp ) );
-    Teuchos::RCP<ROL::Vector<RealT> > ineq_upper_bounds( new ROL::StdVector<RealT>( ineq_u_rcp ) );
+    Teuchos::RCP<ROL::Vector<Real> > ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
+    Teuchos::RCP<ROL::Vector<Real> > ineq_upper_bounds( new ROL::StdVector<Real>( ineq_u_rcp ) );
 
     // create ROL::BoundConstraint object to house variable bounds information
-    ineq_bnd.reset( new ROL::Bounds<RealT>(ineq_lower_bounds,ineq_upper_bounds) );
+    ineq_bnd.reset( new ROL::Bounds<Real>(ineq_lower_bounds,ineq_upper_bounds) );
   }
 
   // Call simplified interface problem generator
-  optProblem = ROL::OptimizationProblem<RealT> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
+  optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
 
   // checking, may be enabled in tests or debug mode
 
