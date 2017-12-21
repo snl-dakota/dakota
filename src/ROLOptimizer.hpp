@@ -174,15 +174,21 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<ScalarT>
 
     void update( const ROL::Vector<ScalarT> &x, bool flag, int iter ) {
 
+      // Cout << "ROL: calling update in IneqConstraints." << std::endl;
+
       // Speculative model evaluation, invoked by ROL's call to update(...)
       if ( flag && (numNonlinIneq > 0)) {
         ROLTraits::set_continuous_vars(ROLTraits::getVector(x), iteratedModel);
 
         ActiveSet eval_set(iteratedModel.current_response().active_set());
-        eval_set.request_values(0);
-        for(size_t i=0;i<numNonlinIneq;++i)
-          eval_set.request_value(AS_FUNC+AS_GRAD,i+1);
+        // eval_set.request_values(0);
+        // for(size_t i=0;i<num_nln_ineq;++i)
+        //   eval_set.request_value(AS_FUNC+AS_GRAD,i+1);
 
+        // Speculative model evaluation, requesting function values and
+        // gradients of all objectives and constraints
+        eval_set.request_values(AS_FUNC+AS_GRAD);
+       
         iteratedModel.evaluate(eval_set);
 
         dakotaFns.assign(iteratedModel.current_response().function_values());
@@ -196,6 +202,8 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<ScalarT>
 
     void value(ROL::Vector<ScalarT> &c, const ROL::Vector<ScalarT> &x, ScalarT &tol) override
     {
+
+      // Cout << "ROL: calling value in IneqConstraints." << std::endl;
 
       using Teuchos::RCP;
 
@@ -224,6 +232,9 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<ScalarT>
 
     void applyJacobian(ROL::Vector<ScalarT> &jv,
         const ROL::Vector<ScalarT> &v, const ROL::Vector<ScalarT> &x, ScalarT &tol){
+
+      // Cout << "ROL: calling applyJacobian in IneqConstraints." << std::endl;
+
 
       using Teuchos::RCP;
 
@@ -344,14 +355,20 @@ class DakotaToROLEqConstraints : public ROL::Constraint<ScalarT>
     // nonlinear constraints and manage the indexing?
     void update( const ROL::Vector<ScalarT> &x, bool flag, int iter ) {
 
+      // Cout << "ROL: calling update in EqConstraints." << std::endl;
+
       // Speculative model evaluation, invoked by ROL's call to update(...)
       if ( flag && (numNonlinEq > 0)) {
         ROLTraits::set_continuous_vars(ROLTraits::getVector(x), iteratedModel);
 
         ActiveSet eval_set(iteratedModel.current_response().active_set());
-        eval_set.request_values(0);
-        for(size_t i=0;i<numNonlinEq;++i)
-          eval_set.request_value(AS_FUNC+AS_GRAD,i+1+numNonlinIneq);
+        // eval_set.request_values(0);
+        // for(size_t i=0;i<num_nln_eq;++i)
+        //   eval_set.request_value(AS_FUNC+AS_GRAD,i+1+num_nln_ineq);
+
+        // Speculative model evaluation, requesting function values and
+        // gradients of all objectives and constraints
+        eval_set.request_values(AS_FUNC+AS_GRAD);
 
         iteratedModel.evaluate(eval_set);
 
@@ -365,6 +382,8 @@ class DakotaToROLEqConstraints : public ROL::Constraint<ScalarT>
 
     void value(ROL::Vector<ScalarT> &c, const ROL::Vector<ScalarT> &x, ScalarT &tol) override
     {
+
+      // Cout << "ROL: calling value in EqConstraints." << std::endl;
 
       using Teuchos::RCP;
 
@@ -394,6 +413,8 @@ class DakotaToROLEqConstraints : public ROL::Constraint<ScalarT>
 
     void applyJacobian(ROL::Vector<ScalarT> &jv,
         const ROL::Vector<ScalarT> &v, const ROL::Vector<ScalarT> &x, ScalarT &tol){
+
+      // Cout << "ROL: calling applyJacobian in EqConstraints." << std::endl;
 
       using Teuchos::RCP;
 
@@ -487,13 +508,19 @@ class DakotaToROLObjective : public ROL::Objective<ScalarT>
 
     void update( const ROL::Vector<ScalarT> &x, bool flag, int iter ) {
 
+      // Cout << "ROL: calling update in Objective." << std::endl;
+
       // Speculative model evaluation, invoked by ROL's call to update(...)
       if ( flag ) {
         ROLTraits::set_continuous_vars(ROLTraits::getVector(x), iteratedModel);
 
         ActiveSet eval_set(iteratedModel.current_response().active_set());
-        eval_set.request_values(0);
-        eval_set.request_value(AS_FUNC+AS_GRAD,0);
+        // eval_set.request_values(0);
+        // eval_set.request_value(AS_FUNC+AS_GRAD,0);
+
+        // Speculative model evaluation, requesting function values and
+        // gradients of all objectives and constraints
+        eval_set.request_values(AS_FUNC+AS_GRAD);
 
         iteratedModel.evaluate(eval_set);
 
@@ -509,6 +536,8 @@ class DakotaToROLObjective : public ROL::Objective<ScalarT>
 
     ScalarT value(const ROL::Vector<ScalarT> &x, ScalarT &tol) override
     {
+      // Cout << "ROL: calling value in Objective." << std::endl;
+
       // makes sure that update(...) is called prior to first value(...) call
       if (!updateCalled)
         update( x, true, 0 );
@@ -518,6 +547,8 @@ class DakotaToROLObjective : public ROL::Objective<ScalarT>
 
     void gradient( ROL::Vector<ScalarT> &g, const ROL::Vector<ScalarT> &x, ScalarT &tol ) {
 
+      // Cout << "ROL: calling gradient in Objective." << std::endl;
+   
       // makes sure that update(...) is called prior to first value(...) call
       if (!updateCalled)
         update( x, true, 0 );
