@@ -42,7 +42,7 @@ using std::endl;
 namespace Dakota {
 
 enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
- 
+
 using namespace ROL;
 
 // TODO: data transfers cleanup once decide on std vs Teuchos
@@ -127,6 +127,8 @@ public:
   }
   void update( const Vector<Real> &x, bool flag, int iter ) {
   
+    // Cout << "ROL: calling update in IneqConstraints." << std::endl;
+
     // Speculative model evaluation, invoked by ROL's call to update(...)
     if ( flag && (num_nln_ineq > 0)) {
       set_continuous_vars(getVector(x), iteratedModel);
@@ -146,6 +148,8 @@ public:
     update_called = true;
   }
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
+
+    // Cout << "ROL: calling value in IneqConstraints." << std::endl;
 
     using Teuchos::RCP;
 
@@ -174,6 +178,9 @@ public:
 
   void applyJacobian(Vector<Real> &jv,
         const Vector<Real> &v, const Vector<Real> &x, Real &tol){
+
+    // Cout << "ROL: calling applyJacobian in IneqConstraints." << std::endl;
+
 
     using Teuchos::RCP;
 
@@ -300,6 +307,8 @@ public:
   // BMA TODO: don't we now have data adapters that convert linear to
   // nonlinear constraints and manage the indexing?
   void update( const Vector<Real> &x, bool flag, int iter ) {
+  
+    // Cout << "ROL: calling update in EqConstraints." << std::endl;
 
     // Speculative model evaluation, invoked by ROL's call to update(...)
     if ( flag && (num_nln_eq > 0)) {
@@ -321,6 +330,8 @@ public:
   }
 
   void value(Vector<Real> &c, const Vector<Real> &x, Real &tol){
+  
+    // Cout << "ROL: calling value in EqConstraints." << std::endl;
 
     using Teuchos::RCP;
 
@@ -350,6 +361,8 @@ public:
 
   void applyJacobian(Vector<Real> &jv,
         const Vector<Real> &v, const Vector<Real> &x, Real &tol){
+  
+    // Cout << "ROL: calling applyJacobian in EqConstraints." << std::endl;
 
     using Teuchos::RCP;
 
@@ -449,6 +462,8 @@ public:
   }
 
   void update( const Vector<Real> &x, bool flag, int iter ) {
+  
+    // Cout << "ROL: calling update in Objective." << std::endl;
 
     // Speculative model evaluation, invoked by ROL's call to update(...)
     if ( flag ) {
@@ -471,6 +486,8 @@ public:
   }
 
   Real value(const Vector<Real> &x, Real &tol) {
+  
+    // Cout << "ROL: calling value in Objective." << std::endl;
 
     // makes sure that update(...) is called prior to first value(...) call
     if (!update_called)
@@ -480,6 +497,8 @@ public:
   }
 
   void gradient( Vector<Real> &g, const Vector<Real> &x, Real &tol ) {
+  
+    // Cout << "ROL: calling gradient in Objective." << std::endl;
    
     // makes sure that update(...) is called prior to first value(...) call
     if (!update_called)
