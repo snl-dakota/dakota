@@ -702,7 +702,7 @@ void NonDExpansion::initialize_expansion()
 }
 
 
-void NonDExpansion::compute_expansion(size_t index)
+void NonDExpansion::compute_expansion()
 {
 #ifdef DERIV_DEBUG
   // numerical verification of analytic Jacobian/Hessian routines
@@ -890,12 +890,12 @@ void NonDExpansion::compute_expansion(size_t index)
       u_space_sampler.active_set(sampler_set);
     }
 
-    uSpaceModel.build_approximation(index);
+    uSpaceModel.build_approximation();
   }
 }
 
 
-void NonDExpansion::refine_expansion(size_t index)
+void NonDExpansion::refine_expansion()
 {
   // --------------------------------------
   // Uniform/adaptive refinement approaches
@@ -910,12 +910,12 @@ void NonDExpansion::refine_expansion(size_t index)
   if (!converged)
     annotated_refinement_results(true); // includes initialization of traces
 
-  pre_refinement(index);
+  pre_refinement();
 
   Real metric;
   while (!converged) {
 
-    core_refinement(index, metric);
+    core_refinement(metric);
 
     converged = (metric <= convergenceTol || ++iter > max_refine);
     if (!converged)
@@ -923,11 +923,11 @@ void NonDExpansion::refine_expansion(size_t index)
     Cout << "\nRefinement iteration convergence metric = " << metric << '\n';
   }
 
-  post_refinement(index, metric);
+  post_refinement(metric);
 }
 
 
-void NonDExpansion::pre_refinement(size_t index)
+void NonDExpansion::pre_refinement()
 {
   // initialize refinement algorithms (if necessary)
   switch (refineControl) {
@@ -937,7 +937,7 @@ void NonDExpansion::pre_refinement(size_t index)
 }
 
 
-void NonDExpansion::core_refinement(size_t index, Real& metric)
+void NonDExpansion::core_refinement(Real& metric)
 {
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
@@ -948,7 +948,7 @@ void NonDExpansion::core_refinement(size_t index, Real& metric)
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid(); // TPQ or SSG
-      update_expansion(index);
+      update_expansion();
       break;
     }
     case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
@@ -960,7 +960,7 @@ void NonDExpansion::core_refinement(size_t index, Real& metric)
       // ramp expansion order and update regression samples, keeping
       // initial collocation ratio (either user specified or inferred)
       increment_order_and_grid(); // virtual fn defined for NonDPCE
-      update_expansion(index); // invokes uSpaceModel.build_approximation()
+      update_expansion(); // invokes uSpaceModel.build_approximation()
       break;
     }
     metric = compute_covariance_metric();
@@ -974,7 +974,7 @@ void NonDExpansion::core_refinement(size_t index, Real& metric)
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
     nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
-    update_expansion(index);
+    update_expansion();
     metric = compute_covariance_metric();
     break;
   }
@@ -987,7 +987,7 @@ void NonDExpansion::core_refinement(size_t index, Real& metric)
     NonDIntegration* nond_integration = (NonDIntegration*)
       uSpaceModel.subordinate_iterator().iterator_rep();
     nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-    update_expansion(index);
+    update_expansion();
     metric = compute_covariance_metric();
     break;
   }
@@ -1005,7 +1005,7 @@ void NonDExpansion::core_refinement(size_t index, Real& metric)
 }
 
 
-void NonDExpansion::post_refinement(size_t index, Real& metric)
+void NonDExpansion::post_refinement(Real& metric)
 {
   // finalize refinement algorithms (if necessary)
   switch (refineControl) {
@@ -1121,16 +1121,15 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
 {
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  size_t num_lev, form; RealVector cost;
+  bool multilev; size_t num_lev, form; RealVector cost;
   configure_hierarchy(num_lev, form, multilev, cost, true, true);
 
   // initial low fidelity/lowest discretization expansion
   size_t lev = 0; Real lev_cost;
   configure_model_indices(lev, form, multilev, cost, lev_cost);
-  compute_expansion(lev);  // nominal LF expansion from input spec
+  compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
-    refine_expansion(lev); // uniform/adaptive refinement
+    refine_expansion(); // uniform/adaptive refinement
   // output and capture low fidelity results
   Cout << "\n--------------------------------------"
        << "\nMultifidelity UQ: low fidelity results"
@@ -1140,17 +1139,14 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
 
   // loop over each of the discrepancy levels
   for (lev=1; lev<num_lev; ++lev) {
-    // store current state for use in combine_approximation() below
-    //uSpaceModel.store_approximation(lev-1);
-
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
     // form the expansion for level i
     configure_model_indices(lev, form, multilev, cost, lev_cost);
-    update_expansion(lev);   // nominal discrepancy expansion from input spec
+    update_expansion();   // nominal discrepancy expansion from input spec
     if (refine_type)
-      refine_expansion(lev); // uniform/adaptive refinement
+      refine_expansion(); // uniform/adaptive refinement
 
     Cout << "\n-------------------------------------------"
 	 << "\nMultifidelity UQ: model discrepancy results"
@@ -1171,12 +1167,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
   size_t lev, form, num_lev, best_lev, iter = 0,
     max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  bool multilev, recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
+  bool multilev; Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
   configure_hierarchy(num_lev, form, multilev, cost, true, true);
-
-  // NEXT STEP: WORK OUT DATA MODEL FOR OVERLAYING STORE/RESTORE AND PUSH/POP
-  // (OUTSIDE OF GSG, PREVIOUS REFINEMENT APPROACHES DID NOT PUSH/POP...)
 
   //for (lev=0; lev<num_lev; ++lev)
   //  pre_refinement(lev); // initialize_sets() for each level grid
@@ -1191,11 +1183,9 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       configure_model_indices(lev, form, multilev, cost, lev_cost);
 
-      // retrieve prev expansion for this level & append new samples
-      //uSpaceModel.restore_approximation(lev);
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      core_refinement(lev, lev_metric); // TO DO: retrieve lev_candidate
+      core_refinement(lev_metric); // TO DO: retrieve lev_candidate
       // TO DO: normalize lev_metric by aggregate cost, either here or within
       // core_refinement()...
 
@@ -1204,16 +1194,12 @@ void NonDExpansion::greedy_multifidelity_expansion()
 	{ best_lev_metric = lev_metric; best_lev = lev; }//TO DO: best_candidate
 
       // TO DO: pop the refinement candidate for this level
-      //uSpaceModel.pop_approximation(lev); // currently assumes trial_set
-
-      // return the unrefined approximation to storage
-      //uSpaceModel.store_approximation(lev);
-      //last_active = lev;
+      //uSpaceModel.pop_approximation(); // currently assumes trial_set
     }
 
     // TO DO: push best level refinement (which may need to identify best among
     // several candidates for this level)
-    //uSpaceModel.restore_approximation(best_lev);
+    configure_model_indices(best_lev, form, multilev, cost, lev_cost);
     //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
     // Note: in case of GSG, this step must update ref/candidate sets
 
@@ -1223,8 +1209,6 @@ void NonDExpansion::greedy_multifidelity_expansion()
   //for (lev=0; lev<num_lev; ++lev)
   //  post_refinement(lev); // finalize_sets() for each level grid
 
-  // remove redundancy between current active and stored, prior to combining
-  //uSpaceModel.remove_stored_approximation(num_lev-1);//(last_active);
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
 
@@ -1246,8 +1230,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
 
 
 void NonDExpansion::
-append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
-		 size_t index)
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
        << "       NonDExpansion does not support data appending." << std::endl;
@@ -1264,7 +1247,7 @@ void NonDExpansion::increment_order_and_grid()
 }
 
 
-void NonDExpansion::update_expansion(size_t index)
+void NonDExpansion::update_expansion()
 {
   // leave sampler_set, expansion flags, and distribution parameter settings
   // as set previously by compute_expansion(); there should be no need to
@@ -1275,7 +1258,7 @@ void NonDExpansion::update_expansion(size_t index)
   // before this can be implemented.  For now, employ incremental rebuilds
   // only for hierarchical SC and rely on evaluation duplicate detection
   // within non-incremental builds from scratch.
-  uSpaceModel.build_approximation(index);//.rebuild_approximation();
+  uSpaceModel.build_approximation();//.rebuild_approximation();
 }
 
 

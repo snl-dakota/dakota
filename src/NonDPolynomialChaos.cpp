@@ -879,13 +879,13 @@ void NonDPolynomialChaos::initialize_u_space_model()
 }
 
 
-void NonDPolynomialChaos::compute_expansion(size_t index)
+void NonDPolynomialChaos::compute_expansion()
 {
   if (expansionImportFile.empty())
     // ------------------------------
     // Calculate the PCE coefficients
     // ------------------------------
-    NonDExpansion::compute_expansion(index); // default implementation
+    NonDExpansion::compute_expansion(); // default implementation
   else {
     // ---------------------------
     // Import the PCE coefficients

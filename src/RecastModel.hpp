@@ -248,33 +248,30 @@ protected:
   const RealVector& error_estimates();
 
   /// builds the subModel approximation
-  void build_approximation(size_t index = _NPOS);
+  void build_approximation();
   /// builds the subModel approximation
   bool build_approximation(const Variables& vars,
-			   const IntResponsePair& response_pr,
-			   size_t index = _NPOS);
+			   const IntResponsePair& response_pr);
 
   /// replaces data in the subModel approximation
-  void update_approximation(bool rebuild_flag, size_t index = _NPOS);
+  void update_approximation(bool rebuild_flag);
   /// replaces data in the subModel approximation
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag, size_t index = _NPOS);
+			    bool rebuild_flag);
   /// replaces data in the subModel approximation
   void update_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// appends data to the subModel approximation
-  void append_approximation(bool rebuild_flag, size_t index = _NPOS);
+  void append_approximation(bool rebuild_flag);
   /// appends data to the subModel approximation
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag, size_t index = _NPOS);
+			    bool rebuild_flag);
   /// appends data to the subModel approximation
   void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
   void push_approximation();
@@ -299,7 +296,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -613,49 +610,45 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 { subModel.surrogate_function_indices(surr_fn_indices); }
 
 
-inline void RecastModel::build_approximation(size_t index)
-{ subModel.build_approximation(index); }
+inline void RecastModel::build_approximation()
+{ subModel.build_approximation(); }
 
 
 inline bool RecastModel::
-build_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		    size_t index)
-{ return subModel.build_approximation(vars, response_pr, index); }
+build_approximation(const Variables& vars, const IntResponsePair& response_pr)
+{ return subModel.build_approximation(vars, response_pr); }
 
 
-inline void RecastModel::
-update_approximation(bool rebuild_flag, size_t index)
-{ subModel.update_approximation(rebuild_flag, index); }
+inline void RecastModel::update_approximation(bool rebuild_flag)
+{ subModel.update_approximation(rebuild_flag); }
 
 
 inline void RecastModel::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag, size_t index)
-{ subModel.update_approximation(vars, response_pr, rebuild_flag, index); }
+		     bool rebuild_flag)
+{ subModel.update_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 update_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
-{ subModel.update_approximation(vars_array, resp_map, rebuild_flag, index); }
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{ subModel.update_approximation(vars_array, resp_map, rebuild_flag); }
 
 
-inline void RecastModel::append_approximation(bool rebuild_flag, size_t index)
-{ subModel.append_approximation(rebuild_flag, index); }
+inline void RecastModel::append_approximation(bool rebuild_flag)
+{ subModel.append_approximation(rebuild_flag); }
 
 
 inline void RecastModel::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag, size_t index)
-{ subModel.append_approximation(vars, response_pr, rebuild_flag, index); }
+		     bool rebuild_flag)
+{ subModel.append_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
-{ subModel.append_approximation(vars_array, resp_map, rebuild_flag, index); }
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{ subModel.append_approximation(vars_array, resp_map, rebuild_flag); }
 
 
 inline void RecastModel::
@@ -717,8 +710,9 @@ approximation_variances(const Variables& vars)
 { return subModel.approximation_variances(vars); }
 
 
-inline const Pecos::SurrogateData& RecastModel::approximation_data(size_t index)
-{ return subModel.approximation_data(index); }
+inline const Pecos::SurrogateData& RecastModel::
+approximation_data(size_t fn_index)
+{ return subModel.approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)

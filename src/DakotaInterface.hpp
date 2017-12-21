@@ -153,14 +153,13 @@ public:
   virtual void build_approximation(const RealVector& c_l_bnds,
     const RealVector&  c_u_bnds, const IntVector&  di_l_bnds,
     const IntVector&  di_u_bnds, const RealVector& dr_l_bnds,
-    const RealVector& dr_u_bnds, size_t index = _NPOS);
+    const RealVector& dr_u_bnds);
 
   /// export the approximation to disk
   virtual void export_approximation();
 
   /// rebuilds the approximation after a data update
-  virtual void rebuild_approximation(const BoolDeque& rebuild_deque,
-				     size_t index = _NPOS);
+  virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
   virtual void pop_approximation(bool save_surr_data);
@@ -211,7 +210,7 @@ public:
   virtual std::vector<Approximation>& approximations();
   /// retrieve the approximation data from a particular Approximation
   /// within an ApproximationInterface
-  virtual const Pecos::SurrogateData& approximation_data(size_t index);
+  virtual const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface

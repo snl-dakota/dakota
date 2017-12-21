@@ -1129,12 +1129,11 @@ append_approximation(const VariablesArray& vars_array,
 void Interface::
 build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds,
-		    size_t index)
+		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->build_approximation(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
-				      dr_l_bnds, dr_u_bnds, index);
+				      dr_l_bnds, dr_u_bnds);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\n       This interface does not support "
@@ -1143,8 +1142,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
-void Interface::
-export_approximation()
+void Interface::export_approximation()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->export_approximation();
@@ -1157,10 +1155,10 @@ export_approximation()
 }
 
 void Interface::
-rebuild_approximation(const BoolDeque& rebuild_deque, size_t index)
+rebuild_approximation(const BoolDeque& rebuild_deque)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_deque, index);
+    interfaceRep->rebuild_approximation(rebuild_deque);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
 	 << "approximation() function.\n       This interface does not "
@@ -1369,7 +1367,7 @@ std::vector<Approximation>& Interface::approximations()
 }
 
 
-const Pecos::SurrogateData& Interface::approximation_data(size_t index)
+const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
@@ -1379,7 +1377,7 @@ const Pecos::SurrogateData& Interface::approximation_data(size_t index)
   }
   
   // envelope fwd to letter
-  return interfaceRep->approximation_data(index);
+  return interfaceRep->approximation_data(fn_index);
 }
 
 

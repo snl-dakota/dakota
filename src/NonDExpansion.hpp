@@ -71,8 +71,7 @@ public:
 
   /// append new data to uSpaceModel and update expansion order (PCE only)
   virtual void append_expansion(const RealMatrix& samples,
-				const IntResponseMap& resp_map,
-				size_t index = _NPOS);
+				const IntResponseMap& resp_map);
 
 protected:
 
@@ -87,14 +86,14 @@ protected:
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
-  virtual void compute_expansion(size_t index = _NPOS);
+  virtual void compute_expansion();
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
   /// increment the input specification sequence (PCE only)
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()
-  virtual void update_expansion(size_t index = _NPOS);
+  virtual void update_expansion();
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
@@ -180,13 +179,13 @@ protected:
 
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
-  void refine_expansion(size_t index = _NPOS);
+  void refine_expansion();
   /// initialization of expansion refinement, if necessary
-  void pre_refinement(size_t index);
+  void pre_refinement();
   /// advance the refinement strategy one step
-  void core_refinement(size_t index, Real& metric);
+  void core_refinement(Real& metric);
   /// finalization of expansion refinement, if necessary
-  void post_refinement(size_t index, Real& metric);
+  void post_refinement(Real& metric);
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics(short results_state = FINAL_RESULTS);

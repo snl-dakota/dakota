@@ -132,49 +132,44 @@ protected:
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
-  void build_approximation(size_t index = _NPOS);
+  void build_approximation();
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points that
   /// augment the passed vars/response anchor point
   bool build_approximation(const Variables& vars,
-			   const IntResponsePair& response_pr,
-			   size_t index = _NPOS);
+			   const IntResponsePair& response_pr);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
-  void update_approximation(bool rebuild_flag, size_t index = _NPOS);
+  void update_approximation(bool rebuild_flag);
   /// replaces the anchor point, and rebuilds the approximation if requested
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag, size_t index = _NPOS);
+			    bool rebuild_flag);
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// appends daceIterator results to a global approximation and rebuilds
   /// it if requested
-  void append_approximation(bool rebuild_flag, size_t index = _NPOS);
+  void append_approximation(bool rebuild_flag);
   /// appends a point to a global approximation and rebuilds it if requested
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag, size_t index = _NPOS);
+			    bool rebuild_flag);
   /// appends an array of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag,
-			    size_t index = _NPOS);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
   /// or a specified number of points
@@ -204,7 +199,7 @@ protected:
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
-  void run_dace_iterator(bool rebuild_flag, size_t index = _NPOS);
+  void run_dace_iterator(bool rebuild_flag);
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();
@@ -222,7 +217,7 @@ protected:
   const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -326,9 +321,9 @@ private:
   void build_local_multipoint();
 
   /// Refine the built surrogate until convergence criteria are met
-  void refine_surrogate(size_t index = _NPOS);
+  void refine_surrogate();
   /// Call build_approximation on the interface, passing appropriate constraints
-  void interface_build_approx(size_t index = _NPOS);
+  void interface_build_approx();
 
   /// update actualModel with data from constraints/labels/sets
   void init_model(Model& model);
@@ -553,8 +548,8 @@ approximation_variances(const Variables& vars)
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::
-approximation_data(size_t index)
-{ return approxInterface.approximation_data(index); }
+approximation_data(size_t fn_index)
+{ return approxInterface.approximation_data(fn_index); }
 
 
 inline IntIntPair DataFitSurrModel::

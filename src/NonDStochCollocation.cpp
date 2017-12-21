@@ -364,7 +364,7 @@ void NonDStochCollocation::initialize_u_space_model()
 }
 
 
-void NonDStochCollocation::update_expansion(size_t index)
+void NonDStochCollocation::update_expansion()
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     // grid levels have been updated, now evaluate the new points
@@ -372,10 +372,10 @@ void NonDStochCollocation::update_expansion(size_t index)
       uSpaceModel.subordinate_iterator().iterator_rep();
     nond_sparse->evaluate_grid_increment(); // like NonDSG::evaluate_set()
     // append the new data to the existing approximation and rebuild
-    uSpaceModel.append_approximation(index, true); // rebuild
+    uSpaceModel.append_approximation(true); // rebuild
   }
   else
-    NonDExpansion::update_expansion(index); // default: build from scratch
+    NonDExpansion::update_expansion(); // default: build from scratch
 }
 
 

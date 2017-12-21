@@ -126,7 +126,7 @@ protected:
 
   SharedApproxData& shared_approximation();
   std::vector<Approximation>& approximations();
-  const Pecos::SurrogateData& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
   const RealVectorArray& approximation_coefficients(bool normalized = false);
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
@@ -376,14 +376,14 @@ inline std::vector<Approximation>& ApproximationInterface::approximations()
 
 
 inline const Pecos::SurrogateData& ApproximationInterface::
-approximation_data(size_t index)
+approximation_data(size_t fn_index)
 {
-  if (approxFnIndices.find(index) == approxFnIndices.end()) {
+  if (approxFnIndices.find(fn_index) == approxFnIndices.end()) {
     Cerr << "Error: index passed to ApproximationInterface::approximation_data"
 	 << "() does not correspond to an approximated function." << std::endl;
     abort_handler(-1);
   }
-  return functionSurfaces[index].approximation_data();
+  return functionSurfaces[fn_index].approximation_data();
 }
 
 

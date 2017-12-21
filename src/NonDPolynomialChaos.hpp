@@ -96,7 +96,7 @@ protected:
   void initialize_u_space_model();
 
   /// form or import an orthogonal polynomial expansion using PCE methods
-  void compute_expansion(size_t index = _NPOS);
+  void compute_expansion();
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
@@ -107,7 +107,7 @@ protected:
     RealMatrix& best_samples);
 
   void append_expansion(const RealMatrix& samples,
-			const IntResponseMap& resp_map, size_t index = _NPOS);
+			const IntResponseMap& resp_map);
 
   void increment_order_and_grid();
 
@@ -126,7 +126,7 @@ protected:
   //
 
   /// generate new samples from numSamplesOnModel and update expansion
-  void append_expansion(size_t index = _NPOS);
+  void append_expansion();
 
   /// configure exp_orders from inputs
   void config_expansion_orders(unsigned short exp_order,
@@ -272,8 +272,7 @@ private:
 
 
 inline void NonDPolynomialChaos::
-append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
-		 size_t index)
+append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   // adapt the expansion in sync with the dataset
   numSamplesOnModel += resp_map.size();
@@ -281,11 +280,11 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map,
     increment_order_from_grid();
 
   // utilize rebuild following expansion updates
-  uSpaceModel.append_approximation(samples, resp_map, true, index);
+  uSpaceModel.append_approximation(samples, resp_map, true);
 }
 
 
-inline void NonDPolynomialChaos::append_expansion(size_t index)
+inline void NonDPolynomialChaos::append_expansion()
 {
   // Reqmts: numSamplesOnModel updated and propagated to uSpaceModel
   //         increment_order_from_grid() called
@@ -293,7 +292,7 @@ inline void NonDPolynomialChaos::append_expansion(size_t index)
   // Run uSpaceModel::daceIterator, append data sets, and rebuild expansion
   uSpaceModel.subordinate_iterator().sampling_reset(numSamplesOnModel,
 						    true, false);
-  uSpaceModel.run_dace_iterator(true, index); // appends and rebuilds
+  uSpaceModel.run_dace_iterator(true); // appends and rebuilds
 }
 
 

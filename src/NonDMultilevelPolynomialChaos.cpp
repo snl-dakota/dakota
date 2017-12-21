@@ -728,7 +728,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
-  size_t lev, num_lev, form, index, iter = 0, last_active = 0,
+  size_t lev, num_lev, form, iter = 0,
     max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   RealVector cost; SizetArray cardinality;
@@ -772,7 +772,6 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     for (lev=0; lev<num_lev; ++lev) {
 
       configure_model_indices(lev, form, multilev, cost, lev_cost);
-      index = (recursive) ? lev : _NPOS;
 
       if (iter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support
@@ -782,8 +781,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
-	if (lev == 0) compute_expansion(index); // init + build; not recursive
-	else           update_expansion(index); //   just build; not recursive
+	if (lev == 0) compute_expansion(); // init + build; not recursive
+	else           update_expansion(); //   just build; not recursive
 
 	if (import_pilot) { // update counts to include imported data
 	  NLev[lev] = delta_N_l[lev]
@@ -798,19 +797,16 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	}
       }
       else if (delta_N_l[lev]) {
-	// retrieve prev expansion for this level & append new samples
-	//uSpaceModel.restore_approximation(lev);
 	NLev[lev] += delta_N_l[lev]; // update total samples for this level
 	increment_sample_sequence(delta_N_l[lev], NLev[lev], lev);
 	// Note: import build data is not re-processed by append_expansion()
-	append_expansion(index); // not recursive
+	append_expansion(); // not recursive
       }
 
-      bool delta = (delta_N_l[lev] > 0);
       switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = level_metric[lev];
-	if (delta) aggregate_variance(agg_var_l);
+	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
 	  std::pow(lev_cost, kappaEstimatorRate), 1./(kappaEstimatorRate+1.));
         // MSE reference is ML MC aggregation for pilot(+import) sample:
@@ -818,17 +814,9 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	break;
       }
       case RIP_SAMPLING: // use RMS of sparsity across QoI
-	if (delta) sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
+	if (delta_N_l[lev] > 0)
+	  sparsity_metrics(cardinality[lev], level_metric[lev], 2.);
 	break;
-      }
-
-      if (delta) {
-        // store all approximation levels, whenever recomputed.
-	//uSpaceModel.store_approximation(lev);
-	// The active approximation upon completion of the refinement loop may
-	// be any level -> store the last approximation index for use within
-	// combine_approximation().
-	last_active = lev;
       }
     }
 
@@ -851,8 +839,6 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	 << delta_N_l << std::endl;
   }
 
-  // remove redundancy between current active and stored, prior to combining
-  //uSpaceModel.remove_stored_approximation(last_active);
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
 

@@ -3057,10 +3057,10 @@ bool Model::resize_pending() const
 }
 
 
-void Model::build_approximation(size_t index)
+void Model::build_approximation()
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->build_approximation(index);
+    modelRep->build_approximation();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\nThis model does not support approximation "
@@ -3071,8 +3071,7 @@ void Model::build_approximation(size_t index)
 
 
 bool Model::
-build_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		    size_t index)
+build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
@@ -3082,14 +3081,14 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr,
   }
 
   // envelope fwd to letter
-  return modelRep->build_approximation(vars, response_pr, index);
+  return modelRep->build_approximation(vars, response_pr);
 }
 
 
-void Model::update_approximation(bool rebuild_flag, size_t index)
+void Model::update_approximation(bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(rebuild_flag, index);
+    modelRep->update_approximation(rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_"
 	 << "approximation(bool) function.\nThis model does not support "
@@ -3101,10 +3100,10 @@ void Model::update_approximation(bool rebuild_flag, size_t index)
 
 void Model::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag, size_t index)
+		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars, response_pr, rebuild_flag, index);
+    modelRep->update_approximation(vars, response_pr, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
@@ -3116,11 +3115,10 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 void Model::
 update_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars_array, resp_map, rebuild_flag, index);
+    modelRep->update_approximation(vars_array, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
@@ -3132,10 +3130,10 @@ update_approximation(const VariablesArray& vars_array,
 
 void Model::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
+		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(samples, resp_map, rebuild_flag, index);
+    modelRep->update_approximation(samples, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
@@ -3145,10 +3143,10 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 }
 
 
-void Model::append_approximation(bool rebuild_flag, size_t index)
+void Model::append_approximation(bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(rebuild_flag, index);
+    modelRep->append_approximation(rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_"
 	 << "approximation(bool) function.\nThis model does not support "
@@ -3160,10 +3158,10 @@ void Model::append_approximation(bool rebuild_flag, size_t index)
 
 void Model::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag, size_t index)
+		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars, response_pr, rebuild_flag, index);
+    modelRep->append_approximation(vars, response_pr, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(Variables, IntResponsePair) function.\nThis model does not "
@@ -3175,11 +3173,10 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 
 void Model::
 append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars_array, resp_map, rebuild_flag, index);
+    modelRep->append_approximation(vars_array, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(VariablesArray, IntResponseMap) function.\nThis model does not "
@@ -3191,10 +3188,10 @@ append_approximation(const VariablesArray& vars_array,
 
 void Model::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag, size_t index)
+		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(samples, resp_map, rebuild_flag, index);
+    modelRep->append_approximation(samples, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(RealMatrix, IntResponseMap) function.\nThis model does not "
@@ -3318,10 +3315,10 @@ void Model::clear_inactive()
 }
 
 
-void Model::run_dace_iterator(bool rebuild_flag, size_t index)
+void Model::run_dace_iterator(bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->run_dace_iterator(rebuild_flag, index);
+    modelRep->run_dace_iterator(rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual run_dace_iterator()"
 	 << "function.\n       This model does not support DACE executions."
@@ -3453,7 +3450,7 @@ const RealVector& Model::error_estimates()
 }
 
 
-const Pecos::SurrogateData& Model::approximation_data(size_t index)
+const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
@@ -3463,7 +3460,7 @@ const Pecos::SurrogateData& Model::approximation_data(size_t index)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_data(index);
+  return modelRep->approximation_data(fn_index);
 }
 
 
