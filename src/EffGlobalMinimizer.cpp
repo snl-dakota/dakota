@@ -61,7 +61,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
     approx_type = "global_gaussian";
 
-  String sample_reuse = "none";
+  String sample_reuse = "none"; // *** TO DO: allow reuse separate from import
   UShortArray approx_order; // empty
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
@@ -84,7 +84,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // get point samples file
   const String& import_pts_file
     = probDescDB.get_string("method.import_build_points_file");
-  if (!import_pts_file.empty())
+  if (!import_pts_file.empty()) // *** TO DO: allow reuse separate from import
     { samples = 0; sample_reuse = "all"; }
 
   Iterator dace_iterator;

@@ -41,8 +41,8 @@ namespace Dakota {
 Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 			     const SharedApproxData& shared_data,
                              const String& approx_label):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL),
-  approxLabel(approx_label), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep()),
+  approxLabel(approx_label), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -60,7 +60,8 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     uninitialized pointer causes problems in ~Approximation). */
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
-  sharedDataRep(shared_data.data_rep()), approxRep(NULL), referenceCount(1)
+  approxData(true), sharedDataRep(shared_data.data_rep()),
+  approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(NoDBBaseConstructor) called to build "
