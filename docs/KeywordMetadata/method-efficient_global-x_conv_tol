@@ -1,0 +1,13 @@
+Blurb::
+x-convergence tolerance
+
+Description::
+The Efficient Global Optimization method will terminate if the
+relative change in the best decision variables values x is less than
+the specified tolerance.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

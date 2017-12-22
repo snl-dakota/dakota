@@ -130,6 +130,9 @@ private:
   /// (user-supplied functions mode for "on the fly" instantiations).
   String setUpType;
 
+  /// convergence tolerance on distance between predicted best points
+  Real distanceTol;
+
   /// GP model of response, one approximation per response function
   Model fHatModel;
   /// recast model which assimilates mean and variance to solve the

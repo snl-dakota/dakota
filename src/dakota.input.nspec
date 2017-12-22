@@ -997,6 +997,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ x_conv_tol REAL {N_mdm(Real,xConvTol)} ]
     [ gaussian_process ALIAS kriging {0}
       surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
       |

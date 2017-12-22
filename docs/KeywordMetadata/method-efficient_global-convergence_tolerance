@@ -1,0 +1,12 @@
+Blurb:: Expected improvement convergence tolerance
+
+Description::
+The Efficient Global Optimization method will terminate if the
+expected improvement is below the specified tolerance for two
+subsequent iterations.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	
