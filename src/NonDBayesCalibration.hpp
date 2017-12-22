@@ -126,6 +126,8 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  /// supplement high-fidelity data with LHS samples
+  void add_lhs_hifi_data();
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();

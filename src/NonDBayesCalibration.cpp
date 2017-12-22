@@ -664,36 +664,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
   */
   int num_exp = expData.num_experiments();
   int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
-  if (num_lhs_samples > 0) {
-
-    hifiSampler.run();
-
-    const RealMatrix& all_samples = hifiSampler.all_samples();
-    const IntResponseMap& all_responses = hifiSampler.all_responses();
-
-    if (num_exp == 0) {
-      // No file data; all initial hifi calibration data points come from LHS
-      // BMA TODO: Once ExperimentData can be updated, post this into
-      // expData directly
-      ExperimentData exp_data(initHifiSamples, 
-                              mcmcModel.current_response().shared_data(), 
-                              all_samples, all_responses, outputLevel);
-      expData = exp_data;
-    }
-    else {
-      // If number of num_experiments is less than the number of desired initial
-      // samples, run LHS to supplement
-      IntRespMCIter responses_it = all_responses.begin();
-      IntRespMCIter responses_end = all_responses.end();
-      for (int i=0 ; responses_it != responses_end; ++responses_it, ++i) {
-        RealVector col_vec = 
-          Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(all_samples),
-                          i);
-        expData.add_data(col_vec, responses_it->second.copy());
-      }
-    }
-
-  }
+  if (num_lhs_samples > 0) 
+    add_lhs_hifi_data();
   num_exp = expData.num_experiments();
   
   // Apply hifi error
@@ -1186,6 +1158,37 @@ void NonDBayesCalibration::calibrate_to_hifi()
     } // end MI loop
   } // end while loop
 
+}
+
+void NonDBayesCalibration::add_lhs_hifi_data()
+{
+  hifiSampler.run();
+
+  int num_exp = expData.num_experiments();
+  const RealMatrix& all_samples = hifiSampler.all_samples();
+  const IntResponseMap& all_responses = hifiSampler.all_responses();
+
+  if (num_exp == 0) {
+    // No file data; all initial hifi calibration data points come from LHS
+    // BMA TODO: Once ExperimentData can be updated, post this into
+    // expData directly
+    ExperimentData exp_data(initHifiSamples, 
+                            mcmcModel.current_response().shared_data(), 
+                            all_samples, all_responses, outputLevel);
+    expData = exp_data;
+  }
+  else {
+    // If number of num_experiments is less than the number of desired initial
+    // samples, run LHS to supplement
+    IntRespMCIter responses_it = all_responses.begin();
+    IntRespMCIter responses_end = all_responses.end();
+    for (int i=0 ; responses_it != responses_end; ++responses_it, ++i) {
+      RealVector col_vec = 
+        Teuchos::getCol(Teuchos::Copy, const_cast<RealMatrix&>(all_samples),
+                        i);
+      expData.add_data(col_vec, responses_it->second.copy());
+    }
+  }
 }
 
 void NonDBayesCalibration::build_model_discrepancy()
