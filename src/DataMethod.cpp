@@ -23,7 +23,8 @@ namespace Dakota {
 DataMethodRep::DataMethodRep():
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxRefineIterations(-1),
   maxSolverIterations(-1), maxFunctionEvaluations(1000), speculativeFlag(false),
-  methodUseDerivsFlag(false), convergenceTolerance(1.e-4), 
+  methodUseDerivsFlag(false),
+  convergenceTolerance(-std::numeric_limits<double>::max()),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   // Meta-iterators
