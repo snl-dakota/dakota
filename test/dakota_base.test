@@ -19700,6 +19700,14 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       1.7254607914e-04
 <<<<< Best data captured at function evaluation 23
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 45 total (44 new, 1 duplicate)
+<<<<< Best parameters          =
+                      9.8686903469e-01 x1
+                      9.7394568102e-01 x2
+<<<<< Best objective function  =
+                      1.7254607914e-04
+<<<<< Best data captured at function evaluation 23
 dakota_rosenbrock_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)

@@ -916,6 +916,12 @@ public:
   /// userDefinedConstraints
   void all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i);
 
+  // CONSTRAINTS
+
+  /// reshape the linear/nonlinear constraint arrays
+  void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+
   // LINEAR CONSTRAINTS
 
   /// return the number of linear inequality constraints
@@ -3035,6 +3041,19 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
       userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
   else
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
+}
+
+
+inline void
+Model::reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
+					     num_lin_ineq_cons, num_lin_eq_cons);
+  else
+    userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
+				   num_lin_ineq_cons, num_lin_eq_cons);
 }
 
 
