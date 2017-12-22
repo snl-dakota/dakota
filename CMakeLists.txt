@@ -409,6 +409,13 @@ if (NOT BUILD_IN_TRILINOS)
       # Map key Dakota variables to TriBITS variables
       set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
       set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+      # Newer versions of Trilinos automatically turn off Fortran name-mangling
+      # on Windows
+      if(WIN32)
+        set(Trilinos_ENABLE_Fortran ON CACHE BOOL
+	    "Dakota enabling Trilinos Fortran")
+      endif()
+
       # Dakota doesn't use any Teuchos MPI features; may want to force off
       #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
 # This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
