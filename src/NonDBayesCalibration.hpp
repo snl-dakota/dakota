@@ -128,6 +128,8 @@ protected:
   void calibrate_to_hifi();
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
+  /// apply simulation error vector
+  void apply_error_vec(const RealVector& error_vec);
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();

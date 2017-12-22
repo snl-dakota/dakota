@@ -671,39 +671,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
   // Apply hifi error
   const RealVector& hifi_sim_error = hifiModel.current_response().
                                        shared_data().simulation_error();
-  RealVector hifi_error_vec(numFunctions);
-  if (hifi_sim_error.length() > 0) {
-    int stoch_seed = randomSeed;
-    Real stdev;
-    boost::mt19937 rnumGenerator;
-    if (hifi_sim_error.length() == 1) {
-      for (size_t k = 0; k < num_exp; k++) {
-	stoch_seed += 1;
-        rnumGenerator.seed(stoch_seed);
-        stdev = std::sqrt(hifi_sim_error[0]);
-        boost::normal_distribution<> err_dist(0.0, stdev);
-        boost::variate_generator<boost::mt19937,
-        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
-        for (size_t j = 0; j < numFunctions; j++)
-          hifi_error_vec[j] = err_gen();
-        expData.apply_simulation_error(hifi_error_vec, k);
-      }
-    }
-    else {
-      for (size_t k = 0; k < num_exp; k++) {
-        for (size_t j = 0; j < numFunctions; j++) {
-          stoch_seed += 1;
-          stdev = std::sqrt(hifi_sim_error[j]);
-          rnumGenerator.seed(stoch_seed);
-          boost::normal_distribution<> err_dist(0.0, stdev);
-          boost::variate_generator<boost::mt19937,
-          boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
-          hifi_error_vec[j] = err_gen();
-        }
-        expData.apply_simulation_error(hifi_error_vec, k);
-      }
-    }
-  }
+  if (hifi_sim_error.length() > 0) 
+    apply_error_vec(hifi_sim_error);
 
   if (outputLevel >= DEBUG_OUTPUT)
     for (size_t i=0; i<initHifiSamples; i++)
@@ -1190,7 +1159,43 @@ void NonDBayesCalibration::add_lhs_hifi_data()
     }
   }
 }
-
+    
+void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec)
+{ 
+  int num_exp = expData.num_experiments();
+  RealVector error_vec(numFunctions);
+  int stoch_seed = randomSeed;
+  Real stdev;
+  boost::mt19937 rnumGenerator;
+  if (sim_error_vec.length() == 1) {
+    for (size_t k = 0; k < num_exp; k++) {
+      stoch_seed += 1;
+      rnumGenerator.seed(stoch_seed);
+      stdev = std::sqrt(sim_error_vec[0]);
+      boost::normal_distribution<> err_dist(0.0, stdev);
+      boost::variate_generator<boost::mt19937,
+      boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+      for (size_t j = 0; j < numFunctions; j++)
+        error_vec[j] = err_gen();
+      expData.apply_simulation_error(error_vec, k);
+    }
+  }
+  else {
+    for (size_t k = 0; k < num_exp; k++) {
+      for (size_t j = 0; j < numFunctions; j++) {
+        stoch_seed += 1;
+        stdev = std::sqrt(sim_error_vec[j]);
+        rnumGenerator.seed(stoch_seed);
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+        boost::normal_distribution<> > err_gen(rnumGenerator, err_dist);
+        error_vec[j] = err_gen();
+      }
+      expData.apply_simulation_error(error_vec, k);
+    }
+  }
+}
+    
 void NonDBayesCalibration::build_model_discrepancy()
 {
   // For now, use average params (unfiltered)
