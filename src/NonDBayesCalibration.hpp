@@ -369,6 +369,9 @@ protected:
   /// and prediction intervals)
   void export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals);
 
+  /// Perform chain filtering based on target chain length
+  void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain, 
+      		    int target_length);
   /// Perform chain filtering with burn-in and sub-sampling
   void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
   void filter_fnvals(RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);

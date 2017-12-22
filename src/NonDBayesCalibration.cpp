@@ -681,71 +681,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
   // KAM TODO: replace instances of num_candidates with numCandidates
   size_t num_candidates = numCandidates; 
   RealMatrix design_matrix;
-  /*
-  //RealMatrix response_matrix;
-  unsigned short sample_type = SUBMETHOD_LHS;
-  bool vary_pattern = true;
-  String rng("mt19937");
-  Iterator lhs_iterator2;
-  if (importCandPtsFile.empty()) {
-    NonDLHSSampling* lhs_sampler_rep2;
-    int randomSeed1 = randomSeed+1;
-    lhs_sampler_rep2 =
-      new NonDLHSSampling(hifiModel, sample_type, num_candidates, randomSeed1,
-  			rng, vary_pattern, ACTIVE_UNIFORM);
-    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
-    lhs_iterator2.pre_run();
-    //const RealMatrix design_matrix = lhs_iterator2.all_samples();
-    design_matrix = lhs_iterator2.all_samples();
-  }
-  else {
-    // BMA TODO: This should probably be cv() + div() + ...
-    size_t num_designvars = hifiModel.tv();
-    RealMatrix design_matrix_in;
-    TabularIO::read_data_tabular(importCandPtsFile,
-				 "user-provided candidate points",
-				 design_matrix_in, num_designvars, 
-				 importCandFormat, false);
-    size_t num_candidates_in = design_matrix_in.numCols();
-    if (num_candidates_in < num_candidates) {
-      size_t new_candidates = num_candidates - num_candidates_in;
-      NonDLHSSampling* lhs_sampler_rep2;
-      int randomSeed1 = randomSeed+1;
-      lhs_sampler_rep2 =
-        new NonDLHSSampling(hifiModel, sample_type, new_candidates, randomSeed1,
-    			rng, vary_pattern, ACTIVE_UNIFORM);
-      lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
-      lhs_iterator2.pre_run();
-      RealMatrix design_matrix_supp = lhs_iterator2.all_samples();
-      design_matrix.shape(num_designvars, num_candidates);
-      for (int i = 0; i < num_candidates_in; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
-	    				     i);
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
-      for (int i = num_candidates_in; i < num_candidates; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_supp,
-	    			      	     int(i-num_candidates_in));
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
-    }
-    else if (num_candidates_in == num_candidates)  
-      design_matrix = design_matrix_in;
-    else {
-      if (outputLevel >= VERBOSE_OUTPUT) {
-	Cout << "\nWarning: Bayesian design of experiments only using the "
-	     << "first " << num_candidates << " candidates in " 
-	     << importCandPtsFile << '\n';
-      }
-      design_matrix.shape(num_designvars, num_candidates);
-      for (int i = 0; i < num_candidates; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
-	    				     i);
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
-    }
-  }
-  */
   build_designs(design_matrix);
 
   bool stop_metric = false;
@@ -846,31 +781,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // through all the designs and pick the one with maximum mutual
       // information
   
-      // Filter posterior, aim for 5000 samples
-      int num_mcmc_samples = acceptanceChain.numCols();
-      int burn_in_post = int(0.2*num_mcmc_samples);
-      int burned_in_post = num_mcmc_samples - burn_in_post;
-      int num_skip;
-      int num_filtered;
-      int ind = 0;
-      int it_cntr = 0;
-      if (num_mcmc_samples < 18750) {
-        num_skip = 3;
-      }
-      else {
-        num_skip = int(burned_in_post/5000);
-      }
-      num_filtered = int(burned_in_post/num_skip);
-      RealVector lofi_params(numContinuousVars);
-      RealMatrix mi_chain(acceptanceChain.numRows(), num_filtered);
-      for (int j=burn_in_post; j<num_mcmc_samples; j++) {
-        ++it_cntr;
-        if (it_cntr % num_skip == 0){
-          lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
-          Teuchos::setCol(lofi_params, ind, mi_chain);
-          ind++;
-        }
-      }
+      RealMatrix mi_chain;
+      filter_chain(acceptanceChain, mi_chain, 5000);
+      int num_filtered = mi_chain.numCols();
 
       int batch_size = batchEvals;
       if (max_hifi != 0)  
@@ -1870,6 +1783,35 @@ void NonDBayesCalibration::compute_statistics()
   }
 }
 
+void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
+		           RealMatrix& filtered_chain, int target_length)
+{
+  int num_mcmc_samples = acceptanceChain.numCols();
+  int burn_in_post = int(0.2*num_mcmc_samples);
+  int burned_in_post = num_mcmc_samples - burn_in_post;
+  int num_skip;
+  int num_filtered;
+  int ind = 0;
+  int it_cntr = 0;
+  int mcmc_threshhold = target_length*12/5;
+  if (num_mcmc_samples < mcmc_threshhold) {
+    num_skip = 3;
+  }
+  else {
+    num_skip = int(burned_in_post/target_length);
+  }
+  num_filtered = int(burned_in_post/num_skip);
+  RealVector lofi_params(numContinuousVars);
+  filtered_chain.reshape(acceptanceChain.numRows(), num_filtered);
+  for (int j=burn_in_post; j<num_mcmc_samples; j++) {
+    ++it_cntr;
+    if (it_cntr % num_skip == 0){
+      lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
+      Teuchos::setCol(lofi_params, ind, filtered_chain);
+      ind++;
+    }
+  }
+}
 
 void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
 					RealMatrix& filtered_chain)
