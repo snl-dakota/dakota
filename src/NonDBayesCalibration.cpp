@@ -678,9 +678,10 @@ void NonDBayesCalibration::calibrate_to_hifi()
     for (size_t i=0; i<initHifiSamples; i++)
       Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
-  // need to initialize this from user input eventually
+  // KAM TODO: replace instances of num_candidates with numCandidates
   size_t num_candidates = numCandidates; 
   RealMatrix design_matrix;
+  /*
   //RealMatrix response_matrix;
   unsigned short sample_type = SUBMETHOD_LHS;
   bool vary_pattern = true;
@@ -744,10 +745,9 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
     }
   }
-  
-  //RealVectorArray std_deviations;
-  //expData.cov_std_deviation(std_deviations);
- 
+  */
+  build_designs(design_matrix);
+
   bool stop_metric = false;
   size_t optimal_ind;
   //RealVector optimal_config;
@@ -1192,6 +1192,71 @@ void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec)
         error_vec[j] = err_gen();
       }
       expData.apply_simulation_error(error_vec, k);
+    }
+  }
+}
+
+void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
+{
+  unsigned short sample_type = SUBMETHOD_LHS;
+  bool vary_pattern = true;
+  String rng("mt19937");
+  Iterator lhs_iterator2;
+  if (importCandPtsFile.empty()) {
+    NonDLHSSampling* lhs_sampler_rep2;
+    int randomSeed1 = randomSeed+1;
+    lhs_sampler_rep2 =
+      new NonDLHSSampling(hifiModel, sample_type, numCandidates, randomSeed1,
+  			rng, vary_pattern, ACTIVE_UNIFORM);
+    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+    lhs_iterator2.pre_run();
+    design_matrix = lhs_iterator2.all_samples();
+  }
+  else {
+    // BMA TODO: This should probably be cv() + div() + ...
+    size_t num_designvars = hifiModel.tv();
+    RealMatrix design_matrix_in;
+    TabularIO::read_data_tabular(importCandPtsFile,
+				 "user-provided candidate points",
+				 design_matrix_in, num_designvars, 
+				 importCandFormat, false);
+    size_t num_candidates_in = design_matrix_in.numCols();
+    if (num_candidates_in < numCandidates) {
+      size_t new_candidates = numCandidates - num_candidates_in;
+      NonDLHSSampling* lhs_sampler_rep2;
+      int randomSeed1 = randomSeed+1;
+      lhs_sampler_rep2 =
+        new NonDLHSSampling(hifiModel, sample_type, new_candidates, randomSeed1,
+    			rng, vary_pattern, ACTIVE_UNIFORM);
+      lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+      lhs_iterator2.pre_run();
+      RealMatrix design_matrix_supp = lhs_iterator2.all_samples();
+      design_matrix.shape(num_designvars, numCandidates);
+      for (int i = 0; i < num_candidates_in; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
+	    				     i);
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
+      for (int i = num_candidates_in; i < numCandidates; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_supp,
+	    			      	     int(i-num_candidates_in));
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
+    }
+    else if (num_candidates_in == numCandidates)  
+      design_matrix = design_matrix_in;
+    else {
+      if (outputLevel >= VERBOSE_OUTPUT) {
+	Cout << "\nWarning: Bayesian design of experiments only using the "
+	     << "first " << numCandidates << " candidates in " 
+	     << importCandPtsFile << '\n';
+      }
+      design_matrix.shape(num_designvars, numCandidates);
+      for (int i = 0; i < numCandidates; i++) {
+	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
+	    				     i);
+	Teuchos::setCol(col_vec, i, design_matrix);
+      }
     }
   }
 }

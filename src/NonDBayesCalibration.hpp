@@ -130,6 +130,8 @@ protected:
   void add_lhs_hifi_data();
   /// apply simulation error vector
   void apply_error_vec(const RealVector& error_vec);
+  /// build matrix of candidate points
+  void build_designs(RealMatrix& design_matrix);
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
