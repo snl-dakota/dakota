@@ -73,6 +73,8 @@ public:
 
   /// activate an approximation state based on its multi-index key
   virtual void active_model_key(const UShortArray& mi_key);
+  /// return active multi-index key
+  virtual const UShortArray& active_model_key() const;
   /// reset initial state by clearing all model keys for an approximation
   virtual void clear_model_keys();
 

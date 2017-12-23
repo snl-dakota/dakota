@@ -167,7 +167,7 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
   // Set the rep pointer to the appropriate derived type
   dataRep = get_shared_data(problem_db, num_vars);
   if ( !dataRep ) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
 }
 
 
@@ -226,7 +226,7 @@ SharedApproxData(const String& approx_type, const UShortArray& approx_order,
   dataRep = get_shared_data(approx_type, approx_order, num_vars,
 			    data_order, output_level);
   if ( !dataRep ) // bad type or insufficient memory
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
 }
 
 
@@ -351,6 +351,18 @@ void SharedApproxData::active_model_key(const UShortArray& mi_key)
 }
 
 
+const UShortArray& SharedApproxData::active_model_key() const
+{
+  if (!dataRep) { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: active_model_key() not available for this approximation "
+	 << "type." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return dataRep->active_model_key();
+}
+
+
 void SharedApproxData::clear_model_keys()
 {
   if (dataRep)
@@ -389,7 +401,7 @@ bool SharedApproxData::push_available()
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: push_available() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return dataRep->push_available();
@@ -401,7 +413,7 @@ size_t SharedApproxData::retrieval_index()
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: retrieval_index() not available for this approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return dataRep->retrieval_index();
@@ -415,7 +427,7 @@ void SharedApproxData::pre_push()
   else {
     Cerr << "\nError: pre_push() not defined for this shared approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -427,7 +439,7 @@ void SharedApproxData::post_push()
   else {
     Cerr << "\nError: post_push() not defined for this shared approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -437,7 +449,7 @@ size_t SharedApproxData::finalization_index(size_t i)
   if (!dataRep) { // virtual fn: no default, error if not supplied by derived
     Cerr << "Error: finalization_index(size_t) not available for this "
 	 << "approximation type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 
   return dataRep->finalization_index(i);
@@ -451,7 +463,7 @@ void SharedApproxData::pre_finalize()
   else {
     Cerr << "\nError: pre_finalize() not defined for this shared approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -463,7 +475,7 @@ void SharedApproxData::post_finalize()
   else {
     Cerr << "\nError: post_finalize() not defined for this shared "
 	 << "approximation type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -476,7 +488,7 @@ void SharedApproxData::store(size_t index)
   else {
     Cerr << "\nError: store() not defined for this shared approximation type."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -488,7 +500,7 @@ void SharedApproxData::restore(size_t index)
   else {
     Cerr << "\nError: restore() not defined for this shared approximation type."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
@@ -500,7 +512,7 @@ void SharedApproxData::remove_stored(size_t index)
   else {
     Cerr << "\nError: remove_stored() not defined for this shared "
 	 << "approximation type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 */
@@ -522,7 +534,7 @@ void SharedApproxData::pre_combine()
   else {
     Cerr << "\nError: pre_combine() not defined for this shared approximation "
 	 << "type." << std::endl;
-    abort_handler(-1);
+    abort_handler(APPROX_ERROR);
   }
 }
 
