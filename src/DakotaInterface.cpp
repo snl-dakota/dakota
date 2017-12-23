@@ -1032,6 +1032,14 @@ void Interface::active_model_key(const UShortArray& mi_key)
 }
 
 
+void Interface::clear_model_keys()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_model_keys();
+  // else: default implementation is no-op
+}
+
+
 void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 {
   if (interfaceRep) // envelope fwd to letter

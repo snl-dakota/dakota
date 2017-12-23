@@ -136,6 +136,10 @@ public:
   /// and approximation classes that support the management of multiple
   /// approximation states within surrogate models
   virtual void active_model_key(const UShortArray& mi_key);
+  /// reset by removing all multi-index keys within surrogate data, grid
+  /// driver, and approximation classes that support the management of
+  /// multiple approximation states within surrogate models
+  virtual void clear_model_keys();
 
   /// return the active approximation sub-model in surrogate models
   virtual Model& surrogate_model();

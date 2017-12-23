@@ -125,6 +125,8 @@ public:
 
   /// activate an approximation state based on its multi-index key
   virtual void active_model_key(const UShortArray& mi_key);
+  /// reset initial state by removing all model keys for an approximation
+  virtual void clear_model_keys();
 
   /// set the (currently active) approximation function index set
   virtual void approximation_function_indices(const IntSet& approx_fn_indices);

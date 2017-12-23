@@ -74,6 +74,7 @@ protected:
   int recommended_points(bool constraint_flag) const;
 
   void active_model_key(const UShortArray& mi_key);
+  void clear_model_keys();
 
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
@@ -259,7 +260,17 @@ recommended_points(bool constraint_flag) const
 inline void ApproximationInterface::active_model_key(const UShortArray& mi_key)
 {
   sharedData.active_model_key(mi_key);
-  // functionSurfaces access key through shared data
+  // functionSurfaces access active key through shared data at run time
+}
+
+
+inline void ApproximationInterface::clear_model_keys()
+{
+  sharedData.clear_model_keys();
+  // No Approximations currently require a default key assignment at construct
+  // time: all key assignments are performed at run time
+  //for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+  //  functionSurfaces[*it].clear_model_keys();
 }
 
 

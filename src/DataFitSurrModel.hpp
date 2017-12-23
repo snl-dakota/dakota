@@ -103,8 +103,12 @@ protected:
 
   /// return daceIterator
   Iterator& subordinate_iterator();
-  /// set active key within approxInterface
+
+  /// set active model key within approxInterface
   void active_model_key(const UShortArray& mi_key);
+  /// remove all model keys within approxInterface
+  void clear_model_keys();
+
   /// return this model instance
   Model& surrogate_model();
   /// return actualModel
@@ -423,6 +427,10 @@ inline Iterator& DataFitSurrModel::subordinate_iterator()
 
 inline void DataFitSurrModel::active_model_key(const UShortArray& mi_key)
 { approxInterface.active_model_key(mi_key); }
+
+
+inline void DataFitSurrModel::clear_model_keys()
+{ approxInterface.clear_model_keys(); }
 
 
 inline Model& DataFitSurrModel::surrogate_model()

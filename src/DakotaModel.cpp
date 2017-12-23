@@ -2715,6 +2715,19 @@ void Model::active_model_key(const UShortArray& mi_key)
 }
 
 
+void Model::clear_model_keys()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->clear_model_keys();
+  else {
+    Cerr << "Error: Letter lacking redefinition of virtual clear_model_keys() "
+	 << "function.\n       model keys are not supported by this Model "
+	 << "class." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */

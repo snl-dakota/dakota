@@ -1065,6 +1065,10 @@ configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
 	 << "configure_hierarchy()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+
+  // remove default key (empty activeKey) since this interferes with
+  // combine_approximation().  Also useful for ML/MF re-entrancy.
+  uSpaceModel.clear_model_keys();
 }
 
 

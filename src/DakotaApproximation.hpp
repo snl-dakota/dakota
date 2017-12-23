@@ -395,7 +395,7 @@ inline void Approximation::clear_all()
   if (approxRep) // envelope fwd to letter
     approxRep->clear_all();
   else // not virtual: base class implementation
-    approxData.clear_data();
+    approxData.clear_active();
 }
 
 
@@ -412,8 +412,8 @@ inline void Approximation::clear_current()
 
 inline void Approximation::clear_data()
 {
-  if (approxRep) approxRep->approxData.clear_data();
-  else approxData.clear_data();
+  if (approxRep) approxRep->approxData.clear_active();
+  else approxData.clear_active();
 }
 
 

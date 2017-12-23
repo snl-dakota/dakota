@@ -351,6 +351,14 @@ void SharedApproxData::active_model_key(const UShortArray& mi_key)
 }
 
 
+void SharedApproxData::clear_model_keys()
+{
+  if (dataRep)
+    dataRep->clear_model_keys();
+  //else no-op (implementation not required for shared data)
+}
+
+
 void SharedApproxData::build()
 {
   if (dataRep)

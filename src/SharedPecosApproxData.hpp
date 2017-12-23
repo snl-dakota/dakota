@@ -114,6 +114,7 @@ protected:
   //
 
   void active_model_key(const UShortArray& mi_key);
+  void clear_model_keys();
 
   void build();
   void rebuild();
@@ -172,6 +173,10 @@ inline SharedPecosApproxData::~SharedPecosApproxData()
 
 inline void SharedPecosApproxData::active_model_key(const UShortArray& mi_key)
 { pecosSharedDataRep->active_key(mi_key); }
+
+
+inline void SharedPecosApproxData::clear_model_keys()
+{ pecosSharedDataRep->clear_keys(); }
 
 
 inline void SharedPecosApproxData::build()

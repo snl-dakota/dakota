@@ -72,7 +72,9 @@ public:
   //
 
   /// activate an approximation state based on its multi-index key
-  void active_model_key(const UShortArray& mi_key);
+  virtual void active_model_key(const UShortArray& mi_key);
+  /// reset initial state by clearing all model keys for an approximation
+  virtual void clear_model_keys();
 
   /// builds the shared approximation data from scratch
   virtual void build();

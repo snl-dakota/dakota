@@ -206,8 +206,12 @@ protected:
   Iterator& subordinate_iterator();
   /// return subModel
   Model& subordinate_model();
+
   /// set key in subModel
   void active_model_key(const UShortArray& mi_key);
+  /// remove keys in subModel
+  void clear_model_keys();
+
   /// return surrogate model, if present, within subModel
   Model& surrogate_model();
   /// return truth model, if present, within subModel
@@ -539,6 +543,10 @@ inline Model& RecastModel::subordinate_model()
 
 inline void RecastModel::active_model_key(const UShortArray& mi_key)
 { subModel.active_model_key(mi_key); }
+
+
+inline void RecastModel::clear_model_keys()
+{ subModel.clear_model_keys(); }
 
 
 inline Model& RecastModel::surrogate_model()
