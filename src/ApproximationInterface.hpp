@@ -260,17 +260,21 @@ recommended_points(bool constraint_flag) const
 inline void ApproximationInterface::active_model_key(const UShortArray& mi_key)
 {
   sharedData.active_model_key(mi_key);
-  // functionSurfaces access active key through shared data at run time
+  // functionSurfaces access active key at run time through shared data; 
+  // however they each contain their own approxData which must be updated.
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].active_model_key(mi_key);
 }
 
 
 inline void ApproximationInterface::clear_model_keys()
 {
   sharedData.clear_model_keys();
-  // No Approximations currently require a default key assignment at construct
-  // time: all key assignments are performed at run time
-  //for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-  //  functionSurfaces[*it].clear_model_keys();
+  // No Approximation currently requires a default key assignment at construct
+  // time: all key assignments can be performed at run time.  However, they
+  // each contain their own approxData which must be cleared.
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].clear_model_keys();
 }
 
 

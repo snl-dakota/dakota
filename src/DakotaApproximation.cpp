@@ -375,6 +375,20 @@ void Approximation::remove_stored(size_t index)
 */
 
 
+void Approximation::active_model_key(const UShortArray& mi_key)
+{
+  if (approxRep) approxRep->active_model_key(mi_key);
+  else           approxData.active_key(mi_key);
+}
+
+
+void Approximation::clear_model_keys()
+{
+  if (approxRep) approxRep->clear_model_keys();
+  else           approxData.clear_keys();
+}
+
+
 void Approximation::clear_inactive()
 {
   if (approxRep) approxRep->clear_inactive();

@@ -598,12 +598,9 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 }
 
 
-/** This function appends one point to SurrogateData::{vars,resp}Data
-    and rebuilds the approximation, if requested.  It does not modify
-    other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
-    update the actualModel with revised bounds, labels, etc.  Thus, it
-    appends to data from a previous call to build_approximation(), and
-    is not intended to be used in isolation. */
+/** This function appends all{Samples,Variables,Responses} to
+    SurrogateData::{vars,resp}Data and rebuilds the approximation,
+    if requested. */
 void DataFitSurrModel::append_approximation(bool rebuild_flag)
 {
   if (outputLevel >= NORMAL_OUTPUT)

@@ -90,6 +90,10 @@ public:
   /// remove a stored approximation prior to combination
   virtual void remove_stored(size_t index = _NPOS);
   */
+  /// activate an approximation state based on its multi-index key
+  virtual void active_model_key(const UShortArray& mi_key);
+  /// reset initial state by removing all model keys for an approximation
+  virtual void clear_model_keys();
   /// clear inactive approximation data
   virtual void clear_inactive();
 
