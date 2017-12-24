@@ -1143,11 +1143,12 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
 
   // loop over each of the discrepancy levels
   for (lev=1; lev<num_lev; ++lev) {
+    // configure hierarchical model indices and activate key in data fit model
+    configure_model_indices(lev, form, multilev, cost, lev_cost);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
     // form the expansion for level i
-    configure_model_indices(lev, form, multilev, cost, lev_cost);
     update_expansion();   // nominal discrepancy expansion from input spec
     if (refine_type)
       refine_expansion(); // uniform/adaptive refinement
@@ -1184,7 +1185,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
     best_lev_metric = 0.;
     for (lev=0; lev<num_lev; ++lev) {
-
+      // configure hierarchical model indices and activate key in data fit model
       configure_model_indices(lev, form, multilev, cost, lev_cost);
 
       // This returns the best/only candidate for the current level
