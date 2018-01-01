@@ -1017,8 +1017,8 @@ void NonDExpansion::post_refinement(Real& metric)
 
   
 void NonDExpansion::
-configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
-		    RealVector& cost, bool optional_cost, bool mf_precedence)
+configure_levels(size_t& num_lev, size_t& model_form, bool& multilevel,
+		 bool mf_precedence)
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ...)
@@ -1029,52 +1029,58 @@ configure_hierarchy(size_t& num_lev,  size_t& model_form, bool& multilevel,
   multilevel = (num_hf_lev > 1 && ( num_mf <= 1 || !mf_precedence ) );
   if (multilevel) {
     num_lev = num_hf_lev; model_form = num_mf - 1;
-    cost = m_iter->solution_level_costs(); // can be empty
     if (num_mf > 1)
       Cerr << "Warning: multiple model forms will be ignored in "
-	   << "NonDExpansion::configure_hierarchy().\n";
-    if (!optional_cost && cost.length() != num_lev) {
-      Cerr << "Error: missing required simulation costs in NonDExpansion::"
-	   << "configure_hierarchy()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+	   << "NonDExpansion::configure_levels().\n";
   }
   else if ( num_mf > 1 && ( num_hf_lev <= 1 || mf_precedence ) ) {
     num_lev = num_mf;
     if (num_hf_lev > 1)
       Cerr << "Warning: solution control levels will be ignored in "
-	   << "NonDExpansion::configure_hierarchy().\n";
-    cost.sizeUninitialized(num_mf);
+	   << "NonDExpansion::configure_levels().\n";
+  }
+  else {
+    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
+	 << "configure_levels()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+  
+void NonDExpansion::
+configure_cost(size_t num_lev, bool multilevel, RealVector& cost)
+{
+  ModelList& ordered_models = iteratedModel.subordinate_models(false);
+  ModelLIter m_iter;
+  if (multilevel) {
+    ModelLIter m_iter = --ordered_models.end(); // HF model
+    cost = m_iter->solution_level_costs(); // can be empty
+    if (cost.length() != num_lev) {
+      Cerr << "Error: missing required simulation costs in NonDExpansion::"
+	   << "configure_cost()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+  }
+  else  {
+    cost.sizeUninitialized(num_lev);
     m_iter = ordered_models.begin();
     bool missing_cost = false;
-    for (size_t i=0; i<num_mf; ++i, ++m_iter) {
+    for (size_t i=0; i<num_lev; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost(); // cost for active soln index
       if (cost[i] <= 0.) missing_cost = true;
     }
     if (missing_cost) {
-      if (optional_cost) cost.resize(0); // suppress optional cost usage
-      else {
-	Cerr << "Error: missing required simulation cost in NonDExpansion::"
-	     << "configure_hierarchy()." << std::endl;
-	abort_handler(METHOD_ERROR);
-      }
+      Cerr << "Error: missing required simulation cost in NonDExpansion::"
+	   << "configure_cost()." << std::endl;
+      abort_handler(METHOD_ERROR);
     }
   }
-  else {
-    Cerr << "Error: no model hierarchy evident in NonDExpansion::"
-	 << "configure_hierarchy()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  // remove default key (empty activeKey) since this interferes with
-  // combine_approximation().  Also useful for ML/MF re-entrancy.
-  uSpaceModel.clear_model_keys();
 }
 
 
 void NonDExpansion::
-configure_model_indices(size_t lev, size_t form, bool multilevel,
-			const RealVector& cost, Real& lev_cost)
+configure_indices(size_t lev, size_t form, bool multilevel,
+		  const RealVector& cost, Real& lev_cost)
 {
   // Set the active surrogate/truth models within iteratedModel
   // (the HierarchSurrModel)
@@ -1092,6 +1098,12 @@ configure_model_indices(size_t lev, size_t form, bool multilevel,
     if (costs) lev_cost += cost[lev-1]; // discrepancies incur 2 level costs
   }
 
+  configure_keys(lev, form, multilevel);
+}
+
+
+void NonDExpansion::configure_keys(size_t lev, size_t form, bool multilevel)
+{
   // Assign the multi-index key for surrogate model management within
   // uSpaceModel (the DataFitSurrModel)
   UShortArray mi_key;
@@ -1123,14 +1135,18 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 
 void NonDExpansion::multifidelity_expansion(short refine_type)
 {
+  // remove default key (empty activeKey) since this interferes with
+  // combine_approximation().  Also useful for ML/MF re-entrancy.
+  uSpaceModel.clear_model_keys();
+
   // Allow either model forms or discretization levels, but not both
   // (model form takes precedence)
-  bool multilev; size_t num_lev, form; RealVector cost;
-  configure_hierarchy(num_lev, form, multilev, cost, true, true);
+  bool multilev; size_t num_lev, form; RealVector cost; Real lev_cost;
+  configure_levels(num_lev, form, multilev, true);
 
   // initial low fidelity/lowest discretization expansion
-  size_t lev = 0; Real lev_cost;
-  configure_model_indices(lev, form, multilev, cost, lev_cost);
+  size_t lev = 0;
+  configure_indices(lev, form, multilev, cost, lev_cost);
   compute_expansion();  // nominal LF expansion from input spec
   if (refine_type)
     refine_expansion(); // uniform/adaptive refinement
@@ -1144,7 +1160,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   // loop over each of the discrepancy levels
   for (lev=1; lev<num_lev; ++lev) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_model_indices(lev, form, multilev, cost, lev_cost);
+    configure_indices(lev, form, multilev, cost, lev_cost);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
@@ -1170,14 +1186,18 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Generate MF reference expansion that is starting pt for greedy refinement:
   multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
 
-  size_t lev, form, num_lev, best_lev, iter = 0,
-    max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
-  bool multilev; Real lev_metric, best_lev_metric, lev_cost; RealVector cost;
-  configure_hierarchy(num_lev, form, multilev, cost, true, true);
+  // Initialize again (or must propagate settings from mf_expansion())
+  size_t lev, form, num_lev, best_lev;  bool multilev;  RealVector cost;
+  configure_levels(num_lev, form, multilev, true);
+  configure_cost(num_lev, multilev, cost);
 
-  //for (lev=0; lev<num_lev; ++lev)
-  //  pre_refinement(lev); // initialize_sets() for each level grid
+  for (lev=0; lev<num_lev; ++lev) {
+    configure_keys(lev, form, multilev);
+    pre_refinement(); // initialize_sets() for each level grid
+  }
 
+  size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  Real lev_metric, best_lev_metric = DBL_MAX, lev_cost;
   while ( best_lev_metric > convergenceTol && iter <= max_iter ) {
     // Generate candidates at each level -- use refine_expansion_core() ?
     // > Need to be able to push / pop each refinement type for each level!
@@ -1186,7 +1206,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     best_lev_metric = 0.;
     for (lev=0; lev<num_lev; ++lev) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_model_indices(lev, form, multilev, cost, lev_cost);
+      configure_indices(lev, form, multilev, cost, lev_cost);
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
@@ -1204,15 +1224,17 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
     // TO DO: push best level refinement (which may need to identify best among
     // several candidates for this level)
-    configure_model_indices(best_lev, form, multilev, cost, lev_cost);
+    configure_indices(best_lev, form, multilev, cost, lev_cost);
     //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
     // Note: in case of GSG, this step must update ref/candidate sets
 
     ++iter;
   }
 
-  //for (lev=0; lev<num_lev; ++lev)
-  //  post_refinement(lev); // finalize_sets() for each level grid
+  for (lev=0; lev<num_lev; ++lev) {
+    configure_keys(lev, form, multilev);
+    post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level grid
+  }
 
   // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();

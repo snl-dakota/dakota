@@ -505,7 +505,8 @@ void NonDMultilevelPolynomialChaos::core_run()
   //   >> want to support import for MF PCE as well, including future
   //      adaptive MF PCE.
 
-  bool multifid_uq = false, greedy = false;
+  bool multifid_uq = false, greedy = (refineType &&
+    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);// for now
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
@@ -734,7 +735,8 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
   RealVector cost;
   bool multilev, optional_cost = (multilevAllocControl == RIP_SAMPLING),
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
-  configure_hierarchy(num_lev, form, multilev, cost, optional_cost, false);
+  configure_levels(num_lev, form, multilev, false);
+  configure_cost(num_lev, multilev, cost);
   SizetArray cardinality;  RealVector level_metric(num_lev);
   if (multilevAllocControl == RIP_SAMPLING)
     cardinality.resize(num_lev);
@@ -771,7 +773,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     sum_root_var_cost = 0.;
     for (lev=0; lev<num_lev; ++lev) {
 
-      configure_model_indices(lev, form, multilev, cost, lev_cost);
+      configure_indices(lev, form, multilev, cost, lev_cost);
 
       if (iter == 0) { // initial expansion build
 	// Update solution control variable in uSpaceModel to support
