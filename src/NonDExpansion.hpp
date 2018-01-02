@@ -97,10 +97,15 @@ protected:
   /// archive expansion coefficients, as supported by derived instance
   virtual void archive_coefficients();
 
+  /// calculate the response covariance (diagonal or full matrix)
+  virtual void compute_covariance();
+
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric();
   /// compute 2-norm of change in final statistics
   virtual Real compute_final_statistics_metric();
+  /// perform any required expansion roll-ups prior to metric computation
+  virtual void metric_roll_up();
 
   //
   //- Heading: Virtual function redefinitions
@@ -187,7 +192,7 @@ protected:
   /// initialization of expansion refinement, if necessary
   void pre_refinement();
   /// advance the refinement strategy one step
-  void core_refinement(Real& metric);
+  void core_refinement(Real& metric, bool apply_best = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
@@ -259,6 +264,10 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
+  /// enumeration for controlling response covariance calculation and
+  /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
+  short covarianceControl;
+
   /// number of consecutive iterations within tolerance required to
   /// indicate soft convergence
   unsigned short softConvLimit;
@@ -288,7 +297,7 @@ private:
   /// initialization of adaptive refinement using generalized sparse grids
   void initialize_sets();
   /// perform an adaptive refinement increment using generalized sparse grids
-  Real increment_sets();
+  Real increment_sets(bool apply_best = true);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
@@ -301,8 +310,6 @@ private:
   void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
 					  RealRealPairArray& min_max_fns);
 
-  /// calculate the response covariance (diagonal or full matrix)
-  void compute_covariance();
   /// calculate respVariance or diagonal terms respCovariance(i,i)
   void compute_diagonal_variance();
   /// calculate respCovariance(i,j) for j<i
@@ -359,10 +366,6 @@ private:
   unsigned short vbdOrderLimit;
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
-
-  /// enumeration for controlling response covariance calculation and
-  /// output: {DEFAULT,DIAGONAL,FULL}_COVARIANCE
-  short covarianceControl;
 
   /// integration refinement for expansion sampler
   unsigned short integrationRefine;

@@ -937,7 +937,7 @@ void NonDExpansion::pre_refinement()
 }
 
 
-void NonDExpansion::core_refinement(Real& metric)
+void NonDExpansion::core_refinement(Real& metric, bool apply_best)
 {
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
@@ -999,7 +999,7 @@ void NonDExpansion::core_refinement(Real& metric)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    metric = increment_sets(); // SSG only
+    metric = increment_sets(apply_best); // SSG only
     break;
   }
 }
@@ -1177,14 +1177,23 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   }
 
   // compute aggregate expansion and generate its statistics
+  // NOTE: GENERATE combined{MultiIndex,ExpCoeffs,ExpCoeffGrads} BUT
+  //       DO NOT OVERWRITE ACTIVE multiIndex,expansionCoeff{s,Grads}.
   uSpaceModel.combine_approximation();
+
+  // CALLERS OF THIS FUNCTION MUST INVOKE A FINAL POST_COMBINE-LIKE OPERATION
+  // TO FINALIZE THE COMBINATION (SWAP DATA), CLEAR INACTIVE KEYS, ETC...
 }
 
 
 void NonDExpansion::greedy_multifidelity_expansion()
 {
   // Generate MF reference expansion that is starting pt for greedy refinement:
+  // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
+  //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
   multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
+  // > Need reference stats
+  compute_covariance();// TO DO: annotated_results(false);
 
   // Initialize again (or must propagate settings from mf_expansion())
   size_t lev, form, num_lev, best_lev;  bool multilev;  RealVector cost;
@@ -1193,16 +1202,15 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    pre_refinement(); // initialize_sets() for each level grid
+    pre_refinement(); // initialize_sets() for each level
   }
 
   size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
   Real lev_metric, best_lev_metric = DBL_MAX, lev_cost;
   while ( best_lev_metric > convergenceTol && iter <= max_iter ) {
-    // Generate candidates at each level -- use refine_expansion_core() ?
-    // > Need to be able to push / pop each refinement type for each level!
-    // > Expand (unify?) saved / stored capabilities
 
+    // Generate candidates at each level
+    // > TO DO: need to be able to push / pop for all refine types (beyond GSG)
     best_lev_metric = 0.;
     for (lev=0; lev<num_lev; ++lev) {
       // configure hierarchical model indices and activate key in data fit model
@@ -1210,38 +1218,43 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      core_refinement(lev_metric); // TO DO: retrieve lev_candidate
-      // TO DO: normalize lev_metric by aggregate cost, either here or within
-      // core_refinement()...
+      /* lev_candidate = */core_refinement(lev_metric, false); // TO DO
+      // core_refinement() normalizes level candidates based on the number of
+      // required evaluations, which is sufficient for selection of the best
+      // level candidate.  For selection among multiple level candidates, a
+      // secondary normalization for relative level cost is required.
+      lev_metric /= lev_cost;
 
       // Assess candidate for best across all levels
-      if (lev_metric > best_lev_metric)
-	{ best_lev_metric = lev_metric; best_lev = lev; }//TO DO: best_candidate
-
-      // TO DO: pop the refinement candidate for this level
-      //uSpaceModel.pop_approximation(); // currently assumes trial_set
+      if (lev_metric > best_lev_metric) {
+	best_lev_metric = lev_metric;
+	best_lev = lev;	/* best_candidate = lev_candidate; */ // TO DO
+      }
     }
 
-    // TO DO: push best level refinement (which may need to identify best among
-    // several candidates for this level)
+    // TO DO: push best level refinement
     configure_indices(best_lev, form, multilev, cost, lev_cost);
     //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
     // Note: in case of GSG, this step must update ref/candidate sets
 
+    // Update reference stats
+    compute_covariance();// TO DO: annotated_results(false);
     ++iter;
   }
 
+  // FINAL ROLL UP OF EACH OF THE FINALIZED GSG's --> FINAL STATS
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level grid
+    post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level
   }
-
-  // compute aggregate expansion and generate its statistics
   uSpaceModel.combine_approximation();
+  //uSpaceModel.combined_to_final(); // TO DO
 
   // compute the equivalent number of HF evaluations
   // TO DO: accumulate N_l from model / level eval counts
   //compute_equivalent_cost(N_l, cost);
+
+  // Final annotated results are printed in core_run()
 }
 
 
@@ -1312,7 +1325,7 @@ void NonDExpansion::initialize_sets()
 }
 
 
-Real NonDExpansion::increment_sets()
+Real NonDExpansion::increment_sets(bool apply_best)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
@@ -1357,7 +1370,7 @@ Real NonDExpansion::increment_sets()
       cit_star = cit; delta_star = delta;
       // partial results tracking avoids need to recompute statistics
       // on the selected index set
-      if (outputLevel < DEBUG_OUTPUT) {
+      if (apply_best && outputLevel < DEBUG_OUTPUT) {
 	if (totalLevelRequests) stats_star = finalStatistics.function_values();
 	else if (covarianceControl == FULL_COVARIANCE)
 	                        covar_star = respCovariance;
@@ -1378,14 +1391,17 @@ Real NonDExpansion::increment_sets()
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
 
-  // permanently apply best increment and update ref points for next increment
-  nond_sparse->update_sets(*cit_star);
-  uSpaceModel.push_approximation();
-  nond_sparse->update_reference();
-  if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
-    if (totalLevelRequests) finalStatistics.function_values(stats_star);
-    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_star;
-    else respVariance = stats_star;
+  if (apply_best) {
+    // permanently apply best increment and update references for next increment
+    nond_sparse->update_sets(*cit_star);
+    uSpaceModel.push_approximation();
+    nond_sparse->update_reference();
+    if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
+      if (totalLevelRequests) finalStatistics.function_values(stats_star);
+      else if (covarianceControl == FULL_COVARIANCE)
+	respCovariance = covar_star;
+      else respVariance = stats_star;
+    }
   }
 
   return delta_star;
@@ -1532,6 +1548,9 @@ Real NonDExpansion::compute_covariance_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
+  // perform any roll-ups of expansion contributions, prior to metric compute
+  metric_roll_up();
+
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
     RealVector delta_resp_var = respVariance; // deep copy
@@ -1585,6 +1604,9 @@ Real NonDExpansion::compute_final_statistics_metric()
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
 
+  // perform any roll-ups of expansion contributions, prior to metric compute
+  metric_roll_up();
+
   RealVector final_stats_ref = finalStatistics.function_values(); // deep copy
   compute_statistics(INTERMEDIATE_RESULTS);
   const RealVector& final_stats_new = finalStatistics.function_values();
@@ -1631,6 +1653,10 @@ Real NonDExpansion::compute_final_statistics_metric()
   return (scale_sq > 0.) ? std::sqrt(sum_sq / scale_sq) :
                            std::sqrt(sum_sq / Pecos::SMALL_NUMBER);
 }
+
+
+void NonDExpansion::metric_roll_up()
+{ /* default is no-op */ }
 
 
 void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)

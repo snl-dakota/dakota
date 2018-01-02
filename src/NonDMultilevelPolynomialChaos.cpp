@@ -849,6 +849,74 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 }
 
 
+void NonDMultilevelPolynomialChaos::metric_roll_up()
+{
+  bool greedy_mf
+    = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS && refineType &&
+       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
+
+  if (greedy_mf) // multilev/multifid on inner loop --> roll up multilevel stats
+    uSpaceModel.combine_approximation();
+}
+
+
+void NonDMultilevelPolynomialChaos::compute_covariance()
+{
+  bool greedy_mf
+    = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS && refineType &&
+       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
+
+  if (!greedy_mf) // multilev/multifid on outer loop --> return single lev covar
+    { NonDExpansion::compute_covariance(); return; }
+
+  // multilev/multifid on inner loop --> roll up of multilevel covariance
+  size_t i, j;
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  switch (covarianceControl) {
+  case DIAGONAL_COVARIANCE:
+    for (size_t i=0; i<numFunctions; ++i) {
+      PecosApproximation* poly_approx_rep_i
+	= (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (poly_approx_rep_i->expansion_coefficient_flag())
+	respVariance[i] = (all_vars) ?
+	  poly_approx_rep_i->combined_covariance(initialPtU, poly_approx_rep_i):
+	  poly_approx_rep_i->combined_covariance(poly_approx_rep_i);
+      else
+	{ warn_flag = true; respVariance[i] = 0.; }
+    }
+    break;
+  case FULL_COVARIANCE:
+    for (i=0; i<numFunctions; ++i) {
+      PecosApproximation* poly_approx_rep_i
+	= (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (poly_approx_rep_i->expansion_coefficient_flag())
+	for (j=0; j<=i; ++j) {
+	  PecosApproximation* poly_approx_rep_j
+	    = (PecosApproximation*)poly_approxs[j].approx_rep();
+	  if (poly_approx_rep_j->expansion_coefficient_flag())
+	    respCovariance(i,j) = (all_vars) ? poly_approx_rep_i->
+	      combined_covariance(initialPtU, poly_approx_rep_j) :
+	      poly_approx_rep_i->combined_covariance(poly_approx_rep_j);
+	  else
+	    { warn_flag = true; respCovariance(i,j) = 0.; }
+	}
+      else {
+	warn_flag = true;
+	for (j=0; j<=i; ++j)
+	  respCovariance(i,j) = 0.;
+      }
+    }
+    break;
+  }
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	 << "compute_diagonal_variance().\n         Zeroing affected variance "
+	 << "terms." << std::endl;
+}
+
+
 void NonDMultilevelPolynomialChaos::aggregate_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
