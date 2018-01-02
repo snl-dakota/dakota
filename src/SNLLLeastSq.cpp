@@ -42,6 +42,9 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
   SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // convenience function from SNLLBase
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 

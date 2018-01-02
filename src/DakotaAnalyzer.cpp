@@ -40,6 +40,9 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   iteratedModel = model;
   update_from_model(iteratedModel); // variable/response counts & checks
 
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   if (model.primary_fn_type() == OBJECTIVE_FNS)
     numObjFns = model.num_primary_fns();
   else if (model.primary_fn_type() == CALIB_TERMS)

@@ -42,6 +42,9 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     abort_handler(-1);
   }
 
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(

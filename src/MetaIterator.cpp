@@ -28,6 +28,9 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 	    problem_db.get_int("method.processors_per_iterator"),
 	    problem_db.get_short("method.iterator_scheduling"))
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)
 }
@@ -43,6 +46,9 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
 {
   iteratedModel = model;
   //update_from_model(iteratedModel);
+
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)

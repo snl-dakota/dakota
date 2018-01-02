@@ -41,6 +41,11 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   setUpType("model"), dataOrder(1)
 {
+  // historical default convergence tolerances
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-12;
+  distanceTol = probDescDB.get_real("method.x_conv_tol");
+  if (distanceTol < 0.0) distanceTol = 1.0e-8;
+
   bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
   // initialize augmented Lagrange multipliers
@@ -232,6 +237,17 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   // Model recursion so that they are correct when they propagate back down.
   eifModel.update_from_subordinate_model(); // depth = max
 
+  // (We might want a more selective update from submodel, or make a
+  // new EIFModel specialization of RecastModel.)  Always want to
+  // minimize the negative expected improvement as posed in the
+  // eifModel, which consumes min/max sense and weights, and recasts
+  // nonlinear constraints, so we don't let these propagate to the
+  // approxSubproblemMinimizer.
+  eifModel.primary_response_fn_sense(BoolDeque());
+  eifModel.primary_response_fn_weights(RealVector(), false); // no recursion
+  eifModel.reshape_constraints(0, 0, eifModel.num_linear_ineq_constraints(),
+			       eifModel.num_linear_eq_constraints());
+
   // Build initial GP once for all response functions
   fHatModel.build_approximation();
 
@@ -240,7 +256,6 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     eif_convergence_limit = 2, dist_convergence_limit = 1;
   globalIterCount = 0;
   bool approx_converged = false;
-  convergenceTol = 1.e-12; Real dist_tol = 1.e-8;
   // Decided for now (10-25-2013) to have EGO take the maxIterations 
   // as the default from minimizer, so it will be initialized as 100
   //  maxIterations  = 25*numContinuousVars;
@@ -311,7 +326,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       rel_change_L2(c_vars, prev_cv_star);
     // update prev_cv_star
     copy_data(c_vars, prev_cv_star);
-    if (dist_cstar < dist_tol)
+    if (dist_cstar < distanceTol)
       ++dist_convergence_cntr;
 
     // If DIRECT failed to find a point with EIF>0, it returns the
@@ -456,6 +471,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 }
 
 
+/** To maximize expected improvement, the approxSubProbMinimizer will
+    minimize -(expected_improvement). */
 void EffGlobalMinimizer::
 EIF_objective_eval(const Variables& sub_model_vars,
 		   const Variables& recast_vars,
@@ -478,6 +495,8 @@ EIF_objective_eval(const Variables& sub_model_vars,
 Real EffGlobalMinimizer::
 expected_improvement(const RealVector& means, const RealVector& variances)
 {
+  // Objective calculation will incorporate any sense changes or
+  // weights, such that this is an objective to minimize.
   Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
 			iteratedModel.primary_response_fn_weights()), stdv;
 

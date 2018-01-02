@@ -44,6 +44,9 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
   LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
               probDescDB.get_int("method.npsol.verify_level"),
