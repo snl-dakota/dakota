@@ -727,6 +727,10 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
 
 void NonDMultilevelPolynomialChaos::multilevel_regression()
 {
+  // remove default key (empty activeKey) since this interferes with
+  // combine_approximation().  Also useful for ML/MF re-entrancy.
+  uSpaceModel.clear_model_keys();
+
   // Allow either model forms or discretization levels, but not both
   // (discretization levels take precedence)
   size_t lev, num_lev, form, iter = 0,
