@@ -130,6 +130,9 @@ protected:
   void add_lhs_hifi_data();
   /// apply simulation error vector
   void apply_error_vec(const RealVector& error_vec);
+  /// build matrix of errors 
+  void build_error_matrix(const RealVector& sim_error_vec, 
+      			  RealMatrix& sim_error_matrix);
   /// build matrix of candidate points
   void build_designs(RealMatrix& design_matrix);
   

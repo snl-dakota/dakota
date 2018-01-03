@@ -678,27 +678,20 @@ void NonDBayesCalibration::calibrate_to_hifi()
     for (size_t i=0; i<initHifiSamples; i++)
       Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
-  // KAM TODO: replace instances of num_candidates with numCandidates
-  size_t num_candidates = numCandidates; 
+  // Build matrix of candidate designs
   RealMatrix design_matrix;
   build_designs(design_matrix);
 
   bool stop_metric = false;
   size_t optimal_ind;
-  //RealVector optimal_config;
   double max_MI;
   double prev_MI;
   double MIdiff;
   double MIrel;
-  int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : num_candidates;
+  int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
-  // Determine mutual information algorithm
-  int alg;
-  if (mutualInfoKSG2)
-    alg = 1;
-  else
-    alg = 0; //default is KSG1
+  int alg = (mutualInfoKSG2) ? 1 : 0;
 
   std::ofstream out_file("experimental_design_output.txt");
 
@@ -727,7 +720,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         prev_MI = max_MI;
     }
     // check remaining number of candidates
-    if (num_candidates == 0) {
+    if (numCandidates == 0) {
       stop_metric = true;
       Cout << "Experimental Design Stop Criteria met: "
 	   << "Design candidates have been exhausted \n" 
@@ -787,15 +780,14 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       int batch_size = batchEvals;
       if (max_hifi != 0)  
-        if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
-	  batchEvals = min(num_candidates, max_hifi - num_hifi);
+        if (numCandidates < batchEvals || max_hifi - num_hifi < batchEvals) 
+	  batchEvals = min(numCandidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
       RealVector optimal_config(design_matrix.numRows());
       RealMatrix optimal_config_matrix(design_matrix.numRows(), batchEvals);
       RealVector MI_vec(batchEvals);
-      int stoch_seed = randomSeed;
 
       // For loop for batch MI 
       for (int batch_n = 1; batch_n < batchEvals+1; batch_n ++) {
@@ -804,50 +796,17 @@ void NonDBayesCalibration::calibrate_to_hifi()
         RealMatrix sim_error_matrix;
         const RealVector& sim_error_vec = mcmcModel.current_response().
                                           shared_data().simulation_error();
-        if (sim_error_vec.length() > 0) {
-          if (num_it == 1) {
-            Real stdev;
+        if (num_it == 1) 
+          if (sim_error_vec.length() > 0) {
             sim_error_matrix.reshape(numFunctions, num_filtered);
-            RealVector col_vec(numFunctions);
-            boost::mt19937 rnumGenerator;
-            if (sim_error_vec.length() == 1) {
-              stoch_seed += 1;
-              rnumGenerator.seed(stoch_seed);
-              stdev = std::sqrt(sim_error_vec[0]);
-              boost::normal_distribution<> err_dist(0.0, stdev);
-              boost::variate_generator<boost::mt19937, 
-                                       boost::normal_distribution<> >
-                     err_gen(rnumGenerator, err_dist);
-              for (int j = 0; j < num_filtered; j++) {
-                for (size_t k = 0; k < numFunctions; k++) {
-                  col_vec[k] = err_gen();
-  	        }
-              Teuchos::setCol(col_vec, j, sim_error_matrix);
-  	      }
-            }
-            else {
-              for (int j = 0; j < num_filtered; j++) {
-                for (size_t k = 0; k < numFunctions; k++) {
-                  stoch_seed += 1;
-                  rnumGenerator.seed(stoch_seed);
-                  stdev = std::sqrt(sim_error_vec[k]);
-                  boost::normal_distribution<> err_dist(0.0, stdev);
-                  boost::variate_generator<boost::mt19937,
-  		                         boost::normal_distribution<> >
-                         err_gen(rnumGenerator, err_dist);
-                  col_vec[k] = err_gen();
-                }
-              Teuchos::setCol(col_vec, j, sim_error_matrix);
-              }
-  	    }
+	    build_error_matrix(sim_error_vec, sim_error_matrix);
           }
-        }
 
         // BMA: You can now use acceptanceChain/acceptedFnVals, though
         // need to be careful about what subset for this chain run (may
         // need indices to track)
 
-        for (size_t i=0; i<num_candidates; i++) {
+        for (size_t i=0; i<numCandidates; i++) {
     
           RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, 
 	      				    int(i));
@@ -870,7 +829,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  Cout << "lofi_resp_matrix = " << lofi_resp_matrix << '\n';
 
 	  //concatenate posterior_theta and lofi_resp_mat into Xmatrix
-
 	  RealMatrix xmatrix_theta(Teuchos::View, Xmatrix,
 				   numContinuousVars, num_filtered);
 	  xmatrix_theta.assign(mi_chain);
@@ -879,7 +837,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	    (Teuchos::View, Xmatrix, numFunctions, num_filtered,
 	     numContinuousVars, 0);
 	  xmatrix_curr_responses.assign(lofi_resp_matrix);
-
 	  if (sim_error_vec.length() > 0)
 	    xmatrix_curr_responses += sim_error_matrix;
 
@@ -893,7 +850,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	    (Teuchos::View, Xmatrix, optimal_obs.numRows(), num_filtered,
 	     numContinuousVars + numFunctions, 0);
 	  xmatrix_optimal_responses.assign(optimal_obs);
-
 
           // calculate the mutual information b/w post theta and lofi responses
           Real MI = knn_mutual_info(Xmatrix, numContinuousVars, 
@@ -928,12 +884,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  optimal_obs.reshape(batch_n * numFunctions, num_filtered);
           Model::inactive_variables(optimal_config, mcmcModel);
 
-	  // with option to batch evaluate the lo-fi model
-
-	  // BMA: Don't we already have these evals completed and
-	  // stored in XMatrix, why need to reevaluate? Can we copy
-	  // them?
-
+	  // Evaluate lofi model at optimal design
 	  RealMatrix lofi_resp_matrix;
 	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
 
@@ -941,18 +892,12 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  RealMatrix optimal_obs_submatrix
 	    (Teuchos::View, optimal_obs, numFunctions, num_filtered,
 	     newobs_ind, 0);
-
 	  optimal_obs_submatrix.assign(lofi_resp_matrix);
-
-	  // BMA NOTE: This was commented out in the code I replaced
-	  // if (sim_error_vec.length() > 0)
-	  //   optimal_obs_submatrix += sim_error_matrix;
-
         }
 
         // update list of candidates
         remove_column(design_matrix, optimal_ind);
-        --num_candidates;
+        --numCandidates;
 	if (batch_size > 1) {
           if (outputLevel >= DEBUG_OUTPUT) {
 	    Cout << "\n----------------------------------------------\n";
@@ -970,18 +915,14 @@ void NonDBayesCalibration::calibrate_to_hifi()
       // RUN HIFI MODEL WITH NEW POINT(S)
       RealMatrix resp_matrix;
       if (max_hifi > 0) {
-
 	// batch evaluate hifiModel, populating resp_matrix
 	Model::evaluate(optimal_config_matrix, hifiModel, resp_matrix);
-
 	// update hifi experiment data
 	RealMatrix::ordinalType col_ind;
 	RealMatrix::ordinalType num_evals = optimal_config_matrix.numCols();
 	for (col_ind = 0; col_ind < num_evals; ++col_ind) {
-
 	  RealVector config_vars =
 	    Teuchos::getCol(Teuchos::Copy, optimal_config_matrix, col_ind);
-
 	  // ExperimentData requires a new Response for each insertion
 	  RealVector hifi_fn_vals =
 	    Teuchos::getCol(Teuchos::Copy, resp_matrix, col_ind);
@@ -990,9 +931,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 	  expData.add_data(config_vars, hifi_resp);
 	}
-	
 	num_hifi += num_evals;
-
       }
       num_it++;
 
@@ -1039,7 +978,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
     } // end MI loop
   } // end while loop
-
 }
 
 void NonDBayesCalibration::add_lhs_hifi_data()
@@ -1105,6 +1043,46 @@ void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec)
         error_vec[j] = err_gen();
       }
       expData.apply_simulation_error(error_vec, k);
+    }
+  }
+}
+
+void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
+                           RealMatrix& sim_error_matrix)
+{
+  Real stdev;
+  int stoch_seed = randomSeed;
+  RealVector col_vec(numFunctions);
+  boost::mt19937 rnumGenerator;
+  int num_filtered = sim_error_matrix.numCols();
+  if (sim_error_vec.length() == 1) {
+    stoch_seed += 1;
+    rnumGenerator.seed(stoch_seed);
+    stdev = std::sqrt(sim_error_vec[0]);
+    boost::normal_distribution<> err_dist(0.0, stdev);
+    boost::variate_generator<boost::mt19937, 
+                             boost::normal_distribution<> >
+           err_gen(rnumGenerator, err_dist);
+    for (int j = 0; j < num_filtered; j++) {
+      for (size_t k = 0; k < numFunctions; k++) {
+        col_vec[k] = err_gen();
+      }
+      Teuchos::setCol(col_vec, j, sim_error_matrix);
+    }
+  }
+  else {
+    for (int j = 0; j < num_filtered; j++) {
+      for (size_t k = 0; k < numFunctions; k++) {
+        stoch_seed += 1;
+        rnumGenerator.seed(stoch_seed);
+        stdev = std::sqrt(sim_error_vec[k]);
+        boost::normal_distribution<> err_dist(0.0, stdev);
+        boost::variate_generator<boost::mt19937,
+                   boost::normal_distribution<> >
+               err_gen(rnumGenerator, err_dist);
+        col_vec[k] = err_gen();
+      }
+      Teuchos::setCol(col_vec, j, sim_error_matrix);
     }
   }
 }
