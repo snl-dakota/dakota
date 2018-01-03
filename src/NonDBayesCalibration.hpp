@@ -126,6 +126,9 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  /// evaluate stopping criteria for calibrate_to_hifi
+  bool eval_hi2lo_stop(bool stop_metric, double prev_MI, double max_MI, int num_it, 
+                       int num_hifi, int max_hifi, int num_candidates);
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
   /// apply simulation error vector

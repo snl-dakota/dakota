@@ -679,6 +679,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       Cout << "Exp Data  i " << i << " value = " << expData.all_data(i);
 
   // Build matrix of candidate designs
+  int num_candidates = numCandidates;
   RealMatrix design_matrix;
   build_designs(design_matrix);
 
@@ -686,8 +687,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
   size_t optimal_ind;
   double max_MI;
   double prev_MI;
-  double MIdiff;
-  double MIrel;
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
@@ -703,37 +702,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
-    // check relative MI change
-    if (num_it == 1)
-      prev_MI = max_MI;
-    else if (num_it > 1) {
-      MIdiff = prev_MI - max_MI;
-      MIrel = fabs(MIdiff/prev_MI);
-      if (MIrel < 0.05) {
-        stop_metric = true;
-        Cout << "Experimental Design Stop Criteria met: "
-	     << "Relative change in mutual information is \n"
-	     << "sufficiently small \n" 
-	     << '\n';
-      }
-      else
-        prev_MI = max_MI;
-    }
-    // check remaining number of candidates
-    if (numCandidates == 0) {
-      stop_metric = true;
-      Cout << "Experimental Design Stop Criteria met: "
-	   << "Design candidates have been exhausted \n" 
-	   << '\n';
-    }
-    // check number of hifi evaluations
-    if (num_hifi == max_hifi) {
-      stop_metric = true;
-      Cout << "Experimental Design Stop Criteria met: "
-	   << "Maximum number of hifi evaluations has \n"
-	   << "been reached \n" 
-	   << '\n';
-    }
+    stop_metric = eval_hi2lo_stop(stop_metric, prev_MI, max_MI, num_it, num_hifi, 
+	                          max_hifi, num_candidates);
 
     // If the experiment data changed, need to update a number of
     // models that wrap it.  TODO: make this more lightweight instead
@@ -780,8 +750,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
       int batch_size = batchEvals;
       if (max_hifi != 0)  
-        if (numCandidates < batchEvals || max_hifi - num_hifi < batchEvals) 
-	  batchEvals = min(numCandidates, max_hifi - num_hifi);
+        if (num_candidates < batchEvals || max_hifi - num_hifi < batchEvals) 
+	  batchEvals = min(num_candidates, max_hifi - num_hifi);
       // Build optimal observations matrix, contains obsverations from
       // previously selected optimal designs
       RealMatrix optimal_obs;  
@@ -806,7 +776,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         // need to be careful about what subset for this chain run (may
         // need indices to track)
 
-        for (size_t i=0; i<numCandidates; i++) {
+        for (size_t i=0; i<num_candidates; i++) {
     
           RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, 
 	      				    int(i));
@@ -826,7 +796,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  // receive the evals in a separate matrix for safety
 	  RealMatrix lofi_resp_matrix;
 	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
-	  Cout << "lofi_resp_matrix = " << lofi_resp_matrix << '\n';
 
 	  //concatenate posterior_theta and lofi_resp_mat into Xmatrix
 	  RealMatrix xmatrix_theta(Teuchos::View, Xmatrix,
@@ -897,7 +866,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
         // update list of candidates
         remove_column(design_matrix, optimal_ind);
-        --numCandidates;
+        --num_candidates;
 	if (batch_size > 1) {
           if (outputLevel >= DEBUG_OUTPUT) {
 	    Cout << "\n----------------------------------------------\n";
@@ -978,6 +947,46 @@ void NonDBayesCalibration::calibrate_to_hifi()
       }
     } // end MI loop
   } // end while loop
+}
+
+bool NonDBayesCalibration::eval_hi2lo_stop(bool stop_metric, double prev_MI,
+    			   double max_MI, int num_it, int num_hifi, int max_hifi, 
+			   int num_candidates)
+{
+  // check relative MI change
+  if (num_it == 1)
+    prev_MI = max_MI;
+  else if (num_it > 1) {
+    double MIdiff = prev_MI - max_MI;
+    double MIrel = fabs(MIdiff/prev_MI);
+    if (MIrel < 0.05) {
+      stop_metric = true;
+      Cout << "Experimental Design Stop Criteria met: "
+           << "Relative change in mutual information is \n"
+           << "sufficiently small \n" 
+           << '\n';
+    }
+    else
+      prev_MI = max_MI;
+  }
+  
+  // check remaining number of candidates
+  if (num_candidates == 0) {
+    stop_metric = true;
+    Cout << "Experimental Design Stop Criteria met: "
+         << "Design candidates have been exhausted \n" 
+         << '\n';
+  }
+
+  // check number of hifi evaluations
+  if (num_hifi == max_hifi) {
+    stop_metric = true;
+    Cout << "Experimental Design Stop Criteria met: "
+         << "Maximum number of hifi evaluations has \n"
+         << "been reached \n" 
+         << '\n';
+  }
+  return stop_metric;
 }
 
 void NonDBayesCalibration::add_lhs_hifi_data()
@@ -2475,7 +2484,6 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   //std::ofstream test_stream("kam1.txt");
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
   //Cout << "Xmatrix = " << Xmatrix << '\n';
-  Cout << "dimX = " << dimX << ", dimY = " << dimY << '\n';
 
   int num_samples = Xmatrix.numCols();
   int dim = dimX + dimY;
