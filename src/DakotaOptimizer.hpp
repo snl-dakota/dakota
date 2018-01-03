@@ -289,6 +289,39 @@ void get_linear_constraints( Model & model,
 
 //----------------------------------------------------------------
 
+/** Data adapter to transfer data from Dakota to third-party opt packages */
+template <typename VecT>
+void apply_linear_eq_constraints( const Model & model,
+                                  const VecT & in_vals,
+                                        VecT & values )
+{
+  size_t num_linear_eq              = model.num_linear_eq_constraints();
+  size_t num_nonlinear_eq           = model.num_nonlinear_eq_constraints();
+  const RealVector & lin_eq_targets = model.linear_eq_constraint_targets();
+  const RealMatrix & lin_eq_coeffs  = model.linear_eq_constraint_coeffs();
+
+  apply_matrix(lin_eq_coeffs, in_vals, values);
+  for(size_t i=0;i<num_linear_eq;++i)
+    values[i] -= lin_eq_targets(i);
+}
+
+//----------------------------------------------------------------
+
+/** Data adapter to transfer data from Dakota to third-party opt packages */
+template <typename VecT>
+void apply_linear_ineq_constraints( const Model & model,
+                                    const VecT & in_vals,
+                                          VecT & values )
+{
+  size_t num_linear_ineq              = model.num_linear_eq_constraints();
+  size_t num_nonlinear_ineq           = model.num_nonlinear_eq_constraints();
+  const RealMatrix & lin_ineq_coeffs  = model.linear_ineq_constraint_coeffs();
+
+  apply_matrix(lin_ineq_coeffs, in_vals, values);
+}
+
+//----------------------------------------------------------------
+
 /// Base class for the optimizer branch of the iterator hierarchy.
 
 /** The Optimizer class provides common data and functionality for
@@ -758,25 +791,30 @@ void get_responses( const Model & model,
 //----------------------------------------------------------------
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
-template <typename RVecT>
-void get_nonlinear_eq_constraints( Model & model,
-                                   const RVecT & curr_resp_vals,
-                                         RVecT & values)
+template <typename VecT>
+void get_nonlinear_eq_constraints( const Model & model,
+                                         VecT & values,
+                                         Real scale,
+                                         int offset = -1 )
 {
+  if( -1 == offset )
+    offset = model.num_linear_eq_constraints();
+  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
+  size_t num_nonlinear_eq          = model.num_nonlinear_eq_constraints();
   const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
-  int num_nl_eq_constr             = model.num_nonlinear_eq_constraints();
+  const RealVector& curr_resp_vals = model.current_response().function_values();
 
-  for (int i=0; i<num_nl_eq_constr; i++)
-    values.push_back(curr_resp_vals[i] - nln_eq_targets[i]);
+  for (int i=0; i<num_nonlinear_eq; i++)
+    values[i+offset] = curr_resp_vals[i+1+num_nonlinear_ineq] + scale*nln_eq_targets[i];
 }
 
 //----------------------------------------------------------------
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
-template <typename RVecT>
+template <typename VecT>
 void get_nonlinear_eq_constraints( Model & model,
                                    const RealVector & curr_resp_vals,
-                                         RVecT & values,
+                                         VecT & values,
                                          Real scale,
                                          int offset = 0 )
 {
@@ -785,6 +823,20 @@ void get_nonlinear_eq_constraints( Model & model,
 
   for (int i=0; i<num_nl_eq_constr; i++)
     values[i+offset] = curr_resp_vals[i] + scale*nln_eq_targets[i];
+}
+
+//----------------------------------------------------------------
+
+/** Data adapter to transfer data from Dakota to third-party opt packages */
+template <typename VecT>
+void get_nonlinear_ineq_constraints( const Model & model,
+                                           VecT & values)
+{
+  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
+  size_t num_linear_ineq           = model.num_linear_ineq_constraints();
+  const RealVector& curr_resp_vals = model.current_response().function_values();
+
+  copy_data_partial(curr_resp_vals, 1, values, num_linear_ineq, num_nonlinear_ineq);
 }
 
 //----------------------------------------------------------------

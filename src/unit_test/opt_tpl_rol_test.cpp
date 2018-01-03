@@ -241,9 +241,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   static const char text_book_input[] = 
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-5"
-    "     constraint_tolerance 1.0e-5"
-    "     threshold_delta 1.0e-5"
+    "     gradient_tolerance 1.0e-7"
+    "     constraint_tolerance 1.0e-7"
+    "     threshold_delta 1.0e-7"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
