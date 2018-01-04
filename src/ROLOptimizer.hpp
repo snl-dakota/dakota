@@ -308,7 +308,7 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<Real>
       // Pointer to optimization vector     
       Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
 
-      apply_linear_ineq_constraints( dakotaROLModelWrapper.get_wrapped_model(), *xp, *cp );
+      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::INEQUALITY, *xp, *cp );
       get_nonlinear_ineq_constraints( dakotaROLModelWrapper.get_wrapped_model(), (*cp) );
     }
 
@@ -383,7 +383,7 @@ class DakotaToROLEqConstraints : public ROL::Constraint<Real>
       // Pointer to optimization vector     
       Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
 
-      apply_linear_eq_constraints( dakotaROLModelWrapper.get_wrapped_model(), *xp, *cp );
+      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::EQUALITY, *xp, *cp );
       get_nonlinear_eq_constraints( dakotaROLModelWrapper.get_wrapped_model(), (*cp), -1.0 );
     }
 

@@ -163,11 +163,6 @@ void ROLOptimizer::set_problem()
   Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
 
-  // Extract Dakota variable and bound vectors
-  const RealVector& initial_points = iteratedModel.continuous_variables();
-  const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-  const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
-
   // create ROL variable and bound vectors
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<Real> >
@@ -175,12 +170,8 @@ void ROLOptimizer::set_problem()
   Teuchos::RCP<std::vector<Real> >
     u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
 
-  // BMA: left this loop for data transfers consolidation
-  for(j=0; j<numContinuousVars; j++){
-    rolX->operator[](j) = initial_points[j];
-    l_rcp->operator[](j) = c_l_bnds[j];
-    u_rcp->operator[](j) = c_u_bnds[j];
-  }
+  get_initial_values(iteratedModel, *rolX);
+  get_bounds(iteratedModel, *l_rcp, *u_rcp);
 
   x.reset( new ROL::StdVector<Real>(rolX) );
   Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );

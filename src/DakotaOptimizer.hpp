@@ -19,16 +19,29 @@
 namespace Dakota {
 
 
+/** Adapter for copying initial continuous variables values from a Dakota Model
+   into TPL vectors */
+
+template <typename VecT>
+void get_initial_values( const Model & model,
+                               VecT  & values)
+{
+  const RealVector& initial_points = model.continuous_variables();
+
+  for(int i=0; i<model.cv(); ++i)
+    values[i] = initial_points[i];
+}
+
 /** Adapter for copying continuous variables data from Dakota RealVector
    into TPL vectors */
 
 template <typename VecT>
 bool get_bounds( const RealVector  & lower_source,
                  const RealVector  & upper_source,
-                       Real          big_real_bound_size,
-                       Real          no_value,
                        VecT        & lower_target,
-                       VecT        & upper_target )
+                       VecT        & upper_target,
+                       Real          big_real_bound_size,
+                       Real          no_value)
 {
   bool allSet = true;
 
@@ -49,6 +62,24 @@ bool get_bounds( const RealVector  & lower_source,
   }
 
   return allSet;
+}
+
+/** Adapter for copying continuous variables data from a Dakota Model
+   into TPL vectors */
+
+template <typename VecT>
+void get_bounds( const Model & model,
+                       VecT  & lower_target,
+                       VecT  & upper_target)
+{
+  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+
+  for( int i=0; i<c_l_bnds.length(); ++i )
+  {
+    lower_target[i] = c_l_bnds[i];
+    upper_target[i] = c_u_bnds[i];
+  }
 }
 
 /** Adapter originating from (and somewhat specialized based on)
@@ -143,10 +174,10 @@ bool get_variable_bounds( Model &                   model, // would like to make
 
   bool allSet = get_bounds(lower_bnds_cont,
                            upper_bnds_cont,
-                           big_real_bound_size,
-                           AdapterT::noValue(),
                            lower,
-                           upper);
+                           upper,
+                           big_real_bound_size,
+                           AdapterT::noValue());
 
   int offset = model.cv();
   allSet = allSet && 
@@ -279,10 +310,10 @@ void get_linear_constraints( Model & model,
 
   get_bounds(linear_ineq_lower_bnds,
              linear_ineq_upper_bnds,
-             big_real_bound_size,
-             AdapterT::noValue(),
              lin_ineq_lower_bnds,
-             lin_ineq_upper_bnds);
+             lin_ineq_upper_bnds,
+             big_real_bound_size,
+             AdapterT::noValue());
 
   copy_data(linear_eq_targets, lin_eq_targets);
 }
@@ -291,33 +322,29 @@ void get_linear_constraints( Model & model,
 
 /** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename VecT>
-void apply_linear_eq_constraints( const Model & model,
-                                  const VecT & in_vals,
-                                        VecT & values )
+void apply_linear_constraints( const Model & model,
+                               CONSTRAINT_EQUALITY_TYPE etype,
+                               const VecT & in_vals,
+                                     VecT & values )
 {
-  size_t num_linear_eq              = model.num_linear_eq_constraints();
-  size_t num_nonlinear_eq           = model.num_nonlinear_eq_constraints();
-  const RealVector & lin_eq_targets = model.linear_eq_constraint_targets();
-  const RealMatrix & lin_eq_coeffs  = model.linear_eq_constraint_coeffs();
+  size_t num_linear_consts      = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                              model.num_linear_eq_constraints() :
+                                              model.num_linear_ineq_constraints();
+  size_t num_nonlinear_consts   = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                              model.num_nonlinear_eq_constraints() :
+                                              model.num_nonlinear_ineq_constraints();
+  const RealMatrix & lin_coeffs = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                              model.linear_eq_constraint_coeffs() :
+                                              model.linear_ineq_constraint_coeffs();
 
-  apply_matrix(lin_eq_coeffs, in_vals, values);
-  for(size_t i=0;i<num_linear_eq;++i)
-    values[i] -= lin_eq_targets(i);
-}
+  apply_matrix(lin_coeffs, in_vals, values);
 
-//----------------------------------------------------------------
-
-/** Data adapter to transfer data from Dakota to third-party opt packages */
-template <typename VecT>
-void apply_linear_ineq_constraints( const Model & model,
-                                    const VecT & in_vals,
-                                          VecT & values )
-{
-  size_t num_linear_ineq              = model.num_linear_eq_constraints();
-  size_t num_nonlinear_ineq           = model.num_nonlinear_eq_constraints();
-  const RealMatrix & lin_ineq_coeffs  = model.linear_ineq_constraint_coeffs();
-
-  apply_matrix(lin_ineq_coeffs, in_vals, values);
+  if( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY )
+  {
+    const RealVector & lin_eq_targets = model.linear_eq_constraint_targets();
+    for(size_t i=0;i<num_linear_consts;++i)
+      values[i] -= lin_eq_targets(i);
+  }
 }
 
 //----------------------------------------------------------------
