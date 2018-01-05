@@ -197,7 +197,7 @@ void ROLOptimizer::set_problem()
     emul.reset(new ROL::StdVector<Real>(emul_rcp) );
   }
 
-  // Inequality constraints
+  // Inequality constraints: [linear_ineq, nonlinear_ineq]
   if (numIneqConstraints > 0){
     // create inequality constraint object and give it access to Dakota model 
     ineqConst.reset(new DakotaToROLIneqConstraints(*wrappedDakotaModel));
@@ -213,24 +213,15 @@ void ROLOptimizer::set_problem()
     Teuchos::RCP<std::vector<Real> >
       ineq_u_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
 
-    if (numLinearIneqConstraints){
-      const RealVector& lin_eq_lwr_bnds = iteratedModel.linear_ineq_constraint_lower_bounds();
-      const RealVector& lin_eq_upr_bnds = iteratedModel.linear_ineq_constraint_upper_bounds();
-
-      for(j=0; j<numLinearIneqConstraints; j++){
-        ineq_l_rcp->operator[](j) = lin_eq_lwr_bnds[j];
-        ineq_u_rcp->operator[](j) = lin_eq_upr_bnds[j];
-      }
-    }
-    if (numNonlinearIneqConstraints){
-      const RealVector& nln_eq_lwr_bnds = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
-      const RealVector& nln_eq_upr_bnds = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
-
-      for(j=0; j<numNonlinearIneqConstraints; j++){
-        ineq_l_rcp->operator[](j+numLinearIneqConstraints) = nln_eq_lwr_bnds[j];
-        ineq_u_rcp->operator[](j+numLinearIneqConstraints) = nln_eq_upr_bnds[j];
-      }
-    }
+    // copy all to partial (should be no-op if no data to copy)
+    copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
+		      *ineq_l_rcp, 0);
+    copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
+		      *ineq_u_rcp, 0);
+    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+		      *ineq_l_rcp, numLinearIneqConstraints);
+    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+		      *ineq_u_rcp, numLinearIneqConstraints);
 
     Teuchos::RCP<ROL::Vector<Real> > ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
     Teuchos::RCP<ROL::Vector<Real> > ineq_upper_bounds( new ROL::StdVector<Real>( ineq_u_rcp ) );
@@ -265,9 +256,7 @@ void ROLOptimizer::core_run()
   // copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
   RealVector& cont_vars = best_vars.continuous_variables_view();
-  // TODO: data transfers consolidation: copy_data(rolX, cont_vars)
-  for(int j=0; j<numContinuousVars; j++)
-    cont_vars[j] = (*rolX)[j];
+  copy_data(*rolX, cont_vars);
 
   // Attempt DB lookup directly into best, fallback on re-evaluation if needed
   Response& best_resp = bestResponseArray.front();
