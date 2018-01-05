@@ -192,7 +192,7 @@ protected:
   /// initialization of expansion refinement, if necessary
   void pre_refinement();
   /// advance the refinement strategy one step
-  void core_refinement(Real& metric, bool apply_best = true);
+  size_t core_refinement(Real& metric, bool apply_best = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 
@@ -297,9 +297,12 @@ private:
   /// initialization of adaptive refinement using generalized sparse grids
   void initialize_sets();
   /// perform an adaptive refinement increment using generalized sparse grids
-  Real increment_sets(bool apply_best = true);
+  size_t increment_sets(Real& delta_star, bool apply_best = true);
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
+
+  /// promote selected candidate into reference grid + expansion
+  void select_candidate(size_t best_candidate);
 
   /// analytic portion of compute_statistics() from post-processing of
   /// expansion coefficients

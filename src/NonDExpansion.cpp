@@ -937,7 +937,7 @@ void NonDExpansion::pre_refinement()
 }
 
 
-void NonDExpansion::core_refinement(Real& metric, bool apply_best)
+size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
 {
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
@@ -964,6 +964,7 @@ void NonDExpansion::core_refinement(Real& metric, bool apply_best)
       break;
     }
     metric = compute_covariance_metric();
+    return 0; // only one candidate
     break;
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
     // Dimension adaptive refinement: define anisotropic preference
@@ -976,6 +977,7 @@ void NonDExpansion::core_refinement(Real& metric, bool apply_best)
     nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
     update_expansion();
     metric = compute_covariance_metric();
+    return 0; // only one candidate
     break;
   }
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
@@ -989,9 +991,10 @@ void NonDExpansion::core_refinement(Real& metric, bool apply_best)
     nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
     update_expansion();
     metric = compute_covariance_metric();
+    return 0; // only one candidate
     break;
   }
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: // SSG only
     // Dimension adaptive refinement using generalized sparse grids.
     // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
     //   most efficient if fully nested; otherwise, unique points from
@@ -999,7 +1002,7 @@ void NonDExpansion::core_refinement(Real& metric, bool apply_best)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    metric = increment_sets(apply_best); // SSG only
+    return increment_sets(metric, apply_best); // best of several candidates
     break;
   }
 }
@@ -1196,7 +1199,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
   compute_covariance();// TO DO: annotated_results(false);
 
   // Initialize again (or must propagate settings from mf_expansion())
-  size_t lev, form, num_lev, best_lev;  bool multilev;  RealVector cost;
+  size_t lev, form, num_lev, best_lev, lev_candidate, best_candidate;
+  bool multilev;  RealVector cost;
   configure_levels(num_lev, form, multilev, true);
   configure_cost(num_lev, multilev, cost);
 
@@ -1218,26 +1222,29 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      /* lev_candidate = */core_refinement(lev_metric, false); // TO DO
+      lev_candidate = core_refinement(lev_metric, false);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
       // secondary normalization for relative level cost is required.
       lev_metric /= lev_cost;
+      Cout << "\n<<<<< Level refinement metric = " << lev_metric << '\n';
 
       // Assess candidate for best across all levels
       if (lev_metric > best_lev_metric) {
 	best_lev_metric = lev_metric;
-	best_lev = lev;	/* best_candidate = lev_candidate; */ // TO DO
+	best_lev = lev;	best_candidate = lev_candidate;
       }
     }
 
-    // TO DO: push best level refinement
+    // permanently apply best increment and update references for next increment
+    Cout << "\n<<<<< Iteration complete: selected refinement indices = level "
+	 << best_lev << " candidate " << best_candidate << '\n';
     configure_indices(best_lev, form, multilev, cost, lev_cost);
-    //uSpaceModel.push_approximation(best_candidate); // assumes trial_set
-    // Note: in case of GSG, this step must update ref/candidate sets
+    select_candidate(best_candidate);
 
     // Update reference stats
+    metric_roll_up();
     compute_covariance();// TO DO: annotated_results(false);
     ++iter;
   }
@@ -1255,6 +1262,30 @@ void NonDExpansion::greedy_multifidelity_expansion()
   //compute_equivalent_cost(N_l, cost);
 
   // Final annotated results are printed in core_run()
+}
+
+
+void NonDExpansion::select_candidate(size_t best_candidate)
+{
+  // permanently apply best increment and update references for next increment
+  switch (refineControl) {
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: {
+    // convert incoming candidate index to selected trial set
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
+    std::set<UShortArray>::const_iterator best_cit = active_mi.begin();
+    std::advance(best_cit, best_candidate);
+    // See also bottom of NonDExpansion::increment_sets() ...
+    nond_sparse->update_sets(*best_cit);
+    uSpaceModel.push_approximation();
+    nond_sparse->update_reference();
+    break;
+  }
+  //case Pecos::UNIFORM_CONTROL:
+  //case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  //case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+  }
 }
 
 
@@ -1325,14 +1356,14 @@ void NonDExpansion::initialize_sets()
 }
 
 
-Real NonDExpansion::increment_sets(bool apply_best)
+size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
 {
   Cout << "\n>>>>> Begin evaluation of active index sets.\n";
 
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   std::set<UShortArray>::const_iterator cit, cit_star;
-  Real delta, delta_star = -1.;
+  delta_star = -DBL_MAX;               Real delta;
   RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
 
   // store reference points for computing refinement metrics
@@ -1390,6 +1421,7 @@ Real NonDExpansion::increment_sets(bool apply_best)
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
+  size_t index_star = find_index(active_mi, *cit_star);
 
   if (apply_best) {
     // permanently apply best increment and update references for next increment
@@ -1404,7 +1436,7 @@ Real NonDExpansion::increment_sets(bool apply_best)
     }
   }
 
-  return delta_star;
+  return index_star;
 }
 
 
