@@ -348,7 +348,7 @@ void Approximation::finalize()
 void Approximation::combine()
 {
   if (approxRep) approxRep->combine();
-  else approxData.active_key(sharedDataRep->active_model_key());
+  //else approxData.active_key(sharedDataRep->active_model_key());
 }
 
 

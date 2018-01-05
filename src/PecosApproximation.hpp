@@ -531,7 +531,7 @@ inline void PecosApproximation::rebuild()
 inline void PecosApproximation::pop(bool save_data)
 {
   // base class implementation removes data from currentPoints
-  Approximation::pop(save_data);
+  Approximation::pop(save_data); // *** active key not updated until decrement!
   // map to Pecos::BasisApproximation
   pecosBasisApprox.decrement_coefficients(save_data);
 }
