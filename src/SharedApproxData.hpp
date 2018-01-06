@@ -118,6 +118,8 @@ public:
   virtual void pre_combine();
   /// clean up stored data sets after aggregation
   virtual void post_combine();
+  /// promote aggregated data sets to active state
+  virtual void combined_to_active();
 
   //
   //- Heading: Member functions

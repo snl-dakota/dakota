@@ -97,8 +97,10 @@ public:
   /// clear inactive approximation data
   virtual void clear_inactive();
 
-  /// combine current approximation with previously stored approximation
+  /// combine all level approximations into a single aggregate approximation
   virtual void combine();
+  /// promote combined approximation into active approximation
+  virtual void combined_to_active();
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);

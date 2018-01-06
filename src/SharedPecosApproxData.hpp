@@ -132,6 +132,7 @@ protected:
   void post_finalize();
   void pre_combine();
   void post_combine();
+  void combined_to_active();
 
   /*
   void store(size_t index = _NPOS);
@@ -248,6 +249,10 @@ inline void SharedPecosApproxData::pre_combine()
 
 inline void SharedPecosApproxData::post_combine()
 { pecosSharedDataRep->post_combine_data(); }
+
+
+inline void SharedPecosApproxData::combined_to_active()
+{ pecosSharedDataRep->combined_to_active(); }
 
 
 inline void SharedPecosApproxData::

@@ -115,6 +115,7 @@ protected:
   void clear_inactive();
 
   void combine_approximation();
+  void combined_to_active();
 
   Real2DArray cv_diagnostics(const StringArray& metrics, unsigned num_folds);
   Real2DArray challenge_diagnostics(const StringArray& metric_types,
@@ -324,6 +325,14 @@ inline void ApproximationInterface::combine_approximation()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].combine();
   sharedData.post_combine(); // shared cleanup last
+}
+
+
+inline void ApproximationInterface::combined_to_active()
+{
+  sharedData.combined_to_active(); // shared aggregation first
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].combined_to_active();
 }
 
 

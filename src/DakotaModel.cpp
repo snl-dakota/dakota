@@ -3278,6 +3278,19 @@ void Model::combine_approximation()
 }
 
 
+void Model::combined_to_active()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->combined_to_active();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
+	 << " function.\n       This model does not support approximation"
+	 << " combination." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 /*
 void Model::store_approximation(size_t index)
 {

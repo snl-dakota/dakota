@@ -1289,6 +1289,19 @@ void Interface::combine_approximation()
 }
 
 
+void Interface::combined_to_active()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->combined_to_active();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
+	 << " function.\n       This interface does not support approximation"
+	 << " combination." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {

@@ -809,8 +809,16 @@ void DataFitSurrModel::combine_approximation()
   //bool swap = !nond_int->maximal_grid();
 
   approxInterface.combine_approximation();
+}
 
-  //Cout << "\n<<<<< " << surrogateType << " approximation combined.\n";
+
+void DataFitSurrModel::combined_to_active()
+{
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Promoting combined " << surrogateType << " approximation "
+	 << "to active approximation.\n";
+
+  approxInterface.combined_to_active();
 }
 
 

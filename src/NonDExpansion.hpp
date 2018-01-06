@@ -166,7 +166,7 @@ protected:
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
-  void multifidelity_expansion(short refine_type);
+  void multifidelity_expansion(short refine_type, bool to_active = true);
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
   void greedy_multifidelity_expansion();

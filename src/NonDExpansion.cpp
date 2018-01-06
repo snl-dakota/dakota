@@ -1136,7 +1136,7 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 }
 
 
-void NonDExpansion::multifidelity_expansion(short refine_type)
+void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 {
   // remove default key (empty activeKey) since this interferes with
   // combine_approximation().  Also useful for ML/MF re-entrancy.
@@ -1183,9 +1183,10 @@ void NonDExpansion::multifidelity_expansion(short refine_type)
   // NOTE: GENERATE combined{MultiIndex,ExpCoeffs,ExpCoeffGrads} BUT
   //       DO NOT OVERWRITE ACTIVE multiIndex,expansionCoeff{s,Grads}.
   uSpaceModel.combine_approximation();
-
   // CALLERS OF THIS FUNCTION MUST INVOKE A FINAL POST_COMBINE-LIKE OPERATION
   // TO FINALIZE THE COMBINATION (SWAP DATA), CLEAR INACTIVE KEYS, ETC...
+  if (to_active)
+    uSpaceModel.combined_to_active();
 }
 
 
@@ -1194,7 +1195,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
-  multifidelity_expansion(Pecos::NO_REFINEMENT); // suppress indiv. refinement
+  // > suppress individual refinement
+  multifidelity_expansion(Pecos::NO_REFINEMENT, false); // defer final roll up
   // > Need reference stats
   compute_covariance();// TO DO: annotated_results(false);
 
@@ -1250,13 +1252,13 @@ void NonDExpansion::greedy_multifidelity_expansion()
     ++iter;
   }
 
-  // FINAL ROLL UP OF EACH OF THE FINALIZED GSG's --> FINAL STATS
+  // Perform final roll-up for each level and then combine levels
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
     post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level
   }
   uSpaceModel.combine_approximation();
-  //uSpaceModel.combined_to_active();
+  uSpaceModel.combined_to_active();
 
   // compute the equivalent number of HF evaluations
   // TO DO: accumulate N_l from model / level eval counts

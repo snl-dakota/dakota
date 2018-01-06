@@ -214,6 +214,7 @@ protected:
   void push();
   void finalize();
   void combine();
+  void combined_to_active();
   /*
   void store(size_t index = _NPOS);
   void restore(size_t index = _NPOS);
@@ -558,9 +559,18 @@ inline void PecosApproximation::finalize()
 inline void PecosApproximation::combine()
 {
   // base class implementation manages approx data
-  Approximation::combine();
+  //Approximation::combine();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.combine_coefficients();
+}
+
+
+inline void PecosApproximation::combined_to_active()
+{
+  // base class implementation manages approx data
+  Approximation::combined_to_active();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.combined_to_active();
 }
 
 

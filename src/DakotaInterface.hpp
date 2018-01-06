@@ -176,6 +176,8 @@ public:
 
   /// combine the current approximation with previously stored data sets
   virtual void combine_approximation();
+  /// promote the combined approximation to the currently active one
+  virtual void combined_to_active();
 
   /*
   /// move the current approximation into storage for later combination;

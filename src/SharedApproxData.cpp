@@ -547,4 +547,13 @@ void SharedApproxData::post_combine()
   //  default: no post combine required
 }
 
+
+void SharedApproxData::combined_to_active()
+{
+  if (dataRep)
+    dataRep->combined_to_active();
+  //else
+  //  default: no op
+}
+
 } // namespace Dakota

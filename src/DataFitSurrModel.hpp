@@ -187,8 +187,10 @@ protected:
   /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
-  /// combine the current data fit approximation with one previously stored
+  /// combine all level approximations into a separate composite approximation
   void combine_approximation();
+  /// promote the combined approximation into the active one
+  void combined_to_active();
 
   /*
   /// store the current data fit approximation for later combination
