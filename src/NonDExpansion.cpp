@@ -1238,8 +1238,9 @@ void NonDExpansion::greedy_multifidelity_expansion()
     }
 
     // permanently apply best increment and update references for next increment
-    Cout << "\n<<<<< Iteration complete: selected refinement indices = level "
-	 << best_lev << " candidate " << best_candidate << '\n';
+    Cout << "\n<<<<< Iteration " << iter+1
+	 << " completed: selected refinement indices = level " << best_lev+1
+	 << " candidate " << best_candidate+1 << '\n';
     configure_indices(best_lev, form, multilev, cost, lev_cost);
     select_candidate(best_candidate);
 
@@ -1255,7 +1256,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
     post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level
   }
   uSpaceModel.combine_approximation();
-  //uSpaceModel.combined_to_final(); // TO DO
+  //uSpaceModel.combined_to_active();
 
   // compute the equivalent number of HF evaluations
   // TO DO: accumulate N_l from model / level eval counts
