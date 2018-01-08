@@ -221,6 +221,9 @@ protected:
 
   /// emulation approach for multilevel discrepancy: distinct or recursive
   short multilevDiscrepEmulation;
+  /// number of samples allocated to each level of a discretization/model
+  /// hierarchy within multilevel/multifidelity methods
+  SizetArray NLev;
   /// equivalent number of high fidelity evaluations accumulated using samples
   /// across multiple model forms and/or discretization levels
   Real equivHFEvals;

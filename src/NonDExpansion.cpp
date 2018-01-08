@@ -1211,9 +1211,10 @@ void NonDExpansion::greedy_multifidelity_expansion()
     pre_refinement(); // initialize_sets() for each level
   }
 
-  size_t iter = 0, max_iter = (maxIterations < 0) ? 25 : maxIterations;
+  size_t iter = 0,
+    max_refine = (maxRefineIterations < 0) ? 100 : maxRefineIterations;
   Real lev_metric, best_lev_metric = DBL_MAX, lev_cost;
-  while ( best_lev_metric > convergenceTol && iter <= max_iter ) {
+  while ( best_lev_metric > convergenceTol && iter < max_refine ) {
 
     // Generate candidates at each level
     // > TO DO: need to be able to push / pop for all refine types (beyond GSG)
@@ -1240,29 +1241,25 @@ void NonDExpansion::greedy_multifidelity_expansion()
     }
 
     // permanently apply best increment and update references for next increment
-    Cout << "\n<<<<< Iteration " << iter+1
-	 << " completed: selected refinement indices = level " << best_lev+1
-	 << " candidate " << best_candidate+1 << '\n';
     configure_indices(best_lev, form, multilev, cost, lev_cost);
     select_candidate(best_candidate);
 
-    // Update reference stats
-    metric_roll_up();
-    compute_covariance();// TO DO: annotated_results(false);
     ++iter;
+    Cout << "\n<<<<< Iteration " << iter
+	 << " completed: selected refinement indices = level " << best_lev+1
+	 << " candidate " << best_candidate+1 << '\n';
   }
 
   // Perform final roll-up for each level and then combine levels
+  NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    post_refinement(best_lev_metric/*lev_metric[lev]*/); // finalize_sets() for each level
+    post_refinement(best_lev_metric); // finalize_sets() for each level
+    NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   uSpaceModel.combine_approximation();
   uSpaceModel.combined_to_active();
-
-  // compute the equivalent number of HF evaluations
-  // TO DO: accumulate N_l from model / level eval counts
-  //compute_equivalent_cost(N_l, cost);
+  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
   // Final annotated results are printed in core_run()
 }
@@ -1288,7 +1285,13 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   //case Pecos::UNIFORM_CONTROL:
   //case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   //case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    //uSpaceModel.push_approximation();
+    //break;
   }
+
+  // Update reference stats
+  metric_roll_up();
+  compute_covariance();// TO DO: annotated_results(false);
 }
 
 

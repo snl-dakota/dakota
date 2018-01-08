@@ -143,9 +143,6 @@ private:
   /// scale parameter for estimator variance in ML PCE
   Real gammaEstimatorScale;
 
-  /// number of samples allocated to each level of a discretization
-  /// hierarchy within multilevel regression
-  SizetArray NLev;
   /// number of initial samples specified by the user
   SizetArray pilotSamples;
 };
