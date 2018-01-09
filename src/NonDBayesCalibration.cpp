@@ -118,6 +118,14 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 {
   // BMA ERROR! Random seed should be set before using it!
 
+  if (randomSeed != 0)
+    Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
+  else {
+    // Use NonD convenience function for system seed
+    randomSeed = generate_system_seed();
+    Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
+  }
+
   if (adaptExpDesign) {
     // TODO: instead of pulling these models out, change modes on the
     // iteratedModel
@@ -141,14 +149,6 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
                             rng, vary_pattern, ACTIVE_UNIFORM);
       hifiSampler.assign_rep(lhs_sampler_rep, false);
     }
-  }
-
-  if (randomSeed != 0)
-    Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
-  else {
-    // Use NonD convenience function for system seed
-    randomSeed = generate_system_seed();
-    Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
 
   switch (emulatorType) {
@@ -653,9 +653,9 @@ void NonDBayesCalibration::initialize_model()
 
 void NonDBayesCalibration::calibrate_to_hifi()
 {
-  RealVector vars = mcmcModel.continuous_variables();
-  const RealVector& initial_point = RealVector(Teuchos::Copy, 
-                              	    vars.values(), numContinuousVars);
+  const RealVector initial_point(Teuchos::Copy, 
+      				 mcmcModel.continuous_variables().values(), 
+				 mcmcModel.continuous_variables().length());
   
   /* TODO:
      - Handling of hyperparameters
@@ -701,8 +701,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
   while (!stop_metric) {
     
     // EVALUATE STOPPING CRITERIA
-    stop_metric = eval_hi2lo_stop(stop_metric, prev_MI, max_MI, num_it, num_hifi, 
-	                          max_hifi, num_candidates);
+    stop_metric = eval_hi2lo_stop(stop_metric, prev_MI, max_MI, num_it, 
+	                          num_hifi, max_hifi, num_candidates);
 
     // If the experiment data changed, need to update a number of
     // models that wrap it.  TODO: make this more lightweight instead
@@ -895,8 +895,8 @@ void NonDBayesCalibration::print_hi2lo_begin(int num_it)
   Cout << "\n----------------------------------------------\n";
 }
 	    
-void NonDBayesCalibration::print_hi2lo_status(int num_it, int i, RealVector& xi_i, 
-    					      double MI)
+void NonDBayesCalibration::print_hi2lo_status(int num_it, int i, 
+    			   const RealVector& xi_i, double MI)
 {
   Cout << "\n----------------------------------------------\n";
   Cout << "Experimental Design Iteration "<< num_it <<" Progress";
@@ -906,7 +906,7 @@ void NonDBayesCalibration::print_hi2lo_status(int num_it, int i, RealVector& xi_
 }
 	    
 void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n, 
-    			   int batchEvals, RealVector& optimal_config, 
+    			   int batchEvals, const RealVector& optimal_config, 
 			   double max_MI)
 {
   Cout << "\n----------------------------------------------\n";
@@ -920,7 +920,7 @@ void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n,
 }
  
 void NonDBayesCalibration::print_hi2lo_selected(int num_it, int batchEvals, 
-    			   RealMatrix& optimal_config_matrix, RealVector&
+    			   RealMatrix& optimal_config_matrix, const RealVector&
       		           optimal_config, double max_MI)
 {
   Cout << "\n----------------------------------------------\n";
@@ -1145,7 +1145,8 @@ void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
 }
 	  
 void NonDBayesCalibration::build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, 
-    			   RealMatrix& mi_chain, RealMatrix& sim_error_matrix)
+    			   const RealMatrix& mi_chain, RealMatrix& 
+			   sim_error_matrix)
 {
  // run the model at each posterior sample, with option to batch
  // evaluate the lo-fi model

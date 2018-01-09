@@ -137,12 +137,12 @@ protected:
 			RealVector& optimal_config, double max_MI);
   /// print calibrate_to_hifi progress
   void print_hi2lo_begin(int num_it);
-  void print_hi2lo_status(int num_it, int i, RealVector& xi_i, double MI);
+  void print_hi2lo_status(int num_it, int i, const RealVector& xi_i, double MI);
   void print_hi2lo_batch_status(int num_it, int batch_n, int batchEvals, 
-      				RealVector& optimal_config, double max_MI);
+      			const RealVector& optimal_config, double max_MI);
   void print_hi2lo_selected(int num_it, int batchEvals, RealMatrix& 
-      			    optimal_config_matrix, RealVector& optimal_config,
-			    double max_MI);
+      			    optimal_config_matrix, const RealVector& 
+			    optimal_config, double max_MI);
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
   /// apply simulation error vector
@@ -153,7 +153,7 @@ protected:
   /// build matrix of candidate points
   void build_designs(RealMatrix& design_matrix);
   /// build matrix to calculate mutual information for calibrate_to_hifi
-  void build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, RealMatrix& 
+  void build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, const RealMatrix& 
                            mi_chain, RealMatrix& sim_error_matrix);
   /// run high-fidelity model at several configs and add to experiment data 
   void run_hifi(RealMatrix& optimal_config_matrix, RealMatrix& resp_matrix);
