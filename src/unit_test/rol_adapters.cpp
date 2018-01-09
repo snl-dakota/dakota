@@ -4,8 +4,8 @@
 #include "ROL_RandomVector.hpp"
 #include "ROL_StdVector.hpp"
 #include "ROL_StdObjective.hpp"
-#include "ROL_Teuchos_Objective.hpp"
-#include "ROL_Teuchos_Constraint.hpp"
+// #include "ROL_Teuchos_Objective.hpp"
+// #include "ROL_Teuchos_Constraint.hpp"
 #include "ROL_Bounds.hpp"
 
 #include "Teuchos_UnitTestHarness.hpp"
@@ -30,14 +30,14 @@ class StdFactory
 
   //----------------------------
 
-class TeuchosSerialDenseFactory
-{
-  public:
+// class TeuchosSerialDenseFactory
+// {
+//   public:
 
-    typedef RealVector VT;
-    typedef ROL::TeuchosVector<int, Real> RVT;
-    typedef ROL::TeuchosObjective<int, Real> RObjT;
-};
+//     typedef RealVector VT;
+//     typedef ROL::TeuchosVector<int, Real> RVT;
+//     typedef ROL::TeuchosObjective<int, Real> RObjT;
+// };
 
 //----------------------------------------------------------------
 
@@ -149,8 +149,8 @@ TEUCHOS_UNIT_TEST(a_rol_std, quad)
 
 //----------------------------------------------------------------
 
- TEUCHOS_UNIT_TEST(a_rol_teuchos, quad)
- {
-   rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
- }
+ // TEUCHOS_UNIT_TEST(a_rol_teuchos, quad)
+ // {
+ //   rol_quad_solv<TeuchosSerialDenseFactory>(out, success);
+ // }
 

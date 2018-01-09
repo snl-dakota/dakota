@@ -87,10 +87,6 @@ include_directories(${Teuchos_INCLUDE_DIRS})
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)
 
-if(HAVE_ROL)
-  include_directories(${DakotaROL_SOURCE_DIR}/include)
-endif(HAVE_ROL)
-
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_teuchos_unit_tests
 #     demo_teuchos.cpp

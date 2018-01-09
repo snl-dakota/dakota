@@ -734,8 +734,7 @@ if(HAVE_OPTPP)
 endif(HAVE_OPTPP)
 
 if(HAVE_ROL)
-  list(APPEND DAKOTA_INCDIRS 
-    ${DakotaROL_SOURCE_DIR}/include)
+  list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
   add_definitions("-DHAVE_ROL")
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
