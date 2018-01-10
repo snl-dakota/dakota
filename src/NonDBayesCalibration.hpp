@@ -149,7 +149,7 @@ protected:
   void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
   /// build matrix of errors 
   void build_error_matrix(const RealVector& sim_error_vec, 
-      			  RealMatrix& sim_error_matrix);
+      			  RealMatrix& sim_error_matrix, int &seed);
   /// build matrix of candidate points
   void build_designs(RealMatrix& design_matrix);
   /// build matrix to calculate mutual information for calibrate_to_hifi

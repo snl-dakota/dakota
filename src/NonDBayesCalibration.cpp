@@ -769,7 +769,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
                                           shared_data().simulation_error();
         if (sim_error_vec.length() > 0) {
           sim_error_matrix.reshape(numFunctions, num_filtered);
-          build_error_matrix(sim_error_vec, sim_error_matrix);
+          build_error_matrix(sim_error_vec, sim_error_matrix, random_seed);
         }
 
         for (size_t i=0; i<num_candidates; i++) {
@@ -1020,6 +1020,7 @@ void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec,
   }
   else {
       for (size_t j = 0; j < numFunctions; j++) {
+        ++stoch_seed;
         stdev = std::sqrt(sim_error_vec[j]);
         rnumGenerator.seed(stoch_seed);
         boost::normal_distribution<> err_dist(0.0, stdev);
@@ -1033,15 +1034,14 @@ void NonDBayesCalibration::apply_error_vec(const RealVector& sim_error_vec,
 }
 
 void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
-                           RealMatrix& sim_error_matrix)
+                           RealMatrix& sim_error_matrix, int &stoch_seed)
 {
   Real stdev;
-  int stoch_seed = randomSeed;
   RealVector col_vec(numFunctions);
   boost::mt19937 rnumGenerator;
   int num_filtered = sim_error_matrix.numCols();
+  ++stoch_seed;
   if (sim_error_vec.length() == 1) {
-    stoch_seed += 1;
     rnumGenerator.seed(stoch_seed);
     stdev = std::sqrt(sim_error_vec[0]);
     boost::normal_distribution<> err_dist(0.0, stdev);
@@ -1054,12 +1054,11 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
       }
       Teuchos::setCol(col_vec, j, sim_error_matrix);
     }
-    Cout << "sim error matrix = " << sim_error_matrix << '\n';
   }
   else {
     for (int j = 0; j < num_filtered; j++) {
       for (size_t k = 0; k < numFunctions; k++) {
-        stoch_seed += 1;
+        ++stoch_seed;
         rnumGenerator.seed(stoch_seed);
         stdev = std::sqrt(sim_error_vec[k]);
         boost::normal_distribution<> err_dist(0.0, stdev);
