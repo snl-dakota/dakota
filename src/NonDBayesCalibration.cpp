@@ -757,32 +757,27 @@ void NonDBayesCalibration::calibrate_to_hifi()
       RealMatrix optimal_config_matrix(design_matrix.numRows(), batchEvals);
       RealVector MI_vec(batchEvals);
 
+      RealMatrix Xmatrix;
       // For loop for batch MI 
       for (int batch_n = 1; batch_n < batchEvals+1; batch_n ++) {
-      
+        Xmatrix.reshape(numContinuousVars + batch_n * numFunctions,
+	    		num_filtered);
+	
         // Build simulation error matrix
         RealMatrix sim_error_matrix;
         const RealVector& sim_error_vec = mcmcModel.current_response().
                                           shared_data().simulation_error();
-        if (num_it == 1) 
-          if (sim_error_vec.length() > 0) {
-            sim_error_matrix.reshape(numFunctions, num_filtered);
-	    build_error_matrix(sim_error_vec, sim_error_matrix);
-          }
-
-        // BMA: You can now use acceptanceChain/acceptedFnVals, though
-        // need to be careful about what subset for this chain run (may
-        // need indices to track)
+        if (sim_error_vec.length() > 0) {
+          sim_error_matrix.reshape(numFunctions, num_filtered);
+          build_error_matrix(sim_error_vec, sim_error_matrix);
+        }
 
         for (size_t i=0; i<num_candidates; i++) {
           RealVector xi_i = Teuchos::getCol(Teuchos::View, design_matrix, 
 	      				    int(i));
           Model::inactive_variables(xi_i, mcmcModel); 
 	  
-	  // Declare a matrix to store the low fidelity responses 
-	  RealMatrix Xmatrix(numContinuousVars + batch_n * numFunctions, 
-	    		     num_filtered);
-	  build_hi2lo_xmatrix(Xmatrix, i, mi_chain, sim_error_matrix);
+	  build_hi2lo_xmatrix(Xmatrix, batch_n, mi_chain, sim_error_matrix);
 
           // calculate the mutual information b/w post theta and lofi responses
           Real MI = knn_mutual_info(Xmatrix, numContinuousVars, 
@@ -808,18 +803,17 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	Teuchos::setCol(optimal_config, batch_n-1, optimal_config_matrix);
         // Update optimal_obs matrix
         if (batchEvals > 1) {
-	  optimal_obs.reshape(batch_n * numFunctions, num_filtered);
-          Model::inactive_variables(optimal_config, mcmcModel);
-
-	  // Evaluate lofi model at optimal design
+	  // Evaluate lofi model at optimal design, update Xmatrix
 	  RealMatrix lofi_resp_matrix;
+          Model::inactive_variables(optimal_config, mcmcModel);
 	  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
+          if (sim_error_matrix.numRows() > 0)
+	    lofi_resp_matrix += sim_error_matrix;
 
-	  size_t newobs_ind = (batch_n-1)*numFunctions;
-	  RealMatrix optimal_obs_submatrix
-	    (Teuchos::View, optimal_obs, numFunctions, num_filtered,
-	     newobs_ind, 0);
-	  optimal_obs_submatrix.assign(lofi_resp_matrix);
+	  RealMatrix optimal_obs
+	    (Teuchos::View, Xmatrix, numFunctions, num_filtered,
+	     numContinuousVars + (batch_n-1)*numFunctions, 0);
+	  optimal_obs.assign(lofi_resp_matrix);
         }
 
         // update list of candidates
@@ -843,12 +837,11 @@ void NonDBayesCalibration::calibrate_to_hifi()
       num_it++;
 
       // Print results to screen and to file
-      if (outputLevel >= VERBOSE_OUTPUT) {
+      if (outputLevel >= VERBOSE_OUTPUT) 
 	print_hi2lo_selected(num_it, batchEvals, optimal_config_matrix, 
 	    		     optimal_config, max_MI);
-	print_hi2lo_file(out_file, num_it, batchEvals, optimal_config_matrix, 
+      print_hi2lo_file(out_file, num_it, batchEvals, optimal_config_matrix, 
 	    	MI_vec, max_hifi, resp_matrix, optimal_config, max_MI);
-      }
     } // end MI loop
   } // end while loop
 }
@@ -1061,6 +1054,7 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
       }
       Teuchos::setCol(col_vec, j, sim_error_matrix);
     }
+    Cout << "sim error matrix = " << sim_error_matrix << '\n';
   }
   else {
     for (int j = 0; j < num_filtered; j++) {
@@ -1148,26 +1142,27 @@ void NonDBayesCalibration::build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i,
     			   const RealMatrix& mi_chain, RealMatrix& 
 			   sim_error_matrix)
 {
- // run the model at each posterior sample, with option to batch
- // evaluate the lo-fi model
-
- // receive the evals in a separate matrix for safety
- RealMatrix lofi_resp_matrix;
- Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
-
- //concatenate posterior_theta and lofi_resp_mat into Xmatrix
- RealMatrix xmatrix_theta(Teuchos::View, Xmatrix,
-		   numContinuousVars, Xmatrix.numCols());
- xmatrix_theta.assign(mi_chain);
-
- RealMatrix xmatrix_curr_responses
-   (Teuchos::View, Xmatrix, numFunctions, Xmatrix.numCols(),
-    numContinuousVars, 0);
- xmatrix_curr_responses.assign(lofi_resp_matrix);
- if (sim_error_matrix.numRows() > 0)
-   xmatrix_curr_responses += sim_error_matrix;
+  // run the model at each posterior sample, with option to batch
+  // evaluate the lo-fi model
+ 
+  // receive the evals in a separate matrix for safety
+  RealMatrix lofi_resp_matrix;
+  Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
+ 
+  //concatenate posterior_theta and lofi_resp_mat into Xmatrix
+  RealMatrix xmatrix_theta(Teuchos::View, Xmatrix,
+ 		   numContinuousVars, Xmatrix.numCols());
+  xmatrix_theta.assign(mi_chain);
+ 
+  RealMatrix xmatrix_curr_responses
+    (Teuchos::View, Xmatrix, numFunctions, Xmatrix.numCols(),
+     numContinuousVars + (i-1)*numFunctions, 0);
+  xmatrix_curr_responses.assign(lofi_resp_matrix);
+  
+  if (sim_error_matrix.numRows() > 0)
+    xmatrix_curr_responses += sim_error_matrix;
 }
-	
+
 void NonDBayesCalibration::run_hifi(RealMatrix& optimal_config_matrix, 
     			   RealMatrix& resp_matrix)
 {
