@@ -98,6 +98,9 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr
   }
 #endif
 
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   bestVariablesArray.push_back(
     iteratedModel.truth_model().current_variables().copy());
 

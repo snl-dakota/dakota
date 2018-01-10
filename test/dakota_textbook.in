@@ -16,6 +16,8 @@
 # s10-s11: test correct traits coverage of various Minimizer TPLs
 
 environment
+## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s9
+## Consider newer capabilities in the Dakota GUI     	     	      #s9
   graphics                #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 #  tabular_data                                     #s9
 #    tabular_data_file = 'textbook_opt_conmin.dat'  #s9
@@ -25,7 +27,7 @@ environment
 method
   dot_mmfd,                       #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
 ## dot_mmfd #DOT performs better but may not be available     #s9
-#  conmin_mfd				      				                            #s9
+#  conmin_mfd			                              #s9
     max_iterations = 50           #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
     convergence_tolerance = 1e-4  #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 # id_method = 'SBGO'              #s10

@@ -115,8 +115,7 @@ as well as some method independent and method
 dependent controls for the sequential quadratic programming (SQP)
 algorithm from the DOT library. The \c max_iterations, \c
 convergence_tolerance, and \c output settings are method independent
-controls, in that they are defined for a variety of methods (see \ref method-dot
- for usage of these controls). 
+controls, in that they are defined for a variety of methods.
 
 The next example shows a specification for a least squares method.
 \verbatim

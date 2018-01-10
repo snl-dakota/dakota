@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_UTIL_H
-#define DATA_UTIL_H
+#ifndef DAKOTA_DATA_UTIL_H
+#define DAKOTA_DATA_UTIL_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
@@ -1275,4 +1275,4 @@ inline bool isfloat(const Dakota::String token) {
 }
 
 
-#endif // DATA_UTIL_H
+#endif // DAKOTA_DATA_UTIL_H

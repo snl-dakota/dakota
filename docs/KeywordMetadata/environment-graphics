@@ -1,13 +1,17 @@
-Blurb::
-Display a 2D graphics window of variables and responses
+Blurb:: (DEPRECATED) Display plots of variables and responses
 
 Description::
-For most studies, the \c graphics flag activates a 2D graphics window
-containing history plots for the variables and response functions in
-the study. This window is updated in an event loop with approximately
-a 2 second cycle time.  Some study types such as surrogate-based
-optimization or local reliability specialize the use of the graphics
-window.
+Activate Dakota's legacy X Windows-based graphics feature.  Dakota
+plotting and visualization capabilities are increasingly available in
+the Dakota graphical user interface (GUI); see the Dakota GUI User
+Manual in the documentation section of the Dakota website for
+additional details.
+
+The \c graphics flag activates a 2D graphics window containing history
+plots for the variables and response functions in the study. This
+window is updated approximately every two seconds.  Some study types
+such as surrogate-based optimization or local reliability specialize
+the use of the graphics window.
 
 There is no dependence between the \c graphics flag and the \c
 tabular_data flag; they may be used independently or

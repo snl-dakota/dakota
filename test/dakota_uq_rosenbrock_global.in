@@ -4,7 +4,6 @@
 # DAKOTA INPUT FILE : dakota_uq_rosenbrock_global.in
 
 environment,
-	#graphics
 
 method,
 	global_reliability

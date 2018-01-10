@@ -3,7 +3,6 @@
 # PCBDO with mixed insertion/augmentation using the cantilever test function.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

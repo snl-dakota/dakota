@@ -54,7 +54,6 @@
 # 44 least orthogonal interpolation
 
 environment,
-	#graphics
 	output_precision = 16
 
 method,

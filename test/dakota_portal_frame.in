@@ -4,7 +4,6 @@
 # This file is a verification test for second-order integration.
 
 environment,
-	#graphics
 
 method,
 	local_reliability

@@ -541,8 +541,23 @@ Iterator* Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return new ROLOptimizer(problem_db, model); break;
 #endif
   default:
-    Cerr << "Invalid iterator: " << method_enum_to_string(method_name)
-	 << " not available." << std::endl;
+    switch (method_name) {
+    case NPSOL_SQP: case NLPQL_SQP:
+    case DOT_BFGS: case DOT_FRCG: case DOT_MMFD: case DOT_SLP: case DOT_SQP:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available; requires a separate software license."
+	   << "\nCONMIN or OPT++ methods may be suitable alternatives.\n";
+      break;
+    case NLSSOL_SQP:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available; requires a separate software license."
+	   << "\nnl2sol or optpp_g_newton may be suitable alternatives.\n";
+      break;
+    default:
+      Cerr << "Method " << method_enum_to_string(method_name)
+	   << " not available.\n";
+      break;
+    }
     return NULL; break;
   }
 }
@@ -670,8 +685,17 @@ Iterator* Iterator::get_iterator(const String& method_string, Model& model)
     return new ROLOptimizer(method_string, model);
 #endif
   else {
-    Cerr << "Invalid iterator: " << method_string << " not available by name."
-	 << std::endl;
+    if ( method_string == "npsol_sqp" || method_string == "nlpql_sqp" ||
+	 strbegins(method_string, "dot_") )
+      Cerr << "Method " << method_string
+	   << " not available by name; requires a separate software license."
+	   << "\nCONMIN or OPT++ methods may be suitable alternatives.\n";
+    else if (method_string == "nlssol_sqp")
+      Cerr << "Method " << method_string
+	   << " not available by name; requires a separate software license."
+	   << "\nnl2sol may be a suitable alternative.\n";
+    else
+      Cerr << "Method " << method_string << " not available by name.\n";
     return NULL;
   }
 }

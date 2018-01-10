@@ -10,7 +10,8 @@
 # optimization.  Note that correction is required for hierarchical SBO.
 
 environment,
-	tabular_data graphics
+	tabular_data
+	graphics
 	method_pointer = 'SBLO'
 
 method,

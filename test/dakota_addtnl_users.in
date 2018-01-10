@@ -21,6 +21,8 @@ method
   optpp_q_newton                              #s0,#s2
 #  optpp_g_newton                             #s1,#s3
     convergence_tolerance = 1e-10	            #s0,#s1,#s2,#s3
+## (NPSOL requires a software license; if not available, try	      #s4,#s5
+## conmin_mfd or optpp_q_newton instead)     			      #s4,#s5
 #  npsol_sqp				                          #s4,#s5
 #    convergence_tolerance = 1.e-8	          #s4,#s5
 

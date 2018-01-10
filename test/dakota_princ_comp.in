@@ -11,7 +11,7 @@
 # information being printed. 
 
 environment
-        tabular_graphics_data
+        tabular_data
 
 method,
 	  seed = 34785				

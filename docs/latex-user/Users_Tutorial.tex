@@ -91,18 +91,19 @@ progress of the iterator (i.e. method/algorithm).
   \item The output file \texttt{rosen\_multidim.out} 
 contains information about the function evaluations.
   \item \texttt{rosen\_multidim.dat} is created due to the 
-specification of \texttt{tabular\_graphics\_data} and \\
-\texttt{tabular\_graphics\_file}. This summarizes 
+specification of \texttt{tabular\_data} and \\
+\texttt{tabular\_data\_file}. This summarizes 
 the variables and responses for each function evaluation.
   \item \texttt{dakota.rst} is a restart file. If a Dakota 
 analysis is interrupted, it can be often be restarted without 
 losing all progress.
 \end{enumerate}
-In addition to the files, some plots are created due to the specification
-of \texttt{graphics}. These can be helpful when processing the data or
-diagnosing unexpected results.  If your particular installation or build
-of Dakota does not support graphics, you will instead get a warning to
-this effect.
+When running on Unix operating systems with Dakota's legacy X
+Windows-based graphics enabled, some plots are created as well, due to
+the specification of \texttt{graphics}. These can be helpful when
+processing the data or diagnosing unexpected results.  If your
+particular installation or build of Dakota does not support graphics,
+you will instead get a warning to this effect.
 
 Dakota has some data processing capabilities for output analysis. 
 The output file will contain the relevant results. 
@@ -316,7 +317,7 @@ Figure~\ref{tutorial:rosenbrock_multidim} is the \emph{environment}
 block.  This keyword block is used to specify the general Dakota
 settings such as Dakota's graphical output (via the \texttt{graphics}
 flag) and the tabular data output (via the
-\texttt{tabular\_graphics\_data} keyword).  In advanced cases, it also
+\texttt{tabular\_data} keyword).  In advanced cases, it also
 identifies the \texttt{top\_method\_pointer} that will control the
 Dakota study.  The \emph{environment} block is optional, and at most
 one such block can appear in a Dakota input file.
@@ -518,11 +519,12 @@ over the second input variable.  Note that the
 \texttt{graphics} flag in the \emph{environment} block of the input
 file could be commented out since, for this example, the iteration
 history plots created by Dakota are not particularly instructive. More
-interesting visualizations can be created by importing Dakota's
-tabular data into an external graphics/plotting package. Common
-graphics and plotting packages include Mathematica, Matlab, Microsoft
-Excel, Origin, Tecplot, Gnuplot and many others. (Sandia National Laboratories
-and the Dakota developers do not endorse any of these commercial
+interesting visualizations can be created by using the Dakota
+graphical user interface, or by importing Dakota's tabular data into
+an external graphics/plotting package. Example graphics and plotting
+packages include Mathematica, Matlab, Microsoft Excel, Origin,
+Tecplot, Gnuplot, and Matplotlib. (Sandia National Laboratories and
+the Dakota developers do not endorse any of these commercial
 products.)
 
 \begin{figure}[htb!]
@@ -580,18 +582,20 @@ the convergence tolerance for three successive iterations).
   \label{tutorial:rosenbrock_grad}
 \end{figure}
 
-The Dakota command is noted in the file, and copies of the outputs
-are in the \texttt{Dakota/examples/users} directory, with \texttt{.sav}
+The Dakota command is noted in the file, and copies of the outputs are
+in the \texttt{Dakota/examples/users} directory, with \texttt{.sav}
 appended to the name.  When this example problem is executed using
-Dakota with graphics support enabled, Dakota creates some iteration
-history graphics similar to the screen capture shown in Figure~
-\ref{tutorial:rosenbrock_grad_graphics}(a). These plots show how the
-objective function and design parameters change in value during the
-optimization steps. The scaling of the horizontal and vertical axes
-can be changed by moving the scroll knobs on each plot.  Also, the
-``Options'' button allows the user to plot the vertical axes using a
-logarithmic scale. Note that log-scaling is only allowed if the values
-on the vertical axis are strictly greater than zero.
+Dakota's legacy X Windows-based graphics support enabled, Dakota
+creates some iteration history graphics similar to the screen capture
+shown in Figure~ \ref{tutorial:rosenbrock_grad_graphics}(a). These
+plots show how the objective function and design parameters change in
+value during the optimization steps. The scaling of the horizontal and
+vertical axes can be changed by moving the scroll knobs on each plot.
+Also, the ``Options'' button allows the user to plot the vertical axes
+using a logarithmic scale. Note that log-scaling is only allowed if
+the values on the vertical axis are strictly greater than zero.
+Similar plots can also be created in Dakota's graphical user
+interface.
 
 \begin{figure}[ht!]
   \centering
@@ -603,9 +607,9 @@ on the vertical axis are strictly greater than zero.
   (b)
   \end{tabular}
   \caption{Rosenbrock gradient-based unconstrained optimization
-    example: (a) screen capture of the Dakota graphics and (b)
-    sequence of design points (dots) evaluated (line search points
-    omitted).}
+    example: (a) screen capture of the legacy Dakota X Windows-based
+    graphics and (b) sequence of design points (dots) evaluated (line
+    search points omitted).}
   \label{tutorial:rosenbrock_grad_graphics}
 \end{figure}
 

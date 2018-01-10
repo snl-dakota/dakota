@@ -13,7 +13,6 @@
 # types.
 
 environment
-#  graphics
   tabular_data
     tabular_data_file = 'rosen_opt_sbo.dat'   #s0
   top_method_pointer = 'SBLO'

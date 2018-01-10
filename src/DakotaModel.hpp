@@ -916,6 +916,12 @@ public:
   /// userDefinedConstraints
   void all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i);
 
+  // CONSTRAINTS
+
+  /// reshape the linear/nonlinear constraint arrays
+  void reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+
   // LINEAR CONSTRAINTS
 
   /// return the number of linear inequality constraints
@@ -1109,6 +1115,11 @@ public:
 
   static void inactive_variables(const RealVector& config_vars, Model& model,
 				 Variables& updated_vars);
+
+  /// Bulk synchronously evaluate the model for each column in the
+  /// samples matrix and return as columns of the response matrix
+  static void evaluate(const RealMatrix& samples_matrix,
+		       Model& model, RealMatrix& resp_matrix);
 
 protected:
 
@@ -3035,6 +3046,19 @@ inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
       userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
   else
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
+}
+
+
+inline void
+Model::reshape_constraints(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+			   size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
+					     num_lin_ineq_cons, num_lin_eq_cons);
+  else
+    userDefinedConstraints.reshape(num_nln_ineq_cons, num_nln_eq_cons,
+				   num_lin_ineq_cons, num_lin_eq_cons);
 }
 
 

@@ -22,5 +22,8 @@ interface
 
 responses
   objective_functions = 1
+# Verify same solution maximizing the negative objective
+#   weights  -1.0				#s1
+#   sense    'max'				#s1
   no_gradients
   no_hessians

@@ -12,8 +12,8 @@
 //- Owner:        Mike Eldred
 //- Version: $Id: global_defs.h 6492 2009-12-19 00:04:28Z briadam $
 
-#ifndef GLOBAL_DEFS_H
-#define GLOBAL_DEFS_H
+#ifndef DAKOTA_GLOBAL_DEFS_H
+#define DAKOTA_GLOBAL_DEFS_H
 
 #include "dakota_system_defs.hpp"
 #include <stdexcept>
@@ -188,4 +188,4 @@ void mpi_debug_hold();
 
 } // namespace Dakota
 
-#endif // GLOBAL_DEFS_H
+#endif // DAKOTA_GLOBAL_DEFS_H

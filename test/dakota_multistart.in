@@ -32,6 +32,8 @@
 
 environment
   top_method_pointer = 'MS'
+## Activate Dakota's legacy X Windows-based graphics on Unix systems  #s0
+## Consider newer capabilities in the Dakota GUI     	     	      #s0
   graphics
 
 method
@@ -53,6 +55,8 @@ method
 
 method                            #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
   id_method = 'NLP'               #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
+## (DOT requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   dot_bfgs                        #s0,#s1,#s2,#p0,#p1,#p2,#p3,#p4
 #   scaling                       #s1,#s2
 

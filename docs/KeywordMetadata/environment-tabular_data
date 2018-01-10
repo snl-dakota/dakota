@@ -1,12 +1,12 @@
 Blurb:: Write a tabular results file with variable and response history
 
 Description::
-Specifying the \c tabular_data flag writes to a data file the
-same variable and response function history data plotted when using
-the \c graphics flag.  Within the generated data file, the variables
-and response functions appear as columns and each function evaluation
-provides a new table row. This capability is most useful for
-post-processing of %Dakota results with third-party graphics tools
+Specifying the \c tabular_data flag writes to a data file the same
+variable and response function history data plotted when using the
+(deprecated) \c graphics flag.  Within the generated data file, the
+variables and response functions appear as columns and each function
+evaluation provides a new table row. This capability is most useful
+for post-processing of %Dakota results with third-party graphics tools
 such as MatLab, Excel, Tecplot, etc.
 
 There is no dependence between the \c graphics flag and the \c

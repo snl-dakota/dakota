@@ -15,7 +15,6 @@
 # regular probability case in the outer loop.
 
 environment
-#	graphics
     top_method_pointer = 'EPISTEMIC'
 
 #################################

@@ -386,20 +386,18 @@ void NonDQUESOBayesCalibration::run_chain_with_restarting()
 
     // Perform optimization
     mapOptimizer.run();
-    Cout << "MAP pre-solve completed.  Solution used as start of MCMC chain."
-	 << "\n\n";
-    // Could print here, but would require transform logic that is redundant
-    // with print_results().  Since starting point of MCMC chain is included
-    // in bestSamples and we would want to include any possible enhancements
-    // (not likely, but possible), rely on existing bestSamples tracking.
     //negLogPostModel.print_evaluation_summary(Cout);
     //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+    Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
+	 << "\n(will be used as initial point for MCMC chain):\n";
+    const RealVector& map_c_vars
+      = mapOptimizer.variables_results().continuous_variables();
+    print_variables(Cout, map_c_vars);
+    Cout << std::endl;
 
     // propagate map solution to paramInitials for starting point of MCMC chain.
     // This propagates further to mcmcModel::currentVariables either within the
     // derivative preconditioning or within the likelihood evaluator.
-    const RealVector& map_c_vars
-      = mapOptimizer.variables_results().continuous_variables();
     copy_gsl_partial(map_c_vars, *paramInitials, 0);
     if (adaptPosteriorRefine) copy_data(map_c_vars, mapSoln);//deep copy of view
   }
@@ -1547,12 +1545,6 @@ print_results(std::ostream& s, short results_state)
 {
   if (bestSamples.empty()) return;
 
-  StringMultiArrayConstView cv_labels = 
-    iteratedModel.continuous_variable_labels();
-  // the residualModel includes any hyper-parameters
-  StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
-
   // ----------------------------------------
   // Output best sample which appoximates MAP
   // ----------------------------------------
@@ -1562,22 +1554,7 @@ print_results(std::ostream& s, short results_state)
 
   size_t wpp7 = write_precision+7;
   s << "<<<<< Best parameters          =\n";
-  // print MAP for continuous random variables
-  if (standardizedSpace) {
-    RealVector u_rv(Teuchos::View, best_sample.values(), numContinuousVars);
-    RealVector x_rv;
-    natafTransform.trans_U_to_X(u_rv, x_rv);
-    write_data(Cout, x_rv, cv_labels);
-  }
-  else
-    for (size_t j=0; j<numContinuousVars; ++j)
-      s << "                     " << std::setw(wpp7) << best_sample[j]
-	<< ' ' << cv_labels[j] << '\n';
-  // print MAP for hyper-parameters (e.g., observation error params)
-  for (size_t j=0; j<numHyperparams; ++j)
-    s << "                     " << std::setw(wpp7) 
-      << best_sample[numContinuousVars+j] << ' ' 
-      << combined_labels[numContinuousVars + j] << '\n';
+  print_variables(s, best_sample);
 
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
@@ -1621,6 +1598,36 @@ print_results(std::ostream& s, short results_state)
   
   // Print final stats for variables and responses 
   NonDBayesCalibration::print_results(s, results_state);
+}
+
+
+void NonDQUESOBayesCalibration::
+print_variables(std::ostream& s, const RealVector& c_vars)
+{
+  StringMultiArrayConstView cv_labels =
+    iteratedModel.continuous_variable_labels();
+  // the residualModel includes any hyper-parameters
+  StringArray combined_labels;
+  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+
+  size_t wpp7 = write_precision+7;
+
+  // print MAP for continuous random variables
+  if (standardizedSpace) {
+    RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
+    RealVector x_rv;
+    natafTransform.trans_U_to_X(u_rv, x_rv);
+    write_data(Cout, x_rv, cv_labels);
+  }
+  else
+    for (size_t j=0; j<numContinuousVars; ++j)
+      s << "                     " << std::setw(wpp7) << c_vars[j]
+	<< ' ' << cv_labels[j] << '\n';
+  // print MAP for hyper-parameters (e.g., observation error params)
+  for (size_t j=0; j<numHyperparams; ++j)
+    s << "                     " << std::setw(wpp7)
+      << c_vars[numContinuousVars+j] << ' '
+      << combined_labels[numContinuousVars + j] << '\n';
 }
 
 

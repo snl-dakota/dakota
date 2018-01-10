@@ -27,6 +27,8 @@ method
 
 method
   id_method = 'NLP'
+## (DOT requires a software license; if not available, try	      #s0
+## conmin_frcg or optpp_q_newton instead)     			      #s0
   dot_bfgs
 
 variables

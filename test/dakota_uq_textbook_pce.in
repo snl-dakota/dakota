@@ -4,7 +4,6 @@
 # DAKOTA INPUT FILE - dakota_textbook_pce.in
 
 environment,
-	#graphics
 
 method,
 	polynomial_chaos

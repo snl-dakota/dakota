@@ -33,10 +33,10 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
   dltfdj(0.), delta0(0.), dltfdc(0.),
   // max limits
   mxfcal(maxFunctionEvals), mxiter(maxIterations),
-  // convergence tolerances
-  rfctol( convergenceTol ),
+  // convergence tolerances (-1.0 triggers NL2SOL default tolerances)
+  rfctol( (convergenceTol < -1.0) ? 1.0e-4 : convergenceTol ),
   afctol( probDescDB.get_real("method.nl2sol.absolute_conv_tol") ),
-  xctol(  probDescDB.get_real("method.nl2sol.x_conv_tol") ),
+  xctol(  probDescDB.get_real("method.x_conv_tol") ),
   sctol(  probDescDB.get_real("method.nl2sol.singular_conv_tol") ),
   lmaxs(  probDescDB.get_real("method.nl2sol.singular_radius") ),
   xftol(  probDescDB.get_real("method.nl2sol.false_conv_tol") ),

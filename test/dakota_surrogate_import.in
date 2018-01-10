@@ -7,7 +7,7 @@
 # the build data for s5.
 
 environment
-          tabular_graphics_data
+          tabular_data
           method_pointer = 'UQ'
  
 method,

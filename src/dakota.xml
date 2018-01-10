@@ -639,7 +639,7 @@
 	       <oneOf label="Basis Polynomial Family">
 	         <keyword  id="askey" name="askey" code="{N_mdm(type,expansionType_ASKEY_U)}" label="askey"  default="extended (Askey + numerically-generated)" />
 	         <keyword  id="wiener" name="wiener" code="{N_mdm(type,expansionType_STD_NORMAL_U)}" label="wiener"  default="extended (Askey + numerically-generated)" />
-	         <!-- # | piecewise {N_mdm(type,expansionType_} -->
+	         <!-- # | piecewise {N_mdm(type,expansionType_}) -->
 	       </oneOf>
              </optional>
 	     <keyword  id="normalized" name="normalized" code="{N_mdm(true,normalizedCoeffs)}" label="Output PCE coefficients corresponding to normalized basis"  minOccurs="0" default="PCE coefficients correspond to unnormalized basis polynomials" />
@@ -1623,16 +1623,6 @@
         <keyword  id="dot_sqp" name="dot_sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="dot_sqp"   group="Optimization: Local, Derivative-based" >
 	  &method_dot_common_opts;
 	</keyword>
-        <keyword  id="dot" name="dot" code="{0}" label="dot"  minOccurs="1" >
-          <oneOf label="DOT Solver Type">
-            <keyword  id="frcg" name="frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="frcg"   />
-            <keyword  id="mmfd" name="mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="mmfd"   />
-            <keyword  id="bfgs" name="bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="bfgs"   />
-            <keyword  id="slp" name="slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="slp"   />
-            <keyword  id="sqp" name="sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="sqp"   />
-          </oneOf>
-	  &method_dot_common_opts;
-	</keyword>
 
         <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg"   group="Optimization: Local, Derivative-based" >
 	  &method_conmin_common_opts;
@@ -1640,13 +1630,6 @@
         <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd"   group="Optimization: Local, Derivative-based" >
 	  &method_conmin_common_opts;
 	</keyword>
-        <keyword  id="conmin" name="conmin" code="{0}" label="conmin"  minOccurs="1" >
-          <oneOf label="CONMIN Solver Type">
-            <keyword  id="frcg1" name="frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="frcg"   />
-            <keyword  id="mfd" name="mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="mfd"   />
-          </oneOf>
-	  &method_conmin_common_opts;
-        </keyword>
 
         <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver"   group="Optimization: Other" >
           <!-- store method name AND incoming STRING -->
@@ -1661,13 +1644,6 @@
 	  &method_npsol_common_opts;
 	</keyword>
         <keyword  id="nlssol_sqp" name="nlssol_sqp" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol_sqp"   group="Calibration" >
-	  &method_npsol_common_opts;
-	</keyword>
-        <keyword  id="stanford" name="stanford" code="{0}" label="stanford"  minOccurs="1" >
-          <oneOf label="Stanford Solver Type">
-            <keyword  id="npsol" name="npsol" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol"   />
-            <keyword  id="nlssol" name="nlssol" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol"   />
-          </oneOf>
 	  &method_npsol_common_opts;
 	</keyword>
 
@@ -2207,6 +2183,12 @@
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           &default_max_iterations;
+	  <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-12" >
+            <param type="REAL" />
+          </keyword>
+          <keyword  id="x_conv_tol" name="x_conv_tol" code="{N_mdm(Real,xConvTol)}" label="Convergence tolerance for change in parameter vector"  minOccurs="0" default="1.0e-8" >
+            <param type="REAL" />
+          </keyword>
           <keyword  id="gaussian_process" name="gaussian_process" code="{0}" label="GP selection"  minOccurs="0" default="Surfpack Gaussian process" >
             <alias name="kriging"/>
             <oneOf label="GP Implementation">
@@ -2814,6 +2796,9 @@
             <keyword  id="max_hifi_evaluations" name="max_hifi_evaluations" code="{N_mdm(int,maxHifiEvals)}" label="Maximum Number of Hi-Fi Model Evaluations"  minOccurs="0">
               <param type="INTEGER" constraint=">= 0" />
             </keyword>
+  	    <keyword  id="batch_size" name="batch_size" code="{N_mdm(int,batchSize)}" label="Number of optimal experimental designs selected per iteration"  minOccurs="0" >
+	      <param type="INTEGER" constraint=">= 1" />
+  	    </keyword>
             <keyword  id="import_candidate_points_file" name="import_candidate_points_file" code="{N_mdm(str,importCandPtsFile)}" label="Filename for Candidate Point Import"  minOccurs="0" default="no point import from a file" >
               <param type="INPUT_FILE" />
 	      <optional>

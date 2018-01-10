@@ -2476,7 +2476,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.initial_trust_radius", P initTRRadius},
 	{"nl2sol.singular_conv_tol", P singConvTol},
 	{"nl2sol.singular_radius", P singRadius},
-	{"nl2sol.x_conv_tol", P xConvTol},
 	{"nond.collocation_ratio", P collocationRatio},
 	{"nond.collocation_ratio_terms_order", P collocRatioTermsOrder},
 	{"nond.multilevel_estimator_rate", P multilevEstimatorRate},
@@ -2495,7 +2494,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"trust_region.minimum_size", P trustRegionMinSize},
 	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
-	{"volume_boxsize_limit", P volBoxSize}};
+	{"volume_boxsize_limit", P volBoxSize},
+	{"x_conv_tol", P xConvTol}};
     #undef P
 
     KW<Real, DataMethodRep> *kw;
@@ -2558,6 +2558,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
     #define P &DataMethodRep::
     static KW<int, DataMethodRep> Idme[] = {	
       // must be sorted by string (key)
+        {"batch_size", P batchSize},
 	{"build_samples", P buildSamples},
 	{"burn_in_samples", P burnInSamples},
 	{"coliny.contract_after_failure", P contractAfterFail},

@@ -6,14 +6,17 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_TYPES_H
-#define DATA_TYPES_H
+#ifndef DAKOTA_DATA_TYPES_H
+#define DAKOTA_DATA_TYPES_H
 
 #include "dakota_system_defs.hpp"
 #include "Teuchos_SerialDenseVector.hpp"
 #include <boost/multi_array.hpp>
-#include "boost/dynamic_bitset.hpp"
+#include <boost/dynamic_bitset.hpp>
+#include <deque>
 #include <list>
+#include <map>
+#include <set>
 
 namespace Dakota {
 
@@ -216,4 +219,4 @@ typedef IntResponseMap::const_iterator         IntRespMCIter;
 
 } // namespace Dakota
 
-#endif // DATA_TYPES_H
+#endif // DAKOTA_DATA_TYPES_H
