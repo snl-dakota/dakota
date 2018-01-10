@@ -146,7 +146,7 @@ protected:
   /// supplement high-fidelity data with LHS samples
   void add_lhs_hifi_data();
   /// apply simulation error vector
-  void apply_error_vec(const RealVector& error_vec);
+  void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
   /// build matrix of errors 
   void build_error_matrix(const RealVector& sim_error_vec, 
       			  RealMatrix& sim_error_matrix);
