@@ -91,6 +91,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   exportCorrVarFormat(
     probDescDB.get_ushort("method.nond.export_corrected_variance_format")),
   approxCorrectionOrder(probDescDB.get_short("method.nond.correction_order")),
+// BMA: This is probably wrong as config vars need not be continuous!
   configLowerBnds(probDescDB.get_rv("variables.continuous_state.lower_bounds")),
   configUpperBnds(probDescDB.get_rv("variables.continuous_state.upper_bounds")),
   obsErrorMultiplierMode(
@@ -1074,68 +1075,58 @@ void NonDBayesCalibration::build_error_matrix(const RealVector& sim_error_vec,
 
 void NonDBayesCalibration::build_designs(RealMatrix& design_matrix)
 {
-  unsigned short sample_type = SUBMETHOD_LHS;
-  bool vary_pattern = true;
-  String rng("mt19937");
-  Iterator lhs_iterator2;
-  if (importCandPtsFile.empty()) {
-    NonDLHSSampling* lhs_sampler_rep2;
-    int randomSeed1 = randomSeed+1;
-    lhs_sampler_rep2 =
-      new NonDLHSSampling(hifiModel, sample_type, numCandidates, randomSeed1,
-  			rng, vary_pattern, ACTIVE_UNIFORM);
-    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
-    lhs_iterator2.pre_run();
-    design_matrix = lhs_iterator2.all_samples();
-  }
-  else {
-    // BMA TODO: This should probably be cv() + div() + ...
-    size_t num_designvars = hifiModel.tv();
+  // We assume the hifiModel's active variables are the config vars
+  size_t num_candidates_in = 0, num_design_vars =
+    hifiModel.cv() + hifiModel.div() + hifiModel.dsv() + hifiModel.drv();
+  design_matrix.shape(num_design_vars, numCandidates);
+
+  // If available, import data first
+  if (!importCandPtsFile.empty()) {
     RealMatrix design_matrix_in;
     TabularIO::read_data_tabular(importCandPtsFile,
 				 "user-provided candidate points",
-				 design_matrix_in, num_designvars, 
+				 design_matrix_in, num_design_vars,
 				 importCandFormat, false);
-    size_t num_candidates_in = design_matrix_in.numCols();
-    if (num_candidates_in < numCandidates) {
-      size_t new_candidates = numCandidates - num_candidates_in;
-      NonDLHSSampling* lhs_sampler_rep2;
-      int randomSeed1 = randomSeed+1;
-      lhs_sampler_rep2 =
-        new NonDLHSSampling(hifiModel, sample_type, new_candidates, randomSeed1,
-    			rng, vary_pattern, ACTIVE_UNIFORM);
-      lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
-      lhs_iterator2.pre_run();
-      RealMatrix design_matrix_supp = lhs_iterator2.all_samples();
-      design_matrix.shape(num_designvars, numCandidates);
-      for (int i = 0; i < num_candidates_in; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
-	    				     i);
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
-      for (int i = num_candidates_in; i < numCandidates; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_supp,
-	    			      	     int(i-num_candidates_in));
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
-    }
-    else if (num_candidates_in == numCandidates)  
-      design_matrix = design_matrix_in;
-    else {
+    num_candidates_in = design_matrix_in.numCols();
+    if (num_candidates_in > numCandidates) {
+      // truncate the imported data
+      num_candidates_in = numCandidates;
+      design_matrix_in.reshape(num_design_vars, num_candidates_in);
       if (outputLevel >= VERBOSE_OUTPUT) {
 	Cout << "\nWarning: Bayesian design of experiments only using the "
 	     << "first " << numCandidates << " candidates in " 
 	     << importCandPtsFile << '\n';
       }
-      design_matrix.shape(num_designvars, numCandidates);
-      for (int i = 0; i < numCandidates; i++) {
-	RealVector col_vec = Teuchos::getCol(Teuchos::Copy, design_matrix_in, 
-	    				     i);
-	Teuchos::setCol(col_vec, i, design_matrix);
-      }
     }
+    // populate the sub-matrix (possibly full matrix) of imported candidates
+    RealMatrix des_mat_imported(Teuchos::View, design_matrix,
+				num_design_vars, num_candidates_in, 0, 0);
+    des_mat_imported.assign(design_matrix_in);
+  }
+
+  // If needed, supplement with LHS-generated designs
+  if (num_candidates_in < numCandidates) {
+    size_t new_candidates = numCandidates - num_candidates_in;
+
+    Iterator lhs_iterator2;
+    unsigned short sample_type = SUBMETHOD_LHS;
+    bool vary_pattern = true;
+    String rng("mt19937");
+    int random_seed_1 = randomSeed+1;
+    NonDLHSSampling* lhs_sampler_rep2 =
+      new NonDLHSSampling(hifiModel, sample_type, new_candidates, random_seed_1,
+			  rng, vary_pattern, ACTIVE_UNIFORM);
+    lhs_iterator2.assign_rep(lhs_sampler_rep2, false);
+    lhs_iterator2.pre_run();
+
+    // populate the sub-matrix (possibly full matrix) of generated candidates
+    RealMatrix des_mat_generated(Teuchos::View, design_matrix,
+				 num_design_vars, new_candidates,
+				 0, num_candidates_in);
+    des_mat_generated.assign(lhs_iterator2.all_samples());
   }
 }
+
 	  
 void NonDBayesCalibration::build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, 
     			   const RealMatrix& mi_chain, RealMatrix& 
