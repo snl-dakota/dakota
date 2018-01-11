@@ -20,6 +20,7 @@
 #include "DakotaOptimizer.hpp"
 #include "DakotaModel.hpp"
 #include "ROL_StdObjective.hpp"
+#include "ROL_StdConstraint.hpp"
 #include "ROL_OptimizationSolver.hpp"
 
 #include "DakotaTraitsBase.hpp"
@@ -42,13 +43,7 @@ class ROLTraits: public TraitsBase
 
   // TODO: data transfers cleanup once decide on std vs Teuchos
   /** Convenience function to set the variables from ROL into a Dakota Model */
-  static void set_continuous_vars(Teuchos::RCP<const std::vector<Real>> x, Model& model);
-
-  /** Convenience function to convert from ROL to std::vector */
-  static Teuchos::RCP<const std::vector<Real>> getVector( const ROL::Vector<Real>& x );
-
-  /** Convenience function to convert from ROL to std::vector */
-  static Teuchos::RCP<std::vector<Real>> getVector( ROL::Vector<Real>& x );
+  static void set_continuous_vars(const std::vector<Real>& x, Model& model);
 
   /// destructor
   virtual ~ROLTraits();
@@ -87,23 +82,11 @@ inline ROLTraits::ROLTraits()
 inline ROLTraits::~ROLTraits()
 { }
 
-inline void ROLTraits::set_continuous_vars(Teuchos::RCP<const std::vector<Real>> x, Model& model)
+inline void ROLTraits::set_continuous_vars(const std::vector<Real>& x, Model& model)
 {
   size_t num_cv = model.cv();
   for(size_t i=0; i<num_cv; ++i)
-    model.continuous_variable((*x)[i], i);
-}
-
-inline Teuchos::RCP<const std::vector<Real>> ROLTraits::getVector( const ROL::Vector<Real>& x )
-{
-  using Teuchos::dyn_cast;
-  return dyn_cast<const ROL::StdVector<Real>>(x).getVector();
-}
-
-inline Teuchos::RCP<std::vector<Real>> ROLTraits::getVector( ROL::Vector<Real>& x )
-{
-  using Teuchos::dyn_cast;
-  return dyn_cast<ROL::StdVector<Real>>(x).getVector();
+    model.continuous_variable(x[i], i);
 }
 
 
@@ -128,21 +111,20 @@ class DakotaROLModelWrapper
       extract_model_params();
     }
 
-    void check_model_is_updated( const ROL::Vector<Real> &x)
+    void check_model_is_updated( const std::vector<Real> &x)
     {
-      Teuchos::RCP<const std::vector<Real>> test_vec = ROLTraits::getVector(x);
-      if( (*test_vec) != lastUpdateIterate )
+      if( x != lastUpdateIterate )
       {
         numMismatchedUpdatesCalled++;
         update_model(x, true, 0);
       }
     }
 
-    void update_model( const ROL::Vector<Real> &x, bool flag, int rol_iter )
+    void update_model( const std::vector<Real> &x, bool flag, int rol_iter )
     {
       if ( flag )
       {
-        ROLTraits::set_continuous_vars(ROLTraits::getVector(x), wrappedModel);
+        ROLTraits::set_continuous_vars(x, wrappedModel);
 
         ActiveSet eval_set(wrappedModel.current_response().active_set());
         eval_set.request_values(AS_FUNC+AS_GRAD);
@@ -163,13 +145,6 @@ class DakotaROLModelWrapper
 
     Real fn_value()
       { return fnVal; }
-
-    void grad_value( ROL::Vector<Real> &g, const ROL::Vector<Real> &x, Real &tol )
-    {
-      Teuchos::RCP<std::vector<Real>> gp = ROLTraits::getVector(g);
-      for (int i=0; i<numContinuousVars; ++i)
-        (*gp)[i] = dakotaGrads(i, 0);
-    }
 
     const Model & get_wrapped_model() const
       { return wrappedModel; }
@@ -284,47 +259,35 @@ class DakotaROLModelWrapper
 
 // --------------------------------------------------------------
 
-class DakotaToROLIneqConstraints : public ROL::Constraint<Real>
+class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
 {
 
   public:
 
-    DakotaToROLIneqConstraints(DakotaROLModelWrapper & wrapped_model) :
+    DakotaROLIneqConstraints(DakotaROLModelWrapper & wrapped_model) :
       dakotaROLModelWrapper(wrapped_model)
     { }
 
 
-    void update( const ROL::Vector<Real> &x, bool flag, int iter ) override
+    void update( const std::vector<Real> &x, bool flag, int iter ) override
     {
       dakotaROLModelWrapper.update_model(x, flag, iter);
     }
 
 
-    void value(ROL::Vector<Real> &c, const ROL::Vector<Real> &x, Real &tol) override
+    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
     {
-      // Pointer to constraint vector
-      Teuchos::RCP<std::vector<Real>> cp = ROLTraits::getVector(c);
-
-      // Pointer to optimization vector     
-      Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
-
-      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::INEQUALITY, *xp, *cp );
-      get_nonlinear_ineq_constraints( dakotaROLModelWrapper.get_wrapped_model(), (*cp) );
+      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
+      get_nonlinear_ineq_constraints( dakotaROLModelWrapper.get_wrapped_model(), c );
     }
 
     // -------------------------------------------------------
     // ------------------- CAUTION ---------------------------
     // ------------ THIS CODE IS NOT TESTED ------------------
     // -------------------------------------------------------
-    void applyJacobian(ROL::Vector<Real> &jv,
-        const ROL::Vector<Real> &v, const ROL::Vector<Real> &x, Real &tol) override
+    void applyJacobian(std::vector<Real> &jv,
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      // Pointer to optimization vector     
-      Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
-
-      // Pointer to jv vector
-      Teuchos::RCP<std::vector<Real>> jvp = ROLTraits::getVector(jv);
-
       size_t num_continuous_vars = dakotaROLModelWrapper.get_num_continuous_vars();
       size_t num_linear_ineq = dakotaROLModelWrapper.get_num_linear_ineq();
       size_t num_nonlinear_ineq = dakotaROLModelWrapper.get_num_nonlinear_ineq();
@@ -332,7 +295,7 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<Real>
       const RealMatrix & gradient_matrix = dakotaROLModelWrapper.get_gradient_matrix();
 
       // apply linear constraint Jacobian
-      apply_matrix(lin_ineq_coeffs, *xp, *jvp);
+      apply_matrix(lin_ineq_coeffs, x, jv);
 
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_ineq > 0) {
@@ -341,9 +304,9 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<Real>
         dakotaROLModelWrapper.check_model_is_updated(x);
 
         for(size_t i=0;i<num_nonlinear_ineq;++i){
-          (*jvp)[i+num_linear_ineq] = 0.0;
+          jv[i+num_linear_ineq] = 0.0;
           for (size_t j=0; j<num_continuous_vars; j++)
-            (*jvp)[i+num_linear_ineq] += gradient_matrix(j,i+1) * (*xp)[j];
+            jv[i+num_linear_ineq] += gradient_matrix(j,i+1) * x[j];
         }
       }
     }
@@ -355,51 +318,39 @@ class DakotaToROLIneqConstraints : public ROL::Constraint<Real>
 
     DakotaROLModelWrapper & dakotaROLModelWrapper;
 
-}; // class DakotaToROLIneqConstraints
+}; // class DakotaROLIneqConstraints
 
 // --------------------------------------------------------------
 
-class DakotaToROLEqConstraints : public ROL::Constraint<Real>
+class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
 {
 
   public:
 
-    DakotaToROLEqConstraints(DakotaROLModelWrapper & wrapped_model) :
+    DakotaROLEqConstraints(DakotaROLModelWrapper & wrapped_model) :
       dakotaROLModelWrapper(wrapped_model)
     { }
 
     // BMA TODO: don't we now have data adapters that convert linear to
     // nonlinear constraints and manage the indexing?
-    void update( const ROL::Vector<Real> &x, bool flag, int iter ) override
+    void update( const std::vector<Real> &x, bool flag, int iter ) override
     {
       dakotaROLModelWrapper.update_model(x, flag, iter);
     }
 
-    void value(ROL::Vector<Real> &c, const ROL::Vector<Real> &x, Real &tol) override
+    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
     {
-      // Pointer to constraint vector
-      Teuchos::RCP<std::vector<Real>> cp = ROLTraits::getVector(c);
-
-      // Pointer to optimization vector     
-      Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
-
-      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::EQUALITY, *xp, *cp );
-      get_nonlinear_eq_constraints( dakotaROLModelWrapper.get_wrapped_model(), (*cp), -1.0 );
+      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
+      get_nonlinear_eq_constraints( dakotaROLModelWrapper.get_wrapped_model(), c, -1.0 );
     }
 
     // -------------------------------------------------------
     // ------------------- CAUTION ---------------------------
     // ------------ THIS CODE IS NOT TESTED ------------------
     // -------------------------------------------------------
-    void applyJacobian(ROL::Vector<Real> &jv,
-        const ROL::Vector<Real> &v, const ROL::Vector<Real> &x, Real &tol)
+    void applyJacobian(std::vector<Real> &jv,
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      // Pointer to optimization vector     
-      Teuchos::RCP<const std::vector<Real>> xp = ROLTraits::getVector(x);
-
-      // Pointer to jv vector
-      Teuchos::RCP<std::vector<Real>> jvp = ROLTraits::getVector(jv);
-
       size_t num_continuous_vars = dakotaROLModelWrapper.get_num_continuous_vars();
       size_t num_linear_eq = dakotaROLModelWrapper.get_num_linear_eq();
       size_t num_nonlinear_ineq = dakotaROLModelWrapper.get_num_nonlinear_ineq();
@@ -408,7 +359,7 @@ class DakotaToROLEqConstraints : public ROL::Constraint<Real>
       const RealMatrix & gradient_matrix = dakotaROLModelWrapper.get_gradient_matrix();
 
       // apply linear constraint Jacobian
-      apply_matrix(lin_eq_coeffs, *xp, *jvp);
+      apply_matrix(lin_eq_coeffs, x, jv);
 
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_eq > 0) {
@@ -417,9 +368,9 @@ class DakotaToROLEqConstraints : public ROL::Constraint<Real>
         dakotaROLModelWrapper.check_model_is_updated(x);
 
         for(size_t i=0;i<num_nonlinear_eq;++i){
-          (*jvp)[i+num_linear_eq] = 0.0;
+          jv[i+num_linear_eq] = 0.0;
           for (size_t j=0; j<num_continuous_vars; j++)
-            (*jvp)[i+num_linear_eq] += gradient_matrix(j,i+1+num_nonlinear_ineq) * (*xp)[j];
+            jv[i+num_linear_eq] += gradient_matrix(j,i+1+num_nonlinear_ineq) * x[j];
         }
       }
     }
@@ -431,22 +382,22 @@ class DakotaToROLEqConstraints : public ROL::Constraint<Real>
 
     DakotaROLModelWrapper & dakotaROLModelWrapper;
 
-}; // class DakotaToROLEqConstraints
+}; // class DakotaROLEqConstraints
 
 
 // --------------------------------------------------------------
 
-class DakotaToROLObjective : public ROL::Objective<Real>
+class DakotaROLObjective : public ROL::StdObjective<Real>
 {
 
   public:
 
-    DakotaToROLObjective(DakotaROLModelWrapper & wrapped_model) :
+    DakotaROLObjective(DakotaROLModelWrapper & wrapped_model) :
       dakotaROLModelWrapper(wrapped_model),
       gradVals(wrapped_model.get_num_continuous_vars())
   { }
 
-    void update( const ROL::Vector<Real> &x, bool flag, int iter ) override
+    void update( const std::vector<Real> &x, bool flag, int iter ) override
     {
       if( flag )
       {
@@ -460,15 +411,14 @@ class DakotaToROLObjective : public ROL::Objective<Real>
       }
     }
 
-    Real value(const ROL::Vector<Real> &x, Real &tol) override
+    Real value(const std::vector<Real> &x, Real &tol) override
     {
       return fnVal;
     }
 
-    void gradient( ROL::Vector<Real> &g, const ROL::Vector<Real> &x, Real &tol ) override
+    void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) override
     {
-      Teuchos::RCP<std::vector<Real>> gp = ROLTraits::getVector(g);
-      *gp = gradVals;
+      g = gradVals;
     }
 
 
@@ -482,7 +432,7 @@ class DakotaToROLObjective : public ROL::Objective<Real>
     /// Copy of latest function (objective) gradient values
     std::vector<Real> gradVals;
 
-}; // class DakotaToROLObjective
+}; // class DakotaROLObjective
 
 // --------------------------------------------------------------
 
