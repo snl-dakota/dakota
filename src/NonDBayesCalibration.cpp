@@ -45,6 +45,8 @@ static const char rcsId[]="@(#) $Id$";
 
 namespace Dakota {
 
+enum miAlg : unsigned short {MI_ALG_KSG1 = 0, MI_ALG_KSG2 = 1};
+
 // initialization of statics
 NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
 
@@ -70,7 +72,8 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   numCandidates(probDescDB.get_sizet("method.num_candidates")),
   maxHifiEvals(probDescDB.get_int("method.max_hifi_evaluations")),
   batchEvals(probDescDB.get_int("method.batch_size")),
-  mutualInfoKSG2(probDescDB.get_bool("method.nond.mutual_info_ksg2")),
+  mutualInfoAlg(probDescDB.get_bool("method.nond.mutual_info_ksg2") ?
+		MI_ALG_KSG2 : MI_ALG_KSG1),
   calModelDiscrepancy(probDescDB.get_bool("method.nond.model_discrepancy")),
   discrepancyType(probDescDB.get_string("method.nond.discrepancy_type")),
   numPredConfigs(probDescDB.get_sizet("method.num_prediction_configs")),
@@ -693,7 +696,6 @@ void NonDBayesCalibration::calibrate_to_hifi()
   int max_hifi = (maxHifiEvals > -1.) ? maxHifiEvals : numCandidates;
   int num_hifi = 0;
   int num_it = 1;
-  int alg = (mutualInfoKSG2) ? 1 : 0;
   std::ofstream out_file("experimental_design_output.txt");
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -781,8 +783,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 	  build_hi2lo_xmatrix(Xmatrix, batch_n, mi_chain, sim_error_matrix);
 
           // calculate the mutual information b/w post theta and lofi responses
-          Real MI = knn_mutual_info(Xmatrix, numContinuousVars, 
-	    			    batch_n * numFunctions, alg);
+          Real MI = knn_mutual_info(Xmatrix, numContinuousVars,
+				    batch_n * numFunctions, mutualInfoAlg);
 	  if (outputLevel >= DEBUG_OUTPUT) 
 	    print_hi2lo_status(num_it, i, xi_i, MI);
     
@@ -2474,18 +2476,14 @@ void NonDBayesCalibration::mutual_info_buildX()
 
   //test_stream << "Xmatrix = " << Xmatrix << '\n';
 
-  int alg;
-  if (mutualInfoKSG2)
-    alg = 1;
-  else
-    alg = 0; //default is KSG1
-  Real mutualinfo_est = knn_mutual_info(Xmatrix, num_params, num_params, alg);
+  Real mutualinfo_est =
+    knn_mutual_info(Xmatrix, num_params, num_params, mutualInfoAlg);
   Cout << "MI est = " << mutualinfo_est << '\n';
 
 }
 
 Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
-    int dimY, int alg)
+    int dimY, unsigned short alg)
 {
   approxnn::normSelector::instance().method(approxnn::LINF_NORM);
 
@@ -2576,7 +2574,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   double marg_sum = 0.0;
   int n_x, n_y;
   for(int i = 0; i < num_samples; i++){
-    if (alg == 1) { //ksg2
+    if (alg == MI_ALG_KSG2) { //alg=1, ksg2
       IntArray XYind_i = XYindices[i];	
       RealArray ex_vec(XYind_i.size()-1);
       RealArray ey_vec(XYind_i.size()-1);
@@ -2612,7 +2610,7 @@ Real NonDBayesCalibration::knn_mutual_info(RealMatrix& Xmatrix, int dimX,
   double psik = boost::math::digamma(k);
   double psiN = boost::math::digamma(num_samples);
   double MI_est = psik - (marg_sum/double(num_samples)) + psiN;
-  if (alg == 1) {
+  if (alg == MI_ALG_KSG2) {
     MI_est = MI_est - 1/double(k);
   }
   //test_stream << "psi_k = " << psik << '\n';

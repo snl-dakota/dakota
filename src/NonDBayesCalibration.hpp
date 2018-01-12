@@ -77,7 +77,8 @@ public:
   // compute information metrics
   static Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples,
       		size_t dim); 
-  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY, int alg);
+  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY,
+			      unsigned short alg);
 
 protected:
 
@@ -270,9 +271,8 @@ protected:
   /// number of optimal designs selected per iteration of experimental design
   /// algorithm
   int batchEvals;
-  /// whether the KSG2 algorithm is to be employed in the calculation
-  /// of the mutual information
-  bool mutualInfoKSG2;
+  /// algorithm to employ in calculating mutual information
+  unsigned short mutualInfoAlg;
 
   // settings specific to model discrepancy
 
