@@ -37,16 +37,12 @@ class ROLTraits: public TraitsBase
   public:
 
   /// default constructor
-  ROLTraits();
+  ROLTraits() { }
 
   typedef std::vector<Real> VecT;
 
-  // TODO: data transfers cleanup once decide on std vs Teuchos
-  /** Convenience function to set the variables from ROL into a Dakota Model */
-  static void set_continuous_vars(const std::vector<Real>& x, Model& model);
-
   /// destructor
-  virtual ~ROLTraits();
+  virtual ~ROLTraits() { }
 
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
@@ -76,186 +72,47 @@ class ROLTraits: public TraitsBase
 
 };
 
-inline ROLTraits::ROLTraits()
-{ }
-
-inline ROLTraits::~ROLTraits()
-{ }
-
-inline void ROLTraits::set_continuous_vars(const std::vector<Real>& x, Model& model)
-{
-  size_t num_cv = model.cv();
-  for(size_t i=0; i<num_cv; ++i)
-    model.continuous_variable(x[i], i);
-}
-
 
 // --------------------------------------------------------------
 
-class DakotaROLModelWrapper
-{
-  public:
+/// A helper function for consolidating model callbacks
+namespace {
 
-    ~DakotaROLModelWrapper()
+  void update_model(Model & model, const std::vector<Real> & x)
+  {
+    static bool first_pass = true;
+
+    // Not sure why this is not working using the conditional... RWH
+    if ( 1 /* first_pass || !is_equal_vec(model.continuous_variables(), x) */  )
+      /* See https://software-sandbox.sandia.gov/jira/browse/DAK-1931
+
+         BMA: TODO - could be conservative and validate the active set vector
+         foreach asv_i in active_set_request_vector()
+         assert(asv_i & (AS_FUNC+AS_GRAD))
+         */
     {
-      Cout << "~DakotaROLModelWrapper() : numUpdateCalled = " << numUpdateCalled << std::endl;
-      Cout << "~DakotaROLModelWrapper() : numMismatchedUpdatesCalled = " << numMismatchedUpdatesCalled << std::endl;
+      // Decided not to do this DB lookup for now, allow Dakota's
+      // cache to detect duplicates, since ROL is likely on
+      // another major iteration
+      //if (!model.db_lookup(x))
+
+      // Could replace with an adapter call - RWH
+      size_t num_cv = model.cv();
+      for(size_t i=0; i<num_cv; ++i)
+        model.continuous_variable(x[i], i);
+
+      ActiveSet eval_set(model.current_response().active_set());
+      eval_set.request_values(AS_FUNC+AS_GRAD);
+      model.evaluate(eval_set);
+
+      first_pass = false;
+      // now we can use the response currently in the model for any
+      // obj/cons/grad/hess
     }
+  }
 
-    DakotaROLModelWrapper(Model& dakota_model) :
-      wrappedModel(dakota_model),
-      lastIterUpdateCalled(-1),
-      numMismatchedUpdatesCalled(0),
-      numUpdateCalled(0)
-    {
-      extract_model_params();
-    }
+}
 
-    void check_model_is_updated( const std::vector<Real> &x)
-    {
-      if( x != lastUpdateIterate )
-      {
-        numMismatchedUpdatesCalled++;
-        update_model(x, true, 0);
-      }
-    }
-
-    void update_model( const std::vector<Real> &x, bool flag, int rol_iter )
-    {
-      if ( flag )
-      {
-        ROLTraits::set_continuous_vars(x, wrappedModel);
-
-        ActiveSet eval_set(wrappedModel.current_response().active_set());
-        eval_set.request_values(AS_FUNC+AS_GRAD);
-
-        wrappedModel.evaluate(eval_set);
-
-        fnVal = wrappedModel.current_response().function_value(0);
-
-        dakotaFns.resize((int)(1+numNonlinEq+numNonlinIneq));
-        dakotaFns.assign(wrappedModel.current_response().function_values());
-
-        dakotaGrads.reshape((int)numContinuousVars, (int)(1+numNonlinEq+numNonlinIneq));
-        dakotaGrads.assign(wrappedModel.current_response().function_gradients());
-        lastIterUpdateCalled = rol_iter;
-        numUpdateCalled++;
-      }
-    }
-
-    Real fn_value()
-      { return fnVal; }
-
-    const Model & get_wrapped_model() const
-      { return wrappedModel; }
-
-    size_t get_num_continuous_vars() const
-      { return numContinuousVars; }
-
-    size_t get_num_linear_eq() const
-      { return numLinearEq; }
-
-    size_t get_num_linear_ineq() const
-      { return numLinearIneq; }
-
-    size_t get_num_nonlinear_eq() const
-      { return numNonlinEq; }
-
-    size_t get_num_nonlinear_ineq() const
-      { return numNonlinIneq; }
-
-    const RealMatrix & get_lin_eq_coeffs() const
-      { return linEqCoeffs; }
-
-    const RealMatrix & get_lin_ineq_coeffs() const
-      { return linIneqCoeffs; }
-
-    const RealMatrix & get_gradient_matrix() const
-      { return dakotaGrads; }
-
-  private:
-
-    // extract model parameters relevant for inequality constraint evaluation
-    void extract_model_params()
-    {
-      numContinuousVars = wrappedModel.cv();
-      numNonlinIneq = wrappedModel.num_nonlinear_ineq_constraints();
-      numLinearIneq = wrappedModel.num_linear_ineq_constraints();
-      numNonlinEq = wrappedModel.num_nonlinear_eq_constraints();
-      numLinearEq = wrappedModel.num_linear_eq_constraints();
-
-      // BMA: I don't think we need copies at all, could just access
-      // model, but for now, assign instead of looping... until discuss with MK
-      linEqCoeffs.reshape((int)numLinearEq,(int)numContinuousVars);
-      linEqCoeffs.assign(wrappedModel.linear_eq_constraint_coeffs());
-      linEqTargets.resize((int)numLinearEq);
-      linEqTargets.assign(wrappedModel.linear_eq_constraint_targets());
-      nonlinEqTargets.resize((int)numNonlinEq);
-      nonlinEqTargets.assign(wrappedModel.nonlinear_eq_constraint_targets());
-
-      // BMA: I don't think we need copies at all, could just access
-      // model, but for now, assign instead of looping... until discuss with MK
-      linIneqCoeffs.reshape((int)numLinearIneq,(int)numContinuousVars);
-      linIneqCoeffs.assign(wrappedModel.linear_ineq_constraint_coeffs());
-
-      dakotaFns.resize((int)(1+numNonlinEq+numNonlinIneq));
-
-      dakotaGrads.reshape((int)numContinuousVars, (int)(1+numNonlinEq+numNonlinIneq));
-    }
-
-    /// Number of continuous variables
-    int numContinuousVars;
-
-    /// Shallow copy of the model on which ROL will iterate.
-    Model wrappedModel;
-
-    /// Copy of latest obective function values
-    Real fnVal;
-
-    /// Deep copy of linear inequaity coefficients
-    RealMatrix linIneqCoeffs;
-
-    /// Deep copy of linear equaity coefficients
-    RealMatrix linEqCoeffs;
-
-    /// Deep copy of linear equaity targets
-    RealVector linEqTargets;
-
-    /// Deep copy of nonlinear equaity targets
-    RealVector nonlinEqTargets;
-
-    /// Number of nonlinear inequalities
-    size_t numNonlinIneq;
-
-    /// Number of linear inequalities
-    size_t numLinearIneq;
-
-    /// Number of nonlinear equalities
-    size_t numNonlinEq;
-
-    /// Number of linear equalities
-    size_t numLinearEq;
-
-    /// Copy of latest function (objective and nonlinear constraints) values
-    RealVector dakotaFns;
-
-    /// Copy of latest function (objective and nonlinear constraints) gradient values
-    RealMatrix dakotaGrads;
-
-    /// Also used in checking whether or not update has been called yet
-    int lastIterUpdateCalled;
-
-    /// And another datum used in checking whether or not update has been called yet
-    ROLTraits::VecT lastUpdateIterate;
-
-    /// Used to monitor times update has been called
-    int numMismatchedUpdatesCalled;
-
-    /// Used to monitor times update has been called
-    int numUpdateCalled;
-
-
-}; // class DakotaROLModelWrapper
 
 // --------------------------------------------------------------
 
@@ -264,21 +121,16 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
 
   public:
 
-    DakotaROLIneqConstraints(DakotaROLModelWrapper & wrapped_model) :
-      dakotaROLModelWrapper(wrapped_model)
+    DakotaROLIneqConstraints(Model & model) :
+      dakotaModel(model)
     { }
-
-
-    void update( const std::vector<Real> &x, bool flag, int iter ) override
-    {
-      dakotaROLModelWrapper.update_model(x, flag, iter);
-    }
 
 
     void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
     {
-      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
-      get_nonlinear_ineq_constraints( dakotaROLModelWrapper.get_wrapped_model(), c );
+      update_model(dakotaModel, x);
+      apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
+      get_nonlinear_ineq_constraints( dakotaModel, c );
     }
 
     // -------------------------------------------------------
@@ -288,11 +140,11 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      size_t num_continuous_vars = dakotaROLModelWrapper.get_num_continuous_vars();
-      size_t num_linear_ineq = dakotaROLModelWrapper.get_num_linear_ineq();
-      size_t num_nonlinear_ineq = dakotaROLModelWrapper.get_num_nonlinear_ineq();
-      const RealMatrix & lin_ineq_coeffs = dakotaROLModelWrapper.get_lin_ineq_coeffs();
-      const RealMatrix & gradient_matrix = dakotaROLModelWrapper.get_gradient_matrix();
+      size_t num_continuous_vars = dakotaModel.cv();
+      size_t num_linear_ineq = dakotaModel.num_linear_ineq_constraints();
+      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
+      const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+      const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
 
       // apply linear constraint Jacobian
       apply_matrix(lin_ineq_coeffs, x, jv);
@@ -300,8 +152,8 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_ineq > 0) {
 
-        // makes sure that update(...) is called prior to first applyJacobian(...) call
-        dakotaROLModelWrapper.check_model_is_updated(x);
+        // makes sure that model is current
+        update_model(dakotaModel, x);
 
         for(size_t i=0;i<num_nonlinear_ineq;++i){
           jv[i+num_linear_ineq] = 0.0;
@@ -316,7 +168,7 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
 
   private:
 
-    DakotaROLModelWrapper & dakotaROLModelWrapper;
+    Model & dakotaModel;
 
 }; // class DakotaROLIneqConstraints
 
@@ -327,21 +179,15 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
 
   public:
 
-    DakotaROLEqConstraints(DakotaROLModelWrapper & wrapped_model) :
-      dakotaROLModelWrapper(wrapped_model)
+    DakotaROLEqConstraints(Model & model) :
+      dakotaModel(model)
     { }
-
-    // BMA TODO: don't we now have data adapters that convert linear to
-    // nonlinear constraints and manage the indexing?
-    void update( const std::vector<Real> &x, bool flag, int iter ) override
-    {
-      dakotaROLModelWrapper.update_model(x, flag, iter);
-    }
 
     void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
     {
-      apply_linear_constraints( dakotaROLModelWrapper.get_wrapped_model(), CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
-      get_nonlinear_eq_constraints( dakotaROLModelWrapper.get_wrapped_model(), c, -1.0 );
+      update_model(dakotaModel, x);
+      apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
+      get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
     }
 
     // -------------------------------------------------------
@@ -351,12 +197,12 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      size_t num_continuous_vars = dakotaROLModelWrapper.get_num_continuous_vars();
-      size_t num_linear_eq = dakotaROLModelWrapper.get_num_linear_eq();
-      size_t num_nonlinear_ineq = dakotaROLModelWrapper.get_num_nonlinear_ineq();
-      size_t num_nonlinear_eq = dakotaROLModelWrapper.get_num_nonlinear_eq();
-      const RealMatrix & lin_eq_coeffs = dakotaROLModelWrapper.get_lin_eq_coeffs();
-      const RealMatrix & gradient_matrix = dakotaROLModelWrapper.get_gradient_matrix();
+      size_t num_continuous_vars = dakotaModel.cv();
+      size_t num_linear_eq = dakotaModel.num_linear_eq_constraints();
+      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
+      size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
+      const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+      const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
 
       // apply linear constraint Jacobian
       apply_matrix(lin_eq_coeffs, x, jv);
@@ -364,8 +210,8 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_eq > 0) {
 
-        // makes sure that update(...) is called prior to first applyJacobian(...) call
-        dakotaROLModelWrapper.check_model_is_updated(x);
+        // makes sure that model is current
+        update_model(dakotaModel, x);
 
         for(size_t i=0;i<num_nonlinear_eq;++i){
           jv[i+num_linear_eq] = 0.0;
@@ -380,7 +226,7 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
 
   private:
 
-    DakotaROLModelWrapper & dakotaROLModelWrapper;
+    Model & dakotaModel;
 
 }; // class DakotaROLEqConstraints
 
@@ -392,45 +238,25 @@ class DakotaROLObjective : public ROL::StdObjective<Real>
 
   public:
 
-    DakotaROLObjective(DakotaROLModelWrapper & wrapped_model) :
-      dakotaROLModelWrapper(wrapped_model),
-      gradVals(wrapped_model.get_num_continuous_vars())
+    DakotaROLObjective(Model & model) :
+      dakotaModel(model)
   { }
-
-    void update( const std::vector<Real> &x, bool flag, int iter ) override
-    {
-      if( flag )
-      {
-        dakotaROLModelWrapper.update_model(x, flag, iter);
-        Real tol = 0.0;
-        fnVal = dakotaROLModelWrapper.fn_value();
-
-        const RealMatrix & dakota_grads = dakotaROLModelWrapper.get_gradient_matrix();
-        for( int i=0; i<dakotaROLModelWrapper.get_num_continuous_vars(); ++i )
-          gradVals[i] = dakota_grads(i, 0);
-      }
-    }
 
     Real value(const std::vector<Real> &x, Real &tol) override
     {
-      return fnVal;
+      update_model(dakotaModel, x);
+      return dakotaModel.current_response().function_value(0);
     }
 
     void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) override
     {
-      g = gradVals;
+      update_model(dakotaModel, x);
+      copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
     }
-
 
   private:
 
-    DakotaROLModelWrapper & dakotaROLModelWrapper;
-
-    /// Copy of latest obective function values
-    Real fnVal;
-
-    /// Copy of latest function (objective) gradient values
-    std::vector<Real> gradVals;
+    Model & dakotaModel;
 
 }; // class DakotaROLObjective
 
@@ -480,9 +306,6 @@ protected:
 
   /// Parameters for the ROL::OptimizationSolver
   Teuchos::ParameterList optSolverParams;
-
-  /// A wrapper to the Dakota Model which allows ROL to do efficient callbacks
-  std::shared_ptr<DakotaROLModelWrapper> wrappedDakotaModel;
 
   /// Handle to ROL::OptimizationProblem, part of ROL's simplified interface 
   ROL::OptimizationProblem<Real> optProblem;

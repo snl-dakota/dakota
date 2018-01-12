@@ -168,6 +168,23 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv);
 Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 		   const IntVector&  curr_iv,  const IntVector&  prev_iv,
 		   const RealVector& curr_rv2, const RealVector& prev_rv2);
+
+/// equality function for RealVector and a vector of arbitrary type
+template <typename VectorType>
+bool is_equal_vec( const RealVector & vec1,
+	           const VectorType & vec2)
+{ 
+  // Check for equality in array lengths
+  int len = vec1.length();
+  if ( (int)vec2.size() != len )
+    return false;
+  // Check each size_t
+  for (int i=0; i<len; ++i)
+    if ( vec1[i] != vec2[i] )
+      return false;
+  return true;
+}
+
 // ---------------------
 // Misc matrix utilities 
 // ---------------------
@@ -889,6 +906,19 @@ void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
 //    da2[start_index2+i] = da1[start_index1+i];
 //}
 
+/// Copies a column of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+template<typename VectorType>
+void copy_column_vector(const RealMatrix& m,
+                              RealMatrix::ordinalType j,
+			      VectorType& col)
+{
+  RealMatrix::ordinalType i, num_items = m.numRows();
+  if (col.size() != num_items)
+    col.resize(num_items);
+  for(i=0; i<num_items; ++i)
+    col[i] = m(i,j);
+}
+
 /// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
 template<typename VectorType>
 void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
@@ -902,7 +932,7 @@ void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 }
 
 
-/// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
+/// Inserts a std::vector<Real> into a row of a Teuchos_SerialDenseMatrix<int,Real>
 template<typename ScalarType>
 void insert_row_vector(const std::vector<ScalarType>& row, 
                              RealMatrix::ordinalType i,

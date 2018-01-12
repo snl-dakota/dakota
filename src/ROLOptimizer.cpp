@@ -181,8 +181,7 @@ void ROLOptimizer::set_problem()
   bnd.reset( new ROL::Bounds<Real>(lower,upper) );
 
   // create objective function object and give it access to Dakota model 
-  wrappedDakotaModel.reset( new DakotaROLModelWrapper(iteratedModel) );
-  obj.reset(new DakotaROLObjective(*wrappedDakotaModel));
+  obj.reset(new DakotaROLObjective(iteratedModel));
 
   size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
@@ -190,7 +189,7 @@ void ROLOptimizer::set_problem()
   // Equality constraints
   if (numEqConstraints > 0){
     // create equality constraint object and give it access to Dakota model 
-    eqConst.reset(new DakotaROLEqConstraints(*wrappedDakotaModel));
+    eqConst.reset(new DakotaROLEqConstraints(iteratedModel));
 
     // equality multipliers
     Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(numEqConstraints,0.0) );
@@ -200,7 +199,7 @@ void ROLOptimizer::set_problem()
   // Inequality constraints: [linear_ineq, nonlinear_ineq]
   if (numIneqConstraints > 0){
     // create inequality constraint object and give it access to Dakota model 
-    ineqConst.reset(new DakotaROLIneqConstraints(*wrappedDakotaModel));
+    ineqConst.reset(new DakotaROLIneqConstraints(iteratedModel));
 
     // inequality multipliers
     Teuchos::RCP<std::vector<Real> > imul_rcp = Teuchos::rcp( new std::vector<Real>(numIneqConstraints,0.0) );
