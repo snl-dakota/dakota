@@ -1743,13 +1743,8 @@ void NonDBayesCalibration::compute_statistics()
 
   RealMatrix filtered_chain;
   if (burnInSamples > 0 || num_skip > 1) {
-
-    filtered_chain.shapeUninitialized(acceptanceChain.numRows(), num_filtered);
     filter_chain(acceptanceChain, filtered_chain);
-
-    filteredFnVals.shapeUninitialized(acceptedFnVals.numRows(), num_filtered);
     filter_fnvals(acceptedFnVals, filteredFnVals);
-
   }
   else {
 
@@ -1782,69 +1777,70 @@ void NonDBayesCalibration::compute_statistics()
   }
 }
 
-void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
-		           RealMatrix& filtered_chain, int target_length)
+
+void NonDBayesCalibration::
+filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain,
+	     int target_length)
 {
-  int num_mcmc_samples = acceptanceChain.numCols();
+  // BMA --> KAM: magic constants in here need an explanation, why 0.2, 3, 12/5?
+  int num_mcmc_samples = acceptance_chain.numCols();
   int burn_in_post = int(0.2*num_mcmc_samples);
   int burned_in_post = num_mcmc_samples - burn_in_post;
   int num_skip;
-  int num_filtered;
-  int ind = 0;
-  int it_cntr = 0;
+  // BMA --> KAM: check that this expression is correct (what you intend) given
+  // for integer arithmetic:
   int mcmc_threshhold = target_length*12/5;
   if (num_mcmc_samples < mcmc_threshhold) {
     num_skip = 3;
   }
   else {
-    num_skip = int(burned_in_post/target_length);
+    // maximally skip to achieve the target length: floor( (count-1)/(len-1) )
+    // BMA --> KAM: no test exercises this case
+    num_skip = (burned_in_post-1)/(target_length-1);
   }
-  num_filtered = int(burned_in_post/num_skip);
-  RealVector lofi_params(numContinuousVars);
-  filtered_chain.reshape(acceptanceChain.numRows(), num_filtered);
-  for (int j=burn_in_post; j<num_mcmc_samples; j++) {
-    ++it_cntr;
-    if (it_cntr % num_skip == 0){
-      lofi_params = Teuchos::getCol(Teuchos::View, acceptanceChain, j); 
-      Teuchos::setCol(lofi_params, ind, filtered_chain);
-      ind++;
-    }
-  }
+  filter_matrix_cols(acceptance_chain, burn_in_post, num_skip, filtered_chain);
 }
 
-void NonDBayesCalibration::filter_chain(RealMatrix& acceptance_chain, 
+void NonDBayesCalibration::filter_chain(const RealMatrix& acceptance_chain,
 					RealMatrix& filtered_chain)
 {
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-  int num_samples = acceptance_chain.numCols();
-  int j = 0;
-  for (int i = burnin; i < num_samples; ++i) {
-    if (i % num_skip == 0) {
-      RealVector param_vec = Teuchos::getCol(Teuchos::View, 
-	  				acceptance_chain, i);
-      Teuchos::setCol(param_vec, j, filtered_chain);
-      ++j;
-    }
-  }
+  filter_matrix_cols(acceptance_chain, burnin, num_skip, filtered_chain);
 }
 
-void NonDBayesCalibration::filter_fnvals(RealMatrix& accepted_fn_vals, 
+void NonDBayesCalibration::filter_fnvals(const RealMatrix& accepted_fn_vals,
     					 RealMatrix& filtered_fn_vals)
 {
   int burnin = (burnInSamples > 0) ? burnInSamples : 0;
   int num_skip = (subSamplingPeriod > 0) ? subSamplingPeriod : 1;
-  int num_samples = accepted_fn_vals.numCols();
-  int j = 0;
-  for (int i = burnin; i < num_samples; ++i) {
-    if (i % num_skip == 0) {
-      RealVector col_vec = Teuchos::getCol(Teuchos::View, 
-	 	  			  accepted_fn_vals, i);
-      Teuchos::setCol(col_vec, j, filtered_fn_vals);
-      j++;
-     }
-   }
+  filter_matrix_cols(accepted_fn_vals, burnin, num_skip, filtered_fn_vals);
 }
+
+
+void NonDBayesCalibration::
+filter_matrix_cols(const RealMatrix& orig_matrix, int start_index,
+		   int stride, RealMatrix& filtered_matrix)
+{
+  // Alternately, could return a view using the stride to skip ahead
+  int num_orig = orig_matrix.numCols();
+  if (num_orig <= start_index || stride <= 0) {
+    Cerr << "\nError: Invalid arguments to NonDBayesCalibraion::"
+	 << "filter_matrix_cols()\n";
+    abort_handler(METHOD_ERROR);
+  }
+
+  // ceil(num_orig/stride), using integer arithmetic since we have ints
+  // instead of converting to double (1 + remaining cols divided equally)
+  int num_filtered =  1 + (num_orig-start_index-1)/stride;
+  filtered_matrix.shape(orig_matrix.numRows(), num_filtered);
+  for (int i=start_index, j=0; i<num_orig; i+=stride, ++j) {
+      RealVector col_vec =
+	Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(orig_matrix), i);
+      Teuchos::setCol(col_vec, j, filtered_matrix);
+  }
+}
+
 
 void NonDBayesCalibration::compute_intervals()
 {

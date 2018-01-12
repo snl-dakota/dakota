@@ -395,14 +395,21 @@ protected:
   void export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals);
 
   /// Perform chain filtering based on target chain length
-  void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain, 
+  void filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain, 
       		    int target_length);
   /// Perform chain filtering with burn-in and sub-sampling
-  void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
-  void filter_fnvals(RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
+  void filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
+  void filter_fnvals(const RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
+
+  /// return a newly allocated filtered matrix including start_index and
+  /// every stride-th index after; for burn-in cases, start_index is the
+  /// number of burn-in discards
+  void filter_matrix_cols(const RealMatrix& orig_matrix, int start_index,
+			  int stride, RealMatrix& filtered_matrix);
+
   /// Compute credibility and prediction intervals of final chain
   RealMatrix predVals;
-  /// cached filtered function values for printing
+  /// cached filtered function values for printing (may be a view of acceptedFnVals)
   RealMatrix filteredFnVals;
   void compute_intervals();
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,
