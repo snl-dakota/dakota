@@ -3592,7 +3592,7 @@ Partial Rank Correlation Matrix between input and output:
           x5  6.40372e-01 
 dakota_bayes_expdesign.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (lofi_IF): 5159 total (5139 new, 20 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5161 total (5149 new, 12 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.6452518774e-02 uuv_1
@@ -3613,7 +3613,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.1148417783e+01  3.0458369057e+00  3.0153050712e+00  1.3808119764e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (lofi_IF): 5108 total (5092 new, 16 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5110 total (5090 new, 20 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 2 total (2 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.5734147370e-02 uuv_1
@@ -3634,7 +3634,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (lofi_IF): 5132 total (5112 new, 20 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5134 total (5122 new, 12 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 1 total (1 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.2471763471e-02 uuv_1
@@ -3655,7 +3655,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  3.5870494636e+01  2.3254732876e+00  5.1564034700e-01  2.1230996605e+01
 Test Number 3 succeeded
-<<<<< Function evaluation summary (lofi_IF): 5135 total (5115 new, 20 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 5137 total (5125 new, 12 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 3 total (3 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.7224263874e-02 uuv_1
@@ -3694,7 +3694,7 @@ test> Sample moment statistics for each response function:
 test>                             Mean           Std Dev          Skewness          Kurtosis
 test> least_sq_term_1  4.1761667478e+01  2.5223154032e+00  1.8000023674e+00  5.1337922355e+00
 Test Number 5 succeeded
-<<<<< Function evaluation summary (lofi_IF): 12704 total (11702 new, 1002 duplicate)
+<<<<< Function evaluation summary (lofi_IF): 12718 total (11715 new, 1003 duplicate)
 <<<<< Function evaluation summary (hifi_IF): 5 total (5 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.5675352259e-02 uuv_1

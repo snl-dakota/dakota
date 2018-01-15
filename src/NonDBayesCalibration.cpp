@@ -1784,20 +1784,18 @@ void NonDBayesCalibration::
 filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain,
 	     int target_length)
 {
-  // BMA --> KAM: magic constants in here need an explanation, why 0.2, 3, 12/5?
+  // Default behavior: burn in 20% of samples, take only every third point in
+  // chain
   int num_mcmc_samples = acceptance_chain.numCols();
   int burn_in_post = int(0.2*num_mcmc_samples);
   int burned_in_post = num_mcmc_samples - burn_in_post;
   int num_skip;
-  // BMA --> KAM: check that this expression is correct (what you intend) given
-  // for integer arithmetic:
-  int mcmc_threshhold = target_length*12/5;
-  if (num_mcmc_samples < mcmc_threshhold) {
+  int mcmc_threshhold = target_length*3;
+  if (burned_in_post < mcmc_threshhold) {
     num_skip = 3;
   }
   else {
     // maximally skip to achieve the target length: floor( (count-1)/(len-1) )
-    // BMA --> KAM: no test exercises this case
     num_skip = (burned_in_post-1)/(target_length-1);
   }
   filter_matrix_cols(acceptance_chain, burn_in_post, num_skip, filtered_chain);
