@@ -278,17 +278,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   double max_tol;
 
   target = 0.5;
-  max_tol = 1.e-10;
+  max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.5;
-  max_tol = 1.e-10;
+  max_tol = 1.e-2;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 3.0;
-  max_tol = 1.e-11;
+  max_tol = 1.e-10;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -296,7 +296,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   const Response& resp  = env.response_results();
 
   target = 16.125;
-  max_tol = 1.e-10;
+  max_tol = 1.e-6;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
@@ -445,7 +445,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-3;
+  max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
