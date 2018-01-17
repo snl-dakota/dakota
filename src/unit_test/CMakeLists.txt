@@ -102,7 +102,8 @@ if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
 #     restart_test.cpp
     rol_adapters.cpp
     rol_integration.cpp
-    opt_tpl_rol_test.cpp
+    opt_tpl_rol_test_textbook.cpp
+    opt_tpl_rol_test_rol_pbs.cpp
 #     stat_utils.cpp
 #     wilks_sampling.cpp
     )

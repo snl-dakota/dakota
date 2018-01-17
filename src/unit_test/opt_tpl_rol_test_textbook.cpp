@@ -1,13 +1,15 @@
+/*  _______________________________________________________________________
 
-#include "APPSOptimizer.hpp"
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright 2014 Sandia Corporation.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
 
 #include "opt_tpl_test.hpp"
-
 #include <string>
 #include <map>
-
-#include <Teuchos_UnitTestHarness.hpp> 
-
+#include <Teuchos_UnitTestHarness.hpp>
 
 using namespace Dakota;
 
@@ -18,7 +20,7 @@ using namespace Dakota;
 TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -49,7 +51,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -91,7 +93,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 {
   /// Dakota input string:
 
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -123,7 +125,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -162,7 +164,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-6"
@@ -195,7 +197,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -238,7 +240,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-7"
@@ -272,7 +274,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -319,7 +321,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -352,7 +354,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -394,7 +396,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-4"
@@ -429,7 +431,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -472,7 +474,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -507,7 +509,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -557,7 +559,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_ineq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -591,7 +593,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -641,7 +643,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -678,7 +680,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;
@@ -740,7 +742,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
 TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
 {
   /// Dakota input string:
-  static const char text_book_input[] = 
+  static const char text_book_input[] =
     " method,"
     "   rol_ls"
     "     gradient_tolerance 1.0e-5"
@@ -781,7 +783,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  // convergence tests: 
+  // convergence tests:
   double rel_err;
   double target;
   double max_tol;

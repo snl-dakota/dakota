@@ -162,17 +162,15 @@ namespace {
   //----------------------------------------------------------------
 
 
-  /** Simple plugin for a derived serial direct application
-    interface instance */
-  void serial_interface_plugin(Dakota::LibraryEnvironment& env)
+  /** Simple plugin for a derived serial direct application interface
+    instance. Memory ownership is transferred to the appropriate
+    interface envelope in the environment. */
+  void serial_interface_plugin(Dakota::LibraryEnvironment& env,
+			       const std::string an_driver,
+			       Dakota::Interface* serial_iface)
   {
     std::string model_type(""); // demo: empty string will match any model type
     std::string interf_type("direct");
-    std::string an_driver("simple_quad");
-
-    Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-    Dakota::Interface* serial_iface = 
-      new OptTestDirectApplicInterface(problem_db);
 
     bool plugged_in =
       env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
@@ -238,7 +236,10 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
   env.done_modifying_db();
 
   // plug the client's interface (function evaluator) into the Dakota environment
-  serial_interface_plugin(env);
+  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  Dakota::Interface* serial_iface =
+    new OptTestDirectApplicInterface(problem_db);
+  serial_interface_plugin(env, "simple_quad", serial_iface);
 
   return p_env;
 }
