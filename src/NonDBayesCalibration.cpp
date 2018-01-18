@@ -1190,6 +1190,15 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
 void NonDBayesCalibration::build_model_discrepancy()
 {
+  size_t num_field_groups = expData.num_fields();
+  if (num_field_groups == 0)
+    build_scalar_discrepancy();
+  else
+    build_field_discrepancy();
+}
+
+void NonDBayesCalibration::build_scalar_discrepancy()
+{
   // For now, use average params (unfiltered)
   RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
   int num_cols = acc_chain_transpose.numCols();
@@ -1346,6 +1355,11 @@ void NonDBayesCalibration::build_model_discrepancy()
   }
   
   export_discrepancy(configpred_mat);
+}
+
+void NonDBayesCalibration::build_field_discrepancy()
+{
+  Cout << "Build field discrepancy\n";
 }
 
 void NonDBayesCalibration::export_discrepancy(RealMatrix& 

@@ -129,6 +129,8 @@ protected:
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
+  void build_scalar_discrepancy();
+  void build_field_discrepancy();
 
   /// calculate a Kernel Density Estimate (KDE) for the posterior samples
   void calculate_kde();
