@@ -1359,6 +1359,33 @@ void NonDBayesCalibration::build_scalar_discrepancy()
 
 void NonDBayesCalibration::build_field_discrepancy()
 {
+  // For now, use average params (unfiltered)
+  RealMatrix acc_chain_transpose(acceptanceChain, Teuchos::TRANS);
+  int num_cols = acc_chain_transpose.numCols();
+  RealVector ave_params(num_cols);
+  compute_col_means(acc_chain_transpose, ave_params); 
+  mcmcModel.continuous_variables(ave_params);
+  
+  int num_exp = expData.num_experiments();
+  size_t num_configvars = expData.config_vars()[0].length();
+  RealMatrix allConfigInputs(num_configvars,num_exp);
+  for (int i = 0; i < num_exp; i++) {
+    RealVector config_vec = expData.config_vars()[i];
+    Teuchos::setCol(config_vec, i, allConfigInputs);
+  } 
+
+  // Read independent coordinates
+  // RealMatrix indep_coordinates = expData.read_field_coords_view(response,exp_index);
+  // We are getting coordinates for the experiment and ultimately we need to handle the simulation coordinates
+  // if interpolation.
+  //
+  // Initialize newFnDiscClass
+  // newFnDiscClass.initialize(x, theta, t) 
+  // newFnDiscClass.build(vector t, vector responses, correction_term) 
+  // newFnDiscClass.apply(vector t_new, vector responses, corrected_responses) 
+  // One possibility is to use the GP construction from NonDLHSSampling, line 794
+  // Another is to use the DiscrepancyCorrection class 
+
   Cout << "Build field discrepancy\n";
 }
 
