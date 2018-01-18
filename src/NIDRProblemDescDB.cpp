@@ -6138,30 +6138,6 @@ check_variables(std::list<DataVariables>* dvl)
   // input keyword not accounted for below
 
 
-  // validate descriptors. The string arrays are empty unless the user
-  // explicitly set descriptors.
-  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
-  for(; It != Ite; ++It) {
-    const DataVariablesRep* dvr = It->data_rep();
-    check_descriptors(dvr->continuousDesignLabels);
-    check_descriptors(dvr->discreteDesignRangeLabels);
-    check_descriptors(dvr->discreteDesignSetIntLabels);
-    check_descriptors(dvr->discreteDesignSetStrLabels);
-    check_descriptors(dvr->discreteDesignSetRealLabels);
-    check_descriptors(dvr->continuousStateLabels);
-    check_descriptors(dvr->discreteStateRangeLabels);
-    check_descriptors(dvr->discreteStateSetIntLabels);
-    check_descriptors(dvr->discreteStateSetStrLabels);
-    check_descriptors(dvr->discreteStateSetRealLabels);
-    check_descriptors(dvr->continuousAleatoryUncLabels);
-    check_descriptors(dvr->discreteIntAleatoryUncLabels);
-    check_descriptors(dvr->discreteStrAleatoryUncLabels);
-    check_descriptors(dvr->discreteRealAleatoryUncLabels);
-    check_descriptors(dvr->continuousEpistemicUncLabels);
-    check_descriptors(dvr->discreteIntEpistemicUncLabels);
-    check_descriptors(dvr->discreteStrEpistemicUncLabels);
-    check_descriptors(dvr->discreteRealEpistemicUncLabels);
-  }
 
   if (pDDBInstance) {
     std::list<void*>::iterator It, Ite = pDDBInstance->VIL.end();
@@ -6355,6 +6331,30 @@ check_variables(std::list<DataVariables>* dvl)
 
       check_variables_node((void*)vi);
     }
+  }
+  // validate descriptors. The string arrays are empty unless the user
+  // explicitly set descriptors.
+  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
+  for(; It != Ite; ++It) {
+    const DataVariablesRep* dvr = It->data_rep();
+    check_descriptors(dvr->continuousDesignLabels);
+    check_descriptors(dvr->discreteDesignRangeLabels);
+    check_descriptors(dvr->discreteDesignSetIntLabels);
+    check_descriptors(dvr->discreteDesignSetStrLabels);
+    check_descriptors(dvr->discreteDesignSetRealLabels);
+    check_descriptors(dvr->continuousStateLabels);
+    check_descriptors(dvr->discreteStateRangeLabels);
+    check_descriptors(dvr->discreteStateSetIntLabels);
+    check_descriptors(dvr->discreteStateSetStrLabels);
+    check_descriptors(dvr->discreteStateSetRealLabels);
+    check_descriptors(dvr->continuousAleatoryUncLabels);
+    check_descriptors(dvr->discreteIntAleatoryUncLabels);
+    check_descriptors(dvr->discreteStrAleatoryUncLabels);
+    check_descriptors(dvr->discreteRealAleatoryUncLabels);
+    check_descriptors(dvr->continuousEpistemicUncLabels);
+    check_descriptors(dvr->discreteIntEpistemicUncLabels);
+    check_descriptors(dvr->discreteStrEpistemicUncLabels);
+    check_descriptors(dvr->discreteRealEpistemicUncLabels);
   }
 }
 
