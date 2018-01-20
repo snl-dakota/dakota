@@ -1456,7 +1456,12 @@ void SharedVariablesData::serialize(Archive& ar, const unsigned int version)
        << "  svdRep use_count before = " << svdRep.use_count() << std::endl;
 #endif
   // load will default construct and load through the pointer
-  ar & svdRep;
+  // Prior to Boost 1.56 std::shared_ptr must be converted to boost::shared_ptr
+  // for boost serialization
+  //ar & svdRep;
+  boost::shared_ptr<SharedVariablesDataRep> boost_ptr = to_boost_ptr(svdRep);
+  ar & boost_ptr;
+  svdRep = to_std_ptr(boost_ptr);
 #ifdef REFCOUNT_DEBUG
   Cout << "  svdRep pointer after  = " << svdRep.get() << std::endl;
   Cout << "  svdRep use_count after  = " << svdRep.use_count() << std::endl;
