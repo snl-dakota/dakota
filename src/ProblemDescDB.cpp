@@ -2674,7 +2674,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.final_moments", P finalMomentsType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.least_squares_regression_type", P lsRegressionType},
-	{"nond.multilevel_allocation_control", P multilevAllocControl},
+	{"nond.multilevel_allocation_control", P mlmfAllocControl},
 	{"nond.multilevel_discrepancy_emulation", P multilevDiscrepEmulation},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.regression_type", P regressionType},

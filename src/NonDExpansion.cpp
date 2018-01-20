@@ -1208,7 +1208,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    pre_refinement(); // initialize_sets() for each level
+    pre_refinement(); // e.g., initialize_sets() for each level
   }
 
   size_t iter = 0,
@@ -1254,7 +1254,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
   NLev.resize(num_lev);
   for (lev=0; lev<num_lev; ++lev) {
     configure_keys(lev, form, multilev);
-    post_refinement(best_lev_metric); // finalize_sets() for each level
+    post_refinement(best_lev_metric); // e.g., finalize_sets() for each level
     NLev[lev] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   uSpaceModel.combine_approximation();

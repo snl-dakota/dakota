@@ -565,13 +565,22 @@
 
     <!ENTITY ml_alloc_control '
       	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
-	       <oneOf label="Multilevel Regression Control">
-		 <keyword  id="estimator_variance" name="estimator_variance" code="{N_mdm(type,multilevAllocControl_ESTIMATOR_VARIANCE)}" label="estimator_variance" help="" >
+	       <oneOf label="Multilevel Sample Allocation Control">
+		 <keyword  id="estimator_variance" name="estimator_variance" code="{N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}" label="estimator_variance" help="" >
 		   <keyword  id="estimator_rate" name="estimator_rate" code="{N_mdm(Real,multilevEstimatorRate)}" label="estimator_rate" help="" minOccurs="0" default="2" >
 		     <param type="REAL" />
 		   </keyword>
 		 </keyword>
-		 <keyword  id="rip_sampling" name="rip_sampling" code="{N_mdm(type,multilevAllocControl_RIP_SAMPLING)}" label="rip_sampling" help="" />
+		 <keyword  id="rip_sampling" name="rip_sampling" code="{N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}" label="rip_sampling" help="" />
+		 <keyword  id="greedy" name="greedy" code="{N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}" label="greedy" help="" />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY mf_alloc_control '
+      	     <keyword  id="allocation_control" name="allocation_control" code="{0}" label="allocation_control" help="" minOccurs="0" >
+	       <oneOf label="Multifidelity Sample Allocation Control">
+		 <keyword  id="greedy" name="greedy" code="{N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}" label="greedy" help="" />
 	       </oneOf>
 	     </keyword>
 	     ' >
@@ -2246,6 +2255,7 @@
 
 	<keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos" help="" minOccurs="1" group="Uncertainty Quantification" >
 	  &pce_refinement;
+	  &mf_alloc_control;
 	  &discrep_emulation;
 	  <oneOf label="Chaos Coefficient Estimation Approach">
 	    &expansion_quadrature_sequence;

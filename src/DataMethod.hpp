@@ -9,7 +9,6 @@
 //- Class:        DataMethod
 //- Description:
 //-
-//-
 //- Owner:        Mike Eldred
 //- Version: $Id: DataMethod.hpp 6984 2010-09-27 02:11:09Z lpswile $
 
@@ -143,8 +142,9 @@ enum { NO_EMULATION, DISTINCT_EMULATION, RECURSIVE_EMULATION };
 // -------------
 // define special values for lsRegressionType
 enum { DEFAULT_LS=0, SVD_LS, EQ_CON_LS };
-// define special values for multilevRegressCntl
-enum { DEFAULT_ML_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING };
+// define special values for mlmfAllocControl
+enum { DEFAULT_MLMF_CONTROL=0, ESTIMATOR_VARIANCE, RIP_SAMPLING,
+       GREEDY_REFINEMENT };
 
 // --------------------
 // NonDBayesCalibration
@@ -932,7 +932,7 @@ public:
   /// the \c pilot_samples selection in \ref MethodMultilevelMC
   SizetArray pilotSamples;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
-  short multilevAllocControl;
+  short mlmfAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
   /// the \c final_moments specification in \ref MethodNonD

@@ -1319,6 +1319,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(nnint,maxRefineIterations)} ]
+    [ allocation_control {0}
+      greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
+     ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
@@ -1584,11 +1587,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ allocation_control {0}
-      ( estimator_variance {N_mdm(type,multilevAllocControl_ESTIMATOR_VARIANCE)}
+      ( estimator_variance {N_mdm(type,mlmfAllocControl_ESTIMATOR_VARIANCE)}
         [ estimator_rate REAL {N_mdm(Real,multilevEstimatorRate)} ]
        )
       |
-      rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
+      rip_sampling {N_mdm(type,mlmfAllocControl_RIP_SAMPLING)}
+      |
+      greedy {N_mdm(type,mlmfAllocControl_GREEDY_REFINEMENT)}
      ]
     [ discrepancy_emulation {0}
       distinct {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}

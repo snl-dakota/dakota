@@ -30,7 +30,7 @@ namespace Dakota {
 NonDMultilevelPolynomialChaos::
 NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   NonDPolynomialChaos(BaseConstructor(), problem_db, model),
-  multilevAllocControl(
+  mlmfAllocControl(
     probDescDB.get_short("method.nond.multilevel_allocation_control")),
   expOrderSeqSpec(probDescDB.get_usa("method.nond.expansion_order")),
   collocPtsSeqSpec(probDescDB.get_sza("method.nond.collocation_points")),
@@ -120,7 +120,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
-  // multilevAllocControl config and specification checks:
+  // mlmfAllocControl config and specification checks:
   if (methodName == MULTILEVEL_POLYNOMIAL_CHAOS) {
     if (expansionCoeffsApproach < Pecos::DEFAULT_REGRESSION) {
       Cerr << "Error: unsupported solver configuration within "
@@ -128,7 +128,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       abort_handler(METHOD_ERROR);
     }
 
-    switch (multilevAllocControl) {
+    switch (mlmfAllocControl) {
     case RIP_SAMPLING:
       // use OMP for robustness (over or under-determined)
       if (expansionCoeffsApproach == Pecos::DEFAULT_REGRESSION)
@@ -145,8 +145,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
       break;
     case ESTIMATOR_VARIANCE:
       break;
-    //case GREEDY_REFINEMENT:
-    //  break;
+    case GREEDY_REFINEMENT:
+      break;
     }
   }
 
@@ -269,7 +269,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   NonDPolynomialChaos(method_name, model, exp_coeffs_approach, dim_pref,
 		      u_space_type, piecewise_basis, use_derivs, colloc_ratio,
 		      seed, cv_flag), 
-  multilevAllocControl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
+  mlmfAllocControl(ESTIMATOR_VARIANCE), expOrderSeqSpec(exp_order_seq),
   collocPtsSeqSpec(colloc_pts_seq), sequenceIndex(0), kappaEstimatorRate(2.),
   gammaEstimatorScale(1.), pilotSamples(pilot)
 {
@@ -505,16 +505,19 @@ void NonDMultilevelPolynomialChaos::core_run()
   //   >> want to support import for MF PCE as well, including future
   //      adaptive MF PCE.
 
-  bool multifid_uq = false, greedy = (refineType &&
-    refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);// for now
+  bool multifid_uq = false;
   switch (methodName) {
   case MULTIFIDELITY_POLYNOMIAL_CHAOS:
     multifid_uq = true;
-    if (greedy) greedy_multifidelity_expansion();    // from NonDExpansion
-    else        multifidelity_expansion(refineType); // from NonDExpansion
+    // inherited methods from from NonDExpansion:
+    if (mlmfAllocControl == GREEDY_REFINEMENT) greedy_multifidelity_expansion();
+    else                                    multifidelity_expansion(refineType);
     break;
   case MULTILEVEL_POLYNOMIAL_CHAOS:
-    multilevel_regression();                     // specific to this class
+    //if (mlmfAllocControl == GREEDY_REFINEMENT)
+    //  greedy_multifidelity_expansion();
+    //else
+    multilevel_regression(); // specific to derived class
     break;
   default:
     Cerr << "Error: bad configuration in NonDMultilevelPolynomialChaos::"
@@ -666,7 +669,7 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   default: // regression
     update_exp = update_sampler = true;
     // fix the basis cardinality in the case of RIP_SAMPLING
-    if (multilevAllocControl != RIP_SAMPLING) {
+    if (mlmfAllocControl != RIP_SAMPLING) {
       if (collocPtsSeqSpec.empty()) // (fixed) collocation ratio
 	update_from_ratio = true;
       else // config via collocation pts sequence not supported
@@ -737,12 +740,12 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
     max_iter = (maxIterations < 0) ? 25 : maxIterations; // default = -1
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., lev_cost; 
   RealVector cost;
-  bool multilev, optional_cost = (multilevAllocControl == RIP_SAMPLING),
+  bool multilev, optional_cost = (mlmfAllocControl == RIP_SAMPLING),
     recursive = (multilevDiscrepEmulation == RECURSIVE_EMULATION);
   configure_levels(num_lev, form, multilev, false);
   configure_cost(num_lev, multilev, cost);
   SizetArray cardinality;  RealVector level_metric(num_lev);
-  if (multilevAllocControl == RIP_SAMPLING)
+  if (mlmfAllocControl == RIP_SAMPLING)
     cardinality.resize(num_lev);
 
   // Multilevel variance aggregation requires independent sample sets
@@ -809,7 +812,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 	append_expansion(); // not recursive
       }
 
-      switch (multilevAllocControl) {
+      switch (mlmfAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = level_metric[lev];
 	if (delta_N_l[lev] > 0) aggregate_variance(agg_var_l);
@@ -826,7 +829,7 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
       }
     }
 
-    switch (multilevAllocControl) {
+    switch (mlmfAllocControl) {
     case ESTIMATOR_VARIANCE:
       if (iter == 0) { // eps^2 / 2 = var * relative factor
 	eps_sq_div_2 = estimator_var0 * convergenceTol;

@@ -138,7 +138,7 @@ DataMethodRep::DataMethodRep():
   multilevDiscrepEmulation(DISTINCT_EMULATION),
   sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
   reliabilitySearchType(MV), integrationRefine(NO_INT_REFINE),
-  multilevAllocControl(ESTIMATOR_VARIANCE), multilevEstimatorRate(2.),
+  mlmfAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
   finalMomentsType(STANDARD_MOMENTS), distributionType(CUMULATIVE),
   responseLevelTarget(PROBABILITIES), responseLevelTargetReduce(COMPONENT),
   chainSamples(0), buildSamples(0), samplesOnEmulator(0), emulatorOrder(0),
@@ -286,7 +286,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << multilevAllocControl << multilevEstimatorRate
+    << mlmfAllocControl << multilevEstimatorRate
     << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
@@ -438,7 +438,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
     >> numCandidateDesigns >> reliabilitySearchType >> reliabilityIntegration
     >> integrationRefine >> refineSamples >> pilotSamples
-    >> multilevAllocControl >> multilevEstimatorRate
+    >> mlmfAllocControl >> multilevEstimatorRate
     >> finalMomentsType >> distributionType
     >> responseLevelTarget >> responseLevelTargetReduce >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
@@ -590,7 +590,7 @@ void DataMethodRep::write(std::ostream& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns << reliabilitySearchType << reliabilityIntegration
     << integrationRefine << refineSamples << pilotSamples
-    << multilevAllocControl << multilevEstimatorRate
+    << mlmfAllocControl << multilevEstimatorRate
     << finalMomentsType << distributionType
     << responseLevelTarget << responseLevelTargetReduce << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
