@@ -17,11 +17,13 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <memory>
 
 
 static const char rcsId[]="@(#) $Id: SharedResponseData.cpp 6886 2010-08-02 19:13:01Z mseldre $";
@@ -257,7 +259,7 @@ void SharedResponseData::reshape(size_t num_fns)
     Cout << "SharedResponseData::reshape() called.\n"
 	 << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
 #endif
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep()); // create new srdRep
     srdRep->copy_rep(old_rep.get());           // copy old data to new
 #ifdef REFCOUNT_DEBUG
@@ -281,7 +283,7 @@ void SharedResponseData::field_lengths(const IntVector& field_lens)
   // no change in number of scalar functions
   // when the field lengths change, need a new rep
   if (field_lengths() != field_lens) {
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep());  // create new srdRep
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     
@@ -323,7 +325,7 @@ void SharedResponseData::primary_fn_type(short type)
 { 
   // when the primary type changes, need a new rep
   if (srdRep->primaryFnType != type) {
-    boost::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
+    std::shared_ptr<SharedResponseDataRep> old_rep = srdRep;
     srdRep.reset(new SharedResponseDataRep());  // create new srdRep
     srdRep->copy_rep(old_rep.get());            // copy old data to new
     srdRep->primaryFnType = type;
@@ -348,7 +350,11 @@ void SharedResponseData::serialize(Archive& ar, const unsigned int version)
        << "  srdRep use_count before = " << srdRep.use_count() << std::endl;
 #endif
   // load will default construct and load through the pointer
-  ar & srdRep;
+  // Prior to Boost 1.56 std::shared_ptr must be converted to boost::shared_ptr
+  // for boost serialization
+  boost::shared_ptr<SharedResponseDataRep> boost_ptr = to_boost_ptr(srdRep);
+  ar & boost_ptr;
+  srdRep = to_std_ptr(boost_ptr);
 #ifdef REFCOUNT_DEBUG
   Cout << "  srdRep pointer after  = " << srdRep.get() << std::endl;
   Cout << "  srdRep use_count after  = " << srdRep.use_count() << std::endl;
