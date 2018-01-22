@@ -80,35 +80,17 @@ namespace {
 
   void update_model(Model & model, const std::vector<Real> & x)
   {
-    static bool first_pass = true;
+    // Could replace with an adapter call - RWH
+    size_t num_cv = model.cv();
+    for(size_t i=0; i<num_cv; ++i)
+      model.continuous_variable(x[i], i);
 
-    // Not sure why this is not working using the conditional... RWH
-    if ( 1 /* first_pass || !is_equal_vec(model.continuous_variables(), x) */  )
-      /* See https://software-sandbox.sandia.gov/jira/browse/DAK-1931
+    ActiveSet eval_set(model.current_response().active_set());
+    eval_set.request_values(AS_FUNC+AS_GRAD);
+    model.evaluate(eval_set);
 
-         BMA: TODO - could be conservative and validate the active set vector
-         foreach asv_i in active_set_request_vector()
-         assert(asv_i & (AS_FUNC+AS_GRAD))
-         */
-    {
-      // Decided not to do this DB lookup for now, allow Dakota's
-      // cache to detect duplicates, since ROL is likely on
-      // another major iteration
-      //if (!model.db_lookup(x))
-
-      // Could replace with an adapter call - RWH
-      size_t num_cv = model.cv();
-      for(size_t i=0; i<num_cv; ++i)
-        model.continuous_variable(x[i], i);
-
-      ActiveSet eval_set(model.current_response().active_set());
-      eval_set.request_values(AS_FUNC+AS_GRAD);
-      model.evaluate(eval_set);
-
-      first_pass = false;
-      // now we can use the response currently in the model for any
-      // obj/cons/grad/hess
-    }
+    // now we can use the response currently in the model for any
+    // obj/cons/grad/hess
   }
 
 }
