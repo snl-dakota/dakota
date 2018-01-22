@@ -158,7 +158,7 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
         for(size_t i=0;i<num_nonlinear_ineq;++i){
           jv[i+num_linear_ineq] = 0.0;
           for (size_t j=0; j<num_continuous_vars; j++)
-            jv[i+num_linear_ineq] += gradient_matrix(j,i+1) * x[j];
+            jv[i+num_linear_ineq] += gradient_matrix(j,i+1) * v[j];
         }
       }
     }
@@ -216,7 +216,7 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
         for(size_t i=0;i<num_nonlinear_eq;++i){
           jv[i+num_linear_eq] = 0.0;
           for (size_t j=0; j<num_continuous_vars; j++)
-            jv[i+num_linear_eq] += gradient_matrix(j,i+1+num_nonlinear_ineq) * x[j];
+            jv[i+num_linear_eq] += gradient_matrix(j,i+1+num_nonlinear_ineq) * v[j];
         }
       }
     }
