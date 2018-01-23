@@ -764,7 +764,7 @@
 	     ' >
 
     <!ENTITY bayes_proposal_covariance '
-	     <keyword  name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
+	     <keyword id="proposal_covariance" name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
 	       <oneOf label="Proposal Covariance Source">
 		 <keyword id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
 		   <keyword id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates"  minOccurs="0" >
