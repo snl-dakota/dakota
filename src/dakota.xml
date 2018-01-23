@@ -766,24 +766,24 @@
     <!ENTITY bayes_proposal_covariance '
 	     <keyword  name="proposal_covariance" code="{N_mdm(lit,proposalCovType_user)}" label="Proposal covariance type"  minOccurs="0" >
 	       <oneOf label="Proposal Covariance Source">
-		 <keyword  name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
-		   <keyword  name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates"  minOccurs="0" >
+		 <keyword id="derivatives" name="derivatives" code="{N_mdm(lit,proposalCovType_derivatives)}" label="Derivative-based proposal covariance"  >
+		   <keyword id="proposal_updates" name="proposal_updates" code="{N_mdm(int,proposalCovUpdates)}" label="proposal_updates"  minOccurs="0" >
 		     <param type="INTEGER" />
 		   </keyword>
 		 </keyword>
-		 <keyword  name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance"   />
-		 <keyword  name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
+		 <keyword id="prior" name="prior" code="{N_mdm(lit,proposalCovType_prior)}" label="Prior-based proposal covariance"   />
+		 <keyword id="values" name="values" code="{N_mdm(RealDL,proposalCovData)}" label="User-provided proposal covariance data values"  minOccurs="1" >
 		   <param type="REALLIST"/>
 		   <oneOf label="Values For">
-		     <keyword  name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input"   />
-		     <keyword  name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
+		     <keyword id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covariance input"   />
+		     <keyword id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
 		   </oneOf>
 		 </keyword>
-		 <keyword  name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename"  minOccurs="1" >
+		 <keyword id="filename" name="filename" code="{N_mdm(str,proposalCovFile)}" label="User-provided proposal covariance filename"  minOccurs="1" >
 		   <param type="INPUT_FILE"/>
 		   <oneOf label="Values For">
-		     <keyword  name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput "   />
-		     <keyword  name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
+		     <keyword id="diagonal" name="diagonal" code="{N_mdm(lit,proposalCovInputType_diagonal)}" label="Diagonal covarianceinput "   />
+		     <keyword id="matrix" name="matrix" code="{N_mdm(lit,proposalCovInputType_matrix)}" label="Matrix covariance input"   />
 		   </oneOf>
 		 </keyword>
 	       </oneOf>
