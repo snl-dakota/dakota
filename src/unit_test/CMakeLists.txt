@@ -89,23 +89,23 @@ include_directories(${Pecos_SOURCE_DIR}/src)
 
 if(DAKOTA_ENABLE_TEUCHOS_UNIT_TESTS)
   set(dakota_teuchos_unit_tests
-#     demo_teuchos.cpp
-#     covariance_reader.cpp
-#     expt_data.cpp
-#     expt_data_reader.cpp
-#     file_reader.cpp
-#     data_conversions.cpp
-#     opt_api_core_data_xfers.cpp
-#     opt_tpl_api.cpp
-#     opt_api_traits.cpp
-#     reduced_basis.cpp
-#     restart_test.cpp
+    demo_teuchos.cpp
+    covariance_reader.cpp
+    expt_data.cpp
+    expt_data_reader.cpp
+    file_reader.cpp
+    data_conversions.cpp
+    opt_api_core_data_xfers.cpp
+    opt_tpl_api.cpp
+    opt_api_traits.cpp
+    reduced_basis.cpp
+    restart_test.cpp
     rol_adapters.cpp
     rol_integration.cpp
     opt_tpl_rol_test_textbook.cpp
     opt_tpl_rol_test_rol_pbs.cpp
-#     stat_utils.cpp
-#     wilks_sampling.cpp
+    stat_utils.cpp
+    wilks_sampling.cpp
     )
   if (DAKOTA_HAVE_MPI)
     list(REMOVE_ITEM dakota_teuchos_unit_tests opt_tpl_api.cpp opt_tpl_test.cpp)
