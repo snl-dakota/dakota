@@ -102,6 +102,7 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
   private:
 
     Model & dakotaModel;
+    bool haveNlnConst;
 
 }; // class DakotaROLIneqConstraints
 
@@ -130,6 +131,7 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
   private:
 
     Model & dakotaModel;
+    bool haveNlnConst;
 
 }; // class DakotaROLEqConstraints
 
@@ -210,7 +212,7 @@ protected:
   Teuchos::RCP<std::vector<Real> > rolX;
 
   /// ROL problem type
-  unsigned short problem_type;
+  unsigned short problemType;
 };
 
 } // namespace Dakota

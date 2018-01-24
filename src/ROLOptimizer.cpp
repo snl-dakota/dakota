@@ -71,21 +71,21 @@ void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
 
-  if (problem_type == TYPE_U)
+  if (problemType == TYPE_U)
   {
     optSolverParams.sublist("Step").set("Type","Trust Region");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
   }
-  if (problem_type == TYPE_B)
+  if (problemType == TYPE_B)
   {
     optSolverParams.sublist("Step").set("Type","Trust Region");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
   }
-  if (problem_type == TYPE_E)
+  if (problemType == TYPE_E)
   {
     optSolverParams.sublist("Step").set("Type","Composite Step");
   }
-  if (problem_type == TYPE_EB)
+  if (problemType == TYPE_EB)
   {
     optSolverParams.sublist("Step").set("Type","Augmented Lagrangian");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
@@ -263,22 +263,22 @@ void ROLOptimizer::set_problem()
 
   // Obtain ROL problem type
   // Defaults to Type-U, otherwise overwrite
-  problem_type = TYPE_U;
+  problemType = TYPE_U;
   if (numIneqConstraints > 0)
-    problem_type = TYPE_EB;
+    problemType = TYPE_EB;
   else
   {
     if (numEqConstraints > 0)
     {
       if (boundConstraintFlag)
-        problem_type = TYPE_EB;
+        problemType = TYPE_EB;
       else
-        problem_type = TYPE_E;
+        problemType = TYPE_E;
     }
     else
     {
       if (boundConstraintFlag)
-        problem_type = TYPE_B;
+        problemType = TYPE_B;
     }
   }
 
@@ -368,7 +368,9 @@ namespace {
 
 DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
   dakotaModel(model)
-{ }
+{
+  haveNlnConst = model.num_nonlinear_ineq_constraints() > 0;
+}
 
 void
 DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
@@ -390,9 +392,8 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
   apply_matrix(lin_ineq_coeffs, v, jv);
 
-  size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
-  if (num_nonlinear_ineq > 0) {
-    // makes sure that model is current
+  // apply nonlinear constraint Jacobian
+  if( haveNlnConst ) {
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, jv);
   }
@@ -413,8 +414,7 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
   apply_matrix_transpose(lin_ineq_coeffs, v, ajv);
 
   // apply nonlinear constraint Jacobian (might be empty)
-  size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
-  if (num_nonlinear_ineq > 0) {
+  if (haveNlnConst) {
     // makes sure that model is current
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, ajv, true);
@@ -429,7 +429,9 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
 
 DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
   dakotaModel(model)
-{ }
+{
+  haveNlnConst = model.num_nonlinear_eq_constraints() > 0;
+}
 
 void
 DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
@@ -451,9 +453,7 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
   apply_matrix(lin_eq_coeffs, v, jv);
 
   // apply nonlinear constraint Jacobian
-  size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
-  if (num_nonlinear_eq > 0) {
-    // makes sure that model is current
+  if( haveNlnConst ) {
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
   }
@@ -473,8 +473,7 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
   apply_matrix_transpose(lin_eq_coeffs, v, ajv);
 
   // apply nonlinear constraint Jacobian (might be empty)
-  size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
-  if (num_nonlinear_eq > 0) {
+  if (haveNlnConst) {
     // makes sure that model is current
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, ajv, true);
