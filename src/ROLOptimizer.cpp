@@ -41,8 +41,6 @@ using std::endl;
 
 namespace Dakota {
 
-using namespace ROL;
-
 /// Standard constructor.
 
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):

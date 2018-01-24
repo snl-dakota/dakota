@@ -349,6 +349,39 @@ void apply_linear_constraints( const Model & model,
 
 //----------------------------------------------------------------
 
+/** Data adapter to transfer data from Dakota to third-party opt packages */
+template <typename VecT>
+void apply_nonlinear_constraints( const Model & model,
+                               CONSTRAINT_EQUALITY_TYPE etype,
+                               const VecT & in_vals,
+                                     VecT & values )
+{
+  size_t num_resp = 1; // does this need to be generalized to more than one response value? - RWH
+
+  size_t num_continuous_vars         = model.cv();
+
+  size_t num_linear_consts           = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   model.num_linear_eq_constraints() :
+                                                   model.num_linear_ineq_constraints();
+  size_t num_nonlinear_consts        = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   model.num_nonlinear_eq_constraints() :
+                                                   model.num_nonlinear_ineq_constraints();
+
+  const RealMatrix & gradient_matrix = model.current_response().function_gradients();
+
+  int grad_offset = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+                                                   num_resp + model.num_nonlinear_ineq_constraints() :
+                                                   num_resp;
+  for(size_t i=0;i<num_nonlinear_consts;++i)
+  {
+    values[i+num_linear_consts] = 0.0;
+    for (size_t j=0; j<num_continuous_vars; j++)
+      values[i+num_linear_consts] += gradient_matrix(j, i+grad_offset) * in_vals[j];
+  }
+}
+
+//----------------------------------------------------------------
+
 /// Base class for the optimizer branch of the iterator hierarchy.
 
 /** The Optimizer class provides common data and functionality for

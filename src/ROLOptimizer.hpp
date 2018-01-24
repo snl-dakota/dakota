@@ -118,26 +118,15 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      size_t num_continuous_vars = dakotaModel.cv();
-      size_t num_linear_ineq = dakotaModel.num_linear_ineq_constraints();
-      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
-      const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
-      const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
-
       // apply linear constraint Jacobian
+      const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
       apply_matrix(lin_ineq_coeffs, v, jv);
 
-      // apply nonlinear constraint Jacobian
+      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
       if (num_nonlinear_ineq > 0) {
-
         // makes sure that model is current
         update_model(dakotaModel, x);
-
-        for(size_t i=0;i<num_nonlinear_ineq;++i){
-          jv[i+num_linear_ineq] = 0.0;
-          for (size_t j=0; j<num_continuous_vars; j++)
-            jv[i+num_linear_ineq] += gradient_matrix(j,i+1) * v[j];
-        }
+        apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, jv);
       }
     }
 
@@ -168,27 +157,16 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
-      size_t num_continuous_vars = dakotaModel.cv();
-      size_t num_linear_eq = dakotaModel.num_linear_eq_constraints();
-      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
-      size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
-      const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
-      const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
-
       // apply linear constraint Jacobian
+      const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
       apply_matrix(lin_eq_coeffs, v, jv);
 
       // apply nonlinear constraint Jacobian
+      size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
       if (num_nonlinear_eq > 0) {
-
         // makes sure that model is current
         update_model(dakotaModel, x);
-
-        for(size_t i=0;i<num_nonlinear_eq;++i){
-          jv[i+num_linear_eq] = 0.0;
-          for (size_t j=0; j<num_continuous_vars; j++)
-            jv[i+num_linear_eq] += gradient_matrix(j,i+1+num_nonlinear_ineq) * v[j];
-        }
+        apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
       }
     }
 
