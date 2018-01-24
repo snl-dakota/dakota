@@ -77,7 +77,7 @@ void ROLOptimizer::set_rol_parameters()
   optSolverParams.sublist("Step").set("Type","Line Search");
 
   // Turns on usage of applyJacobian for constraints with a "Trust Region" Subproblem Step Type
-  //optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+  optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
 
   // PRECEDENCE 2: Dakota input file settings
 

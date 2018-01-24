@@ -115,10 +115,6 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
       get_nonlinear_ineq_constraints( dakotaModel, c );
     }
 
-    // -------------------------------------------------------
-    // ------------------- CAUTION ---------------------------
-    // ------------ THIS CODE IS NOT TESTED ------------------
-    // -------------------------------------------------------
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
@@ -144,9 +140,6 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
         }
       }
     }
-    // -------------------------------------------------------
-    // ------------------- CAUTION ---------------------------
-    // -------------------------------------------------------
 
   private:
 
@@ -172,10 +165,6 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
       get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
     }
 
-    // -------------------------------------------------------
-    // ------------------- CAUTION ---------------------------
-    // ------------ THIS CODE IS NOT TESTED ------------------
-    // -------------------------------------------------------
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
     {
@@ -202,9 +191,6 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
         }
       }
     }
-    // -------------------------------------------------------
-    // ------------------- CAUTION ---------------------------
-    // -------------------------------------------------------
 
   private:
 

@@ -789,17 +789,17 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   double max_tol;
 
   target = 0.614041801350369;
-  max_tol = 1.e-6;
+  max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 5.5409525784e-01;
-  max_tol = 1.e-11;
+  max_tol = 1.e-5;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 2.831863531038414;
-  max_tol = 1.e-6;
+  max_tol = 1.e-5;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -807,7 +807,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   const Response& resp  = env.response_results();
 
   target = 11.322607724274398;
-  max_tol = 1.e-5;
+  max_tol = 5.e-5;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
