@@ -129,7 +129,7 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
       const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
 
       // apply linear constraint Jacobian
-      apply_matrix(lin_ineq_coeffs, x, jv);
+      apply_matrix(lin_ineq_coeffs, v, jv);
 
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_ineq > 0) {
@@ -187,7 +187,7 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
       const RealMatrix & gradient_matrix = dakotaModel.current_response().function_gradients();
 
       // apply linear constraint Jacobian
-      apply_matrix(lin_eq_coeffs, x, jv);
+      apply_matrix(lin_eq_coeffs, v, jv);
 
       // apply nonlinear constraint Jacobian
       if (num_nonlinear_eq > 0) {
