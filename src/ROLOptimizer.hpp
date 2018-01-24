@@ -75,66 +75,27 @@ class ROLTraits: public TraitsBase
 
 // --------------------------------------------------------------
 
-/// A helper function for consolidating model callbacks
-namespace {
-
-  void update_model(Model & model, const std::vector<Real> & x)
-  {
-    // Could replace with an adapter call - RWH
-    size_t num_cv = model.cv();
-    for(size_t i=0; i<num_cv; ++i)
-      model.continuous_variable(x[i], i);
-
-    ActiveSet eval_set(model.current_response().active_set());
-    eval_set.request_values(AS_FUNC+AS_GRAD);
-    model.evaluate(eval_set);
-
-    // now we can use the response currently in the model for any
-    // obj/cons/grad/hess
-  }
-
-}
-
-
-// --------------------------------------------------------------
-
 class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
 {
 
   public:
 
-    DakotaROLIneqConstraints(Model & model) :
-      dakotaModel(model)
-    { }
+    /// Constructor
+    DakotaROLIneqConstraints(Model & model);
 
+    /// Callback to return the constraint value to ROL
+    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override;
 
-    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
-    {
-      update_model(dakotaModel, x);
-      apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
-      get_nonlinear_ineq_constraints( dakotaModel, c );
-    }
-
+    /// Callback to return the result of applying the constraint gradient on an arbitrary vector to ROL
     void applyJacobian(std::vector<Real> &jv,
-        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
-    {
-      // apply linear constraint Jacobian
-      const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
-      apply_matrix(lin_ineq_coeffs, v, jv);
-
-      size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
-      if (num_nonlinear_ineq > 0) {
-        // makes sure that model is current
-        update_model(dakotaModel, x);
-        apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, jv);
-      }
-    }
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
 
   private:
 
     Model & dakotaModel;
 
 }; // class DakotaROLIneqConstraints
+
 
 // --------------------------------------------------------------
 
@@ -143,32 +104,15 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
 
   public:
 
-    DakotaROLEqConstraints(Model & model) :
-      dakotaModel(model)
-    { }
+    /// Constructor
+    DakotaROLEqConstraints(Model & model);
 
-    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override
-    {
-      update_model(dakotaModel, x);
-      apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
-      get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
-    }
+    /// Callback to return the constaint value to ROL
+    void value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override;
 
+    /// Callback to return the result of applying the constraint gradient on an arbitrary vector to ROL
     void applyJacobian(std::vector<Real> &jv,
-        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override
-    {
-      // apply linear constraint Jacobian
-      const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
-      apply_matrix(lin_eq_coeffs, v, jv);
-
-      // apply nonlinear constraint Jacobian
-      size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
-      if (num_nonlinear_eq > 0) {
-        // makes sure that model is current
-        update_model(dakotaModel, x);
-        apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
-      }
-    }
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
 
   private:
 
@@ -184,21 +128,14 @@ class DakotaROLObjective : public ROL::StdObjective<Real>
 
   public:
 
-    DakotaROLObjective(Model & model) :
-      dakotaModel(model)
-  { }
+    /// Constructor
+    DakotaROLObjective(Model & model);
 
-    Real value(const std::vector<Real> &x, Real &tol) override
-    {
-      update_model(dakotaModel, x);
-      return dakotaModel.current_response().function_value(0);
-    }
+    /// Callback to return the objective value (Response) to ROL
+    Real value(const std::vector<Real> &x, Real &tol) override;
 
-    void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) override
-    {
-      update_model(dakotaModel, x);
-      copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
-    }
+    /// Callback to return the response gradient to ROL
+    void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) override;
 
   private:
 

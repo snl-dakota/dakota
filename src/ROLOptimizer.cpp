@@ -278,5 +278,119 @@ void ROLOptimizer::core_run()
   }
 }
 
+// --------------------------------------------------------------
+
+/// A helper function for consolidating model callbacks
+namespace {
+
+  void update_model(Model & model, const std::vector<Real> & x)
+  {
+    // Could replace with an adapter call - RWH
+    size_t num_cv = model.cv();
+    for(size_t i=0; i<num_cv; ++i)
+      model.continuous_variable(x[i], i);
+
+    ActiveSet eval_set(model.current_response().active_set());
+    eval_set.request_values(AS_FUNC+AS_GRAD);
+    model.evaluate(eval_set);
+
+    // now we can use the response currently in the model for any
+    // obj/cons/grad/hess
+  }
+
+} // namespace anonymous
+
+// --------------------------------------------------------------
+//    These classes could go into a new file for evaluators along
+//    the lines of APPS and COLIN if desirable.
+// --------------------------------------------------------------
+
+// --------------------------------------------------------------
+//             DakotaROLIneqConstraints
+// --------------------------------------------------------------
+
+DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
+  dakotaModel(model)
+{ }
+
+void
+DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
+{
+  update_model(dakotaModel, x);
+  apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
+  get_nonlinear_ineq_constraints( dakotaModel, c );
+}
+
+void 
+DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
+    const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
+{
+  // apply linear constraint Jacobian
+  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  apply_matrix(lin_ineq_coeffs, v, jv);
+
+  size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
+  if (num_nonlinear_ineq > 0) {
+    // makes sure that model is current
+    update_model(dakotaModel, x);
+    apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, jv);
+  }
+}
+
+// --------------------------------------------------------------
+//               DakotaROLEqConstraints
+// --------------------------------------------------------------
+
+DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
+  dakotaModel(model)
+{ }
+
+void
+DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
+{
+  update_model(dakotaModel, x);
+  apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
+  get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
+}
+
+void
+DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
+    const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
+{
+  // apply linear constraint Jacobian
+  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  apply_matrix(lin_eq_coeffs, v, jv);
+
+  // apply nonlinear constraint Jacobian
+  size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
+  if (num_nonlinear_eq > 0) {
+    // makes sure that model is current
+    update_model(dakotaModel, x);
+    apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
+  }
+}
+
+
+// --------------------------------------------------------------
+//               DakotaROLObjective
+// --------------------------------------------------------------
+
+DakotaROLObjective::DakotaROLObjective(Model & model) :
+  dakotaModel(model)
+{ }
+
+Real
+DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)
+{
+  update_model(dakotaModel, x);
+  return dakotaModel.current_response().function_value(0);
+}
+
+void
+DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
+{
+  update_model(dakotaModel, x);
+  copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
+}
 
 } // namespace Dakota
