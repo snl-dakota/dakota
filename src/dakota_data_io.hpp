@@ -21,7 +21,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/shared_ptr.hpp>
-#include <memory>
 
 namespace boost {
 namespace serialization {
@@ -135,6 +134,9 @@ BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
 /// Register separate load/save for StringMultiArray type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::StringMultiArray)
 
+#if 0
+// WJB - ToDo:  double-check with Brian Adams.  Any value in leaving this
+// hack in the code base if not being used / tested?
 namespace {
   template<class SharedPointer> struct Holder {
     SharedPointer p;
@@ -166,7 +168,7 @@ template<class T> boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p)
     return boost::shared_ptr<T>(p.get(), Holder<std::shared_ptr<T>>(p));
   }
 }
-
+#endif
 
 namespace Dakota {
 
