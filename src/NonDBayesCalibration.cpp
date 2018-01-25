@@ -1375,7 +1375,24 @@ void NonDBayesCalibration::build_field_discrepancy()
   } 
 
   // Read independent coordinates
-  // RealMatrix indep_coordinates = expData.read_field_coords_view(response,exp_index);
+  for (int i = 0; i < numFieldLeastSqTerms; i++) {
+    for (int j = 0; j < num_exp; j++) {
+      RealMatrix indep_coordinates = expData.read_field_coords_view(i,j);
+      Cout << "Independent Coordinate " << indep_coordinates;
+    }
+  }
+  RealVector concat_disc(field_length);
+
+  for (int i = 0; i < numFieldLeastSqTerms; i++) {
+   // Question:  do we want the t and concat_disp to include ALL the experiments?
+    for (int j = 0; j < num_exp; j++) {
+      for (int k=0; k < field_length; k++) {
+        concat_disc(k) = expData.residuals_view(residuals, j);
+      }
+    }
+    build_GP_field(vector view(indep_coordinates, t_new_coord, concat_disc, disc_pred);
+  }
+
   // We are getting coordinates for the experiment and ultimately we need to handle the simulation coordinates
   // if interpolation.
   //
@@ -1385,8 +1402,37 @@ void NonDBayesCalibration::build_field_discrepancy()
   // newFnDiscClass.apply(vector t_new, vector responses, corrected_responses) 
   // One possibility is to use the GP construction from NonDLHSSampling, line 794
   // Another is to use the DiscrepancyCorrection class 
-
+  
   Cout << "Build field discrepancy\n";
+}
+
+
+void NonDBayesCalibration::build_GP_field(const RealVector& t, const RealVector& t_pred,
+			   const RealVector& concat_disc, const RealVector& disc_pred)
+{
+
+  String approx_type;
+  approx_type = "global_kriging";  // Surfpack GP
+  UShortArray approx_order;
+  short data_order = 1;  // assume only function values
+  short output_level = NORMAL_OUTPUT;
+  SharedApproxData sharedData;
+  // if multiple independent coordinates and config vars, need to 
+  // change 1 to number of input parameters for GP
+  int num_GP_inputs = 1;
+  sharedData = SharedApproxData(approx_type, approx_order, num_GP_inputs,
+                                data_order, output_level);
+  Approximation gpApproximation(sharedData);
+
+  // build the GP for the discrepancy
+  //
+  gpApproximation.add(t,concat_resp);
+  gpApproximation.build();
+  //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
+  for (int i=0; i<length_t_pred; i++) {
+     disc_pred(i)=gpApproximation.value(t_pred[i]);
+  }
+
 }
 
 void NonDBayesCalibration::export_discrepancy(RealMatrix& 
