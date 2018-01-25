@@ -986,6 +986,10 @@ void DataFitSurrModel::build_global()
   // Check data_pairs and importPointsFile for any existing evaluations to reuse
   // **************************************************************************
   size_t i, j, reuse_points = 0;
+  int fn_index = *surrogateFnIndices.begin();
+  const Pecos::SurrogateData& approx_data
+    = approxInterface.approximation_data(fn_index);
+  bool anchor = approx_data.anchor();
   if (pointReuse == "all" || pointReuse == "region") {
 
     size_t num_c_vars, num_di_vars, num_dr_vars;
@@ -999,13 +1003,6 @@ void DataFitSurrModel::build_global()
       num_di_vars = actualModel.div();
       num_dr_vars = actualModel.drv();
     }
-
-    // since SurrBasedLocalMinimizer currently evaluates the trust region center
-    // first, we must take care to not include this point in the point reuse,
-    // since this would cause it to be used twice.
-    int fn_index = *surrogateFnIndices.begin();
-    const Pecos::SurrogateDataVars& anchor_vars
-      = approxInterface.approximation_data(fn_index).anchor_variables();
 
     // Process PRPCache using default iterators (index 0 = ordered_non_unique).
     // This includes evals from current run, evals imported from restart, and 
@@ -1031,12 +1028,15 @@ void DataFitSurrModel::build_global()
 	else
 	  { db_vars = prp_vars; db_resp = prp_resp; }
 
+	// Note: since SurrBasedLocalMinimizer currently evaluates the trust
+	// region center first, we must take care to not include this point
+	// in the point reuse, since this would cause it to be used twice.
 	// Note: for NonD uses with u-space models, the global_bounds boolean
 	// in NonD::transform_model() needs to be set in order to allow test
 	// of transformed bounds in "region" reuse case.  For "all" reuse case
 	// typically used with data import, this is not necessary.
-	if ( inside(db_vars) &&
-	    !active_vars_compare(db_vars, anchor_vars) ) {// avoid anchor duplic
+	if ( inside(db_vars) && !(anchor && // avoid anchor duplic
+	     active_vars_compare(db_vars, approx_data.anchor_variables())) ) {
 	  // Eval id definitions:
 	  //   id > 0 for unique evals from current execution
 	  //   id = 0 for evals from file import --> data_pairs
@@ -1115,11 +1115,9 @@ void DataFitSurrModel::build_global()
   // *******************************
   // Output counts for data ensemble
   // *******************************
-  int fn_index = *surrogateFnIndices.begin();
-  String anchor = (approxInterface.approximation_data(fn_index).anchor())
-    ? "one" : "no";
-  Cout << "Constructing global approximations with " << anchor << " anchor, "
-       << new_points << " DACE samples, and " << reuse_points
+  String anchor_str = (anchor) ? "one" : "no";
+  Cout << "Constructing global approximations with " << anchor_str
+       << " anchor, " << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
 }
 
