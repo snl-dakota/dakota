@@ -40042,7 +40042,7 @@ Moment statistics for each response function:
  response_fn_1  2.4975008083e-02  6.9982216365e-03
  response_fn_2  1.2897642241e-01  1.7696050156e-02
  response_fn_3  2.4975008085e-02  6.9982216323e-03
-dakota_uq_diffusion_mfpce_gsg.in
+dakota_uq_diffusion_mfpce_greedy.in
 Test Number 0 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -40501,7 +40501,7 @@ Moment statistics for each response function:
  response_fn_1  2.5271893349315629e-02  6.5970885160726838e-03
  response_fn_2  1.2904453164907889e-01  1.3438093559212260e-02
  response_fn_3  2.5271893349381246e-02  6.5970885180449109e-03
-dakota_uq_diffusion_mlpce_gsg.in
+dakota_uq_diffusion_mlpce_greedy.in
 Test Number 0 succeeded
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis

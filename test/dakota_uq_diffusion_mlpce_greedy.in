@@ -4,13 +4,15 @@ environment,
 method,
 	model_pointer = 'HIERARCH'
         multifidelity_polynomial_chaos
-	  sparse_grid_level_sequence = 0
-	    unrestricted
 	  allocation_control greedy
-	  p_refinement dimension_adaptive generalized
-	    max_refinement_iterations 500
-	    convergence_tolerance 1.e-6			#s0
-#	    convergence_tolerance 1.e-8			#s1
+	  p_refinement dimension_adaptive generalized		#s0,#s1
+	    sparse_grid_level_sequence = 0 unrestricted		#s0,#s1
+#	  p_refinement uniform	       	 			#s2
+#	    expansion_order_sequence = 1			#s2
+#	    collocation_ratio = .9				#s2
+	    convergence_tolerance 1.e-6				#s0,#s2
+#	    convergence_tolerance 1.e-8				#s1
+#	    max_refinement_iterations 500
 	output silent
 #	variance_based_decomp
 
