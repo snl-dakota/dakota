@@ -32,6 +32,10 @@ namespace Dakota {
 /** ROLTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
 
+// PDH: Now that we understand how ROL works, we should do a sanity check
+// to make sure these still make sense.  We should also revisit the Traits
+// base class to see if there's anything that needs to be changed or added.
+
 class ROLTraits: public TraitsBase
 {
   public:

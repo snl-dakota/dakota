@@ -163,6 +163,10 @@ void ROLOptimizer::set_problem()
   Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
 
+//PDH: Should figure out which of this class data (e.g., numContinuousVars)
+//we could/should elminate and which we should keep and formall make part
+//of the TPL API.
+
   // create ROL variable and bound vectors
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<Real> >
@@ -183,6 +187,10 @@ void ROLOptimizer::set_problem()
   // create objective function object and give it access to Dakota model 
   obj.reset(new DakotaROLObjective(iteratedModel));
 
+//PDH: Seems like we should be able to use traits to determine when we
+//need to provide the sum rather than making the user do it.  Also, same
+//comment about class data as above.
+
   size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
   size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
 
@@ -190,6 +198,8 @@ void ROLOptimizer::set_problem()
   if (numEqConstraints > 0){
     // create equality constraint object and give it access to Dakota model 
     eqConst.reset(new DakotaROLEqConstraints(iteratedModel));
+
+//PDH: What are the multipliers for?
 
     // equality multipliers
     Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(numEqConstraints,0.0) );
@@ -211,6 +221,9 @@ void ROLOptimizer::set_problem()
       ineq_l_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
     Teuchos::RCP<std::vector<Real> >
       ineq_u_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
+
+//PDH: Seems like we should be able to pull this into the adapters and
+//use traits to determine what to populate the bounds vectors with.
 
     // copy all to partial (should be no-op if no data to copy)
     copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
@@ -252,6 +265,11 @@ void ROLOptimizer::core_run()
 
   // TODO: print termination criteria (based on Step or AlgorithmState?)
 
+//PDH: If memory serves me correctly, Russell implementd a function at the
+//DakotaOptimizer level that sets all the final values.  It was based on
+//APPS, but we should revisit to figure out how this compares and if it
+//makes sense to merge them.
+
   // copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
   RealVector& cont_vars = best_vars.continuous_variables_view();
@@ -286,6 +304,8 @@ namespace {
   void update_model(Model & model, const std::vector<Real> & x)
   {
     // Could replace with an adapter call - RWH
+//PDH: Agreed.
+
     size_t num_cv = model.cv();
     for(size_t i=0; i<num_cv; ++i)
       model.continuous_variable(x[i], i);
@@ -316,6 +336,10 @@ DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
 void
 DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
+//PDH: Should look into whether or not it makes sense to use traits to
+//determine how to pack these and just return one vectore of constraint
+//values.
+
   update_model(dakotaModel, x);
   apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
   get_nonlinear_ineq_constraints( dakotaModel, c );
@@ -349,6 +373,9 @@ void
 DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
   update_model(dakotaModel, x);
+//PDH: Same comment as for the inequality constraints.  Also, why the -1.0
+//when getting the nonlinear constraint values?
+
   apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
   get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
 }
@@ -378,6 +405,11 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
 DakotaROLObjective::DakotaROLObjective(Model & model) :
   dakotaModel(model)
 { }
+
+//PDH: Can we hide the model details in a data adapter for the objective
+//and gradient evaluations?  Because of the way ROL appears to handle
+//constraints, may not be a big deal for this wrapper, but it will likely
+//simplify things in other wrappers.
 
 Real
 DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)

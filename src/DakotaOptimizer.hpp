@@ -18,7 +18,6 @@
 
 namespace Dakota {
 
-
 /** Adapter for copying initial continuous variables values from a Dakota Model
    into TPL vectors */
 
@@ -34,6 +33,11 @@ void get_initial_values( const Model & model,
 
 /** Adapter for copying continuous variables data from Dakota RealVector
    into TPL vectors */
+
+//PDH: At some point, need to get rid of big_real_bound_size.  Was no_value
+//specific to APPS?  I think it was.  If so, we should look at how general
+//that is across the other TPLs.  It might make more sense to push it back
+//down to APPS.
 
 template <typename VecT>
 bool get_bounds( const RealVector  & lower_source,
@@ -86,6 +90,9 @@ void get_bounds( const Model & model,
    APPSOptimizer for copying discrete variables from a set-based Dakota
    container into TPL vectors */
 
+//PDH: I think the target_offset can be eliminated from the argument list
+//by using a trait specifying expected order.
+
 template <typename SetT, typename VecT>
 void get_bounds( const SetT & source_set,
                        VecT & lower_target,
@@ -101,6 +108,8 @@ void get_bounds( const SetT & source_set,
 /** Adapter originating from (and somewhat specialized based on)
    APPSOptimizer for copying discrete integer variables data
    with bit masking from Dakota into TPL vectors */
+
+//PDH: Same comments as above for bigBoundSize, no_value, target_offset.
 
 template <typename OrdinalType, typename ScalarType, typename VectorType2, typename MaskType, typename SetArray>
 bool get_mixed_bounds( const MaskType& mask_set,
@@ -148,6 +157,8 @@ bool get_mixed_bounds( const MaskType& mask_set,
 /** Adapter originating from (and somewhat specialized based on)
     APPSOptimizer for copying heterogeneous bounded data from 
     Dakota::Variables into concatenated TPL vectors */
+
+//PDH: Same for big_real_bound_size, big_int_bound_size.
 
 template <typename AdapterT>
 bool get_variable_bounds( Model &                   model, // would like to make const but cannot due to discrete_int_sets below
@@ -204,6 +215,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
 /** Adapter for configuring inequality constraint maps used when
    transferring data between Dakota and a TPL */
 
+//PDH: Yes, scaling should be tied to a trait.  And get rid of big_real...
+
 template <typename RVecT, typename IVecT>
 int configure_inequality_constraint_maps(
                                const Model & model,
@@ -245,6 +258,10 @@ int configure_inequality_constraint_maps(
 
 /** Adapter for configuring equality constraint maps used when
    transferring data between Dakota and a TPL */
+
+//PDH: I'll have to remind myself what the call chain is.  Ultimately,
+//make_one_sided should be tied to a trait somewhere along the line.
+//Same for the map-related vectors (e.g., multipliers).
 
 template <typename RVecT, typename IVecT>
 void configure_equality_constraint_maps(
@@ -614,6 +631,10 @@ inline void Optimizer::not_available(const std::string& package_name)
 
 
 //----------------------------------------------------------------
+
+//PDH: How much of everything from here on is used by both APPS and ROL?
+//Probably need to make a pass to look for possible redundancies and to
+//consolidate if/where necessary.
 
 // Data utilities supporting Opt TPL refactor which may eventually be promoted
 // to a more generally accessible location - RWH
