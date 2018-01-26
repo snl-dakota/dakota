@@ -1330,12 +1330,9 @@ void NonDExpansion::update_expansion()
   // as set previously by compute_expansion(); there should be no need to
   // update these for an expansion refinement.
 
-  // Ultimately want to be more incremental than this, but need to support
-  // sgmgg usage for incremental grid updates following initial sgmg/sgmga
-  // before this can be implemented.  For now, employ incremental rebuilds
-  // only for hierarchical SC and rely on evaluation duplicate detection
-  // within non-incremental builds from scratch.
-  uSpaceModel.build_approximation();//.rebuild_approximation();
+  // Use build from scratch as default and enumerate cases that can support
+  // incremental builds within derived class implementations
+  uSpaceModel.build_approximation(); // default is build from scratch
 }
 
 

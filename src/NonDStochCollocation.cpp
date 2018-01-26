@@ -366,6 +366,12 @@ void NonDStochCollocation::initialize_u_space_model()
 
 void NonDStochCollocation::update_expansion()
 {
+  // Ultimately want to be consistently incremental, but need to support
+  // sgmgg usage for incremental grid updates following initial sgmg/sgmga
+  // before this can be implemented.  For now, employ incremental rebuilds
+  // only for hierarchical SC and rely on evaluation duplicate detection
+  // within non-incremental builds from scratch.
+
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     // grid levels have been updated, now evaluate the new points
     NonDSparseGrid* nond_sparse = (NonDSparseGrid*)

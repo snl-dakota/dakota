@@ -143,6 +143,10 @@ protected:
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr);
 
+  /// Rebuilds the local/multipoint/global approximation using
+  /// daceIterator/actualModel to generate an increment of appended data
+  void rebuild_approximation();
+
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
   void update_approximation(bool rebuild_flag);
@@ -317,14 +321,18 @@ private:
   void derived_synchronize_approx(bool block,
 				  IntResponseMap& approx_resp_map_rekey);
 
-  /// Updates fit arrays for global approximations
-  void update_global();
   /// Updates fit arrays for local or multipoint approximations
   void update_local_multipoint();
-  /// Builds a global approximation using daceIterator
-  void build_global();
   /// Builds a local or multipoint approximation using actualModel
   void build_local_multipoint();
+
+  /// Updates fit arrays for global approximations
+  void update_global();
+  /// Builds a global approximation using daceIterator
+  void build_global();
+  /// Rebuilds a global approximation by generating new data using
+  /// daceIterator and appending to approxInterface
+  void rebuild_global();
 
   /// Refine the built surrogate until convergence criteria are met
   void refine_surrogate();

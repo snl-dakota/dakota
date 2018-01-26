@@ -214,7 +214,8 @@ public:
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
 				   const IntResponsePair& response_pr);
-
+  /// update an existing SurrogateModel approximation
+  virtual void rebuild_approximation();
 
   /// replace the approximation data within an existing surrogate
   /// based on data updates propagated elsewhere

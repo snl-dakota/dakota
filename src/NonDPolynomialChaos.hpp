@@ -98,6 +98,8 @@ protected:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
+  void update_expansion();
+
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
 				RealMatrix& best_samples);

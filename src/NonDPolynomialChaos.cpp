@@ -918,6 +918,21 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
+void NonDPolynomialChaos::update_expansion()
+{
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::CUBATURE:
+    // build from scratch and detect any duplicates
+    // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
+    NonDExpansion::update_expansion();   break;
+  default:
+    // unstructured grid cases: SAMPLING, ORTHOG_LEAST_INTERP, all REGRESSION
+    uSpaceModel.rebuild_approximation(); break;
+  }
+}
+
+
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, 

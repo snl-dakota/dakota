@@ -256,6 +256,8 @@ protected:
   /// builds the subModel approximation
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr);
+  /// updates a subModel approximation
+  void rebuild_approximation();
 
   /// replaces data in the subModel approximation
   void update_approximation(bool rebuild_flag);
@@ -626,6 +628,10 @@ inline void RecastModel::build_approximation()
 inline bool RecastModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 { return subModel.build_approximation(vars, response_pr); }
+
+
+inline void RecastModel::rebuild_approximation()
+{ subModel.rebuild_approximation(); }
 
 
 inline void RecastModel::update_approximation(bool rebuild_flag)

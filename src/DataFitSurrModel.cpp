@@ -111,7 +111,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 	 << "approximation\n       must be specified with reuse_points or "
 	 << "dace_method_pointer, or a\n       local/multipoint approximation "
 	 << "must be specified with an actual_model_pointer." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // assign the ApproximationInterface instance which manages the
@@ -181,7 +181,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   if (actualModel.is_null()) {
     Cerr << "Error: actualModel is empty envelope in alternate "
 	 << "DataFitSurrModel constructor." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   surrogateType = approx_type;
@@ -398,7 +398,6 @@ void DataFitSurrModel::build_approximation()
   }
 
   ++approxBuilds;
-
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 }
 
@@ -449,7 +448,6 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   }
 
   ++approxBuilds;
-
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
 
   // return a bool indicating whether the incoming data defines an embedded
@@ -458,6 +456,33 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   return (strbegins(surrogateType, "local_") ||
 	  strbegins(surrogateType, "multipoint_") ||
 	  surrogateType == "global_polynomial");
+}
+
+
+/** This function updates an existing approximation, by appending new data.
+    It does not define an anchor point, so is an unconstrained build. */
+void DataFitSurrModel::rebuild_approximation()
+{
+  Cout << "\n>>>>> Rebuilding " << surrogateType << " approximations.\n";
+
+  // update actualModel w/ variable values/bounds/labels
+  update_model(actualModel);
+
+  // rebuild a local, multipoint, or global data fit approximation
+  if (strbegins(surrogateType, "local_") ||
+      strbegins(surrogateType, "multipoint_")) {
+    //update_local_multipoint(); // reuse updates from build_approximation()
+    build_local_multipoint(); // also works for rebuild
+    interface_build_approx();
+  }
+  else { // global approximation
+    //update_global(); // reuse updates from build_approximation()
+    rebuild_global();
+    append_approximation(true);
+  }
+
+  ++approxBuilds;
+  Cout << "\n<<<<< " << surrogateType << " approximation rebuilds completed.\n";
 }
 
 
@@ -1070,7 +1095,7 @@ void DataFitSurrModel::build_global()
       Cerr << "Error: a minimum of " << min_points << " points is required by "
 	   << "DataFitSurrModel::build_global.\n" << reuse_points
 	   << " were provided." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
   else { // else use rst info only (no new data)
@@ -1119,6 +1144,84 @@ void DataFitSurrModel::build_global()
   Cout << "Constructing global approximations with " << anchor_str
        << " anchor, " << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
+}
+
+
+/** Determine points to use in rebuilding the approximation and
+    then evaluate them on actualModel using daceIterator.  Assumes
+    data imports/reuse have been handled previously within build_global(). */
+void DataFitSurrModel::rebuild_global()
+{
+  // rebuild_global() follows update_model() so we may use
+  // actualModel.continuous_(lower/upper)_bounds() to avoid view
+  // conversions and allow pass-by-reference.
+
+  // *******************************************
+  // Evaluate new data points using daceIterator
+  // *******************************************
+  int fn_index = *surrogateFnIndices.begin();
+  const Pecos::SurrogateData& approx_data
+    = approxInterface.approximation_data(fn_index);
+  size_t curr_points = approx_data.points();// *** loop over fn indices for min?
+  // minimum points required by the surrogate model
+  int new_points = 0,
+    min_points = approxInterface.minimum_points(true);// incl constraints
+  if (daceIterator.is_null()) { // reused/imported data only (no new data)
+    if (curr_points < min_points) { // check for sufficient data
+      Cerr << "Error: a minimum of " << min_points << " points is required by "
+	   << "DataFitSurrModel::build_global.\n" << curr_points
+	   << " were provided." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+  }
+  else { // else use rst info only (no new data)
+
+    // set DataFitSurrModel parallelism mode to actualModel
+    component_parallel_mode(TRUTH_MODEL);
+
+    // determine number of points associated with the model specification
+    // (min, recommended, or total)
+    int model_points;                                
+    switch (pointsManagement) {
+    case DEFAULT_POINTS: case MINIMUM_POINTS:
+      model_points = min_points;                               break;
+    case RECOMMENDED_POINTS:
+      model_points = approxInterface.recommended_points(true); break;
+    case TOTAL_POINTS:
+      if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
+	Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
+	     << " is less than minimum required;\n                  "
+	     << "increasing to " << min_points << std::endl;
+      model_points = std::max(min_points, pointsTotal);        break;
+    }
+
+    // daceIterator must generate at least diff_points samples, should
+    // populate allData lists (allDataFlag = true), and should bypass
+    // statistics computation (statsFlag = false).
+    int diff_points = std::max(0, model_points - (int)curr_points);
+    daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
+    // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
+    // the number of samples generated: new_points = max(diff_points,reference).
+    new_points = daceIterator.num_samples();
+
+    // only run the iterator if work to do
+    if (new_points)
+      run_dace_iterator(false); // don't rebuild (no index needed)
+    else if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "DataFitSurrModel: No samples needed from DACE iterator."
+	   << std::endl;
+
+  }
+
+  // *******************************
+  // Output counts for data ensemble
+  // *******************************
+  //int fn_index = *surrogateFnIndices.begin();
+  //String anchor = (approxInterface.approximation_data(fn_index).anchor())
+  //  ? "one" : "no";
+  Cout << "Updating global approximations with " //<< anchor << " anchor, "
+       << new_points << " DACE samples, and " << curr_points
+       << " existing points.\n";
 }
 
 
@@ -1740,7 +1843,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
       case MODEL_DISCREPANCY: case AGGREGATED_MODELS:
 	Cerr << "Error: approx eval missing in DataFitSurrModel::"
 	     << "derived_synchronize_nowait()" << std::endl;
-	abort_handler(-1); break;
+	abort_handler(MODEL_ERROR); break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
 	// there is no approx component to this response
 	response_mapping(act_it->second, empty_resp,
@@ -1990,7 +2093,7 @@ void DataFitSurrModel::init_model(Model& model)
       Cerr << "Error: cannot update linear inequality constraints in "
 	   << "DataFitSurrModel::init_model() due to inconsistent active "
 	   << "variables." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
   if (userDefinedConstraints.num_linear_eq_constraints()) {
@@ -2008,7 +2111,7 @@ void DataFitSurrModel::init_model(Model& model)
       Cerr << "Error: cannot update linear equality constraints in "
 	   << "DataFitSurrModel::init_model() due to inconsistent active "
 	   << "variables." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -2196,7 +2299,7 @@ void DataFitSurrModel::update_model(Model& model)
   else {
     Cerr << "Error: unsupported variable view differences in "
 	 << "DataFitSurrModel::update_model()" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2288,7 +2391,7 @@ void DataFitSurrModel::update_from_model(const Model& model)
       Cerr << "Error: cannot update linear inequality constraints in "
 	   << "DataFitSurrModel::update_from_model() due to inconsistent "
 	   << "active variables." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
   if (model.num_linear_eq_constraints()) {
@@ -2306,7 +2409,7 @@ void DataFitSurrModel::update_from_model(const Model& model)
       Cerr << "Error: cannot update linear equality constraints in "
 	   << "DataFitSurrModel::update_from_model() due to inconsistent "
 	   << "active variables." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 

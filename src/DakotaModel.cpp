@@ -3098,6 +3098,19 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 }
 
 
+void Model::rebuild_approximation()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->rebuild_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+	 << "approximation() function.\nThis model does not support "
+	 << "approximation updating." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
 void Model::update_approximation(bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
