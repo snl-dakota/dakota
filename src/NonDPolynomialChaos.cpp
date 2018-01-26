@@ -605,7 +605,10 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       // if reusing samples within a refinement strategy, ensure different
       // random numbers are generated for points within the grid (even if
       // the number of samples differs)
-      bool vary_pattern = (refineType && !pt_reuse.empty());
+      // Update: (uniform) regression refinement now uses DataFitSurrModel::
+      // rebuild_approximation() which no longer requires a pt_reuse spec to
+      // employ incremental appending
+      bool vary_pattern = (refineType);// && !pt_reuse.empty());
       // reuse type/seed/rng settings intended for the expansion_sampler.
       // Unlike expansion_sampler, allow sampling pattern to vary under
       // unstructured grid refinement/replacement/augmentation.  Also
