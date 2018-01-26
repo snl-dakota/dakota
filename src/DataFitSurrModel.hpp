@@ -72,6 +72,8 @@ public:
 
   /// set pointsTotal and pointsManagement mode
   void total_points(int points);
+  /// return points required for build according to pointsManagement mode
+  int required_points();
 
 protected:
 
@@ -196,20 +198,12 @@ protected:
   /// promote the combined approximation into the active one
   void combined_to_active();
 
-  /*
-  /// store the current data fit approximation for later combination
-  void store_approximation(size_t index = _NPOS);
-  /// restore a previous data fit approximation
-  void restore_approximation(size_t index = _NPOS);
-  /// store the current data fit approximation for later combination
-  void remove_stored_approximation(size_t index = _NPOS);
-  */
   /// clear inactive data stored in the approxInterface
   void clear_inactive();
 
   /// execute the DACE iterator, append the approximation data, and
   /// rebuild the approximation if indicated
-  void run_dace_iterator(bool rebuild_flag);
+  void run_dace_append(bool rebuild_flag);
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();
@@ -411,6 +405,25 @@ inline short DataFitSurrModel::correction_type()
 
 inline void DataFitSurrModel::total_points(int points)
 { pointsTotal = points; if (points > 0) pointsManagement = TOTAL_POINTS; }
+
+
+inline int DataFitSurrModel::required_points()
+{
+  switch (pointsManagement) {
+  case TOTAL_POINTS: {
+    int min_points = approxInterface.minimum_points(true);
+    if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nDataFitSurrModel: Total points specified (" << pointsTotal
+	   << ") is less than minimum required;\n                  "
+	   << "increasing to " << min_points << std::endl;
+    return std::max(min_points, pointsTotal);        break;
+  }
+  case RECOMMENDED_POINTS:
+    return approxInterface.recommended_points(true); break;
+  default: //case DEFAULT_POINTS: case MINIMUM_POINTS:
+    return approxInterface.minimum_points(true);     break;
+  }
+}
 
 
 inline bool DataFitSurrModel::

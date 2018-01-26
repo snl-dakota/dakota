@@ -471,18 +471,17 @@ void DataFitSurrModel::rebuild_approximation()
   // rebuild a local, multipoint, or global data fit approximation
   if (strbegins(surrogateType, "local_") ||
       strbegins(surrogateType, "multipoint_")) {
-    //update_local_multipoint(); // reuse updates from build_approximation()
-    build_local_multipoint(); // also works for rebuild
+    //update_local_multipoint(); // updates from build_approximation() are valid
+    build_local_multipoint(); // no change for build vs. rebuild
     interface_build_approx();
   }
   else { // global approximation
-    //update_global(); // reuse updates from build_approximation()
+    //update_global(); // updates from build_approximation() are still valid
     rebuild_global();
-    append_approximation(true);
   }
 
   ++approxBuilds;
-  Cout << "\n<<<<< " << surrogateType << " approximation rebuilds completed.\n";
+  //Cout << "\n<<<<< "<< surrogateType <<" approximation rebuilds completed.\n";
 }
 
 
@@ -628,12 +627,12 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     if requested. */
 void DataFitSurrModel::append_approximation(bool rebuild_flag)
 {
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
-
   // append to the current points for each approximation
   //daceIterator.run(pl_iter);
   const IntResponseMap& all_resp = daceIterator.all_responses();
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Appending " << all_resp.size() << " points to "
+	 << surrogateType << " approximations.\n";
   if (daceIterator.compact_mode())
     approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
   else
@@ -847,44 +846,6 @@ void DataFitSurrModel::combined_to_active()
 }
 
 
-/*
-void DataFitSurrModel::store_approximation(size_t index)
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
-
-  // store the current data for each approximation for later combination
-  approxInterface.store_approximation(index);
-
-  //Cout << "\n<<<<< " << surrogateType << " approximation stored.\n";
-}
-
-
-void DataFitSurrModel::restore_approximation(size_t index)
-{
-  if (outputLevel >= NORMAL_OUTPUT)
-    Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
-
-  // store the current data for each approximation for later combination
-  approxInterface.restore_approximation(index);
-
-  //Cout << "\n<<<<< " << surrogateType << " approximation restored.\n";
-}
-
-
-void DataFitSurrModel::remove_stored_approximation(size_t index)
-{
-  // If activated, must protect _NPOS:
-  //Cout << "\n>>>>> Removing stored approximation " << index+1 << ".\n";
-
-  // store the current data for each approximation for later combination
-  approxInterface.remove_stored_approximation(index);
-
-  //Cout << "\n<<<<< Stored approximation removed.\n";
-}
-*/
-
-
 void DataFitSurrModel::update_local_multipoint()
 {
   // Store the actualModel inactive variable values for use in force_rebuild()
@@ -1086,12 +1047,11 @@ void DataFitSurrModel::build_global()
   // *******************************************
   // Evaluate new data points using daceIterator
   // *******************************************
-  // minimum points required by the surrogate model
-  int min_points = approxInterface.minimum_points(true);// incl constraints
-
   int new_points = 0;
   if (daceIterator.is_null()) { // reused/imported data only (no new data)
-    if (reuse_points < min_points) { // check for sufficient data
+    // check for sufficient data
+    int min_points = approxInterface.minimum_points(true);
+    if (reuse_points < min_points) {
       Cerr << "Error: a minimum of " << min_points << " points is required by "
 	   << "DataFitSurrModel::build_global.\n" << reuse_points
 	   << " were provided." << std::endl;
@@ -1103,26 +1063,10 @@ void DataFitSurrModel::build_global()
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(TRUTH_MODEL);
 
-    // determine number of points associated with the model specification
-    // (min, recommended, or total)
-    int model_points;                                
-    switch (pointsManagement) {
-    case DEFAULT_POINTS: case MINIMUM_POINTS:
-      model_points = min_points;                               break;
-    case RECOMMENDED_POINTS:
-      model_points = approxInterface.recommended_points(true); break;
-    case TOTAL_POINTS:
-      if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
-	Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
-	     << " is less than minimum required;\n                  "
-	     << "increasing to " << min_points << std::endl;
-      model_points = std::max(min_points, pointsTotal);        break;
-    }
-
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
     // statistics computation (statsFlag = false).
-    int diff_points = std::max(0, model_points - (int)reuse_points);
+    int diff_points = std::max(0, required_points() - (int)reuse_points);
     daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
     // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
     // the number of samples generated: new_points = max(diff_points,reference).
@@ -1130,11 +1074,10 @@ void DataFitSurrModel::build_global()
 
     // only run the iterator if work to do
     if (new_points)
-      run_dace_iterator(false); // don't rebuild (no index needed)
+      run_dace_append(false); // don't rebuild
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
-
   }
 
   // *******************************
@@ -1159,15 +1102,17 @@ void DataFitSurrModel::rebuild_global()
   // *******************************************
   // Evaluate new data points using daceIterator
   // *******************************************
-  int fn_index = *surrogateFnIndices.begin();
-  const Pecos::SurrogateData& approx_data
-    = approxInterface.approximation_data(fn_index);
-  size_t curr_points = approx_data.points();// *** loop over fn indices for min?
-  // minimum points required by the surrogate model
-  int new_points = 0,
-    min_points = approxInterface.minimum_points(true);// incl constraints
+  size_t pts_i, curr_points = std::numeric_limits<size_t>::max();
+  ISIter it;
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    pts_i = approxInterface.approximation_data(*it).points();
+    if (pts_i < curr_points) curr_points = pts_i;
+  }
+  int new_points = 0;
   if (daceIterator.is_null()) { // reused/imported data only (no new data)
-    if (curr_points < min_points) { // check for sufficient data
+    // check for sufficient data
+    int min_points = approxInterface.minimum_points(true);
+    if (curr_points < min_points) {
       Cerr << "Error: a minimum of " << min_points << " points is required by "
 	   << "DataFitSurrModel::build_global.\n" << curr_points
 	   << " were provided." << std::endl;
@@ -1179,26 +1124,10 @@ void DataFitSurrModel::rebuild_global()
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(TRUTH_MODEL);
 
-    // determine number of points associated with the model specification
-    // (min, recommended, or total)
-    int model_points;                                
-    switch (pointsManagement) {
-    case DEFAULT_POINTS: case MINIMUM_POINTS:
-      model_points = min_points;                               break;
-    case RECOMMENDED_POINTS:
-      model_points = approxInterface.recommended_points(true); break;
-    case TOTAL_POINTS:
-      if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
-	Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
-	     << " is less than minimum required;\n                  "
-	     << "increasing to " << min_points << std::endl;
-      model_points = std::max(min_points, pointsTotal);        break;
-    }
-
     // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
     // statistics computation (statsFlag = false).
-    int diff_points = std::max(0, model_points - (int)curr_points);
+    int diff_points = std::max(0, required_points() - (int)curr_points);
     daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
     // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
     // the number of samples generated: new_points = max(diff_points,reference).
@@ -1206,28 +1135,17 @@ void DataFitSurrModel::rebuild_global()
 
     // only run the iterator if work to do
     if (new_points)
-      run_dace_iterator(false); // don't rebuild (no index needed)
+      run_dace_append(true); // rebuild approx
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
-
   }
-
-  // *******************************
-  // Output counts for data ensemble
-  // *******************************
-  //int fn_index = *surrogateFnIndices.begin();
-  //String anchor = (approxInterface.approximation_data(fn_index).anchor())
-  //  ? "one" : "no";
-  Cout << "Updating global approximations with " //<< anchor << " anchor, "
-       << new_points << " DACE samples, and " << curr_points
-       << " existing points.\n";
 }
 
 
-void DataFitSurrModel::run_dace_iterator(bool rebuild_flag)
+void DataFitSurrModel::run_dace_append(bool rebuild_flag)
 {
-  // Define the data requests
+  // Execute the daceIterator
   ActiveSet set = daceIterator.active_set(); // copy
   ShortArray actual_asv, approx_asv;
   asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
@@ -1242,6 +1160,7 @@ void DataFitSurrModel::run_dace_iterator(bool rebuild_flag)
   // run the iterator
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   daceIterator.run(pl_iter);
+
   // append the new data sets and rebuild if indicated
   append_approximation(rebuild_flag);
 }
@@ -1312,7 +1231,7 @@ void DataFitSurrModel::refine_surrogate()
     total_evals += num_samples;
     Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";
-    run_dace_iterator(false); // don't rebuild
+    run_dace_append(false); // don't rebuild
 
     // build and check diagnostics
     interface_build_approx();
