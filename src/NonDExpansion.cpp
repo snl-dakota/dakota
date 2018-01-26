@@ -1168,7 +1168,7 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
     increment_specification_sequence();
 
     // form the expansion for level i
-    update_expansion();   // nominal discrepancy expansion from input spec
+    compute_expansion();  // nominal discrepancy expansion from input spec
     if (refine_type)
       refine_expansion(); // uniform/adaptive refinement
 
