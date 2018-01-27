@@ -331,9 +331,9 @@ sub compare_output {
         $base = shift @base_excerpt; # grab next line
         $test = shift @tst_excerpt; # grab next line
 
-	my $ci_vals_re = '^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]';
-        while ( ( ($t_lb, $t_ub) = $test =~ /${ci_vals_re}/ ) &&
-                ( ($b_lb, $b_ub) = $base =~ /${ci_vals_re}/ ) ) {
+	#my $ci_vals_re = '^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]';
+        while ( ( ($t_lb, $t_ub) = $test =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) &&
+                ( ($b_lb, $b_ub) = $base =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) ) {
           if ( diff($t_lb, $b_lb) || diff($t_ub, $b_ub) ) {
             $test_diff = 1;
             if ($first_diff == 0) {
@@ -349,18 +349,18 @@ sub compare_output {
         }
 
         # if there's extra data in either file, mark this a DIFF
-        if ( ( ($t_lb, $t_ub) = $test =~ /${ci_vals_re}/ ) ||
-             ( ($b_lb, $b_ub) = $base =~ /${ci_vals_re}/ ) ) {
+        if ( ( ($t_lb, $t_ub) = $test =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) ||
+             ( ($b_lb, $b_ub) = $base =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) ) {
           $test_diff = 1;
           if ($first_diff == 0) {
             push @base_diffs, $b_hdr;
             push @test_diffs, $t_hdr;
           }
-          while ( ($t_lb, $t_ub) = $test =~ /${ci_vals_re}/ ) {
+          while ( ($t_lb, $t_ub) = $test =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) {
             push @test_diffs, $test;
             $test = shift @tst_excerpt; # grab next line
           }
-          while ( ($b_lb, $b_ub) = $base =~ /${ci_vals_re}/ ) {
+          while ( ($b_lb, $b_ub) = $base =~ /^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/ ) {
             push @base_diffs, $base;
             $base = shift @base_excerpt; # grab next line
           }

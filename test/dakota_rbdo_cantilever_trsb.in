@@ -4,7 +4,6 @@
 # Trust-region surrogate-based RBDO using the cantilever test function.
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,

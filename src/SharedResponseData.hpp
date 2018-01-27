@@ -18,9 +18,9 @@
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DataResponses.hpp"
-#include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/tracking.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Dakota {
 

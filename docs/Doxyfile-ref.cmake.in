@@ -40,14 +40,17 @@ PROJECT_NUMBER         = "Version @Dakota_VERSION_SRC@"
 # for a project that appears at the top of each page and should give viewer
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Large-Scale Engineering Optimization and Uncertainty Analysis"
+PROJECT_BRIEF          = "Explore and Predict with Confidence"
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is
 # included in the documentation. The maximum height of the logo should not
 # exceed 55 pixels and the maximum width should not exceed 200 pixels.
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/images/dakota-logo.png
+# Converted from branding element with:
+# convert DAKOTA_Arrow_Name.png -matte -bordercolor none -border 20 -resize x55 foo.png
+
+PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/images/DAKOTA_Arrow_Name_77x55.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -946,6 +949,15 @@ HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/common/dox-stylesheet.css
 HTML_EXTRA_FILES       = 
 #keyword-index.html
 
+# The HUE, SAT are set to match Dakota color 295D72
+# DDECCA (light grayish green)
+# 75CBE0 (soft cyan): 191.8, 63.3% (161/255), lightness 66.9%
+# 00A6C5 (strong cyan): 189.4, 100.0% (255/255), lightness 38.6%
+# 448FAA (dark moderate blue): 195.9, 42.9% (109/255), lightness 46.7%
+# 295D72 (very dark blue): 197.3, 47.1% (120/255), lightness 30.4%
+
+# The following must be integers...lest you get a default scheme
+
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the style sheet and background images
 # according to this color. Hue is specified as an angle on a colorwheel,
@@ -954,13 +966,13 @@ HTML_EXTRA_FILES       =
 # 180 is cyan, 240 is blue, 300 purple, and 360 is red again.
 # The allowed range is 0 to 359.
 
-HTML_COLORSTYLE_HUE    = 30
+HTML_COLORSTYLE_HUE    = 197
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of
 # the colors in the HTML output. For a value of 0 the output will use
 # grayscales only. A value of 255 will produce the most vivid colors.
 
-HTML_COLORSTYLE_SAT    = 81
+HTML_COLORSTYLE_SAT    = 120
 
 # The HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to
 # the luminance component of the colors in the HTML output. Values below
@@ -969,7 +981,8 @@ HTML_COLORSTYLE_SAT    = 81
 # so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2,
 # and 100 does not change the gamma.
 
-HTML_COLORSTYLE_GAMMA  = 127
+# 40 to 240, nominal 80
+HTML_COLORSTYLE_GAMMA  = 100
 
 # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
 # page will contain the date and time when the page was generated. Setting

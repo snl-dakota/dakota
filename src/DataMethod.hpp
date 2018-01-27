@@ -1058,6 +1058,9 @@ public:
   /// maximum number of highfidelity model runs to be used for
   /// adaptive Bayesian experimental design
   int maxHifiEvals;
+  /// number of optimal designs selected per iteration of experimental design
+  /// algorithm
+  int batchSize;
   /// indicate that the KSG2 algorithm is to be employed in the calculation
   /// of the mutual information
   bool mutualInfoKSG2;

@@ -338,7 +338,7 @@ Several of these functions involve format conversions. In particular,
 the binary format used for restart files can be converted to ASCII
 text and printed to the screen, converted to and from a neutral file
 format, or converted to a tabular format for importing into 3rd-party
-graphics programs. In addition, a restart file with corrupted data can
+plotting programs. In addition, a restart file with corrupted data can
 be repaired by value or id, and multiple restart files can be combined
 to create a master database.
 

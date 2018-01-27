@@ -13,6 +13,9 @@
     Dakota RealMatrix/RealVector
 */
 
+#ifndef DAKOTA_LINEAR_ALGEBRA_H
+#define DAKOTA_LINEAR_ALGEBRA_H
+
 #include "dakota_data_types.hpp"
 
 /* Functions to consider integrating here:
@@ -77,3 +80,5 @@ int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs);
 double det_AtransA(RealMatrix& A);
 
 }  // namespace Dakota
+
+#endif  // DAKOTA_LINEAR_ALGEBRA_H

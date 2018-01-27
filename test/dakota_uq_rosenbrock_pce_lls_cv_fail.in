@@ -15,7 +15,6 @@
 # Test 4 with collocation =0.9 will be a good test of splitting data equally across data when some data is faulty
 
 environment,
-	#graphics
 	output_precision = 16
 
 method,

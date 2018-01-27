@@ -1,0 +1,28 @@
+Blurb:: Stopping criterion based on objective function convergence
+
+Description::
+The \c convergence_tolerance specification provides a real value for
+controlling the termination of iteration.
+
+For optimization, it is most commonly a <b>relative convergence
+tolerance</b> for the objective function; i.e., if the change in the
+objective function between successive iterations divided by the
+previous objective function is less than the amount specified by
+convergence_tolerance, then this convergence criterion is satisfied on
+the current iteration.
+
+Therefore, permissible values are between 0 and 1, non-inclusive.
+
+NPSOL defines an internal optimality tolerance which is used in
+evaluating if an iterate satisfies the first-order Kuhn-Tucker
+conditions for a minimum. The magnitude of \c convergence_tolerance
+approximately specifies the number of significant digits of accuracy
+desired in the final objective function (e.g., \c
+convergence_tolerance = \c 1.0e-6 will result in approximately six
+digits of accuracy in the final objective function).
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

@@ -23,7 +23,6 @@
 # (5) maximization w/ 3 nonlinear 1-sided ineq (non-default bounds)
 
 environment,
-#	  graphics
 	  tabular_data
 
 method,

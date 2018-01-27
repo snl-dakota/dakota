@@ -42,6 +42,9 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
   SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   // convenience function from SNLLBase
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
@@ -518,13 +521,9 @@ void SNLLLeastSq::initialize_run()
 
 
 void SNLLLeastSq::core_run()
-{ theOptimizer->optimize(); }
-
-
-/// SNLLLeastSq requires fn DB lookup, so overrides LeastSq::post_run
-/// and directly invokes Iterator::post_run when complete
-void SNLLLeastSq::post_run(std::ostream& s)
 {
+  theOptimizer->optimize();
+
   // BMA NOTE: casting away the constness as done historically in DakotaString  
   String status("Solution from Opt++");
   char* nonconst_status = (char *) status.c_str();
@@ -534,87 +533,29 @@ void SNLLLeastSq::post_run(std::ostream& s)
   // the strategy level.
 
   // best variables is updated using a convenience function from SNLLBase
+  // Always populate bestVariables; DakotaLeastSq will unscale if needed
   snll_post_run(nlfObjective);
 
-  Variables& best_vars = bestVariablesArray.front();
-  // Cache the iterator space vars before storing the native in best
-  const RealVector iter_cv
-    (Teuchos::Copy, best_vars.continuous_variables().values(),
-     best_vars.continuous_variables().length());
+  // Update best response to contain the final lsq terms.  Since OPT++
+  // has no knowledge of these terms, the OPT++ final design variables
+  // must be matched to final lsq terms using data_pairs.find().  This
+  // lookup is handled by DakotaLeastSq::post_run()
+  retrievedIterPriFns = false;
 
-  // transform variables back to user/native for lookup
-  // Default unscaling does not apply in this case, so can't use
-  // implementation in LeastSq::post_run
-  if (scaleFlag) {
-    ScalingModel* scale_model_rep = 
-      static_cast<ScalingModel*>(scalingModel.model_rep());
-    best_vars.continuous_variables
-      (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
-  }
-
-  // post-process results to compute confidence intervals on parameter estimates
-  get_confidence_intervals(iter_cv, best_vars);
-
-  // update best response to contain the final lsq terms.  Since OPT++ has no
-  // knowledge of these terms, the OPT++ final design variables must be matched
-  // to final lsq terms using data_pairs.find().
-
-  // Since we always perform DB lookup for OPT++ final results, don't
-  // need to transform by weights or calibration data.
-
-  size_t num_user_fns = numUserPrimaryFns + numNonlinearConstraints;
-  RealVector best_fns(num_user_fns);
-  ShortArray search_asv(num_user_fns, 1);
-  for (size_t i=numUserPrimaryFns; i<num_user_fns; ++i)
-    search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
-  // take care to not resize activeSet due to post_run
-  ActiveSet search_set(activeSet);
-  search_set.request_vector(search_asv);
-
-  // The retrieved primary response will be unweighted and unscaled
-  PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-    iteratedModel.interface_id(), best_vars, search_set);
-  if (cache_it == data_pairs.get<hashed>().end()) {
-    // This can occur in model calibration under uncertainty using nested
-    // models, or surrogate models so make this non-fatal.
-    Cerr << "Warning: failure in recovery of final least squares terms."
-         << std::endl;
-    //abort_handler(-1);
-  }
-  else // unscaled -> user/native
-    copy_data_partial(cache_it->response().function_values(), (size_t)0,
-		      numUserPrimaryFns, best_fns, (size_t)0);
+  // Always populate bestResponse with constraints; DakotaLeastSq will
+  // unscale if needed.
+  // This must use an offset of the # user/native functions since the
+  // bestResponseArray is in original space
 
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
-  // Therefore, reorder the constraint values, unscale them, and store them.
+  // Therefore, reorder the constraint values, and store them.
   if (numNonlinearConstraints) {
-    // This is sized for the original user model, so applied scales
-    // are the right size (primary fns are ignored here anyway):
-    RealVector scaled_cons(numUserPrimaryFns + numNonlinearConstraints);
-    scaled_cons = 1.;
-    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
+    RealVector best_fns = bestResponseArray.front().function_values_view();
+    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns,
 			       numUserPrimaryFns);
-    // primary functions unscaled/unweighted from lookup; unscale
-    // secondary from the OPT++ solver
-    if (scaleFlag) {
-      // ScalingModel manages which transformations are needed
-      ScalingModel* scale_model_rep = 
-        static_cast<ScalingModel*>(scalingModel.model_rep());
-      // This function will update the nonlinear constraints in best_fns
-      scale_model_rep->
-        secondary_resp_scaled2native(scaled_cons, activeSet.request_vector(), 
-                                     best_fns);
-    }
-    else
-      copy_data_partial(scaled_cons, numUserPrimaryFns, numNonlinearConstraints,
-                        best_fns, numUserPrimaryFns);
   }
-
-  bestResponseArray.front().function_values(best_fns);
-
-  // bypass duplicate post-processing in LeastSq, since we did a DB lookup
-  Minimizer::post_run(s);
 }
+
 
 void SNLLLeastSq::finalize_run()
 {

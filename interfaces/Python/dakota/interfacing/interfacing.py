@@ -95,8 +95,8 @@ class Parameters(object):
         return len(self.an_comps)
 
     def __iter__(self):
-        for index, (name, response) in enumerate(self._variables.items()):
-            yield index, name, response
+        for index, (name, value) in enumerate(self._variables.items()):
+            yield index, name, value
 
 
 # Datatype to hold ASV element for a single response. function, gradient,
@@ -409,10 +409,15 @@ def _extract_block(stream, numRE, dataRE, handle):
     handle is a function to store the extracted items."""
 
     line = stream.readline()
+    m = numRE.match(line)
+    if m is None:
+        raise ParamsFormatError("Improper format for section header in parameters file")
     num = int(numRE.match(line).group("value"))
     for i in range(num):
         line = stream.readline()
         m = dataRE.match(line)
+        if m is None:
+            raise ParamsFormatError("Improperly formatted item in parameters file")
         tag = m.group("tag")
         value = m.group("value")
         handle(tag,value)

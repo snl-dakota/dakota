@@ -38,6 +38,9 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
   optimizationFlag = true; // default; may be overridden below
 
   bool err_flag = false;
@@ -525,7 +528,8 @@ void Optimizer::initialize_run()
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
 
-  configure_constraint_maps();
+  if (!iteratedModel.is_null())
+    configure_constraint_maps();
 }
 
 

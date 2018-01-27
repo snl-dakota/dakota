@@ -2,8 +2,6 @@ namespace Dakota { // for some reason, this doesn't work with mainpage
 
 /** \mainpage Dakota Developers Manual
 
-\image html logo_3d_halfsize.jpg
-
 \author Brian M. Adams, William J. Bohnhoff, Keith
 R. Dalbey, John P. Eddy, Mohamed S. Ebeida, Michael S. Eldred, Joseph R. Frye, 
 Gianluca Geraci, Russell W. Hooper, Patricia D. Hough, Kenneth T. Hu, 

@@ -14,7 +14,6 @@
 # I have lowered these numbers. 
 	
 environment, 
-#	graphics
         tabular_data
 
 method,

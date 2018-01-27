@@ -909,6 +909,8 @@ print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
   fn_only_as.request_values(1);
   residual_resp.active_set(fn_only_as);
 
+  s << "Original (as-posed) response:\n";
+
   // print the original userModel Responses
   if (expData.config_vars().size() == 0) {
     const RealVector& best_fns = best_submodel_resp.function_values();
@@ -928,6 +930,14 @@ print_best_responses(std::ostream& s, const Variables& best_submodel_vars,
   }
 
   const RealVector& resid_fns = residual_resp.function_values();
+  // The data transformation may be weighting by variance; remind the user:
+  if (expData.variance_active())
+    s << "Variance-weighted original (as-posed) residuals:\n";
+  else
+    s << "Original (as-posed) residuals:\n";
+  Minimizer::print_residuals(num_primary_fns(), resid_fns, RealVector(),
+			     num_best, best_ind, s);
+
   // must use the expanded weight set from the data difference model
   const RealVector& lsq_weights = Model::primary_response_fn_weights();
   Minimizer::print_residuals(num_primary_fns(), resid_fns, lsq_weights,

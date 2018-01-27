@@ -3,7 +3,6 @@
 ## Dakota Input File: rosen_uq_pce.in			#s1
 
 environment
-  #graphics
 
 method
   polynomial_chaos

@@ -11,20 +11,15 @@ set(CMAKE_MODULE_PATH
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
 
-# Require C++11 at a minimum, but allow newer standards
-# Do this prior to other flag settings below
-if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
-  set(CMAKE_CXX_STANDARD 11 CACHE STRING "Dakota strictly requires C++11 or better")
-endif()
-if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
-  set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
-    "Dakota prefers not to use compiler-specific C++ extensions")
-endif()
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "Dakota strictly requires C++11 or better")
+message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
+
+# Dakota requires C++11
+include(DakotaCxxOptions)
+dakota_cxx_standard()
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 6)
-set(Dakota_VERSION_MINOR 6)
+set(Dakota_VERSION_MINOR 7)
 set(Dakota_VERSION_PATCH 0)
 set(Dakota_VERSION_PAIR
   "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}")
@@ -38,8 +33,8 @@ set(Dakota_VERSION_APPEND_STABLE "+")  # Stable releases
 
 # --- Release time toggle 
 # If empty, the build date will be used as the release date (could consider 
-# using the SVN rev date); use format Mmm dd yyyy, as in asctime()
-#set(Dakota_RELEASE_DATE "May 15 2015")    # Versioned release date Mmm dd yyyy
+# using the Git rev date); use format Mmm dd yyyy, as in asctime()
+#set(Dakota_RELEASE_DATE "Nov 15 2017")    # Versioned release date Mmm dd yyyy
 set(Dakota_RELEASE_DATE "")               # Stable release: empty -> build date 
 
 # Dakota version to use for naming archives
@@ -64,51 +59,10 @@ execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory
   "${Dakota_BINARY_DIR}/generated/VERSION")
 
-# Buiding in an SVN checkout or a source package? 
+# Buiding in a Git repo or a source package?
 set(DAKOTA_VERSION_file_path)
-if(EXISTS ${Dakota_SOURCE_DIR}/.svn)
-  set(DAKOTA_SVN_checkout TRUE)
-  # SVN checkout, determine revision level
-
-  if((APPLE AND DEFINED ENV{BUILD_URL}) OR (CYGWIN AND DEFINED ENV{BUILD_URL}))
-    # Workarounds for Jenkins slave shell where svn is different version
-    # than the svn client that performed the 'update' step
-
-    file(STRINGS ${Dakota_SOURCE_DIR}/.svn/entries
-      list_dakota_rev LIMIT_COUNT 4)
-
-    # Get the trailing (or 4th) entry (SVN rev of Dakota)
-    # Would also want to silence CMP0007, or remove blanks
-    list(GET list_dakota_rev -1 Dakota_SVN_REV)
-
-  else()
-    # NOT CYGWIN/jenkins so "assert" that the same svn client is used for
-    # 'update' and 'configure' steps
-    find_package(Subversion)
-
-    if(Subversion_FOUND)
-      # Workarounds for Trilinos, where CMAKE_PROJECT_NAME != Dakota
-      # and the Dakota/ directory may be symlinked.
-      get_filename_component(abs_source_dir ${Dakota_SOURCE_DIR} REALPATH)
-      Subversion_WC_INFO(${abs_source_dir} Dakota)
-
-      set(Dakota_SVN_REV "${Dakota_WC_REVISION}")
-    endif(Subversion_FOUND) # Subversion_FOUND
-  endif()
-
-  # Create VERSION file
-  file( WRITE ${Dakota_BINARY_DIR}/generated/VERSION/VERSION
-        "DAKOTA Version ${Dakota_VERSION_SRC}
-Built from SVN revision ${Dakota_SVN_REV}
-" )
-  set(DAKOTA_VERSION_file_path "${Dakota_BINARY_DIR}/generated/VERSION/")
-  install(FILES ${Dakota_BINARY_DIR}/generated/VERSION/VERSION DESTINATION
-	  .)
-
-  message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
-  message(STATUS "Dakota subversion revision is: ${Dakota_SVN_REV}")
-
-elseif(EXISTS ${Dakota_SOURCE_DIR}/.git)
+set(DAKOTA_GIT_checkout FALSE)
+if(EXISTS ${Dakota_SOURCE_DIR}/.git)
   set(DAKOTA_GIT_checkout TRUE)
   # GIT checkout, determine revision level
 
@@ -146,11 +100,10 @@ Built from GIT revision ${Dakota_GIT_REV}
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Dakota git revision is: ${Dakota_GIT_REV}")
 
-else() # source tree NOT an SVN or GIT checkout
-  set(DAKOTA_SVN_checkout FALSE)
+else() # source tree NOT a Git checkout
   message(STATUS "Dakota release version is: ${Dakota_VERSION_SRC}")
   message(STATUS "Appear to building from source package.")
-endif() # .svn .git directory conditionals
+endif() # .git directory conditionals
 
 # More widely distributed packages exclude more content
 # So smaller number implies less content
@@ -169,6 +122,11 @@ set(DAKOTA_DISTRO ${DAKOTA_InternalFull} CACHE STRING
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+if(WIN32)
+  # We always build 32-bit Windows binaries and don't want to confuse users
+  # with the processor name from a 64-bit build host
+  set(local_arch "${CMAKE_SYSTEM_NAME}.x86")
+endif()
 
 # TODO: insert distribution type into package names, i.e., instead of 
 # ${Dakota_VERSION_STRING} use ${Dakota_VERSION_STRING}.int_web, based on DAKOTA_DISTRO
@@ -181,14 +139,10 @@ set(CPACK_DAKOTA_BINARY_DIR "${Dakota_BINARY_DIR}")
 
 # Always omit .svn directories, .git directories, duplicate TPLs, and GPL packages
 # FFTW is GPL, CDDLIB is GPL
-set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.svn/" ".*\\\\.git/" ".*\\\\.git.*"
+set(CPACK_SOURCE_IGNORE_FILES ".*\\\\.git/" ".*\\\\.git.*"
   "^${Dakota_SOURCE_DIR}/sync.local-git.sh"
-  "^${Dakota_SOURCE_DIR}/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/hopspack/src/src-citizens/citizen-gss/cddlib/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/teuchos/"
-  "^${Dakota_SOURCE_DIR}/packages/pecos/packages/fftw/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/CONMIN/"
-  "^${Dakota_SOURCE_DIR}/packages/surfpack/packages/NCSUOpt/"
+  "^${Dakota_SOURCE_DIR}/packages/external/fftw/"
+  "^${Dakota_SOURCE_DIR}/packages/external/hopspack/src/src-citizens/citizen-gss/cddlib/"
   )
 
 # Only internal full (developer version) has these things
@@ -220,12 +174,19 @@ if(DAKOTA_DISTRO LESS ${DAKOTA_InternalWeb})
 endif()
 
 # RPATH settings 
+# These settings must take into consideration the presence of shared libraries in both bin/
+# and /lib, and applications in bin/ and test/.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
-  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib" 
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin" 
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
-  set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib")
+   #$ORIGIN is replaced at runtime by the path of the executable (application or .so).
+   # Add:
+   #  $ORIGIN so executables can find shared libs in their own folder
+   #  $ORIGIN/../lib so that executables in bin and test can find shared libs in the lib folder
+   #  $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
+   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin")
 endif()
 
 
@@ -243,6 +204,7 @@ endif()
 # Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
+dakota_check_cxx11()
 enable_language(Fortran)
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
@@ -392,7 +354,17 @@ if(WIN32)
 endif()
 # Dakota requires Boost 1.49 or newer; enforce for all libs in the build
 find_package(Boost 1.49 REQUIRED COMPONENTS "${dakota_boost_components}")
-
+# This cache variable is used to package the Boost liraries on Darwin (see
+# cmake/InstallDarwinDylibs.cmake). The variable Boost_LIBRARY_DIRS is set
+# in this scope by the CMake Boost probe (at least for CMake 3.5.2), but
+# this changes from version to version of CMake.
+if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+    if("${Boost_LIBRARY_DIRS}" STREQUAL "")
+        message(WARNING "The Boost probe for this version of CMake (${CMAKE_VERSION}) \
+        does not set Boost_LIBRARY_DIRS. Please notify the Dakota development team.")
+    endif()
+    set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
+endif()
 
 include(CTest)
 
@@ -416,56 +388,58 @@ set(ExportTarget DakotaTargets CACHE STRING
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
 
-  # first probe for system-installed Trilinos
-  # this will respect Trilinos_DIR if already set
+  # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
   find_package(Trilinos QUIET)
 
-  if ( NOT Trilinos_DIR )
+  if(Trilinos_FOUND)
+    if(Trilinos_DIR)
+      message(STATUS
+	"Dakota using previously specified Trilinos in ${Trilinos_DIR}")
+    else()
+      message(STATUS "Dakota using external Trilinos")
+    endif()
+  else()
 
-    # if no one has configured a local src Teuchos, do so
-    # this will respect Teuchos_DIR if already set
-    if( NOT Teuchos_DIR )
-      if( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/packages/external/teuchos/cmake/tribits )
-        set( Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/teuchos/packages/teuchos )
-        set( Trilinos_ENABLE_Teuchos ON CACHE BOOL
-          "ENABLE TriBITS build of teuchos" FORCE )
+    # If no parent project configured Teuchos, do so, using Teuchos_DIR if set
+    if(Teuchos_DIR)
+      message(STATUS
+	"Dakota using previously specified Teuchos in ${Teuchos_DIR}")
+    else()
+      set(Teuchos_DIR
+        ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos)
+      set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
+        "Dakota enabling Trilinos Teuchos" FORCE)
 
-        # Map key Dakota variables to TriBITS variables
-        set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
-        set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
-	# Dakota doesn't use any Teuchos MPI features; may want to force off
-        #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
+      # Map key Dakota variables to TriBITS variables
+      set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
+      set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+      # Newer versions of Trilinos automatically turn off Fortran name-mangling
+      # on Windows
+      if(WIN32)
+        set(Trilinos_ENABLE_Fortran ON CACHE BOOL
+	    "Dakota enabling Trilinos Fortran")
+      endif()
 
-
+      # Dakota doesn't use any Teuchos MPI features; may want to force off
+      #set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
 # This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
 # at all; doesn't just control whether installed!  Want Config.cmake in build
 #        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
 #	  "Dakota is the top-level package; don't write Trilinos config files")
 
-      else()
-        # Use "historical" directory hierarchy, before TriBITS
-        set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
-      endif() # tribits source directory EXISTS
-
-      message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}" )
+      message(STATUS "Dakota setting Teuchos_DIR to ${Teuchos_DIR}")
       set(DAKOTA_BUILDING_TEUCHOS TRUE CACHE BOOL
         "Dakota is building Teuchos in its build tree" FORCE)
-      add_subdirectory(packages/external/teuchos)
+      add_subdirectory(packages/external/trilinos)
 
-    else()
-      message(STATUS
-	"In ${CMAKE_CURRENT_BINARY_DIR} using Teuchos_DIR: ${Teuchos_DIR}")
-    endif() # NOT Teuchos_DIR
+    endif() # Teuchos_DIR
 
     # Additional setting to prevent multiple targets with the same name
     set(Trilinos_TARGETS_IMPORTED 1)
 
     find_package( Teuchos NO_MODULE REQUIRED )
 
-  else()
-    message( "Using system trilinos in ${Trilinos_DIR}" )
-  endif() # NOT Trilinos_DIR
+  endif() # Trilinos_DIR
 
 endif() # NOT BUILD_IN_TRILINOS
 
@@ -581,7 +555,6 @@ install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
   USE_SOURCE_PERMISSIONS
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.am" EXCLUDE
-  PATTERN ".svn" EXCLUDE
   PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.f" EXCLUDE 
@@ -590,7 +563,6 @@ install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
 install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.*" EXCLUDE
-  PATTERN ".svn" EXCLUDE
   PATTERN ".git" EXCLUDE
   PATTERN "*.c" EXCLUDE 
   PATTERN "*.cpp" EXCLUDE 
@@ -611,7 +583,7 @@ endif()
 # Final CPack settings
 
 # Create Add generated files to source package
-if(DAKOTA_SVN_checkout OR DAKOTA_GIT_checkout)
+if(DAKOTA_GIT_checkout)
   SET(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};/") 
   LIST(APPEND CPACK_SOURCE_INSTALLED_DIRECTORIES
 	"${Dakota_BINARY_DIR}/generated/src/;/src")

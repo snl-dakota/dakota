@@ -1,0 +1,33 @@
+Blurb::
+Cubature using Stroud rules and their extensions
+Description::
+Multi-dimensional integration by Stroud cubature rules 
+\cite stroud and extensions 
+\cite xiu_cubature, as specified with \c cubature_integrand. 
+   A total-order
+   expansion is used, where the isotropic order \e p of the
+   expansion is half of the integrand order, rounded down. The
+   total number of terms \e N for an isotropic total-order expansion
+   of order \e p over \e n variables is given by
+   \f[N~=~1 + P ~=~1 + \sum_{s=1}^{p} {\frac{1}{s!}} 
+   \prod_{r=0}^{s-1} (n + r) ~=~\frac{(n+p)!}{n!p!}\f]
+   Since the maximum integrand order is currently five for normal
+   and uniform and two for all other types, at most second- and
+   first-order expansions, respectively, will be used. As a result,
+   cubature is primarily useful for global sensitivity analysis,
+   where the Sobol' indices will provide main effects and, at most,
+   two-way interactions. In addition, the random variable set must
+   be independent and identically distributed (\e iid), so the use
+   of \c askey or \c wiener transformations may be required to
+   create \e iid variable sets in the transformed space (as well as
+   to allow usage of the higher order cubature rules for normal and
+   uniform). Note that global sensitivity analysis often assumes
+   uniform bounded regions, rather than precise probability
+   distributions, so the \e iid restriction would not be problematic
+   in that case.
+
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

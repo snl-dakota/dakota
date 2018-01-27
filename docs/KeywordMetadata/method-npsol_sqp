@@ -1,8 +1,12 @@
-Blurb::
-Sequential Quadratic Program
+Blurb:: NPSOL Sequential Quadratic Program
+
 Description::
-NPSOL provides an implementation of sequential quadratic programming 
-that can be accessed with \c npsol_sqp.
+Sequential quadratic programming optimizer.
+
+<em>NPSOL requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
+
 
 <b> Stopping Criteria </b>
 

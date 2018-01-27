@@ -8,11 +8,10 @@ returned by the interface.
 The \c lower_bounds and \c upper_bounds specifications provide the
 lower and upper bounds for 2-sided nonlinear inequalities of the form
 \f[g_l \leq g(x) \leq g_u\f]
-The defaults for the inequality constraint bounds are selected so that
-one-sided inequalities of the form
-\f[g(x) \leq 0.0\f]
-result when there are no user constraint bounds specifications (this
-provides backwards compatibility with previous %Dakota versions).
+When constraint bounds are not specified, the problem is assumed to
+have one-sided inequalities bounded above by zero:
+\f[g(x) \leq 0.0.\f]
+This provides backwards compatibility with previous %Dakota versions.
 
 In a user bounds specification, any upper bound values greater than \c
 +bigRealBoundSize (1.e+30, as defined in Minimizer) are treated as

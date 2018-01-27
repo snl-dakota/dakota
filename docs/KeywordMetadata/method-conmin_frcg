@@ -1,10 +1,14 @@
-Blurb::
-A conjugate gradient optimization method
+Blurb:: CONMIN conjugate gradient optimization method
+
 Description::
-This is a duplicated keyword. Please use \ref method-conmin instead.
+The interpretations of the method independent controls for CONMIN are
+essentially identical to those for DOT.  
+
+See \ref topic-package_dot for information related to \c CONMIN
+methods, specifically \ref method-dot_frcg.
 
 Topics::	
 Examples::
 Theory::
 Faq::
-See_Also::	method-conmin-frcg
+See_Also::	method-dot_frcg

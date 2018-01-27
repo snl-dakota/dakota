@@ -7,6 +7,10 @@ criterion for optimizers.  If it has not reached any other stopping
 criteria first, the optimizer will stop after it has performed \c
 max_function_evalutions evaluations.  See also \c max_iterations.
 
+Some optimizers (e.g. \c ncsu_direct) may run past this limit in the course
+of an iteration step that began before \c max_function_evaluations was 
+exceeded.
+
 <b> Default Behavior </b>
 
 Default value is 1000.

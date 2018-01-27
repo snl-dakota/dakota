@@ -18,8 +18,7 @@
 #include "dakota_results_types.hpp"
 #include "ResultsDBAny.hpp"
 #include "dakota_data_util.hpp"
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #ifdef DAKOTA_HAVE_HDF5
 #include "ResultsDBHDF5.hpp"
@@ -411,11 +410,11 @@ private:
   bool hdf5DBActive;
 
   /// In-core database, with option to flush to file at end
-  boost::scoped_ptr<ResultsDBAny> coreDB;
+  std::unique_ptr<ResultsDBAny> coreDB;
 
   /// File-based database; using shared_ptr due to potentially incomplete type
   /// and requirements for checked_delete in debug builds
-  boost::shared_ptr<ResultsDBHDF5> hdf5DB;
+  std::shared_ptr<ResultsDBHDF5> hdf5DB;
 
 };  // class ResultsManager
 

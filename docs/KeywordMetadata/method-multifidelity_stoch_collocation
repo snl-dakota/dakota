@@ -1,0 +1,99 @@
+Blurb:: Multifidelity uncertainty quantification using stochastic collocation
+
+Description:: 
+As described in \ref method-stoch_collocation, stochastic collocation 
+is a general framework for approximate representation of random response 
+functions in terms of finite-dimensional interpolation bases, using
+interpolation polynomials that may be either local or global
+and either value-based or gradient-enhanced.
+
+In the multifidelity case, we decompose this interpolant expansion
+into several constituent expansions, one per model form or solution
+control level.  In a bi-fidelity case with low-fidelity (LF) and
+high-fidelity (HF) models and an additive discrepancy approach, we have:
+
+\f[R = \sum_{i=1}^{N_p^{LF}} r^{LF}_i \L_i(\xi)
+     + \sum_{i=1}^{N_p^{HF}} \delta_i \L_i(\xi) \f]
+
+where \f$\delta_i\f$ is a coefficient for the discrepancy expansion.
+
+The same specification options are available as described in 
+\ref method-stoch_collocation with one key difference: the
+coefficient estimation inputs change from a scalar input for a single
+expansion to a <i>sequence</i> specification for a low-fidelity expansion
+followed by multiple discrepancy expansions.
+
+To obtain the coefficients \f$r_i\f$ and \f$\delta_i\f$ for each of 
+the expansions, the following options are provided:
+
+<ol>
+<li> multidimensional integration by a tensor-product of Gaussian
+     quadrature rules (specified with \c quadrature_order_sequence, and,
+     optionally, \c dimension_preference).
+<li> multidimensional integration by the Smolyak sparse grid method
+     (specified with \c sparse_grid_level_sequence and, optionally, 
+     \c dimension_preference)
+</ol>
+
+It is important to note that, while \c quadrature_order_sequence and \c
+sparse_grid_level_sequence are
+array inputs, only one scalar from these arrays is active at a time
+for a particular expansion estimation.  In order to specify anisotropy
+in resolution across the random variable set, a \c dimension_preference 
+specification can be used to augment these scalar specifications.
+
+Multifidelity UQ using SC requires that the model selected for
+iteration by the method specification is a multifidelity surrogate
+model (see \ref model-surrogate-hierarchical), which defines an
+\c ordered_model_sequence (see \ref model-surrogate-hierarchical).
+Two types of hierarchies are supported: (i) a hierarchy of model forms
+composed from more than one model within the \c ordered_model_sequence,
+or (ii) a hierarchy of discretization levels comprised from a single
+model within the \c ordered_model_sequence which in turn specifies a 
+\c solution_level_control (see 
+\ref model-single-solution_level_cost-solution_level_control).
+
+In both cases, an expansion will first be formed for the low fidelity
+model or coarse discretization, using the first value within the
+coefficient estimation sequence, along with any specified refinement
+strategy.  Second, expansions are formed for one or more model
+discrepancies (the difference between response results if \c additive
+\c correction or the ratio of results if \c multiplicative \c
+correction), using all subsequent values in the coefficient estimation
+sequence (if the sequence does not provide a new value, then the
+previous value is reused) along with any specified refinement
+strategy.  The number of discrepancy expansions is determined by the
+number of model forms or discretization levels in the hierarchy.
+
+After formation and refinement of the constituent expansions, each of
+the expansions is combined (added or multiplied) into an expansion
+that approximates the high fidelity model, from which the final set of
+statistics are generated.
+
+<b> Additional Resources </b>
+
+%Dakota provides access to multifidelity SC methods through the
+NonDMultilevelStochCollocation class. Refer to the Stochastic Expansion
+Methods chapter of the Theory Manual \cite TheoMan for additional
+information on the Multifidelity SC algorithm.
+
+Topics::
+
+Examples::
+\verbatim
+method,
+	multifidelity_stoch_collocation
+	  model_pointer = 'HIERARCH'
+	  sparse_grid_level_sequence = 4 3 2
+
+model,
+	id_model = 'HIERARCH'
+	surrogate hierarchical
+	  ordered_model_fidelities = 'LF' 'MF' 'HF'
+	  correction additive zeroth_order
+\endverbatim
+
+Theory::
+
+Faq::
+See_Also::	method-adaptive_sampling, method-gpais, method-local_reliability, method-global_reliability, method-sampling, method-importance_sampling, method-stoch_collocation

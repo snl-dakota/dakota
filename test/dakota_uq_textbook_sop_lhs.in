@@ -7,7 +7,6 @@
 # to continuous nested mappings.
 
 environment,
-#	graphics
 	  method_pointer = 'PSTUDY'
 
 #################################

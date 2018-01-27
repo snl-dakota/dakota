@@ -1055,13 +1055,15 @@ JEGAOptimizer::LoadTheParameterDatabase(
         "method.mutation_scale",
         probDescDB.get_real("method.mutation_scale")
         );
+    double perc_change = probDescDB.get_real("method.jega.percent_change");
     this->_theParamDB->AddDoubleParam(
         "method.jega.percent_change",
-        probDescDB.get_real("method.jega.percent_change")
+	(perc_change < 0) ? 1.0e-4 : perc_change
         );
+    double conv_tol = probDescDB.get_real("method.convergence_tolerance");
     this->_theParamDB->AddDoubleParam(
         "method.convergence_tolerance",
-        probDescDB.get_real("method.convergence_tolerance")
+	(conv_tol < 0) ? 1.0e-4 : conv_tol 
         );
     this->_theParamDB->AddDoubleParam(
         "method.jega.shrinkage_percentage",

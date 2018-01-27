@@ -3,7 +3,6 @@
 # PCE-based OUU using the cantilever test function.
 
 environment,
-#	graphics
   top_method_pointer = 'OPTIM'
 
 ###########################
@@ -11,6 +10,8 @@ environment,
 ###########################
 method,
 	id_method = 'OPTIM'
+## (NPSOL requires a software license; if not available, try	      #s5
+## conmin_mfd or optpp_q_newton instead)     			      #s5
 	npsol_sqp
 	  convergence_tolerance = 1.e-6
  	  model_pointer = 'OPTIM_M'

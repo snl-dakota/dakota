@@ -11,9 +11,9 @@ environment,
 
 method,
 	mesh_adaptive_search
-#	model_pointer = 'SURROGATE'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	model_pointer = 'SURROGATE'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	use_surrogate optimize					#s10,#s11,#s12
-#	use_surrogate inform_search				#s14,#s15,#s16,#s18
+#	use_surrogate inform_search				#s14,#s15,#s16
 	seed = 1234
 #	initial_delta = 2.0					#s1,#s9
 #	threshold_delta = 0.01					#s2,#s10
@@ -22,16 +22,16 @@ method,
 #	function_precision = 0.00000001				#s5,#s14
 #	variable_neighborhood_search = 0.1			#s5,#s14
 #	neighbor_order = 2	       				#s6,#s15
-#	neighbor_order = 4	       				#s7,#s16,#s18
+#	neighbor_order = 4	       				#s7,#s16
 #	display_format = 'bbe obj'
 #	display_all_evaluations	       				#s5,#s14
 #	history_file = 'mads_history.log'			#s5,#s14
 
-#model,								#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	id_model = 'SURROGATE'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	surrogate global					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	  polynomial quadratic					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	  dace_method_pointer = 'SAMPLING'			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#model,								#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	id_model = 'SURROGATE'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	surrogate global					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	  polynomial quadratic					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	  dace_method_pointer = 'SAMPLING'			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 
 variables,
 	continuous_design = 3					#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
@@ -98,25 +98,25 @@ variables,
 #                     	     0 0 1 1 1				#s8,#s17
 #                     	     0 0 1 1 1				#s8,#s17
 
-#method,		       	     				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	id_method = 'SAMPLING'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	model_pointer = 'TRUTH'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	sampling      						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	  seed = 12345						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	  samples = 55						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#method,		       	     				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,
+#	id_method = 'SAMPLING'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	model_pointer = 'TRUTH'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	sampling      						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	  seed = 12345						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	  samples = 55						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 
-#model,	  	    						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	id_model = 'TRUTH'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	single	   						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-#	  interface_pointer = 'TRUE_FN'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#model,	  	    						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	id_model = 'TRUTH'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	single	   						#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	  interface_pointer = 'TRUE_FN'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 
 interface,
-#	id_interface = 'TRUE_FN'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
-       direct							#s0,#s2,#s3,#s4,#s5,#s6,#s7
-#       direct							#s9,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+#	id_interface = 'TRUE_FN'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+       direct							#s0,#s2,#s3,#s4,#s5,#s6,#s7,#s18
+#       direct							#s9,#s11,#s12,#s13,#s14,#s15,#s16
 #	fork asynch evaluation_concurrency 4			#s1,#s8,#s10,#s17
-	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#	  analysis_driver = 'text_book'	   			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s18
+	  analysis_driver = 'text_book'	   			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s18
+#	  analysis_driver = 'text_book'	   			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #          analysis_driver = 'gerstner_string'			#s8,#s17
 #          parameters_file = 'params.in'			#s8,#s17
 #          results_file = 'results.out'				#s8,#s17

@@ -14,10 +14,10 @@ beginning with the (case-insensitive) word "fail".  Any file contents
 after "fail" are ignored.
 
 Once Dakota detects analysis failure, the failure can be mitigated in four ways:
-- \ref interface-analysis_drivers-failure_capture-abort (the default)
-- \ref interface-analysis_drivers-failure_capture-retry
-- \ref interface-analysis_drivers-failure_capture-recover
-- \ref interface-analysis_drivers-failure_capture-continuation
+- \ref interface-failure_capture-abort (the default)
+- \ref interface-failure_capture-retry
+- \ref interface-failure_capture-recover
+- \ref interface-failure_capture-continuation
 
 <!-- If no failure -->
 <!-- capturing specification is provided, then the default behavior is -->

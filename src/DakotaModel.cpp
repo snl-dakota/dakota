@@ -4691,6 +4691,7 @@ bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
     PRPCacheHIter cache_it
       = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
     if (cache_it != data_pairs.get<hashed>().end()) {
+      found_resp.active_set(search_set);
       found_resp.update(cache_it->response());
       return true;
     }
@@ -4775,6 +4776,39 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model,
   RealVector drcv(Teuchos::View, config_vars.values() + offset, model.idrv());
   vars.inactive_discrete_real_variables(drcv);
   //offset += model.idrv();
+}
+
+
+void Model::evaluate(const RealMatrix& samples_matrix,
+		     Model& model, RealMatrix& resp_matrix)
+{
+  // TODO: option for setting its active or inactive variables
+
+  RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
+  resp_matrix.shape(model.num_functions(), num_evals);
+
+  for (i=0; i<num_evals; ++i) {
+
+    const RealVector sample_i =
+      Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(samples_matrix), i);
+    Model::active_variables(sample_i, model);
+
+    if (model.asynch_flag())
+      model.evaluate_nowait();
+    else {
+      model.evaluate();
+      const RealVector& fn_vals = model.current_response().function_values();
+      Teuchos::setCol(fn_vals, i, resp_matrix);
+    }
+  }
+
+  // synchronize asynchronous evaluations
+  if (model.asynch_flag()) {
+    const IntResponseMap& resp_map = model.synchronize();
+    IntRespMCIter r_cit;
+    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+      Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
+  }
 }
 
 

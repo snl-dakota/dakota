@@ -33,7 +33,8 @@ my $save_output = 0;         # whether to save the .out, .err. .in_, etc.
 my @test_inputs = ();        # input files to run or extract
 my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
-my $using_srun = 0;
+my $using_srun = 0;          # use srun to launch parallel dakota
+my $using_aprun = 0;         # use aprun to launch both serial and parallel dakota
 my $run_valgrind = 0;        # boolean for whether to run valgrind
 my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
 
@@ -260,7 +261,8 @@ foreach my $file (@test_inputs) {
       else {
 
 	# turn off graphics for all test files
-	if ( s/\sgraphics(\s|,)/# graphics\n/) {
+	# requires 'graphics' on a line by itself, so it can appear in comments
+	if ( s/^[\s]*graphics[,\s]*$/# graphics\n/) {
 	  print INPUT_TMP;
 	}
 	# if line contains $cnt tag, then comment/uncomment
@@ -597,14 +599,14 @@ sub manage_parallelism {
   if ( $parallelism eq "parallel" ) {
     $ENV{'OMPI_MCA_mpi_warn_on_fork'} = '0';
   }
-
   # Detect launch within a job on a Cray XC system. These systems
   # can run MOAB, PBS (only with MOAB?), or SLURM
-  if (exists $ENV{CRAYPE_VERSION} && 
-	( exists $ENV{MOAB_JOBNAME} || 
-	  exists $ENV{PBS_VERSION} ||   
-	  exists $ENV{SLURM_JOB_ID} )) {
-    $using_srun = 1;
+  if (exists $ENV{CRAYPE_VERSION}) {
+    if ( exists $ENV{MOAB_JOBNAME} || exists $ENV{PBS_VERSION} ) {  
+      $using_aprun = 1;
+    } elsif ( exists $ENV{SLURM_JOB_ID} ) {
+      $using_srun = 1;
+    }
   }
 }
 
@@ -1042,9 +1044,9 @@ sub form_test_command {
     $test_command = "${vg_cmd} ${test_command}";
   }
 
-  # If testing within a Cray XC job, srun the test and force Dakota into serial mode
-  if( $using_srun && $parallelism eq "serial") {
-    $test_command = "srun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
+  # If testing within a Cray XC job and aprun, aprun the test and force Dakota into serial mode
+  if( $using_aprun && $parallelism eq "serial") {
+    $test_command = "aprun --export=DAKOTA_RUN_PARALLEL=F -n 1 $test_command";
   }
  
 
@@ -1061,6 +1063,9 @@ sub form_test_command {
     elsif($using_srun == 1) {
       $test_command = "srun -n $num_proc $fulldakota $redir";
     } 
+    elsif($using_aprun == 1) {
+      $test_command = "aprun -n $num_proc $fulldakota $redir";
+    }
     else
     { 
       # default for Linux

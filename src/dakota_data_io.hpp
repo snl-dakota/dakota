@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_IO_H
-#define DATA_IO_H
+#ifndef DAKOTA_DATA_IO_H
+#define DAKOTA_DATA_IO_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr, write_precision
@@ -20,6 +20,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace boost {
 namespace serialization {
@@ -133,6 +134,41 @@ BOOST_SERIALIZATION_SPLIT_FREE(Dakota::BitArray)
 /// Register separate load/save for StringMultiArray type
 BOOST_SERIALIZATION_SPLIT_FREE(Dakota::StringMultiArray)
 
+#if 0
+// WJB - ToDo:  double-check with Brian Adams.  Any value in leaving this
+// hack in the code base if not being used / tested?
+namespace {
+  template<class SharedPointer> struct Holder {
+    SharedPointer p;
+
+    Holder(const SharedPointer &p) : p(p) {}
+    Holder(const Holder &other) : p(other.p) {}
+    Holder(Holder &&other) : p(std::move(other.p)) {}
+
+    void operator () (...) { p.reset(); }
+  };
+}
+
+template<class T> std::shared_ptr<T> to_std_ptr(const boost::shared_ptr<T> &p) {
+  typedef Holder<std::shared_ptr<T>> H;
+  if(H *h = boost::get_deleter<H, T>(p)) {
+    return h->p;
+  }
+  else {
+    return std::shared_ptr<T>(p.get(), Holder<boost::shared_ptr<T>>(p));
+  }
+}
+
+template<class T> boost::shared_ptr<T> to_boost_ptr(const std::shared_ptr<T> &p){
+  typedef Holder<boost::shared_ptr<T>> H;
+  if(H * h = std::get_deleter<H, T>(p)) {
+    return h->p;
+  }
+   else {
+    return boost::shared_ptr<T>(p.get(), Holder<std::shared_ptr<T>>(p));
+  }
+}
+#endif
 
 namespace Dakota {
 
@@ -1597,4 +1633,4 @@ inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 
 } // namespace Dakota
 
-#endif // DATA_IO_H
+#endif // DAKOTA_DATA_IO_H

@@ -1,7 +1,8 @@
 #@ s0: DakotaConfig=HAVE_NPSOL
 
 environment,
-	graphics tabular_data
+	graphics
+	tabular_data
 	method_pointer = 'SBLO'
 
 method,

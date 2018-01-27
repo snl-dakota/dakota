@@ -19,7 +19,6 @@
 # "reuse_samples" command is omitted.
 
 environment,
-#	graphics
 	method_pointer = 'SBLO'
 
 method,

@@ -1,10 +1,17 @@
-Blurb::
-Sequential Quadratic Program
-Description::
-This is a duplicated keyword. Please use \ref method-dot instead.
+Blurb:: DOT Sequential Quadratic Program
 
-Topics::	
+Description::
+DOT library \cite Van95 implementation of sequential quadratic
+programming for constrained optimizaiton.
+
+See \ref topic-package_dot for information common to all \c DOT methods.
+
+<em>DOT requires a separate software license and therefore may not
+be available in all versions of Dakota.  CONMIN or OPT++ methods may
+be suitable alternatives.</em>
+
+Topics::    package_dot	
 Examples::
 Theory::
 Faq::
-See_Also::	method-dot-sqp
+See_Also::

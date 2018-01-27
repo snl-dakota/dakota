@@ -1,1 +1,145 @@
-DUPLICATE-refinement_samples
+Blurb::
+Performs an incremental Latin Hypercube Sampling (LHS) study
+
+Description::
+Use of \c refinement_samples replaces
+the deprecated \c sample_type \c incremental_lhs and 
+\c sample_type \c incremental_random.
+
+An incremental random sampling approach will successively add
+samples to an initial or existing random sampling study 
+according to the sequence of \c refinement_samples. Dakota reports 
+statistics (mean, variance, percentiles, etc) separately for the 
+initial \c samples and for each \c refinement_samples increment at 
+the end of the study. For an LHS design, the number of 
+\c refinement_samples in each refinement 
+level must result in twice the number of previous samples. For
+\c sample_type \c random, there is no constraint on the number of
+samples that can be added.
+
+Often, this approach is used when you have an initial study with
+sample size N1 and you want to perform an additional N1 samples.
+The initial N1 samples may be contained in a Dakota restart file so
+only N1 (instead of 2 x N1) potentially expensive function
+evaluations will be performed.
+
+
+This process can be extended by repeatedly increasing (for LHS: doubling) 
+the \c refinement_samples:
+\verbatim
+method
+  sampling
+    seed = 1337
+    samples = 50
+    refinement_samples = 50 100 200 400 800
+\endverbatim
+
+<b> Usage Tips </b>
+
+The incremental approach is useful if it is uncertain how many
+simulations can be completed within available time.
+
+See the examples below and 
+the \ref running_dakota-usage and \ref dakota_restart pages.
+
+Topics::	
+Examples::
+
+Suppose an initial study is conducted using \c sample_type \c lhs
+with \c samples = 50.  A follow-on study uses a new input file where
+\c samples = 50, and \c refinement_samples = 50, resulting in 50
+reused samples (from restart) and 50 new random samples.  The 50 new
+samples will be combined with the 50 previous samples to generate a
+combined sample of size 100 for the analysis.
+
+One way to ensure the restart file is saved is to specify a non-default name,
+via a command line option:
+\verbatim 
+dakota -input LHS_50.in -write_restart LHS_50.rst
+\endverbatim
+
+which uses the input file:
+
+\verbatim 
+# LHS_50.in
+
+environment
+  tabular_data
+    tabular_data_file = 'LHS_50.dat'
+
+method
+  sampling
+    seed = 1337
+    sample_type lhs
+    samples = 50
+
+model
+  single
+
+variables
+  uniform_uncertain = 2
+    descriptors  =   'input1'     'input2'
+    lower_bounds =  -2.0     -2.0
+    upper_bounds =   2.0      2.0
+
+interface
+  analysis_drivers 'text_book'
+    fork
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+\endverbatim
+and the restart file is written to \c LHS_50.rst.
+
+
+Then an incremental LHS study can be run with:
+\verbatim 
+dakota -input LHS_100.in -read_restart LHS_50.rst -write_restart LHS_100.rst
+\endverbatim
+where \c LHS_100.in is shown below, and \c LHS_50.rst is the restart
+file containing the results of the previous LHS study. In the example input
+files for the initial and incremental studies, the values for \c seed match.
+This ensures that the initial 50 samples generated in both runs are the same.
+\verbatim 
+# LHS_100.in
+
+environment
+  tabular_data
+    tabular_data_file = 'LHS_100.dat'
+
+method
+  sampling
+    seed = 1337
+    sample_type incremental_lhs
+    samples = 50
+      refinement_samples = 50
+
+model
+  single
+
+variables
+  uniform_uncertain = 2
+    descriptors  =   'input1'     'input2'
+    lower_bounds =  -2.0     -2.0
+    upper_bounds =   2.0      2.0
+
+interface
+  analysis_drivers 'text_book'
+    fork
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+\endverbatim
+
+The user will get 50 new LHS samples which
+maintain both the correlation and stratification of the original LHS
+sample. The new samples will be combined with the original
+samples to generate a combined sample of size 100.
+
+Theory::
+Faq::
+See_Also::	

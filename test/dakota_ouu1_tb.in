@@ -18,7 +18,6 @@
 # has been modified to have six uncertain variables.
 
 environment
-#  graphics
   top_method_pointer = 'OPTIM'
 
 ###########################
@@ -26,6 +25,8 @@ environment
 ###########################
 method
   id_method = 'OPTIM'
+## (NPSOL requires a software license; if not available, try	      #s0
+## conmin_mfd or optpp_q_newton instead)     			      #s0
   npsol_sqp
     convergence_tolerance = 1.e-10
     model_pointer = 'OPTIM_M'
@@ -144,7 +145,8 @@ interface
   id_interface = 'UQ_I'
   analysis_drivers = 'text_book_ouu'
     direct
-##    fork asynch evaluation_concurrency = 5		#s0
+# Proliferate as comment to user manual:
+#    fork asynch evaluation_concurrency = 5		#s0
 
 responses
   id_responses = 'UQ_R'

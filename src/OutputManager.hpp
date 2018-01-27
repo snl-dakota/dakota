@@ -19,6 +19,7 @@
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 #include "DakotaGraphics.hpp"
+#include <memory>
 
 
 namespace Dakota {
@@ -99,7 +100,7 @@ protected:
 
   /// stack of redirections to OutputWriters; shared pointers are used
   /// to potentially share the same ostream at multiple levels
-  std::vector<boost::shared_ptr<OutputWriter> > ostreamDestinations;
+  std::vector<std::shared_ptr<OutputWriter> > ostreamDestinations;
 
 private:
   // private ctors since current implementation with streams isn't
@@ -154,7 +155,7 @@ private:
 
   /// Binary output archive to which data is written (pointer since no
   /// default ctor for oarchive and may not be initialized); 
-  boost::scoped_ptr<boost::archive::binary_oarchive> restartOutputArchive;
+  std::unique_ptr<boost::archive::binary_oarchive> restartOutputArchive;
 
 };  // class RestartWriter
 
@@ -315,7 +316,7 @@ private:
 
   /// Stack of active restart destinations; end is the last (active)
   /// redirection. All remain open until popped or destroyed.
-  std::vector<boost::shared_ptr<RestartWriter> > restartDestinations;
+  std::vector<std::shared_ptr<RestartWriter> > restartDestinations;
 
   /// message to print at startup when proceeding to instantiate objects
   String startupMessage;

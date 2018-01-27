@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_UTIL_H
-#define DATA_UTIL_H
+#ifndef DAKOTA_DATA_UTIL_H
+#define DAKOTA_DATA_UTIL_H
 
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"  // for Cerr
@@ -734,7 +734,7 @@ void copy_data_partial(
     sdv2[i] = sdv1[start_index1+i];
 }
 
-/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by MixedVariables - RWH
+/// copy all of first SerialDenseVector to portion of second SerialDenseVector - used by MixedVariables - RWH, NLSSOLLeastSq - BMA
 template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
 void copy_data_partial(
   const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv1,
@@ -1253,4 +1253,4 @@ inline bool isfloat(const Dakota::String token) {
 }
 
 
-#endif // DATA_UTIL_H
+#endif // DAKOTA_DATA_UTIL_H

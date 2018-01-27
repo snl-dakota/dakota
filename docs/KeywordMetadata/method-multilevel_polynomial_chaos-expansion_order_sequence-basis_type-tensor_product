@@ -1,0 +1,12 @@
+Blurb::
+Use a tensor-product index set to construct a polynomial chaos expansion.
+Description::
+Use a tensor-product index set to construct a polynomial chaos expansion. That is for a given order \f$p\f$ keep all terms with \f$d\f$-dimensional multi index \f$\mathbf{i}=(i_1,\ldots,i_d)\f$ that satisfies
+\f[
+\max \,(i_1,\ldots,i_d) \le p
+\f]
+Topics::
+Examples::
+Theory::
+Faq::
+See_Also::	

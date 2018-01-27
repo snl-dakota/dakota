@@ -1,5 +1,4 @@
-/*  _______________________________________________________________________
-
+/*  _______________________________________________________________________ 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
     Copyright 2014 Sandia Corporation.
     This software is distributed under the GNU Lesser General Public License.
@@ -20,10 +19,8 @@
 namespace Dakota {
 
 
-/*----------------------------------------------------------------
-   Adapter for copying continuous variables data from Dakota RealVector
-   into TPL vectors
-  ---------------------------------------------------------------*/
+/** Adapter for copying continuous variables data from Dakota RealVector
+   into TPL vectors */
 
 template <typename VecT>
 bool get_bounds( const RealVector  & lower_source,
@@ -54,17 +51,15 @@ bool get_bounds( const RealVector  & lower_source,
   return allSet;
 }
 
-/*----------------------------------------------------------------
-   Adapter originating from (and somewhat specialized based on)
+/** Adapter originating from (and somewhat specialized based on)
    APPSOptimizer for copying discrete variables from a set-based Dakota
-   container into TPL vectors
-  ---------------------------------------------------------------*/
+   container into TPL vectors */
 
 template <typename SetT, typename VecT>
 void get_bounds( const SetT & source_set,
                        VecT & lower_target,
                        VecT & upper_target,
-                       int    target_offset = 0)
+                       int    target_offset)
 {
   for (size_t i=0; i<source_set.size(); ++i) {
     lower_target[i+target_offset] = 0;
@@ -72,11 +67,9 @@ void get_bounds( const SetT & source_set,
   }
 }
 
-/*----------------------------------------------------------------
-   Adapter originating from (and somewhat specialized based on)
+/** Adapter originating from (and somewhat specialized based on)
    APPSOptimizer for copying discrete integer variables data
-   with bit masking from Dakota into TPL vectors
-  ---------------------------------------------------------------*/
+   with bit masking from Dakota into TPL vectors */
 
 template <typename OrdinalType, typename ScalarType, typename VectorType2, typename MaskType, typename SetArray>
 bool get_mixed_bounds( const MaskType& mask_set,
@@ -121,11 +114,9 @@ bool get_mixed_bounds( const MaskType& mask_set,
   return allSet;
 }
 
-/*----------------------------------------------------------------
-   Adapter originating from (and somewhat specialized based on)
-   APPSOptimizer for copying heterogeneous bounded data from 
-   Dakota::Variables into concatenated TPL vectors
-  ---------------------------------------------------------------*/
+/** Adapter originating from (and somewhat specialized based on)
+    APPSOptimizer for copying heterogeneous bounded data from 
+    Dakota::Variables into concatenated TPL vectors */
 
 template <typename AdapterT>
 bool get_variable_bounds( Model &                   model, // would like to make const but cannot due to discrete_int_sets below
@@ -179,10 +170,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
   return allSet;
 }
 
-/*----------------------------------------------------------------
-   Adapter for configuring inequality constraint maps used when
-   transferring data between Dakota and a TPL
-  ---------------------------------------------------------------*/
+/** Adapter for configuring inequality constraint maps used when
+   transferring data between Dakota and a TPL */
 
 template <typename RVecT, typename IVecT>
 int configure_inequality_constraint_maps(
@@ -223,10 +212,8 @@ int configure_inequality_constraint_maps(
   return num_added;
 }
 
-/*----------------------------------------------------------------
-   Adapter for configuring equality constraint maps used when
-   transferring data between Dakota and a TPL
-  ---------------------------------------------------------------*/
+/** Adapter for configuring equality constraint maps used when
+   transferring data between Dakota and a TPL */
 
 template <typename RVecT, typename IVecT>
 void configure_equality_constraint_maps(
@@ -266,12 +253,10 @@ void configure_equality_constraint_maps(
   }
 }
 
-/*----------------------------------------------------------------
-   Adapter based initially on APPSOptimizer for linear constraint
+/** Adapter based initially on APPSOptimizer for linear constraint
    maps and including matrix and bounds data;
        * bundles a few steps together which could (should?) be broken
-         into two or more adapters
-  ---------------------------------------------------------------*/
+         into two or more adapters */
 
 template <typename AdapterT>
 void get_linear_constraints( Model & model,
@@ -323,7 +308,7 @@ public:
   int num_nonlin_ineq_constraints_found() const
     { return numNonlinearIneqConstraintsFound; }
 
-  /// Adapter for transferring variable bounds from Dakota data to TPL data
+  /** Adapter for transferring variable bounds from Dakota data to TPL data */
   template <typename AdapterT>
     bool get_variable_bounds_from_dakota(
         typename AdapterT::VecT & lower,
@@ -337,7 +322,7 @@ public:
                             upper);
     }
 
-  /// Adapter for transferring responses from Dakota data to TPL data
+  /** Adapter for transferring responses from Dakota data to TPL data */
   template <typename VecT>
     void get_responses_from_dakota(
         const RealVector & dak_fn_vals,
@@ -618,7 +603,7 @@ void copy_data( const VectorType1 & source,
 
 //----------------------------------------------------------------
 
-/// Data adapter for use by third-party opt packages to transfer response data to Dakota
+/** Data adapter for use by third-party opt packages to transfer response data to Dakota */
 template <typename AdapterT>
 void set_best_responses( typename AdapterT::OptT & optimizer,
                          const Model & model,
@@ -659,7 +644,7 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
 
 //----------------------------------------------------------------
 
-/// copy appropriate slices of source vector to Dakota::Variables
+/** copy appropriate slices of source vector to Dakota::Variables */
 template <typename VectorType>
 void set_variables( const VectorType & source,
                           Model & model,
@@ -698,7 +683,7 @@ void set_variables( const VectorType & source,
 
 //----------------------------------------------------------------
 
-/// copy the various pieces comprising Dakota::Variables into a concatenated TPL vector
+/** copy the various pieces comprising Dakota::Variables into a concatenated TPL vector */
 template <typename VectorType>
 void get_variables( Model & model,
                     VectorType & vec)
@@ -738,7 +723,7 @@ void get_variables( Model & model,
 
 //----------------------------------------------------------------
 
-/// Data adapter to transfer data from Dakota to third-party opt packages
+/** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename vectorType>
 void get_responses( const Model & model,
                     const RealVector & dak_fn_vals,
@@ -772,6 +757,7 @@ void get_responses( const Model & model,
 
 //----------------------------------------------------------------
 
+/** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename RVecT>
 void get_nonlinear_eq_constraints( Model & model,
                                    const RVecT & curr_resp_vals,
@@ -786,6 +772,7 @@ void get_nonlinear_eq_constraints( Model & model,
 
 //----------------------------------------------------------------
 
+/** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename RVecT>
 void get_nonlinear_eq_constraints( Model & model,
                                    const RealVector & curr_resp_vals,
@@ -805,6 +792,7 @@ void get_nonlinear_eq_constraints( Model & model,
 ///  Would like to combine the previous adapter with this one (based on APPSOptimizer and COLINOptimizer)
 ///  and then see how much more generalization is needed to support other TPLs like JEGA
 
+/** Data adapter to transfer data from Dakota to third-party opt packages */
 template <typename VecT>
 void get_nonlinear_constraints( Model & model,
                                 VecT & nonlin_ineq_lower,

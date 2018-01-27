@@ -6,7 +6,6 @@
 # Mixed UQ with aleatory post-processing of optional interface simulation
 
 environment,
-#	graphics
 	  method_pointer = 'EPISTEMIC'
 
 #################################

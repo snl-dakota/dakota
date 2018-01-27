@@ -42,8 +42,9 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Traits
   Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numLeastSqTerms(numUserPrimaryFns),
-  weightFlag(!iteratedModel.primary_response_fn_weights().empty())
+  weightFlag(!iteratedModel.primary_response_fn_weights().empty()),
 				// TODO: wrong because of recasting layers
+  retrievedIterPriFns(false)
 {
   optimizationFlag  = false;
 
@@ -120,6 +121,15 @@ void LeastSq::weight_model()
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing weighting transformation" << std::endl;
 
+  // we assume sqrt(w_i) will be applied to each residual, therefore:
+  const RealVector& lsq_weights = iteratedModel.primary_response_fn_weights();
+  for (int i=0; i<lsq_weights.length(); ++i)
+    if (lsq_weights[i] < 0) {
+      Cerr << "\nError: Calibration term weights must be nonnegative. Specified "
+	   << "weights are:\n" << lsq_weights << '\n';
+      abort_handler(-1);
+    }
+
   // the size of the recast is the total numLeastSqTerms being iterated
   size_t i;
   Sizet2DArray var_map_indices(numContinuousVars), 
@@ -188,6 +198,24 @@ void LeastSq::weight_model()
     least squares results (residual terms and constraints). */
 void LeastSq::print_results(std::ostream& s, short results_state)
 {
+  // Seq: print from native variables through to residuals as worked on:
+  //  * Best native parameters: LeastSq::print_results
+  //
+  //  * IF DataTransform: DataTransformModel::print_best_responses
+  //     - Best configs and native model responses (residuals or
+  //       functions, prior to data transform),
+  //     - [covariance-weighted] residuals
+  //     - residual norms
+  //
+  //    ELSE: Accounted for by final iterator space residuals
+  //
+  //  * Skip: scaled residuals
+  //
+  //  * Final iterator space residuals and residual norms (accounting
+  //    for scaling/weighting): DakotaLeastSq::print_results
+
+  // TODO: Need to add residual norm to baselines
+
   // archive the single best point
   size_t num_best = 1, best_ind = 0;
   archive_allocate_best(num_best);
@@ -205,26 +233,32 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     best_vars.write(s, ACTIVE_VARS);
   }
 
-  // after post-run, responses should be back in user model space (no
-  // data, scaling, or weighting)
+  // after post-run, responses should be back in user model space
+  // (no// scaling, or weighting); however TODO: they don't account
+  // for the multiple config cases.  They do contain the user-space
+  // constraints in all cases.
   const RealVector& best_fns = bestResponseArray.front().function_values();
 
-  // BMA TODO: The following is printing weight(data_trans(model)),
-  // omitting scaling!
   if (calibrationDataFlag) {
-    // TODO: approximate models with interpolation of field data may
-    // not have recovered the correct best residuals
+    // This will print the original model responses (possibly
+    // per-config) and the full set of data-transformed residuals,
+    // possibly scaled by sigma^-1/2.  This should be correct in
+    // interpolation cases as well.
     DataTransformModel* dt_model_rep =
       static_cast<DataTransformModel*>(dataTransformModel.model_rep());
     dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
                                        num_best, best_ind);
   }
   else {
-    // the original model had least squares terms and numLeastSqTerms
-    // == numTotalCalibTerms
-    const RealVector& lsq_weights
-      = iteratedModel.subordinate_model().primary_response_fn_weights();
-    print_residuals(numUserPrimaryFns, best_fns, lsq_weights, 
+    // otherwise the residuals worked on are same size/type as the
+    // inbound Model, that is the original model had least squares
+    // terms and numLeastSqTerms == numTotalCalibTerms
+
+    // only need clarify if transformations
+    if (scaleFlag || weightFlag)
+      s << "Original (as-posed) response:\n";
+    // always print the native residuals
+    print_residuals(numUserPrimaryFns, best_fns, RealVector(),
 		    num_best, best_ind, s);
   }
 
@@ -274,6 +308,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   // Currently there is no weighting matrix, but that can be added. 
 
   if (!confBoundsLower.empty() && !confBoundsUpper.empty()) {
+    // BMA: Not sure this warning is needed
     if (expData.num_experiments() > 1) {
       s << "Warning: Confidence intervals may be inaccurate when "
         << "num_experiments > 1\n";
@@ -401,6 +436,9 @@ void LeastSq::initialize_run()
   // NPSOL and the previous leastSqInstance is NULL).  
   prevLSqInstance = leastSqInstance;
   leastSqInstance = this;
+
+  retrievedIterPriFns = false;
+  bestIterPriFns.resize(0);
 }
 
 
@@ -410,97 +448,263 @@ void LeastSq::initialize_run()
     post_run() (which would otherwise hide it). */
 void LeastSq::post_run(std::ostream& s)
 {
-  size_t num_points = bestVariablesArray.size();
-  if (num_points != bestResponseArray.size()) {
-    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
-	 << std::endl;
-    abort_handler(-1);
+  // BMA TODO: the lookups can't possibly retrieve config vars properly...
+  // DataTransformModel needs to reimplement db_lookup...
+
+  // Moreover, can't store a single best_resp if config vars
+
+  // BMA TODO: print_results review/cleanup now that we're storing
+  // native and transformed residuals...
+
+  // Due to all the complicated use cases for residual recovery, we
+  // opt to lookup or re-evaluate the necessary models here, performing fn
+  // and grad evals separately, in case they are cached in different
+  // evals, and expecting duplicates or surrogate evals in most cases.
+
+  if (bestVariablesArray.empty() || bestResponseArray.empty()) {
+    Cerr << "\nError: Empty calibration solution variables or response.\n";
+    abort_handler(METHOD_ERROR);
+  }
+  if (bestVariablesArray.size() > 1) {
+    Cout << "\nWarning: " << bestVariablesArray.size() << " calibration "
+	 << "best parameter sets returned; expected only one." << std::endl;
+  }
+  if (bestResponseArray.size() > 1) {
+    Cout << "\nWarning: " << bestResponseArray.size() << " calibration "
+	 << "best residual sets returned; expected only one." << std::endl;
   }
 
-  // TODO: no LSQ methods return multiple points, so consider removing this
-  for (size_t point_index = 0; point_index < num_points; ++point_index) {
-    
-    // best_vars / best_resp will now contain residuals and parameters as the
-    // LSQ solver (iterator) saw them
-    Variables& best_vars = bestVariablesArray[point_index];
-    Response&  best_resp = bestResponseArray[point_index];
+  bool transform_flag = weightFlag || scaleFlag || calibrationDataFlag;
 
-    // Cache the iterator space vars before storing the native in best
-    const RealVector iter_cv
-      (Teuchos::Copy, best_vars.continuous_variables().values(),
-       best_vars.continuous_variables().length());
+  // On entry:
+  //  * best_vars contains the iterator space (transformed) variables
+  //  * bestIterPriFns contains the residuals if available
+  //  * best_resp contains the iterator space (transformed) constraints
 
-    /// Transform variables back to inbound model, before any potential lookup
-    if (scaleFlag) {
-      ScalingModel* scale_model_rep = 
-        static_cast<ScalingModel*>(scalingModel.model_rep());
-      best_vars.continuous_variables
-        (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
-    }
+  // BMA REVIEW: best_vars / best_resp must be used judiciously in
+  // config var cases...
 
-    // Only calculate confidence intervals for the first point, before
-    // mucking with best_resp.  Here, best_vars is native space
-    if (point_index == 0)
-      get_confidence_intervals(iter_cv, best_vars);
+  Variables& best_vars = bestVariablesArray.front();
+  Response& best_resp = bestResponseArray.front();
+  RealVector best_fns = best_resp.function_values_view();
 
-    if (calibrationDataFlag && expData.interpolate_flag()) {
-      // When interpolation is active, best we can do is a lookup to
-      // get the original native Model response function.  This will
-      // fail for surrogate models; need approx eval DB
-      local_recast_retrieve(best_vars, best_resp);
-    }
-    else {
-      // Derived classes populated best response with first
-      // experiment's block of residuals as seen by the
-      // solver. Reverse transformations on each point in best data:
-      // unweight, unscale, restore data
+  // After recovery:
+  //  * iter_resp contains all native fn vals, constraints for return and 
+  //    reporting
+  //  * iter_resp contains iterator residuals and gradient
+  //    for CI calculation and reporting (doesn't need constraints)
 
-      // BMA TODO: This requires fixing; when there is a data
-      // transformation, size(fn_vals) != size(lsq_weights).  Why does
-      // best_fns only contain the original user space functions at
-      // this call point? The previous convention of storing
-      // user-space best residuals in bestResponseArray, e.g., in
-      // NL2SOLLeastSq, may not be sound any longer.
-      if (weightFlag) {
-        // the weighting transformation consumes weights; get some sub-model
-        const RealVector& lsq_weights
-          = iteratedModel.subordinate_model().primary_response_fn_weights();
-        const RealVector& fn_vals = best_resp.function_values();
-        for (size_t i=0; i<numLeastSqTerms; i++)
-          best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
-      }
-  
-      // unscaling should be based on correct size in data difference case
-      // scaling does not work in conjunction with data diff...
-      if (scaleFlag) {
-        // ScalingModel manages which transformations are needed
-        ScalingModel* scale_model_rep = 
-          static_cast<ScalingModel*>(scalingModel.model_rep());
-        scale_model_rep->resp_scaled2native(best_vars, best_resp);
-      }
+  // iterator space variables and response (deep copy only if needed)
+  Variables iter_vars(scaleFlag ? best_vars.copy() : best_vars);
+  Response iter_resp(transform_flag ? iteratedModel.current_response().copy() :
+		     best_resp);
+  RealVector iter_fns = iter_resp.function_values_view();
 
-      if (calibrationDataFlag) {
-        // restore residuals to original model's primary responses
-        // (leaving any constraints)
-        // BMA TODO: verify that numUserPrimaryFns is correct
-        RealVector resid_fns = best_resp.function_values_view();
-        expData.recover_model(numUserPrimaryFns, resid_fns);
-      }
-    }
-    
+  // Transform variables back to inbound model, before any potential lookup
+  if (scaleFlag) {
+    ScalingModel* scale_model_rep = 
+      static_cast<ScalingModel*>(scalingModel.model_rep());
+    best_vars.continuous_variables
+      (scale_model_rep->cv_scaled2native(iter_vars.continuous_variables()));
   }
+
+  // also member retrievedIterPriFns (true for NL2SOL, NLSSOL, false for SNLL)
+  bool have_native_pri_fns = false;
+  bool have_iter_pri_grads = false;
+
+  // If there are no problem transformations, populate (native) best
+  // from iterator-space residuals
+  if (!transform_flag && retrievedIterPriFns) {
+    copy_data_partial(bestIterPriFns, 0, (int)numLeastSqTerms, best_fns, 0);
+    have_native_pri_fns = true;
+  }
+
+  // -----
+  // Retrieve in native/user space for best_resp and reporting
+  // -----
+
+  // Always necessary for SNLLLeastSq recovery; other methods if transforms
+
+  // TODO: In the multiple config case, this is going to retrieve
+  // whichever config was last evaluated, together with the optimal
+  // calibration parameters.  Could skip here since it's done again in
+  // DataTransformModel at print_results time.
+
+  if (!have_native_pri_fns) {
+
+    // Only need to retrieve functions; as constraints are always
+    // cached by the solver and unscaled if needed below
+    // BMA TODO: Don't really need this whole response object
+    // Could just cache the evalId here.. via cacheiter.
+    Model orig_model = original_model();
+    Response found_resp(orig_model.current_response());
+    ActiveSet search_set(found_resp.active_set());
+    search_set.request_values(0);
+    for (size_t i=0; i<numUserPrimaryFns; ++i)
+      search_set.request_value(1, i);
+    // The receiving response must have the right ASV when using this
+    // lookup signature
+    found_resp.active_set(search_set);
+    have_native_pri_fns |= orig_model.db_lookup(best_vars, search_set,
+						found_resp);
+
+    if (have_native_pri_fns)
+      copy_data_partial(found_resp.function_values(), 0, (int)numUserPrimaryFns,
+			best_fns, 0);
+    else
+      // This can occur in model calibration under uncertainty using nested
+      // models, or surrogate models so make this non-fatal.
+      Cout << "Warning: couldn't recover final least squares terms from "
+	   << "evaluation database."
+	   << std::endl;
+  }
+
+  // -----
+  // Retrieve in transformed space for CIs and reporting
+  // -----
+  if (!retrievedIterPriFns) {
+
+    // This lookup should only be necessary for SNLLLeastSq and will
+    // fail if there is a data transformation, so will be caught by
+    // re-evaluate below.
+
+    // (Rather than transforming the found native function values, keep
+    // it simpler and lookup the iterator space responses too.)
+
+    // Only need to retrieve functions; as constraints are always
+    // cached by the solver and unscaled if needed below
+    // BMA TODO: Don't really need this whole response object
+    // Could just cache the evalId here.. via cacheiter.
+    Response found_resp(iteratedModel.current_response());
+    ActiveSet search_set(found_resp.active_set());
+    search_set.request_values(0);
+    for (size_t i=0; i<numLeastSqTerms; ++i)
+      search_set.request_value(1, i);
+    // The receiving response must have the right ASV when using this
+    // lookup signature
+    found_resp.active_set(search_set);
+    retrievedIterPriFns |= iteratedModel.db_lookup(iter_vars, search_set,
+						   found_resp);
+
+    if (retrievedIterPriFns)
+      copy_data_partial(found_resp.function_values(), 0, (int)numLeastSqTerms,
+			iter_fns, 0);
+    else
+      Cout << "Warning: couldn't recover final (transformed) least squares "
+	   << "terms from\n          evaluation database."
+	   << std::endl;
+  }
+
+  // Confidence intervals calculations are unconditional and no solver
+  // stores the gradients.  Try to lookup first.
+  // We want the gradient of the transformed residuals
+  // w.r.t. the original variables, so use the iteratedModel
+  Response found_resp(iteratedModel.current_response());
+  ActiveSet search_set(found_resp.active_set());
+  search_set.request_values(0);
+  for (size_t i=0; i<numLeastSqTerms; ++i)
+    search_set.request_value(2, i);
+  found_resp.active_set(search_set);
+  have_iter_pri_grads |= iteratedModel.db_lookup(iter_vars, search_set,
+						 found_resp);
+
+  if (have_iter_pri_grads) {
+    RealMatrix found_gradients(Teuchos::View,
+			       found_resp.function_gradients(),
+			       (int)numContinuousVars, (int)numLeastSqTerms);
+    RealMatrix iter_gradients(Teuchos::View, iter_resp.function_gradients(),
+			      (int)numContinuousVars, (int)numLeastSqTerms);
+    iter_gradients.assign(found_gradients);
+  }
+  else if ( outputLevel > NORMAL_OUTPUT)
+    Cout << "Info: Couldn't recover residual gradient for confidence interval "
+	 << "calculation; will attempt re-evaluation." << std::endl;
+
+  // If needed, evaluate the function values separately from the
+  // gradients so more likely to hit a duplicate if they're stored in
+  // different evals.  These evals will also aid in recovery of
+  // surrogate-based LSQ
+  if (!retrievedIterPriFns || !have_native_pri_fns) {
+
+    // BMA TODO: Be finer grained and eval original vs. iterated... if
+    // only need one or other:
+    // if (!iter_fns)
+    //    eval iterated model; save iter_fns and conditionally save native_fns
+    // else if (!native_fns)
+    //    eval original model; save native_fns
+    iteratedModel.continuous_variables(iter_vars.continuous_variables());
+    activeSet.request_values(0);
+    for (size_t i=0; i<numLeastSqTerms; ++i)
+      activeSet.request_value(1, i);
+    iteratedModel.evaluate(activeSet);
+
+    if (!retrievedIterPriFns) {
+      copy_data_partial(iteratedModel.current_response().function_values(),
+			0, (int)numLeastSqTerms, iter_fns, 0);
+      retrievedIterPriFns = true;
+    }
+
+    if (!have_native_pri_fns) {
+      copy_data_partial(original_model().current_response().function_values(),
+			0, (int)numUserPrimaryFns, best_fns, 0);
+      have_native_pri_fns = true;
+    }
+  }
+
+  // Can't evaluate gradient with vendor-computed gradients (so no CIs)
+  if (!have_iter_pri_grads && !vendorNumericalGradFlag) {
+    // For now, we populate iter_resp, then partially undo the scaling in
+    // get_confidence_intervals.  Could instead get the eval from
+    // original_model and transform it up.
+    iteratedModel.continuous_variables(iter_vars.continuous_variables());
+    activeSet.request_values(0);
+    for (size_t i=0; i<numLeastSqTerms; ++i)
+      activeSet.request_value(2, i);
+    iteratedModel.evaluate(activeSet);
+
+    RealMatrix eval_gradients(Teuchos::View,
+			      iteratedModel.current_response().function_gradients(),
+			      (int)numContinuousVars, (int)numLeastSqTerms);
+    RealMatrix iter_gradients(Teuchos::View, iter_resp.function_gradients(),
+			      (int)numContinuousVars, (int)numLeastSqTerms);
+    iter_gradients.assign(eval_gradients);
+
+    have_iter_pri_grads = true;
+
+  }
+
+  // All derived solvers return constraints in best_resp; unscale
+  // in-place if needed
+  // BMA TODO: constrained LSQ with scaling test
+  if (scaleFlag && numNonlinearConstraints > 0) {
+    ScalingModel* scale_model_rep =
+      static_cast<ScalingModel*>(scalingModel.model_rep());
+    RealVector best_fns = best_resp.function_values_view();
+    // only requesting scaling of constraints, so no need for variable Jacobian
+    activeSet.request_values(1);
+    scale_model_rep->
+      secondary_resp_scaled2native(best_resp.function_values(),
+				   activeSet.request_vector(),
+				   best_fns);
+  }
+
+  // confidence intervals require
+  //  - fully transformed residuals
+  //  - native vars for calculating intervals
+  //  - Jacobian: transformed resid / native vars
+  //    (or fully transformed for un-transforming)
+  get_confidence_intervals(best_vars, iter_resp);
 
   Minimizer::post_run(s);
 }
 
 
 /** Calculate individual confidence intervals for each parameter,
-    based on a linear approximation of the nonlinear model. iter_cv
-    are needed to eval iteratedModel gradients, while native_cv are
-    needed for final reporting.  best_resp must contain the final
-    differenced, scaled, weighted residuals. */
-void LeastSq::get_confidence_intervals(const RealVector& iter_cv,
-				       const Variables& native_vars)
+    based on a linear approximation of the nonlinear model. native_cv
+    are needed for transformations and final reporting.  iter_resp
+    must contain the final differenced, scaled, weighted residuals and gradients. */
+void LeastSq::get_confidence_intervals(const Variables& native_vars,
+				       const Response& iter_resp)
 {
   // TODO: Fix CIs for interpolation and multi-experiment cases.  For
   // simple multi-experiment cases, can just use the model derivatives
@@ -522,23 +726,9 @@ void LeastSq::get_confidence_intervals(const RealVector& iter_cv,
 	 << "\n         variables.\n\n";
     return;
   }
-  if (bestVariablesArray.size() > 1) {
-    Cout << "\nWarning: Multiple solutions found, but confidence intervals are "
-	 << "only calculated\n         for the single best point." << std::endl;
-  }
-
-  // Due to all the complicated use cases for residual recovery, we
-  // opt to just re-evaluate the necessary models here, performing fn
-  // and grad evals separately, in case they are cached in different
-  // evals
 
   // recover the iterator space residuals, hopefully via duplicate detection
-  short asv_request = 1;
-  iteratedModel.continuous_variables(iter_cv);
-  activeSet.request_values(asv_request);
-  iteratedModel.evaluate(activeSet);
-  const RealVector& resid_star =
-    iteratedModel.current_response().function_values();
+  const RealVector& resid_star = iter_resp.function_values();
 
   // first calculate the estimate of sigma-squared.
   Real dof = std::max(double(numLeastSqTerms-numContinuousVars), 1.);
@@ -564,34 +754,24 @@ void LeastSq::get_confidence_intervals(const RealVector& iter_cv,
   double *tau, *work;
   double* Jmatrix = new double[numLeastSqTerms*numContinuousVars];
   
-  // Unfortunately, best_resp may not contain gradients, so we
-  // evaluate the iteratedModel at the iterator variables, aiming to
-  // catch a duplicate eval .  This evaluation will potentially yield
+  // With scaling, the iter_resp will potentially contain
   // d(scaled_resp) / d(scaled_params).
-  asv_request = 2;
-  iteratedModel.continuous_variables(iter_cv);
-  activeSet.request_values(asv_request);
-  iteratedModel.evaluate(activeSet);
-
+  //
   // When parameters are scaled, have to apply the variable
   // transformation Jacobian to get to
   // d(scaled_resp) / d(native_params) =
   //   d(scaled_resp) / d(scaled_params) * d(scaled_params) / d(native_params)
 
   // envelope to hold the either unscaled or iterator response
-  Response ultimate_resp;
+  Response ultimate_resp = scaleFlag ? iter_resp.copy() : iter_resp; 
   if (scaleFlag) {
-    const Response& scaled_resp = iteratedModel.current_response();
-    ultimate_resp = scaled_resp.copy();
     ScalingModel* scale_model_rep =
       static_cast<ScalingModel*>(scalingModel.model_rep());
     bool unscale_resp = false;
-    scale_model_rep->response_modify_s2n(native_vars, scaled_resp,
+    scale_model_rep->response_modify_s2n(native_vars, iter_resp,
 					 ultimate_resp, 0, numLeastSqTerms,
 					 unscale_resp);
   }
-  else
-    ultimate_resp = iteratedModel.current_response();
   const RealMatrix& fn_grads = ultimate_resp.function_gradients_view();
 
   // BMA: TODO we don't need to transpose this matrix...
@@ -616,7 +796,7 @@ void LeastSq::get_confidence_intervals(const RealVector& iter_cv,
   error_flag &= info;
 
   if (error_flag) {
-    Cerr << "\nWarning: LAPACK error computing confidence intervals.\n\n";
+    Cout << "\nWarning: LAPACK error computing confidence intervals.\n\n";
     return;
   }
 

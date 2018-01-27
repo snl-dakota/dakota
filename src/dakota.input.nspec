@@ -287,25 +287,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( dot {0}
-    frcg {N_mdm(utype,methodName_DOT_FRCG)}
-    |
-    mmfd {N_mdm(utype,methodName_DOT_MMFD)}
-    |
-    bfgs {N_mdm(utype,methodName_DOT_BFGS)}
-    |
-    slp {N_mdm(utype,methodName_DOT_SLP)}
-    |
-    sqp {N_mdm(utype,methodName_DOT_SQP)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-    [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-    [ scaling {N_mdm(true,methodScaling)} ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
   ( conmin_frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
@@ -317,19 +298,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( conmin_mfd {N_mdm(utype,methodName_CONMIN_MFD)}
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-    [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-    [ scaling {N_mdm(true,methodScaling)} ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
-  ( conmin {0}
-    frcg {N_mdm(utype,methodName_CONMIN_FRCG)}
-    |
-    mfd {N_mdm(utype,methodName_CONMIN_MFD)}
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
@@ -359,22 +327,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
    )
   |
   ( nlssol_sqp {N_mdm(utype,methodName_NLSSOL_SQP)}
-    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
-    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
-    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
-    [ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
-    [ speculative {N_mdm(true,speculativeFlag)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(nnint,maxFunctionEvaluations)} ]
-    [ scaling {N_mdm(true,methodScaling)} ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
-  ( stanford {0}
-    npsol {N_mdm(utype,methodName_NPSOL_SQP)}
-    |
-    nlssol {N_mdm(utype,methodName_NLSSOL_SQP)}
     [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
     [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
@@ -997,6 +949,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
     [ initial_samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(pint,randomSeed)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(nnint,maxIterations)} ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ x_conv_tol REAL {N_mdm(Real,xConvTol)} ]
     [ gaussian_process ALIAS kriging {0}
       surfpack {N_mdm(type,emulatorType_KRIGING_EMULATOR)}
       |
@@ -4641,6 +4595,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
       initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
       num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
       [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
+      [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)} ]
       [ import_candidate_points_file STRING {N_mdm(str,importCandPtsFile)}
         [ 
           ( custom_annotated {N_mdm(utype,importCandFormat_TABULAR_NONE)}

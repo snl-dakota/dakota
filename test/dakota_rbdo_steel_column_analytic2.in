@@ -7,7 +7,6 @@
 # fully-analytic bi-level RBDO approach.
 
 environment,
-#	graphics
 	  method_pointer = 'OPTIM'
 
 ###########################

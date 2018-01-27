@@ -1,6 +1,5 @@
 
 environment,
-	#graphics
 
 method,
 	polynomial_chaos

@@ -1,11 +1,14 @@
-Blurb::
-Sequential Quadratic Program for nonlinear least squares
+Blurb:: Sequential Quadratic Program for nonlinear least squares
+
 Description::
-NLSSOL is available as \c nlssol_sqp and supports unconstrained,
-bound-constrained, and generally-constrained problems. It exploits
+NLSSOL supports unconstrained, bound-constrained, and
+generally-constrained least-squares calibration problems. It exploits
 the structure of a least squares objective function through the
 periodic use of Gauss-Newton Hessian approximations to accelerate the
-SQP algorithm. 
+SQP algorithm.
+
+<em>NLSSOL requires a separate software license and therefore may not
+be available in all versions of Dakota.  \ref method-nl2sol or \ref method-optpp_g_newton may be suitable alternatives.</em>
 
 
 <b> Stopping Criteria </b>
