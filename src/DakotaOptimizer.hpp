@@ -337,19 +337,24 @@ void get_linear_constraints( Model & model,
 
 //----------------------------------------------------------------
 
-/** Data adapter to transfer data from Dakota to third-party opt packages */
+/** Data adapter to transfer data from Dakota to third-party opt
+    packages.  The vector values might contain additional constraints;
+    the first entries corresponding to linear constraints are
+    populated by apply. */
 template <typename VecT>
 void apply_linear_constraints( const Model & model,
                                CONSTRAINT_EQUALITY_TYPE etype,
                                const VecT & in_vals,
-                                     VecT & values )
+			       VecT & values,
+			       bool adjoint = false)
 {
   size_t num_linear_consts      = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                               model.num_linear_eq_constraints() :
                                               model.num_linear_ineq_constraints();
-  size_t num_nonlinear_consts   = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                              model.num_nonlinear_eq_constraints() :
-                                              model.num_nonlinear_ineq_constraints();
+  // BMA --> RWH: Commented this as unused
+  // size_t num_nonlinear_consts   = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
+  //                                             model.num_nonlinear_eq_constraints() :
+  //                                             model.num_nonlinear_ineq_constraints();
   const RealMatrix & lin_coeffs = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                               model.linear_eq_constraint_coeffs() :
                                               model.linear_ineq_constraint_coeffs();
@@ -366,12 +371,25 @@ void apply_linear_constraints( const Model & model,
 
 //----------------------------------------------------------------
 
-/** Data adapter to transfer data from Dakota to third-party opt packages */
+/** Data adapter to transfer data from Dakota to third-party opt packages
+
+    If adjoint = false, (perhaps counter-intuitively) apply the
+    Jacobian (transpose of the gradient) to in_vals, which should be
+    of size num_continuous_vars: J*x = G'*x, resulting in
+    num_nonlinear_const values getting populated (possibly a subset of
+    the total constraint vector).
+
+    If adjoint = true, apply the adjoint Jacobian (gradient) to the
+    nonlinear constraint portion of in_vals, which should be of size
+    at least num_nonlinear_consts: J'*y = G*y, resulting in
+    num_continuous_vars values getting populated.
+*/
 template <typename VecT>
 void apply_nonlinear_constraints( const Model & model,
                                CONSTRAINT_EQUALITY_TYPE etype,
                                const VecT & in_vals,
-                                     VecT & values )
+				  VecT & values ,
+				  bool adjoint = false)
 {
   size_t num_resp = 1; // does this need to be generalized to more than one response value? - RWH
 
@@ -389,12 +407,20 @@ void apply_nonlinear_constraints( const Model & model,
   int grad_offset = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                                    num_resp + model.num_nonlinear_ineq_constraints() :
                                                    num_resp;
-  for(size_t i=0;i<num_nonlinear_consts;++i)
-  {
-    values[i+num_linear_consts] = 0.0;
-    for (size_t j=0; j<num_continuous_vars; j++)
-      values[i+num_linear_consts] += gradient_matrix(j, i+grad_offset) * in_vals[j];
-  }
+
+  if (adjoint)
+    for (size_t i=0; i<num_continuous_vars; ++i) {
+      // BMA --> RWH: can't zero in case compounding linear and nonlinear (usability issue)
+      // values[i] = 0.0;
+      for(size_t j=0; j<num_nonlinear_consts; ++j)
+	values[i] += gradient_matrix(i, grad_offset+j) * in_vals[num_linear_consts+j];
+    }
+  else
+    for(size_t j=0; j<num_nonlinear_consts; ++j) {
+      values[num_linear_consts+j] = 0.0;
+      for (size_t i=0; i<num_continuous_vars; i++)
+	values[num_linear_consts+j] += gradient_matrix(i, grad_offset+j) * in_vals[i];
+    }
 }
 
 //----------------------------------------------------------------

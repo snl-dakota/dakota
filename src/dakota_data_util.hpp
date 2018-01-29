@@ -192,7 +192,10 @@ bool is_equal_vec( const RealVector & vec1,
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
-/// Applies a RealMatrix to a vector
+/// Applies a RealMatrix to a vector (or subset of vector) v1
+/** Optionally works with a subset of the passed vectors; applies the
+    matrix M to the first M.numCols() entries in v1, and populates the
+    first M.numRows entries in v2. */
 template<typename VectorType>
 void apply_matrix(const RealMatrix& M, const VectorType & v1, VectorType & v2)
 {
@@ -211,6 +214,31 @@ void apply_matrix(const RealMatrix& M, const VectorType & v1, VectorType & v2)
     v2[i] = 0.0;
     for (size_t j=0; j<M.numCols(); ++j)
       v2[i] += M(i,j) * v1[j];
+  }
+}
+
+/// Applies transpose of a RealMatrix to a vector (or subset of vector) v1
+/** Optionally works with a subset of the passed vectors; applies the
+    matrix M^T to the first M.numRows() entries in v1, and populates the
+    first M.numCols() entries in v2. */
+template<typename VectorType>
+void apply_matrix_transpose(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+{
+  if( M.numRows() > v1.size() ) {
+    Cerr << "apply_matrix_transpose Error: incoming vector size is inconsistent with matrix row dimension."
+      << std::endl;
+    abort_handler(-1);
+  }
+
+  // Resize target vector if needed
+  if( M.numCols() > v2.size() )
+    v2.resize(M.numCols());
+
+  // Apply the matrix
+  for(size_t j=0; j<M.numCols(); ++j) {
+    v2[j] = 0.0;
+    for (size_t i=0; i<M.numRows(); ++i)
+      v2[j] += M(i,j) * v1[i];
   }
 }
 

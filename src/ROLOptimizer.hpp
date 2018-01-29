@@ -94,6 +94,10 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
     void applyJacobian(std::vector<Real> &jv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
 
+    /// Callback to return the result of applying the constraint adjoint on an arbitrary vector to ROL
+    void applyAdjointJacobian(std::vector<Real> &ajv,
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
+
   private:
 
     Model & dakotaModel;
@@ -116,6 +120,10 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
 
     /// Callback to return the result of applying the constraint gradient on an arbitrary vector to ROL
     void applyJacobian(std::vector<Real> &jv,
+        const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
+
+    /// Callback to return the result of applying the constraint adjoint on an arbitrary vector to ROL
+    void applyAdjointJacobian(std::vector<Real> &ajv,
         const std::vector<Real> &v, const std::vector<Real> &x, Real &tol) override;
 
   private:

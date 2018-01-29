@@ -361,6 +361,31 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
   }
 }
 
+
+void
+DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
+    const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
+{
+  // BMA --> RWH: Not sure how you'd prefer to handler this...
+  // Must init since are merging the effect of linear and nonlinear
+  // and linear might get skipped
+  ajv.assign(ajv.size(), 0.0);
+
+  // apply linear constraint Jacobian (might be empty)
+  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  apply_matrix_transpose(lin_ineq_coeffs, v, ajv);
+
+  // apply nonlinear constraint Jacobian (might be empty)
+  size_t num_nonlinear_ineq = dakotaModel.num_nonlinear_ineq_constraints();
+  if (num_nonlinear_ineq > 0) {
+    // makes sure that model is current
+    update_model(dakotaModel, x);
+    apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, ajv, true);
+  }
+}
+
+
+
 // --------------------------------------------------------------
 //               DakotaROLEqConstraints
 // --------------------------------------------------------------
@@ -394,6 +419,28 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
     // makes sure that model is current
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
+  }
+}
+
+void
+DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
+    const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
+{
+  // BMA --> RWH: Not sure how you'd prefer to handler this...
+  // Must init since are merging the effect of linear and nonlinear
+  // and linear might get skipped
+  ajv.assign(ajv.size(), 0.0);
+
+  // apply linear constraint Jacobian (might be empty)
+  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  apply_matrix_transpose(lin_eq_coeffs, v, ajv);
+
+  // apply nonlinear constraint Jacobian (might be empty)
+  size_t num_nonlinear_eq = dakotaModel.num_nonlinear_eq_constraints();
+  if (num_nonlinear_eq > 0) {
+    // makes sure that model is current
+    update_model(dakotaModel, x);
+    apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, ajv, true);
   }
 }
 
