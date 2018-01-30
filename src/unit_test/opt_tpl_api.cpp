@@ -1,6 +1,4 @@
 
-#include "APPSOptimizer.hpp"
-
 #include "opt_tpl_test_fixture.hpp"
 
 #include <string>
