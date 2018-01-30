@@ -6,10 +6,12 @@
 #include "DataModel.hpp"
 
 #include "APPSOptimizer.hpp"
+#ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
+#endif
 #include "JEGAOptimizer.hpp"
 #include "NomadOptimizer.hpp"
-#include "PEBBLMinimizer.hpp"
 #include "SNLLOptimizer.hpp"
 #include "SurrBasedGlobalMinimizer.hpp"
 
@@ -116,7 +118,9 @@ TEUCHOS_UNIT_TEST(opt_api_traits, var_consistency)
   check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
   check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()), out, success );
   check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          , out, success );
+#ifdef HAVE_ACRO
   check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         , out, success );
+#endif
 }
 
 //----------------------------------------------------------------
