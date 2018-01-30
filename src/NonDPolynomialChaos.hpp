@@ -112,6 +112,7 @@ protected:
 			const IntResponseMap& resp_map);
 
   void increment_order_and_grid();
+  void decrement_order_and_grid();
 
   /// print the final coefficients and final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -214,9 +215,17 @@ private:
   /// define a grid increment that is consistent with an advancement in
   /// expansion order
   void increment_grid_from_order();
+  /// revert a previous grid increment following an order decrement
+  void decrement_grid_from_order();
+
   /// define an expansion order that is consistent with an advancement in
   /// structured/unstructured grid level/density
   void increment_order_from_grid();
+
+  /// update numSamplesOnModel after an order increment/decrement
+  void update_samples_from_order();
+  /// publish numSamplesOnModel update to the DataFitSurrModel instance
+  void update_model_from_samples();
 
   /// convert an isotropic/anisotropic expansion_order vector into a scalar
   /// plus a dimension preference vector

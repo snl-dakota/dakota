@@ -474,13 +474,14 @@ void DataFitSurrModel::rebuild_approximation()
     //update_local_multipoint(); // updates from build_approximation() are valid
     build_local_multipoint(); // no change for build vs. rebuild
     interface_build_approx();
+    ++approxBuilds;
   }
   else { // global approximation
     //update_global(); // updates from build_approximation() are still valid
     rebuild_global();
+    //++approxBuilds; // already incremented by append_approximation(true)
   }
 
-  ++approxBuilds;
   //Cout << "\n<<<<< "<< surrogateType <<" approximation rebuilds completed.\n";
 }
 

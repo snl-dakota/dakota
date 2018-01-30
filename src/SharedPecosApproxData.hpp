@@ -96,8 +96,11 @@ public:
   const UShortArray& expansion_order() const;
   /// invokes Pecos::SharedOrthogPolyApproxData::expansion_order(UShortArray&)
   void expansion_order(const UShortArray& order);
+
   /// invokes Pecos::SharedOrthogPolyApproxData::increment_order()
   void increment_order();
+  /// invokes Pecos::SharedOrthogPolyApproxData::decrement_order()
+  void decrement_order();
 
   /// set the expansion configuration options within Pecos::SharedPolyApproxData
   void configuration_options(const Pecos::ExpansionConfigOptions& ec_options);
@@ -356,6 +359,10 @@ inline void SharedPecosApproxData::expansion_order(const UShortArray& order)
 
 inline void SharedPecosApproxData::increment_order()
 { ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->increment_order(); }
+
+
+inline void SharedPecosApproxData::decrement_order()
+{ ((Pecos::SharedOrthogPolyApproxData*)pecosSharedDataRep)->decrement_order(); }
 
 
 inline void SharedPecosApproxData::

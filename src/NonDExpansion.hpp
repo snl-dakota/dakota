@@ -90,6 +90,9 @@ protected:
   /// uniformly increment the expansion order and structured/unstructured
   /// grid (PCE only)
   virtual void increment_order_and_grid();
+  /// uniformly decrement the expansion order and structured/unstructured
+  /// grid (PCE only)
+  virtual void decrement_order_and_grid();
   /// increment the input specification sequence (PCE only)
   virtual void increment_specification_sequence();
   /// update an expansion; avoids overhead in compute_expansion()

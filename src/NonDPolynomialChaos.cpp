@@ -1097,18 +1097,19 @@ void NonDPolynomialChaos::increment_order_and_grid()
 
 
 /** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::increment_grid_from_order()
+void NonDPolynomialChaos::decrement_order_and_grid()
 {
   SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
     uSpaceModel.shared_approximation().data_rep();
-  const UShortArray& exp_order = shared_data_rep->expansion_order();
-  size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
-    Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
-    Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+  shared_data_rep->decrement_order();
+  decrement_grid_from_order();
+}
 
-  // update numSamplesOnModel based on existing collocation ratio and
-  // updated number of expansion terms
-  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+
+/** Used for uniform refinement of regression-based PCE. */
+void NonDPolynomialChaos::increment_grid_from_order()
+{
+  update_samples_from_order();
 
   // update u-space sampler to use new sample count
   if (tensorRegression) {
@@ -1119,12 +1120,26 @@ void NonDPolynomialChaos::increment_grid_from_order()
       nond_quad->increment_grid(); // increment dimension quad order
     nond_quad->update();
   }
-  else { // enforce increment through sampling_reset()
-    // no lower bound on samples in the subiterator
-    uSpaceModel.subordinate_iterator().sampling_reference(0);
-    DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
-    dfs_model->total_points(numSamplesOnModel);
+  else
+    update_model_from_samples();
+}
+
+
+void NonDPolynomialChaos::decrement_grid_from_order()
+{
+  update_samples_from_order();
+
+  // update u-space sampler to use new sample count
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_quad->samples(numSamplesOnModel);
+    //if (nond_quad->mode() == RANDOM_TENSOR) ***
+    //  nond_quad->decrement_grid(); // decrement dimension quad order
+    nond_quad->update();
   }
+  else
+    update_model_from_samples();
 }
 
 
@@ -1143,6 +1158,31 @@ void NonDPolynomialChaos::increment_order_from_grid()
   ratio_samples_to_order(collocRatio, numSamplesOnModel, exp_order, true);
   // restore
   shared_data_rep->expansion_order(exp_order);
+}
+
+
+void NonDPolynomialChaos::update_samples_from_order()
+{
+  SharedPecosApproxData* shared_data_rep = (SharedPecosApproxData*)
+    uSpaceModel.shared_approximation().data_rep();
+  const UShortArray& exp_order = shared_data_rep->expansion_order();
+  size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
+    Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
+    Pecos::SharedPolyApproxData::total_order_terms(exp_order);
+
+  // update numSamplesOnModel based on existing collocation ratio and
+  // updated number of expansion terms
+  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+}
+
+
+void NonDPolynomialChaos::update_model_from_samples()
+{
+  // enforce increment through sampling_reset()
+  // no lower bound on samples in the subiterator
+  uSpaceModel.subordinate_iterator().sampling_reference(0);
+  DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
+  dfs_model->total_points(numSamplesOnModel);
 }
 
 

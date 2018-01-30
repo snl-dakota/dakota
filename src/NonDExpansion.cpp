@@ -949,6 +949,11 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid(); // TPQ or SSG
       update_expansion();
+      metric = compute_covariance_metric();
+      if (!apply_best) {
+	uSpaceModel.pop_approximation(true);// store increment to use in restore
+	//nond_integration->decrement_grid();
+      }
       break;
     }
     case Pecos::DEFAULT_REGRESSION: case Pecos::DEFAULT_LEAST_SQ_REGRESSION:
@@ -961,9 +966,13 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
       // initial collocation ratio (either user specified or inferred)
       increment_order_and_grid(); // virtual fn defined for NonDPCE
       update_expansion(); // invokes uSpaceModel.build_approximation()
+      metric = compute_covariance_metric();
+      if (!apply_best) {
+	uSpaceModel.pop_approximation(true);// store increment to use in restore
+	decrement_order_and_grid();
+      }
       break;
     }
-    metric = compute_covariance_metric();
     return 0; // only one candidate
     break;
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
@@ -977,6 +986,10 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
     nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
     update_expansion();
     metric = compute_covariance_metric();
+    if (!apply_best) {
+      uSpaceModel.pop_approximation(true); // store increment to use in restore
+      //nond_integration->decrement_grid();
+    }
     return 0; // only one candidate
     break;
   }
@@ -991,6 +1004,10 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
     nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
     update_expansion();
     metric = compute_covariance_metric();
+    if (!apply_best) {
+      uSpaceModel.pop_approximation(true); // store increment to use in restore
+      //nond_integration->decrement_grid();
+    }
     return 0; // only one candidate
     break;
   }
@@ -1320,6 +1337,15 @@ void NonDExpansion::increment_order_and_grid()
   Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
        << "class.\n       NonDExpansion does not support uniform expansion "
        << "order and grid increments." << std::endl;
+  abort_handler(-1);
+}
+
+
+void NonDExpansion::decrement_order_and_grid()
+{
+  Cerr << "Error: virtual decrement_order_and_grid() not redefined by derived "
+       << "class.\n       NonDExpansion does not support uniform expansion "
+       << "order and grid decrements." << std::endl;
   abort_handler(-1);
 }
 
