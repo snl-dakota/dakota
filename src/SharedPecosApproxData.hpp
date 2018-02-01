@@ -124,15 +124,16 @@ protected:
   void rebuild();
 
   void pop(bool save_surr_data);
+
   bool push_available();
   size_t retrieval_index();
   void pre_push();
-
   void post_push();
+
   size_t finalization_index(size_t i);
   void pre_finalize();
-
   void post_finalize();
+
   void pre_combine();
   void post_combine();
   void combined_to_active();
