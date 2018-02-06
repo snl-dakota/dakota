@@ -1374,23 +1374,25 @@ void NonDBayesCalibration::build_field_discrepancy()
     Teuchos::setCol(config_vec, i, allConfigInputs);
   } 
 
+  size_t num_field_groups = expData.num_fields();
   // Read independent coordinates
-  for (int i = 0; i < numFieldLeastSqTerms; i++) {
+  for (int i = 0; i < num_field_groups; i++) {
     for (int j = 0; j < num_exp; j++) {
-      RealMatrix indep_coordinates = expData.read_field_coords_view(i,j);
+      RealMatrix indep_coordinates = expData.field_coords_view(i,j);
       Cout << "Independent Coordinate " << indep_coordinates;
     }
   }
-  RealVector concat_disc(field_length);
 
-  for (int i = 0; i < numFieldLeastSqTerms; i++) {
+  for (int i = 0; i < num_field_groups; i++) {
    // Question:  do we want the t and concat_disp to include ALL the experiments?
     for (int j = 0; j < num_exp; j++) {
-      for (int k=0; k < field_length; k++) {
-        concat_disc(k) = expData.residuals_view(residuals, j);
-      }
+      const IntVector field_lengths = expData.field_lengths(j);
+      RealVector concat_disc(field_lengths[0]);
+      Response residual_response;
+      expData.form_residuals(mcmcModel.current_response(), j, residual_response);
+      //build_GP_field(vector view(indep_coordinates, t_new_coord, concat_disc, disc_pred);
+      Cout << residual_response.function_values();
     }
-    build_GP_field(vector view(indep_coordinates, t_new_coord, concat_disc, disc_pred);
   }
 
   // We are getting coordinates for the experiment and ultimately we need to handle the simulation coordinates
@@ -1426,12 +1428,12 @@ void NonDBayesCalibration::build_GP_field(const RealVector& t, const RealVector&
 
   // build the GP for the discrepancy
   //
-  gpApproximation.add(t,concat_resp);
+  gpApproximation.add(t,concat_disc);
   gpApproximation.build();
   //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
-  for (int i=0; i<length_t_pred; i++) {
-     disc_pred(i)=gpApproximation.value(t_pred[i]);
-  }
+  //for (int i=0; i<length_t_pred; i++) {
+  //   disc_pred(i)=gpApproximation.value(t_pred[i]);
+  //}
 
 }
 
