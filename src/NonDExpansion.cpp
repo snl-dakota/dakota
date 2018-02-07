@@ -1209,6 +1209,9 @@ void NonDExpansion::multifidelity_expansion(short refine_type, bool to_active)
 
 void NonDExpansion::greedy_multifidelity_expansion()
 {
+  // clear any persistent state from previous (e.g., for OUU)
+  NLev.clear();
+
   // Generate MF reference expansion that is starting pt for greedy refinement:
   // > Only generate combined{MultiIndex,ExpCoeffs,ExpCoeffGrads}; active
   //   multiIndex,expansionCoeff{s,Grads} remain at ref state (no roll up)
@@ -1248,7 +1251,8 @@ void NonDExpansion::greedy_multifidelity_expansion()
       // level candidate.  For selection among multiple level candidates, a
       // secondary normalization for relative level cost is required.
       lev_metric /= lev_cost;
-      Cout << "\n<<<<< Level refinement metric = " << lev_metric << '\n';
+      Cout << "\n<<<<< Level " << lev+1 << " refinement metric = "
+	   << lev_metric << '\n';
 
       // Assess candidate for best across all levels
       if (lev_metric > best_lev_metric) {
