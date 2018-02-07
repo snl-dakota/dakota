@@ -1367,7 +1367,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   mcmcModel.continuous_variables(ave_params);
   
   int num_exp = expData.num_experiments();
-  size_t num_configvars = expData.config_vars()[0].length();
+/*  size_t num_configvars = expData.config_vars()[0].length();
   RealMatrix allConfigInputs(num_configvars,num_exp);
   for (int i = 0; i < num_exp; i++) {
     RealVector config_vec = expData.config_vars()[i];
@@ -1394,6 +1394,27 @@ void NonDBayesCalibration::build_field_discrepancy()
       Cout << residual_response.function_values();
     }
   }
+*/
+   RealVector disc_concat(5), disc_pred(6); 
+   RealMatrix t(1,5), t_pred(1,6); 
+   t(0,0)=1.0;
+   t(0,1)=2.0;
+   t(0,2)=3.0;
+   t(0,3)=4.0;
+   t(0,4)=5.0;
+   t_pred(0,0)=1.5;
+   t_pred(0,1)=2.5;
+   t_pred(0,2)=3.5;
+   t_pred(0,3)=4.5;
+   t_pred(0,4)=5.5;
+   t_pred(0,5)=6.5;
+   disc_concat[0]=2.2;
+   disc_concat[1]=2.6;
+   disc_concat[2]=2.9;
+   disc_concat[3]=3.4;
+   disc_concat[4]=3.8;
+   build_GP_field(t, t_pred, disc_concat, disc_pred);
+   Cout << "disc_pred " << disc_pred;
 
   // We are getting coordinates for the experiment and ultimately we need to handle the simulation coordinates
   // if interpolation.
@@ -1409,8 +1430,8 @@ void NonDBayesCalibration::build_field_discrepancy()
 }
 
 
-void NonDBayesCalibration::build_GP_field(const RealVector& t, const RealVector& t_pred,
-			   const RealVector& concat_disc, const RealVector& disc_pred)
+void NonDBayesCalibration::build_GP_field(const RealMatrix& t, RealMatrix& t_pred,
+			   const RealVector& concat_disc, RealVector& disc_pred)
 {
 
   String approx_type;
@@ -1431,9 +1452,11 @@ void NonDBayesCalibration::build_GP_field(const RealVector& t, const RealVector&
   gpApproximation.add(t,concat_disc);
   gpApproximation.build();
   //gpApproximations.export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
-  //for (int i=0; i<length_t_pred; i++) {
-  //   disc_pred(i)=gpApproximation.value(t_pred[i]);
-  //}
+  int pred_length = t_pred.numCols();
+  for (int i=0; i<pred_length; i++) {
+    RealVector new_sample = Teuchos::getCol(Teuchos::View,t_pred,i);
+    disc_pred(i)=gpApproximation.value(new_sample);
+  }
 
 }
 

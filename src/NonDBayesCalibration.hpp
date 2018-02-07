@@ -131,8 +131,8 @@ protected:
   void build_model_discrepancy();
   void build_scalar_discrepancy();
   void build_field_discrepancy();
-  void build_GP_field(const RealVector& t, const RealVector& t_pred,
-                           const RealVector& concat_disc, const RealVector& disc_pred);
+  void build_GP_field(const RealMatrix& t, RealMatrix& t_pred,
+                           const RealVector& concat_disc, RealVector& disc_pred);
 
 
   /// calculate a Kernel Density Estimate (KDE) for the posterior samples
