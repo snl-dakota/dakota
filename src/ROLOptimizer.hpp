@@ -28,6 +28,7 @@
 namespace Dakota {
 
   enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
+  enum {TYPE_U=1, TYPE_B=2, TYPE_E=3, TYPE_EB=4};
 
 /** ROLTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
@@ -207,6 +208,9 @@ protected:
 
   /// Handle to ROL's solution vector 
   Teuchos::RCP<std::vector<Real> > rolX;
+
+  /// ROL problem type
+  unsigned short problem_type;
 };
 
 } // namespace Dakota

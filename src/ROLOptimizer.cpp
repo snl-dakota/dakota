@@ -47,9 +47,9 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL")
 {
-  set_rol_parameters();
-
   set_problem();
+
+  set_rol_parameters();
 }
 
 /// Alternate constructor for Iterator instantiations by name.
@@ -59,9 +59,9 @@ ROLOptimizer(const String& method_string, Model& model):
   Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL")
 {
-  set_rol_parameters();
-
   set_problem();
+
+  set_rol_parameters();
 }
 
 
@@ -71,11 +71,25 @@ void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
 
-  // (we only support line search for now)
-  optSolverParams.sublist("Step").set("Type","Line Search");
-
-  // Turns on usage of applyJacobian for constraints with a "Trust Region" Subproblem Step Type
-  optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+  if (problem_type == TYPE_U)
+  {
+    optSolverParams.sublist("Step").set("Type","Trust Region");
+    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+  }
+  if (problem_type == TYPE_B)
+  {
+    optSolverParams.sublist("Step").set("Type","Trust Region");
+    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+  }
+  if (problem_type == TYPE_E)
+  {
+    optSolverParams.sublist("Step").set("Type","Composite Step");
+  }
+  if (problem_type == TYPE_EB)
+  {
+    optSolverParams.sublist("Step").set("Type","Augmented Lagrangian");
+    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+  }
 
   // PRECEDENCE 2: Dakota input file settings
 
@@ -175,14 +189,16 @@ void ROLOptimizer::set_problem()
     u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
 
   get_initial_values(iteratedModel, *rolX);
-  get_bounds(iteratedModel, *l_rcp, *u_rcp);
-
   x.reset( new ROL::StdVector<Real>(rolX) );
-  Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );
-  Teuchos::RCP<ROL::Vector<Real> > upper( new ROL::StdVector<Real>( u_rcp ) );
 
-  // create ROL::BoundConstraint object to house variable bounds information
-  bnd.reset( new ROL::Bounds<Real>(lower,upper) );
+  if (boundConstraintFlag){
+    get_bounds(iteratedModel, *l_rcp, *u_rcp);
+    Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );
+    Teuchos::RCP<ROL::Vector<Real> > upper( new ROL::StdVector<Real>( u_rcp ) );
+
+    // create ROL::BoundConstraint object to house variable bounds information
+    bnd.reset( new ROL::Bounds<Real>(lower,upper) );
+  }
 
   // create objective function object and give it access to Dakota model 
   obj.reset(new DakotaROLObjective(iteratedModel));
@@ -244,6 +260,27 @@ void ROLOptimizer::set_problem()
 
   // Call simplified interface problem generator
   optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
+
+  // Obtain ROL problem type
+  // Defaults to Type-U, otherwise overwrite
+  problem_type = TYPE_U;
+  if (numIneqConstraints > 0)
+    problem_type = TYPE_EB;
+  else
+  {
+    if (numEqConstraints > 0)
+    {
+      if (boundConstraintFlag)
+        problem_type = TYPE_EB;
+      else
+        problem_type = TYPE_E;
+    }
+    else
+    {
+      if (boundConstraintFlag)
+        problem_type = TYPE_B;
+    }
+  }
 
   // checking, may be enabled in tests or debug mode
 

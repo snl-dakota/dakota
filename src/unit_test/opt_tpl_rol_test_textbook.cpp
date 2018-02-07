@@ -324,10 +324,10 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-5"
-    "     constraint_tolerance 1.0e-5"
-    "     threshold_delta 1.0e-5"
-    "     max_iterations 20"
+    "     gradient_tolerance 1.0e-7"
+    "     constraint_tolerance 1.0e-7"
+    "     threshold_delta 1.0e-7"
+    "     max_iterations 100"
     " variables,"
     "   continuous_design = 3"
     "     initial_point  -2.3    2.3   0.23"
@@ -361,18 +361,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 
   target = 0.762750812626551;
   // BMA: Needs review
-  max_tol = 1.5e-6;
+  max_tol = 1.0e-9;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.163577604324929;
-  max_tol = 1.e-5;
+  max_tol = 1.e-8;
   rel_err = fabs((vars.continuous_variable(1) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.5e-2;
+  max_tol = 1.0e-2;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -380,7 +380,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   const Response& resp  = env.response_results();
 
   target = 3.884217188745469e-03;
-  max_tol = 1.e-4;
+  max_tol = 1.e-7;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
@@ -404,7 +404,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
     "     gradient_tolerance 1.0e-4"
     "     constraint_tolerance 1.0e-4"
     "     threshold_delta 1.0e-4"
-    "     max_iterations 20"
+    "     max_iterations 100"
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.0    0.0   0.0"
@@ -439,18 +439,18 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-4;
+  max_tol = 1.e-10;
   rel_err = fabs((vars.continuous_variable(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
-  max_tol = 1.e-3;
+  max_tol = 1.e-10;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.3e-3;
+  max_tol = 1.e-1;
   rel_err = fabs((vars.continuous_variable(2) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 
@@ -458,7 +458,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   const Response& resp  = env.response_results();
 
   target = 1.0;
-  max_tol = 1.e-3;
+  max_tol = 1.e-6;
   rel_err = fabs((resp.function_value(0) - target)/target);
   TEST_COMPARE(rel_err,<, max_tol);
 }
