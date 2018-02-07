@@ -359,7 +359,7 @@ void apply_linear_constraints( const Model & model,
                                               model.linear_eq_constraint_coeffs() :
                                               model.linear_ineq_constraint_coeffs();
 
-  apply_matrix(lin_coeffs, in_vals, values);
+  apply_matrix_partial(lin_coeffs, in_vals, values);
 
   if( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY )
   {

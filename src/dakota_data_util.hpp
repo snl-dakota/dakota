@@ -197,7 +197,7 @@ void remove_column(RealMatrix& matrix, int index);
     matrix M to the first M.numCols() entries in v1, and populates the
     first M.numRows entries in v2. */
 template<typename VectorType>
-void apply_matrix(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+void apply_matrix_partial(const RealMatrix& M, const VectorType & v1, VectorType & v2)
 {
   if( M.numCols() > v1.size() ) {
     Cerr << "apply_matrix Error: incoming vector size is inconsistent with matrix column dimension."
@@ -222,7 +222,7 @@ void apply_matrix(const RealMatrix& M, const VectorType & v1, VectorType & v2)
     matrix M^T to the first M.numRows() entries in v1, and populates the
     first M.numCols() entries in v2. */
 template<typename VectorType>
-void apply_matrix_transpose(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+void apply_matrix_transpose_partial(const RealMatrix& M, const VectorType & v1, VectorType & v2)
 {
   if( M.numRows() > v1.size() ) {
     Cerr << "apply_matrix_transpose Error: incoming vector size is inconsistent with matrix row dimension."

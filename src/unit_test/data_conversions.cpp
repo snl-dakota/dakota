@@ -64,7 +64,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
   std::vector<Real> v2;
 
   /////////////////  What we want to test
-  apply_matrix(mat, v1, v2);
+  apply_matrix_partial(mat, v1, v2);
   /////////////////  What we want to test
 
   // Verify correct dimensions
@@ -89,7 +89,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix)
     v4[i] = (Real)i;
 
   /////////////////  What we want to test
-  apply_matrix(mat, v3, v4);
+  apply_matrix_partial(mat, v3, v4);
   /////////////////  What we want to test
 
   // Verify correct dimensions
@@ -123,7 +123,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
   std::vector<Real> v2;
 
   /////////////////  What we want to test
-  apply_matrix_transpose(mat, v1, v2);
+  apply_matrix_transpose_partial(mat, v1, v2);
   /////////////////  What we want to test
 
   // Verify correct dimensions
@@ -148,7 +148,7 @@ TEUCHOS_UNIT_TEST(data_conversion, apply_matrix_transpose)
     v4[i] = (Real)i;
 
   /////////////////  What we want to test
-  apply_matrix_transpose(mat, v3, v4);
+  apply_matrix_transpose_partial(mat, v3, v4);
   /////////////////  What we want to test
 
   // Verify correct dimensions

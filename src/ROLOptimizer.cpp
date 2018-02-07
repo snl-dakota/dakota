@@ -390,7 +390,7 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
 {
   // apply linear constraint Jacobian
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
-  apply_matrix(lin_ineq_coeffs, v, jv);
+  apply_matrix_partial(lin_ineq_coeffs, v, jv);
 
   // apply nonlinear constraint Jacobian
   if( haveNlnConst ) {
@@ -411,7 +411,7 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // apply linear constraint Jacobian (might be empty)
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
-  apply_matrix_transpose(lin_ineq_coeffs, v, ajv);
+  apply_matrix_transpose_partial(lin_ineq_coeffs, v, ajv);
 
   // apply nonlinear constraint Jacobian (might be empty)
   if (haveNlnConst) {
@@ -450,7 +450,7 @@ DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
 {
   // apply linear constraint Jacobian
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
-  apply_matrix(lin_eq_coeffs, v, jv);
+  apply_matrix_partial(lin_eq_coeffs, v, jv);
 
   // apply nonlinear constraint Jacobian
   if( haveNlnConst ) {
@@ -470,7 +470,7 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // apply linear constraint Jacobian (might be empty)
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
-  apply_matrix_transpose(lin_eq_coeffs, v, ajv);
+  apply_matrix_transpose_partial(lin_eq_coeffs, v, ajv);
 
   // apply nonlinear constraint Jacobian (might be empty)
   if (haveNlnConst) {
