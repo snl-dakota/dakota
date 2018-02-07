@@ -404,7 +404,6 @@ void
 DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // BMA --> RWH: Not sure how you'd prefer to handler this...
   // Must init since are merging the effect of linear and nonlinear
   // and linear might get skipped
   ajv.assign(ajv.size(), 0.0);
@@ -463,7 +462,6 @@ void
 DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // BMA --> RWH: Not sure how you'd prefer to handler this...
   // Must init since are merging the effect of linear and nonlinear
   // and linear might get skipped
   ajv.assign(ajv.size(), 0.0);

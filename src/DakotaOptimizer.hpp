@@ -351,10 +351,6 @@ void apply_linear_constraints( const Model & model,
   size_t num_linear_consts      = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                               model.num_linear_eq_constraints() :
                                               model.num_linear_ineq_constraints();
-  // BMA --> RWH: Commented this as unused
-  // size_t num_nonlinear_consts   = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-  //                                             model.num_nonlinear_eq_constraints() :
-  //                                             model.num_nonlinear_ineq_constraints();
   const RealMatrix & lin_coeffs = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                               model.linear_eq_constraint_coeffs() :
                                               model.linear_ineq_constraint_coeffs();
