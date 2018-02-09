@@ -1303,11 +1303,10 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     nond_sparse->update_reference();
     break;
   }
-  //case Pecos::UNIFORM_CONTROL:
-  //case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
-  //case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    //uSpaceModel.push_approximation();
-    //break;
+  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    // can ignore best index since only one candidate for now
+    uSpaceModel.push_approximation();  break;
   }
 
   // Update reference stats

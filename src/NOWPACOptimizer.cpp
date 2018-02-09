@@ -211,10 +211,12 @@ void NOWPACOptimizer::core_run()
   nowpacEvaluator.unscale(x_star, c_vars);
   // Publish optimal response
   if (!localObjectiveRecast) {
+    // objective value is returned from optimize()
     RealVector best_fns(numFunctions);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star : obj_star;
 
+    // final constraint vals are approximate since come from internal surrogate
     const SizetList& nln_ineq_map_indices
       = nowpacEvaluator.nonlinear_inequality_mapping_indices();
     const RealList&  nln_ineq_map_mult

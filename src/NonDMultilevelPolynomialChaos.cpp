@@ -858,21 +858,15 @@ void NonDMultilevelPolynomialChaos::multilevel_regression()
 
 void NonDMultilevelPolynomialChaos::metric_roll_up()
 {
-  bool greedy_mf
-    = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS && refineType &&
-       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
-
-  if (greedy_mf) // multilev/multifid on inner loop --> roll up multilevel stats
+  // multilev/multifid on inner loop --> roll up multilevel stats
+  if (mlmfAllocControl == GREEDY_REFINEMENT && refineControl)
     uSpaceModel.combine_approximation();
 }
 
 
 void NonDMultilevelPolynomialChaos::compute_covariance()
 {
-  bool greedy_mf
-    = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS && refineType &&
-       refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);//for now
-
+  bool greedy_mf = (mlmfAllocControl == GREEDY_REFINEMENT && refineControl);
   if (!greedy_mf) // multilev/multifid on outer loop --> return single lev covar
     { NonDExpansion::compute_covariance(); return; }
 
