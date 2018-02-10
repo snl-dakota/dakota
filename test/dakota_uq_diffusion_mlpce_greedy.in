@@ -10,9 +10,11 @@ method,
 #	  p_refinement uniform	       	 			#s2
 #	    expansion_order_sequence = 1			#s2
 #	    collocation_ratio = .9				#s2
-	    convergence_tolerance 1.e-6				#s0,#s2
+#	    orthogonal_matching_pursuit				#s2
+	    convergence_tolerance 1.e-6				#s0
 #	    convergence_tolerance 1.e-8				#s1
-#	    max_refinement_iterations 500
+#	    convergence_tolerance 1.e-3				#s2
+#	    max_refinement_iterations 100
 	output silent
 #	variance_based_decomp
 
