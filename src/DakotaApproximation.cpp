@@ -340,7 +340,7 @@ void Approximation::finalize()
     size_t i, num_popped = approxData.popped_sets(); // # of popped trials
     for (i=0; i<num_popped; ++i)
       approxData.push(sharedDataRep->finalization_index(i), false);
-    approxData.clear_popped(); // only after process completed
+    approxData.clear_active_popped(); // only after process completed
   }
 }
 

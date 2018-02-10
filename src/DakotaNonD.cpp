@@ -1921,7 +1921,7 @@ load_pilot_sample(const SizetArray& pilot_spec, const Sizet3DArray& N_l,
 	     << "load_pilot_sample(SizetArray)" << std::endl;
 	abort_handler(METHOD_ERROR);
       }
-    Cout << "\nnMultifidelity pilot sample:\n";
+    Cout << "\nMultifidelity pilot sample:\n";
   }
   else { // ML only case
     delta_size = N_l[0].size();

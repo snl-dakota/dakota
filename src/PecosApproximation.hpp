@@ -574,35 +574,6 @@ inline void PecosApproximation::combined_to_active()
 }
 
 
-/*
-inline void PecosApproximation::store(size_t index)
-{
-  // base class implementation manages approx data
-  Approximation::store(index);
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.store_coefficients(index);
-}
-
-
-inline void PecosApproximation::restore(size_t index)
-{
-  // base class implementation manages approx data
-  Approximation::restore(index);
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.restore_coefficients(index);
-}
-
-
-inline void PecosApproximation::remove_stored(size_t index)
-{
-  // base class implementation manages approx data
-  Approximation::remove_stored(index);
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.remove_stored_coefficients(index);
-}
-*/
-
-
 inline void PecosApproximation::clear_inactive()
 {
   // base class implementation manages approx data

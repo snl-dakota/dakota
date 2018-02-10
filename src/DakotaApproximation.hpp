@@ -222,7 +222,9 @@ public:
   void clear_all();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
-  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack
+  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for active key
+  void clear_active_popped();
+  /// clear SurrogateData::popped{Vars,Resp}Trials,popCountStack for all keys
   void clear_popped();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
@@ -420,6 +422,13 @@ inline void Approximation::clear_data()
 {
   if (approxRep) approxRep->approxData.clear_active();
   else approxData.clear_active();
+}
+
+
+inline void Approximation::clear_active_popped()
+{
+  if (approxRep) approxRep->approxData.clear_active_popped();
+  else           approxData.clear_active_popped();
 }
 
 

@@ -1305,8 +1305,16 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   }
   case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    // ramp expansion order and update regression samples
+    increment_order_and_grid(); // virtual fn defined for NonDPCE
     // can ignore best index since only one candidate for now
-    uSpaceModel.push_approximation();  break;
+    uSpaceModel.push_approximation();
+    // *** promotion of best candidate invalidates coefficient increments, but
+    // not multi-index and SurrogateData increments --> would be best to just
+    // replace coefficients by using special logic in increment/push, rather
+    // than implementing an unbalanced pop
+    //uSpaceModel.clear_popped(); // ***
+    break;
   }
 
   // Update reference stats

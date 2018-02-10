@@ -124,6 +124,7 @@ protected:
 
   void clear_current();
   void clear_all();
+  void clear_active_popped();
   void clear_popped();
 
   SharedApproxData& shared_approximation();
@@ -381,6 +382,13 @@ inline void ApproximationInterface::clear_all()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
     functionSurfaces[*it].clear_all();
+}
+
+
+inline void ApproximationInterface::clear_active_popped()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
+    functionSurfaces[*it].clear_active_popped();
 }
 
 

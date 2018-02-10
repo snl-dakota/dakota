@@ -1334,9 +1334,8 @@ void Interface::clear_current()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->clear_current();
-  else { // letter lacking redefinition of virtual fn.
+  //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
-  }
 }
 
 
@@ -1344,9 +1343,17 @@ void Interface::clear_all()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->clear_all();
-  else { // letter lacking redefinition of virtual fn.
+  //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
-  }
+}
+
+
+void Interface::clear_active_popped()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->clear_active_popped();
+  //else // letter lacking redefinition of virtual fn.
+    // ApplicationInterfaces: do nothing
 }
 
 
@@ -1354,9 +1361,8 @@ void Interface::clear_popped()
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->clear_popped();
-  else { // letter lacking redefinition of virtual fn.
+  //else // letter lacking redefinition of virtual fn.
     // ApplicationInterfaces: do nothing
-  }
 }
 
 
