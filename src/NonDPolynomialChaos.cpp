@@ -928,10 +928,12 @@ void NonDPolynomialChaos::update_expansion()
   case Pecos::CUBATURE:
     // build from scratch and detect any duplicates
     // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
-    NonDExpansion::update_expansion();   break;
+    uSpaceModel.build_approximation(); break;
   default:
     // unstructured grid cases: SAMPLING, ORTHOG_LEAST_INTERP, all REGRESSION
-    uSpaceModel.rebuild_approximation(); break;
+    if (uSpaceModel.push_available()) uSpaceModel.push_approximation();
+    else                              uSpaceModel.rebuild_approximation();
+    break;
   }
 }
 

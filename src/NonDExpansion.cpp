@@ -1029,9 +1029,19 @@ void NonDExpansion::post_refinement(Real& metric)
 {
   // finalize refinement algorithms (if necessary)
   switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED: {
     bool converged_within_tol = (metric <= convergenceTol);
     finalize_sets(converged_within_tol); break;
+  }
+  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    if (uSpaceModel.push_available()) {
+      // ramp expansion order and update regression samples
+      increment_order_and_grid(); // virtual fn defined for NonDPCE
+      // can ignore best index since only one candidate for now
+      uSpaceModel.push_approximation();
+    }
+    break;
   }
 }
 
@@ -1309,11 +1319,10 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     increment_order_and_grid(); // virtual fn defined for NonDPCE
     // can ignore best index since only one candidate for now
     uSpaceModel.push_approximation();
-    // *** promotion of best candidate invalidates coefficient increments, but
-    // not multi-index and SurrogateData increments --> would be best to just
-    // replace coefficients by using special logic in increment/push, rather
-    // than implementing an unbalanced pop
-    //uSpaceModel.clear_popped(); // ***
+    // Promotion of best candidate does not invalidate coefficient increments
+    // for other levels, as they are separate functions.  Only the metric roll
+    // up must be updated for subsequent use of existing expansion increments.
+    //uSpaceModel.clear_popped(); // NOT NEEDED!
     break;
   }
 
