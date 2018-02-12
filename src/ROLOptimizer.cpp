@@ -71,6 +71,11 @@ void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
 
+  optSolverParams.sublist("General").sublist("Secant").
+    set("Type", "Limited-memory BFGS");
+  optSolverParams.sublist("General").sublist("Secant").
+    set("Use as Hessian", true);
+
   if (problemType == TYPE_U)
   {
     optSolverParams.sublist("Step").set("Type","Trust Region");
