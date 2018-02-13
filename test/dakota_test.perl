@@ -1236,7 +1236,8 @@ sub parse_test_output {
     }
     # Capture final results: best parameters, samples,
     # objective functions, constraints, residual terms, etc.
-    while (/^<<<<< Best [ \w\(\)]+=$/) {
+    # Also grab Bayesian optimal design points
+    while (/^(<<<<< Best [ \w\(\)]+=|Optimal design:)$/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
@@ -1296,7 +1297,7 @@ sub parse_test_output {
       print TEST_OUT;
     }
     
-    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =)/) {
+    if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Mutual information =)/) {
       print;
       print TEST_OUT;
     }
