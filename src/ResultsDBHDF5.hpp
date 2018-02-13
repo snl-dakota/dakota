@@ -17,9 +17,9 @@
 #include "dakota_global_defs.hpp"
 #include "dakota_results_types.hpp"
 #include "BinaryIO_Helper.hpp"
-#include <boost/scoped_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <memory>
 
 namespace Dakota {
 
@@ -107,7 +107,7 @@ private:
 
   /// BMA TODO: would prefer not to have a pointer, but no way to
   /// default construct an output handler
-  boost::scoped_ptr<HDF5BinaryStream> hdf5Stream;
+  std::unique_ptr<HDF5BinaryStream> hdf5Stream;
 
 
 };

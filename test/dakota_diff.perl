@@ -266,15 +266,18 @@ sub compare_output {
     my $surr_re = '^Surrogate quality metrics';
     my $pce_re = 'of Polynomial Chaos Expansion for';
     my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
+    my $opt_des_re = '^Optimal design:$';
 
     while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
             ($base =~ /${conf_int_re}/) && ($test =~ /${conf_int_re}/) ||
             ($base =~ /${surr_re}/) && ($test =~ /${surr_re}/) ||
             ($base =~ /${pce_re}/)  && ($test =~ /${pce_re}/)  ||
-            ($base =~ /${uq_re}/)   && ($test =~ /${uq_re}/)) {
+            ($base =~ /${uq_re}/)   && ($test =~ /${uq_re}/) ||
+            ($base =~ /${opt_des_re}/)   && ($test =~ /${opt_des_re}/)) {
 
       # General
-      while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ) {
+      while ( ($base =~ /${best_re}/) && ($test =~ /${best_re}/) ||
+	      ($base =~ /${opt_des_re}/) && ($test =~ /${opt_des_re}/) ) {
         if ($base != $test) {
           print "Error: mismatch in data header between baseline and test\n";
           exit(-1);
@@ -671,9 +674,9 @@ sub compare_output {
 
     # MV
     elsif ( ( ($t_val) = $test =~
-	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+)\s+=\s+($e)$/ ) &&
+	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Mutual information)\s+=\s+($e)$/ ) &&
 	    ( ($b_val) = $base =~
-	      /^\s+(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+)\s+=\s+($e)$/ ) ) {
+	      /^\s*(?:Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for \w+|Mutual information)\s+=\s+($e)$/ ) ) {
       if ( diff($t_val, $b_val) ) {
 	$test_diff = 1;
 	push @base_diffs, $base;

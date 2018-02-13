@@ -77,7 +77,8 @@ public:
   // compute information metrics
   static Real knn_kl_div(RealMatrix& distX_samples, RealMatrix& distY_samples,
       		size_t dim); 
-  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY, int alg);
+  static Real knn_mutual_info(RealMatrix& Xmatrix, int dimX, int dimY,
+			      unsigned short alg);
 
 protected:
 
@@ -126,6 +127,37 @@ protected:
   /// information-guided design of experiments (adaptive experimental
   /// design)
   void calibrate_to_hifi();
+  /// evaluate stopping criteria for calibrate_to_hifi
+  bool eval_hi2lo_stop(bool stop_metric, double prev_MI, double max_MI, 
+      		       int num_it, int num_hifi, int max_hifi, 
+		       int num_candidates);
+  /// print calibrate_to_hifi progress to file
+  void print_hi2lo_file(std::ostream& out_file, int num_it, int batchEvals, 
+                        RealMatrix& optimal_config_matrix, const RealVector& 
+			MI_vec, int max_hifi, RealMatrix& resp_matrix, const 
+			RealVector& optimal_config, double max_MI);
+  /// print calibrate_to_hifi progress
+  void print_hi2lo_begin(int num_it);
+  void print_hi2lo_status(int num_it, int i, const RealVector& xi_i, double MI);
+  void print_hi2lo_batch_status(int num_it, int batch_n, int batchEvals, 
+      			const RealVector& optimal_config, double max_MI);
+  void print_hi2lo_selected(int num_it, int batchEvals, RealMatrix& 
+      			    optimal_config_matrix, const RealVector& 
+			    optimal_config, double max_MI);
+  /// supplement high-fidelity data with LHS samples
+  void add_lhs_hifi_data();
+  /// apply simulation error vector
+  void apply_error_vec(const RealVector& error_vec, int &seed, int experiment);
+  /// build matrix of errors 
+  void build_error_matrix(const RealVector& sim_error_vec, 
+      			  RealMatrix& sim_error_matrix, int &seed);
+  /// build matrix of candidate points
+  void build_designs(RealMatrix& design_matrix);
+  /// build matrix to calculate mutual information for calibrate_to_hifi
+  void build_hi2lo_xmatrix(RealMatrix& Xmatrix, int i, const RealMatrix& 
+                           mi_chain, RealMatrix& sim_error_matrix);
+  /// run high-fidelity model at several configs and add to experiment data 
+  void run_hifi(RealMatrix& optimal_config_matrix, RealMatrix& resp_matrix);
   
   /// calculate model discrepancy with respect to experimental data
   void build_model_discrepancy();
@@ -244,9 +276,8 @@ protected:
   /// number of optimal designs selected per iteration of experimental design
   /// algorithm
   int batchEvals;
-  /// whether the KSG2 algorithm is to be employed in the calculation
-  /// of the mutual information
-  bool mutualInfoKSG2;
+  /// algorithm to employ in calculating mutual information
+  unsigned short mutualInfoAlg;
 
   // settings specific to model discrepancy
 
@@ -368,12 +399,22 @@ protected:
   /// and prediction intervals)
   void export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals);
 
+  /// Perform chain filtering based on target chain length
+  void filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain, 
+      		    int target_length);
   /// Perform chain filtering with burn-in and sub-sampling
-  void filter_chain(RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
-  void filter_fnvals(RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
+  void filter_chain(const RealMatrix& acceptance_chain, RealMatrix& filtered_chain);
+  void filter_fnvals(const RealMatrix& accepted_fn_vals, RealMatrix& filtered_fn_vals);
+
+  /// return a newly allocated filtered matrix including start_index and
+  /// every stride-th index after; for burn-in cases, start_index is the
+  /// number of burn-in discards
+  void filter_matrix_cols(const RealMatrix& orig_matrix, int start_index,
+			  int stride, RealMatrix& filtered_matrix);
+
   /// Compute credibility and prediction intervals of final chain
   RealMatrix predVals;
-  /// cached filtered function values for printing
+  /// cached filtered function values for printing (may be a view of acceptedFnVals)
   RealMatrix filteredFnVals;
   void compute_intervals();
   void compute_prediction_vals(RealMatrix& filtered_fn_vals,

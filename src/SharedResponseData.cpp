@@ -17,6 +17,7 @@
 #include "ProblemDescDB.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/export.hpp>

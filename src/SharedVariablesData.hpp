@@ -17,10 +17,10 @@
 
 #include "dakota_data_types.hpp"
 #include "DataVariables.hpp"
-#include <boost/shared_ptr.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/tracking.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Dakota {
 
