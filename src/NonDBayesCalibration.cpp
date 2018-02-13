@@ -738,7 +738,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
     if (!stop_metric || max_hifi == 0) {
 
-      if (outputLevel >= DEBUG_OUTPUT) 
+      if (outputLevel >= NORMAL_OUTPUT) 
 	print_hi2lo_begin(num_it);
 
       // After QUESO is run, get the posterior values of the samples; go
@@ -785,7 +785,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
           // calculate the mutual information b/w post theta and lofi responses
           Real MI = knn_mutual_info(Xmatrix, numContinuousVars,
 				    batch_n * numFunctions, mutualInfoAlg);
-	  if (outputLevel >= DEBUG_OUTPUT) 
+	  if (outputLevel >= NORMAL_OUTPUT) 
 	    print_hi2lo_status(num_it, i, xi_i, MI);
     
           // Now track max MI:
@@ -823,7 +823,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
         remove_column(design_matrix, optimal_ind);
         --num_candidates;
 	if (batch_size > 1) 
-          if (outputLevel >= DEBUG_OUTPUT) 
+          if (outputLevel >= NORMAL_OUTPUT) 
 	    print_hi2lo_batch_status(num_it, batch_n, batchEvals, 
 				     optimal_config, max_MI);
       } // end batch_n loop
@@ -840,7 +840,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
       num_it++;
 
       // Print results to screen and to file
-      if (outputLevel >= VERBOSE_OUTPUT) 
+      if (outputLevel >= NORMAL_OUTPUT) 
 	print_hi2lo_selected(num_it, batchEvals, optimal_config_matrix, 
 	    		     optimal_config, max_MI);
       print_hi2lo_file(out_file, num_it, batchEvals, optimal_config_matrix, 
@@ -902,7 +902,7 @@ void NonDBayesCalibration::print_hi2lo_status(int num_it, int i,
   Cout << "\n----------------------------------------------\n";
   Cout << "Experimental Design Iteration "<< num_it <<" Progress";
   Cout << "\n----------------------------------------------\n";
-  Cout << "Design candidate " << i << " = " << xi_i;
+  Cout << "Design candidate " << i << " :\n" << xi_i;
   Cout << "Mutual Information = " << MI << '\n'; 
 }
 	    
@@ -915,7 +915,7 @@ void NonDBayesCalibration::print_hi2lo_batch_status(int num_it, int batch_n,
   Cout << "\n----------------------------------------------\n";
   Cout << "Point " << batch_n << " of " << batchEvals 
        << " selected\n";
-  Cout << "Optimal design: " << optimal_config;
+  Cout << "Optimal design:\n" << optimal_config;
   Cout << "Mutual information = " << max_MI << '\n';
   Cout << "\n";
 }
@@ -936,7 +936,7 @@ void NonDBayesCalibration::print_hi2lo_selected(int num_it, int batchEvals,
     }
   } 
   else 
-    Cout << "Optimal design: " << optimal_config;
+    Cout << "Optimal design:\n" << optimal_config;
   Cout << "Mutual information = " << max_MI << '\n';
   Cout << "\n";
 }
