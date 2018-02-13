@@ -1352,7 +1352,8 @@ void NonDBayesCalibration::build_field_discrepancy()
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
   mcmcModel.continuous_variables(ave_params);
-  
+  mcmcModel.evaluate();
+ 
   int num_exp = expData.num_experiments();
 /*  size_t num_configvars = expData.config_vars()[0].length();
   RealMatrix allConfigInputs(num_configvars,num_exp);
@@ -1360,48 +1361,55 @@ void NonDBayesCalibration::build_field_discrepancy()
     RealVector config_vec = expData.config_vars()[i];
     Teuchos::setCol(config_vec, i, allConfigInputs);
   } 
-
+*/
+  RealMatrix indep_coordinates;
   size_t num_field_groups = expData.num_fields();
   // Read independent coordinates
   for (int i = 0; i < num_field_groups; i++) {
     for (int j = 0; j < num_exp; j++) {
-      RealMatrix indep_coordinates = expData.field_coords_view(i,j);
+      indep_coordinates = expData.field_coords_view(i,j);
       Cout << "Independent Coordinate " << indep_coordinates;
     }
   }
 
-  for (int i = 0; i < num_field_groups; i++) {
-   // Question:  do we want the t and concat_disp to include ALL the experiments?
-    for (int j = 0; j < num_exp; j++) {
-      const IntVector field_lengths = expData.field_lengths(j);
-      RealVector concat_disc(field_lengths[0]);
-      Response residual_response;
-      expData.form_residuals(mcmcModel.current_response(), j, residual_response);
-      //build_GP_field(vector view(indep_coordinates, t_new_coord, concat_disc, disc_pred);
-      Cout << residual_response.function_values();
+  RealMatrix coord_transpose(indep_coordinates,Teuchos::TRANS); 
+  Cout << "Coordinates transpose" << coord_transpose;
+  ShortArray my_asv(3);
+  my_asv[0]=1;
+  my_asv[1]=0;
+  my_asv[2]=0;
+  Cout << "my asv " << my_asv << std::endl;
+  Cout << "expdata" << expData.all_data(0) << std::endl;
+  Cout << "sim response " << mcmcModel.current_response();
+
+  //for (int i = 0; i < num_field_groups; i++) {
+  // Question:  do we want the t and concat_disp to include ALL the experiments?
+  for (int j = 0; j < num_exp; j++) {
+    const IntVector field_lengths = expData.field_lengths(j);
+    RealVector concat_disc(field_lengths[j]);
+    Cout << "field_length " << field_lengths[j] << std::endl;
+    for (int i=0; i<field_lengths[j]; i++){
+      concat_disc[i] = mcmcModel.current_response().function_values()[i] - expData.all_data(j)[i];
     }
+    Cout << "disc_build_points " <<concat_disc;
+    RealVector disc_pred(6); 
+    RealMatrix t_pred(1,6); 
+    t_pred(0,0)=0.5;
+    t_pred(0,1)=1.0;
+    t_pred(0,2)=1.5;
+    t_pred(0,3)=1.75;
+    t_pred(0,4)=2.0;
+    t_pred(0,5)=2.5;
+    build_GP_field(coord_transpose, t_pred, concat_disc, disc_pred);
+    Cout << "disc_pred " << disc_pred;
+    //allExperiments[exp_ind].function_value(i);
+    //Response residual_response;
+    //expData.form_residuals(mcmcModel.current_response(), j, my_asv, 0, residual_response);
+    //expData.form_residuals(mcmcModel.current_response(), j, residual_response);
+    //build_GP_field(vector view(indep_coordinates, t_new_coord, concat_disc, disc_pred);
+    //Cout << residual_response.function_values();
   }
-*/
-   RealVector disc_concat(5), disc_pred(6); 
-   RealMatrix t(1,5), t_pred(1,6); 
-   t(0,0)=1.0;
-   t(0,1)=2.0;
-   t(0,2)=3.0;
-   t(0,3)=4.0;
-   t(0,4)=5.0;
-   t_pred(0,0)=1.5;
-   t_pred(0,1)=2.5;
-   t_pred(0,2)=3.5;
-   t_pred(0,3)=4.5;
-   t_pred(0,4)=5.5;
-   t_pred(0,5)=6.5;
-   disc_concat[0]=2.2;
-   disc_concat[1]=2.6;
-   disc_concat[2]=2.9;
-   disc_concat[3]=3.4;
-   disc_concat[4]=3.8;
-   build_GP_field(t, t_pred, disc_concat, disc_pred);
-   Cout << "disc_pred " << disc_pred;
+  //}
 
   // We are getting coordinates for the experiment and ultimately we need to handle the simulation coordinates
   // if interpolation.
