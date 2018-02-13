@@ -57,26 +57,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_base)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 0.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/1.0);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -131,26 +131,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_options_file)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 0.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/1.0);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -167,9 +167,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -203,26 +203,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 0.0625;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/1.0);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -243,9 +243,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-1"
+    "     constraint_tolerance 1.0e-1"
+    "     threshold_delta 1.0e-1"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -280,26 +280,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_lin_eq_const)
   double max_tol;
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 3.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 16.125;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -324,9 +324,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -361,27 +361,27 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_eq_const)
 
   target = 0.762750812626551;
   // BMA: Needs review
-  max_tol = 1.0e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.0e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.163577604324929;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.0e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.0e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 3.884217188745469e-03;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -401,9 +401,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -439,27 +439,27 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_const)
   double max_tol;
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.0;
-  max_tol = 1.e-20;
+  max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 1.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -479,9 +479,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-2"
+    "     constraint_tolerance 1.0e-2"
+    "     threshold_delta 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -517,26 +517,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_1_lin_ineq_const)
   double max_tol;
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 3.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 16.125;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e0;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -557,9 +557,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-2"
+    "     constraint_tolerance 1.0e-2"
+    "     threshold_delta 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -595,26 +595,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_2_lin_ineq_const)
   double max_tol;
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 0.5;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 3.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 16.125;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e0;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -642,9 +642,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-4"
+    "     constraint_tolerance 1.0e-4"
+    "     threshold_delta 1.0e-4"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -679,27 +679,27 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   double max_tol;
 
   target = 0.8140754878147402;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.125437799721614;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(1) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.0;
   // BMA: Needs review
-  max_tol = 1.3e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.0e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 1.442520331911729e-03;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -727,9 +727,9 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   static const char text_book_input[] =
     " method,"
     "   rol_ls"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     threshold_delta 1.0e-3"
+    "     gradient_tolerance 1.0e-2"
+    "     constraint_tolerance 1.0e-2"
+    "     threshold_delta 1.0e-2"
     "     max_iterations 20"
     " variables,"
     "   continuous_design = 3"
@@ -767,26 +767,26 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_ineq_const)
   double max_tol;
 
   target = 0.8140754878147402;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 1.125437799721614;
-  max_tol = 1.e-20;
+  max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 2.0;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 1.001442520331912;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-1;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
 
@@ -870,25 +870,25 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   double max_tol;
 
   target = 0.614041801350369;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(0) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 5.5409525784e-01;
-  max_tol = 1.e-20;
+  max_tol = 1.e-2;
   rel_err = fabs(vars.continuous_variable(1) - target);
   TEST_COMPARE(rel_err,<, max_tol);
 
   target = 2.831863531038414;
-  max_tol = 1.e-20;
-  rel_err = fabs((vars.continuous_variable(2) - target)/target);
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
 
   target = 11.322607724274398;
-  max_tol = 1.e-20;
-  rel_err = fabs((resp.function_value(0) - target)/target);
+  max_tol = 1.e-1;
+  rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
