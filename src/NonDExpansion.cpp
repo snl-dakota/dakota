@@ -1319,10 +1319,14 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     increment_order_and_grid(); // virtual fn defined for NonDPCE
     // can ignore best index since only one candidate for now
     uSpaceModel.push_approximation();
-    // Promotion of best candidate does not invalidate coefficient increments
-    // for other levels, as they are separate functions.  Only the metric roll
-    // up must be updated for subsequent use of existing expansion increments.
-    //uSpaceModel.clear_popped(); // NOT NEEDED!
+    // Distinct discrepancy: promotion of best candidate does not invalidate
+    // coefficient increments for other levels, as they are separate functions.
+    // Only the metric roll up must be updated when pushing existing expansion
+    // increments.  For recursive discrepancy, however, all levels above the
+    // selected candidate are invalidated.
+    //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
+    //  for (lev=best_lev+1; lev<num_lev; ++lev)
+    //    uSpaceModel.clear_popped();
     break;
   }
 

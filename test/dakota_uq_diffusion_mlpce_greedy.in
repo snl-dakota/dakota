@@ -8,8 +8,8 @@ method,
 	  p_refinement dimension_adaptive generalized		#s0,#s1
 	    sparse_grid_level_sequence = 0 unrestricted		#s0,#s1
 #	  p_refinement uniform	       	 			#s2
-#	    expansion_order_sequence = 1			#s2
-#	    collocation_ratio = .9				#s2
+#	    expansion_order_sequence = 0			#s2
+#	    collocation_ratio = .9  seed = 160415		#s2
 #	    orthogonal_matching_pursuit				#s2
 	    convergence_tolerance 1.e-6				#s0
 #	    convergence_tolerance 1.e-8				#s1
