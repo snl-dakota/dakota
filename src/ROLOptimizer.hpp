@@ -25,10 +25,28 @@
 
 #include "DakotaTraitsBase.hpp"
 
+#include <boost/iostreams/filter/line.hpp>
+
 namespace Dakota {
 
   enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
   enum {TYPE_U=1, TYPE_B=2, TYPE_E=3, TYPE_EB=4};
+
+/// Stream filter that prefixes output, e.g., with a TPL name
+class PrefixingLineFilter : public boost::iostreams::line_filter
+{
+public:
+  explicit PrefixingLineFilter(const std::string& prefix_in):
+    linePrefix(prefix_in)
+  {  /* empty ctor */}
+private:
+  /// "filter" the line by adding the prefix
+  std::string do_filter(const std::string& line)
+  {  return linePrefix + line;  }
+  /// prefix for each line
+  std::string linePrefix;
+};
+
 
 /** ROLTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */

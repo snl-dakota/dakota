@@ -32,6 +32,7 @@
 #include "ROLOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 
+#include <boost/iostreams/filtering_stream.hpp>
 
 using std::endl;
 
@@ -301,9 +302,20 @@ void ROLOptimizer::set_problem()
     solver interface and finally catalogues the results. */
 void ROLOptimizer::core_run()
 {
+  // ostream that will prefix lines with ROL identifier
+  boost::iostreams::filtering_ostream rol_cout;
+  rol_cout.push(PrefixingLineFilter("ROL: "));
+  // Tried to disable buffering so ROL output gets inlined with
+  // Dakota's; doesn't work perfectly. Instead, modified ROL to flush()
+  //std::streamsize buffer_size = 0;
+  //rol_cout.push(Cout, buffer_size);
+  rol_cout.push(Cout);
+
   // Setup and call simplified interface solver object
   ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
-  opt_solver.solve(Cout);
+  opt_solver.solve(rol_cout);
+
+  rol_cout.flush();
 
   // TODO: print termination criteria (based on Step or AlgorithmState?)
 
