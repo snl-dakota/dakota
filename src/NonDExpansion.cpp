@@ -942,12 +942,12 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
     switch (expansionCoeffsApproach) {
-    case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
-    case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
-      nond_integration->increment_grid(); // TPQ or SSG
+      nond_integration->increment_grid();
       update_expansion();
       metric = compute_covariance_metric();
       if (!apply_best) {
@@ -1033,11 +1033,23 @@ void NonDExpansion::post_refinement(Real& metric)
     bool converged_within_tol = (metric <= convergenceTol);
     finalize_sets(converged_within_tol); break;
   }
-  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::UNIFORM_CONTROL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     if (uSpaceModel.push_available()) {
-      // ramp expansion order and update regression samples
-      increment_order_and_grid(); // virtual fn defined for NonDPCE
+      switch (expansionCoeffsApproach) {
+      case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+      case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+	// ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+	NonDIntegration* nond_integration = (NonDIntegration*)
+	  uSpaceModel.subordinate_iterator().iterator_rep();
+	nond_integration->increment_grid();
+	break;
+      }
+      default: // ramp expansion order and update regression samples
+	increment_order_and_grid(); // virtual fn defined for NonDPCE
+	break;
+      }
       // can ignore best index since only one candidate for now
       uSpaceModel.push_approximation();
     }
@@ -1313,10 +1325,23 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     nond_sparse->update_reference();
     break;
   }
-  case Pecos::UNIFORM_CONTROL:  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::UNIFORM_CONTROL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    // ramp expansion order and update regression samples
-    increment_order_and_grid(); // virtual fn defined for NonDPCE
+    // increment the grid and, if needed, the expansion order
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+      NonDIntegration* nond_integration = (NonDIntegration*)
+	uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_integration->increment_grid();
+      break;
+    }
+    default: // ramp expansion order and update regression samples
+      increment_order_and_grid(); // virtual fn defined for NonDPCE
+      break;
+    }
     // can ignore best index since only one candidate for now
     uSpaceModel.push_approximation();
     // Distinct discrepancy: promotion of best candidate does not invalidate
