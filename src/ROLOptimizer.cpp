@@ -302,27 +302,6 @@ void ROLOptimizer::set_problem()
   // Call simplified interface problem generator
   optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
 
-  // Obtain ROL problem type
-  // Defaults to Type-U, otherwise overwrite
-  problemType = TYPE_U;
-  if (numIneqConstraints > 0)
-    problemType = TYPE_EB;
-  else
-  {
-    if (numEqConstraints > 0)
-    {
-      if (boundConstraintFlag)
-        problemType = TYPE_EB;
-      else
-        problemType = TYPE_E;
-    }
-    else
-    {
-      if (boundConstraintFlag)
-        problemType = TYPE_B;
-    }
-  }
-
   // checking, may be enabled in tests or debug mode
 
   // Teuchos::RCP<std::ostream> outStream_checking;
