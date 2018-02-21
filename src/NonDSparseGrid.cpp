@@ -239,6 +239,17 @@ void NonDSparseGrid::increment_grid()
 }
 
 
+void NonDSparseGrid::decrement_grid()
+{
+  int orig_ssg_size = ssgDriver->grid_size();
+  ssgDriver->level(--ssgLevelRef);
+  // with restricted growth/delayed sequences in nested rules, a decrement in
+  // level will not always change the grid.  Anisotropy (if present) is fixed.
+  while (ssgDriver->grid_size() == orig_ssg_size)
+    ssgDriver->level(--ssgLevelRef);
+}
+
+
 void NonDSparseGrid::increment_grid_weights(const RealVector& aniso_wts)
 {
   // define reference points

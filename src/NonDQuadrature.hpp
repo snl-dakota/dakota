@@ -68,6 +68,7 @@ public:
   //
 
   void increment_grid();
+  void decrement_grid();
 
   //
   //- Heading: Member functions
@@ -127,6 +128,8 @@ private:
   /// convenience function used to make increment_grid_preference() more modular
   void increment_grid_preference(const RealVector& dim_pref,
 				 UShortArray& dim_quad_order);
+  /// convenience function used to make decrement_grid() more modular
+  void decrement_grid(UShortArray& dim_quad_order);
 
   /// calculate smallest dim_quad_order with at least min_samples
   void compute_minimum_quadrature_order(size_t min_samples,
@@ -153,6 +156,8 @@ private:
   /// and then rebalance
   void increment_dimension_quadrature_order(const RealVector& dim_pref,
 					    UShortArray& dim_quad_order);
+  /// decrement each dim_quad_order entry by 1
+  void decrement_dimension_quadrature_order(UShortArray& dim_quad_order);
 
   //
   //- Heading: Data
@@ -244,6 +249,10 @@ inline void NonDQuadrature::update()
 
 inline void NonDQuadrature::increment_grid()
 { increment_grid(dimQuadOrderRef); }
+
+
+inline void NonDQuadrature::decrement_grid()
+{ decrement_grid(dimQuadOrderRef); }
 
 
 inline void NonDQuadrature::

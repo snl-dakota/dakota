@@ -951,7 +951,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
       update_expansion();
       metric = compute_covariance_metric();
       if (!apply_best) {
-	//nond_integration->decrement_grid();
+	nond_integration->decrement_grid();
 	uSpaceModel.pop_approximation(true);// store increment to use in restore
       }
       break;
@@ -987,7 +987,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
     update_expansion();
     metric = compute_covariance_metric();
     if (!apply_best) {
-      //nond_integration->decrement_grid();
+      nond_integration->decrement_grid();  // reuses latest dim_pref
       uSpaceModel.pop_approximation(true); // store increment to use in restore
     }
     return 0; // only one candidate
@@ -1005,7 +1005,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
     update_expansion();
     metric = compute_covariance_metric();
     if (!apply_best) {
-      //nond_integration->decrement_grid();
+      nond_integration->decrement_grid();  // reuses latest aniso_wts
       uSpaceModel.pop_approximation(true); // store increment to use in restore
     }
     return 0; // only one candidate

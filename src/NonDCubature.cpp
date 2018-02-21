@@ -197,4 +197,8 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 void NonDCubature::increment_grid()
 { increment_reference(); cubDriver->integrand_order(cubIntOrderRef); }
 
+
+void NonDCubature::decrement_grid()
+{ decrement_reference(); cubDriver->integrand_order(cubIntOrderRef); }
+
 } // namespace Dakota

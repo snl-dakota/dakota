@@ -366,7 +366,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 {
-  // Used for uniform refinement: all quad orders are incremented by 1.
+  // Used for uniform refinement: all quad orders are incremented by 1
   if (nestedRules) {
     // define reference point
     size_t orig_size = tpqDriver->grid_size();
@@ -381,12 +381,41 @@ void NonDQuadrature::increment_grid(UShortArray& dim_quad_order)
 }
 
 
+void NonDQuadrature::decrement_grid(UShortArray& dim_quad_order)
+{
+  // Used for uniform de-refinement: all quad orders are decremented by 1
+  if (nestedRules) {
+    // define reference point
+    size_t orig_size = tpqDriver->grid_size();
+    // initial decrement and nestedness enforcement
+    decrement_dimension_quadrature_order(dim_quad_order);
+    // ensure change in presence of restricted growth
+    while (tpqDriver->grid_size() == orig_size)
+      decrement_dimension_quadrature_order(dim_quad_order);
+  }
+  else
+    decrement_dimension_quadrature_order(dim_quad_order);
+}
+
+
 void NonDQuadrature::
 increment_dimension_quadrature_order(UShortArray& dim_quad_order)
 {
   // increment uniformly by 1
   for (size_t i=0; i<numContinuousVars; ++i)
     dim_quad_order[i] += 1;
+
+  if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
+  else             tpqDriver->quadrature_order(dim_quad_order);
+}
+
+
+void NonDQuadrature::
+decrement_dimension_quadrature_order(UShortArray& dim_quad_order)
+{
+  // increment uniformly by 1
+  for (size_t i=0; i<numContinuousVars; ++i)
+    dim_quad_order[i] -= 1;
 
   if (nestedRules) tpqDriver->nested_quadrature_order(dim_quad_order);
   else             tpqDriver->quadrature_order(dim_quad_order);

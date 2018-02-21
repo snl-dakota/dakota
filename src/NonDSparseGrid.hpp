@@ -62,6 +62,8 @@ public:
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
   /// based on specified anisotropic weighting
   void increment_grid_weights(const RealVector& aniso_wts);
+  /// decrement ssgDriver::ssgLevel
+  void decrement_grid();
 
   /// set level and dimension preference within ssgDriver based on ssgLevelSpec
   /// and dimPrefSpec, following refinement or sequence advancement
