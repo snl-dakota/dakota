@@ -178,16 +178,16 @@ void ROLOptimizer::set_problem()
   //need to provide the sum rather than making the user do it.  Also, same
   //comment about class data as below.
 
-  size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
-  size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
+  size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
+  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
 
   // Obtain ROL problem type
   // Defaults to Type-U, otherwise overwrite
   problemType = TYPE_U;
-  if (numIneqConstraints > 0)
+  if (num_ineq_const > 0)
     problemType = TYPE_EB;
   else{
-    if (numEqConstraints > 0){
+    if (num_eq_const > 0){
       if (boundConstraintFlag)
         problemType = TYPE_EB;
       else
@@ -204,14 +204,14 @@ void ROLOptimizer::set_problem()
   Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
   Teuchos::RCP<ROL::Vector<Real> > x = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > bnd = Teuchos::null;
-  Teuchos::RCP<DakotaROLEqConstraints> eqConst = Teuchos::null;
+  Teuchos::RCP<DakotaROLEqConstraints> eq_const = Teuchos::null;
   Teuchos::RCP<ROL::Vector<Real> > emul = Teuchos::null;
-  Teuchos::RCP<DakotaROLIneqConstraints> ineqConst = Teuchos::null;
+  Teuchos::RCP<DakotaROLIneqConstraints> ineq_const = Teuchos::null;
   Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
   Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
 
 //PDH: Should figure out which of this class data (e.g., numContinuousVars)
-//we could/should elminate and which we should keep and formall make part
+//we could/should elminate and which we should keep and formally make part
 //of the TPL API.
 
 // create ROL variable vector
@@ -252,32 +252,32 @@ void ROLOptimizer::set_problem()
   obj.reset(new DakotaROLObjective(iteratedModel));
 
   // Equality constraints
-  if (numEqConstraints > 0){
+  if (num_eq_const > 0){
     // create equality constraint object and give it access to Dakota model 
-    eqConst.reset(new DakotaROLEqConstraints(iteratedModel));
+    eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
 
 //PDH: What are the multipliers for?
 
     // equality multipliers
-    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(numEqConstraints,0.0) );
+    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
     emul.reset(new ROL::StdVector<Real>(emul_rcp) );
   }
 
   // Inequality constraints: [linear_ineq, nonlinear_ineq]
-  if (numIneqConstraints > 0){
+  if (num_ineq_const > 0){
     // create inequality constraint object and give it access to Dakota model 
-    ineqConst.reset(new DakotaROLIneqConstraints(iteratedModel));
+    ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
 
     // inequality multipliers
-    Teuchos::RCP<std::vector<Real> > imul_rcp = Teuchos::rcp( new std::vector<Real>(numIneqConstraints,0.0) );
+    Teuchos::RCP<std::vector<Real> > imul_rcp = Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
     imul.reset(new ROL::StdVector<Real>(imul_rcp) );
   
 
     // create ROL inequality constraint bound vectors
     Teuchos::RCP<std::vector<Real> >
-      ineq_l_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
+      ineq_l_rcp(new std::vector<Real>(num_ineq_const, 0.0));
     Teuchos::RCP<std::vector<Real> >
-      ineq_u_rcp(new std::vector<Real>(numIneqConstraints, 0.0));
+      ineq_u_rcp(new std::vector<Real>(num_ineq_const, 0.0));
 
 //PDH: Seems like we should be able to pull this into the adapters and
 //use traits to determine what to populate the bounds vectors with.
@@ -300,7 +300,7 @@ void ROLOptimizer::set_problem()
   }
 
   // Call simplified interface problem generator
-  optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eqConst, emul, ineqConst, imul, ineq_bnd);
+  optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eq_const, emul, ineq_const, imul, ineq_bnd);
 
   // checking, may be enabled in tests or debug mode
 
