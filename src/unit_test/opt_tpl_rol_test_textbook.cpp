@@ -698,7 +698,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_ineq_const)
   const Response& resp  = env.response_results();
 
   target = 1.442520331911729e-03;
-  max_tol = 1.e-2;
+  max_tol = 1.e-6;
   rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }

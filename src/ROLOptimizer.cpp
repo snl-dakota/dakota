@@ -73,28 +73,30 @@ void ROLOptimizer::set_rol_parameters()
   // PRECEDENCE 1: hard-wired default settings
 
   optSolverParams.sublist("General").sublist("Secant").
-    set("Type", "Limited-memory BFGS");
+    set("Type", "Limited-Memory BFGS");
   optSolverParams.sublist("General").sublist("Secant").
     set("Use as Hessian", true);
 
-  if (problemType == TYPE_U)
-  {
+  if (problemType == TYPE_U){
     optSolverParams.sublist("Step").set("Type","Trust Region");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
   }
-  if (problemType == TYPE_B)
-  {
+  else if (problemType == TYPE_B){
     optSolverParams.sublist("Step").set("Type","Trust Region");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
   }
-  if (problemType == TYPE_E)
-  {
+  else if (problemType == TYPE_E){
     optSolverParams.sublist("Step").set("Type","Composite Step");
   }
-  if (problemType == TYPE_EB)
-  {
+  else if (problemType == TYPE_EB){
     optSolverParams.sublist("Step").set("Type","Augmented Lagrangian");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
+    // The default choice of Kelley-Sachs was performing lots of fn evals for smoothing
+    optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Model", "Coleman-Li");
+
+    if (outputLevel >= VERBOSE_OUTPUT)
+      optSolverParams.sublist("Step").sublist("Augmented Lagrangian").
+        set("Print Intermediate Optimization History","true");
   }
 
   // PRECEDENCE 2: Dakota input file settings
@@ -172,6 +174,31 @@ void ROLOptimizer::set_problem()
 {
   size_t j;
 
+  //PDH: Seems like we should be able to use traits to determine when we
+  //need to provide the sum rather than making the user do it.  Also, same
+  //comment about class data as below.
+
+  size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
+  size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
+
+  // Obtain ROL problem type
+  // Defaults to Type-U, otherwise overwrite
+  problemType = TYPE_U;
+  if (numIneqConstraints > 0)
+    problemType = TYPE_EB;
+  else{
+    if (numEqConstraints > 0){
+      if (boundConstraintFlag)
+        problemType = TYPE_EB;
+      else
+        problemType = TYPE_E;
+    }
+    else{
+      if (boundConstraintFlag)
+        problemType = TYPE_B;
+    }
+  }
+
   // null defaults for various elements of ROL's simplified interface
   // will be overridden as required
   Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
@@ -187,7 +214,7 @@ void ROLOptimizer::set_problem()
 //we could/should elminate and which we should keep and formall make part
 //of the TPL API.
 
-  // create ROL variable and bound vectors
+// create ROL variable vector
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
   Teuchos::RCP<std::vector<Real> >
     l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
@@ -197,8 +224,23 @@ void ROLOptimizer::set_problem()
   get_initial_values(iteratedModel, *rolX);
   x.reset( new ROL::StdVector<Real>(rolX) );
 
-  if (boundConstraintFlag){
+  // create ROL bound vector; for Type-EB problems, map any Dakota
+  // infinite bounds to ROL_INF for best performance
+  if (boundConstraintFlag || (problemType == TYPE_EB)){
+    Real rol_inf = ROL::ROL_INF<Real>();
+    Real rol_ninf = ROL::ROL_NINF<Real>();
+
     get_bounds(iteratedModel, *l_rcp, *u_rcp);
+
+    // map bounds greater than (in absolute sense) ROL_INF,
+    // including any Dakota infinite bounds, to ROL_INF
+    for (size_t i = 0; i < numContinuousVars; i++) {
+      if ((*l_rcp)[i] < rol_ninf)
+        (*l_rcp)[i] = rol_ninf;
+      if ((*u_rcp)[i] > rol_inf)
+        (*u_rcp)[i] = rol_inf;
+    }
+
     Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );
     Teuchos::RCP<ROL::Vector<Real> > upper( new ROL::StdVector<Real>( u_rcp ) );
 
@@ -208,13 +250,6 @@ void ROLOptimizer::set_problem()
 
   // create objective function object and give it access to Dakota model 
   obj.reset(new DakotaROLObjective(iteratedModel));
-
-//PDH: Seems like we should be able to use traits to determine when we
-//need to provide the sum rather than making the user do it.  Also, same
-//comment about class data as above.
-
-  size_t numEqConstraints = numLinearEqConstraints + numNonlinearEqConstraints;
-  size_t numIneqConstraints = numLinearIneqConstraints + numNonlinearIneqConstraints;
 
   // Equality constraints
   if (numEqConstraints > 0){
