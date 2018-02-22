@@ -135,6 +135,10 @@ private:
   /// reference point (e.g., lower bound) for the Smolyak sparse grid level
   /// maintained within ssgDriver
   unsigned short ssgLevelRef;
+  /// value of ssgLevelRef prior to increment_grid(), for restoration in
+  /// decrement_grid() since increment must induce a change in grid size
+  /// and this adaptive increment in not reversible
+  unsigned short ssgLevelPrev;
 };
 
 

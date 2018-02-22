@@ -230,6 +230,10 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 void NonDSparseGrid::increment_grid()
 {
+  // for restoration in decrement_grid()
+  ssgLevelPrev = ssgLevelRef;
+
+  // enforce a change in grid size
   int orig_ssg_size = ssgDriver->grid_size();
   ssgDriver->level(++ssgLevelRef);
   // with restricted growth/delayed sequences in nested rules, an increment in
@@ -241,12 +245,17 @@ void NonDSparseGrid::increment_grid()
 
 void NonDSparseGrid::decrement_grid()
 {
+  ssgLevelRef = ssgLevelPrev;
+  ssgDriver->level(ssgLevelRef);
+
+  /* adaptive increment logic is not reversible ...
   int orig_ssg_size = ssgDriver->grid_size();
   ssgDriver->level(--ssgLevelRef);
   // with restricted growth/delayed sequences in nested rules, a decrement in
   // level will not always change the grid.  Anisotropy (if present) is fixed.
   while (ssgDriver->grid_size() == orig_ssg_size)
     ssgDriver->level(--ssgLevelRef);
+  */
 }
 
 

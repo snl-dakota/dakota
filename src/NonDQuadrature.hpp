@@ -176,6 +176,10 @@ private:
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
   UShortArray dimQuadOrderRef;
+  /// value of dimQuadOrderRef prior to increment_grid(), for restoration in
+  /// decrement_grid() since increment must induce a change in grid size and
+  /// this adaptive increment in not reversible
+  UShortArray dimQuadOrderPrev;
 
   /// point generation mode: FULL_TENSOR, FILTERED_TENSOR, RANDOM_TENSOR
   short quadMode;
@@ -248,11 +252,24 @@ inline void NonDQuadrature::update()
 
 
 inline void NonDQuadrature::increment_grid()
-{ increment_grid(dimQuadOrderRef); }
+{
+  // for restoration in decrement_grid(): adaptive increment is not reversible
+  dimQuadOrderPrev = dimQuadOrderRef;
+
+  increment_grid(dimQuadOrderRef);
+}
 
 
 inline void NonDQuadrature::decrement_grid()
-{ decrement_grid(dimQuadOrderRef); }
+{
+  // adaptive increment is not reversible ...
+  //decrement_grid(dimQuadOrderRef);
+
+  dimQuadOrderRef = dimQuadOrderPrev; // restoration
+
+  if (nestedRules) tpqDriver->nested_quadrature_order(dimQuadOrderRef);
+  else             tpqDriver->quadrature_order(dimQuadOrderRef);
+}
 
 
 inline void NonDQuadrature::
