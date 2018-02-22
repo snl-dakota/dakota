@@ -14,8 +14,8 @@
 #ifndef USAGE_TRACKER_H
 #define USAGE_TRACKER_H
 
-#include <boost/shared_ptr.hpp>
 #include "dakota_system_defs.hpp"
+#include <memory>
 
 namespace Dakota {
 
@@ -52,7 +52,7 @@ private:
   /// posts usage data to Web server; using shared_ptr due to
   /// potentially incomplete type and requirements for checked_delete
   /// in debug builds (scoped_ptr would suffice)
-  boost::shared_ptr<TrackerHTTP> pTrackerHTTP; 
+  std::shared_ptr<TrackerHTTP> pTrackerHTTP; 
 
 };
 

@@ -5,12 +5,22 @@
 #include "DataMethod.hpp"
 #include "DataModel.hpp"
 
+#ifdef DAKOTA_HOPS
 #include "APPSOptimizer.hpp"
+#endif
+#ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
-#include "JEGAOptimizer.hpp"
-#include "NomadOptimizer.hpp"
 #include "PEBBLMinimizer.hpp"
+#endif
+#ifdef HAVE_JEGA
+#include "JEGAOptimizer.hpp"
+#endif
+#ifdef HAVE_NOMAD
+#include "NomadOptimizer.hpp"
+#endif
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.hpp"
+#endif
 #include "SurrBasedGlobalMinimizer.hpp"
 
 #include <limits>
@@ -111,12 +121,20 @@ namespace {
 TEUCHOS_UNIT_TEST(opt_api_traits, var_consistency)
 {
   // Test various TPL Traits as they become available
+#ifdef DAKOTA_HOPS
   check_variable_consistency( ASYNCH_PATTERN_SEARCH , std::shared_ptr<TraitsBase>(new AppsTraits())           , out, success );
+#endif
+#ifdef HAVE_JEGA
   check_variable_consistency( MOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
   check_variable_consistency( SOGA                  , std::shared_ptr<TraitsBase>(new JEGATraits())           , out, success );
+#endif
   check_variable_consistency( SURROGATE_BASED_GLOBAL, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits()), out, success );
+#ifdef HAVE_NOMAD
   check_variable_consistency( MESH_ADAPTIVE_SEARCH  , std::shared_ptr<TraitsBase>(new NomadTraits())          , out, success );
+#endif
+#ifdef HAVE_ACRO
   check_variable_consistency( BRANCH_AND_BOUND      , std::shared_ptr<TraitsBase>(new PebbldTraits())         , out, success );
+#endif
 }
 
 //----------------------------------------------------------------

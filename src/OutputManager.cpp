@@ -290,7 +290,7 @@ void OutputManager::append_restart(const ParamResponsePair& prp)
 	 << std::endl;
     abort_handler(-1);
   }
-  boost::shared_ptr<RestartWriter> rst_writer = restartDestinations.back();
+  std::shared_ptr<RestartWriter> rst_writer = restartDestinations.back();
   rst_writer->append_prp(prp);
   // flush is critical so we have a complete restart record should Dakota abort
   rst_writer->flush();
@@ -395,7 +395,7 @@ void OutputManager::read_write_restart(bool restart_requested,
   // If no restart requested, push back a level that doesn't open
   // files so we can later pop it
   if (!restart_requested) {
-    boost::shared_ptr<RestartWriter> rst_writer(new RestartWriter());
+    std::shared_ptr<RestartWriter> rst_writer(new RestartWriter());
     restartDestinations.push_back(rst_writer);
     return;
   }
@@ -523,7 +523,7 @@ void OutputManager::read_write_restart(bool restart_requested,
   try {
 
     // create a new restart destination
-    boost::shared_ptr<RestartWriter>
+    std::shared_ptr<RestartWriter>
       rst_writer(new RestartWriter(write_restart_filename));
     restartDestinations.push_back(rst_writer);
 
@@ -628,7 +628,7 @@ void ConsoleRedirector::push_back()
 	    << "destination " << std::endl;
 #endif 
   if (ostreamDestinations.empty()) {
-    boost::shared_ptr<OutputWriter> 
+    std::shared_ptr<OutputWriter> 
       out_writer_ptr(new OutputWriter(defaultOStream));
     ostreamDestinations.push_back(out_writer_ptr);
   }
@@ -657,7 +657,7 @@ void ConsoleRedirector::push_back(const String& output_filename)
 		<< ostreamDestinations.back()->filename() << ". New filename "
 		<< output_filename << std::endl;
 #endif 
-    boost::shared_ptr<OutputWriter> 
+    std::shared_ptr<OutputWriter> 
       out_writer_ptr(new OutputWriter(output_filename));
     ostreamDestinations.push_back(out_writer_ptr);
   }

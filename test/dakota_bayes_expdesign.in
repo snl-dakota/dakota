@@ -93,7 +93,7 @@ responses,
         calibration_terms = 1
 	no_gradients	
 	no_hessians
-#	simulation_variance = 200			#s3
+#	simulation_variance = 130			#s3
 
 responses,
  	id_responses = 'hifi_resp'

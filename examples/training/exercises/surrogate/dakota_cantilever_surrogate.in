@@ -3,10 +3,10 @@ environment
 
 method
   id_method = 'UQ_on_surrogate'
-  model_pointer = 'surr_model'
-	sampling
-	  samples = 1000 seed = 6347
-	  sample_type lhs
+  sampling
+	samples = 1000 seed = 6347
+	sample_type lhs
+	model_pointer = 'surr_model'
   output verbose
 
 model
