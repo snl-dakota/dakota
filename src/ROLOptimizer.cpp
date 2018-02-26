@@ -48,8 +48,8 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL")
 {
+  // These calls are order-dependent in that the parameter settings depend on problemType
   set_problem();
-
   set_rol_parameters();
 }
 
@@ -60,8 +60,8 @@ ROLOptimizer(const String& method_string, Model& model):
   Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL")
 {
+  // These calls are order-dependent in that the parameter settings depend on problemType
   set_problem();
-
   set_rol_parameters();
 }
 
@@ -241,11 +241,11 @@ void ROLOptimizer::set_problem()
         (*u_rcp)[i] = rol_inf;
     }
 
-    Teuchos::RCP<ROL::Vector<Real> > lower( new ROL::StdVector<Real>( l_rcp ) );
-    Teuchos::RCP<ROL::Vector<Real> > upper( new ROL::StdVector<Real>( u_rcp ) );
+    lowerBounds = Teuchos::rcp( new ROL::StdVector<Real>( l_rcp ) );
+    upperBounds = Teuchos::rcp( new ROL::StdVector<Real>( u_rcp ) );
 
     // create ROL::BoundConstraint object to house variable bounds information
-    bnd.reset( new ROL::Bounds<Real>(lower,upper) );
+    bnd.reset( new ROL::Bounds<Real>(lowerBounds, upperBounds) );
   }
 
   // create objective function object and give it access to Dakota model 
@@ -309,6 +309,19 @@ void ROLOptimizer::set_problem()
   // optProblem.check(*outStream_checking);
 }
 
+void ROLOptimizer::reset_problem( const RealVector & init_vals,
+                                  const RealVector & lower_bnds,
+                                  const RealVector & upper_bnds,
+                                  const Teuchos::ParameterList & params)
+{
+  copy_data(init_vals, *rolX);
+  copy_data(lower_bnds, *(lowerBounds->getVector()));
+  copy_data(upper_bnds, *(upperBounds->getVector()));
+  optProblem.reset();
+
+  // These changes get used in core_run
+  optSolverParams.setParameters(params);
+}
 
 /** core_run redefines the Optimizer virtual function to perform
     the optimization using ROL. It first sets up the simplified ROL

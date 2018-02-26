@@ -203,6 +203,13 @@ public:
   /// iterates the ROL solver to determine the optimal solution
   void core_run();
 
+  /// Support re-entrant behavior by allowing problem reset (selected components for now)
+  void reset_problem(const RealVector &,            // initial vals
+                     const RealVector &,            // lower bounds
+                     const RealVector &,            // upper bounds
+                     const Teuchos::ParameterList & // ROL solver parameters/options
+                     );
+
 protected:
 
   //
@@ -228,6 +235,12 @@ protected:
 
   /// Handle to ROL's solution vector 
   Teuchos::RCP<std::vector<Real> > rolX;
+
+  /// Handle to ROL's lower bounds vector 
+  Teuchos::RCP<ROL::StdVector<Real> > lowerBounds;
+
+  /// Handle to ROL's upper bounds vector 
+  Teuchos::RCP<ROL::StdVector<Real> > upperBounds;
 
   /// ROL problem type
   unsigned short problemType;

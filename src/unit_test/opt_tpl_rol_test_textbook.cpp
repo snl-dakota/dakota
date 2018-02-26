@@ -11,6 +11,9 @@
 #include <map>
 #include <Teuchos_UnitTestHarness.hpp>
 
+// Needed to test reset (re-entrant) capability
+#include "ROLOptimizer.hpp"
+
 using namespace Dakota;
 
 //----------------------------------------------------------------
@@ -221,6 +224,113 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
   const Response& resp  = env.response_results();
 
   target = 0.0625;
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
+  TEST_COMPARE(rel_err,<, max_tol);
+}
+
+//----------------------------------------------------------------
+/// 3D textbook problem with active bound constraints and use of reset
+/// of ROL problem and solver to test re-entrant capability: The 2nd
+/// and 3rd variables have best values at the corresponding upper bound constraint
+/// of 0.3 and 0.6, resp. (in comparison to a best value of 1 for the unconstrained
+/// problem; other two variables have expected best value of 1 with a
+/// best objective 0f 0.5^4
+
+TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_reset)
+{
+  /// Dakota input string:
+  static const char text_book_input[] =
+    " method,"
+    "   rol_ls"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
+    "     max_iterations 20"
+    " variables,"
+    "   continuous_design = 3"
+    "     initial_point  0.5    0.0   0.5"
+    "     upper_bounds  2.0   0.5  2.0"
+    "     lower_bounds     0.0  0.0 0.0"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
+    " interface,"
+    "   direct"
+    "     analysis_driver = 'text_book'"
+    " responses,"
+    "   num_objective_functions = 1"
+    "   analytic_gradients"
+    "   no_hessians";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  if (env.parallel_library().mpirun_flag())
+    TEST_ASSERT( false ); // This test only works for serial builds
+
+  // Execute the environment - this solves the problem as previously without any reset
+  env.execute();
+
+  // Now get the ROL Optimizer and test various reset functionality
+  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  IteratorList& iter_list = problem_db.iterator_list();
+  Dakota::Iterator & dak_iter = *iter_list.begin();
+  //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
+  dak_iter.print_results(Cout);
+  Dakota::ROLOptimizer * rol_optimizer = dynamic_cast<Dakota::ROLOptimizer*>(dak_iter.iterator_rep());
+  //Cout << "The iterator is also a ROLOptimizer --> " << ((NULL != rol_optimizer) ? true : false) << endl;
+
+  // retrieve the final parameter values
+  const Variables& vars = env.variables_results();
+
+  // Let's see if we can reset the initial and bounds values using the registered solution with ROL 
+  // and owned by ROLOptimizer and then re-solve ... RWH
+  RealVector new_initial_vals(vars.cv());
+  new_initial_vals[0] = 0.0; // These values require more ROL iterations and allow testing of new options below.
+  new_initial_vals[1] = 0.0;
+  new_initial_vals[2] = 0.0;
+
+  RealVector new_lower_bnds(vars.cv());
+  new_lower_bnds[0] = 0.0;
+  new_lower_bnds[1] = 0.0;
+  new_lower_bnds[2] = 0.0;
+
+  RealVector new_upper_bnds(vars.cv());
+  new_upper_bnds[0] = 2.0;
+  new_upper_bnds[1] = 0.3;
+  new_upper_bnds[2] = 0.6;
+
+  // Now also test resetting some ROL solver options, eg max iters and tolerance
+  Teuchos::ParameterList new_options;
+  new_options.sublist("Status Test").set("Iteration Limit", 15);
+  new_options.sublist("Status Test").set("Step Tolerance", 1.e-3);
+
+  rol_optimizer->reset_problem(new_initial_vals, new_lower_bnds, new_upper_bnds, new_options);
+  rol_optimizer->core_run();
+
+  // convergence tests:
+  double rel_err;
+  double target;
+  double max_tol;
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 0.3;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 0.6;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  // retrieve the final response values
+  const Response& resp  = env.response_results();
+
+  target = 0.2657;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
   TEST_COMPARE(rel_err,<, max_tol);
