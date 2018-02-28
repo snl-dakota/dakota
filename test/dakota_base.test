@@ -42,6 +42,7 @@ least_sq_term_7 -2.4359747796e-01  6.6629794692e-01  5.1613062219e-02 -2.2625229
 least_sq_term_8  2.0091065446e-01  3.2876276902e-01  1.2265482474e-01 -1.0454422570e+00
 least_sq_term_9 -2.2231169390e-01  7.0288828433e-01 -2.5754372569e-01 -1.6841180925e-01
 least_sq_term_10  5.1099180123e-01  3.0286623825e-01  2.9593932755e-01  2.8009818572e-02
+Information gained from prior to posterior = 2.2457705067e+01
 dakota_3pc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
@@ -3761,6 +3762,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.0262439658e-01  4.7209409486e-03 -5.5921239559e+00  6.0598387947e+01
+Information gained from prior to posterior = 2.6454835447e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1909 total (1909 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3779,6 +3781,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.0302681077e-01  8.3909747134e-03  1.7170344413e+01  3.6571432592e+02
+Information gained from prior to posterior = 4.8016661131e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1735 total (1735 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3797,6 +3800,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  4.0212221096e-01  4.7276075141e-03 -5.5276434882e+00  5.7842029182e+01
+Information gained from prior to posterior = 2.6398843365e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 1872 total (1872 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3823,6 +3827,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  2.0011247816e+00  8.5449314196e-03 -2.5470466416e+01  7.4828269571e+02
+Information gained from prior to posterior = -4.2579856701e-01
 dakota_big_dataset.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 300 total (300 new, 0 duplicate)
@@ -3958,6 +3963,11 @@ Test Number 0 succeeded
                      -7.0554064792e+00
                       1.6082874247e+01
                       1.1280144759e+01
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
 <<<<< Best data not found in evaluation cache
 Confidence Intervals on Calibrated Parameters:
              E: [ 2.8499998058e+07, 2.8500002364e+07 ]
@@ -3981,6 +3991,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
+Information gained from prior to posterior = 3.9196284455e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 14 total (12 new, 2 duplicate)
 <<<<< Best parameters (experiment config variables omitted) =
@@ -4002,6 +4013,11 @@ Test Number 2 succeeded
 <<<<< Best model responses (experiment 2) =
                       7.3787664323e+03 stress
                       6.1767741155e-01 displacement
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
 <<<<< Best residual terms =
                      -1.7257130977e+01
                      -7.0554064792e+00
@@ -4037,6 +4053,11 @@ Test Number 3 succeeded
                      -7.0554064792e+00
                       1.6082874247e+01
                       1.1280144759e+01
+<<<<< Best residual terms =
+                     -1.7257130977e+01
+                     -7.0554064792e+00
+                      1.6082874247e+01
+                      1.1280144759e+01
 <<<<< Best data not found in evaluation cache
 Confidence Intervals on Calibrated Parameters:
              E: [ 2.8499998058e+07, 2.8500002364e+07 ]
@@ -4060,6 +4081,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  7.1469031261e+03  2.9319080204e+02  1.2178677968e+00  2.2168355520e+01
 least_sq_term_2  5.5443636988e-01  4.0600257543e-02 -4.1153291004e-02  1.0515596679e+00
+Information gained from prior to posterior = 3.9196284455e+00
 dakota_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
@@ -5021,6 +5043,7 @@ Sample moment statistics for each response function:
                   3.5984952189e-01  9.5000000000e-01
                   2.4309506889e-01  1.0000000000e-01
                   3.4867791685e-01  9.0000000000e-01
+Information gained from prior to posterior = 6.0209966781e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1632 total (1632 new, 0 duplicate)
          stress: 1632 val (1632 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -5066,6 +5089,7 @@ Sample moment statistics for each response function:
                   3.5828171623e-01  9.5000000000e-01
                   2.4141757650e-01  1.0000000000e-01
                   3.4803474966e-01  9.0000000000e-01
+Information gained from prior to posterior = 6.0209966781e+00
 dakota_cantilever_sampling_wilks.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
@@ -6966,6 +6990,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.5632849885e-02  5.5328382145e-03  6.4434824403e-01 -5.4101597132e-01
 least_sq_term_2  1.3492064490e-01  1.7471504542e-02  3.6846752157e-01 -7.8714959309e-01
 least_sq_term_3  2.5632849886e-02  5.5328382145e-03  6.4434824403e-01 -5.4101597131e-01
+Information gained from prior to posterior = -5.8294648569e+00
 Test Number 1 succeeded
 Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.5082955196e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
@@ -8596,6 +8621,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4526384509e-02  5.7876704408e-03  8.9826920165e-01  2.6487827428e-01
 least_sq_term_2  1.2735844009e-01  1.2331562075e-02  9.3775921605e-01 -6.5851684323e-02
 least_sq_term_3  2.4526384510e-02  5.7876704373e-03  8.9826920219e-01  2.6487827519e-01
+Information gained from prior to posterior = -5.6037032312e+00
 Test Number 2 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -8663,6 +8689,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4531608101e-02  5.9384571082e-03  9.7255268291e-01  5.2964417267e-01
 least_sq_term_2  1.2733881851e-01  1.2020079729e-02  9.5707815697e-01  1.0120348405e-01
 least_sq_term_3  2.4531608095e-02  5.9384571087e-03  9.7255268231e-01  5.2964417131e-01
+Information gained from prior to posterior = -5.4272787501e+00
 Test Number 3 succeeded
 Coefficients of Polynomial Chaos Expansion for least_sq_term_1:
    2.5272274224e-02   P0   P0   P0   P0   P0   P0   P0   P0   P0
@@ -9965,6 +9992,7 @@ Sample moment statistics for each response function:
 least_sq_term_1  2.4928500364e-02  5.9695015035e-03  8.7395072101e-01  2.7780776291e-01
 least_sq_term_2  1.2795055903e-01  1.2297485186e-02  8.6702045167e-01 -1.0289586526e-01
 least_sq_term_3  2.4928500363e-02  5.9695015037e-03  8.7395072123e-01  2.7780776327e-01
+Information gained from prior to posterior = -5.3773465245e+00
 dakota_dll.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)
@@ -19909,6 +19937,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
             f1 -1.1842859177e-01  7.0072632742e-01  3.4827928247e-02 -1.6687143422e-02
             f2  2.8389901110e-01  3.9066292649e-01  5.9341416179e-01 -5.7421701040e-02
+Information gained from prior to posterior = 3.0385809789e+00
 dakota_rosenbrock_users.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 81 total (81 new, 0 duplicate)

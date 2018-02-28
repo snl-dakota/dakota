@@ -17,6 +17,7 @@ method,
  	    derivatives #proposal_updates = 200
 #	  posterior_adaptive max_iterations = 100 # 20
 #	  logit_transform    		    # Note: errors with uniform!
+	  posterior_stats kl_divergence
 #	  output verbose
 
 variables,

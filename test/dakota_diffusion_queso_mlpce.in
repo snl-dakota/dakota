@@ -18,6 +18,7 @@ method,
 	    derivatives
 	    proposal_updates = 50 # default update is every 100 samples
 #	  logit_transform         # default is off
+	  posterior_stats kl_divergence
 
 model,
 	id_model = 'HIERARCH'

@@ -33,6 +33,7 @@ method,
 #	sub_sampling_period 10 					#s1
 	probability_levels 0.05 0.1  				#s0,#s1
 	 		   0.05 0.1				#s0,#s1
+        posterior_stats kl_divergence
 	output debug
 
 variables,								

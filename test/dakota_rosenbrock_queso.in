@@ -22,6 +22,7 @@ method,
 	    derivatives	
 	    proposal_updates = 50 # default update is every 100 samples
 	  logit_transform         # default is off
+	  posterior_stats kl_divergence
 #         calibrate_error_multipliers  #p27
 #           per_experiment             #p27
 #	  output verbose
