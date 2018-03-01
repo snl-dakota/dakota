@@ -72,6 +72,9 @@ void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
 
+  // HESSIAN TODO: if Dakota Hessian available, don't use "Secant"
+  // need to check on if anything else needs to be set.
+
   optSolverParams.sublist("General").sublist("Secant").
     set("Type", "Limited-Memory BFGS");
   optSolverParams.sublist("General").sublist("Secant").
@@ -199,6 +202,9 @@ void ROLOptimizer::set_problem()
     }
   }
 
+  // HESSIAN TODO: instantiate obj based on whether or not Hessian is
+  // provided
+
   // null defaults for various elements of ROL's simplified interface
   // will be overridden as required
   Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
@@ -247,6 +253,8 @@ void ROLOptimizer::set_problem()
     // create ROL::BoundConstraint object to house variable bounds information
     bnd.reset( new ROL::Bounds<Real>(lowerBounds, upperBounds) );
   }
+
+  // HESSIAN TODO: reset obj based on whether or not Hessian is provided
 
   // create objective function object and give it access to Dakota model 
   obj.reset(new DakotaROLObjective(iteratedModel));
@@ -391,8 +399,10 @@ namespace {
     for(size_t i=0; i<num_cv; ++i)
       model.continuous_variable(x[i], i);
 
+    // HESSIAN TODO: added AS_HESS; need to track if this creates isses
+
     ActiveSet eval_set(model.current_response().active_set());
-    eval_set.request_values(AS_FUNC+AS_GRAD);
+    eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
     model.evaluate(eval_set);
 
     // now we can use the response currently in the model for any
@@ -549,5 +559,116 @@ DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, 
   update_model(dakotaModel, x);
   copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
 }
+
+  // HESSIAN TODO: Fill out the details of these
+
+DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :
+  DakotaROLObjective(model)
+{ }
+
+void
+DakotaROLObjectiveHess::hessVec( std::vector<Real> &hv,
+				 const std::vector<Real> &v,
+				 const std::vector<Real> &x,
+				 Real &tol )
+{/*
+  // make sure the Hessian has been evaluated and is available
+  update_model(dakotaModel, x);
+
+  // get the objective Hessian matrix from Dakota Response
+  hess_f = local_response.function_hessian(0);
+
+  // multiply the objective Hessian matrix by the vector
+  apply_matrix_partial(hess_f, v, hv);
+ */}
+
+void
+DakotaROLObjectiveHess::invHessVec( std::vector<Real> &h,
+				    const std::vector<Real> &v,
+				    const std::vector<Real> &x,
+				    Real &tol )
+{/*
+  // make sure the Hessian has been evaluated and is available
+  update_model(dakotaModel, x);
+
+  // get the objective Hessian matrix from Dakota Response
+  hess_f = local_response.function_hessian(0);
+
+  // stole this from DakotaLeastSq.cpp; think we want to do something
+  // like this; return product in h
+
+  // We are using a formulation where the standard error of the
+  // parameter vector is calculated as the square root of the diagonal
+  // elements of sigma_sq_hat*inverse(J'J), where J is the matrix
+  // of derivatives of the model with respect to the parameters,
+  // and J' is the transpose of J.  Insteaad of calculating J'J and
+  // explicitly taking the inverse, we are using a QR decomposition,
+  // where J=QR, and inv(J'J)= inv((QR)'QR)=inv(R'Q'QR)=inv(R'R)=
+  // inv(R)*inv(R').
+  // J must be in column order for the Fortran call
+  Teuchos::LAPACK<int, Real> la;
+  int info;
+  int M = numLeastSqTerms;
+  int N = numContinuousVars;
+  int LDA = numLeastSqTerms;
+  double *tau, *work;
+  double* Jmatrix = new double[numLeastSqTerms*numContinuousVars];
+  
+  // With scaling, the iter_resp will potentially contain
+  // d(scaled_resp) / d(scaled_params).
+  //
+  // When parameters are scaled, have to apply the variable
+  // transformation Jacobian to get to
+  // d(scaled_resp) / d(native_params) =
+  //   d(scaled_resp) / d(scaled_params) * d(scaled_params) / d(native_params)
+
+  // envelope to hold the either unscaled or iterator response
+  Response ultimate_resp = scaleFlag ? iter_resp.copy() : iter_resp; 
+  if (scaleFlag) {
+    ScalingModel* scale_model_rep =
+      static_cast<ScalingModel*>(scalingModel.model_rep());
+    bool unscale_resp = false;
+    scale_model_rep->response_modify_s2n(native_vars, iter_resp,
+					 ultimate_resp, 0, numLeastSqTerms,
+					 unscale_resp);
+  }
+  const RealMatrix& fn_grads = ultimate_resp.function_gradients_view();
+
+  // BMA: TODO we don't need to transpose this matrix...
+  for (int i=0; i<numLeastSqTerms; i++)
+    for (int j=0; j<numContinuousVars; j++)
+      Jmatrix[(j*numLeastSqTerms)+i]=fn_grads(j,i);
+
+  // This is the QR decomposition, the results are returned in J
+  work = new double[N + std::min(M,N)];
+  tau = work + N;
+
+  la.GEQRF(M,N,Jmatrix,LDA,tau,work,N,&info);
+  bool error_flag = info;
+  delete[] work;
+
+  // if you add these three lines right after DGEQRF, then the upper triangular
+  // part of Jmatrix will then contain Rinverse
+
+  char uplo = 'U'; // upper triangular
+  char unitdiag = 'N'; // non-unit trangular
+  la.TRTRI(uplo, unitdiag, N, Jmatrix, LDA, &info); 
+  error_flag &= info;
+
+  if (error_flag) {
+    Cout << "\nWarning: LAPACK error computing confidence intervals.\n\n";
+    return;
+  }
+
+  RealVector standard_error(numContinuousVars);
+  RealVector diag(numContinuousVars, true);
+  for (int i=0; i<numContinuousVars; i++) {
+    for (int j=i; j<numContinuousVars; j++)
+      diag(i) += Jmatrix[j*numLeastSqTerms+i]*Jmatrix[j*numLeastSqTerms+i];
+    standard_error[i] = std::sqrt(diag(i)*sigma_sq_hat);
+  }
+  delete[] Jmatrix;
+
+ */}
 
 } // namespace Dakota
