@@ -300,8 +300,6 @@ private:
   /// response set for use as an anisotropy indicator
   void reduce_decay_rate_sets(RealVector& min_decay);
 
-  /// initialization of adaptive refinement using generalized sparse grids
-  void initialize_sets();
   /// perform an adaptive refinement increment using generalized sparse grids
   size_t increment_sets(Real& delta_star, bool apply_best = true);
   /// finalization of adaptive refinement using generalized sparse grids

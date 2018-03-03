@@ -930,9 +930,21 @@ void NonDExpansion::refine_expansion()
 void NonDExpansion::pre_refinement()
 {
   // initialize refinement algorithms (if necessary)
+  Iterator* sub_iter_rep = uSpaceModel.subordinate_iterator().iterator_rep();
   switch (refineControl) {
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
-    initialize_sets(); break;
+    Cout << "\n>>>>> Initialization of generalized sparse grid sets.\n";
+    ((NonDSparseGrid*)sub_iter_rep)->initialize_sets();
+    break;
+  case Pecos::UNIFORM_CONTROL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
+    switch (expansionCoeffsApproach) {
+    case Pecos::COMBINED_SPARSE_GRID: //case Pecos::HIERARCHICAL_SPARSE_GRID:
+      ((NonDSparseGrid*)sub_iter_rep)->update_reference();
+      break;
+    }
+    break;
   }
 }
 
@@ -1422,15 +1434,6 @@ void NonDExpansion::increment_specification_sequence()
     = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
   nond_integration->reset(); // TPQ or SSG
   */
-}
-
-
-void NonDExpansion::initialize_sets()
-{
-  Cout << "\n>>>>> Initialization of generalized sparse grid sets.\n";
-  NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  nond_sparse->initialize_sets();
 }
 
 
