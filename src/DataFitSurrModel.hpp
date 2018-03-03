@@ -201,9 +201,8 @@ protected:
   /// clear inactive data stored in the approxInterface
   void clear_inactive();
 
-  /// execute the DACE iterator, append the approximation data, and
-  /// rebuild the approximation if indicated
-  void run_dace_append(bool rebuild_flag);
+  /// execute the DACE iterator to generate build data
+  void run_dace();
 
   /// retrieve the SharedApproxData from approxInterface
   SharedApproxData& shared_approximation();

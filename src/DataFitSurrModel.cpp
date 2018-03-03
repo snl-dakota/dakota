@@ -1074,8 +1074,10 @@ void DataFitSurrModel::build_global()
     new_points = daceIterator.num_samples();
 
     // only run the iterator if work to do
-    if (new_points)
-      run_dace_append(false); // don't rebuild
+    if (new_points) {
+      run_dace();
+      append_approximation(false); // append new data sets; don't rebuild
+    }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
@@ -1135,8 +1137,10 @@ void DataFitSurrModel::rebuild_global()
     new_points = daceIterator.num_samples();
 
     // only run the iterator if work to do
-    if (new_points)
-      run_dace_append(true); // rebuild approx
+    if (new_points) {
+      run_dace(); // *** TO DO: daceIterator.run() is not an incremental build
+      append_approximation(true); // append new data sets and rebuild
+    }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
 	   << std::endl;
@@ -1144,7 +1148,7 @@ void DataFitSurrModel::rebuild_global()
 }
 
 
-void DataFitSurrModel::run_dace_append(bool rebuild_flag)
+void DataFitSurrModel::run_dace()
 {
   // Execute the daceIterator
   ActiveSet set = daceIterator.active_set(); // copy
@@ -1161,9 +1165,6 @@ void DataFitSurrModel::run_dace_append(bool rebuild_flag)
   // run the iterator
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   daceIterator.run(pl_iter);
-
-  // append the new data sets and rebuild if indicated
-  append_approximation(rebuild_flag);
 }
 
 
@@ -1232,7 +1233,8 @@ void DataFitSurrModel::refine_surrogate()
     total_evals += num_samples;
     Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";
-    run_dace_append(false); // don't rebuild
+    run_dace();
+    append_approximation(false); // append new data sets; don't rebuild
 
     // build and check diagnostics
     interface_build_approx();
