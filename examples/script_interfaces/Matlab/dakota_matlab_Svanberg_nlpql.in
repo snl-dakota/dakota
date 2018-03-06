@@ -1,0 +1,56 @@
+#  DAKOTA INPUT FILE - dakota_matlab_Svanberg.in
+#
+#  This sample Dakota input file optimizes the Svanberg beam function.
+#  Svanberg, Krister, "The Method of Moving Asymptotes--A New Method for
+#  Structural Optimization," Intl. J. Num. Meth. Vol. 24, 1987, pp. 359-373.
+#  
+# Here we use the 
+#   matlab_Svanberg_simulator.sh (Unix) or 
+# analysis driver that calls Matlab for each function evaluation
+
+environment,
+	tabular_data 
+	tabular_data_file = 'dakota_matlab_Svanberg_nlpql.dat'
+	graphics
+
+method,                                         
+	nlpql_sqp
+	convergence_tolerance = 0.001
+
+variables,					
+	continuous_design = 5
+	cdv_initial_point    5.0      5.0     5.0     5.0     5.0
+	cdv_lower_bounds     0.0      0.0     0.0     0.0     0.0
+	cdv_upper_bounds   100.0    100.0   100.0   100.0   100.0
+	cdv_descriptor       'x1'     'x2'    'x3'    'x4'    'x5'
+
+interface,					
+
+# common options
+	fork,
+	parameters_file = 'params.in'		
+	results_file    = 'results.out'
+	deactivate active_set_vector
+
+# Use this line for Linux
+	analysis_driver = 'matlab_Svanberg_simulator.sh'	
+
+# POSSIBLY use the following to perform 2 or more simultaneous Matlab
+# evaluations.  I haven't researched whether the automation
+# server supports this asynchronously, or whether one evaluation will
+# block the next (seems to work though)
+##       asynchronous                            
+##       evaluation_concurrency = 2
+##	 file_tag                                
+# use this to keep parameters/results files around if you wish (when
+# using file_tag only)
+##	file_save                               
+
+
+responses,                                      
+	num_objective_functions = 1             
+	nonlinear_inequality_constraints = 1
+	analytic_gradients
+# 	numerical_gradients			
+# 	  fd_gradient_step_size = .000001	
+	no_hessians
