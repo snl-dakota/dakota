@@ -230,6 +230,79 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const)
 }
 
 //----------------------------------------------------------------
+/// 3D textbook problem with active bound constraints:
+/// The 2nd variable has a best value at the corresponding upper
+/// bound constraint of 0.5 (in comparison to a best value of 1
+/// for the unconstrained problem; other two variables have
+/// expected best value of 1 with a best objective 0f 0.5^4
+/// This variant uses an analytic Hessian.
+
+TEUCHOS_UNIT_TEST(opt_rol,text_book_bound_const_hessian)
+{
+  /// Dakota input string:
+  static const char text_book_input[] =
+    " method,"
+    "   rol_ls"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
+    "     max_iterations 20"
+    " variables,"
+    "   continuous_design = 3"
+    "     initial_point  0.5    0.0   0.5"
+    "     upper_bounds  2.0   0.5  2.0"
+    "     lower_bounds     0.0  0.0 0.0"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
+    " interface,"
+    "   direct"
+    "     analysis_driver = 'text_book'"
+    " responses,"
+    "   num_objective_functions = 1"
+    "   analytic_gradients"
+    "   analytic_hessians";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  if (env.parallel_library().mpirun_flag())
+    TEST_ASSERT( false ); // This test only works for serial builds
+
+  // Execute the environment
+  env.execute();
+
+  // retrieve the final parameter values
+  const Variables& vars = env.variables_results();
+
+  // convergence tests:
+  double rel_err;
+  double target;
+  double max_tol;
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 0.5;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  // retrieve the final response values
+  const Response& resp  = env.response_results();
+
+  target = 0.0625;
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
+  TEST_COMPARE(rel_err,<, max_tol);
+}
+
+//----------------------------------------------------------------
 /// 3D textbook problem with active bound constraints and use of reset
 /// of ROL problem and solver to test re-entrant capability: The 2nd
 /// and 3rd variables have best values at the corresponding upper bound constraint
