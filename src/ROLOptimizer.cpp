@@ -75,10 +75,12 @@ void ROLOptimizer::set_rol_parameters()
   // HESSIAN TODO: if Dakota Hessian available, don't use "Secant"
   // need to check on if anything else needs to be set.
 
-  optSolverParams.sublist("General").sublist("Secant").
-    set("Type", "Limited-Memory BFGS");
-  optSolverParams.sublist("General").sublist("Secant").
-    set("Use as Hessian", true);
+  if (iteratedModel.hessian_type() == "none") {
+    optSolverParams.sublist("General").sublist("Secant").
+      set("Type", "Limited-Memory BFGS");
+    optSolverParams.sublist("General").sublist("Secant").
+      set("Use as Hessian", true);
+  }
 
   if (problemType == TYPE_U){
     optSolverParams.sublist("Step").set("Type","Trust Region");
@@ -204,6 +206,9 @@ void ROLOptimizer::set_problem()
 
   // HESSIAN TODO: instantiate obj based on whether or not Hessian is
   // provided
+  // PDH FOLLOW-UP: conditional instantiation is not appreciated by
+  // the compiler.  instantiate the parent objective and handle the
+  // conditional assignment in the reset down in line 265
 
   // null defaults for various elements of ROL's simplified interface
   // will be overridden as required
@@ -257,7 +262,10 @@ void ROLOptimizer::set_problem()
   // HESSIAN TODO: reset obj based on whether or not Hessian is provided
 
   // create objective function object and give it access to Dakota model 
-  obj.reset(new DakotaROLObjective(iteratedModel));
+  if (iteratedModel.hessian_type() == "none")
+    obj.reset(new DakotaROLObjective(iteratedModel));
+  else
+    obj.reset(new DakotaROLObjectiveHess(iteratedModel));
 
   // Equality constraints
   if (num_eq_const > 0){
@@ -402,7 +410,10 @@ namespace {
     // HESSIAN TODO: added AS_HESS; need to track if this creates isses
 
     ActiveSet eval_set(model.current_response().active_set());
-    eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
+    if (model.hessian_type() == "none")
+      eval_set.request_values(AS_FUNC+AS_GRAD);
+    else
+      eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
     model.evaluate(eval_set);
 
     // now we can use the response currently in the model for any
