@@ -253,7 +253,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
   }
 
   if (err_flag)
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 }
 
 
@@ -278,7 +278,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
   if (refineType) {
     Cerr << "Error: uniform/adaptive refinement of cubature grids not "
 	 << "supported." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   u_space_sampler.assign_rep(new 
@@ -294,7 +294,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
     Cerr << "Error: generalized option does not support adaptive refinement of "
 	 << "tensor grids." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // enforce minimum required VBD control
@@ -323,7 +323,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
     Cerr << "Error: only uniform refinement is supported for regression with "
 	 << "the tensor_grid option." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   /*
@@ -357,7 +357,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
     Cerr << "Error: only uniform refinement is supported for regression with "
 	 << "the tensor_grid option." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   /*
@@ -447,7 +447,7 @@ construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   if (num_samples <= 0) {
     Cerr << "Error: bad samples specification (" << num_samples << ") in "
 	 << "NonDExpansion::construct_incremental_lhs()." << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 
   // use default LHS sample_type for consistency with collocation support for
@@ -542,7 +542,7 @@ construct_expansion_sampler(const String& import_approx_file,
     if (!numSamplesOnExpansion) { // sanity check for samples spec
       Cerr << "\nError: number of samples must be specified for numerically "
 	   << "evaluating statistics on a stochastic expansion." << std::endl;
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
     // could use construct_lhs() except for non-default ALEATORY_UNCERTAIN
@@ -949,7 +949,7 @@ void NonDExpansion::pre_refinement()
 }
 
 
-size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
+size_t NonDExpansion::core_refinement(Real& metric, bool revert)
 {
   switch (refineControl) {
   case Pecos::UNIFORM_CONTROL:
@@ -961,8 +961,8 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid();
       update_expansion();
-      metric = compute_covariance_metric();
-      if (!apply_best) {
+      metric = compute_covariance_metric(revert);
+      if (revert) {
 	nond_integration->decrement_grid();
 	uSpaceModel.pop_approximation(true);// store increment to use in restore
       }
@@ -978,8 +978,8 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
       // initial collocation ratio (either user specified or inferred)
       increment_order_and_grid(); // virtual fn defined for NonDPCE
       update_expansion(); // invokes uSpaceModel.build_approximation()
-      metric = compute_covariance_metric();
-      if (!apply_best) {
+      metric = compute_covariance_metric(revert);
+      if (revert) {
 	decrement_order_and_grid();
 	uSpaceModel.pop_approximation(true);// store increment to use in restore
       }
@@ -997,8 +997,8 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
       uSpaceModel.subordinate_iterator().iterator_rep();
     nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
     update_expansion();
-    metric = compute_covariance_metric();
-    if (!apply_best) {
+    metric = compute_covariance_metric(revert);
+    if (revert) {
       nond_integration->decrement_grid();  // reuses latest dim_pref
       uSpaceModel.pop_approximation(true); // store increment to use in restore
     }
@@ -1015,8 +1015,8 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
       uSpaceModel.subordinate_iterator().iterator_rep();
     nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
     update_expansion();
-    metric = compute_covariance_metric();
-    if (!apply_best) {
+    metric = compute_covariance_metric(revert);
+    if (revert) {
       nond_integration->decrement_grid();  // reuses latest aniso_wts
       uSpaceModel.pop_approximation(true); // store increment to use in restore
     }
@@ -1031,7 +1031,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool apply_best)
     // > Starting GSG from TPQ is conceptually straightforward but
     //   awkward in implementation (would need something like
     //   nond_sparse->ssg_driver->compute_tensor_grid()).
-    return increment_sets(metric, apply_best); // best of several candidates
+    return increment_sets(metric, !revert); // best of several candidates
     break;
   }
 }
@@ -1279,7 +1279,7 @@ void NonDExpansion::greedy_multifidelity_expansion()
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> lev_metric
-      lev_candidate = core_refinement(lev_metric, false);
+      lev_candidate = core_refinement(lev_metric, true);
       // core_refinement() normalizes level candidates based on the number of
       // required evaluations, which is sufficient for selection of the best
       // level candidate.  For selection among multiple level candidates, a
@@ -1380,7 +1380,7 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   Cerr << "Error: virtual select_refinement_points() not redefined by derived "
        << "class.\n       NonDExpansion does not support point selection."
        << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1389,7 +1389,7 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   Cerr << "Error: virtual append_expansion() not redefined by derived class.\n"
        << "       NonDExpansion does not support data appending." << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1398,7 +1398,7 @@ void NonDExpansion::increment_order_and_grid()
   Cerr << "Error: virtual increment_order_and_grid() not redefined by derived "
        << "class.\n       NonDExpansion does not support uniform expansion "
        << "order and grid increments." << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1407,19 +1407,20 @@ void NonDExpansion::decrement_order_and_grid()
   Cerr << "Error: virtual decrement_order_and_grid() not redefined by derived "
        << "class.\n       NonDExpansion does not support uniform expansion "
        << "order and grid decrements." << std::endl;
-  abort_handler(-1);
+  abort_handler(METHOD_ERROR);
 }
 
 
+/** leave sampler_set, expansion flags, and distribution parameter
+    settings as set previously by compute_expansion(); there should be
+    no need to update these for an expansion refinement. */
 void NonDExpansion::update_expansion()
 {
-  // leave sampler_set, expansion flags, and distribution parameter settings
-  // as set previously by compute_expansion(); there should be no need to
-  // update these for an expansion refinement.
-
-  // Use build from scratch as default and enumerate cases that can support
-  // incremental builds within derived class implementations
-  uSpaceModel.build_approximation(); // default is build from scratch
+  // enumerate cases that can support incremental builds within
+  // derived class implementations
+  Cerr << "Error: virtual update_expansion() not redefined by derived class.\n"
+       << "       NonDExpansion does not provide default." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1444,13 +1445,8 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   std::set<UShortArray>::const_iterator cit, cit_star;
-  delta_star = -DBL_MAX;               Real delta;
-  RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
-
-  // store reference points for computing refinement metrics
-  if (totalLevelRequests) stats_ref = finalStatistics.function_values();
-  else if (covarianceControl == FULL_COVARIANCE) covar_ref = respCovariance;
-  else stats_ref = respVariance;
+  Real delta; delta_star = -DBL_MAX;
+  RealSymMatrix covar_star; RealVector stats_star;
 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
@@ -1470,9 +1466,9 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // assess effect of increment (non-negative norm)
-    delta = (totalLevelRequests) ? compute_final_statistics_metric()
-                                 : compute_covariance_metric();
+    // assess effect of increment (non-negative norm); restore ref once done
+    delta = (totalLevelRequests) ? compute_final_statistics_metric(true)
+                                 : compute_covariance_metric(true);
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1495,10 +1491,6 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store SDP set for use in restore
     nond_sparse->decrement_set();
-    // restore reference point for next metric calculation
-    if (totalLevelRequests) finalStatistics.function_values(stats_ref);
-    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_ref;
-    else respVariance = stats_ref;
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -1512,7 +1504,7 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
       if (totalLevelRequests) finalStatistics.function_values(stats_star);
       else if (covarianceControl == FULL_COVARIANCE)
-	respCovariance = covar_star;
+	 respCovariance = covar_star;
       else respVariance = stats_star;
     }
   }
@@ -1656,7 +1648,7 @@ void NonDExpansion::annotated_results(short results_state)
 
 
 /** computes the default refinement metric based on change in respCovariance */
-Real NonDExpansion::compute_covariance_metric()
+Real NonDExpansion::compute_covariance_metric(bool restore_ref)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1666,16 +1658,23 @@ Real NonDExpansion::compute_covariance_metric()
 
   switch (covarianceControl) {
   case DIAGONAL_COVARIANCE: {
+    RealVector resp_var_ref;
+    if (restore_ref) resp_var_ref = respVariance;
+
     RealVector delta_resp_var = respVariance; // deep copy
     Real scale = respVariance.normFrobenius();
     compute_covariance();                     // update
     delta_resp_var -= respVariance;           // compute change
+
 #ifdef DEBUG
     Cout << "resp_var_ref:\n"; write_data(Cout, resp_var_ref);
     Cout << "respVariance:\n"; write_data(Cout, respVariance);
     Cout << "norm of delta_resp_var = " << delta_resp_var.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
+
+    if (restore_ref) respVariance = resp_var_ref;
+
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
@@ -1684,10 +1683,14 @@ Real NonDExpansion::compute_covariance_metric()
     break;
   }
   case FULL_COVARIANCE: {
+    RealSymMatrix resp_covar_ref;
+    if (restore_ref) resp_covar_ref = respCovariance;
+
     RealSymMatrix delta_resp_covar = respCovariance; // deep copy
     Real scale = respCovariance.normFrobenius();
     compute_covariance();                            // update
     delta_resp_covar -= respCovariance;              // compute change
+
 #ifdef DEBUG
     Cout << "resp_covar_ref:\n";
     write_data(Cout, resp_covar_ref, false, true, true);
@@ -1696,6 +1699,9 @@ Real NonDExpansion::compute_covariance_metric()
     Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
 	 << std::endl;
 #endif // DEBUG
+
+    if (restore_ref) respCovariance = resp_covar_ref;
+
     // For adaptation started from level = 0, reference covariance = 0.
     // Trap this and also avoid possible bogus termination from using absolute
     // change compared against relative conv tol.
@@ -1712,7 +1718,7 @@ Real NonDExpansion::compute_covariance_metric()
 
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
-Real NonDExpansion::compute_final_statistics_metric()
+Real NonDExpansion::compute_final_statistics_metric(bool restore_ref)
 {
   // default implementation for use when direct (hierarchical) calculation
   // of increments is not available
@@ -1759,6 +1765,8 @@ Real NonDExpansion::compute_final_statistics_metric()
       sum_sq   += delta * delta;
     }
   }
+
+  if (restore_ref) finalStatistics.function_values(final_stats_ref);
 
   // Risk of zero reference is reduced relative to covariance control, but not
   // eliminated. Trap this and also avoid possible bogus termination from using
@@ -2298,7 +2306,7 @@ void NonDExpansion::compute_numerical_statistics()
 	  else if (respLevelTarget == GEN_RELIABILITIES)
 	    Cerr << "generalized reliability";
 	  Cerr << " not yet supported." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(METHOD_ERROR);
 	}
       }
     }
@@ -2312,7 +2320,7 @@ void NonDExpansion::compute_numerical_statistics()
       if (final_asv[cntr] & 2) { // TO DO: p->z sampling sensitivity analysis
 	Cerr << "\nError: analytic sensitivity of response level not yet "
 	     << "supported for mapping from probability." << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
     }
 
@@ -2330,7 +2338,7 @@ void NonDExpansion::compute_numerical_statistics()
 	Cerr << "\nError: analytic sensitivity of response level not yet "
 	     << "supported for mapping from generalized reliability."
 	     << std::endl;
-	abort_handler(-1);
+	abort_handler(METHOD_ERROR);
       }
     }
 

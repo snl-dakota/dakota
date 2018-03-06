@@ -104,9 +104,9 @@ protected:
   virtual void compute_covariance();
 
   /// compute 2-norm of change in response covariance
-  virtual Real compute_covariance_metric();
+  virtual Real compute_covariance_metric(bool restore_ref);
   /// compute 2-norm of change in final statistics
-  virtual Real compute_final_statistics_metric();
+  virtual Real compute_final_statistics_metric(bool restore_ref);
   /// perform any required expansion roll-ups prior to metric computation
   virtual void metric_roll_up();
 
@@ -195,7 +195,7 @@ protected:
   /// initialization of expansion refinement, if necessary
   void pre_refinement();
   /// advance the refinement strategy one step
-  size_t core_refinement(Real& metric, bool apply_best = true);
+  size_t core_refinement(Real& metric, bool revert = false);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric);
 

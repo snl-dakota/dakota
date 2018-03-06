@@ -923,6 +923,7 @@ void NonDPolynomialChaos::compute_expansion()
 
 void NonDPolynomialChaos::update_expansion()
 {
+  /*
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: case Pecos::CUBATURE:
     // build from scratch cases (detect any duplicates)
@@ -930,10 +931,15 @@ void NonDPolynomialChaos::update_expansion()
   default:
     // incremental cases: SSG, SAMPLING, all REGRESSION
     // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
-    if (uSpaceModel.push_available()) uSpaceModel.push_approximation();
-    else                              uSpaceModel.rebuild_approximation();
+  */
+    if (uSpaceModel.push_available())
+      uSpaceModel.push_approximation();    // default to false
+    else
+      uSpaceModel.rebuild_approximation(); // default to build from scratch
+  /*
     break;
   }
+  */
 }
 
 

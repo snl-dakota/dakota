@@ -3102,12 +3102,8 @@ void Model::rebuild_approximation()
 {
   if (modelRep) // envelope fwd to letter
     modelRep->rebuild_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
-	 << "approximation() function.\nThis model does not support "
-	 << "approximation updating." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
+  else
+    build_approximation(); // default: build from scratch
 }
 
 
@@ -3254,15 +3250,7 @@ void Model::push_approximation()
 
 
 bool Model::push_available()
-{
-  if (!modelRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual push_available()"
-	 << "function.\n       This model does not support approximation "
-	 << "augmentation." << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-  return modelRep->push_available();
-}
+{ return (modelRep) ? modelRep->push_available() : false; }
 
 
 void Model::finalize_approximation()

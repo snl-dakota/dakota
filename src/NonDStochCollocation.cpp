@@ -381,11 +381,11 @@ void NonDStochCollocation::update_expansion()
     uSpaceModel.append_approximation(true); // rebuild
   }
   else
-    NonDExpansion::update_expansion(); // default: build from scratch
+    uSpaceModel.rebuild_approximation(); // defaults to build from scratch
 }
 
 
-Real NonDStochCollocation::compute_covariance_metric()
+Real NonDStochCollocation::compute_covariance_metric(bool restore_ref)
 {
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
     size_t i, j;
@@ -417,16 +417,18 @@ Real NonDStochCollocation::compute_covariance_metric()
       Cerr << "Warning: expansion coefficients unavailable in "
 	   << "NonDStochCollocation::compute_covariance_metric().\n         "
 	   << "Zeroing affected delta_covariance terms." << std::endl;
+
     // reference covariance gets restored in NonDExpansion::increment_sets()
-    respCovariance += delta_resp_covar;
+    if (!restore_ref) respCovariance += delta_resp_covar;
+
     return delta_resp_covar.normFrobenius();
   }
   else // use default implementation
-    return NonDExpansion::compute_covariance_metric();
+    return NonDExpansion::compute_covariance_metric(restore_ref);
 }
 
 
-Real NonDStochCollocation::compute_final_statistics_metric()
+Real NonDStochCollocation::compute_final_statistics_metric(bool restore_ref)
 {
   // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
   // with default definition of delta-{p,beta*}
@@ -451,9 +453,14 @@ Real NonDStochCollocation::compute_final_statistics_metric()
     if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
       RealVector delta_final_stats;
       if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
+	RealVector final_stats_ref;
+	if (restore_ref) final_stats_ref = finalStatistics.function_values();
+
         delta_final_stats  = finalStatistics.function_values();     // deep copy
 	compute_statistics(false);                         // intermediate stats
 	delta_final_stats -= finalStatistics.function_values(); // compute delta
+
+	if (restore_ref) finalStatistics.function_values(final_stats_ref);
       }
 #ifdef DEBUG
       else
@@ -519,10 +526,10 @@ Real NonDStochCollocation::compute_final_statistics_metric()
       //return delta_final_stats.normFrobenius();
     }
     else // use default implementation if no beta-mapping increments
-      return NonDExpansion::compute_final_statistics_metric();
+      return NonDExpansion::compute_final_statistics_metric(restore_ref);
   }
   else // use default implementation for Nodal
-    return NonDExpansion::compute_final_statistics_metric();
+    return NonDExpansion::compute_final_statistics_metric(restore_ref);
 }
 
 } // namespace Dakota
