@@ -567,10 +567,10 @@ DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :
 { }
 
 void
-DakotaROLObjectiveHess::hessVec( std::vector<Real> &hv,
-				 const std::vector<Real> &v,
-				 const std::vector<Real> &x,
-				 Real &tol )
+DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
+				const std::vector<Real> &v,
+				const std::vector<Real> &x,
+				Real &tol)
 {/*
   // make sure the Hessian has been evaluated and is available
   update_model(dakotaModel, x);
@@ -583,10 +583,10 @@ DakotaROLObjectiveHess::hessVec( std::vector<Real> &hv,
  */}
 
 void
-DakotaROLObjectiveHess::invHessVec( std::vector<Real> &h,
-				    const std::vector<Real> &v,
-				    const std::vector<Real> &x,
-				    Real &tol )
+DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
+				   const std::vector<Real> &v,
+				   const std::vector<Real> &x,
+				   Real &tol)
 {/*
   // make sure the Hessian has been evaluated and is available
   update_model(dakotaModel, x);

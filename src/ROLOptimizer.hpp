@@ -246,7 +246,7 @@ private:
   // HESSIAN TODO: finish populating this class if anything else is
   // needed
   // second-order
-class DakotaROLObjectiveHess : public ROL::DakotaROLObjective
+class DakotaROLObjectiveHess : public DakotaROLObjective
 {
 public:
 
@@ -278,15 +278,15 @@ public:
   //		const std::vector<Real> &x,
   //		Real &tol) override;
 
-  void hessVec( std::vector<Real> &hv,
-		const std::vector<Real> &v,
-		const std::vector<Real> &x,
-		Real &tol ) override;
+  void hessVec(std::vector<Real> &hv,
+	       const std::vector<Real> &v,
+	       const std::vector<Real> &x,
+	       Real &tol) override;
 
-  void invHessVec( std::vector<Real> &h,
-		   const std::vector<Real> &v,
-		   const std::vector<Real> &x,
-		   Real &tol ) override;
+  void invHessVec(std::vector<Real> &hv,
+		  const std::vector<Real> &v,
+		  const std::vector<Real> &x,
+		  Real &tol) override;
 
 private:
 
