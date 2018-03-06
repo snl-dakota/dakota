@@ -11,7 +11,6 @@
 #include <map>
 #include <Teuchos_UnitTestHarness.hpp>
 
-// Needed to test reset (re-entrant) capability
 #include "ROLOptimizer.hpp"
 
 using namespace Dakota;
@@ -1075,3 +1074,73 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
   rel_err = fabs((resp.function_value(0) - target) );
   TEST_COMPARE(rel_err,<, max_tol);
 }
+
+
+//----------------------------------------------------------------
+/// Unconstrained 3D textbook problem with known solution of
+/// {1,1,1} and utilizing Hessians from the problem
+
+TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessians)
+{
+  /// Dakota input string:
+  static const char text_book_input[] =
+    " method,"
+    "   rol_ls"
+    "     gradient_tolerance 1.0e-6"
+    "     constraint_tolerance 1.0e-6"
+    "     threshold_delta 1.0e-6"
+    "     max_iterations 20"
+    " variables,"
+    "   continuous_design = 3"
+    "     initial_point  0.5    0.5   0.5"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
+    " interface,"
+    "   direct"
+    "     analysis_driver = 'text_book'"
+    " responses,"
+    "   num_objective_functions = 1"
+    "   analytic_gradients"
+    "   analytic_hessians";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  if (env.parallel_library().mpirun_flag())
+    TEST_ASSERT( false ); // This test only works for serial builds
+
+  // Execute the environment
+  env.execute();
+
+  // retrieve the final parameter values
+  const Variables& vars = env.variables_results();
+
+  // convergence tests:
+  double rel_err;
+  double target;
+  double max_tol;
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(0) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(1) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  target = 1.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((vars.continuous_variable(2) - target) );
+  TEST_COMPARE(rel_err,<, max_tol);
+
+  // retrieve the final response values
+  const Response& resp  = env.response_results();
+
+  target = 0.0;
+  max_tol = 1.e-2;
+  rel_err = fabs((resp.function_value(0) - target));
+  TEST_COMPARE(rel_err,<, max_tol);
+}
+
+
