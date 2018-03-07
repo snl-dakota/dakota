@@ -7,34 +7,32 @@
     _______________________________________________________________________ */
 
 //- Class:       ROLOptimizer
-//- Description: Implementation of the ROLOptimizer class, Only able to
-//               call line search optimization for now (i.e. ROLOptimizer
-//               is single-method TPL for this iterations)
+//- Description: Wrapper class for ROL
 //- Owner:       Moe Khalil
 //- Checked by:
 //- Version: $Id$
 
-// BMA TODO: Traits should indicate that ROL requires gradients
+// Dakota headers
+#include "ROLOptimizer.hpp"
+#include "ProblemDescDB.hpp"
 
+// ROL headers
+#include "ROL_StdVector.hpp"
+#include "ROL_Objective.hpp"
+#include "ROL_Bounds.hpp"
+#include "ROL_Constraint.hpp"
+#include "ROL_Algorithm.hpp"
+#include "ROL_OptimizationSolver.hpp"
+
+// Teuchos headers
 #include "Teuchos_XMLParameterListHelpers.hpp"
+// CLEAN-UP: Are these comments still needed?
 // BMA TODO: Above will break with newer Teuchos; instead need 
 //#include "Teuchos_XMLParameterListCoreHelpers.hpp"
 #include "Teuchos_StandardCatchMacros.hpp"
 
-#include "ROL_StdVector.hpp"
-#include "ROL_Algorithm.hpp"
-#include "ROL_Objective.hpp"
-#include "ROL_Constraint.hpp"
-#include "ROL_Bounds.hpp"
-
-#include "ROL_OptimizationSolver.hpp"
-
-#include "ROLOptimizer.hpp"
-#include "ProblemDescDB.hpp"
-
+// Semi-standard headers
 #include <boost/iostreams/filtering_stream.hpp>
-
-using std::endl;
 
 //
 // - ROLOptimizer implementation
@@ -42,39 +40,289 @@ using std::endl;
 
 namespace Dakota {
 
-/// Standard constructor.
+// -----------------------------------------------------------------
+/** Standard constructor for ROLOptimizer.  Sets up ROL solver based
+    on information from the problem database. */
 
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
-  optSolverParams("Dakota::ROL")
+  optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
-  // These calls are order-dependent in that the parameter settings depend on problemType
+  // Populate ROL data with user-provided problem dimensions and
+  // initial values, and set ROL solver parameters.  These calls are
+  // order-dependent in that the solver settings depend on
+  // problemType, which is set with the problem data.
+
   set_problem();
   set_rol_parameters();
 }
 
-/// Alternate constructor for Iterator instantiations by name.
+// -----------------------------------------------------------------
+/** Alternate constructor for Iterator instantiations by name.  Sets
+    up ROL solver based on information passed as arguments. */
 
-ROLOptimizer::
-ROLOptimizer(const String& method_string, Model& model):
-  Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new ROLTraits())),
-  optSolverParams("Dakota::ROL")
+ROLOptimizer::ROLOptimizer(const String& method_string, Model& model):
+  Optimizer(method_string_to_enum(method_string), model,
+	    std::shared_ptr<TraitsBase>(new ROLTraits())),
+  optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
-  // These calls are order-dependent in that the parameter settings depend on problemType
+  // Populate ROL data with user-provided problem dimensions and
+  // initial values, and set ROL solver parameters.  These calls are
+  // order-dependent in that the solver settings depend on
+  // problemType, which is set with the problem data.
+
   set_problem();
   set_rol_parameters();
 }
 
+// -----------------------------------------------------------------
+/** core_run redefines the Optimizer virtual function to perform
+    the optimization using ROL and catalogue the results. */
 
-/** This function uses ProblemDescDB and therefore must only be called
-    at construct time. */
+void ROLOptimizer::core_run()
+{
+  // ostream that will prefix lines with ROL identifier
+  boost::iostreams::filtering_ostream rol_cout;
+  rol_cout.push(PrefixingLineFilter("ROL: "));
+  // CLEAN-UP: Are these comments still needed?
+  // Tried to disable buffering so ROL output gets inlined with
+  // Dakota's; doesn't work perfectly. Instead, modified ROL to flush()
+  //std::streamsize buffer_size = 0;
+  //rol_cout.push(Cout, buffer_size);
+  rol_cout.push(Cout);
+
+  // Instantiate and call simplified interface solver object
+  ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
+  opt_solver.solve(rol_cout);
+  rol_cout.flush();
+
+  // TODO: print termination criteria (based on Step or AlgorithmState?)
+
+  // CLEAN-UP: If memory serves me correctly, Russell implementd a
+  // function at the DakotaOptimizer level that sets all the final
+  // values.  It was based on APPS, but we should revisit to figure
+  // out how this compares and if it makes sense to merge them.
+
+  // QUESTION: Do we need the copy_data?  Where is rolX coming from
+  // and/or what does is get used for?
+  // Copy ROL solution to Dakota bestVariablesArray
+  Variables& best_vars = bestVariablesArray.front();
+  RealVector& cont_vars = best_vars.continuous_variables_view();
+  copy_data(*rolX, cont_vars);
+
+  // ROL does not currently provide access to the final solution, so
+  // attempt a model database lookup directly into best.
+  Response& best_resp = bestResponseArray.front();
+  ActiveSet search_set(best_resp.active_set());
+  search_set.request_values(AS_FUNC);
+  best_resp.active_set(search_set);
+  bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+
+  // Fall back on re-evaluation if not found.
+  if (db_found)
+    Cout << "INFO: ROL retrieved best response from cache." << std::endl;
+  else {
+    Cout << "INFO: ROL re-evaluating model to retrieve best response."
+	 << std::endl;
+
+    // QUESTION: Is this evaluating at the right parameter values?  If
+    // I read other code correctly, rolX was copied into cont_vars.
+    // But rolX hasn't been touched since the problem was set up.
+    // Evaluate model for responses at best parameters and set Dakota
+    // bestResponseArray
+    iteratedModel.continuous_variables(cont_vars);
+    iteratedModel.evaluate();
+    const RealVector& best_fns =
+      iteratedModel.current_response().function_values();
+    best_resp.function_values(best_fns);
+  }
+}
+
+// -----------------------------------------------------------------
+/** Helper function to populate ROL data with user-provided problem
+    dimensions and initial values. */
+
+void ROLOptimizer::set_problem()
+{
+  size_t j;
+
+  // CLEAN-UP: Seems like we should be able to use traits to determine
+  // when we need to provide the sum rather than making the user do
+  // it.  Also, same comment about class data as below.
+
+  size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
+  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
+  // Set the ROL problem type.  Default is TYPE_B (bound constrained),
+  // so overwrite for other constraint scenarios.
+  if ( (num_ineq_const > 0) ||
+       ((num_eq_const > 0) && (boundConstraintFlag)) )
+    problemType = TYPE_EB;
+  else {
+    if (!boundConstraintFlag)
+      problemType = (num_eq_const > 0) ? TYPE_E : TYPE_U;
+  }
+
+  // QUESTION: Why do it this way?  Is it recommended practice for
+  // ROL?  Some other best practice?
+  // Instantiate null defaults for ROL problem data.  They will be
+  // dimensioned and populated later.
+  Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > x = Teuchos::null;
+  Teuchos::RCP<ROL::BoundConstraint<Real> > bnd = Teuchos::null;
+  Teuchos::RCP<DakotaROLEqConstraints> eq_const = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > emul = Teuchos::null;
+  Teuchos::RCP<DakotaROLIneqConstraints> ineq_const = Teuchos::null;
+  Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
+  Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
+
+  // CLEAN-UP: Should figure out which of this class data (e.g.,
+  // numContinuousVars) we could/should elminate and which we should
+  // keep and formally make part of the TPL API.
+
+  // QUESTION: Why do we need both rolX and x?
+  // QUESTION: Should all bound constraint related stuff be inside the
+  // conditional below?
+  // Dimension ROL variable vector and set initial values.
+  rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
+  Teuchos::RCP<std::vector<Real> >
+    l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
+  Teuchos::RCP<std::vector<Real> >
+    u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
+
+  get_initial_values(iteratedModel, *rolX);
+  x.reset( new ROL::StdVector<Real>(rolX) );
+
+  // For TYPE_B and TYPE_EB problems, set values of the bounds.  Map
+  // any Dakota infinite bounds to ROL_INF for best performance.
+  if ( (problemType == TYPE_B) || (problemType == TYPE_EB) ) {
+    Real rol_inf = ROL::ROL_INF<Real>();
+    Real rol_ninf = ROL::ROL_NINF<Real>();
+
+    get_bounds(iteratedModel, *l_rcp, *u_rcp);
+
+    // QUESTION: Is there a reason not to just use isfinite() and set
+    // to rol_(n)inf based on that?  And maybe save the extra data
+    // running around with the assignment above?
+    // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
+    // (ROL_NINF)
+    for (size_t i = 0; i < numContinuousVars; i++) {
+      if ((*l_rcp)[i] < rol_ninf)
+        (*l_rcp)[i] = rol_ninf;
+      if ((*u_rcp)[i] > rol_inf)
+        (*u_rcp)[i] = rol_inf;
+    }
+
+    // Set bounds values in ROL::BoundConstraint object.
+    lowerBounds = Teuchos::rcp( new ROL::StdVector<Real>( l_rcp ) );
+    upperBounds = Teuchos::rcp( new ROL::StdVector<Real>( u_rcp ) );
+    bnd.reset( new ROL::Bounds<Real>(lowerBounds, upperBounds) );
+  }
+
+  // Create objective function object and give it access to Dakota
+  // model.  If there is a Dakota/user-provided Hessian, need to
+  // instantiate the "Hess" version to enable support for it.
+  if (iteratedModel.hessian_type() == "none")
+    obj.reset(new DakotaROLObjective(iteratedModel));
+  else
+    obj.reset(new DakotaROLObjectiveHess(iteratedModel));
+
+  // QUESTION: Is there a distinction/order between linear and
+  // nonlinear as there appears to be with the inequality constraints?
+  // Does ROL assume the target is 0.0?
+  // If there are equality constraints, create the object and provide
+  // the Dakota model.
+  if (num_eq_const > 0){
+    eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
+
+    // QUESTION: What are the multipliers for?
+    // equality multipliers
+    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
+    emul.reset(new ROL::StdVector<Real>(emul_rcp) );
+  }
+
+  // If there are inequality constraints, create the object and provide
+  // the Dakota model. (Order: [linear_ineq, nonlinear_ineq])
+  if (num_ineq_const > 0){
+    ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
+
+    // QUESTION: What are the multipliers for?
+    // inequality multipliers
+    Teuchos::RCP<std::vector<Real> > imul_rcp = 
+      Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
+    imul.reset(new ROL::StdVector<Real>(imul_rcp) );
+  
+    // create ROL inequality constraint bound vectors
+    Teuchos::RCP<std::vector<Real> >
+      ineq_l_rcp(new std::vector<Real>(num_ineq_const, 0.0));
+    Teuchos::RCP<std::vector<Real> >
+      ineq_u_rcp(new std::vector<Real>(num_ineq_const, 0.0));
+
+    // CLEAN-UP: Seems like we should be able to pull this into the
+    // adapters and use traits to determine what to populate the
+    // bounds vectors with...similar to get_bounds for the bound
+    // constraints above.
+
+    // Get the inequality bounds from Dakota and transfer them into a
+    // ROL::BoundConstraint object.
+    copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
+		      *ineq_l_rcp, 0);
+    copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
+		      *ineq_u_rcp, 0);
+    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+		      *ineq_l_rcp, numLinearIneqConstraints);
+    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+		      *ineq_u_rcp, numLinearIneqConstraints);
+    Teuchos::RCP<ROL::Vector<Real> >
+      ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
+    Teuchos::RCP<ROL::Vector<Real> >
+      ineq_upper_bounds( new ROL::StdVector<Real>( ineq_u_rcp ) );
+    ineq_bnd.reset( new ROL::Bounds<Real>(ineq_lower_bounds,ineq_upper_bounds) );
+  }
+
+  // Instantiate ROL problem and populate it with relevant data.
+  optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eq_const, emul,
+					       ineq_const, imul, ineq_bnd);
+
+  // CLEAN-UP: Do we need these comments anymore?
+  // checking, may be enabled in tests or debug mode
+
+  // Teuchos::RCP<std::ostream> outStream_checking;
+  // outStream_checking = Teuchos::rcp(&std::cout, false);
+  // optProblem.check(*outStream_checking);
+}
+
+// QUESTION: Shouldn't this be called from somewhere?
+// -----------------------------------------------------------------
+/** Helper function to reset ROL data and solver parameters.  This
+    can be used to ensure that ROL is re-entrant since ROL itself
+    does not provide such assurance. */
+
+void ROLOptimizer::reset_problem( const RealVector & init_vals,
+                                  const RealVector & lower_bnds,
+                                  const RealVector & upper_bnds,
+                                  const Teuchos::ParameterList & params)
+{
+  // Reset ROL problem data.
+  copy_data(init_vals, *rolX);
+  copy_data(lower_bnds, *(lowerBounds->getVector()));
+  copy_data(upper_bnds, *(upperBounds->getVector()));
+  optProblem.reset();
+
+  // Reset ROL solver settings.
+  optSolverParams.setParameters(params);
+}
+
+// -----------------------------------------------------------------
+/** Helper function to set ROL solver parameters.  This function uses
+    ProblemDescDB and therefore must should be called at construct
+    time. */
+
 void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
 
-  // HESSIAN TODO: if Dakota Hessian available, don't use "Secant"
-  // need to check on if anything else needs to be set.
-
+  // If the user has specified "no_hessians", tell ROL to use its own
+  // Hessian approximation.
   if (iteratedModel.hessian_type() == "none") {
     optSolverParams.sublist("General").sublist("Secant").
       set("Type", "Limited-Memory BFGS");
@@ -82,6 +330,7 @@ void ROLOptimizer::set_rol_parameters()
       set("Use as Hessian", true);
   }
 
+  // Set the solver based on the type of problem.
   if (problemType == TYPE_U){
     optSolverParams.sublist("Step").set("Type","Trust Region");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
@@ -96,9 +345,12 @@ void ROLOptimizer::set_rol_parameters()
   else if (problemType == TYPE_EB){
     optSolverParams.sublist("Step").set("Type","Augmented Lagrangian");
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Solver", "Truncated CG");
-    // The default choice of Kelley-Sachs was performing lots of fn evals for smoothing
+    // The default choice of Kelley-Sachs was performing lots of fn
+    // evals for smoothing, so ROL developers recommend Coleman-Li.
     optSolverParams.sublist("Step").sublist("Trust Region").set("Subproblem Model", "Coleman-Li");
 
+    // QUESTION: Is there a reason this is only for problem TYPE_EB?
+    // Set the verbosity level.
     if (outputLevel >= VERBOSE_OUTPUT)
       optSolverParams.sublist("Step").sublist("Augmented Lagrangian").
         set("Print Intermediate Optimization History","true");
@@ -106,8 +358,11 @@ void ROLOptimizer::set_rol_parameters()
 
   // PRECEDENCE 2: Dakota input file settings
 
+  // Set the verbosity level.
   optSolverParams.sublist("General").
     set("Print Verbosity", outputLevel < VERBOSE_OUTPUT ? 0 : 1);
+
+  // Set the stopping criteria.
   optSolverParams.sublist("Status Test").
     set("Gradient Tolerance", probDescDB.get_real("method.gradient_tolerance"));
   optSolverParams.sublist("Status Test").
@@ -117,7 +372,6 @@ void ROLOptimizer::set_rol_parameters()
   optSolverParams.sublist("Status Test").
     set("Step Tolerance", probDescDB.get_real("method.threshold_delta"));
   optSolverParams.sublist("Status Test").set("Iteration Limit", maxIterations);
-
 
   // BMA: We aren't yet using ROL's Trust Region Step, but Patty
   // called out these settings that we'll want to map
@@ -147,6 +401,7 @@ void ROLOptimizer::set_rol_parameters()
 
   // PRECEDENCE 3: power-user advanced options
 
+  // Check for and ROL XML input file.
   String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
     if (boost::filesystem::exists(adv_opts_file)) {
@@ -160,6 +415,7 @@ void ROLOptimizer::set_rol_parameters()
       abort_handler(METHOD_ERROR);
     }
 
+    // Update ROL solver parameters based on the XML input.
     bool success;
     try {
       Teuchos::Ptr<Teuchos::ParameterList> osp_ptr(&optSolverParams);
@@ -174,223 +430,11 @@ void ROLOptimizer::set_rol_parameters()
   }
 }
 
-// need to move functionality from core_run below here.
-void ROLOptimizer::set_problem()
-{
-  size_t j;
+// --------------------------------------------------------------
 
-  //PDH: Seems like we should be able to use traits to determine when we
-  //need to provide the sum rather than making the user do it.  Also, same
-  //comment about class data as below.
-
-  size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
-  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
-
-  // Obtain ROL problem type
-  // Defaults to Type-U, otherwise overwrite
-  problemType = TYPE_U;
-  if (num_ineq_const > 0)
-    problemType = TYPE_EB;
-  else{
-    if (num_eq_const > 0){
-      if (boundConstraintFlag)
-        problemType = TYPE_EB;
-      else
-        problemType = TYPE_E;
-    }
-    else{
-      if (boundConstraintFlag)
-        problemType = TYPE_B;
-    }
-  }
-
-  // HESSIAN TODO: instantiate obj based on whether or not Hessian is
-  // provided
-  // PDH FOLLOW-UP: conditional instantiation is not appreciated by
-  // the compiler.  instantiate the parent objective and handle the
-  // conditional assignment in the reset down in line 265
-
-  // null defaults for various elements of ROL's simplified interface
-  // will be overridden as required
-  Teuchos::RCP<DakotaROLObjective> obj = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<Real> > x = Teuchos::null;
-  Teuchos::RCP<ROL::BoundConstraint<Real> > bnd = Teuchos::null;
-  Teuchos::RCP<DakotaROLEqConstraints> eq_const = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<Real> > emul = Teuchos::null;
-  Teuchos::RCP<DakotaROLIneqConstraints> ineq_const = Teuchos::null;
-  Teuchos::RCP<ROL::Vector<Real> > imul = Teuchos::null;
-  Teuchos::RCP<ROL::BoundConstraint<Real> > ineq_bnd = Teuchos::null;
-
-//PDH: Should figure out which of this class data (e.g., numContinuousVars)
-//we could/should elminate and which we should keep and formally make part
-//of the TPL API.
-
-// create ROL variable vector
-  rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<Real> >
-    l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-  Teuchos::RCP<std::vector<Real> >
-    u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-
-  get_initial_values(iteratedModel, *rolX);
-  x.reset( new ROL::StdVector<Real>(rolX) );
-
-  // create ROL bound vector; for Type-EB problems, map any Dakota
-  // infinite bounds to ROL_INF for best performance
-  if (boundConstraintFlag || (problemType == TYPE_EB)){
-    Real rol_inf = ROL::ROL_INF<Real>();
-    Real rol_ninf = ROL::ROL_NINF<Real>();
-
-    get_bounds(iteratedModel, *l_rcp, *u_rcp);
-
-    // map bounds greater than (in absolute sense) ROL_INF,
-    // including any Dakota infinite bounds, to ROL_INF
-    for (size_t i = 0; i < numContinuousVars; i++) {
-      if ((*l_rcp)[i] < rol_ninf)
-        (*l_rcp)[i] = rol_ninf;
-      if ((*u_rcp)[i] > rol_inf)
-        (*u_rcp)[i] = rol_inf;
-    }
-
-    lowerBounds = Teuchos::rcp( new ROL::StdVector<Real>( l_rcp ) );
-    upperBounds = Teuchos::rcp( new ROL::StdVector<Real>( u_rcp ) );
-
-    // create ROL::BoundConstraint object to house variable bounds information
-    bnd.reset( new ROL::Bounds<Real>(lowerBounds, upperBounds) );
-  }
-
-  // create appropriate objective function object and give it access to Dakota model 
-  if (iteratedModel.hessian_type() == "none")
-    obj.reset(new DakotaROLObjective(iteratedModel));
-  else
-    obj.reset(new DakotaROLObjectiveHess(iteratedModel));
-
-  // Equality constraints
-  if (num_eq_const > 0){
-    // create equality constraint object and give it access to Dakota model 
-    eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
-
-//PDH: What are the multipliers for?
-
-    // equality multipliers
-    Teuchos::RCP<std::vector<Real> > emul_rcp = Teuchos::rcp( new std::vector<Real>(num_eq_const,0.0) );
-    emul.reset(new ROL::StdVector<Real>(emul_rcp) );
-  }
-
-  // Inequality constraints: [linear_ineq, nonlinear_ineq]
-  if (num_ineq_const > 0){
-    // create inequality constraint object and give it access to Dakota model 
-    ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
-
-    // inequality multipliers
-    Teuchos::RCP<std::vector<Real> > imul_rcp = Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
-    imul.reset(new ROL::StdVector<Real>(imul_rcp) );
-  
-
-    // create ROL inequality constraint bound vectors
-    Teuchos::RCP<std::vector<Real> >
-      ineq_l_rcp(new std::vector<Real>(num_ineq_const, 0.0));
-    Teuchos::RCP<std::vector<Real> >
-      ineq_u_rcp(new std::vector<Real>(num_ineq_const, 0.0));
-
-//PDH: Seems like we should be able to pull this into the adapters and
-//use traits to determine what to populate the bounds vectors with.
-
-    // copy all to partial (should be no-op if no data to copy)
-    copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
-		      *ineq_l_rcp, 0);
-    copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
-		      *ineq_u_rcp, 0);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		      *ineq_l_rcp, numLinearIneqConstraints);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		      *ineq_u_rcp, numLinearIneqConstraints);
-
-    Teuchos::RCP<ROL::Vector<Real> > ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
-    Teuchos::RCP<ROL::Vector<Real> > ineq_upper_bounds( new ROL::StdVector<Real>( ineq_u_rcp ) );
-
-    // create ROL::BoundConstraint object to house variable bounds information
-    ineq_bnd.reset( new ROL::Bounds<Real>(ineq_lower_bounds,ineq_upper_bounds) );
-  }
-
-  // Call simplified interface problem generator
-  optProblem = ROL::OptimizationProblem<Real> (obj, x, bnd, eq_const, emul, ineq_const, imul, ineq_bnd);
-
-  // checking, may be enabled in tests or debug mode
-
-  // Teuchos::RCP<std::ostream> outStream_checking;
-  // outStream_checking = Teuchos::rcp(&std::cout, false);
-  // optProblem.check(*outStream_checking);
-}
-
-void ROLOptimizer::reset_problem( const RealVector & init_vals,
-                                  const RealVector & lower_bnds,
-                                  const RealVector & upper_bnds,
-                                  const Teuchos::ParameterList & params)
-{
-  copy_data(init_vals, *rolX);
-  copy_data(lower_bnds, *(lowerBounds->getVector()));
-  copy_data(upper_bnds, *(upperBounds->getVector()));
-  optProblem.reset();
-
-  // These changes get used in core_run
-  optSolverParams.setParameters(params);
-}
-
-/** core_run redefines the Optimizer virtual function to perform
-    the optimization using ROL. It first sets up the simplified ROL
-    problem data, then executes solve() on the simplified ROL
-    solver interface and finally catalogues the results. */
-void ROLOptimizer::core_run()
-{
-  // ostream that will prefix lines with ROL identifier
-  boost::iostreams::filtering_ostream rol_cout;
-  rol_cout.push(PrefixingLineFilter("ROL: "));
-  // Tried to disable buffering so ROL output gets inlined with
-  // Dakota's; doesn't work perfectly. Instead, modified ROL to flush()
-  //std::streamsize buffer_size = 0;
-  //rol_cout.push(Cout, buffer_size);
-  rol_cout.push(Cout);
-
-  // Setup and call simplified interface solver object
-  ROL::OptimizationSolver<Real> opt_solver( optProblem, optSolverParams );
-  opt_solver.solve(rol_cout);
-
-  rol_cout.flush();
-
-  // TODO: print termination criteria (based on Step or AlgorithmState?)
-
-//PDH: If memory serves me correctly, Russell implementd a function at the
-//DakotaOptimizer level that sets all the final values.  It was based on
-//APPS, but we should revisit to figure out how this compares and if it
-//makes sense to merge them.
-
-  // copy ROL solution to Dakota bestVariablesArray
-  Variables& best_vars = bestVariablesArray.front();
-  RealVector& cont_vars = best_vars.continuous_variables_view();
-  copy_data(*rolX, cont_vars);
-
-  // Attempt DB lookup directly into best, fallback on re-evaluation if needed
-  Response& best_resp = bestResponseArray.front();
-  ActiveSet search_set(best_resp.active_set());
-  search_set.request_values(AS_FUNC);
-  best_resp.active_set(search_set);
-  bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
-  if (db_found)
-    Cout << "INFO: ROL retrieved best response from cache." << std::endl;
-  else {
-    Cout << "INFO: ROL re-evaluating model to retrieve best response."
-	 << std::endl;
-    // Evaluate model for responses at best parameters
-    iteratedModel.continuous_variables(cont_vars);
-    iteratedModel.evaluate();
-    // push best responses through Dakota bestResponseArray
-    const RealVector& best_fns =
-      iteratedModel.current_response().function_values();
-    best_resp.function_values(best_fns);
-  }
-}
-
+// --------------------------------------------------------------
+//    These classes could go into a new file for evaluators along
+//    the lines of APPS and COLIN if desirable.
 // --------------------------------------------------------------
 
 /// A helper function for consolidating model callbacks
@@ -421,9 +465,31 @@ namespace {
 } // namespace anonymous
 
 // --------------------------------------------------------------
-//    These classes could go into a new file for evaluators along
-//    the lines of APPS and COLIN if desirable.
+//               DakotaROLObjective
 // --------------------------------------------------------------
+
+DakotaROLObjective::DakotaROLObjective(Model & model) :
+  dakotaModel(model)
+{ }
+
+//PDH: Can we hide the model details in a data adapter for the objective
+//and gradient evaluations?  Because of the way ROL appears to handle
+//constraints, may not be a big deal for this wrapper, but it will likely
+//simplify things in other wrappers.
+
+Real
+DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)
+{
+  update_model(dakotaModel, x);
+  return dakotaModel.current_response().function_value(0);
+}
+
+void
+DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
+{
+  update_model(dakotaModel, x);
+  copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
+}
 
 // --------------------------------------------------------------
 //             DakotaROLIneqConstraints
@@ -462,7 +528,6 @@ DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
   }
 }
 
-
 void
 DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
@@ -482,8 +547,6 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, ajv, true);
   }
 }
-
-
 
 // --------------------------------------------------------------
 //               DakotaROLEqConstraints
@@ -539,34 +602,6 @@ DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, ajv, true);
   }
-}
-
-
-// --------------------------------------------------------------
-//               DakotaROLObjective
-// --------------------------------------------------------------
-
-DakotaROLObjective::DakotaROLObjective(Model & model) :
-  dakotaModel(model)
-{ }
-
-//PDH: Can we hide the model details in a data adapter for the objective
-//and gradient evaluations?  Because of the way ROL appears to handle
-//constraints, may not be a big deal for this wrapper, but it will likely
-//simplify things in other wrappers.
-
-Real
-DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)
-{
-  update_model(dakotaModel, x);
-  return dakotaModel.current_response().function_value(0);
-}
-
-void
-DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
-{
-  update_model(dakotaModel, x);
-  copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
 }
 
 DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :

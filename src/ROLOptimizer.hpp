@@ -130,6 +130,8 @@ protected:
 // sanity check to make sure these still make sense.  We should also
 // revisit the Traits base class to see if there's anything that needs
 // to be changed or added.
+// BMA TODO: Traits should indicate that ROL requires gradients
+// Also need to include Hessian support
 
 class ROLTraits: public TraitsBase
 {
@@ -181,22 +183,6 @@ public:
    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 }; // class ROLTraits
-
-// TODO: Add Hessian support.  Per Brian...
-// However, ROL behavior will change based on what virtual functions
-// are implemented, e.g., if we re-implement the Hessian functions,
-// ROL will always call them. This would be a problem if the Dakota
-// user hasn.t provided a Hessian specification.  I think we.ll want
-// something like the following:
-// 1. Specialize each of the ROL evaluators {DakotaROLObjective,
-//    DakotaROLIneqConstraints, DakotaROLEqConstraints}, e.g, adding
-//    new specializations DakotaROLSecondOrderObjective, or
-//    DakotaROLObjectiveHessian something
-// 2. In those *SecondOrder* specializations, implement the necessary
-//    hessVec, inverseHessVec, applyHessian, etc., virtual functions.
-// 3. When a Dakota user has Hessians, instantiate the *SecondOrder*
-//    classes; otherwise instantiate the current evaluator classes,
-//    and pass them to the ROL Problem.
 
 // -----------------------------------------------------------------
 /** DakotaROLObjective is derived from the ROL objective class.
