@@ -12,30 +12,32 @@ environment,
 #	tabular_data_file = 'dakota_rosenbrock_2d_nlpql.dat' 		#s4
 #	tabular_data_file = 'dakota_rosenbrock_2d_npsol.dat' 		#s5
 
-#	tabular_data_file = 'dakota_rosenbrock_10d_conmin.dat'	#s10
-#	tabular_data_file = 'dakota_rosenbrock_10d_dotfrcg.dat'	#s11
-#	tabular_data_file = 'dakota_rosenbrock_10d_optppcg.dat' 	#s12
-#	tabular_data_file = 'dakota_rosenbrock_10d_optppqn.dat' 	#s13
-#	tabular_data_file = 'dakota_rosenbrock_10d_nlpql.dat' 	#s14
-#	tabular_data_file = 'dakota_rosenbrock_10d_npsol.dat' 	#s15
+#	tabular_data_file = 'dakota_rosenbrock_10d_conmin.dat'	#s6
+#	tabular_data_file = 'dakota_rosenbrock_10d_dotfrcg.dat'	#s7
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppcg.dat' 	#s8
+#	tabular_data_file = 'dakota_rosenbrock_10d_optppqn.dat' 	#s9
+#	tabular_data_file = 'dakota_rosenbrock_10d_nlpql.dat' 	#s10
+#	tabular_data_file = 'dakota_rosenbrock_10d_npsol.dat' 	#s11
 
-#	tabular_data_file = 'dakota_rosenbrock_100d_conmin.dat'	#s20
-#	tabular_data_file = 'dakota_rosenbrock_100d_dotfrcg.dat'	#s21
-#	tabular_data_file = 'dakota_rosenbrock_100d_optppcg.dat'	#s22
-#	tabular_data_file = 'dakota_rosenbrock_100d_optppqn.dat'	#s23
-#	tabular_data_file = 'dakota_rosenbrock_100d_nlpql.dat' 	#s24
-#	tabular_data_file = 'dakota_rosenbrock_100d_npsol.dat' 	#s25
+#	tabular_data_file = 'dakota_rosenbrock_100d_conmin.dat'	#s12
+#	tabular_data_file = 'dakota_rosenbrock_100d_dotfrcg.dat'	#s13
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppcg.dat'	#s14
+#	tabular_data_file = 'dakota_rosenbrock_100d_optppqn.dat'	#s15
+#	tabular_data_file = 'dakota_rosenbrock_100d_nlpql.dat' 	#s16
+#	tabular_data_file = 'dakota_rosenbrock_100d_npsol.dat' 	#s17
 
 method,
-	conmin_frcg                      #s0,#s10,#s20
-#	dot_frcg									#s1,#s11,#s21
-#	optpp_cg									#s2,#s12,#s22
-#	optpp_q_newton							#s3,#s13,#s23
-#	nlpql										#s4,#s14,#s24
-#	npsol										#s5,#s15,#s25
+	conmin_frcg                      #s0,#s6,#s12
+#	dot_frcg									#s1,#s7,#s13
+#	optpp_cg									#s2,#s8,#s14
+#	optpp_q_newton							#s3,#s9,#s15
+#	nlpql										#s4,#s10,#s16
+#	npsol										#s5,#s11,#s17
 	  max_iterations = 500
-	  convergence_tolerance = 1e-5
-#	  convergence_tolerance = 1e-7	#s2,#s12,#s22 # opt++cg tighter tolerance
+	  convergence_tolerance = 1e-5	#s0,#s6
+#	  convergence_tolerance = 1e-5	#s3,#s5,#s9,#s11,#s15,#s17
+#	  convergence_tolerance = 1e-6	#s1,#s7,#s12,#s13
+#	  convergence_tolerance = 1e-7	#s2,#s4,#s8,#s10,#s14,#s16
 
 variables,					
 	continuous_design = 2					#s0,#s1,#s2,#s3,#s4,#s5
@@ -43,15 +45,15 @@ variables,
 	lower_bounds        -2.0, -2.0		#s0,#s1,    #s3,#s4,#s5
 	upper_bounds         2.0,  2.0		#s0,#s1,    #s3,#s4,#s5
 #
-#	continuous_design = 10					#s10,#s11,#s12,#s13,#s14,#s15
-#	initial_point  -1.9, 2.0, 8 * 0.0	#s10,#s11,#s12,#s13,#s14,#s15
-#	lower_bounds        10 * -2.048		#s10,#s11,     #s13,#s14,#s15
-#	upper_bounds        10 *  2.048		#s10,#s11,     #s13,#s14,#s15
+#	continuous_design = 10					#s6,#s7,#s8,#s9,#s10,#s11
+#	initial_point  -1.9, 2.0, 8 * 0.0	#s6,#s7,#s8,#s9,#s10,#s11
+#	lower_bounds        10 * -2.048		#s6,#s7,    #s9,#s10,#s11
+#	upper_bounds        10 *  2.048		#s6,#s7,    #s9,#s10,#s11
 #
-#	continuous_design = 100					#s20,#s21,#s22,#s23,#s24,#s25
-#	initial_point -1.9, 2.0, 98 * 0.0	#s20,#s21,#s22,#s23,#s24,#s25
-#	lower_bounds        100 * -2.048		#s20,#s21,     #s23,#s24,#s25
-#	upper_bounds        100 *  2.048		#s20,#s21,     #s23,#s24,#s25
+#	continuous_design = 100					#s12,#s13,#s14,#s15,#s16,#s17
+#	initial_point -1.9, 2.0, 98 * 0.0	#s12,#s13,#s14,#s15,#s16,#s17
+#	lower_bounds        100 * -2.048		#s12,#s13     ,#s15,#s16,#s17
+#	upper_bounds        100 *  2.048		#s12,#s13     ,#s15,#s16,#s17
 
 interface,
 	direct

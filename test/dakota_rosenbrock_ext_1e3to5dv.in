@@ -10,10 +10,10 @@ method,
 #	optpp_q_newton								#s3,#s13,#s23
 #	nlpql											#s4,#s14,#s24
 #	npsol											#s5,#s15,#s25
-	  convergence_tolerance = 1e-5
-#	  convergence_tolerance = 1e-7		#s2,#s12,#s22   # opt++cg tighter tol
-	  max_iterations = 5000
-     max_function_evaluations = 1e4		#s0,#s1,#s10,#s11#s20,#s21
+#	  convergence_tolerance = 1e-5		#s3,#s4,#s5,#s13,#s14,#s15,#s23,#s24,#s25
+#	  convergence_tolerance = 1e-7		#s0,#s1,#s2,#s10,#s11,#s12,#s20,#s21,#s22
+#	  max_iterations = 5000					#s3,#s4,#s5,#s13,#s14,#s15,#s23,#s24,#s25
+#    max_function_evaluations = 1e4		#s0,#s1,#s2,#s10,#s11,#s12,#s20,#s21,#s22
 #	output quiet
 
 variables,					
@@ -29,8 +29,8 @@ variables,
 #
 #	continuous_design = 1e5					#s20,#s21,#s22
 #	initial_point       1e5 * 0.0			#s20,#s21,#s22
-#	lower_bounds        1e5 * -2.048		#s20,#s21,     
-#	upper_bounds        1e5 *  2.048		#s20,#s21,     
+#	lower_bounds        1e5 * -2.048		#s20,#s21
+#	upper_bounds        1e5 *  2.048		#s20,#s21
 
 interface,
 	direct
