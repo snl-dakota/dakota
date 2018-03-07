@@ -266,23 +266,12 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  // Should just call value and gradient from parent class but don't
-  // delete until we're sure.
-
-  /// Function to return the objective value (response) to ROL
-  //  Real value(const std::vector<Real> &x,
-  //	     Real &tol) override;
-
-  /// Function to return the response gradient to ROL
-  //  void gradient(std::vector<Real> &g,
-  //		const std::vector<Real> &x,
-  //		Real &tol) override;
-
   void hessVec(std::vector<Real> &hv,
 	       const std::vector<Real> &v,
 	       const std::vector<Real> &x,
 	       Real &tol) override;
 
+  /// This callback is not used by ROL algorithms currently supported by Dakota
   void invHessVec(std::vector<Real> &hv,
 		  const std::vector<Real> &v,
 		  const std::vector<Real> &x,
@@ -293,14 +282,6 @@ private:
   //
   //- Heading: Data
   //
-
-  // CLEAN-UP: Would be nice to ultimately get rid of this via
-  // adapters.  May take a little thought and work, so defer for now.
-
-  // Shouldn't need this either; make it protected in parent class.
-
-  /// Dakota problem data provided by user
-  //  Model & dakotaModel;
 
 }; // class DakotaROLObjectiveHess
 

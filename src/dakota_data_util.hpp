@@ -196,8 +196,8 @@ void remove_column(RealMatrix& matrix, int index);
 /** Optionally works with a subset of the passed vectors; applies the
     matrix M to the first M.numCols() entries in v1, and populates the
     first M.numRows entries in v2. */
-template<typename VectorType>
-void apply_matrix_partial(const RealMatrix& M, const VectorType & v1, VectorType & v2)
+template<typename MatrixType, typename VectorType>
+void apply_matrix_partial(const MatrixType& M, const VectorType & v1, VectorType & v2)
 {
   if( M.numCols() > v1.size() ) {
     Cerr << "apply_matrix Error: incoming vector size is inconsistent with matrix column dimension."

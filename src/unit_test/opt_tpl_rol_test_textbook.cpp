@@ -1080,7 +1080,7 @@ TEUCHOS_UNIT_TEST(opt_rol,text_book_nln_lin_eq_ineq_const)
 /// Unconstrained 3D textbook problem with known solution of
 /// {1,1,1} and utilizing Hessians from the problem
 
-TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessians)
+TEUCHOS_UNIT_TEST(opt_rol,text_book_base_hessian)
 {
   /// Dakota input string:
   static const char text_book_input[] =
