@@ -174,6 +174,14 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
 }
 
 
+void NonDIntegration::update_reference()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "update_reference()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 /** Converts a scalar order specification and a vector anisotropic
     dimension preference into an anisotropic order vector.  It is used
     for initialization and does not enforce a reference lower bound

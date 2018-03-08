@@ -262,10 +262,8 @@ inline void NonDQuadrature::increment_grid()
 
 inline void NonDQuadrature::decrement_grid()
 {
-  // adaptive increment is not reversible ...
-  //decrement_grid(dimQuadOrderRef);
-
-  dimQuadOrderRef = dimQuadOrderPrev; // restoration
+  // restoration from increment_grid(): adaptive increment is not reversible
+  dimQuadOrderRef = dimQuadOrderPrev;
 
   if (nestedRules) tpqDriver->nested_quadrature_order(dimQuadOrderRef);
   else             tpqDriver->quadrature_order(dimQuadOrderRef);
@@ -280,10 +278,10 @@ increment_grid_preference(const RealVector& dim_pref)
 inline int NonDQuadrature::num_samples() const
 {
   switch (quadMode) {
-  case FULL_TENSOR:             return tpqDriver->grid_size(); break;
-  case FILTERED_TENSOR: case RANDOM_TENSOR: return numSamples; break;
+  case FULL_TENSOR:                        return tpqDriver->grid_size(); break;
+  case FILTERED_TENSOR: case RANDOM_TENSOR:            return numSamples; break;
   }
-  return 0;
+  return 0; // should not happen
 }
 
 

@@ -174,19 +174,20 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   // cubIntOrderRef (which is incremented from cubIntOrderSpec) replaces
   // cubIntOrderSpec as the lower bound.
 
-  // should be cubIntOrderRef already, unless min_order previous enforced
-  cubDriver->integrand_order(cubIntOrderRef);
-  if (min_samples > cubDriver->grid_size()) { // reference grid size
-    // determine minimum integrand order that provides at least min_samples
-    unsigned short min_order = cubIntOrderRef + 1;
-    cubDriver->integrand_order(min_order);
-    while (cubDriver->grid_size() < min_samples)
-      cubDriver->integrand_order(++min_order);
-    // leave cubDriver at min_order; do not update cubIntOrderRef
+  // Note: Pecos::CubatureDriver is not currently managed by active keys, so
+  // do not need to worry about tracking multiple reference points.
 
-    // maxEvalConcurrency must not be updated since parallel config management
-    // depends on having the same value at ctor/run/dtor times.
-  }
+  // should be cubIntOrderRef already, unless min_samples previously enforced
+  //cubDriver->integrand_order(cubIntOrderRef);
+
+  // determine minimum integrand order that provides at least min_samples
+  unsigned short min_order = cubDriver->integrand_order();//cubIntOrderRef;
+  while (cubDriver->grid_size() < min_samples)
+    cubDriver->integrand_order(++min_order);
+  // leave cubDriver at min_order; do not update cubIntOrderRef
+
+  // maxEvalConcurrency must not be updated since parallel config management
+  // depends on having the same value at ctor/run/dtor times.
 
   // not currently used by this class:
   //allDataFlag = all_data_flag;
@@ -195,10 +196,10 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 
 void NonDCubature::increment_grid()
-{ increment_reference(); cubDriver->integrand_order(cubIntOrderRef); }
+{ ++cubIntOrderRef; cubDriver->integrand_order(cubIntOrderRef); }
 
 
 void NonDCubature::decrement_grid()
-{ decrement_reference(); cubDriver->integrand_order(cubIntOrderRef); }
+{ --cubIntOrderRef; cubDriver->integrand_order(cubIntOrderRef); }
 
 } // namespace Dakota

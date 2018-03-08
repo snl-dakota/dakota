@@ -199,7 +199,7 @@ initialize_dimension_quadrature_order(unsigned short quad_order_spec,
 				      const RealVector& dim_pref_spec,
 				      UShortArray& dim_quad_order)
 {
-  // Update dimQuadOrderRef from quad_order_spec and dimPrefSpec
+  // Update dim_quad_order from quad_order_spec and dim_pref_spec
   dimension_preference_to_anisotropic_order(quad_order_spec,   dim_pref_spec,
 					    numContinuousVars, dim_quad_order);
   //dimPrefRef = dimPrefSpec; // not currently necessary
@@ -346,7 +346,18 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   // Pecos::TensorProductDriver::quadOrder may be increased ***or decreased***
   // to provide at least min_samples subject to this lower bound.
   // dimQuadOrderRef is ***not*** updated by min_samples.
-  if (min_samples > tpqDriver->grid_size()) {
+
+  // Use tpqDriver->quadrature_order() to track active keys.
+  // *** TO DO: update all dimQuadOrderRef logic ***
+  UShortArray dqo = tpqDriver->quadrature_order();//dimQuadOrderRef;
+  while (tpqDriver->grid_size() < min_samples) {
+    if (dimPrefSpec.empty()) increment_grid(dqo);
+    else                     increment_grid_preference(dimPrefSpec, dqo);
+  }
+  // do not alter dimQuadOrderRef
+
+  /* Old:
+  if (tpqDriver->grid_size() < min_samples) {
     UShortArray dqo_l_bnd; // isotropic or anisotropic based on dimPrefSpec
     compute_minimum_quadrature_order(min_samples, dimPrefSpec, dqo_l_bnd);
     // enforce lower bound
@@ -357,6 +368,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
     if (nestedRules) tpqDriver->nested_quadrature_order(new_dqo);
     else             tpqDriver->quadrature_order(new_dqo);
   }
+  */
 
   // not currently used by this class:
   //allDataFlag = all_data_flag;
@@ -398,9 +410,9 @@ increment_grid_preference(const RealVector& dim_pref,
 			  UShortArray& dim_quad_order)
 {
   // Used for dimension-adaptive refinement: order lower bounds are enforced
-  // using dimQuadOrderRef such that anisotropy may not reduce dimension
-  // resolution once grids have been resolved (as with
-  // SparseGridDriver::axisLowerBounds in NonDSparseGrid).
+  // using dim_quad_order such that anisotropy may not reduce dimension
+  // resolution once grids have been resolved (as with SparseGridDriver::
+  // axisLowerBounds in NonDSparseGrid).
   if (nestedRules) {
     // define reference point
     size_t orig_size = tpqDriver->grid_size();

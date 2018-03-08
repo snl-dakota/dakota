@@ -132,11 +132,8 @@ private:
   /// the user specification for the Smolyak sparse grid level, rendered
   /// anisotropic via dimPrefSpec
   unsigned short ssgLevelSpec;
-  /// reference point (e.g., lower bound) for the Smolyak sparse grid level
-  /// maintained within ssgDriver
-  unsigned short ssgLevelRef;
-  /// value of ssgLevelRef prior to increment_grid(), for restoration in
-  /// decrement_grid() since increment must induce a change in grid size
+  /// value of ssgDriver->level() prior to increment_grid(), for restoration
+  /// in decrement_grid() since increment must induce a change in grid size
   /// and this adaptive increment in not reversible
   unsigned short ssgLevelPrev;
 };
@@ -145,8 +142,7 @@ private:
 inline void NonDSparseGrid::reset()
 {
   // restore user specification state prior to any uniform/adaptive refinement
-  ssgLevelRef = ssgLevelSpec;
-  ssgDriver->level(ssgLevelRef);
+  ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
 }
 

@@ -36,8 +36,7 @@ namespace Dakota {
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   NonDIntegration(problem_db, model),
-  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
-  ssgLevelRef(ssgLevelSpec)
+  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level"))
 {
   short exp_basis_type
     = probDescDB.get_short("method.nond.expansion_basis_type");
@@ -100,20 +99,20 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   if (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID) {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
 		      ec_options, bc_options, growth_rate, track_colloc,
 		      track_uniq_prod_wts);
   }
   else if (exp_coeffs_soln_approach == Pecos::HIERARCHICAL_SPARSE_GRID) {
     bool track_colloc_indices = false; // non-default
     ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
-      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
 		      ec_options, bc_options, growth_rate,
 		      track_colloc_indices);
   }
   else
     ssgDriver->
-      initialize_grid(ssgLevelRef, dimPrefSpec, natafTransform.u_types(),
+      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
 		      ec_options, bc_options, growth_rate);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
@@ -130,7 +129,7 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
 	       short driver_mode, short growth_rate, short refine_control,
 	       bool track_uniq_prod_wts, bool track_colloc_indices): 
   NonDIntegration(SPARSE_GRID_INTEGRATION, model, dim_pref),
-  ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec)
+  ssgLevelSpec(ssg_level)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
@@ -164,7 +163,7 @@ void NonDSparseGrid::
 initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   numIntDriver.initialize_grid(poly_basis);
-  ssgDriver->level(ssgLevelRef);
+  ssgDriver->level(ssgLevelSpec);
   ssgDriver->dimension_preference(dimPrefSpec);
 
   // Precompute quadrature rules (e.g., by defining maximal order for
@@ -202,25 +201,33 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
 void NonDSparseGrid::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // ssgLevelRef (potentially incremented from ssgLevelSpec due to uniform/
-  // adaptive refinements) provides the current lower bound reference point.
-  // Pecos::SparseGridDriver::ssgLevel may be increased ***or decreased***
-  // to provide at least min_samples subject to this lower bound.
-  // ssgLevelRef is ***not*** updated by min_samples.
+  // Determine minimum sparse grid level that provides at least min_samples
+  //  
+  // Simplifing assumption: uniform/adaptive refinements do not need to interact
+  // with sampling_reset() --> the current ssgDriver->level() is sufficient as
+  // lower bound for enforcing min_samples
+  //
+  // If ssgLevelSpec used as lower bound, SparseGridDriver::ssgLevel could
+  // be increased ***or decreased*** to provide at least min_samples subject
+  // to this lower bound, but this would overwrite any previous grid increments
+  //
+  // If ssgLevelRef tracked separately from ssgDriver->level() for use as
+  // lower bound, then uniform/adaptive refinements could be respected within
+  // min_samples enforcement, but this would require activeKey management to
+  // track multiple reference points.  This complication does not appear
+  // necessary at this time (could be if sparse grids used for regression).
 
-  // should be ssgLevelRef already, unless min_level previous enforced
-  ssgDriver->level(ssgLevelRef);
-  if (min_samples > ssgDriver->grid_size()) { // reference grid size
-    // determine minimum sparse grid level that provides at least min_samples
-    unsigned short min_level = ssgLevelRef + 1;
-    ssgDriver->level(min_level);
-    while (ssgDriver->grid_size() < min_samples)
-      ssgDriver->level(++min_level);
-    // leave ssgDriver at min_level; do not update ssgLevelRef
+  // if resetting lower bound (take care to not overwrite increments):
+  //ssgDriver->level(ssgLevelSpec);//(ssgLevelRef);
+  //
+  // use current level as lower bound (one sided: level cannot decrease if
+  // min_samples decreases):
+  unsigned short ssg_level = ssgDriver->level();
+  while (ssgDriver->grid_size() < min_samples)
+    ssgDriver->level(++ssg_level);
 
-    // maxEvalConcurrency must not be updated since parallel config management
-    // depends on having the same value at ctor/run/dtor times.
-  }
+  // maxEvalConcurrency must not be updated since parallel config management
+  // depends on having the same value at ctor/run/dtor times.
 
   // not currently used by this class:
   //allDataFlag = all_data_flag;
@@ -230,40 +237,35 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 
 void NonDSparseGrid::increment_grid()
 {
-  // for restoration in decrement_grid()
-  ssgLevelPrev = ssgLevelRef;
+  // Pecos::SparseGridDriver manages active keys; pull current level from Driver
+  unsigned short ssg_lev = ssgDriver->level();
+  int orig_size = ssgDriver->grid_size();
+  ssgLevelPrev  = ssg_lev; // for restoration in decrement_grid()
 
   // enforce a change in grid size
-  int orig_ssg_size = ssgDriver->grid_size();
-  ssgDriver->level(++ssgLevelRef);
+  ssgDriver->level(++ssg_lev);
   // with restricted growth/delayed sequences in nested rules, an increment in
   // level will not always change the grid.  Anisotropy (if present) is fixed.
-  while (ssgDriver->grid_size() == orig_ssg_size)
-    ssgDriver->level(++ssgLevelRef);
+  while (ssgDriver->grid_size() == orig_size)
+    ssgDriver->level(++ssg_lev);
 
   // downstream call to daceIterator.run() in DFSModel::{,re}build_global()
   // results in CombinedSparseGridDriver::compute_grid(), which re-allocates
   // smolyak arrays (from scratch) --> don't currently need to increment here.
+  // However, push_approximation() lacks compute_grid() and requires update.
+  ssgDriver->update_smolyak_arrays();
   // *** TO DO: Once DFSModel::rebuild_global() uses a grid increment,
-  // ***        can match decrement_grid() below
+  // ***        this won't be redundant with allocate_arrays()
 }
 
 
 void NonDSparseGrid::decrement_grid()
 {
-  ssgLevelRef = ssgLevelPrev;
-  ssgDriver->level(ssgLevelRef);
+  // adaptive increment logic is not reversible, so use ssgLevelPrev
+  // (assumes no change in active key between increment-decrement pairs)
+  ssgDriver->level(ssgLevelPrev);
 
-  /* adaptive increment logic is not reversible ...
-  int orig_ssg_size = ssgDriver->grid_size();
-  ssgDriver->level(--ssgLevelRef);
-  // with restricted growth/delayed sequences in nested rules, a decrement in
-  // level will not always change the grid.  Anisotropy (if present) is fixed.
-  while (ssgDriver->grid_size() == orig_ssg_size)
-    ssgDriver->level(--ssgLevelRef);
-  */
-
-  // no downstream call to daceIterator.run() --> need to decrement here
+  // no downstream call to daceIterator.run() --> apply decrement here
   // [See also CombinedSparseGridDriver::{push,pop}_trial_set()]
   ssgDriver->update_smolyak_arrays();
 }
@@ -271,17 +273,18 @@ void NonDSparseGrid::decrement_grid()
 
 void NonDSparseGrid::increment_grid_weights(const RealVector& aniso_wts)
 {
-  // define reference points
-  int orig_ssg_size = ssgDriver->grid_size();
+  // Pecos::SparseGridDriver manages active keys; pull current level from Driver
+  size_t ssg_lev = ssgDriver->level();
+  int orig_size  = ssgDriver->grid_size();
   ssgDriver->update_axis_lower_bounds();
   // initial increment and anisotropy update
-  ssgDriver->level(++ssgLevelRef);
+  ssgDriver->level(++ssg_lev);
   ssgDriver->anisotropic_weights(aniso_wts); // enforce axis LB's --> wt UB's
   // Enforce constraints of retaining all previous collocation sets and adding
   // at least one new set.  Given the former constraint, the same grid size
   // must logically be the same grid irregardless of changes in anisotropy.
-  while (ssgDriver->grid_size() == orig_ssg_size) {
-    ssgDriver->level(++ssgLevelRef);
+  while (ssgDriver->grid_size() == orig_size) {
+    ssgDriver->level(++ssg_lev);
     ssgDriver->anisotropic_weights(aniso_wts); // re-enforce LB's for new level
   }
 }

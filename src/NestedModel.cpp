@@ -132,7 +132,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
        ( num_var_map_2 && num_var_map_2 != num_var_map_1 ) ) {
     Cerr << "\nError: length of variable mapping specification(s) does not "
 	 << "match number of active variables." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   // active are sized based on totals due to different mapping options
   active1ACVarMapIndices.resize(num_curr_vars);
@@ -191,7 +191,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	Cerr << "\nError: active continuous variable type '" << curr_c_type
 	     << "' could not be matched within all sub-model continuous "
 	     << "variable types." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       // For multiple types, sm_acv_cntr must be reset to 0 at the type change
       if (curr_c_type != prev_c_type) {
@@ -206,7 +206,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       if (sm_acv_cntr > sm_acv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_c_type
 	     << "' exceed sub-model allocation." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
@@ -239,7 +239,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	Cerr << "\nError: active discrete integer variable type '"
 	     << curr_di_type << "' could not be matched within all sub-model "
 	     << "discrete integer variable types." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       // For multiple types, sm_adiv_cntr must be reset to 0 at the type change
       if (curr_di_type != prev_di_type) {
@@ -254,7 +254,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       if (sm_adiv_cntr > sm_adiv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_di_type
 	     << "' exceed sub-model allocation." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
@@ -287,7 +287,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	Cerr << "\nError: active discrete string variable type '"
 	     << curr_ds_type << "' could not be matched within all sub-model "
 	     << "discrete string variable types." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
       if (curr_ds_type != prev_ds_type) {
@@ -302,7 +302,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       if (sm_adsv_cntr > sm_adsv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_ds_type
 	     << "' exceed sub-model allocation." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
@@ -335,7 +335,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	Cerr << "\nError: active discrete real variable type '" << curr_dr_type
 	     << "' could not be matched within all sub-model discrete real "
 	     << "variable types." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       // For multiple types, sm_adrv_cntr must be reset to 0 at the type change
       if (curr_dr_type != prev_dr_type) {
@@ -350,7 +350,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       if (sm_adrv_cntr > sm_adrv_avail) {
 	Cerr << "\nError: default insertions of type '" << curr_dr_type
 	     << "' exceed sub-model allocation." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       if (num_var_map_2)
 	active2ACVarMapTargets[curr_i] = active2ADIVarMapTargets[curr_i]
@@ -401,7 +401,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       Cerr << "\nError: complement continuous variable type '" << curr_ac_type
 	   << "' could not be matched within all sub-model continuous "
 	   << "variable types." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     // For multiple types, sm_acv_cntr must be reset to 0 at the type change
     if (curr_ac_type != prev_ac_type) {
@@ -414,7 +414,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     if (sm_acv_cntr > sm_acv_avail) {
       Cerr << "\nError: default insertions of type '" << curr_ac_type
 	   << "' exceed sub-model allocation." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -429,7 +429,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       Cerr << "\nError: complement discrete integer variable type '"
 	   << curr_adi_type << "' could not be matched within all sub-model "
 	   << "discrete integer variable types." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     // For multiple types, sm_adiv_cntr must be reset to 0 at the type change
     if (curr_adi_type != prev_adi_type) {
@@ -442,7 +442,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     if (sm_adiv_cntr > sm_adiv_avail) {
       Cerr << "\nError: default insertions of type '" << curr_adi_type
 	   << "' exceed sub-model allocation." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -457,7 +457,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       Cerr << "\nError: complement discrete string variable type '"
 	   << curr_ads_type << "' could not be matched within all sub-model "
 	   << "discrete string variable types." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     // For multiple types, sm_adsv_cntr must be reset to 0 at the type change
     if (curr_ads_type != prev_ads_type) {
@@ -470,7 +470,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     if (sm_adsv_cntr > sm_adsv_avail) {
       Cerr << "\nError: default insertions of type '" << curr_ads_type
 	   << "' exceed sub-model allocation." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -485,7 +485,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       Cerr << "\nError: complement discrete real variable type '"
 	   << curr_adr_type << "' could not be matched within all sub-model "
 	   << "discrete real variable types." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     // For multiple types, sm_adrv_cntr must be reset to 0 at the type change
     if (curr_adr_type != prev_adr_type) {
@@ -498,7 +498,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     if (sm_adrv_cntr > sm_adrv_avail) {
       Cerr << "\nError: default insertions of type '" << curr_adr_type
 	   << "' exceed sub-model allocation." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -675,7 +675,7 @@ void NestedModel::update_sub_iterator()
   if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
     Cerr << "\nError: no mappings provided for sub-iterator functions in "
 	 << "NestedModel initialization." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   // Convert vectors to matrices using the number of subIterator response
   // results (e.g., the number of UQ statistics) as the number of columns
@@ -691,7 +691,7 @@ void NestedModel::update_sub_iterator()
 	   << primary_resp_coeffs.length() << ") not evenly divisible"
 	   << "\n       by number of sub-iterator response functions ("
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     copy_data(primary_resp_coeffs, primaryRespCoeffs, 0, (int)numSubIterFns);
   }
@@ -703,7 +703,7 @@ void NestedModel::update_sub_iterator()
 	   << secondary_resp_coeffs.length() << ") not evenly divisible"
 	   << "\n       by number of sub-iterator response functions ("
 	   << numSubIterFns << ") in NestedModel initialization." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
     copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
   }
@@ -747,7 +747,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       ads_index1 == _NPOS && adr_index1 == _NPOS) {
     Cerr << "\nError: primary mapping " << map1 << " could not be matched "
 	 << "within any sub-model variable labels." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   if (ac_index1 != _NPOS &&
@@ -782,7 +782,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "continuous design variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == NORMAL_UNCERTAIN) {
@@ -801,7 +801,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "normal distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == LOGNORMAL_UNCERTAIN) {
@@ -810,7 +810,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  if (submodel_adp.lognormal_means().empty()) {
 	    Cerr << "\nError: cannot insert mean without lognormal means "
 		 << "specification." << std::endl;
-	    abort_handler(-1);
+	    abort_handler(MODEL_ERROR);
 	  }
 	  else
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_MEAN;
@@ -819,7 +819,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  if (submodel_adp.lognormal_std_deviations().empty()) {
 	    Cerr << "\nError: cannot insert std_deviation without lognormal "
 		 << "std_deviations specification." << std::endl;
-	    abort_handler(-1);
+	    abort_handler(MODEL_ERROR);
 	  }
 	  else
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_STD_DEV;
@@ -828,7 +828,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  if (submodel_adp.lognormal_lambdas().empty()) {
 	    Cerr << "\nError: cannot insert lambda without lognormal lambdas "
 		 << "specification." << std::endl;
-	    abort_handler(-1);
+	    abort_handler(MODEL_ERROR);
 	  }
 	  else
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_LAMBDA;
@@ -837,7 +837,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  if (submodel_adp.lognormal_zetas().empty()) {
 	    Cerr << "\nError: cannot insert zeta without lognormal zetas "
 		 << "specification." << std::endl;
-	    abort_handler(-1);
+	    abort_handler(MODEL_ERROR);
 	  }
 	  else
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_ZETA;
@@ -846,7 +846,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	  if (submodel_adp.lognormal_error_factors().empty()) {
 	    Cerr << "\nError: cannot insert error_factor without lognormal "
 		 << "error_factors specification." << std::endl;
-	    abort_handler(-1);
+	    abort_handler(MODEL_ERROR);
 	  }
 	  else
 	    active2ACVarMapTargets[curr_index] = Pecos::LN_ERR_FACT;
@@ -858,7 +858,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "lognormal distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == UNIFORM_UNCERTAIN) {
@@ -873,7 +873,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "uniform distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == LOGUNIFORM_UNCERTAIN) {
@@ -885,7 +885,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "loguniform distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == TRIANGULAR_UNCERTAIN) {
@@ -902,7 +902,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "triangular distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == EXPONENTIAL_UNCERTAIN) {
@@ -912,7 +912,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "exponential distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == BETA_UNCERTAIN) {
@@ -928,7 +928,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "beta distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == GAMMA_UNCERTAIN) {
@@ -940,7 +940,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "gamma distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == GUMBEL_UNCERTAIN) {
@@ -952,7 +952,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "gumbel distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == FRECHET_UNCERTAIN) {
@@ -964,7 +964,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "frechet distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == WEIBULL_UNCERTAIN) {
@@ -976,7 +976,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "weibull distributions." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == CONTINUOUS_STATE) {
@@ -987,14 +987,14 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "continuous state variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else {
 	Cerr << "\nError: " << type << " variable type not supported in "
 	     << "secondary real mappings\n       for primary continuous "
 	     << "variable targets." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
@@ -1007,7 +1007,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " real mapping not supported for "
 	       << "poisson uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       if (type == BINOMIAL_UNCERTAIN) {
@@ -1016,7 +1016,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " real mapping not supported for "
 	       << "binomial uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       if (type == NEGATIVE_BINOMIAL_UNCERTAIN) {
@@ -1025,7 +1025,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " real mapping not supported for "
 	       << "negative binomial uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       if (type == GEOMETRIC_UNCERTAIN) {
@@ -1034,14 +1034,14 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " real mapping not supported for "
 	       << "geometric uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else {
 	Cerr << "\nError: " << type << " variable type not supported in "
 	     << "secondary real mappings\n       for primary discrete integer "
 	     << "variable targets." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
@@ -1051,7 +1051,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary real mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1060,7 +1060,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary real mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1093,7 +1093,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       ads_index1 == _NPOS && adr_index1 == _NPOS) {
     Cerr << "\nError: primary mapping " << map1 << " could not be matched "
 	 << "within any sub-model variable labels." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   if (ac_index1 != _NPOS &&
@@ -1123,7 +1123,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary continuous "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1137,7 +1137,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "discrete design range variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == BINOMIAL_UNCERTAIN) {
@@ -1146,7 +1146,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "binomial uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == NEGATIVE_BINOMIAL_UNCERTAIN) {
@@ -1155,7 +1155,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "negative binomial uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == HYPERGEOMETRIC_UNCERTAIN) {
@@ -1168,7 +1168,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "hypergeometric uncertain variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else if (type == DISCRETE_STATE_RANGE) {
@@ -1179,14 +1179,14 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	else {
 	  Cerr << "\nError: " << map2 << " mapping not supported for "
 	       << "discrete state range variables." << std::endl;
-	  abort_handler(-1);
+	  abort_handler(MODEL_ERROR);
 	}
       }
       else {
 	Cerr << "\nError: " << type << " variable type not supported in "
 	     << "secondary integer mappings\n       for primary discrete "
 	     << "integer variable targets." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
@@ -1196,7 +1196,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1205,7 +1205,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1238,7 +1238,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
       ads_index1 == _NPOS && adr_index1 == _NPOS) {
     Cerr << "\nError: primary mapping " << map1 << " could not be matched "
 	 << "within any sub-model variable labels." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   if (ac_index1 != _NPOS &&
@@ -1268,7 +1268,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary continuous "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ADIVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1277,7 +1277,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete integer "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1286,7 +1286,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1295,7 +1295,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
       active2ACVarMapTargets[curr_index] = active2ADIVarMapTargets[curr_index]
 	= active2ADSVarMapTargets[curr_index] = Pecos::NO_TARGET;
     }
@@ -1570,7 +1570,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
 	 << "\n       expected " << mapped_asv.size() << " total, received "
 	 << num_mapped_primary << " primary plus " << num_opt_interf_con +
             num_sub_iter_mapped_con << " secondary." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // sub_iterator_asv:
@@ -1627,7 +1627,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
       if (cv_index == _NPOS) {
 	Cerr << "\nError: NestedModel DVV component not contained within "
 	     << "active continuous variable ids." << std::endl;
-	abort_handler(-1);
+	abort_handler(MODEL_ERROR);
       }
       size_t sm_acv_index = active1ACVarMapIndices[cv_index],
 	     sm_acv_id    = sm_acv_ids[sm_acv_index];
@@ -1691,7 +1691,7 @@ interface_response_overlay(const Response& opt_interface_response,
        opt_interface_response.active_set_derivative_vector() != mapped_dvv ) {
     Cerr << "\nError: derivative variables vector mismatch in NestedModel::"
          << "interface_response_overlay()." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   check_response_map(mapped_asv);
 
@@ -1751,7 +1751,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
        sub_iterator_response.active_set_derivative_vector().size() ) {
     Cerr << "\nError: derivative variables vector mismatch in NestedModel::"
          << "iterator_response_overlay()." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   check_response_map(mapped_asv);
 
@@ -1854,6 +1854,13 @@ iterator_error_estimation(const RealVector& sub_iterator_errors,
   // but for now, assume these are zero (e.g., deterministic mappings have no
   // estimator variance)
 
+  if (sub_iterator_errors.empty()) {
+    Cerr << "Error: sub_iterator_errors are undefined in NestedModel::"
+	 << "iterator_error_estimation().\n       Check error estimation "
+	 << "support in sub-method." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
   size_t i, j, m_index, num_mapped_fns = currentResponse.num_functions();
   if (mapped_errors.length() != num_mapped_fns)
     mapped_errors.size(num_mapped_fns); // init to 0 
@@ -1916,7 +1923,7 @@ void NestedModel::check_response_map(const ShortArray& mapped_asv)
       numSubIterMappedIneqCon + numSubIterMappedEqCon) {
     Cerr << "\nError: bad function counts in NestedModel::check_response_map()."
          << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -2069,7 +2076,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
     else {
       Cerr << "\nError: inactive sub-model view discrepancy in NestedModel::"
 	   << "update_inactive_view()." << std::endl;
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 }
@@ -2700,7 +2707,7 @@ size_t NestedModel::ccv_index_map(size_t ccv_index, const Variables& vars)
   default: // MIXED_ALL, RELAXED_ALL
     Cerr << "Error: unsupported active view in NestedModel::ccv_index_map()."
 	 << std::endl;
-    abort_handler(-1); break;
+    abort_handler(MODEL_ERROR); break;
   }
   return ccv_index + offset;
 }
@@ -2754,7 +2761,7 @@ size_t NestedModel::cdiv_index_map(size_t cdiv_index, const Variables& vars)
   default: // MIXED_ALL, RELAXED_ALL
     Cerr << "Error: unsupported active view in NestedModel::cdiv_index_map()."
 	 << std::endl;
-    abort_handler(-1); break;
+    abort_handler(MODEL_ERROR); break;
   }
   return cdiv_index + offset;
 }
@@ -2808,7 +2815,7 @@ size_t NestedModel::cdsv_index_map(size_t cdsv_index, const Variables& vars)
   default: // MIXED_ALL, RELAXED_ALL
     Cerr << "Error: unsupported active view in NestedModel::cdsv_index_map()."
 	 << std::endl;
-    abort_handler(-1); break;
+    abort_handler(MODEL_ERROR); break;
   }
   return cdsv_index + offset;
 }
@@ -2862,7 +2869,7 @@ size_t NestedModel::cdrv_index_map(size_t cdrv_index, const Variables& vars)
   default: // MIXED_ALL, RELAXED_ALL
     Cerr << "Error: unsupported active view in NestedModel::cdrv_index_map()."
 	 << std::endl;
-    abort_handler(-1); break;
+    abort_handler(MODEL_ERROR); break;
   }
   return cdrv_index + offset;
 }
@@ -2933,7 +2940,7 @@ size_t NestedModel::sm_acv_index_map(size_t pacvm_index, short sacvm_target)
     case Pecos::NO_TARGET: default:
       Cerr << "\nError: secondary mapping target unmatched for continuous "
 	   << "variable in NestedModel::sm_acv_index_map()." << std::endl;
-      abort_handler(-1); break;
+      abort_handler(MODEL_ERROR); break;
     }
     return dist_index;
   }
@@ -2975,7 +2982,7 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
       Cerr << "\nError: secondary mapping target unmatched for discrete "
 	   << "integer variable in NestedModel::sm_adiv_index_map()."
 	   << std::endl;
-      abort_handler(-1);                                       break;
+      abort_handler(MODEL_ERROR);                                       break;
     }
     return dist_index;
   }
@@ -2999,7 +3006,7 @@ size_t NestedModel::sm_adsv_index_map(size_t padsvm_index, short sadsvm_target)
   //case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for discrete string "
 	 << "variable in NestedModel::sm_adsv_index_map()." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   //}
   return _NPOS;
 }
@@ -3022,7 +3029,7 @@ size_t NestedModel::sm_adrv_index_map(size_t padrvm_index, short sadrvm_target)
   //case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for discrete real "
 	 << "variable in NestedModel::sm_adrv_index_map()." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   //}
   return _NPOS;
 }
@@ -3201,7 +3208,7 @@ real_variable_mapping(const Real& r_var, size_t mapped_index, short svm_target)
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for real value "
 	 << "insertion in NestedModel::real_variable_mapping()." << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3231,7 +3238,7 @@ integer_variable_mapping(const int& i_var, size_t mapped_index,
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for integer value "
 	 << "insertion in NestedModel::integer_variable_mapping()" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 
@@ -3247,7 +3254,7 @@ string_variable_mapping(const String& s_var, size_t mapped_index,
   case Pecos::NO_TARGET: default:
     Cerr << "\nError: secondary mapping target unmatched for string value "
 	 << "insertion in NestedModel::string_variable_mapping()" << std::endl;
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 }
 

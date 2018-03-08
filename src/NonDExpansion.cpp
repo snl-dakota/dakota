@@ -1340,7 +1340,8 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   case Pecos::UNIFORM_CONTROL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
-    // increment the grid and, if needed, the expansion order
+    // increment the grid and, if needed, the expansion order.
+    // can ignore best_candidate (only one candidate for now).
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:           case Pecos::CUBATURE:
     case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
@@ -1348,15 +1349,17 @@ void NonDExpansion::select_candidate(size_t best_candidate)
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid();
+      uSpaceModel.push_approximation();
+      nond_integration->update_reference();
       break;
     }
     default: // ramp expansion order and update regression samples
       increment_order_and_grid(); // virtual fn defined for NonDPCE
+      uSpaceModel.push_approximation();
       break;
     }
-    // can ignore best index since only one candidate for now
-    uSpaceModel.push_approximation();
-    // Distinct discrepancy: promotion of best candidate does not invalidate
+
+    // For distinct discrepancy, promotion of best candidate does not invalidate
     // coefficient increments for other levels, as they are separate functions.
     // Only the metric roll up must be updated when pushing existing expansion
     // increments.  For recursive discrepancy, however, all levels above the

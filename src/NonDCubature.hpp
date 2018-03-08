@@ -83,11 +83,6 @@ private:
   void check_integration(const Pecos::ShortArray& u_types,
 			 const Pecos::AleatoryDistParams& adp);
 
-  /// increment cubIntOrderRef by 1
-  void increment_reference();
-  /// decrement cubIntOrderRef by 1
-  void decrement_reference();
-
   //
   //- Heading: Data
   //
@@ -108,18 +103,6 @@ private:
 
 inline unsigned short NonDCubature::integrand_order() const
 { return cubDriver->integrand_order(); }
-
-
-/** cubIntOrderRef is a reference point for CubatureDriver::cubIntOrder,
-    e.g., a lower bound */
-inline void NonDCubature::increment_reference()
-{ cubIntOrderRef += 1; }
-
-
-/** cubIntOrderRef is a reference point for CubatureDriver::cubIntOrder,
-    e.g., a lower bound */
-inline void NonDCubature::decrement_reference()
-{ cubIntOrderRef -= 1; }
 
 
 /** Should not be used, but pure virtual must be defined. */
