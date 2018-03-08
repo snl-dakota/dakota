@@ -74,12 +74,16 @@ model,
 
 model,
 	id_model = 'SIM1'
+	variables_pointer  = 'UQ_V'
+	interface_pointer  = 'UQ_I'
+	responses_pointer  = 'UQ_R'
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic growth in expense
 	  solution_level_cost = 1. 8. 64. 512. 4096.
 
 variables,
+	id_variables = 'UQ_V'
 	continuous_design = 3	 # number of cosine terms in soln expansion
 	uniform_uncertain = 6	 # number of cosine terms in soln expansion
 	  lower_bounds      =  6*-1.
@@ -104,11 +108,13 @@ variables,
       	  descriptors = 'kernel_type' 'positivity'
 
 interface,
+	id_interface = 'UQ_I'
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
 	  deactivate evaluation_cache restart_file
 
 responses,
+	id_responses = 'UQ_R'
 	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
 	no_gradients
 	no_hessians
