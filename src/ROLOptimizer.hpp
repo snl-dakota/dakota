@@ -83,6 +83,10 @@ public:
                      const RealVector &,              // upper bounds
                      const Teuchos::ParameterList &); // ROL solver parameters/options
 
+  /// Accessor for the underlying ROL Problem
+  ROL::OptimizationProblem<Real> & get_rol_problem()
+  { return optProblem; }
+
 protected:
 
   //
@@ -313,7 +317,7 @@ public:
 			    const std::vector<Real> &x,
 			    Real &tol) override;
 
-private:
+protected:
 
   //
   //- Heading: Data
@@ -329,6 +333,42 @@ private:
   bool haveNlnConst;
 
 }; // class DakotaROLIneqConstraints
+
+
+  // HESSIAN TODO: finish populating this class if anything else is
+  // needed
+  // second-order
+class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraints
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// Constructor
+  DakotaROLIneqConstraintsHess(Model & model);
+
+  /// Destructor
+  virtual ~DakotaROLIneqConstraintsHess() { }
+
+  //
+  //- Heading: Virtual member function redefinitions
+  //
+
+  void applyAdjointHessian( std::vector<Real>       & ahuv,
+                            const std::vector<Real> & u, 
+                            const std::vector<Real> & v,
+                            const std::vector<Real> & x,
+                            Real &tol ) override;
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+}; // class DakotaROLIneqConstraintsHess
 
 // -----------------------------------------------------------------
 /** DakotaROLEqConstraints is derived from the ROL constraint class.

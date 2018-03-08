@@ -1,6 +1,9 @@
 
-#include "ROL_OptimizationSolver.hpp"
+#include "opt_tpl_test.hpp"
+#include "ROLOptimizer.hpp"
 
+#include "ROL_OptimizationSolver.hpp"
+#include "ROL_OptimizationProblem.hpp"
 #include "ROL_RandomVector.hpp"
 #include "ROL_StdObjective.hpp"
 #include "ROL_StdConstraint.hpp"
@@ -9,6 +12,10 @@
 #include "Teuchos_UnitTestHarness.hpp"
 #include "Teuchos_oblackholestream.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
+
+#include <memory>
+
+using namespace Dakota;
 
 /* OBJECTIVE FUNCTION */
 
@@ -157,71 +164,85 @@ TEUCHOS_UNIT_TEST(rol, basic1)
 }
 
 
-//
-//
-//using namespace Dakota;
-//
-////----------------------------------------------------------------
-//
-//TEUCHOS_UNIT_TEST(opt_apps,cyl_head_1)
-//{
-//  /// Default Dakota input string:
-//  static const char cyl_head_input[] = 
-//    " method,"
-//    "   output silent"
-//    "   max_function_evaluations 500"
-//    "   asynch_pattern_search"
-//    "     threshold_delta = 1.e-10"
-//    "     synchronization blocking"
-//    " variables,"
-//    "   continuous_design = 2"
-//    "     initial_point    1.51         0.01"
-//    "     upper_bounds     2.164        4.0"
-//    "     lower_bounds     1.5          0.0"
-//    "     descriptors      'intake_dia' 'flatness'"
-//    " interface,"
-//    "   direct"
-//    "     analysis_driver = 'cyl_head'"
-//    " responses,"
-//    "   num_objective_functions = 1"
-//    "   nonlinear_inequality_constraints = 3"
-//    "   no_gradients"
-//    "   no_hessians";
-//
-//  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(cyl_head_input);
-//  Dakota::LibraryEnvironment & env = *p_env;
-//
-//  if (env.parallel_library().mpirun_flag())
-//    TEST_ASSERT( false ); // This test only works for serial builds
-//
-//  // Execute the environment
-//  env.execute();
-//
-//  // retrieve the final parameter values
-//  const Variables& vars = env.variables_results();
-//
-//  // convergence tests: "Optimal" solution used for comparison
-//  // is obtained using Teuchos unit tests in
-//  // opt_tpl_test_exact_soln.cpp
-//  double rel_err;
-//  double target;
-//  double max_tol;
-//
-//  target = 2.1224215765;
-//  max_tol = 1.e-3;
-//  rel_err = fabs((vars.continuous_variable(0) - target)/target);
-//  TEST_COMPARE(rel_err,<, max_tol);
-//
-//  target = 1.7659069377;
-//  max_tol = 1.e-2;
-//  rel_err = fabs((vars.continuous_variable(1) - target)/target);
-//  TEST_COMPARE(rel_err,<, max_tol);
-//
-//  // retrieve the final response values
-//  const Response& resp  = env.response_results();
-//
-//  target = -2.4614299775;
-//  max_tol = 1.e-3;
-//  rel_err = fabs((resp.function_value(0) - target)/target);
-//  TEST_COMPARE(rel_err,<, max_tol);
-//}
+//----------------------------------------------------------------
+/// This is based on the corresponding test, text_book_nln_ineq_const,
+/// in opt_tpl_rol_test_textbook.cpp but does not run the problem
+/// and contains TWO nonlinear_inequality_constraints instead of one.
+/// Instead of running the simulation, this test takes "0" iterations
+/// to ensure objects are properly configured and then uses ROL's 
+/// checkConstraint utility to compare numerical to analytic 
+/// "apply hessian" values at various finite-difference step sizes.
+/// The results are written to the file rol_diagnostics.txt.  
+///
+/// TODO:
+///        I hope to be able to access these values
+///        and use the differences to assess correctness and 
+///        pass/fail criteria.
+
+TEUCHOS_UNIT_TEST(rol, text_book_nln_ineq_const)
+{
+  /// Dakota input string:
+  static const char text_book_input[] =
+    " method,"
+    "   rol_ls"
+    "     gradient_tolerance 1.0e-4"
+    "     constraint_tolerance 1.0e-4"
+    "     threshold_delta 1.0e-4"
+    "     max_iterations 0"
+    " variables,"
+    "   continuous_design = 3"
+    "     initial_point  0.3    0.6   0.5"
+    "     descriptors 'x_1'  'x_2'  'x_3'"
+    " interface,"
+    "   direct"
+    "     analysis_driver = 'text_book'"
+    " responses,"
+    "   num_objective_functions = 1"
+    "   nonlinear_inequality_constraints = 2"
+    "   nonlinear_inequality_upper_bounds = 0.1 0.2"
+    "   nonlinear_inequality_lower_bounds = -0.1 -0.05"
+    "   analytic_gradients"
+    "   analytic_hessians";
+
+  Teuchos::oblackholestream bhs; // outputs nothing
+  std::ofstream rol_diags("rol_diagnostics.txt");
+  Teuchos::RCP<std::ostream> outStream =
+    Teuchos::rcp(&rol_diags, false);
+    //Teuchos::rcp(&Cout, false);
+    //Teuchos::rcp(&bhs, false);
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  if (env.parallel_library().mpirun_flag())
+    TEST_ASSERT( false ); // This test only works for serial builds
+
+  // Execute the environment
+  env.execute();
+
+  // Now get the ROL Optimizer and test various reset functionality
+  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  IteratorList& iter_list = problem_db.iterator_list();
+  Dakota::Iterator & dak_iter = *iter_list.begin();
+  //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
+  dak_iter.print_results(Cout);
+  Dakota::ROLOptimizer * rol_optimizer = dynamic_cast<Dakota::ROLOptimizer*>(dak_iter.iterator_rep());
+
+  ROL::OptimizationProblem<Real> & rol_problem = rol_optimizer->get_rol_problem();
+
+  Teuchos::RCP<ROL::Vector<Real> > x, u, v, c, l;
+  Teuchos::RCP<ROL::Vector<Real> > sol = rol_problem.getSolutionVector();
+  Teuchos::RCP<ROL::Vector<Real> > mul = rol_problem.getMultiplierVector();
+
+  x = sol->clone(); RandomizeVector(*x);
+  u = sol->clone(); RandomizeVector(*u);
+  v = sol->clone(); RandomizeVector(*v);
+
+  c = mul->dual().clone(); RandomizeVector(*c);
+  l = mul->clone();        RandomizeVector(*l);
+
+  rol_problem.checkConstraint(*x, *u, *v, *c, *l, *outStream);
+
+  rol_diags.close();
+}
+

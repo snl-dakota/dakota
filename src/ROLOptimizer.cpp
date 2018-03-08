@@ -243,7 +243,11 @@ void ROLOptimizer::set_problem()
   // If there are inequality constraints, create the object and provide
   // the Dakota model. (Order: [linear_ineq, nonlinear_ineq])
   if (num_ineq_const > 0){
-    ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
+    // create appropriate inequality constraint object and give it access to Dakota model 
+    if (iteratedModel.hessian_type() == "none")
+      ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
+    else
+      ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
 
     // QUESTION: What are the multipliers for?
     // inequality multipliers
@@ -547,6 +551,46 @@ DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, ajv, true);
   }
 }
+
+// --------------------------------------------------------------
+//             DakotaROLIneqConstraintsHess
+// --------------------------------------------------------------
+
+DakotaROLIneqConstraintsHess::DakotaROLIneqConstraintsHess(Model & model) :
+  DakotaROLIneqConstraints(model)
+{ }
+
+void
+DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
+                                                   const std::vector<Real> & u, 
+                                                   const std::vector<Real> & v,
+                                                   const std::vector<Real> & x,
+                                                   Real &tol )
+{
+  // Must init since linear info is 0.0 and we are appending 
+  // the effect of nonlinear
+  ahuv.assign(ahuv.size(), 0.0);
+
+  // apply nonlinear constraint Hessian (might be empty)
+  if (haveNlnConst) {
+    // make sure that model is current
+    update_model(dakotaModel, x);
+
+    RealSymMatrix hu(dakotaModel.current_response().function_hessian(1));
+    hu *= u[0];
+
+    for( size_t i=1; i<dakotaModel.num_nonlinear_ineq_constraints(); ++i )
+    {
+      RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+i));
+      temp_hu *= u[i];
+      hu += temp_hu;
+    }
+
+    apply_matrix_partial(hu, v, ahuv);
+  }
+}
+
+
 
 // --------------------------------------------------------------
 //               DakotaROLEqConstraints
