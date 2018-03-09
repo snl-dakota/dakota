@@ -50,6 +50,9 @@ public:
   /// decrement SSG level/TPQ order
   virtual void decrement_grid() = 0;
 
+  /// computes a grid increment and evaluates the new parameter sets
+  virtual void evaluate_grid_increment();
+
   /// update reference grid within adaptive grid refinement procedures
   virtual void update_reference();
 

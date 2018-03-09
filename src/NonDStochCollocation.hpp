@@ -74,7 +74,7 @@ protected:
   void initialize_u_space_model();
   //void initialize_expansion();
   //void compute_expansion();
-  void update_expansion();
+  //void update_expansion();
 
   Real compute_covariance_metric(bool restore_ref);
   Real compute_final_statistics_metric(bool restore_ref);

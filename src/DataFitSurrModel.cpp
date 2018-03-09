@@ -463,7 +463,8 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
     It does not define an anchor point, so is an unconstrained build. */
 void DataFitSurrModel::rebuild_approximation()
 {
-  Cout << "\n>>>>> Rebuilding " << surrogateType << " approximations.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> Rebuilding " << surrogateType << " approximations.\n";
 
   // update actualModel w/ variable values/bounds/labels
   update_model(actualModel);
@@ -477,12 +478,13 @@ void DataFitSurrModel::rebuild_approximation()
     ++approxBuilds;
   }
   else { // global approximation
-    //update_global(); // updates from build_approximation() are still valid
+    //update_global(); // updates from build_approximation() assumed valid
     rebuild_global();
     //++approxBuilds; // already incremented by append_approximation(true)
   }
 
-  //Cout << "\n<<<<< "<< surrogateType <<" approximation rebuilds completed.\n";
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n<<<<< "<< surrogateType <<" approximation rebuilds completed.\n";
 }
 
 

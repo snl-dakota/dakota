@@ -1419,11 +1419,26 @@ void NonDExpansion::decrement_order_and_grid()
     no need to update these for an expansion refinement. */
 void NonDExpansion::update_expansion()
 {
-  // enumerate cases that can support incremental builds within
-  // derived class implementations
-  Cerr << "Error: virtual update_expansion() not redefined by derived class.\n"
-       << "       NonDExpansion does not provide default." << std::endl;
-  abort_handler(METHOD_ERROR);
+  if (uSpaceModel.push_available()) // defaults to false
+    uSpaceModel.push_approximation();
+  else
+    switch (expansionCoeffsApproach) {
+    case Pecos::QUADRATURE:           case Pecos::CUBATURE:
+    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
+      NonDIntegration* nond_int = (NonDIntegration*)
+	uSpaceModel.subordinate_iterator().iterator_rep();
+      nond_int->evaluate_grid_increment();
+      // append the new data to the existing approximation and rebuild
+      uSpaceModel.append_approximation(true); // rebuild
+      break;
+    }
+    default: // SAMPLING, all REGRESSION cases
+      // if incremental unsupported, rebuild defaults to build from scratch.
+      // Note: DataFitSurrModel::rebuild_global() utilizes sampling_reset()
+      // and daceIterator.run() to define unstructured sample increment.
+      uSpaceModel.rebuild_approximation(); break;
+    }
 }
 
 

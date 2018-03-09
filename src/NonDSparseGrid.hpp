@@ -65,6 +65,9 @@ public:
   /// decrement ssgDriver::ssgLevel
   void decrement_grid();
 
+  /// computes a grid increment and evaluates the new parameter sets
+  void evaluate_grid_increment();
+
   /// set level and dimension preference within ssgDriver based on ssgLevelSpec
   /// and dimPrefSpec, following refinement or sequence advancement
   void reset();
@@ -93,9 +96,6 @@ public:
   void update_sets(const UShortArray& set_star);
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets(bool output_sets, bool converged_within_tol);
-
-  /// invokes SparseGridDriver::evaluate_grid_increment()
-  void evaluate_grid_increment();
 
   int num_samples() const;
 

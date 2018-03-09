@@ -364,6 +364,7 @@ void NonDStochCollocation::initialize_u_space_model()
 }
 
 
+/*
 void NonDStochCollocation::update_expansion()
 {
   // Ultimately want to be consistently incremental, but need to support
@@ -373,6 +374,7 @@ void NonDStochCollocation::update_expansion()
   // within non-incremental builds from scratch.
 
   if (expansionBasisType == Pecos::HIERARCHICAL_INTERPOLANT) {
+
     // grid levels have been updated, now evaluate the new points
     NonDSparseGrid* nond_sparse = (NonDSparseGrid*)
       uSpaceModel.subordinate_iterator().iterator_rep();
@@ -383,6 +385,7 @@ void NonDStochCollocation::update_expansion()
   else
     uSpaceModel.rebuild_approximation(); // defaults to build from scratch
 }
+*/
 
 
 Real NonDStochCollocation::compute_covariance_metric(bool restore_ref)

@@ -921,28 +921,6 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
-void NonDPolynomialChaos::update_expansion()
-{
-  /*
-  switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: case Pecos::CUBATURE:
-    // build from scratch cases (detect any duplicates)
-    uSpaceModel.build_approximation(); break;
-  default:
-    // incremental cases: SSG, SAMPLING, all REGRESSION
-    // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
-  */
-    if (uSpaceModel.push_available())
-      uSpaceModel.push_approximation();    // default to false
-    else
-      uSpaceModel.rebuild_approximation(); // default to build from scratch
-  /*
-    break;
-  }
-  */
-}
-
-
 void NonDPolynomialChaos::
 select_refinement_points(const RealVectorArray& candidate_samples,
 			 unsigned short batch_size, 

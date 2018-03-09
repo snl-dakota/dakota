@@ -174,6 +174,14 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
 }
 
 
+void NonDIntegration::evaluate_grid_increment()
+{
+  Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
+       << "evaluate_grid_increment()." << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
 void NonDIntegration::update_reference()
 {
   Cerr << "Error: derived class lacking redefinition for NonDIntegration::"
