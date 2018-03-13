@@ -41,9 +41,11 @@
 namespace Dakota {
 
 // -----------------------------------------------------------------
-/** Standard constructor for ROLOptimizer.  Sets up ROL solver based
-    on information from the problem database. */
+/** Implementation of ROLOptimizer class. */
 
+
+// Standard constructor for ROLOptimizer.  Sets up ROL solver based on
+// information from the problem database.
 ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
@@ -55,12 +57,12 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
 
   set_problem();
   set_rol_parameters();
-}
 
-// -----------------------------------------------------------------
-/** Alternate constructor for Iterator instantiations by name.  Sets
-    up ROL solver based on information passed as arguments. */
+} // default constructor
 
+
+// Alternate constructor for Iterator instantiations by name.  Sets up
+// ROL solver based on information passed as arguments.
 ROLOptimizer::ROLOptimizer(const String& method_string, Model& model):
   Optimizer(method_string_to_enum(method_string), model,
 	    std::shared_ptr<TraitsBase>(new ROLTraits())),
@@ -73,12 +75,12 @@ ROLOptimizer::ROLOptimizer(const String& method_string, Model& model):
 
   set_problem();
   set_rol_parameters();
-}
 
-// -----------------------------------------------------------------
-/** core_run redefines the Optimizer virtual function to perform
-    the optimization using ROL and catalogue the results. */
+} // alternate constructor
 
+
+// core_run redefines the Optimizer virtual function to perform the
+// optimization using ROL and catalogue the results.
 void ROLOptimizer::core_run()
 {
   // ostream that will prefix lines with ROL identifier
@@ -129,25 +131,25 @@ void ROLOptimizer::core_run()
     // I read other code correctly, rolX was copied into cont_vars.
     // But rolX hasn't been touched since the problem was set up.
     // Evaluate model for responses at best parameters and set Dakota
-    // bestResponseArray
+    // bestResponseArray.
     iteratedModel.continuous_variables(cont_vars);
     iteratedModel.evaluate();
     const RealVector& best_fns =
       iteratedModel.current_response().function_values();
     best_resp.function_values(best_fns);
   }
-}
 
-// -----------------------------------------------------------------
-/** Helper function to populate ROL data with user-provided problem
-    dimensions and initial values. */
+} // core_run
 
+
+// Helper function to populate ROL data with user-provided problem
+// dimensions and initial values.
 void ROLOptimizer::set_problem()
 {
   size_t j;
 
   // Needed in redefining upper and lower bounds for variables and
-  // constraints as required by ROL for good performance
+  // constraints as required by ROL for good performance.
   Real rol_inf = ROL::ROL_INF<Real>();
   Real rol_ninf = ROL::ROL_NINF<Real>();
 
@@ -156,7 +158,9 @@ void ROLOptimizer::set_problem()
   // it.  Also, same comment about class data as below.
 
   size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
-  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
+  size_t num_ineq_const = numLinearIneqConstraints + 
+                          numNonlinearIneqConstraints;
+
   // Set the ROL problem type.  Default is TYPE_B (bound constrained),
   // so overwrite for other constraint scenarios.
   if ( (num_ineq_const > 0) ||
@@ -246,7 +250,8 @@ void ROLOptimizer::set_problem()
   // If there are inequality constraints, create the object and provide
   // the Dakota model. (Order: [linear_ineq, nonlinear_ineq])
   if (num_ineq_const > 0){
-    // create appropriate inequality constraint object and give it access to Dakota model 
+    // create appropriate inequality constraint object and give it
+    // access to Dakota model
     if (iteratedModel.hessian_type() == "none")
       ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
     else
@@ -258,7 +263,7 @@ void ROLOptimizer::set_problem()
       Teuchos::rcp( new std::vector<Real>(num_ineq_const,0.0) );
     imul.reset(new ROL::StdVector<Real>(imul_rcp) );
   
-    // create ROL inequality constraint bound vectors
+    // Create ROL inequality constraint bound vectors.
     Teuchos::RCP<std::vector<Real> >
       ineq_l_rcp(new std::vector<Real>(num_ineq_const, 0.0));
     Teuchos::RCP<std::vector<Real> >
@@ -269,8 +274,8 @@ void ROLOptimizer::set_problem()
     // bounds vectors with...similar to get_bounds for the bound
     // constraints above.
 
-    // Get the inequality bounds from Dakota and transfer them into a
-    // ROL::BoundConstraint object.
+    // Get the inequality bounds from Dakota and transfer them into
+    // the ROL vectors. 
     copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
 		      *ineq_l_rcp, 0);
     copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
@@ -289,6 +294,7 @@ void ROLOptimizer::set_problem()
         (*ineq_u_rcp)[i] = rol_inf;
     }
 
+    // Set the ROL::BoundConstraint object.
     Teuchos::RCP<ROL::Vector<Real> >
       ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
     Teuchos::RCP<ROL::Vector<Real> >
@@ -306,14 +312,14 @@ void ROLOptimizer::set_problem()
   // Teuchos::RCP<std::ostream> outStream_checking;
   // outStream_checking = Teuchos::rcp(&std::cout, false);
   // optProblem.check(*outStream_checking);
-}
+
+} // set_problem
+
 
 // QUESTION: Shouldn't this be called from somewhere?
-// -----------------------------------------------------------------
-/** Helper function to reset ROL data and solver parameters.  This
-    can be used to ensure that ROL is re-entrant since ROL itself
-    does not provide such assurance. */
-
+// Helper function to reset ROL data and solver parameters.  This can
+// be used to ensure that ROL is re-entrant since ROL itself does not
+// provide such assurance.
 void ROLOptimizer::reset_problem( const RealVector & init_vals,
                                   const RealVector & lower_bnds,
                                   const RealVector & upper_bnds,
@@ -327,13 +333,12 @@ void ROLOptimizer::reset_problem( const RealVector & init_vals,
 
   // Reset ROL solver settings.
   optSolverParams.setParameters(params);
-}
 
-// -----------------------------------------------------------------
-/** Helper function to set ROL solver parameters.  This function uses
-    ProblemDescDB and therefore must should be called at construct
-    time. */
+} // reset_problem
 
+
+// Helper function to set ROL solver parameters.  This function uses
+// ProblemDescDB and therefore should be called at construct time.
 void ROLOptimizer::set_rol_parameters()
 {
   // PRECEDENCE 1: hard-wired default settings
@@ -418,7 +423,7 @@ void ROLOptimizer::set_rol_parameters()
 
   // PRECEDENCE 3: power-user advanced options
 
-  // Check for and ROL XML input file.
+  // Check for ROL XML input file.
   String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
     if (boost::filesystem::exists(adv_opts_file)) {
@@ -432,7 +437,8 @@ void ROLOptimizer::set_rol_parameters()
       abort_handler(METHOD_ERROR);
     }
 
-    // Update ROL solver parameters based on the XML input.
+    // Set ROL solver parameters based on the XML input.  Overrides
+    // anything previously set.
     bool success;
     try {
       Teuchos::Ptr<Teuchos::ParameterList> osp_ptr(&optSolverParams);
@@ -445,29 +451,38 @@ void ROLOptimizer::set_rol_parameters()
     TEUCHOS_STANDARD_CATCH_STATEMENTS(outputLevel >= VERBOSE_OUTPUT, Cerr,
 				      success);
   }
-}
 
-// --------------------------------------------------------------
+} // set_rol_parameters
+
 
 // --------------------------------------------------------------
 //    These classes could go into a new file for evaluators along
 //    the lines of APPS and COLIN if desirable.
 // --------------------------------------------------------------
 
-/// A helper function for consolidating model callbacks
+
+// QUESTION: Why the anonymous namespace?  Is it to avoid conflict
+// with update_model in the surrogate classes or something else?
+// Regardless, perhaps we should re-consider the name of this function
+// to ensure that it is consistent with what it does.
 namespace {
+  // Helper function to manage response evaluations, both objectives
+  // and nonlinear constraints.  The response and all derivatives are
+  // evaluated on first call and need only be retrieved from the
+  // database upon subsequent calls.  This allows for time-saving
+  // speculative derivative computation, which is not natively
+  // supported by ROL.
 
   void update_model(Model & model, const std::vector<Real> & x)
   {
-    // Could replace with an adapter call - RWH
-//PDH: Agreed.
-
+    // CLEAN-UP: Use an adapter.
+    // Set the model variables to the current values.
     size_t num_cv = model.cv();
     for(size_t i=0; i<num_cv; ++i)
       model.continuous_variable(x[i], i);
 
-    // HESSIAN TODO: added AS_HESS; need to track if this creates issues
-
+    // Evaluate response, gradient, and Hessian; the last only if
+    // provided by Dakota/user.
     ActiveSet eval_set(model.current_response().active_set());
     if (model.hessian_type() == "none")
       eval_set.request_values(AS_FUNC+AS_GRAD);
@@ -475,104 +490,186 @@ namespace {
       eval_set.request_values(AS_FUNC+AS_GRAD+AS_HESS);
     model.evaluate(eval_set);
 
-    // now we can use the response currently in the model for any
-    // obj/cons/grad/hess
-  }
+  } // update_model
 
 } // namespace anonymous
 
-// --------------------------------------------------------------
-//               DakotaROLObjective
-// --------------------------------------------------------------
 
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLObjective class. */
+
+
+// Constructor.
 DakotaROLObjective::DakotaROLObjective(Model & model) :
   dakotaModel(model)
 { }
 
-//PDH: Can we hide the model details in a data adapter for the objective
-//and gradient evaluations?  Because of the way ROL appears to handle
-//constraints, may not be a big deal for this wrapper, but it will likely
-//simplify things in other wrappers.
 
+// CLEAN-UP: Can we hide the model details in a data adapter for the
+// objective and gradient evaluations?  Because of the way ROL appears
+// to handle constraints, may not be a big deal for this wrapper, but
+// it will likely simplify things in other wrappers.
+
+
+// Compute objective value and return to ROL.
 Real
 DakotaROLObjective::value(const std::vector<Real> &x, Real &tol)
 {
   update_model(dakotaModel, x);
   return dakotaModel.current_response().function_value(0);
-}
 
+} // objective value
+
+
+// Compute objective gradient and return to ROL.
 void
 DakotaROLObjective::gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol )
 {
   update_model(dakotaModel, x);
   copy_column_vector(dakotaModel.current_response().function_gradients(), 0, g);
-}
 
-// --------------------------------------------------------------
-//             DakotaROLIneqConstraints
-// --------------------------------------------------------------
+} // objective gradient
 
+
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLObjective class. */
+
+
+// Constructor.
+DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :
+  DakotaROLObjective(model)
+{ }
+
+
+// Compute objective Hessian-vector product and return to ROL.
+void
+DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
+				const std::vector<Real> &v,
+				const std::vector<Real> &x,
+				Real &tol)
+{
+  // Make sure the Hessian has been evaluated and get it from Dakota
+  // Response.
+  update_model(dakotaModel, x);
+  const RealSymMatrix& hess_f = dakotaModel.current_response().function_hessian(0);
+
+  // Multiply the objective Hessian matrix by the vector.
+  apply_matrix_partial(hess_f, v, hv);
+
+} // objective hessVec
+
+
+// CLEAN-UP: Should it stay or should it go?
+// Compute product of objective Hessian and a vector.  Not implemented
+// since no ROL methods currently exposed use it.
+void
+DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
+				   const std::vector<Real> &v,
+				   const std::vector<Real> &x,
+				   Real &tol)
+{
+  Cerr << "\nError: DakotaROLObjectiveHess::invHessVec is not currently supported."
+       << "  logic error.\n";
+  abort_handler(METHOD_ERROR);
+
+} // objective invHessVec
+
+
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLIneqConstraints class. */
+
+
+// Constructor.
 DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
   dakotaModel(model)
 {
   haveNlnConst = model.num_nonlinear_ineq_constraints() > 0;
-}
 
+} // ineqConstraints constructor
+
+
+// Compute inequality constraint values and return to ROL.
 void
 DakotaROLIneqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
-//PDH: Should look into whether or not it makes sense to use traits to
-//determine how to pack these and just return one vectore of constraint
-//values.
+  // CLEAN-UP: Should look into whether or not it makes sense to use
+  // traits to determine how to pack these and just return one vector
+  // of constraint values?
 
+  // Evaluate nonlinear constraints.
   update_model(dakotaModel, x);
-  apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
-  get_nonlinear_ineq_constraints( dakotaModel, c );
-}
 
+  // Matrix-vector multiply to get linear constraint values.
+  apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, x, c );
+
+  // QUESTION: What does this do?  Get the nonlinear constraint values
+  // from the Dakota model and append them to the linear constraint
+  // values?
+  get_nonlinear_ineq_constraints( dakotaModel, c );
+
+} // ineqConstraints value
+
+
+// Multiply a vector by the inequality constraint Jacobian and return
+// to ROL.
 void 
 DakotaROLIneqConstraints::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // apply linear constraint Jacobian
+  // Matrix-vector multiply to apply linear constraint Jacobian.
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
   apply_matrix_partial(lin_ineq_coeffs, v, jv);
 
-  // apply nonlinear constraint Jacobian
+  // QUESTION: Why is this separate from the linear constraints?
+  // What's different about it?
+  // Apply nonlinear constraint Jacobian.
   if( haveNlnConst ) {
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, jv);
   }
-}
 
+} // ineqConstraints applyJacobian
+
+
+// Multiply a vector by the transpose of the inequality constraint
+// Jacobian and return to ROL.
 void
 DakotaROLIneqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
+  // QUESTION: Why isn't this needed in applyJacobian?  Or shoult it
+  // be there too?
   // Must init since are merging the effect of linear and nonlinear
-  // and linear might get skipped
+  // might get skipped.
   ajv.assign(ajv.size(), 0.0);
 
-  // apply linear constraint Jacobian (might be empty)
+  // Matrix-vector multiply to apply transpose of linear constraint
+  // Jacobian.
   const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
   apply_matrix_transpose_partial(lin_ineq_coeffs, v, ajv);
 
-  // apply nonlinear constraint Jacobian (might be empty)
+  // QUESTION: What signifies that the transpose should be applied?
+  // Apply transpose of nonlinear constraint Jacobian.
   if (haveNlnConst) {
-    // makes sure that model is current
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::INEQUALITY, v, ajv, true);
   }
-}
 
-// --------------------------------------------------------------
-//             DakotaROLIneqConstraintsHess
-// --------------------------------------------------------------
+} // ineqConstraints applyAdjointJacobian
 
+
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLIneqConstraintsHess class. */
+
+
+// Constructor.
 DakotaROLIneqConstraintsHess::DakotaROLIneqConstraintsHess(Model & model) :
   DakotaROLIneqConstraints(model)
 { }
 
+
+// Multiply a vector by the transpose of the inequality constraint
+// Hessian and return to ROL.
 void
 DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
                                                    const std::vector<Real> & u, 
@@ -601,95 +698,86 @@ DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
 
     apply_matrix_partial(hu, v, ahuv);
   }
-}
+
+} // ineqConstraintsHess applyAdjointHessian
 
 
+// -----------------------------------------------------------------
+/** Implementation of the DakotaROLEqConstraints class. */
 
-// --------------------------------------------------------------
-//               DakotaROLEqConstraints
-// --------------------------------------------------------------
 
+// Constructor.
 DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
   dakotaModel(model)
 {
   haveNlnConst = model.num_nonlinear_eq_constraints() > 0;
-}
 
+} // eqContraints constructor
+
+
+// Compute equality constraint values and return to ROL.
 void
 DakotaROLEqConstraints::value(std::vector<Real> &c, const std::vector<Real> &x, Real &tol)
 {
+  // CLEAN-UP: Same comments as for the inequality constraints class.
+
+  // Evaluate nonlinear constraints.
   update_model(dakotaModel, x);
-//PDH: Same comment as for the inequality constraints.  Also, why the -1.0
-//when getting the nonlinear constraint values?
 
+  // Matrix-vector multiply to get linear constraint values.
   apply_linear_constraints( dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, x, c );
-  get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
-}
 
+  // QUESTION: What does this do?  Also, why the -1.0?
+  get_nonlinear_eq_constraints( dakotaModel, c, -1.0 );
+
+} // eqConstraints value
+
+
+// Multiply a vector by the equality constraint Jacobian and return
+// to ROL.
 void
 DakotaROLEqConstraints::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
-  // apply linear constraint Jacobian
+  // Matrix-vector multiply to apply linear constraint Jacobian.
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
   apply_matrix_partial(lin_eq_coeffs, v, jv);
 
-  // apply nonlinear constraint Jacobian
+  // QUESTION: Why is this separate from the linear constraints?
+  // What's different about it?
+  // Apply nonlinear constraint Jacobian.
   if( haveNlnConst ) {
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, jv);
   }
-}
 
+} // eqConstraints applyJacobian
+
+
+// Multiply a vector by the transpose of the equality constraint
+// Jacobian and return to ROL.
 void
 DakotaROLEqConstraints::applyAdjointJacobian(std::vector<Real> &ajv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
+  // QUESTION: Why isn't this needed in applyJacobian?  Or shoult it
+  // be there too?
   // Must init since are merging the effect of linear and nonlinear
   // and linear might get skipped
   ajv.assign(ajv.size(), 0.0);
 
-  // apply linear constraint Jacobian (might be empty)
+  // Matrix-vector multiply to apply transpose of linear constraint
+  // Jacobian.
   const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
   apply_matrix_transpose_partial(lin_eq_coeffs, v, ajv);
 
-  // apply nonlinear constraint Jacobian (might be empty)
+  // QUESTION: What signifies that the transpose should be applied?
+  // Apply transpose of nonlinear constraint Jacobian.
   if (haveNlnConst) {
-    // makes sure that model is current
     update_model(dakotaModel, x);
     apply_nonlinear_constraints(dakotaModel, CONSTRAINT_EQUALITY_TYPE::EQUALITY, v, ajv, true);
   }
-}
 
-DakotaROLObjectiveHess::DakotaROLObjectiveHess(Model & model) :
-  DakotaROLObjective(model)
-{ }
-
-void
-DakotaROLObjectiveHess::hessVec(std::vector<Real> &hv,
-				const std::vector<Real> &v,
-				const std::vector<Real> &x,
-				Real &tol)
-{
-  // make sure the Hessian has been evaluated and is available
-  update_model(dakotaModel, x);
-
-  // get the objective Hessian matrix from Dakota Response
-  const RealSymMatrix& hess_f = dakotaModel.current_response().function_hessian(0);
-
-  // multiply the objective Hessian matrix by the vector
-  apply_matrix_partial(hess_f, v, hv);
-}
-
-void
-DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
-				   const std::vector<Real> &v,
-				   const std::vector<Real> &x,
-				   Real &tol)
-{
-  Cerr << "\nError: DakotaROLObjectiveHess::invHessVec is not currently supported."
-       << "  logic error.\n";
-  abort_handler(METHOD_ERROR);
-}
+} // eqConstraints applyAdjointJacobian
 
 } // namespace Dakota

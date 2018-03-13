@@ -47,6 +47,7 @@ namespace Dakota {
   enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
   enum {TYPE_U=1, TYPE_B=2, TYPE_E=3, TYPE_EB=4};
 
+
 // -----------------------------------------------------------------
 /** ROLOptimizer specializes DakotaOptimizer to construct and run a
     ROL solver appropriate for the type of problem specified by the
@@ -81,7 +82,7 @@ public:
   void reset_problem(const RealVector &,              // initial vals
                      const RealVector &,              // lower bounds
                      const RealVector &,              // upper bounds
-                     const Teuchos::ParameterList &); // ROL solver parameters/options
+                     const Teuchos::ParameterList &); // ROL solver settings
 
   /// Accessor for the underlying ROL Problem
   ROL::OptimizationProblem<Real> & get_rol_problem()
@@ -124,6 +125,7 @@ protected:
   unsigned short problemType;
 
 }; // class ROLOptimizer
+
 
 // -----------------------------------------------------------------
 /** ROLTraits defines the types of problems and data formats ROL
@@ -188,6 +190,7 @@ public:
 
 }; // class ROLTraits
 
+
 // -----------------------------------------------------------------
 /** DakotaROLObjective is derived from the ROL objective class.
     It overrides the member functions to provide Dakota-specific
@@ -233,9 +236,15 @@ private:
 }; // class DakotaROLObjective
 
 
-  // HESSIAN TODO: finish populating this class if anything else is
-  // needed
-  // second-order
+// -----------------------------------------------------------------
+/** DakotaROLObjectiveHess is derived from DakotaROLObjective.  It
+    implements overrides of ROL member functions to provide a
+    Dakota-specific implementation of a Hessian-vector product.  This
+    separate class is needed (rather than putting the product into
+    DakotaROLObjective) because logic in ROL does not always protect
+    against calling the Hessian-vector product in cases where there
+    is not actually a Hessian provided. */ 
+
 class DakotaROLObjectiveHess : public DakotaROLObjective
 {
 public:
@@ -244,11 +253,9 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  // QUESTION: Do we need a destructor?
   /// Constructor
   DakotaROLObjectiveHess(Model & model);
 
-  // May want to get rid of inverse information
   /// Destructor
   virtual ~DakotaROLObjectiveHess() { }
 
@@ -256,12 +263,17 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  /// Function to returen Hessian-vector product needed by ROL when
+  /// using user/Dakota-supplied Hessians
   void hessVec(std::vector<Real> &hv,
 	       const std::vector<Real> &v,
 	       const std::vector<Real> &x,
 	       Real &tol) override;
 
-  /// This callback is not used by ROL algorithms currently supported by Dakota
+  // CLEAN-UP: Should we take this out or leave it for possible future
+  // use cases?
+  /// This callback is not used by ROL algorithms currently supported
+  /// by Dakota
   void invHessVec(std::vector<Real> &hv,
 		  const std::vector<Real> &v,
 		  const std::vector<Real> &x,
@@ -274,6 +286,7 @@ private:
   //
 
 }; // class DakotaROLObjectiveHess
+
 
 // -----------------------------------------------------------------
 /** DakotaROLIneqConstraints is derived from the ROL constraint
@@ -311,7 +324,7 @@ public:
 		     Real &tol) override;
 
   /// Function to return the result of applying the constraint adjoint
-  /// on an arbitrary vector to ROL
+  /// to an arbitrary vector to ROL
   void applyAdjointJacobian(std::vector<Real> &ajv,
 			    const std::vector<Real> &v,
 			    const std::vector<Real> &x,
@@ -335,9 +348,16 @@ protected:
 }; // class DakotaROLIneqConstraints
 
 
-  // HESSIAN TODO: finish populating this class if anything else is
-  // needed
-  // second-order
+// -----------------------------------------------------------------
+/** DakotaROLIneqConstraintsHess is derived from
+    DakotaROLIneqConstraints.  It implements overrides of ROL member
+    functions to provide a Dakota-specific implementation of a adjoint
+    Hessian-vector product for inequality constraints.  This separate
+    class is needed (rather than putting the product into
+    DakotaROLIneqConstraints) because logic in ROL does not always
+    protect against calling the adjoint Hessian-vector product in
+    cases where there is not actually a Hessian provided. */
+
 class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraints
 {
 public:
@@ -356,6 +376,8 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  /// Function to return the result of applying the constraint adjoint
+  /// Hessian to an arbitrary vector to ROL
   void applyAdjointHessian( std::vector<Real>       & ahuv,
                             const std::vector<Real> & u, 
                             const std::vector<Real> & v,
@@ -369,6 +391,7 @@ private:
   //
 
 }; // class DakotaROLIneqConstraintsHess
+
 
 // -----------------------------------------------------------------
 /** DakotaROLEqConstraints is derived from the ROL constraint class.
@@ -398,14 +421,14 @@ public:
 	     Real &tol) override;
 
   /// Function to return the result of applying the constraint
-  /// gradient on an arbitrary vector to ROL
+  /// gradient to an arbitrary vector to ROL
   void applyJacobian(std::vector<Real> &jv,
 		     const std::vector<Real> &v,
 		     const std::vector<Real> &x,
 		     Real &tol) override;
 
   /// Function to return the result of applying the constraint adjoint
-  /// on an arbitrary vector to ROL
+  /// to an arbitrary vector to ROL
   void applyAdjointJacobian(std::vector<Real> &ajv,
 			    const std::vector<Real> &v,
 			    const std::vector<Real> &x,
@@ -427,6 +450,7 @@ private:
   bool haveNlnConst;
 
 }; // class DakotaROLEqConstraints
+
 
 // -----------------------------------------------------------------
 /** PrefixingLineFilter is dervied from a Boost stream filter class in
