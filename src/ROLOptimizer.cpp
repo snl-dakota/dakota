@@ -146,6 +146,11 @@ void ROLOptimizer::set_problem()
 {
   size_t j;
 
+  // Needed in redefining upper and lower bounds for variables and
+  // constraints as required by ROL for good performance
+  Real rol_inf = ROL::ROL_INF<Real>();
+  Real rol_ninf = ROL::ROL_NINF<Real>();
+
   // CLEAN-UP: Seems like we should be able to use traits to determine
   // when we need to provide the sum rather than making the user do
   // it.  Also, same comment about class data as below.
@@ -195,8 +200,6 @@ void ROLOptimizer::set_problem()
   // For TYPE_B and TYPE_EB problems, set values of the bounds.  Map
   // any Dakota infinite bounds to ROL_INF for best performance.
   if ( (problemType == TYPE_B) || (problemType == TYPE_EB) ) {
-    Real rol_inf = ROL::ROL_INF<Real>();
-    Real rol_ninf = ROL::ROL_NINF<Real>();
 
     get_bounds(iteratedModel, *l_rcp, *u_rcp);
 
@@ -276,6 +279,16 @@ void ROLOptimizer::set_problem()
 		      *ineq_l_rcp, numLinearIneqConstraints);
     copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
 		      *ineq_u_rcp, numLinearIneqConstraints);
+
+    // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
+    // (ROL_NINF)
+    for (size_t i = 0; i < num_ineq_const; i++) {
+      if ((*ineq_l_rcp)[i] < rol_ninf)
+        (*ineq_l_rcp)[i] = rol_ninf;
+      if ((*ineq_u_rcp)[i] > rol_inf)
+        (*ineq_u_rcp)[i] = rol_inf;
+    }
+
     Teuchos::RCP<ROL::Vector<Real> >
       ineq_lower_bounds( new ROL::StdVector<Real>( ineq_l_rcp ) );
     Teuchos::RCP<ROL::Vector<Real> >
