@@ -19554,16 +19554,16 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 dakota_rol.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 29 total (7 new, 22 duplicate)
+<<<<< Function evaluation summary: 119 total (22 new, 97 duplicate)
 <<<<< Best parameters          =
-                      9.0000000000e-01 cdv_1
-                      1.1000000000e+00 cdv_2
+                      5.0020807271e-01 cdv_1
+                      5.0069129077e-01 cdv_2
 <<<<< Best objective function  =
-                      2.0000000000e-04
+                      1.2455109935e-01
 <<<<< Best constraint values   =
-                      2.6000000000e-01
-                      7.6000000000e-01
-<<<<< Best data captured at function evaluation 1
+                     -1.3752938334e-04
+                      5.8773230135e-04
+<<<<< Best data captured at function evaluation 113
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 97 total (36 new, 61 duplicate)
 <<<<< Best parameters          =
