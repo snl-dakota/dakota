@@ -1461,8 +1461,15 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   std::set<UShortArray>::const_iterator cit, cit_star;
   Real delta; delta_star = -DBL_MAX;
-  RealSymMatrix covar_star; RealVector stats_star;
+  RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
+  bool revert = !apply_best; // can revert metrics immediately
 
+  if (apply_best) { // store reference points for efficient restoration
+    if (totalLevelRequests)     stats_ref = finalStatistics.function_values();
+    else if (covarianceControl == FULL_COVARIANCE) covar_ref = respCovariance;
+    else                                           stats_ref = respVariance;
+  }
+ 
   // Reevaluate the effect of every active set every time, since the reference
   // point for the surplus calculation changes (and the overlay should
   // eventually be inexpensive since each point set is only evaluated once).
@@ -1482,8 +1489,8 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     }
 
     // assess effect of increment (non-negative norm); restore ref once done
-    delta = (totalLevelRequests) ? compute_final_statistics_metric(true)
-                                 : compute_covariance_metric(true);
+    delta = (totalLevelRequests) ? compute_final_statistics_metric(revert)
+                                 : compute_covariance_metric(revert);
     // normalize effect of increment based on cost (# of collocation pts).
     // Note: increment size must be nonzero since growth restriction is
     // precluded for generalized sparse grids.
@@ -1493,7 +1500,7 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
       cit_star = cit; delta_star = delta;
       // partial results tracking avoids need to recompute statistics
       // on the selected index set
-      if (apply_best && outputLevel < DEBUG_OUTPUT) {
+      if (apply_best) {
 	if (totalLevelRequests) stats_star = finalStatistics.function_values();
 	else if (covarianceControl == FULL_COVARIANCE)
 	                        covar_star = respCovariance;
@@ -1506,6 +1513,12 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store SDP set for use in restore
     nond_sparse->decrement_set();
+
+    if (apply_best) { // if not previously reverted, revert now
+      if (totalLevelRequests)        finalStatistics.function_values(stats_ref);
+      else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_ref;
+      else                                             respVariance = stats_ref;
+    }
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -1516,12 +1529,9 @@ size_t NonDExpansion::increment_sets(Real& delta_star, bool apply_best)
     nond_sparse->update_sets(*cit_star);
     uSpaceModel.push_approximation();
     nond_sparse->update_reference();
-    if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
-      if (totalLevelRequests) finalStatistics.function_values(stats_star);
-      else if (covarianceControl == FULL_COVARIANCE)
-	 respCovariance = covar_star;
-      else respVariance = stats_star;
-    }
+    if (totalLevelRequests)         finalStatistics.function_values(stats_star);
+    else if (covarianceControl == FULL_COVARIANCE) respCovariance = covar_star;
+    else                                             respVariance = stats_star;
   }
 
   return index_star;
