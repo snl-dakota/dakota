@@ -106,7 +106,7 @@ public:
   void response_center(const Response& resp, short corr_response_type);
 
   IntResponsePair& response_star_pair(short corr_response_type);
- IntResponsePair& response_center_pair(short corr_response_type);
+  IntResponsePair& response_center_pair(short corr_response_type);
 
   void response_star_id(int eval_id, short corr_response_type);
   void response_center_id(int eval_id, short corr_response_type);
