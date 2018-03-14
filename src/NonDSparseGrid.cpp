@@ -15,7 +15,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_system_defs.hpp"
 #include "NonDSparseGrid.hpp"
-#include "CombinedSparseGridDriver.hpp"
+#include "IncrementalSparseGridDriver.hpp"
 #include "HierarchSparseGridDriver.hpp"
 #include "DakotaModel.hpp"
 #include "DiscrepancyCorrection.hpp"
@@ -40,9 +40,16 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
 {
   short exp_basis_type
     = probDescDB.get_short("method.nond.expansion_basis_type");
-  short exp_coeffs_soln_approach
-    = (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
-    ? Pecos::HIERARCHICAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+  short refine_type
+    = probDescDB.get_short("method.nond.expansion_refinement_type");
+  short refine_control
+    = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short exp_coeffs_soln_approach;
+  if (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
+    exp_coeffs_soln_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+  else
+    exp_coeffs_soln_approach = (refine_control) ?
+      Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
 
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(exp_coeffs_soln_approach);
@@ -52,10 +59,6 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   check_variables(natafTransform.x_random_variables());
 
   // define ExpansionConfigOptions
-  short refine_type
-    = probDescDB.get_short("method.nond.expansion_refinement_type");
-  short refine_control
-    = probDescDB.get_short("method.nond.expansion_refinement_control");
   Pecos::ExpansionConfigOptions ec_options(exp_coeffs_soln_approach,
     exp_basis_type, iteratedModel.correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
@@ -96,24 +99,36 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
     // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
     // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-  if (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID) {
+
+  switch (exp_coeffs_soln_approach) {
+  case Pecos::COMBINED_SPARSE_GRID: {
     bool track_colloc = false, track_uniq_prod_wts = false; // defaults
     ((Pecos::CombinedSparseGridDriver*)ssgDriver)->
       initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
 		      ec_options, bc_options, growth_rate, track_colloc,
 		      track_uniq_prod_wts);
+    break;
   }
-  else if (exp_coeffs_soln_approach == Pecos::HIERARCHICAL_SPARSE_GRID) {
-    bool track_colloc_indices = false; // non-default
+  case Pecos::INCREMENTAL_SPARSE_GRID: {
+    bool track_uniq_prod_wts = false; // default
+    ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
+      initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
+		      ec_options, bc_options, growth_rate, track_uniq_prod_wts);
+    break;
+  }
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    bool track_colloc = false; // non-default
     ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
       initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
-		      ec_options, bc_options, growth_rate,
-		      track_colloc_indices);
+		      ec_options, bc_options, growth_rate, track_colloc);
+    break;
   }
-  else
+  default: // SparseGridDriver
     ssgDriver->
       initialize_grid(ssgLevelSpec, dimPrefSpec, natafTransform.u_types(),
 		      ec_options, bc_options, growth_rate);
+    break;
+  }
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.aleatory_distribution_parameters());
 
@@ -127,7 +142,7 @@ NonDSparseGrid::
 NonDSparseGrid(Model& model, unsigned short ssg_level,
 	       const RealVector& dim_pref, short exp_coeffs_soln_approach,
 	       short driver_mode, short growth_rate, short refine_control,
-	       bool track_uniq_prod_wts, bool track_colloc_indices): 
+	       bool track_uniq_prod_wts): 
   NonDIntegration(SPARSE_GRID_INTEGRATION, model, dim_pref),
   ssgLevelSpec(ssg_level)
 {
@@ -142,15 +157,24 @@ NonDSparseGrid(Model& model, unsigned short ssg_level,
   ssgDriver->mode(driver_mode);
   ssgDriver->growth_rate(growth_rate);
   ssgDriver->refinement_control(refine_control);
-  if (exp_coeffs_soln_approach == Pecos::COMBINED_SPARSE_GRID) {
+  switch (exp_coeffs_soln_approach) {
+  case Pecos::COMBINED_SPARSE_GRID: {
     Pecos::CombinedSparseGridDriver* csg_driver
       = (Pecos::CombinedSparseGridDriver*)ssgDriver;
-    csg_driver->track_collocation_details(true); // for SC & sparse PCE via SPAM
+    csg_driver->track_collocation_details(true); // SC & sparse-grid PCE (SPAM)
     csg_driver->track_unique_product_weights(track_uniq_prod_wts);
+    break;
   }
-  else if (exp_coeffs_soln_approach == Pecos::HIERARCHICAL_SPARSE_GRID)
-    ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
-      track_collocation_indices(track_colloc_indices);
+  case Pecos::INCREMENTAL_SPARSE_GRID:
+    ((Pecos::IncrementalSparseGridDriver*)ssgDriver)->
+      track_unique_product_weights(track_uniq_prod_wts);
+    break;
+  case Pecos::HIERARCHICAL_SPARSE_GRID:
+    if (refine_control == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
+      ((Pecos::HierarchSparseGridDriver*)ssgDriver)->
+	track_collocation_indices(true);
+    break;
+  }
 
   // local natafTransform not yet updated: x_ran_vars would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,

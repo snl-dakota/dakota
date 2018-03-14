@@ -194,9 +194,12 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
   else if (ssg_level != USHRT_MAX) {
     switch (expansionBasisType) {
     case Pecos::HIERARCHICAL_INTERPOLANT:
-      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
+      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
+      break;
     case Pecos::NODAL_INTERPOLANT:
-      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;              break;
+      expansionCoeffsApproach = (refineControl) ?
+	Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+      break;
     case Pecos::DEFAULT_BASIS:
       if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
 	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
@@ -205,7 +208,8 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 	expansionBasisType = Pecos::HIERARCHICAL_INTERPOLANT;
       }
       else {
-	expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+	expansionCoeffsApproach = (refineControl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
 	expansionBasisType = Pecos::NODAL_INTERPOLANT;
       }
       break;
@@ -245,7 +249,7 @@ config_integration(short exp_coeffs_approach, unsigned short num_int,
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_quadrature(u_space_sampler, g_u_model, num_int, dim_pref);
     break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     expansionBasisType = Pecos::NODAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int, dim_pref);
     break;

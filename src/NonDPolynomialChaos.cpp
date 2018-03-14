@@ -198,7 +198,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   case Pecos::QUADRATURE:
     config_integration(num_int, USHRT_MAX, USHRT_MAX, u_space_sampler,
 		       g_u_model, approx_type); break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     config_integration(USHRT_MAX, num_int, USHRT_MAX, u_space_sampler,
 		       g_u_model, approx_type); break;
   case Pecos::CUBATURE:
@@ -422,7 +422,8 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dimPrefSpec);
   }
   else if (ssg_level != USHRT_MAX) {
-    expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+    expansionCoeffsApproach = (refineControl) ?
+      Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dimPrefSpec);
   }
   else if (cub_int != USHRT_MAX) {
@@ -670,7 +671,7 @@ bool NonDPolynomialChaos::resize()
     construct_quadrature(u_space_sampler, g_u_model, quadOrderSpec,
 			 dimPrefSpec);
     break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     construct_sparse_grid(u_space_sampler, g_u_model, ssgLevelSpec,
 			  dimPrefSpec);
     break;
@@ -740,6 +741,7 @@ bool NonDPolynomialChaos::resize()
   pce_set.request_values(7);
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::CUBATURE) {
     approx_type = "global_projection_orthogonal_polynomial";
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -847,6 +849,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   if ( expansionCoeffsApproach == Pecos::QUADRATURE ||
        expansionCoeffsApproach == Pecos::CUBATURE   ||
        expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
        ( tensorRegression && numSamplesOnModel ) ) {
     if (iteratedModel.resize_pending()) // defer grid initialization
       { /* callResize = true; */ }

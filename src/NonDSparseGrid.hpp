@@ -47,8 +47,7 @@ public:
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
-		 bool track_uniq_prod_wts = true,
-		 bool track_colloc_indices = true);
+		 bool track_uniq_prod_wts = true);
 
   //
   //- Heading: Virtual function redefinitions

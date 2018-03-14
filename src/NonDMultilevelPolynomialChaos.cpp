@@ -219,7 +219,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   switch (exp_coeffs_approach) {
   case Pecos::QUADRATURE:
     quadOrderSeqSpec = num_int_seq; quad_order = num_int; break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     ssgLevelSeqSpec  = num_int_seq; ssg_level  = num_int; break;
   case Pecos::CUBATURE:             cubIntSpec = num_int; break;
   default:
@@ -375,7 +375,7 @@ bool NonDMultilevelPolynomialChaos::resize()
     construct_quadrature(u_space_sampler,  g_u_model,
                          quadOrderSeqSpec[sequenceIndex], dimPrefSpec);
     break;
-  case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
     construct_sparse_grid(u_space_sampler, g_u_model,
                           ssgLevelSeqSpec[sequenceIndex], dimPrefSpec);
     break;
@@ -445,8 +445,9 @@ bool NonDMultilevelPolynomialChaos::resize()
   short corr_order = -1, corr_type = NO_CORRECTION;
   ActiveSet pce_set = g_u_model.current_response().active_set(); // copy
   pce_set.request_values(7);
-  if(expansionCoeffsApproach == Pecos::QUADRATURE ||
+  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::CUBATURE) {
     String pt_reuse, approx_type = "global_projection_orthogonal_polynomial";
     uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -558,7 +559,8 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       nond_quad->reset();   // reset driver to pre-refinement state
     break;
   }
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
@@ -658,8 +660,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t lev)
   bool update_exp = false, update_sampler = false, update_from_ratio = false,
     err_flag = false;
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
-  case Pecos::HIERARCHICAL_SPARSE_GRID: case Pecos::CUBATURE:
+  case Pecos::QUADRATURE:            case Pecos::CUBATURE:
+  case Pecos::COMBINED_SPARSE_GRID:  case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID:
     err_flag = true; break;
   case Pecos::SAMPLING:
     //if () update_exp = true;

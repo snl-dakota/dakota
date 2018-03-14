@@ -235,7 +235,8 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       nond_quad->reset();   // reset driver to pre-refinement state
     break;
   }
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {

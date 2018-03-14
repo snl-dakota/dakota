@@ -404,10 +404,6 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
     expansionCoeffsApproach != Pecos::HIERARCHICAL_SPARSE_GRID);
   bool track_wts = (!all_vars || nodal_vbd || outputLevel > NORMAL_OUTPUT);
 
-  // tracking of collocation indices within the SparseGridDriver
-  bool track_colloc = (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID
-    || refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);
-
   short growth_rate;
   if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
       refineControl      == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
@@ -431,8 +427,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
   u_space_sampler.assign_rep(new
     NonDSparseGrid(g_u_model, ssg_level, dim_pref, expansionCoeffsApproach,
-		   driver_mode, growth_rate, refineControl, track_wts,
-		   track_colloc), false);
+		   driver_mode, growth_rate, refineControl, track_wts), false);
 }
 
 
@@ -492,6 +487,7 @@ void NonDExpansion::initialize_u_space_model()
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::CUBATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID) {
     shared_data_rep->integration_iterator(u_space_sampler);
     numSamplesOnModel = u_space_sampler.maximum_evaluation_concurrency()
@@ -940,7 +936,7 @@ void NonDExpansion::pre_refinement()
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     switch (expansionCoeffsApproach) {
-    case Pecos::COMBINED_SPARSE_GRID: //case Pecos::HIERARCHICAL_SPARSE_GRID:
+    case Pecos::INCREMENTAL_SPARSE_GRID: //case Pecos::HIERARCHICAL_SPARSE_GRID:
       ((NonDSparseGrid*)sub_iter_rep)->update_reference();
       break;
     }
@@ -955,7 +951,7 @@ size_t NonDExpansion::core_refinement(Real& metric, bool revert)
   case Pecos::UNIFORM_CONTROL:
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:           case Pecos::CUBATURE:
-    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1050,8 +1046,9 @@ void NonDExpansion::post_refinement(Real& metric)
   case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     if (uSpaceModel.push_available()) {
       switch (expansionCoeffsApproach) {
-      case Pecos::QUADRATURE:           case Pecos::CUBATURE:
-      case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+      case Pecos::QUADRATURE: case Pecos::CUBATURE:
+      case Pecos::INCREMENTAL_SPARSE_GRID:
+      case Pecos::HIERARCHICAL_SPARSE_GRID: {
 	// ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
 	NonDIntegration* nond_integration = (NonDIntegration*)
 	  uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1344,12 +1341,12 @@ void NonDExpansion::select_candidate(size_t best_candidate)
     // can ignore best_candidate (only one candidate for now).
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:           case Pecos::CUBATURE:
-    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
       NonDIntegration* nond_integration = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid();
-      uSpaceModel.push_approximation();
+      uSpaceModel.push_approximation(); // TO DO: only INC2, need INC3
       nond_integration->update_reference();
       break;
     }
@@ -1424,7 +1421,7 @@ void NonDExpansion::update_expansion()
   else
     switch (expansionCoeffsApproach) {
     case Pecos::QUADRATURE:           case Pecos::CUBATURE:
-    case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    case Pecos::INCREMENTAL_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID: {
       // Note: DIMENSION_ADAPTIVE_CONTROL_GENERALIZED does not utilize this fn
       NonDIntegration* nond_int = (NonDIntegration*)
 	uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1574,7 +1571,7 @@ void NonDExpansion::annotated_refinement_results(bool initialize)
   iteratedModel.print_evaluation_summary(Cout);
   NonDExpansion::print_results(Cout, INTERMEDIATE_RESULTS);
   if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-       ( expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+       ( expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
 	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
@@ -1639,7 +1636,7 @@ void NonDExpansion::annotated_results(short results_state)
 #ifdef CONVERGENCE_DATA
   // output fine-grained data on generalized index sets
   if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-       ( expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+       ( expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
 	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
