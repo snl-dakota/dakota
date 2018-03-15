@@ -8,9 +8,9 @@ method
     threshold_delta      1.0e-3				#s0
     max_iterations       10				#s0
 
-# ILLUMINATION, ROSENBROCK, HERBIE, TEXTBOOK (large)
-#    threshold_delta = 1.e-4				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#    gradient_tolerance = 1.e-6				#s16
+# ILLUMINATION, ROSENBROCK, HERBIE, TEXTBOOK (large), BARNES, CYLINDER HEAD, CANTILEVER
+#    threshold_delta = 1.e-4				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
+#    gradient_tolerance = 1.e-6       #s16,
 
 # TEXTBOOK
 variables
@@ -46,12 +46,42 @@ variables
 #    upper_bounds  5*2.0				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
 #    descriptors   'x1'  'x2'  'x3'  'x4'  'x5'		#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
 
+# BARNES
+#  continuous_design = 2        #s17,#s18
+#    initial_point 30.0 40.0    #s17
+#    initial_point 90.0 10.0    #s18
+#    lower_bounds  2*0.0        #s17,#s18
+#    upper_bounds  2*100.0      #s17,#s18
+#    descriptors   'x1'  'x2'   #s17,#s18
+
+# CYLINDER HEAD
+#  continuous_design = 2                      #s19,#s20,#s21,#s22
+#    initial_point 1.8 1.0                    #s19,#s21
+#    initial_point 1.5 0.1                    #s20,#s22
+#    lower_bounds  1.5 0.0                    #s19,#s20,#s21,#s22
+#    upper_bounds  2.164   4.0                #s19,#s20,#s21,#s22
+#    descriptors   'intake_dia' 'flatness'    #s19,#s20,#s21,#s22
+
+# CANTILEVER
+#  continuous_design = 2                              #s23,#s24
+#    initial_point 2*2.0                              #s23
+#    initial_point 2*8.0                              #s24
+#    lower_bounds  2*1.0                              #s23,#s24
+#    upper_bounds  2*10.0                             #s23,#s24
+#    descriptors   'w' 't'                            #s23,#s24
+#  continuous_state = 4                               #s23,#s24
+#    initial_state   40000.  29.E+6  500.  1000.      #s23,#s24
+#    descriptors       'R'    'E'    'X'    'Y'       #s23,#s24
+
 interface
   direct
   analysis_drivers  'text_book'				#s0,#s16
 #  analysis_drivers = 'illumination'			#s1
 #  analysis_drivers = 'rosenbrock'			#s2,#s3
-#  analysis_drivers = 'herbie'				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#  analysis_drivers = 'herbie'        #s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#  analysis_drivers = 'barnes'        #s17,#s18
+#  analysis_drivers = 'cyl_head'      #s19,#s20,#s21,#s22
+#  analysis_drivers = 'cantilever'    #s23,#s24
 
 responses
   descriptors 'f' 'c1' 'c2'				#s0
@@ -72,9 +102,32 @@ responses
 #  analytic_hessians					#s1,#s2,#s3
 
 # HERBIE
-#  objective_functions = 1				#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
-#  analytic_gradients  					#s4,#s5,#s8,#s9,#s12,#s13
-#  numerical_gradients  				#s6,#s7,#s10,#s11,#s14,#s15
-#  analytic_hessians					#s4,#s5,#s6,#s7
-#  no_hessians						#s8,#s9,#s10,#s11
-#  quasi_hessians bfgs					#s12,#s13,#s14,#s15
+#  objective_functions = 1        #s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15
+#  analytic_gradients           #s4,#s5,#s8,#s9,#s12,#s13
+#  numerical_gradients          #s6,#s7,#s10,#s11,#s14,#s15
+#  analytic_hessians          #s4,#s5,#s6,#s7
+#  no_hessians            #s8,#s9,#s10,#s11
+#  quasi_hessians bfgs          #s12,#s13,#s14,#s15
+
+# BARNES
+#  objective_functions = 1                    #s17,#s18
+#  nonlinear_inequality_constraints = 3       #s17,#s18 
+#  nonlinear_inequality_lower_bounds = 3*0.0  #s17,#s18 
+#  nonlinear_inequality_upper_bounds = 3*1.0  #s17,#s18
+#  analytic_gradients                         #s17,#s18
+#  no_hessians                                #s17,#s18
+
+# CYLINDER HEAD
+#  objective_functions = 1                    #s19,#s20,#s21,#s22
+#  nonlinear_inequality_constraints = 3       #s19,#s20,#s21,#s22
+#  nonlinear_inequality_upper_bounds = 3*0.0  #s19,#s20,#s21,#s22
+#  analytic_gradients                         #s19,#s20
+#  numerical_gradients                        #s21,#s22
+#  no_hessians                                #s19,#s20,#s21,#s22
+
+# CANTILEVER
+#  objective_functions = 1                    #s23,#s24
+#  nonlinear_inequality_constraints = 2       #s23,#s24
+#  nonlinear_inequality_upper_bounds = 2*0.0  #s23,#s24
+#  analytic_gradients                         #s23,#s24
+#  no_hessians                                #s23,#s24

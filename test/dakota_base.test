@@ -19781,6 +19781,108 @@ Test Number 16 succeeded
 <<<<< Best objective function  =
                       2.4589796716e-09
 <<<<< Best data captured at function evaluation 70
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 547 total (110 new, 437 duplicate)
+<<<<< Best parameters          =
+                      4.9526287426e+01 x1
+                      1.9622825341e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810292e+01
+<<<<< Best constraint values   =
+                      3.8835098277e-01
+                      3.4109483682e-08
+                      3.8005652126e-01
+<<<<< Best data captured at function evaluation 541
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 568 total (113 new, 455 duplicate)
+<<<<< Best parameters          =
+                      4.9526287668e+01 x1
+                      1.9622825350e+01 x2
+<<<<< Best objective function  =
+                     -3.1636810425e+01
+<<<<< Best constraint values   =
+                      3.8835099022e-01
+                     -2.1444166443e-09
+                      3.8005652054e-01
+<<<<< Best data captured at function evaluation 562
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 603 total (121 new, 482 duplicate)
+<<<<< Best parameters          =
+                      2.1224188323e+00 intake_dia
+                      1.7685563741e+00 flatness
+<<<<< Best objective function  =
+                     -2.4610313643e+00
+<<<<< Best constraint values   =
+                      1.4098766599e-09
+                     -3.3471654389e-01
+                      7.7135678733e-08
+<<<<< Best data captured at function evaluation 597
+Test Number 20 succeeded
+<<<<< Function evaluation summary: 436 total (91 new, 345 duplicate)
+<<<<< Best parameters          =
+                      2.1224189264e+00 intake_dia
+                      1.7685523888e+00 flatness
+<<<<< Best objective function  =
+                     -2.4610320032e+00
+<<<<< Best constraint values   =
+                      8.3212305912e-07
+                     -3.3471714168e-01
+                      7.4687540730e-07
+<<<<< Best data captured at function evaluation 430
+Test Number 21 succeeded
+<<<<< Function evaluation summary: 1509 total (318 new, 1191 duplicate)
+<<<<< Best parameters          =
+                      2.1224186875e+00 intake_dia
+                      1.7685582380e+00 flatness
+<<<<< Best objective function  =
+                     -2.4610310215e+00
+<<<<< Best constraint values   =
+                     -1.2773890263e-06
+                     -3.3471626430e-01
+                     -2.3610697830e-07
+<<<<< Best data captured at function evaluation 1489
+Test Number 22 succeeded
+<<<<< Function evaluation summary: 1185 total (249 new, 936 duplicate)
+<<<<< Best parameters          =
+                      2.1224188425e+00 intake_dia
+                      1.7685204827e+00 flatness
+<<<<< Best objective function  =
+                     -2.4610367525e+00
+<<<<< Best constraint values   =
+                      9.1437748706e-08
+                     -3.3472192760e-01
+                      6.1088069570e-06
+<<<<< Best data captured at function evaluation 1129
+Test Number 23 succeeded
+<<<<< Function evaluation summary: 470 total (94 new, 376 duplicate)
+<<<<< Best parameters          =
+                      2.3520221846e+00 w
+                      3.3262615816e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8234410316e+00
+<<<<< Best constraint values   =
+                     -1.5994040976e-02
+                      2.0272406978e-05
+<<<<< Best data captured at function evaluation 464
+Test Number 24 succeeded
+<<<<< Function evaluation summary: 416 total (83 new, 333 duplicate)
+<<<<< Best parameters          =
+                      2.3520225099e+00 w
+                      3.3262620420e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8234431967e+00
+<<<<< Best constraint values   =
+                     -1.5994449479e-02
+                      1.9718882776e-05
+<<<<< Best data captured at function evaluation 410
 dakota_rosenbrock.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
